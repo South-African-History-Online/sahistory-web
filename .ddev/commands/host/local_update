@@ -1,0 +1,17 @@
+#!/bin/bash
+
+## Description: Local update script
+## Usage: local_update
+## Example: ddev local_update
+
+ddev composer install
+ddev drush cr
+ddev drush updb -y
+ddev drush cr
+ddev drush cim -y
+ddev drush cr
+ddev drush deploy:hook -y
+ddev drush cr
+ddev drush locale-check && ddev drush locale-update
+ddev drush cr
+
