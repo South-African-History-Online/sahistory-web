@@ -36,11 +36,6 @@ On your host machine install the following:
    ```sh
    ddev composer install
    ```
-4. Create local `.env` file from `.env.dist`:
-   ```sh
-   cp .env.dist .env
-   ```
-   _**Note: Insert values, get them from a colleague or get from 1Pass under "SAHO" vault**_
 5. Now run project with DDEV - the database is available internally via sharepoint (ask a fellow developer):
    ```sh
    ddev import-db
