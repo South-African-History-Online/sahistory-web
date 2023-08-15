@@ -1,0 +1,39 @@
+<?php
+
+/**
+ * @file
+ * Install file for updates between versions.
+ */
+
+/**
+ * Updates services and settings configuration.
+ */
+function better_social_sharing_buttons_update_8001() {
+  $config_factory = \Drupal::configFactory();
+  $config = $config_factory->getEditable('better_social_sharing_buttons.settings');
+  $services = $config->get('services');
+  if (!$services) {
+    $services = [
+      'facebook' => 'facebook',
+      'twitter' => 'twitter',
+      'linkedin' => 'linkedin',
+      'email' => 'email',
+    ];
+  }
+  else {
+    unset($services['googleplus']);
+    unset($services['delicious']);
+    $services['print'] = 0;
+  }
+  $config->set('services', $services);
+  $config->set('print_css', '');
+  $config->clear('height');
+  if (!$config->get('width')) {
+    $config->set('width', '20px');
+  }
+  if (!$config->get('radius')) {
+    $config->set('radius', '3px');
+  }
+
+  $config->save(TRUE);
+}

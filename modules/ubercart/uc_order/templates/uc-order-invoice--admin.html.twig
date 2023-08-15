@@ -1,0 +1,32 @@
+{#
+/**
+ * @file
+ * This file is the default admin notification template for Ubercart.
+ */
+#}
+
+<p>
+{{ 'Order number:'|t }} {{ order_admin_link }}<br />
+{{ 'Customer:'|t }} {{ order_first_name }} {{ order_last_name }} - {{ order_email }}<br />
+{{ 'Order total:'|t }} {{ order_total }}<br />
+{{ 'Shipping method:'|t }} {{ order_shipping_method }}
+</p>
+
+<p>
+{{ 'Products:'|t }}<br />
+{% for product in products %}
+- {{ product.qty }} x {{ product.title }} - {{ product.total_price }}<br />
+&nbsp;&nbsp;{{ 'SKU'|t }}: {{ product.model }}<br />
+    {% if product.data.attributes %}
+    {% for attribute, option in product.data.attributes %}
+    &nbsp;&nbsp;{{ attribute }}: {{ option|join(', ') }}<br />
+    {% endfor %}
+    {% endif %}
+<br />
+{% endfor %}
+</p>
+
+<p>
+{{ 'Order comments:'|t }}<br />
+{{ order_comments }}
+</p>

@@ -1,0 +1,74 @@
+<?php
+
+/**
+ * @file
+ * Responsive favicons install file.
+ */
+
+use Drupal\Core\Url;
+
+/**
+ * Implements hook_requirements().
+ */
+function responsive_favicons_requirements($phase) {
+  $requirements = [];
+  if ($phase === 'runtime') {
+    // Make sure that the favicons exist.
+    $tags = responsive_favicons_load_all_icons();
+    if (!empty($tags['missing'])) {
+      $requirements['responsive_favicons_missing'] = [
+        'title' => t('Responsive favicons'),
+        'description' => t('The favicon files are missing for the following tags. Go to <a href=":url">configuration page</a> to add missing files.<br/><code>@tags</code>', [
+          ':url' => Url::fromRoute('responsive_favicons.admin')->toString(),
+          '@tags' => implode(', ', $tags['missing']),
+        ]),
+        'severity' => REQUIREMENT_ERROR,
+      ];
+    }
+    if (!empty($tags['found'])) {
+      $requirements['responsive_favicons_found'] = [
+        'title' => t('Responsive favicons'),
+        'value' => \Drupal::translation()->formatPlural(count($tags['found']), 'Found 1 favicon', 'Found @count favicons'),
+        'severity' => REQUIREMENT_OK,
+      ];
+    }
+
+    // Point out the potential conflict with the favicon module.
+    $moduleHandler = \Drupal::service('module_handler');
+    if ($moduleHandler->moduleExists('favicon')) {
+      $requirements['responsive_favicons_favicon_module'] = [
+        'title' => t('Responsive favicons'),
+        'value' => t('You do not need to have the favicon module enabled when you have the responsive favicons module enabled. Please see the README for more information.'),
+        'severity' => REQUIREMENT_WARNING,
+      ];
+    }
+  }
+
+  return $requirements;
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function responsive_favicons_uninstall() {
+  // Remove favicon files
+  $config = \Drupal::config('responsive_favicons.settings');
+  if (!empty($config->get('path'))) {
+    \Drupal::service('file_system')->deleteRecursive('public://' . $config->get('path'));
+  }
+}
+
+/**
+ * Implementations of hook_update_N().
+ */
+
+/**
+ * Default the new config path_type if not already set.
+ */
+function responsive_favicons_update_8001() {
+  $config = \Drupal::service('config.factory')->getEditable('responsive_favicons.settings');
+  if (empty($config->get('path_type'))) {
+    $config->set('path_type', 'upload');
+    $config->save();
+  }
+}

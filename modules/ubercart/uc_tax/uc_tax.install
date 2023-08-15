@@ -1,0 +1,96 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the uc_tax module.
+ */
+
+/**
+ * Implements hook_schema().
+ */
+function uc_tax_schema() {
+  $schema = array();
+
+  $schema['uc_tax'] = array(
+    'description' => 'Stores tax information.',
+    'fields' => array(
+      'id' => array(
+        'description' => 'Primary key: Unique tax rate id.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'name' => array(
+        'description' => 'The tax rate name.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'rate' => array(
+        'description' => 'The tax rate multiplier.',
+        'type' => 'float',
+        'not null' => TRUE,
+        'default' => 0.0,
+      ),
+      'shippable' => array(
+        'description' => 'Flag that describes how this rate applies to shippable and non-shippable products. 0 => Disregard shipability. 1 => Apply tax to shippable products only.',
+        'type' => 'int',
+        'size' => 'tiny',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'weight' => array(
+        'description' => 'The weight of this tax rate in relation to other rates.',
+        'type' => 'int',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'display_include' => array(
+        'description' => 'Boolean flag indicating that product prices should be displayed including the tax.',
+        'type' => 'int',
+        'size' => 'tiny',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'inclusion_text' => array(
+        'description' => 'Text to be shown near a product price that includes tax.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+    ),
+    'primary key' => array('id'),
+  );
+
+  $schema['uc_tax_taxed_product_types'] = array(
+    'fields' => array(
+      'tax_id' => array(
+        'description' => 'Tax rate id',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'type' => array(
+        'description' => 'Node type',
+        'type' => 'varchar',
+        'length' => 32,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+    ),
+    'primary key' => array('tax_id', 'type'),
+    'indexes' => array(
+      'type' => array('type'),
+    ),
+  );
+
+  $schema['uc_tax_taxed_line_items'] = $schema['uc_tax_taxed_product_types'];
+  $schema['uc_tax_taxed_line_items']['fields']['type']['description'] = 'Line item type';
+
+  return $schema;
+}

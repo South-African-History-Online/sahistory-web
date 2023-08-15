@@ -1,0 +1,86 @@
+<?php
+
+use Drupal\Core\Utility\UpdateException;
+
+/**
+ * @file
+ * The installation implementation for the entity import module.
+ */
+
+/**
+ * Update the entity import configuration to use the new schema definition.
+ */
+function entity_import_update_8103() {
+  try {
+    /** @var \Drupal\Core\Entity\EntityTypeManager $entity_type_manager */
+    $entity_type_manager = \Drupal::service('entity_type.manager');
+    $entity_importer_storage = $entity_type_manager->getStorage('entity_importer');
+
+    /** @var \Drupal\entity_import\Entity\EntityImporter $entity_importer */
+    foreach ($entity_importer_storage->loadMultiple() as $entity_importer) {
+      // Map the old property values to the new properties.
+      $entity_importer->expose_importer = $entity_importer->display_page ?? FALSE;
+      $entity_importer->migration_entity['entity'] = $entity_importer->entity ?? [];
+      $entity_importer->migration_source['source'] = $entity_importer->source ?? [];
+
+      unset(
+        $entity_importer->entity,
+        $entity_importer->source,
+        $entity_importer->display_page
+      );
+      $entity_importer->save();
+    }
+  } catch (\Exception $exception) {
+    throw new UpdateException(
+      'Unable to save the new entity importer configuration.'
+    );
+  }
+
+  return t('All the entity importer configurations have been updated!');
+}
+
+/**
+ * Update field mapping to use a source name instead of the field mapping machine name.
+ */
+function entity_import_update_8102() {
+  /** @var \Drupal\Core\Entity\EntityTypeManager $entity_type_manager */
+  $entity_type_manager = \Drupal::service('entity_type.manager');
+  $entity_importer_field_mapping = $entity_type_manager->getStorage(
+    'entity_importer_field_mapping'
+  );
+
+  /** @var \Drupal\entity_import\Entity\EntityImporterFieldMapping $field_mapping */
+  foreach ($entity_importer_field_mapping->loadMultiple() as $field_mapping) {
+    if (isset($field_mapping->source)) {
+      continue;
+    }
+    $field_mapping->source = $field_mapping->name();
+    $field_mapping->save();
+  }
+}
+
+/**
+ * Rename the entity importer options so they don't conflict with field mappings.
+ */
+function entity_import_update_8101() {
+  $importers = \Drupal::entityTypeManager()
+    ->getStorage('entity_importer')
+    ->loadMultiple();
+
+  $config_factory = \Drupal::configFactory();
+
+  foreach (array_keys($importers) as $identifier) {
+    $config = $config_factory
+      ->getEditable("entity_import.field_mapping.options.{$identifier}");
+
+    if (empty($config->getRawData())) {
+      continue;
+    }
+    $rename_config = clone $config;
+    $rename_config
+      ->setName("entity_import.options.{$identifier}")
+      ->save();
+
+    $config->delete();
+  }
+}

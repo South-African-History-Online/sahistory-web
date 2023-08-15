@@ -1,0 +1,625 @@
+<?php
+
+/**
+ * @file
+ * The controller module for fulfillment modules that process physical goods.
+ *
+ * This module collects information that is necessary to transport products from
+ * one place to another. Its hook system is used by fulfillment modules to get
+ * their specific information so that a shipment may be quoted and requested.
+ */
+
+use Drupal\Core\Ajax\AjaxResponse;
+use Drupal\Core\Ajax\PrependCommand;
+use Drupal\Core\Ajax\ReplaceCommand;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Url;
+use Drupal\uc_order\Entity\Order;
+use Drupal\uc_order\OrderInterface;
+use Drupal\uc_store\Address;
+
+/**
+ * Implements hook_theme().
+ */
+function uc_quote_theme() {
+  return array(
+    'uc_cart_pane_quotes' => array(
+      'render element' => 'form',
+      'file' => 'uc_quote.theme.inc',
+      'function' => 'theme_uc_cart_pane_quotes',
+    ),
+    'uc_quote_returned_rates' => array(
+      'render element' => 'form',
+      'file' => 'uc_quote.theme.inc',
+      'function' => 'theme_uc_quote_returned_rates',
+    ),
+  );
+}
+
+/**
+ * Implements hook_node_insert().
+ */
+function uc_quote_node_insert($node) {
+  uc_quote_node_update($node);
+}
+
+/**
+ * Implements hook_node_update().
+ */
+function uc_quote_node_update($node) {
+  if (uc_product_is_product($node)) {
+    if (isset($node->shipping_type)) {
+      uc_quote_set_shipping_type('product', $node->id(), $node->shipping_type);
+    }
+
+    if (!empty($node->shipping_address['street1'])) {
+      db_merge('uc_quote_product_locations')
+        ->key(array('nid' => $node->id()))
+        ->fields(array(
+          'first_name' => $node->shipping_address['first_name'],
+          'last_name' => $node->shipping_address['last_name'],
+          'company' => $node->shipping_address['company'],
+          'street1' => $node->shipping_address['street1'],
+          'street2' => $node->shipping_address['street2'],
+          'city' => $node->shipping_address['city'],
+          'zone' => $node->shipping_address['zone'],
+          'postal_code' => $node->shipping_address['postal_code'],
+          'country' => $node->shipping_address['country'],
+          'phone' => $node->shipping_address['phone'],
+        ))
+        ->execute();
+    }
+    else {
+      db_delete('uc_quote_product_locations')
+        ->condition('nid', $node->id())
+        ->execute();
+    }
+  }
+}
+
+/**
+ * Implements hook_node_load().
+ */
+function uc_quote_node_load($nodes) {
+  $nids = array();
+  foreach ($nodes as $node) {
+    if (uc_product_is_product($node)) {
+      $nids[] = $node->id();
+    }
+  }
+  if (empty($nids)) {
+    return;
+  }
+
+  $quote_config = \Drupal::config('uc_quote.settings');
+  $shipping_type = $quote_config->get('shipping_type');
+  $shipping_types = db_query("SELECT id, shipping_type FROM {uc_quote_shipping_types} WHERE id_type = :type AND id IN (:ids[])", [':type' => 'product', ':ids[]' => $nids])->fetchAllKeyed();
+
+  $addresses = db_query("SELECT nid, first_name, last_name, company, street1, street2, city, zone, postal_code, country, phone FROM {uc_quote_product_locations} WHERE nid IN (:nids[])", [':nids[]' => $nids], array('fetch' => 'Address'))->fetchAllAssoc('nid');
+
+  foreach ($nids as $nid) {
+    if (isset($shipping_types[$nid])) {
+      $nodes[$nid]->shipping_type = $shipping_types[$nid];
+    }
+    else {
+      $nodes[$nid]->shipping_type = $shipping_type;
+    }
+
+    if (isset($addresses[$nid])) {
+      $nodes[$nid]->shipping_address = (array) $addresses[$nid];
+      unset($nodes[$nid]->shipping_address['nid']);
+    }
+    else {
+      $nodes[$nid]->shipping_address = (array) $quote_config->get('ship_from_address');
+    }
+  }
+}
+
+/**
+ * Implements hook_node_delete().
+ */
+function uc_quote_node_delete($node) {
+  db_delete('uc_quote_shipping_types')
+    ->condition('id_type', 'product')
+    ->condition('id', $node->id())
+    ->execute();
+
+  db_delete('uc_quote_product_locations')
+    ->condition('nid', $node->id())
+    ->execute();
+}
+
+/**
+ * Implements hook_form_BASE_FORM_ID_alter() for node_form().
+ *
+ * Adds a default shipping origin address for products. If left blank, the
+ * store's default origin address will be used.
+ */
+function uc_quote_form_node_form_alter(&$form, FormStateInterface $form_state) {
+  // Alter the product node form.
+  $node = $form_state->getFormObject()->getEntity();
+  if (uc_product_is_product($node->bundle())) {
+    // Get the shipping address.
+    if (isset($node->shipping_address)) {
+      $address = $node->shipping_address;
+    }
+
+    // Use the store default if the product does not have an address set.
+    $quote_config = \Drupal::config('uc_quote.settings');
+    if (empty($address)) {
+      $address = $quote_config->get('ship_from_address');
+    }
+
+    // Initialize the shipping fieldset array.
+    if (!isset($form['shipping'])) {
+      $form['shipping'] = array();
+    }
+
+    $form['shipping'] += array(
+      '#type' => 'details',
+      '#title' => t('Shipping settings'),
+      '#weight' => 150,
+      '#attributes' => array('class' => array('product-shipping')),
+      '#group' => 'advanced',
+    );
+
+    $nid = $form_state->getFormObject()->getEntity()->id();
+    $form['shipping']['shipping_type'] = array(
+      '#type' => 'select',
+      '#title' => t('Default product shipping type'),
+      '#empty_value' => '',
+      '#empty_option' => t('- Store default -'),
+      '#default_value' => $nid ? uc_quote_get_shipping_type('product', $nid) : '',
+      '#options' => uc_quote_shipping_type_options(),
+      '#weight' => -7,
+    );
+
+    // Add the default pickup address fieldset.
+    $form['shipping']['shipping_address'] = array(
+      '#type' => 'details',
+      '#title' => t('Default product pickup address'),
+      '#description' => t('When delivering products to customers, the original location of the product must be known in order to accurately quote the shipping cost and set up a delivery. If this pickup address is left blank, this product will default to the <a href=":url">store pickup address</a>.', [':url' => Url::fromRoute('uc_quote.settings')->toString()]),
+      '#weight' => -6,
+    );
+    $form['shipping']['shipping_address']['#tree'] = TRUE;
+    $form['shipping']['shipping_address']['address'] = array(
+      '#type' => 'uc_address',
+      '#default_value' => $form_state->getValue('shipping_address') ?: $address,
+      '#required' => FALSE,
+    );
+  }
+}
+
+/**
+ * Implements hook_uc_cart_pane().
+ *
+ * @TODO: Replace with block implementation.
+ */
+function uc_quote_uc_cart_pane($items) {
+  if (\Drupal::routeMatch()->getRouteName() == 'uc_cart.cart') {
+    $quote_config = \Drupal::config('uc_quote.settings');
+    if (!$quote_config->get('quotes_enabled') || ($quote_config->get('panes.delivery.settings.delivery_not_shippable') && !uc_cart_is_shippable())) {
+      return array();
+    }
+
+    $body = \Drupal::formBuilder()->getForm('uc_cart_pane_quotes', $items);
+  }
+  else {
+    $body = '';
+  }
+
+  $panes['quotes'] = array(
+    'title' => t('Shipping quotes'),
+    'enabled' => FALSE,
+    'weight' => 5,
+    'body' => $body,
+  );
+
+  return $panes;
+}
+
+/**
+ * Implements hook_uc_order_load().
+ */
+function uc_quote_uc_order_load($orders) {
+  foreach ($orders as $order) {
+    $quote = db_query("SELECT method, accessorials, rate FROM {uc_order_quotes} WHERE order_id = :id", [':id' => $order->id()])->fetchAssoc();
+    $order->quote = $quote;
+    $order->quote['accessorials'] = strval($quote['accessorials']);
+  }
+}
+
+/**
+ * Implements hook_uc_order_update().
+ */
+function uc_quote_uc_order_update(OrderInterface $order) {
+  if (isset($order->quote['method'])) {
+    db_merge('uc_order_quotes')
+      ->key(array('order_id' => $order->id()))
+      ->fields(array(
+        'method' => $order->quote['method'],
+        'accessorials' => $order->quote['accessorials'],
+        'rate' => $order->quote['rate'],
+      ))
+      ->execute();
+  }
+}
+
+/**
+ * Implements hook_uc_order_delete().
+ */
+function uc_quote_uc_order_delete(OrderInterface $order) {
+  db_delete('uc_order_quotes')
+    ->condition('order_id', $order->id())
+    ->execute();
+}
+
+/**
+ * Implements hook_uc_shipping_type().
+ */
+function uc_quote_uc_shipping_type() {
+  $quote_config = \Drupal::config('uc_quote.settings');
+  $weight = $quote_config->get('type_weight');
+
+  $types = array();
+  $types['small_package'] = array(
+    'id' => 'small_package',
+    'title' => t('Small package'),
+    'weight' => $weight['small_package'],
+  );
+
+  return $types;
+}
+
+/**
+ * Stores the shipping type of products and manufacturers.
+ *
+ * Fulfillment modules are invoked for products that match their shipping type.
+ * This function stores the shipping type of a product or a manufacturer.
+ *
+ * @param string $id_type
+ *   Type can be 'product' or 'manufacturer'.
+ * @param int $id
+ *   Either the node id or term id of the object receiving the shipping type.
+ * @param string $shipping_type
+ *   The type of product that is fulfilled by various fulfillment modules.
+ */
+function uc_quote_set_shipping_type($id_type, $id, $shipping_type) {
+  if ($shipping_type !== '') {
+    db_merge('uc_quote_shipping_types')
+      ->key(array(
+        'id_type' => $id_type,
+        'id' => $id,
+      ))
+      ->fields(array('shipping_type' => $shipping_type))
+      ->execute();
+  }
+  else {
+    db_delete('uc_quote_shipping_types')
+      ->condition('id_type', $id_type)
+      ->condition('id', $id)
+      ->execute();
+  }
+}
+
+/**
+ * Retrieves shipping type information from the database.
+ *
+ * @param string $id_type
+ *   Type can be 'product' or 'manufacturer'.
+ * @param int $id
+ *   Either the node id or term id of the object that was assigned
+ *   the shipping type.
+ *
+ * @return string
+ *   The shipping type.
+ */
+function uc_quote_get_shipping_type($id_type, $id) {
+  static $types = array();
+
+  if (!isset($types[$id_type][$id])) {
+    $types[$id_type][$id] = db_query('SELECT shipping_type FROM {uc_quote_shipping_types} WHERE id_type = :type AND id = :id', [':type' => $id_type, ':id' => $id])->fetchField();
+  }
+  // @todo: shouldn't have to test here and add the small_package default -
+  // there should always be a value like there was in D7.
+  return isset($types[$id_type][$id])  ?  $types[$id_type][$id] : 'small_package';
+}
+
+/**
+ * Gets a product's shipping type.
+ *
+ * @param $product
+ *   A product object.
+ *
+ * @return string
+ *   The product's shipping type, or the store's default shipping type if
+ *   the product's is not set.
+ */
+function uc_product_get_shipping_type($product) {
+  $quote_config = \Drupal::config('uc_quote.settings');
+  $shipping_type = $quote_config->get('shipping_type');
+  if ($product->nid->target_id && $type = uc_quote_get_shipping_type('product', $product->nid->target_id)) {
+    $shipping_type = $type;
+  }
+  return $shipping_type;
+}
+
+/**
+ * Gets a product's default shipping address.
+ *
+ * @param int $nid
+ *   A product node id.
+ *
+ * @return \Drupal\uc_store\Address
+ *   An address object containing the product's default shipping address, or
+ *   the store's shipping address if the product's is not set.
+ */
+function uc_quote_get_default_shipping_address($nid) {
+  $address = db_query("SELECT first_name, last_name, company, street1, street2, city, zone, postal_code, country, phone FROM {uc_quote_product_locations} WHERE nid = :nid", [':nid' => $nid])->fetchObject('Drupal\uc_store\Address');
+
+  if (empty($address)) {
+    $quote_config = \Drupal::config('uc_quote.settings');
+    $address = Address::create($quote_config->get('ship_from_address'));
+  }
+
+  return $address;
+}
+
+/**
+ * Cart pane callback.
+ *
+ * @see theme_uc_cart_pane_quotes()
+ * @ingroup forms
+ */
+function uc_cart_pane_quotes($form, FormStateInterface $form_state, $items) {
+  $order = Order::create(array(
+    'uid' => \Drupal::currentUser()->id(),
+  ));
+  $order->delivery_country = $form_state->getValue('delivery_country') ?: uc_store_default_country();
+  $order->delivery_zone = $form_state->getValue('delivery_zone') ?: '';
+  $order->delivery_postal_code = $form_state->getValue('delivery_postal_code') ?: '';
+  $order->products = $items;
+
+  $form['#attached']['library'][] = 'uc_quote/uc_quote.styles';
+
+  $form['address'] = array(
+    '#type' => 'uc_address',
+    '#default_value' => array(
+      'delivery_country' => $order->delivery_country,
+      'delivery_zone' => $order->delivery_zone,
+      'delivery_postal_code' => $order->delivery_postal_code,
+    ),
+    '#required' => TRUE,
+    '#key_prefix' => 'delivery',
+  );
+
+  $form['get_quote'] = array(
+    '#type' => 'button',
+    '#value' => t('Calculate'),
+    '#ajax' => array(
+      'callback' => 'uc_quote_cart_returned_rates',
+      'wrapper' => 'quote',
+    ),
+  );
+
+  module_load_include('inc', 'uc_quote', 'uc_quote.pages');
+  $quotes = uc_quote_assemble_quotes($order);
+
+  $quote_options = array();
+  if (!empty($quotes)) {
+    foreach ($quotes as $method => $data) {
+      foreach ($data as $accessorial => $quote) {
+        $key = $method . '---' . $accessorial;
+
+        if (isset($quote['rate'])) {
+          $quote_options[$key] = t('@label: @price', ['@label' => $quote['option_label'], '@price' => $quote['format']]);
+        }
+      }
+    }
+  }
+
+  $form['quote'] = array(
+    '#theme' => 'item_list',
+    '#items' => $quote_options,
+    '#prefix' => '<div id="quote">',
+    '#suffix' => '</div>',
+  );
+
+  return $form;
+}
+
+/**
+ * Calculates and returns the shipping quote selection form.
+ */
+function uc_quote_build_quote_form($order, $show_errors = TRUE) {
+  $return = array();
+  $quote_config = \Drupal::config('uc_quote.settings');
+
+  module_load_include('inc', 'uc_quote', 'uc_quote.pages');
+  $quotes = uc_quote_assemble_quotes($order);
+  $quote_options = array();
+
+  if (!empty($quotes)) {
+    foreach ($quotes as $method => $data) {
+      foreach ($data as $accessorial => $quote) {
+        $key = $method . '---' . $accessorial;
+
+        if (isset($quote['rate'])) {
+          $quote_options[$key] = t('@label: @price', ['@label' => $quote['option_label'], '@price' => $quote['format']]);
+          $return[$key]['rate'] = array(
+            '#type' => 'hidden',
+            '#value' => $quote['rate'],
+          );
+        }
+
+        if (!empty($quote['error'])) {
+          $item_list = array(
+            '#theme' => 'item_list',
+            '#items' => array('items' => $quote['error']),
+          );
+          $return[$key]['error'] = array(
+            '#type' => 'container',
+            '#markup' => drupal_render($item_list),
+            '#attributes' => array('class' => array('quote-error')),
+          );
+        }
+
+        if (!empty($quote['notes'])) {
+          $return[$key]['notes'] = array(
+            '#type' => 'container',
+            '#markup' => $quote['notes'],
+            '#attributes' => array('class' => array('quote-notes')),
+          );
+        }
+
+        if (!empty($quote['debug'])) {
+          $return[$key]['debug'] = array(
+            '#markup' => '<pre>' . $quote['debug'] . '</pre>',
+          );
+        }
+
+        if (!isset($quote['rate']) && isset($quote['label']) && count($return[$key])) {
+          $return[$key]['#prefix'] = $quote['label'] . ': ';
+        }
+      }
+    }
+  }
+
+  $num_quotes = count($quote_options);
+  $default = key($quote_options);
+  if ($num_quotes > 1) {
+    if (isset($order->quote['method']) && isset($order->quote['accessorials'])) {
+      $chosen = $order->quote['method'] . '---' . $order->quote['accessorials'];
+      if (isset($quote_options[$chosen])) {
+        $default = $chosen;
+      }
+    }
+
+    $return['quote_option'] = array(
+      '#type' => 'radios',
+      '#options' => $quote_options,
+      '#default_value' => $default,
+    );
+  }
+  elseif ($num_quotes == 1) {
+    $return['quote_option'] = array(
+      '#type' => 'hidden',
+      '#value' => $default,
+      '#suffix' => $quote_options[$default],
+    );
+  }
+  elseif ($show_errors) {
+    $return['error'] = array(
+      '#markup' => t('There were problems getting a shipping quote. Please verify the delivery address and try again.'),
+    );
+  }
+
+  $return['#theme'] = 'uc_quote_returned_rates';
+
+  return $return;
+}
+
+/**
+ * Ajax callback: Shows estimated shipping quotes on the cart page.
+ */
+function uc_quote_cart_returned_rates($form, $form_state) {
+  $response = new AjaxResponse();
+  $response->addCommand(new ReplaceCommand('#quote', trim(drupal_render($form['quote']))));
+  $status_messages = array('#type' => 'status_messages');
+  $response->addCommand(new PrependCommand('#quote', drupal_render($status_messages)));
+
+  return $response;
+}
+
+/**
+ * Gets the default (selected) quote option from the built form element.
+ *
+ * @param array $quote_form
+ *   The quotes form-element.
+ *
+ * @return string|false
+ *   The default quote option, or FALSE if none exists.
+ */
+function _uc_quote_extract_default_option($quote_form) {
+  if (isset($quote_form['quote_option']['#value'])) {
+    return $quote_form['quote_option']['#value'];
+  }
+  elseif (isset($quote_form['quote_option']['#default_value'])) {
+    return $quote_form['quote_option']['#default_value'];
+  }
+  else {
+    return FALSE;
+  }
+}
+
+/**
+ * Callback for uasort().
+ */
+function _uc_quote_type_sort($a, $b) {
+  $aw = $a['weight'];
+  $bw = $b['weight'];
+  if ($aw == $bw) {
+    return strcasecmp($a['id'], $b['id']);
+  }
+  else {
+    return ($aw < $bw) ? -1 : 1;
+  }
+}
+
+/**
+ * Callback for uasort().
+ *
+ * Sorts service rates by increasing price.
+ */
+function uc_quote_price_sort($a, $b) {
+  $ar = $a['rate'];
+  $br = $b['rate'];
+  if ($ar == $br) {
+    return 0;
+  }
+  else {
+    return ($ar < $br) ? -1 : 1;
+  }
+}
+
+/**
+ * Returns an options array of shipping types.
+ */
+function uc_quote_shipping_type_options() {
+  $types = array();
+
+  $ship_types = uc_quote_get_shipping_types();
+  uasort($ship_types, '_uc_quote_type_sort');
+
+  foreach ($ship_types as $ship_type) {
+    $types[$ship_type['id']] = $ship_type['title'];
+  }
+
+  if (empty($types)) {
+    $types['small_package'] = t('Small package');
+  }
+
+  return $types;
+}
+
+/**
+ * Returns an array of shipping types.
+ */
+function uc_quote_get_shipping_types() {
+  $args = array();
+  $hook = 'uc_shipping_type';
+  $return = array();
+  $module_handler = \Drupal::moduleHandler();
+  foreach ($module_handler->getImplementations($hook) as $module) {
+    $function = $module . '_' . $hook;
+    $result = call_user_func_array($function, $args);
+    if (isset($result) && is_array($result)) {
+      $return = array_merge($return, $result);
+    }
+    elseif (isset($result)) {
+      $return[] = $result;
+    }
+  }
+
+  return $return;
+}

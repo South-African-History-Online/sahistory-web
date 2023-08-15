@@ -1,0 +1,197 @@
+entity.uc_fulfillment_method.collection:
+  path: '/admin/store/config/fulfillment'
+  defaults:
+    _entity_list: 'uc_fulfillment_method'
+    _title: 'Fulfillment methods'
+  requirements:
+    _permission: 'fulfill orders'
+
+entity.uc_fulfillment_method.add_form:
+  path: '/admin/store/config/fulfillment/add/{plugin_id}'
+  defaults:
+    _controller: '\Drupal\uc_fulfillment\Controller\FulfillmentMethodController::addForm'
+    _title: 'Add fulfillment method'
+  requirements:
+    _permission: 'fulfill orders'
+
+entity.uc_fulfillment_method.edit_form:
+  path: '/admin/store/config/fulfillment/{uc_fulfillment_method}'
+  defaults:
+    _entity_form: 'uc_fulfillment_method.default'
+    _title: 'Edit fulfillment method'
+  requirements:
+    _permission: 'fulfill orders'
+
+entity.uc_fulfillment_method.enable:
+  path: '/admin/store/config/fulfillment/{uc_fulfillment_method}/enable'
+  defaults:
+    _controller: '\Drupal\uc_fulfillment\Controller\FulfillmentMethodController::performOperation'
+    op: 'enable'
+  requirements:
+    _permission: 'fulfill orders'
+    _csrf_token: 'TRUE'
+
+entity.uc_fulfillment_method.disable:
+  path: '/admin/store/config/fulfillment/{uc_fulfillment_method}/disable'
+  defaults:
+    _controller: '\Drupal\uc_fulfillment\Controller\FulfillmentMethodController::performOperation'
+    op: 'disable'
+  requirements:
+    _permission: 'fulfill orders'
+    _csrf_token: 'TRUE'
+
+entity.uc_fulfillment_method.delete_form:
+  path: '/admin/store/config/fulfillment/{uc_fulfillment_method}/delete'
+  defaults:
+    _entity_form: 'uc_fulfillment_method.delete'
+    _title: 'Delete fulfillment method'
+  requirements:
+    _permission: 'fulfill orders'
+
+# Packages.
+
+uc_fulfillment.packages:
+  path: '/admin/store/orders/{uc_order}/packages'
+  defaults:
+    _controller: '\Drupal\uc_fulfillment\Controller\PackageController::listOrderPackages'
+    _title_callback: '\Drupal\uc_order\Controller\OrderController::pageTitle'
+  requirements:
+    _custom_access: '\Drupal\uc_fulfillment\Controller\FulfillmentController::accessOrder'
+
+uc_fulfillment.new_package:
+  path: '/admin/store/orders/{uc_order}/packages/new'
+  defaults:
+    _form: '\Drupal\uc_fulfillment\Form\NewPackageForm'
+    _title: 'Create packages'
+  requirements:
+    _custom_access: '\Drupal\uc_fulfillment\Controller\FulfillmentController::accessOrder'
+
+uc_fulfillment.edit_package:
+  path: '/admin/store/orders/{uc_order}/packages/{uc_package}/edit'
+  defaults:
+    _form: '\Drupal\uc_fulfillment\Form\PackageEditForm'
+    _title: 'Edit package'
+  requirements:
+    _custom_access: '\Drupal\uc_fulfillment\Controller\FulfillmentController::accessOrder'
+  options:
+    parameters:
+      uc_package:
+        type: uc_package
+
+uc_fulfillment.cancel_package:
+  path: '/admin/store/orders/{uc_order}/packages/{uc_package}/cancel'
+  defaults:
+    _form: '\Drupal\uc_fulfillment\Form\PackageCancelForm'
+    _title: 'Cancel package shipment'
+  requirements:
+    _custom_access: '\Drupal\uc_fulfillment\Controller\FulfillmentController::accessOrder'
+  options:
+    parameters:
+      uc_package:
+        type: uc_package
+
+uc_fulfillment.delete_package:
+  path: '/admin/store/orders/{uc_order}/packages/{uc_package}/delete'
+  defaults:
+    _form: '\Drupal\uc_fulfillment\Form\PackageDeleteForm'
+    _title: 'Delete package'
+  requirements:
+    _custom_access: '\Drupal\uc_fulfillment\Controller\FulfillmentController::accessOrder'
+  options:
+    parameters:
+      uc_package:
+        type: uc_package
+
+# Shipments.
+
+uc_fulfillment.shipments:
+  path: '/admin/store/orders/{uc_order}/shipments'
+  defaults:
+    _controller: '\Drupal\uc_fulfillment\Controller\ShipmentController::listOrderShipments'
+    _title_callback: '\Drupal\uc_order\Controller\OrderController::pageTitle'
+  requirements:
+    _custom_access: '\Drupal\uc_fulfillment\Controller\FulfillmentController::accessOrder'
+
+uc_fulfillment.new_shipment:
+  path: '/admin/store/orders/{uc_order}/shipments/new'
+  defaults:
+    _form: '\Drupal\uc_fulfillment\Form\NewShipmentForm'
+    _title: 'New shipment'
+  requirements:
+    _custom_access: '\Drupal\uc_fulfillment\Controller\FulfillmentController::accessNewShipment'
+
+uc_fulfillment.view_shipment:
+  path: '/admin/store/orders/{uc_order}/shipments/{uc_shipment}'
+  defaults:
+    _controller: '\Drupal\uc_fulfillment\Controller\ShipmentController::viewShipment'
+    _title_callback: '\Drupal\uc_fulfillment\Controller\ShipmentController::pageTitle'
+  requirements:
+    _custom_access: '\Drupal\uc_fulfillment\Controller\FulfillmentController::accessOrder'
+  options:
+    parameters:
+      uc_shipment:
+        type: uc_shipment
+
+#uc_fulfillment.view_shipment:
+#  path: '/admin/store/orders/{uc_order}/shipments/{uc_shipment}/view'
+#  defaults:
+#    _title: 'View'
+#    'weight' => -5,
+#    'type' => MENU_DEFAULT_LOCAL_TASK,
+
+uc_fulfillment.edit_shipment:
+  path: '/admin/store/orders/{uc_order}/shipments/{uc_shipment}/edit'
+  defaults:
+    _form: '\Drupal\uc_fulfillment\Form\ShipmentEditForm'
+    _title_callback: '\Drupal\uc_fulfillment\Controller\ShipmentController::pageTitle'
+  requirements:
+    _custom_access: '\Drupal\uc_fulfillment\Controller\FulfillmentController::accessOrder'
+  options:
+    parameters:
+      uc_shipment:
+        type: uc_shipment
+
+uc_fulfillment.packing_slip:
+  path: '/admin/store/orders/{uc_order}/shipments/{uc_shipment}/packing_slip'
+  defaults:
+    _controller: '\Drupal\uc_fulfillment\Controller\ShipmentController::printShipment'
+    _title_callback: '\Drupal\uc_fulfillment\Controller\ShipmentController::pageTitle'
+  requirements:
+    _custom_access: '\Drupal\uc_fulfillment\Controller\FulfillmentController::accessOrder'
+  options:
+    parameters:
+      uc_shipment:
+        type: uc_shipment
+
+uc_fulfillment.print_shipment:
+  path: '/admin/store/orders/{uc_order}/shipments/{uc_shipment}/print'
+  defaults:
+    _controller: '\Drupal\uc_fulfillment\Controller\ShipmentController::printShipment'
+    _title_callback: '\Drupal\uc_fulfillment\Controller\ShipmentController::pageTitle'
+    print: TRUE
+  requirements:
+    _custom_access: '\Drupal\uc_fulfillment\Controller\FulfillmentController::accessOrder'
+  options:
+    parameters:
+      uc_shipment:
+        type: uc_shipment
+
+uc_fulfillment.delete_shipment:
+  path: '/admin/store/orders/{uc_order}/shipments/{uc_shipment}/delete'
+  defaults:
+    _form: '\Drupal\uc_fulfillment\Form\ShipmentDeleteForm'
+    _title_callback: '\Drupal\uc_fulfillment\Controller\ShipmentController::pageTitle'
+  requirements:
+    _custom_access: '\Drupal\uc_fulfillment\Controller\FulfillmentController::accessOrder'
+  options:
+    parameters:
+      uc_shipment:
+        type: uc_shipment
+
+uc_fulfillment.make_shipment:
+  path: '/admin/store/orders/{uc_order}/ship'
+  defaults:
+    _controller: '\Drupal\uc_fulfillment\Controller\ShipmentController::makeShipment'
+    _title: 'Ship packages'
+  requirements:
+    _custom_access: '\Drupal\uc_fulfillment\Controller\FulfillmentController::accessOrder'

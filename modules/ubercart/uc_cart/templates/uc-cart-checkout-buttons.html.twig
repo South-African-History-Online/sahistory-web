@@ -1,0 +1,28 @@
+{#
+/**
+ * @file
+ * Default theme implementation for cart checkout button(s).
+ *
+ * Available variables:
+ * - buttons: An array of button render elements.
+ *
+ * @see \Drupal\uc_cart\Form\CartForm
+ *
+ * @ingroup themeable
+ */
+#}
+{{ buttons|first }}
+
+{% if buttons|length > 1 %}
+  <div class="uc-cart-checkout-button-container clearfix">
+    <div class="uc-cart-checkout-button">
+      <div class="uc-cart-checkout-button-separator">{{ '- or -'|t }}</div>
+      {{ buttons[1:1] }}
+    </div>
+    {% for button in buttons[2:] %}
+      <div class="uc-cart-checkout-button">
+        {{ button }}
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}

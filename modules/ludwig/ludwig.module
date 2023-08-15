@@ -1,0 +1,46 @@
+<?php
+
+/**
+ * @file
+ * This is the primary module file.
+ */
+
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Url;
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function ludwig_form_update_manager_update_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  // Adds the update warnings which remind user to download
+  // missing packages for installed Ludwig manged modules
+  // before advancing to 'Drupal database update' step.
+  $package_manager = \Drupal::service('ludwig.package_manager');
+  $packages = $package_manager->getPackages();
+  $providers = array_column($packages, 'provider', 'provider');
+  foreach ($providers as $name) {
+    if (isset($form['projects']["#options"][$name])) {
+      $form['projects']["#options"][$name]['title']['data']['#markup'] .= ' ' . t('<strong>Ludwig managed module!</strong> Don\'t forget to <a href="@packages-url" title="@packages-title" target="_blank">download all required libraries</a> for this module before advancing to "Run database updates" step. <a href="@maintainance-guide-url" title="@maintainance-guide-title" target="_blank">Read more.</a>', [
+        '@packages-url' => Url::fromRoute('ludwig.packages')->toString(),
+        '@packages-title' => 'Reports > Packages page',
+        '@maintainance-guide-url' => 'https://www.drupal.org/docs/contributed-modules/ludwig/maintenance-of-ludwig-managed-modules-update-steps',
+        '@maintainance-guide-title' => 'Maintenance of Ludwig managed modules guide',
+      ]);
+    }
+  }
+}
+
+/**
+ * Implements hook_help().
+ */
+function ludwig_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    // Main module help for ludwig module.
+    case 'help.page.ludwig':
+      // Return a line-break version of the README.md.
+      return _filter_autop(file_get_contents(dirname(__FILE__) . '/README.md'));
+
+    default:
+  }
+}

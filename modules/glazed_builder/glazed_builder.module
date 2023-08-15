@@ -1,0 +1,187 @@
+<?php
+
+
+use Drupal\Core\Cache\Cache;
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Form\FormStateInterface;
+
+
+/**
+ * @file
+ * Contains hooks used in the Glazed Builder module
+ */
+
+/**
+ * Implementation of hook_entity_type_alter()
+ *
+ * Override the Node class provided by core with a custom
+ * impelementation for Glazed Buidler, that allows for overriding
+ * of specific entity functionality
+ */
+function glazed_builder_entity_type_alter(array &$entity_types) {
+  if (!empty($entity_types['node'])) {
+    $node = &$entity_types['node'];
+    $node->setClass('Drupal\glazed_builder\Entity\Node');
+  }
+
+  if (!empty($entity_types['block_content'])){
+    $block_content = &$entity_types['block_content'];
+    $block_content->setClass('Drupal\glazed_builder\Entity\BlockContent');
+  }
+}
+
+/**
+ * Implements hook_update_status_alter().
+ *
+ * Provides link to sooperthemes.com on Available Updates admin page
+ */
+function glazed_builder_update_status_alter(&$projects) {
+  if (isset($projects['glazed_builder']) && isset($projects['glazed_builder']['title'])) {
+    $projects['glazed_builder']['title'] .=  ' ' . t('on sooperthemes.com. Click for more info.');
+  }
+}
+
+/**
+ * Implements hook_page_bottom().
+ */
+function glazed_builder_page_bottom(array &$page_bottom) {
+  if (\Drupal::service('path.matcher')->isFrontPage()) {
+    $page_bottom['glazed_builder'] = [
+      '#prefix' => '<div class="hidden">',
+      '#suffix' => '</div>',
+      '#markup' => 'sfy39587stp17',
+    ];
+  }
+}
+
+/**
+ * Implements hook_editor_js_settings_alter().
+ *
+ * Sets formatting options, also prevents CKeditor from deleting
+ * <link> tags that we may have in drag and drop elements.
+ *
+ * @ingroup integrations
+ */
+function glazed_builder_editor_js_settings_alter(array &$settings) {
+  foreach(array_keys($settings['editor']['formats']) as $format) {
+    $settings['editor']['formats'][$format]['editorSettings']['customConfig'] = base_path() . drupal_get_path('module', 'glazed_builder') . '/js/ckeditor.config.js';
+  }
+}
+
+/**
+ * Implementation of hook_ENTITY_TYPE_delete()
+ *
+ * Clears the cache when a custom block is deleted, so that deleted blocks do not show
+ * up in the front end builder
+ */
+function glazed_builder_block_content_delete(EntityInterface $blockContent) {
+  drupal_flush_all_caches();
+}
+
+/**
+ * Implementation of hook_ENTITY_TYPE_create()
+ *
+ * Clears the cache when a custom block is created, so that newly added blocks show
+ * up in the front end builder
+ */
+function glazed_builder_block_content_create(EntityInterface $blockContent) {
+  drupal_flush_all_caches();
+}
+
+/**
+ * Implementation of hook_form_FORM_ID_alter()
+ *
+ * Adds a submit handler that is called when a new view is saved, in order to
+ * clear the cache so that the new view is shown on the front end builder.
+ *
+ * @see glazed_builder_view_add_form_submit
+ */
+function glazed_builder_form_view_add_form_alter(array &$form, FormStateInterface $form_state) {
+  $form['actions']['submit']['#submit'][] = 'glazed_builder_view_add_form_submit';
+}
+
+/**
+ * Submit handler called when a new view is added. Clears the cache so that the new
+ * view shows up on the front end builder.
+ *
+ * @see glazed_builder_form_view_add_form_alter
+ */
+function glazed_builder_view_add_form_submit(array &$form, FormStateInterface $form_state) {
+  drupal_flush_all_caches();
+}
+
+/**
+ * Implementation of hook_form_FORM_ID_alter()
+ *
+ * Adds a submit handler that is called when a view is deleted, in order to clear
+ * the cache so that the deleted view is not shown on the front end builder.
+ *
+ * @see glazed_builder_view_delete_form_submit
+ */
+function glazed_builder_form_view_delete_form_alter(&$form, FormStateInterface $form_state) {
+  $form['actions']['submit']['#submit'][] = 'glazed_builder_view_delete_form_submit';
+}
+
+/**
+ * Submit handler called when a view is deleted. Clears the cache so that the deleted view
+ * does not show up in the front end builder.
+ *
+ * @see glazed_builder_form_view_delete_form_alter
+ */
+function glazed_builder_view_delete_form_submit(&$form, FormStateInterface $form_state) {
+  drupal_flush_all_caches();
+}
+
+/**
+ * Implementation of hook_module_preinstall()
+ *
+ * Clears the caches when a module is installed to ensure that
+ * any newly installed elements show up in the front end builder.
+ */
+function glazed_builder_module_preinstall($module) {
+  // drupal_flush_all_caches();
+}
+
+/**
+ * Implementation of hook_module_preuninstall()
+ *
+ * Clears the caches when a module is uninstalled to ensure that
+ * any removed elements do not show up in the front end builder.
+ */
+function glazed_builder_module_preuninstall($module) {
+  drupal_flush_all_caches();
+}
+
+/**
+ * Implements hook_library_info_alter().
+ *
+ * We side-load our own selection.js script to close the Media Modal and trigger
+ * the "entities-selected" event on the correct image parameter input field.
+ *
+ * Remove modal libraries from bootstrap basetheme
+ * @see https://www.drupal.org/project/bootstrap/issues/3014248
+ */
+function glazed_builder_library_info_alter(&$libraries, $extension) {
+  if ($extension == 'entity_browser') {
+    $libraries['iframe_selection']['dependencies'][] = 'glazed_builder/entity_browser_selection';
+    $libraries['modal_selection']['dependencies'][] = 'glazed_builder/entity_browser_selection';
+  }
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_insert().
+ */
+function glazed_builder_webform_insert(Drupal\Core\Entity\EntityInterface $entity) {
+  \Drupal::service('plugin.manager.block')->clearCachedDefinitions();
+  \Drupal::cache()->delete('glazed_builder:cms_elements_blocks');
+  \Drupal::service('cache_tags.invalidator')->invalidateTags(['node_view']);
+}
+
+/**
+ * Implements hook_ENTITY_TYPE__delete().
+ */
+function glazed_builder_webform_delete(Drupal\Core\Entity\EntityInterface $entity) {
+  \Drupal::service('plugin.manager.block')->clearCachedDefinitions();
+  \Drupal::cache()->delete('glazed_builder:cms_elements_blocks');
+  \Drupal::service('cache_tags.invalidator')->invalidateTags(['node_view']);
+}

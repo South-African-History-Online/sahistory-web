@@ -1,0 +1,76 @@
+<?php
+
+/**
+ * @file
+ * The hook implementations for the entity import module.
+ */
+
+use Drupal\Core\Link;
+use Drupal\Core\Routing\RouteMatchInterface;
+
+/**
+ * Implements hook_help().
+ */
+function entity_import_help($route_name, RouteMatchInterface $route_match) {
+  if ($route_name === 'help.page.entity_import') {
+    $readme_file = file_exists(__DIR__ . '/README.md') ? __DIR__ . '/README.md' : __DIR__ . '/README.txt';
+    if (!file_exists($readme_file)) {
+      return NULL;
+    }
+    $text = file_get_contents($readme_file);
+    if ($text && !\Drupal::moduleHandler()->moduleExists('markdown')) {
+      return '<pre>' . $text . '</pre>';
+    }
+    else {
+      // Use the Markdown filter to render the README.
+      $filter_manager = \Drupal::service('plugin.manager.filter');
+      $settings = \Drupal::configFactory()->get('markdown.settings')->getRawData();
+      $config = ['settings' => $settings];
+      $filter = $filter_manager->createInstance('markdown', $config);
+      return $filter->process($text, 'en');
+    }
+  }
+  return NULL;
+}
+
+/**
+ * Implements hook_theme().
+ */
+function entity_import_theme($existing, $type, $theme, $path) {
+  return [
+    'entity_import_list' => [
+      'variables' => ['content' => NULL],
+    ],
+  ];
+}
+
+/**
+ * Prepares variables for list of available entity importers.
+ *
+ * Default template: entity-import-list.html.twig.
+ *
+ * @param array $variables
+ *   An associative array containing:
+ *   - content: An array of entity importers.
+ *
+ */
+function template_preprocess_entity_import_list(&$variables) {
+  $variables['importers'] = [];
+
+  if (!empty($variables['content'])) {
+    /** @var \Drupal\entity_import\Entity\EntityImporter $importer */
+    foreach ($variables['content'] as $importer) {
+      $variables['importers'][$importer->id()] = [
+        'type' => $importer->id(),
+        'link' => Link::createFromRoute(
+            $importer->label(),
+            'entity_import.importer.page.import_form',
+            ['entity_importer' => $importer->id()]
+          )->toRenderable(),
+        'description' => [
+          '#markup' => $importer->getDescription(),
+        ],
+      ];
+    }
+  }
+}

@@ -1,0 +1,89 @@
+<?php
+
+/**
+ * @file
+ * Install and uninstall functions for Popup announcement.
+ */
+
+/**
+ * Implements hook_install().
+ */
+function popup_announcement_install() {
+   
+  variable_set('popup_announcement_blocks', array());
+  
+  $pa = new Popup_announcement_block();
+  $b = $pa->create_block();  
+  
+  $b['bid'] = 1;
+  $b['name'] = st('First popup-announcement');
+  
+  $pa->save_block($b);
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function popup_announcement_uninstall() {
+  variable_del('popup_announcement_blocks');
+  
+  // just for comfortable work for admin
+  if (isset($_SESSION['popup_announcement'])) {
+    unset($_SESSION['popup_announcement']);
+  }
+}
+
+/**
+ * Implements hook_schema().
+ */
+function popup_announcement_schema() {
+  $schema['popup_announcement'] = array(
+    'description' => 'Module Popup announcement collect here data about visitors',
+    'fields' => array(
+      'sid' => array(
+        'type' => 'varchar',
+        'length' => 128,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'User session id.',
+      ),
+      'visit_number' => array(
+        'type' => 'int',
+        'size' => 'tiny',
+        'unsigned' => TRUE,
+        'description' => 'Visit number for this visitor. Remember about cron a deleting old records from database.',
+      ),
+      'is_visible' => array(
+        'type' => 'int',
+        'size' => 'tiny',
+        'unsigned' => TRUE,
+        'description' => 'Visible for this visit only. 0 - not visible. 1 - visible.',
+      ),
+      'is_visible_permanent' => array(
+        'type' => 'int',
+        'size' => 'tiny',
+        'unsigned' => TRUE,
+        'description' => 'Visible for this sid global. 0 - not visible. 1 - visible.',
+      ),
+      'timestamp_first_visit' => array(
+        'type' => 'int',
+        'size' => 'normal',
+        'unsigned' => TRUE,
+        'description' => 'The Unix timestamp when this visitor was here firstly (for cron).',
+      ),
+      'timestamp_last_visit' => array(
+        'type' => 'int',
+        'size' => 'normal',
+        'unsigned' => TRUE,
+        'description' => 'The Unix timestamp when this visitor requsted web page last time. For finding different visits.',
+      ),
+    ),
+    'primary key' => array('sid'),
+    'indexes' => array(
+      'sid' => array('sid'),
+      'timestamp_first_visit' => array('timestamp_first_visit'),
+    ),
+  );
+
+  return $schema;
+}

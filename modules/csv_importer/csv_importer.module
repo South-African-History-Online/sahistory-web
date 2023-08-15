@@ -1,0 +1,32 @@
+<?php
+
+/**
+ * @file
+ * Contains csv_importer.module.
+ */
+
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Url;
+
+/**
+ * Implements hook_help().
+ */
+function csv_importer_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    case 'help.page.csv_importer':
+      $output = '';
+      $output .= '<h3>' . t('CSV Importer') . '</h3>';
+      $output .= '<p>' . t('Import content from CSV files, by default it supports <strong>Node</strong>, <strong>Taxonomy</strong> and <strong>User</strong> import.') . '</p>';
+      $output .= '<h4>' . t('Usage') . '</h4>';
+      $output .= '<ul>';
+      $output .= '<li>' . t('Navigate <a href="@uri" target="_blank">here</a>', ['@uri' => Url::fromRoute('csv_importer.form')->toString()]) . '</li>';
+      $output .= '<li>' . t('Choose entity type') . '</li>';
+      $output .= '<li>' . t('Choose entity bundle (if any)') . '</li>';
+      $output .= '<li>' . t('Choose CSV file') . '</li>';
+      $output .= '<li>' . t('Press <strong>CSV import</strong>') . '</li>';
+      $output .= '</ul>';
+      $output .= '<h4>' . t('Documentation') . '</h4>';
+      $output .= '<a href="https://www.drupal.org/docs/8/modules/csv-importer" target="_blank">' . 'https://www.drupal.org/docs/8/modules/csv-importer' . '</a>';
+      return $output;
+  }
+}

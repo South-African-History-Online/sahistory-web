@@ -1,0 +1,232 @@
+<?php
+
+/**
+ * @file
+ * Organizes ordered products into packages and sets them up for shipment.
+ * Shipping method modules may add functionality to generate shipping labels
+ * and tracking numbers.
+ */
+
+use Drupal\Core\Render\BubbleableMetadata;
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Link;
+use Drupal\Core\Url;
+use Drupal\uc_order\OrderInterface;
+use Drupal\uc_fulfillment\Package;
+use Drupal\uc_fulfillment\Shipment;
+
+/**
+ * Implements hook_help().
+ */
+function uc_fulfillment_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    case 'uc_fulfillment.new_package':
+      return '<p>' . t('Organize products into packages. Package numbers in multiple shipping types are of the first shipping type they appear in. All packages are given a unique ID when they are saved. Choose the default package "Sep." to automatically create a package for each of the selected quantity of products in that row.') . '</p>';
+      break;
+  }
+}
+
+/**
+ * Implements hook_menu_local_tasks_alter().
+ */
+function uc_fulfillment_menu_local_tasks_alter(&$data, $router_item, $root_path) {
+  if ($root_path == 'admin/store/orders/%/shipments') {
+    $order = $router_item['page_arguments'][0];
+    $item = menu_get_item('admin/store/orders/' . $order->id() . '/packages/new');
+    if ($item['access']) {
+      $data['actions']['output'][] = array(
+        '#theme' => 'menu_local_action',
+        '#link' => $item,
+      );
+    }
+  }
+}
+
+/**
+ * Implements hook_theme().
+ */
+function uc_fulfillment_theme() {
+  return array(
+    'uc_packing_slip' => array(
+      'variables' => array(
+        'order' => NULL,
+        'shipment' => NULL,
+        'labels' => TRUE,
+        'print' => FALSE,
+        'business_header' => FALSE,
+      ),
+      'template' => 'uc-packing-slip',
+    ),
+    'uc_packing_slip_page' => array(
+      'variables' => array('content' => NULL),
+      'template' => 'uc-packing-slip-page',
+    ),
+  );
+}
+
+/**
+ * Preprocess function to make tokens available in the packing slip template.
+ *
+ * @see uc-packing-slip.html.twig
+ */
+function template_preprocess_uc_packing_slip(&$variables) {
+  $token_service = \Drupal::token();
+  $bubbleable_metadata = new BubbleableMetadata();
+
+  $tokens = $token_service->generate('site', ['logo' => 'logo'], [], [], $bubbleable_metadata);
+  $variables['site_logo'] = isset($tokens['logo']) ? $tokens['logo'] : '';
+
+  $tokens = $token_service->generate('store', ['name' => 'name', 'address' => 'address', 'phone' => 'phone'], [], [], $bubbleable_metadata);
+  $variables['store_name'] = $tokens['name'];
+  $variables['store_address'] = $tokens['address'];
+  $variables['store_phone'] = $tokens['phone'];
+
+  $order = $variables['order'];
+  $variables['order_link'] = Link::createFromRoute($order->id(), 'uc_order.user_view', ['user' => $order->getOwnerId(), 'uc_order' => $order->id()], ['absolute' => TRUE])->toString();
+  $variables['order_email'] = $order->getEmail();
+  $variables['billing_address'] = array('#markup' => $order->getAddress('billing'));
+  $variables['billing_phone'] = $order->getAddress('billing')->phone;
+  $variables['shipping_address'] = array('#markup' => $order->getAddress('delivery'));
+  $variables['shipping_phone'] = $order->getAddress('delivery')->phone;
+
+  if (\Drupal::moduleHandler()->moduleExists('uc_payment')) {
+    $variables['payment_method'] = \Drupal::service('plugin.manager.uc_payment.method')->createFromOrder($order)->cartReviewTitle();
+  }
+  else {
+    $variables['payment_method'] = '';
+  }
+
+  $shipment = $variables['shipment'];
+  $variables['carrier'] = $shipment->getCarrier();
+  $variables['tracking_number'] = $shipment->getTrackingNumber();
+  $variables['packages'] = $shipment->getPackages();
+}
+
+/**
+ * Implements hook_uc_order_actions().
+ */
+function uc_fulfillment_uc_order_actions(OrderInterface $order) {
+  $actions = array();
+  $account = \Drupal::currentUser();
+  if ($account->hasPermission('fulfill orders') && $order->isShippable()) {
+    $actions['package'] = array(
+      'title' => t('Package'),
+      'url' => Url::fromRoute('uc_fulfillment.packages', ['uc_order' => $order->id()]),
+      'weight' => 12,
+    );
+    $packages = Package::loadByOrder($order->id());
+    if (count($packages) != 0) {
+      $actions['ship'] = array(
+        'title' => t('Ship'),
+        'url' => Url::fromRoute('uc_fulfillment.shipments', ['uc_order' => $order->id()]),
+        'weight' => 13,
+      );
+    }
+  }
+
+  return $actions;
+}
+
+/**
+ * Implements hook_uc_order_can_delete().
+ *
+ * Prevent users from deleting orders with a shipment or package that has
+ * a tracking number, unless the user has administrative privileges or the
+ * "Unconditionally delete orders" permission.
+ */
+function uc_fulfillment_uc_order_can_delete(OrderInterface $order) {
+  // Find and check the shipments for tracking numbers.
+  // {uc_shipments}.tracking_number is NOT NULL.
+  $shipment_count = db_select('uc_shipments')
+    ->condition('order_id', $order->id())
+    ->condition('tracking_number', '', '<>')
+    ->countQuery()
+    ->execute()
+    ->fetchField();
+  if ($shipment_count > 0) {
+    return FALSE;
+  }
+
+  // Find and check the packages.
+  $package_count = db_select('uc_packages')
+    ->condition('order_id', $order->id())
+    ->isNotNull('tracking_number')
+    ->condition('tracking_number', '', '<>')
+    ->countQuery()
+    ->execute()
+    ->fetchField();
+  if ($package_count > 0) {
+    return FALSE;
+  }
+}
+
+/**
+ * Implements hook_uc_order_delete().
+ */
+function uc_fulfillment_uc_order_delete(OrderInterface $order) {
+  // Find and delete the shipments.
+  $shipments = Shipment::loadByOrder($order->id());
+  foreach ($shipments as $shipment) {
+    $shipment->delete();
+  }
+
+  // Find and delete the packages.
+  $packages = Package::loadByOrder($order->id());
+  foreach ($packages as $package) {
+    $package->delete();
+  }
+}
+
+/**
+ * Displays the packing slip and shipping labels for printing.
+ *
+ * @ingroup themeable
+ */
+function obsolete_uc_fulfillment_shipment_print(array $variables) {
+  $order = $variables['order'];
+  $shipment = $variables['shipment'];
+  $labels = $variables['labels'];
+
+  $output = theme('uc_packing_slip', array('order' => $order, 'shipment' => $shipment));
+
+  if ($labels) {
+    foreach ($shipment->packages as $id => $package) {
+      if (isset($package->label_image) &&
+          file_exists($package->label_image->uri)) {
+        // TODO: Find a way to store these magic numbers specifically for UPS.
+        list($width, $height) = array(672, 392);
+        $output .= '<br class="page-break" />' . "\n";
+        $output .= theme('image', array(
+          'uri' => $package->label_image->uri,
+          'attributes' => array('width' => $width, 'height' => $height),
+          'getsize' => FALSE,
+        )) . "\n";
+      }
+    }
+  }
+
+  return $output;
+}
+
+/**
+ * Implements hook_uc_shipping_type().
+ */
+function uc_fulfillment_uc_shipping_type() {
+  $quote_config = \Drupal::config('uc_quote.settings');
+  $weight = $quote_config->get('type_weight', array('envelope' => -1, 'small_package' => 0));
+
+  $types = array(
+    'envelope' => array(
+      'id' => 'envelope',
+      'title' => t('Envelope'),
+      'weight' => isset($weight['envelope']) ? $weight['envelope'] : -1,
+    ),
+    'small_package' => array(
+      'id' => 'small_package',
+      'title' => t('Small package'),
+      'weight' => isset($weight['small_package']) ? $weight['small_package'] : 0,
+    ),
+  );
+
+  return $types;
+}

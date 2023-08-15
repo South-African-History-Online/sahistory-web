@@ -1,0 +1,255 @@
+<?php
+
+/**
+ * @file
+ * Handles all things concerning Ubercart's shopping cart.
+ *
+ * The Ubercart cart system functions much like the e-commerce cart at its base
+ * level... in fact, most carts do.  This module handles the cart display,
+ * adding items to a cart, and checking out.  The module enables the cart,
+ * products, and checkout to be extensible.
+ */
+
+use Drupal\Core\Render\Element;
+use Drupal\Core\Url;
+use Drupal\uc_cart\CartInterface;
+use Drupal\uc_payment\PaymentReceiptInterface;
+
+/**
+ * Implements hook_cron().
+ */
+function uc_cart_cron() {
+  $cart_manager = \Drupal::service('uc_cart.manager');
+  $cart_config = \Drupal::config('uc_cart.settings');
+  // Empty anonymous carts.
+  $time = strtotime($cart_config->get('anon_duration') . ' ' . $cart_config->get('anon_unit') . ' ago');
+  $result = db_query('SELECT DISTINCT cart_id FROM {uc_cart_products} WHERE changed <= :changed', [':changed' => $time]);
+  foreach ($result as $row) {
+    if (strlen($row->cart_id) >= 22) {
+      $cart_manager->emptyCart($row->cart_id);
+    }
+  }
+
+  // Empty authenticated carts.
+  $time = strtotime($cart_config->get('auth_duration') . ' ' . $cart_config->get('auth_unit') . ' ago');
+  $result = db_query('SELECT DISTINCT cart_id FROM {uc_cart_products} WHERE changed <= :changed', [':changed' => $time]);
+  foreach ($result as $row) {
+    if (strlen($row->cart_id) < 22) {
+      $cart_manager->emptyCart($row->cart_id);
+    }
+  }
+
+  // Update status of abandoned orders.
+  $result = db_query('SELECT order_id FROM {uc_orders} WHERE order_status = :status AND changed < :time',
+    [':status' => 'in_checkout', ':time' => REQUEST_TIME - CartInterface::ORDER_TIMEOUT])->fetchCol();
+  foreach ($result as $order_id) {
+    \Drupal\uc_order\Entity\Order::load($order_id)
+      ->setStatusId('abandoned')
+      ->save();
+  }
+}
+
+/**
+ * Implements hook_theme().
+ */
+function uc_cart_theme() {
+  return array(
+    'uc_cart_block_title' => array(
+      'variables' => array(
+        'title' => NULL,
+        'show_icon' => FALSE,
+        'cart_empty' => NULL,
+        'collapsible' => TRUE,
+        'collapsed' => TRUE,
+      ),
+      'template' => 'uc-cart-block-title',
+    ),
+    'uc_cart_block' => array(
+      'variables' => array(
+        'items' => NULL,
+        'item_count' => NULL,
+        'total' => NULL,
+        'summary_links' => NULL,
+        'collapsed' => TRUE,
+      ),
+      'template' => 'uc-cart-block',
+    ),
+    'uc_cart_view_form' => array(
+      'render element' => 'form',
+      'template' => 'uc-cart-form',
+    ),
+    'uc_cart_checkout_buttons' => array(
+      'render element' => 'buttons',
+      'template' => 'uc-cart-checkout-buttons',
+    ),
+    'uc_cart_empty' => array(
+      'variables' => array(),
+      'template' => 'uc-cart-empty',
+    ),
+    'uc_cart_review_table' => array(
+      'variables' => array('items' => array(), 'show_subtotal' => TRUE),
+      'file' => 'uc_cart.theme.inc',
+      'function' => 'theme_uc_cart_review_table',
+    ),
+    'uc_cart_checkout_review' => array(
+      'variables' => array('panes' => NULL, 'form' => NULL),
+      'file' => 'uc_cart.theme.inc',
+      'function' => 'theme_uc_cart_checkout_review',
+    ),
+    'uc_cart_complete_sale' => array(
+      'variables' => array('message' => '', 'order' => NULL),
+      'template' => 'uc-cart-complete-sale',
+    ),
+  );
+}
+
+/**
+ * Prepares variables for the cart block title template.
+ *
+ * Default template: uc-cart-block-title.html.twig.
+ */
+function template_preprocess_uc_cart_block_title(&$variables) {
+  $variables['cart_url'] = Url::fromRoute('uc_cart.cart');
+}
+
+/**
+ * Prepares variables for the cart block template.
+ *
+ * Default template: uc-cart-block.html.twig.
+ */
+function template_preprocess_uc_cart_block(&$variables) {
+  $variables['attributes']['class'][] = 'cart-block-items';
+  if ($variables['collapsed']) {
+    $variables['attributes']['class'][] = 'collapsed';
+  }
+
+  $variables['total'] = uc_currency_format($variables['total']);
+
+  foreach ($variables['items'] as $key => $item) {
+    $variables['items'][$key]['price'] = uc_currency_format($item['price']);
+  }
+
+  $variables['summary_links'] = array(
+    '#theme' => 'links',
+    '#links' => $variables['summary_links'],
+    '#attributes' => array('class' => ['cart-block-summary-links']),
+  );
+}
+
+/**
+ * Prepares variables for the checkout completion template.
+ *
+ * Default template: uc-cart-complete-sale.html.twig.
+ */
+function template_preprocess_uc_cart_complete_sale(&$variables) {
+  $variables['front_page'] = Url::fromRoute('<front>');
+}
+
+/**
+ * Prepares variables for the cart checkout buttons template.
+ *
+ * Default template: uc-cart-checkout-buttons.html.twig.
+ */
+function template_preprocess_uc_cart_checkout_buttons(&$variables) {
+  $buttons = array();
+  foreach (Element::children($variables['buttons']) as $button) {
+    $buttons[] = $variables['buttons'][$button];
+  }
+  $variables['buttons'] = $buttons;
+}
+
+/**
+ * Preprocesses the cart block output to include the icon.
+ */
+function uc_cart_preprocess_block(&$variables) {
+  $cart = \Drupal::service('uc_cart.manager')->get();
+  if ($variables['plugin_id'] == 'uc_cart' && $variables['label']) {
+    $variables['label'] = array(
+      '#theme' => 'uc_cart_block_title',
+      '#title' => $variables['label'],
+      '#show_icon' => $variables['configuration']['show_image'],
+      '#cart_empty' => !$cart->getContents(),
+      '#collapsible' => $variables['configuration']['collapsible'],
+      '#collapsed' => $variables['configuration']['collapsed'],
+    );
+  }
+}
+
+/**
+ * Implements hook_node_delete().
+ */
+function uc_cart_node_delete($node) {
+  if (uc_product_is_product($node)) {
+    $result = \Drupal::entityQuery('uc_cart_item')
+      ->condition('nid', $node->id())
+      ->execute();
+
+    if (!empty($result)) {
+      $storage = \Drupal::entityTypeManager()->getStorage('uc_cart_item');
+      $entities = $storage->loadMultiple(array_keys($result));
+      $storage->delete($entities);
+    }
+  }
+}
+
+/**
+ * Implements hook_user_login().
+ *
+ * Updates cart to include items from the user's anonymous session.
+ */
+function uc_cart_user_login($account) {
+  $session = \Drupal::service('session');
+  if (!$session->has('uc_cart_id')) {
+    // No anonymous cart, so nothing to do here.
+    return;
+  }
+
+  // If there are items in the anonymous cart, consolidate them.
+  $cart_manager = \Drupal::service('uc_cart.manager');
+  $anonymous_cart = $cart_manager->get($session->get('uc_cart_id'));
+  if ($items = $anonymous_cart->getContents()) {
+    // Remove the anonymous cart items.
+    $anonymous_cart->emptyCart();
+
+    // Merge the anonymous items into the user cart.
+    $user_cart = $cart_manager->get($account->id());
+    foreach ($items as $item) {
+      $user_cart->addItem($item->nid->target_id, $item->qty->value, $item->data->first()->toArray(), FALSE);
+    }
+
+    // Unset the anonymous cart ID, it's no longer needed.
+    $session->remove('uc_cart_id');
+  }
+}
+
+/**
+ * Implements hook_uc_payment_receipt_insert().
+ *
+ * Ensure the user has an account when payment is made.
+ */
+function uc_cart_uc_payment_receipt_insert(PaymentReceiptInterface $payment) {
+  \Drupal::service('uc_cart.manager')->completeSale($payment->getOrder(), FALSE);
+}
+
+/**
+ * Implements hook_uc_checkout_complete().
+ *
+ * Sends basic e-mail notifications if Rules is not installed.
+ */
+function uc_cart_uc_checkout_complete($order) {
+  //@todo: Uncomment this conditional when Rules actually works.
+  //if (!\Drupal::moduleHandler()->moduleExists('rules')) {
+    module_load_include('inc', 'uc_order', 'uc_order.rules');
+
+    $cart_config = \Drupal::config('uc_cart.settings');
+    if ($cart_config->get('checkout_email_customer')) {
+      $subject = t('Your Order at @store', ['@store' => uc_store_name()]);
+      uc_order_action_email_invoice($order, uc_store_email_from(), $order->getEmail(), $subject, 'customer', 'checkout-mail');
+    }
+
+    if ($cart_config->get('checkout_email_admin')) {
+      $subject = t('New Order at @store', ['@store' => uc_store_name()]);
+      uc_order_action_email_invoice($order, uc_store_email_from(), uc_store_email(), $subject, 'admin', 'admin-mail');
+    }
+  //}
+}

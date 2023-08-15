@@ -1,0 +1,72 @@
+<?php
+
+/**
+ * @file
+ * Install, update, and uninstall functions for the uc_store module.
+ */
+
+/**
+ * Implements hook_requirements().
+ */
+function uc_store_requirements($phase) {
+  $requirements = array();
+
+  if ($phase == 'runtime') {
+    $severities = array(
+      'warning' => REQUIREMENT_WARNING,
+      'error' => REQUIREMENT_ERROR,
+    );
+
+    $results = \Drupal::moduleHandler()->invokeAll('uc_store_status');
+    foreach ($results as $status) {
+      $requirements[] = array(
+        'severity' => isset($severities[$status['status']]) ? $severities[$status['status']] : NULL,
+        'title' => $status['title'],
+        'value' => $status['desc'],
+      );
+    }
+  }
+
+  return $requirements;
+}
+
+/**
+ * Implements hook_install().
+ */
+function uc_store_install() {
+  // If store country isn't set in the the store configuration,
+  // use the site default country as the store default.
+  $store_config = \Drupal::configFactory()->getEditable('uc_store.settings');
+  $store_country = $store_config->get('address.country');
+  if (!$store_country) {
+    $site_country = \Drupal::config('system.date')->get('country.default');
+    $store_config->set('address.country', $site_country)->save();
+    // Site country was already enabled in uc_country_install(), which was
+    // invoked before uc_store_install().
+  }
+  else {
+    // Ensure store country is enabled.
+    \Drupal\uc_country\Entity\Country::load($store_country)->enable()->save();
+  }
+
+  // Set mail handler for all Ubercart modules
+  $mail_config = \Drupal::configFactory()->getEditable('system.mail');
+  $mail_config
+    ->set('interface.uc_cart', 'ubercart_mail')
+    ->set('interface.uc_order', 'ubercart_mail')
+    ->set('interface.uc_file', 'ubercart_mail')
+    ->set('interface.uc_role', 'ubercart_mail')
+    ->set('interface.uc_stock', 'ubercart_mail')
+    ->set('interface.uc_store', 'ubercart_mail')
+    ->save();
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function uc_store_uninstall() {
+  $format = \Drupal\Core\Datetime\Entity\DateFormat::load('uc_store');
+  if ($format) {
+    drupal_set_message(t('The date format %format has not been deleted. If you need to delete it, <a href=":url">please do so manually</a>.', ['%format' => $format->label(), ':url' => \Drupal\Core\Url::fromRoute('entity.date_format.collection')->toString()]), 'warning');
+  }
+}

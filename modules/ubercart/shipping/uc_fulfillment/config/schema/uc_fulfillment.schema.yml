@@ -1,0 +1,43 @@
+# Schema for the configuration files of the uc_fulfillment module.
+
+uc_fulfillment.method.*:
+  type: config_entity
+  label: 'Shipping method config'
+  mapping:
+    id:
+      type: string
+      label: 'ID'
+    label:
+      type: label
+      label: 'Label'
+    weight:
+      type: integer
+      label: 'Weight'
+    locked:
+      type: boolean
+      label: 'Locked'
+    package_type:
+      type: string
+      label: 'Package type'
+    plugin:
+      type: string
+      label: 'Plugin'
+    settings:
+      type: fulfillment_method.settings.[%parent.plugin]
+
+fulfillment_method.settings.*:
+  type: fulfillment_method
+
+fulfillment_method.settings.manual:
+  type: mapping
+  label: 'Fulfillment method configuration settings'
+  mapping:
+    base_rate:
+      type: float
+      label: 'Base rate (per order rate)'
+    product_rate:
+      type: float
+      label: 'Per product rate'
+    field:
+      type: string
+      label: 'Product field holding override values'

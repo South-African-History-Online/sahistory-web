@@ -1,0 +1,201 @@
+<?php
+
+/**
+ * @file
+ * Easy uninstall module file.
+ */
+
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Url;
+use Drupal\Core\Config\InstallStorage;
+use Drupal\Core\Routing\RouteMatchInterface;
+Use \Drupal\Core\File\FileSystemInterface;
+
+/**
+ * Implements hook_form_alter().
+ */
+function easy_install_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  $form_ids = ['system_modules_uninstall_confirm_form'];
+  if (in_array($form_id, $form_ids)) {
+    $modules = \Drupal::service('keyvalue.expirable')
+      ->get('modules_uninstall')
+      ->get(\Drupal::currentUser()->id());
+    foreach ($modules as $module) {
+      $install_dir = drupal_get_path('module', $module) . '/' . InstallStorage::CONFIG_INSTALL_DIRECTORY;
+      $optional_dir = drupal_get_path('module', $module) . '/' . InstallStorage::CONFIG_OPTIONAL_DIRECTORY;
+      if(file_exists($install_dir)) {
+          $install_details = \Drupal::service('file_system')->scanDirectory($install_dir, "/\.(yml)$/");
+      }    
+      if (!empty($install_details)) {
+        $form['modules_config'][$module] = [
+          '#type' => 'details',
+          '#title' => t('@name', ['@name' => $module]),
+          '#description' => t('Please select the checkbox to delete the configuration of @name module', ['@name' => $module]),
+          '#weight' => 0,
+          '#validated' => TRUE,
+          '#open' => TRUE,
+        ];
+        if(file_exists($install_dir)) {
+            $install_details = \Drupal::service('file_system')->scanDirectory($install_dir, "/\.(yml)$/");
+        }
+        $ins_options = [];
+        foreach ($install_details as $config_value) {
+          $ins_options[$config_value->name] = $config_value->name;
+        }
+        if (!empty($ins_options)) {
+          $form['modules_config'][$module]['configs'] = [
+            '#type' => 'checkboxes',
+            '#label' => $config_value->name,
+            '#title' => t('Select the configurations to be deleted'),
+            '#options' => $ins_options,
+            '#validated' => TRUE,
+          ];
+        }
+        if(file_exists($optional_dir)) {
+            $optional_details = \Drupal::service('file_system')->scanDirectory($optional_dir, "/\.(yml)$/");
+        }    
+        $opt_options = [];
+        foreach ($optional_details as $config_value) {
+          $opt_options[$config_value->name] = $config_value->name;
+        }
+        if (!empty($opt_options)) {
+          $form['modules_config'][$module]['opt_details'] = [
+            '#type' => 'details',
+            '#title' => "Optional Configurations",
+            '#weight' => 0,
+            '#validated' => TRUE,
+            '#open' => TRUE,
+          ];
+          $form['modules_config'][$module]['opt_details']['opt_configs'] = [
+            '#type' => 'checkboxes',
+            '#label' => $config_value->name,
+            '#options' => $opt_options,
+            '#validated' => TRUE,
+          ];
+        }
+      }
+    }
+    $label = 'Delete all the listed configurations except optional';
+    if (empty($opt_options)) {
+      $label = 'Delete all the listed configurations';
+    }
+    if (!empty($ins_options)) {
+      foreach (array_keys($form['actions']) as $action) {
+        if ($action != 'preview' && isset($form['actions'][$action]['#type']) && $form['actions'][$action]['#type'] === 'submit') {
+          $form['actions'][$action]['#submit'][0] = 'easy_install_form_submit';
+        }
+      }
+      $form['ins_all_configs'] = [
+        '#type' => 'checkbox',
+        '#label' => $label,
+        '#title' => $label,
+        '#validated' => TRUE,
+      ];
+    }
+    if (!empty($opt_options)) {
+      $form['opt_all_configs'] = [
+        '#type' => 'checkbox',
+        '#label' => 'Delete all the listed Optional configurations',
+        '#title' => 'Delete all the listed Optional configurations',
+        '#validated' => TRUE,
+      ];
+    }
+  }
+
+}
+
+/**
+ * Implements custom submit().
+ *
+ * Submit function to delete & unintall the selected configs & modules.
+ *
+ * @param array $form
+ *   The form array of uninstall confirm form.
+ * @param \Drupal\Core\Form\FormStateInterface $form_state
+ *   The form state value of uninstall confirm form.
+ */
+function easy_install_form_submit(array $form, FormStateInterface $form_state) {
+
+  // Get the current user and to get the modules that are selected.
+  $account = \Drupal::currentUser()->id();
+  $modules_list = \Drupal::service('keyvalue.expirable')
+    ->get('modules_uninstall');
+  $modules = $modules_list->get($account);
+  $module_handler = \Drupal::service('module_installer');
+
+  // Uninstall the modules and delete the keyvalue.
+  $module_handler->uninstall($modules);
+  $modules_list->delete($account);
+
+  // To message the users whether the selected configurations deleted or not.
+  $config_deteted = FALSE;
+
+  // Get the user selected configs in install folder and delete.
+  $ins_configs = $form_state->getValue('configs') ? $form_state->getValue('configs') : [];
+
+  if ($form_state->getValue('ins_all_configs') != 0) {
+    foreach ($ins_configs as $key => $value) {
+      Drupal::configFactory()->getEditable($key)->delete();
+    }
+    $config_deteted = TRUE;
+  }
+  else {
+    foreach ($ins_configs as $key => $values) {
+      if ($values !== 0) {
+        Drupal::configFactory()->getEditable($key)->delete();
+        $config_deteted = TRUE;
+      }
+    }
+  }
+  // Get the user selected configs in optional folder and delete.
+  $opt_configs = $form_state->getValue('opt_configs') ? $form_state->getValue('opt_configs') : [];
+  if ($form_state->getValue('opt_all_configs') != 0) {
+    foreach ($opt_configs as $key => $value) {
+      Drupal::configFactory()->getEditable($key)->delete();
+    }
+    $config_deteted = TRUE;
+  }
+  else {
+    foreach ($opt_configs as $key => $values) {
+      if ($values !== 0) {
+        Drupal::configFactory()->getEditable($key)->delete();
+        $config_deteted = TRUE;
+      }
+    }
+  }
+  if ($config_deteted) {
+    \Drupal::messenger()->addMessage(t('The selected modules have been uninstalled and configurations
+         deleted'));
+  }
+  else {
+    \Drupal::messenger()->addMessage(t('The selected modules have been uninstalled'));
+  }
+  $redirect = new Url('system.modules_uninstall');
+  $form_state->setRedirectUrl($redirect);
+
+}
+
+/**
+ * Implements hook_help().
+ *
+ * @inheritdoc
+ */
+function easy_install_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    case 'help.page.easy_install':
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('Easy Install is a module built to resolve or avoid the error "Unable to install already exists active configuration" when re installing/un installing the drupal 8 modules , it works even if a module\'s configs not contains enforced in yml or not added configs in optional folder. It removes active configuration object of uninstalled modules and helps to remove configuration object while uninstalling a module without using Drush / Devel / Drupal Console / Features Modules, see the <a href=":easy_install-video">online video for the Easy Install module</a>.', [':easy_install-video' => 'https://www.youtube.com/watch?v=r4Lqx2pIWZ0']) . '</p>';
+      $output .= '<h3>' . t('Uses') . '</h3>';
+      $output .= '<dl>';
+      $output .= '<dt>' . t('Configuring Easy Install') . '</dt>';
+      $output .= '<dd>' . t('There is no configuration for Easy Install, you can use the module at below listed pages') . '</dd>';
+      $output .= '<dd>' . t('On the <a href=":easy_install-purge">Purge configuration page</a>, you can purge the configuration of uninstalled modules.', [':easy_install-purge' => Url::fromRoute('easy_install.purge_configurations')]) . '</dd>';
+
+      $output .= '<dd>' . t('On the <a href=":easy_install-uninstall">Module Uninstall page </a>, you can uninstall the modules with delete configurations option.', [':easy_install-uninstall' => Url::fromRoute('system.modules_uninstall')]) . '</dd>';
+      $output .= '<dt>' . t('Disabling Easy Install') . '</dt>';
+      $output .= '<dd>' . t('To disable Easy Install, the recommended method is to uninstall the module.') . '</dd>';
+      $output .= '</dl>';
+      return $output;
+  }
+}

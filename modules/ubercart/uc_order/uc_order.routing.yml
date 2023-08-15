@@ -1,0 +1,123 @@
+uc_order.customer_admin:
+  path: '/admin/store/customers'
+  defaults:
+    _controller: '\Drupal\system\Controller\SystemController::systemAdminMenuBlockPage'
+    _title: 'Customers'
+  requirements:
+    _permission: 'access administration pages'
+
+uc_order.order_admin:
+  path: '/admin/store/orders'
+  defaults:
+    _controller: '\Drupal\system\Controller\SystemController::systemAdminMenuBlockPage'
+    _title: 'Orders'
+  requirements:
+    _permission: 'access administration pages'
+
+uc_order.workflow:
+  path: '/admin/store/config/orders'
+  defaults:
+    _form: '\Drupal\uc_order\Form\OrderWorkflowForm'
+    _title: 'Order workflow settings'
+  requirements:
+    _permission: 'administer order workflow'
+
+uc_order.status_add:
+  path: '/admin/store/config/orders/workflow/create'
+  defaults:
+    _form: '\Drupal\uc_order\Form\OrderStatusAddForm'
+    _title: 'Create custom order status'
+  requirements:
+    _permission: 'administer order workflow'
+
+uc_order.create:
+  path: '/admin/store/orders/create'
+  defaults:
+    _form: '\Drupal\uc_order\Form\OrderCreateForm'
+    _title: 'Create order'
+  requirements:
+    _permission: 'create orders'
+
+uc_order.create_for_user:
+  path: '/admin/store/orders/create/{user}'
+  defaults:
+    _controller: '\Drupal\uc_order\Controller\OrderController::createForUser'
+  requirements:
+    _permission: 'create orders'
+
+uc_order.admin_invoice:
+  path: '/admin/store/orders/{uc_order}/invoice'
+  defaults:
+    _controller: '\Drupal\uc_order\Controller\OrderController::invoice'
+    _title_callback: '\Drupal\uc_order\Controller\OrderController::pageTitle'
+  requirements:
+    _permission: 'view all orders'
+  options:
+    _admin_route: true
+
+uc_order.admin_invoice_print:
+  path: '/admin/store/orders/{uc_order}/invoice/print'
+  defaults:
+    _controller: '\Drupal\uc_order\Controller\OrderController::invoice'
+    _title_callback: '\Drupal\uc_order\Controller\OrderController::pageTitle'
+    print: TRUE
+  requirements:
+    _permission: 'view all orders'
+
+uc_order.admin_invoice_mail:
+  path: '/admin/store/orders/{uc_order}/invoice/mail'
+  defaults:
+    _form: '\Drupal\uc_order\Form\MailInvoiceForm'
+    _title_callback: '\Drupal\uc_order\Controller\OrderController::pageTitle'
+  requirements:
+    _permission: 'view all orders'
+
+uc_order.admin_log:
+  path: '/admin/store/orders/{uc_order}/log'
+  defaults:
+    _controller: '\Drupal\uc_order\Controller\OrderController::log'
+    _title_callback: '\Drupal\uc_order\Controller\OrderController::pageTitle'
+  requirements:
+    _permission: 'view all orders'
+
+uc_order.user_view:
+  path: '/user/{user}/orders/{uc_order}'
+  defaults:
+    _entity_view: 'uc_order.customer'
+    _title_callback: '\Drupal\uc_order\Controller\OrderController::pageTitle'
+  requirements:
+    _entity_access: 'uc_order.view'
+
+uc_order.user_invoice_print:
+  path: '/user/{user}/orders/{uc_order}/print'
+  defaults:
+    _controller: '\Drupal\uc_order\Controller\OrderController::invoice'
+    _title_callback: '\Drupal\uc_order\Controller\OrderController::pageTitle'
+    print: TRUE
+  requirements:
+    _entity_access: 'uc_order.invoice'
+
+uc_order.address_book:
+  path: '/admin/store/orders/address_book'
+  defaults:
+    _controller: '\Drupal\uc_order\Controller\OrderAdminController::addressBook'
+    _title: 'Select address'
+  requirements:
+    _permission: 'edit orders'
+
+uc_order.select_customer:
+  path: '/admin/store/orders/customer/{operation}'
+  defaults:
+    _controller: '\Drupal\uc_order\Controller\OrderAdminController::selectCustomer'
+    _title: 'Select customer'
+    operation: ''
+  requirements:
+    _permission: 'edit orders'
+
+uc_order.add_line_item:
+  path: '/admin/store/orders/{uc_order}/add_line_item/{item}'
+  defaults:
+    _controller: '\Drupal\uc_order\Form\AddLineItemForm'
+    _title: 'Add a line item'
+  requirements:
+    _permission: 'edit orders'

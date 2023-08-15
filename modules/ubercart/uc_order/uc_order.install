@@ -1,0 +1,242 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the uc_order module.
+ */
+
+/**
+ * Implements hook_schema().
+ */
+function uc_order_schema() {
+  $schema = array();
+
+  $schema['uc_order_admin_comments'] = array(
+    'description' => 'Comments on orders that only administrators can see.',
+    'fields' => array(
+      'comment_id' => array(
+        'description' => 'Primary key: the comment ID.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'order_id' => array(
+        'description' => 'The {uc_orders}.order_id of the order.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'uid' => array(
+        'description' => 'The {user}.uid of the author of the comment.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'message' => array(
+        'description' => 'The comment body.',
+        'type' => 'text',
+      ),
+      'created' => array(
+        'description' => 'The Unix timestamp indicating when the comment was created.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'indexes' => array(
+      'order_id' => array('order_id'),
+    ),
+    'primary key' => array('comment_id'),
+    'foreign keys' => array(
+      'uc_orders' => array(
+        'table' => 'uc_orders',
+        'columns' => array('order_id' => 'order_id'),
+      ),
+      'users' => array(
+        'table' => 'users',
+        'columns' => array('uid' => 'uid'),
+      ),
+    ),
+  );
+
+  $schema['uc_order_comments'] = array(
+    'description' => 'Comments on the order that the customer can see.',
+    'fields' => array(
+      'comment_id' => array(
+        'description' => 'Primary key: the comment ID.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'order_id' => array(
+        'description' => 'The {uc_orders}.order_id of the order.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'uid' => array(
+        'description' => 'The {users}.uid of the user who made the comment.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'order_status' => array(
+        'description' => 'The status the order had when the comment was made.',
+        'type' => 'varchar',
+        'length' => 32,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'notified' => array(
+        'description' => 'A flag indicating whether the comment was emailed to the customer. 1 => Yes. 0 => No.',
+        'type' => 'int',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'message' => array(
+        'description' => 'The comment body.',
+        'type' => 'text',
+      ),
+      'created' => array(
+        'description' => 'The Unix timestamp indicating when the comment was created.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'indexes' => array(
+      'order_id' => array('order_id'),
+    ),
+    'primary key' => array('comment_id'),
+    'foreign keys' => array(
+      'uc_orders' => array(
+        'table' => 'uc_orders',
+        'columns' => array('order_id' => 'order_id'),
+      ),
+      'users' => array(
+        'table' => 'users',
+        'columns' => array('uid' => 'uid'),
+      ),
+    ),
+  );
+
+  $schema['uc_order_line_items'] = array(
+    'description' => 'Order line items other than products.',
+    'fields' => array(
+      'line_item_id' => array(
+        'description' => 'Primary key: the line item ID.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'order_id' => array(
+        'description' => 'The {uc_orders}.order_id.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'type' => array(
+        'description' => 'The line item type.',
+        'type' => 'varchar',
+        'length' => 32,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'title' => array(
+        'description' => 'The label of the line item.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'amount' => array(
+        'description' => "The amount of the line item in the store's currency.",
+        'type' => 'numeric',
+        'precision' => 16,
+        'scale' => 5,
+        'not null' => TRUE,
+        'default' => 0.0,
+      ),
+      'weight' => array(
+        'description' => 'The sort criteria of line items.',
+        'type' => 'int',
+        'size' => 'small',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'data' => array(
+        'description' => 'A serialized array of extra data.',
+        'type' => 'text',
+        'serialize' => TRUE,
+      ),
+    ),
+    'indexes' => array(
+      'order_id' => array('order_id'),
+    ),
+    'primary key' => array('line_item_id'),
+    'foreign keys' => array(
+      'uc_orders' => array(
+        'table' => 'uc_orders',
+        'columns' => array('order_id' => 'order_id'),
+      ),
+    ),
+  );
+
+  $schema['uc_order_log'] = array(
+    'description' => 'Record of changes made to an order.',
+    'fields' => array(
+      'order_log_id' => array(
+        'description' => 'Primary key: the log entry ID.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'order_id' => array(
+        'description' => 'The {uc_orders}.order_id.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'uid' => array(
+        'description' => 'The {users}.uid of the user who made the changes.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'changes' => array(
+        'description' => 'The description of what was changed.',
+        'type' => 'text',
+      ),
+      'created' => array(
+        'description' => 'The Unix timestamp indicating when the change was made.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'indexes' => array(
+      'order_id' => array('order_id'),
+    ),
+    'primary key' => array('order_log_id'),
+    'foreign keys' => array(
+      'uc_orders' => array(
+        'table' => 'uc_orders',
+        'columns' => array('order_id' => 'order_id'),
+      ),
+      'users' => array(
+        'table' => 'users',
+        'columns' => array('uid' => 'uid'),
+      ),
+    ),
+  );
+
+  return $schema;
+}

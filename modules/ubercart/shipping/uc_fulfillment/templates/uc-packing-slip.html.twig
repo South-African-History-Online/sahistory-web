@@ -1,0 +1,183 @@
+{#
+/**
+ * This file is the default packing slip template for Ubercart.
+ *
+ * Available variables:
+ * - products: An array of product objects in the order, with the following
+ *   members:
+ *   - title: The product title.
+ *   - model: The product SKU.
+ *   - qty: The quantity ordered.
+ *   - total_price: The formatted total price for the quantity ordered.
+ *   - individual_price: If quantity is more than 1, the formatted product
+ *     price of a single item.
+ *   - details: Any extra details about the product, such as attributes.
+ * - line_items: An array of line item arrays attached to the order, each with
+ *   the following keys:
+ *   - type: The type of line item (subtotal, shipping, etc.).
+ *   - title: The line item display title.
+ *   - formatted_amount: The formatted amount of the line item.
+ * - shippable: TRUE if the order is shippable.
+ *
+ * Tokens: All site, store and order tokens are also available as
+ * variables, such as site_logo, store_name and order_first_name.
+ *
+ * Display options:
+ * - op: 'view', or 'print', depending on which variant of the invoice
+ *   is being rendered.
+ * - business_header: TRUE if the invoice header should be displayed.
+ * - shipping_method: TRUE if shipping information should be displayed.
+ * - help_text: TRUE if the store help message should be displayed.
+ * - email_text: TRUE if the "do not reply to this email" message should
+ *   be displayed.
+ * - store_footer: TRUE if the store URL should be displayed.
+ * - thank_you_message: TRUE if the 'thank you for your order' message
+ *   should be displayed.
+ *
+ * @see template_preprocess_uc_order()
+ */
+#}
+<table width="95%" border="0" cellspacing="0" cellpadding="1" align="center">
+  <tr>
+    <td>
+      <table width="100%" border="0" cellspacing="0" cellpadding="5" align="center">
+        {% if business_header %}
+        <tr valign="top">
+          <td>
+            <table width="100%">
+              <tr>
+                <td>
+                  {{ site_logo }}
+                </td>
+                <td width="20%" nowrap="nowrap">
+                  {{ store_address }}<br />{{ store_phone }}
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+        {% endif %}
+
+        <tr valign="top">
+          <td>
+
+            <table cellpadding="4" cellspacing="0" border="0" width="100%">
+              <tr>
+                <td colspan="2">
+                  <b>{{ 'Purchasing Information:'|t }}</b>
+                </td>
+              </tr>
+              <tr>
+                <td nowrap="nowrap">
+                  <b>{{ 'E-mail Address:'|t }}</b>
+                </td>
+                <td width="98%">
+                  {{ order_email }}
+                </td>
+              </tr>
+              <tr>
+                <td colspan="2">
+
+                  <table width="100%" cellspacing="0" cellpadding="0">
+                    <tr>
+                      <td valign="top" width="50%">
+                        <b>{{ 'Billing Address:'|t }}</b><br />
+                        {{ billing_address }}<br />
+                        <br />
+                        <b>{{ 'Billing Phone:'|t }}</b><br />
+                        {{ billing_phone }}<br />
+                      </td>
+                      <td valign="top" width="50%">
+                        <b>{{ 'Shipping Address:'|t }}</b><br />
+                        {{ shipping_address }}<br />
+                        <br />
+                        <b>{{ 'Shipping Phone:'|t }}</b><br />
+                        {{ shipping_phone }}<br />
+                      </td>
+                    </tr>
+                  </table>
+
+                </td>
+              </tr>
+              <tr>
+                <td nowrap="nowrap">
+                  <b>{{ 'Payment Method:'|t }}</b>
+                </td>
+                <td width="98%">
+                  {{ payment_method }}
+                </td>
+              </tr>
+
+              <tr>
+                <td colspan="2">
+                  <b>{{ 'Order Summary:'|t }}</b>
+                </td>
+              </tr>
+
+              <tr>
+                <td colspan="2">
+                  <b>{{ 'Shipping Details:'|t }}</b>
+                </td>
+              </tr>
+
+              <tr>
+                <td colspan="2">
+
+                  <table border="0" cellpadding="1" cellspacing="0" width="100%">
+                    <tr>
+                      <td nowrap="nowrap">
+                        <b>{{ 'Order #:'|t }}</b>
+                        {{ order_link }}
+                      </td>
+                    </tr>
+
+                    <tr>
+                      <td nowrap="nowrap">
+                        <b>{{ 'Carrier:'|t }}</b>
+                        {{ carrier }}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td nowrap="nowrap">
+                        <b>{{ 'Tracking #:'|t }}</b>
+                        {{ tracking_number }}
+                      </td>
+                    </tr>
+
+                    <tr>
+                      <td colspan="2">
+                        <br /><br /><b>{{ 'Products on order:'|t }}</b>
+
+                        <table width="100%">
+
+                          {% for package in packages %}
+                          {% for product in package.products %}
+                          <tr>
+                            <td valign="top" nowrap="nowrap">
+                              <b>{{ product.qty }} x </b>
+                            </td>
+                            <td width="98%">
+                              <b>{{ product.title }}</b>
+                              <br />
+                              {{ 'SKU'|t }}: {{ product.model }}<br />
+                              {{ product.details }}
+                            </td>
+                          </tr>
+                          {% endfor %}
+                          {% endfor %}
+                        </table>
+
+                      </td>
+                    </tr>
+                  </table>
+
+                </td>
+              </tr>
+
+            </table>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>

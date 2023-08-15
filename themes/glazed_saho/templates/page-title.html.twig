@@ -1,0 +1,42 @@
+{#
+/**
+ * @file
+ * Default theme implementation for page titles.
+ *
+ * Available variables:
+ * - title_attributes: HTML attributes for the page title element.
+ * - title_prefix: Additional output populated by modules, intended to be
+ *   displayed in front of the main title tag that appears in the template.
+ * - title: The page title, for use in the actual content.
+ * - title_suffix: Additional output populated by modules, intended to be
+ *   displayed after the main title tag that appears in the template.
+ *
+ * @ingroup templates
+ *
+ * @see template_preprocess_page_title()
+ */
+#}
+{{ title_prefix }}
+{% if title %}
+  {%
+    set page_title_classes = [
+      'page-title',
+      theme.settings.page_title_animate ? 'animated',
+      theme.settings.page_title_animate ? theme.settings.page_title_animate,
+    ]
+  %}
+ {%
+    set page_title_classes_long = [
+      'page-title',
+      'page-title_long',
+      theme.settings.page_title_animate ? 'animated',
+      theme.settings.page_title_animate ? theme.settings.page_title_animate,
+    ]
+  %}
+  {% if title|length > 50 %}
+  <h1{{ title_attributes.addClass(page_title_classes_long) }}>{{ title }}</h1>
+  {% else %}
+  <h1{{ title_attributes.addClass(page_title_classes) }}>{{ title }}</h1>
+  {% endif %}
+{% endif %}
+{{ title_suffix }}

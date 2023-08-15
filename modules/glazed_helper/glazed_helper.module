@@ -1,0 +1,138 @@
+<?php
+
+/**
+ * @file
+ * Module file for glazed_helper.
+ */
+
+use Drupal\Component\Utility\Unicode;
+use Drupal\Core\Block\BlockPluginInterface;
+use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Url;
+
+/**
+ * Implements hook_toolbar().
+ */
+function glazed_helper_toolbar() {
+
+  if (\Drupal::currentUser()->hasPermission('Use the administration toolbar')
+    && \Drupal::currentUser()->hasPermission('Administer themes')) {
+
+    $config = \Drupal::config('system.theme');
+    $default_theme = $config->get('default');
+
+    // Create the Glazed Helper toolbar render array.
+    $items['glazedsettings'] = [
+      '#type' => 'toolbar_item',
+      'tab' => [
+        '#type' => 'link',
+        '#title' => t('Theme Settings'),
+        '#url' => Url::fromRoute('system.theme_settings_theme', ['theme' => $default_theme]),
+        '#attributes' => [
+          'title' => t('Glazed Theme Settings'),
+          'class' => ['toolbar-icon', 'toolbar-icon-glazed-helper'],
+        ],
+      ],
+      '#weight' => 99,
+      '#attached' => [
+        'library' => [
+          'glazed_helper/glazed_helper.icons',
+        ],
+      ],
+    ];
+
+    return $items;
+  }
+}
+
+/**
+ * Below code adapted from flippy module @see https://www.drupal.org/project/flippy
+ * Last updated: 18 Jun 2017 at 08:44 UTC
+ */
+
+/**
+ * Implements hook_theme()
+ */
+function glazed_helper_theme() {
+  return [
+    'flippy' => [
+      'variables' => [
+        'list' => [],
+        'node' => NULL,
+      ],
+      'template' => 'flippy',
+    ],
+  ];
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_view() for node entities.
+ */
+function glazed_helper_node_view(array &$build, EntityInterface $node, EntityViewDisplayInterface $display, $view_mode) {
+  // Only add the pager if it should be used for this node's content type.
+  if (\Drupal::service('flippy.pager')->flippy_use_pager($node)) {
+    $build['flippy_pager'] = [
+      '#theme' => 'flippy',
+      '#weight' => 50,
+      '#list' => \Drupal::service('flippy.pager')->flippy_build_list($node),
+      '#node' => $node,
+    ];
+
+    if (is_object($node)) {
+      // Add the previous/next elements to the page head, if enable for this
+      // content type.
+      if (\Drupal::config('flippy.settings')
+        ->get('flippy_head_' . $node->getType())
+      ) {
+        $links = \Drupal::service('flippy.pager')->flippy_build_list($node);
+        if (!empty($links['prev']['nid'])) {
+          $build['#attached']['html_head_link'][][] = [
+            'rel' => 'prev',
+            'href' => Url::fromRoute('entity.node.canonical', ['node' => $links['prev']['nid']])
+              ->toString(),
+          ];
+        }
+        if (!empty($links['next']['nid'])) {
+          $build['#attached']['html_head_link'][][] = [
+            'rel' => 'next',
+            'href' => Url::fromRoute('entity.node.canonical', ['node' => $links['next']['nid']])
+              ->toString(),
+          ];
+        }
+      }
+    }
+  }
+}
+
+/**
+ *  Implements template_preprocess_hook()
+ */
+function template_preprocess_flippy(&$vars) {
+
+  // for getting node type
+  if ($node = \Drupal::request()->attributes->get('node')) {
+    $vars['node'] = $node;
+  }
+
+  $prev_label_markup = '<span class="glazed-icon">' . theme_get_setting('previous_svg') . '</span><span class="nextprev-text">' . t(theme_get_setting('previous_label')) . '</span>';
+
+  $next_label_markup = '<span class="nextprev-text">' . t(theme_get_setting('next_label')) . '</span><span class="glazed-icon">' . theme_get_setting('next_svg') . '</span>';
+
+  $prev_label = \Drupal\Core\Render\Markup::create($prev_label_markup);
+  $next_label = \Drupal\Core\Render\Markup::create($next_label_markup);
+
+  // Build the variables for twig
+  if ($nav = $vars['list']) {
+    if (isset($nav['prev']) && $nav['prev']['nid'] != FALSE) {
+      $vars['prev'] = \Drupal::service('flippy.pager')->flippy_generate_link($nav['prev']['nid'], $prev_label);
+    }
+
+    if (isset($nav['next']) && $nav['next']['nid'] != FALSE) {
+      $vars['next'] = \Drupal::service('flippy.pager')->flippy_generate_link($nav['next']['nid'], $next_label);
+    }
+  }
+
+  unset($vars['list']);
+}

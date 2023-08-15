@@ -1,0 +1,14 @@
+services:
+  theme.negotiator.glazed_settings:
+    class: Drupal\glazed_helper\Theme\GlazedSettingsThemeNegotiator
+    tags:
+      - { name: theme_negotiator, priority: 1000 }
+  flippy.pager:
+    class: Drupal\glazed_helper\FlippyPager
+    arguments:
+      - '@entity_field.manager'
+      - '@event_dispatcher'
+      - '@entity.query'
+      - '@database'
+      - '@config.factory'
+      - '@language_manager'

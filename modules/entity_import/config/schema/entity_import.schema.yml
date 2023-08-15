@@ -1,0 +1,159 @@
+entity_import.page.*:
+  type: config_entity
+  label: 'Entity importer page'
+  mapping:
+    id:
+      type: string
+      label: 'Importer page identifier'
+    title:
+      type: label
+      label: 'Importer page title'
+    importer:
+      type: string
+      label: 'The importer to display on the page'
+
+entity_import.type.*:
+  type: config_entity
+  label: 'Entity importer type'
+  mapping:
+    id:
+      type: string
+      label: 'Entity identifier'
+    label:
+      type: label
+      label: 'Entity human-readable label'
+    expose_importer:
+      type: boolean
+      label: 'Expose entity importer form'
+    description:
+      type: text
+      label: 'Entity importer description'
+    migration_source:
+      type: mapping
+      label: 'Entity importer migration source'
+      mapping:
+        source:
+          type: mapping
+          label: 'Entity importer source info'
+          mapping:
+            plugin_id:
+              type: string
+              label: 'Entity importer source plugin identifier'
+            configuration:
+              type: entity_import.migrate.source.[%parent.plugin_id]
+    migration_entity:
+      type: mapping
+      label: 'Entity importer migration source'
+      mapping:
+        entity:
+          type: mapping
+          label: 'Entity importer entity info'
+          mapping:
+            type:
+              type: text
+              label: 'Entity importer entity type'
+            bundles:
+              type: sequence
+              label: 'Entity importer entity bundles'
+    migration_dependencies:
+      type: mapping
+      label: 'Entity importer migration dependencies'
+      mapping:
+        optional:
+          type: mapping
+          label: 'Optional dependencies'
+          mapping:
+            migration:
+              type: sequence
+              label: 'Optional migration dependencies'
+              sequence:
+                type: string
+                label: 'Migration name'
+
+entity_import.migrate.source.entity_import_csv:
+  type: mapping
+  label: 'Entity importer source CSV'
+  mapping:
+    upload_multiple:
+      type: boolean
+      label: 'Entity importer support multiple CSV files'
+
+entity_import.field_mapping.*.*.*:
+  type: config_entity
+  label: 'Entity importer field mapping'
+  mapping:
+    id:
+      type: string
+      label: 'Field mapping identifier'
+    label:
+      type: string
+      label: 'Field mapping label'
+    name:
+      type: string
+      label: 'Field mapping machine name'
+    source:
+      type: label
+      label: 'Field mapping source name'
+    destination:
+      type: string
+      label: 'Field mapping destination'
+    processing:
+      type: mapping
+      label: 'Field mapping processing'
+      mapping:
+        plugins:
+          type: sequence
+          label: 'Field mapping processing plugins'
+          sequence:
+            type: string
+            label: 'Field mapping process plugin id'
+        configuration:
+          type: mapping
+          label: 'Field mapping processing plugin configuration'
+          mapping:
+            plugins:
+              type: sequence
+              sequence:
+                type: mapping
+                mapping:
+                  settings:
+                    type: sequence
+                    label: 'Process settings.'
+                  weight:
+                    type: integer
+                    label: 'Process weight.'
+    importer_type:
+      type: string
+      label: 'Field mapping importer type'
+    importer_bundle:
+      type: sequnce
+      label: 'Field mapping importer bundle'
+      sequence:
+        - type: string
+          label: 'Field mapping bundle name'
+
+entity_import.options.*:
+  type: config_object
+  mapping:
+    unique_identifiers:
+      type: mapping
+      label: 'Unique identifiers'
+      mapping:
+        items:
+          type: sequence
+          label: 'Identifier items'
+          sequence:
+            type: mapping
+            mapping:
+              reference_type:
+                type: string
+                label: 'Identifier reference type'
+              identifier_name:
+                type: string
+                label: 'Identifier field name'
+              identifier_type:
+                type: string
+                label: 'Identifier field type'
+              identifty_settings:
+                type: string
+                label: 'Identifier field settings'

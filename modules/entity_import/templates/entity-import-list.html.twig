@@ -1,0 +1,30 @@
+{#
+/**
+ * @file
+ * Default theme implementation to list entity importers available.
+ *
+ * Available variables:
+ * - importers: A list of entity importers, each with the following properties:
+ *   - link: Link to the importer.
+ *   - description: Description of the importer.
+ *
+ * @see template_preprocess_entity_import_add_list()
+ *
+ * @ingroup themeable
+ */
+#}
+{% if importers is not empty %}
+  <dl>
+    {% for importer in importers %}
+      <dt>{{ importer.link }}</dt>
+      <dd>{{ importer.description }}</dd>
+    {% endfor %}
+  </dl>
+{% else %}
+  <p>
+    {% set add_importer = path('entity.entity_importer.add_form') %}
+    {% trans %}
+      You have not exposed any entity importers yet. Go to the <a href="{{ add_importer }}">entity importer creation page</a> to add a new importer or update an existing importer to display as a page.
+    {% endtrans %}
+  </p>
+{% endif %}

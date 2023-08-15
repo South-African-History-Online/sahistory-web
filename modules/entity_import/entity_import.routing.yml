@@ -1,0 +1,69 @@
+entity_import.importer.pages:
+  path: admin/content/importer-pages
+  defaults:
+    _title: 'Importers'
+    _controller: \Drupal\entity_import\Controller\EntityImportController::importerPages
+  requirements:
+    _permission: 'administer entity import'
+
+entity_import.importer.page.import_form:
+  path: /admin/content/entity-importer/{entity_importer}
+  defaults:
+    _form: \Drupal\entity_import\Form\EntityImporterPageImportForm
+    _title_callback: \Drupal\entity_import\Form\EntityImporterPageImportForm::setTitle
+  options:
+    parameters:
+      entity_importer:
+        type: entity:entity_importer
+  requirements:
+    _permission: 'administer entity import'
+
+entity_import.importer.page.status_form:
+  path: /admin/content/entity-importer/{entity_importer}/status
+  defaults:
+    _form: \Drupal\entity_import\Form\EntityImporterStatusForm
+    _title_callback: \Drupal\entity_import\Form\EntityImporterStatusForm::setTitle
+  options:
+    parameters:
+      entity_importer:
+        type: entity:entity_importer
+  requirements:
+    _permission: 'administer entity import'
+
+entity_import.importer.page.log_form:
+  path: /admin/content/entity-importer/{entity_importer}/log
+  defaults:
+    _form: \Drupal\entity_import\Form\EntityImporterLogForm
+    _title_callback: \Drupal\entity_import\Form\EntityImporterLogForm::setTitle
+  options:
+    parameters:
+      entity_importer:
+        type: entity:entity_importer
+  requirements:
+    _permission: 'administer entity import'
+
+entity_import.importer.page.log_delete_form:
+  path: /admin/content/entity-importer/{entity_importer}/log/{migration}/delete
+  defaults:
+    _form: \Drupal\entity_import\Form\EntityImporterLogConfirmDeleteForm
+    _title: 'Clear Log'
+  options:
+    parameters:
+      migration:
+        type: migration
+      entity_importer:
+        type: entity:entity_importer
+  requirements:
+    _permission: 'administer entity import'
+
+entity_import.importer.page.action_form:
+  path: /admin/content/entity-importer/{entity_importer}/action
+  defaults:
+    _form: \Drupal\entity_import\Form\EntityImporterPageImportActionForm
+    _title_callback: \Drupal\entity_import\Form\EntityImporterPageImportActionForm::setTitle
+  options:
+    parameters:
+      entity_importer:
+        type: entity:entity_importer
+  requirements:
+    _permission: 'administer entity import'

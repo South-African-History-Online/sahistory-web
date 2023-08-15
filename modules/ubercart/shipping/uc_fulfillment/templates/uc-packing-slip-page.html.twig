@@ -1,0 +1,32 @@
+{#
+/**
+ * @file
+ * Default theme implementation to display a printable Ubercart packing slip.
+ *
+ * @see template_preprocess_uc_fulfillment()
+ */
+#}
+<!DOCTYPE html>
+<html{{ html_attributes }}>
+  <head>
+    <title>{{ head_title }}</title>
+    <style type="text/css">
+      .page-break {
+        page-break-before: always;
+      }
+    </style>
+    <style type="text/css" media="print">
+      .buttons {
+        display: none;
+      }
+    </style>
+  </head>
+  <body{{ attributes }}>
+    <div class="buttons">
+      <input type="button" value="{{ 'Print invoice'|t }}" onclick="window.print();" />
+      <input type="button" value="{{ 'Back'|t }}" onclick="history.back();" />
+    </div>
+
+    {{ content }}
+  </body>
+</html>

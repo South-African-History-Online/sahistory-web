@@ -1,0 +1,41 @@
+<?php
+
+/**
+ * @file
+ * Integrates various PayFast ITN
+ */
+
+use Drupal\uc_order\OrderInterface;
+
+/**
+ * Implementation of hook_uc_payment_method().
+ */
+function uc_pfpayfast_uc_payment_method() {
+  $methods['payfast'] = array(
+      'id' => 'payfast',
+      'name' => t('Payfast'),
+      'title' => t('Payment via Payfast'),
+      'desc' => t('Payment via Payfast'),
+      'callback' => 'uc_payment_method_payfast',
+      'redirect' => 'uc_payfast_form',
+      'weight' => 1,
+      'checkout' => true,
+      'no_gateway' => true,
+  );
+  return $methods;
+}
+
+/**
+ * Implements hook_uc_payment_gateway().
+ */
+function uc_payfast_uc_payment_gateway() {
+  $gateways['payfast'] = array(
+      'title' => t('PayFast'),
+      'description' => t('Process payments via PayFast.'),
+      'settings' => 'uc_payfast_settings_form',
+   //   'credit' => 'uc_authorizenet_charge',
+   //   'credit_txn_types' => array(UC_CREDIT_AUTH_ONLY, UC_CREDIT_PRIOR_AUTH_CAPTURE, UC_CREDIT_AUTH_CAPTURE, UC_CREDIT_REFERENCE_SET, UC_CREDIT_REFERENCE_TXN),
+  );
+
+  return $gateways;
+}

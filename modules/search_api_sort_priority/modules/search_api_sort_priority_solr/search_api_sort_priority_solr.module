@@ -1,0 +1,35 @@
+<?php
+
+/**
+ * @file
+ * Provides Solr support for Search API Sort Priority.
+ */
+
+use Drupal\search_api\IndexInterface;
+
+/**
+ * Implements hook_search_api_solr_field_mapping_alter().
+ */
+function search_api_sort_priority_solr_search_api_solr_field_mapping_alter(IndexInterface $index, array &$fields) {
+  // @TOOD: Limit to content and media indexes for now.
+  if (in_array('entity:node', $index->getDatasourceIds()) or
+      in_array('entity:paragraph', $index->getDatasourceIds()) or
+      in_array('entity:media', $index->getDatasourceIds())) {
+    // Set weight field as a single value.
+    // Search API solr defaults to muli-value for unknown fields.
+    foreach ($fields as $key => $field_id) {
+      // See https://www.drupal.org/node/2886132 for pending name changes.
+      if (strpos($key, 'contentbundle_weight') !== FALSE or
+          strpos($key, 'mediabundle_weight') !== FALSE or
+          strpos($key, 'paragraphbundle_weight') !== FALSE or
+          strpos($key, 'role_weight') !== FALSE
+          ) {
+        // Switch to a single value.
+        $fields[$key] = preg_replace('@^([^m]+)m\_@i', '$1s_', $field_id);
+
+        // This is a hidden field so there is only 1 per index.
+        return;
+      }
+    }
+  }
+}

@@ -1,0 +1,33 @@
+entity.uc_country.collection:
+  path: '/admin/store/config/country'
+  defaults:
+    _entity_list: 'uc_country'
+    _title: 'Country settings'
+  requirements:
+    _permission: 'administer countries'
+
+entity.uc_country.edit_form:
+  path: '/admin/store/config/country/{uc_country}/edit'
+  defaults:
+    _entity_form: 'uc_country.edit'
+    _title: 'Edit country address format'
+  requirements:
+    _permission: 'administer countries'
+
+entity.uc_country.enable:
+  path: '/admin/store/config/country/{uc_country}/enable'
+  defaults:
+    _controller: '\Drupal\uc_country\Controller\CountryController::enableConfig'
+    _title: 'Enable country'
+  requirements:
+    _permission: 'administer countries'
+    _csrf_token: 'TRUE'
+
+entity.uc_country.disable:
+  path: '/admin/store/config/country/{uc_country}/disable'
+  defaults:
+    _controller: '\Drupal\uc_country\Controller\CountryController::disableConfig'
+    _title: 'Disable country'
+  requirements:
+    _permission: 'administer countries'
+    _csrf_token: 'TRUE'

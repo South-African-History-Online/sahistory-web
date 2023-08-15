@@ -1,0 +1,19 @@
+<?php
+
+/**
+ * @file
+ * Install, update, and uninstall functions for the tvi module.
+ */
+
+/**
+ * Implements hook_install().
+ */
+function tvi_install() {
+  $extension_config = \Drupal::configFactory()
+    ->getEditable('core.extension');
+  if (($views_weight = $extension_config
+    ->get("module.views")) !== NULL) {
+
+    module_set_weight('tvi', $views_weight + 5);
+  }
+}

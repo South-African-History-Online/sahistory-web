@@ -1,0 +1,38 @@
+plugin.plugin_configuration.search_api_backend.search_api_solr:
+  type: config_object
+  label: 'Search API Solr settings'
+  mapping:
+    retrieve_data:
+      type: boolean
+      label: 'Retrieve result data from Solr'
+    highlight_data:
+      type: boolean
+      label: 'Highlight retrieved data'
+    skip_schema_check:
+      type: boolean
+      label: 'Skip schema verification'
+    site_hash:
+      type: boolean
+      label: 'Restrict searches to current site'
+    server_prefix:
+      type: string
+      label: 'The default prefix for Solr indexes on this backend'
+    domain:
+      type: string
+      label: 'The targeted content domain'
+    connector:
+      type: string
+      label: 'The connector plugin ID'
+    connector_config:
+      type: plugin.plugin_configuration.search_api_solr_connector.[%parent.connector]
+    optimize:
+      type: boolean
+      label: 'Optimize this backend'
+    disabled_field_types:
+      type: sequence
+      label: 'Disabled Solr Field Types'
+      sequence:
+        type: string
+    rows:
+      type: integer
+      label: 'The default result rows limit if no limit is set as query option'

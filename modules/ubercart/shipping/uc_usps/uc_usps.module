@@ -1,0 +1,228 @@
+<?php
+
+/**
+ * @file
+ * United States Postal Service (USPS) shipping quote module.
+ */
+
+use Drupal\Core\Url;
+
+/**
+ * Implements hook_theme().
+ */
+function uc_usps_theme() {
+  return array(
+    'uc_usps_option_label' => array(
+      'variables' => array(
+        'service'  => NULL,
+        'packages' => NULL,
+      ),
+      'file' => 'uc_usps.theme.inc',
+      'function' => 'theme_uc_usps_option_label',
+    ),
+  );
+}
+
+/**
+ * Implements hook_form_BASE_FORM_ID_alter() for node_form().
+ *
+ * Adds package type to products.
+ *
+ * @see uc_product_form()
+ */
+function uc_usps_form_node_form_alter(&$form, &$form_state, $form_id) {
+  $quote_config = \Drupal::config('uc_quote.settings');
+  $node = $form_state->getFormObject()->getEntity();
+  if (uc_product_is_product($node->bundle())) {
+    $enabled = $quote_config->get('enabled') + array('usps' => FALSE, 'usps_intl' => FALSE);
+    $weight = $quote_config->get('method_weight') + array('usps' => 0, 'usps_intl' => 1);
+
+    $form['shipping']['usps'] = array(
+      '#type' => 'details',
+      '#title' => t('USPS product description'),
+      '#weight' => $weight['usps'],
+      '#tree' => TRUE,
+    );
+    $form['shipping']['usps']['container'] = array(
+      '#type' => 'select',
+      '#title' => t('Package type'),
+      '#options' => \Drupal\uc_usps\USPSUtilities::packageTypes(),
+      '#default_value' => isset($node->usps['container']) ? $node->usps['container'] : 'VARIABLE',
+    );
+  }
+}
+
+/**
+ * Implements hook_node_insert().
+ */
+function uc_usps_node_insert($node) {
+  uc_usps_node_update($node);
+}
+
+/**
+ * Implements hook_node_update().
+ */
+function uc_usps_node_update($node) {
+  if (uc_product_is_product($node)) {
+    if (isset($node->usps)) {
+      $usps_values = $node->usps;
+      if (!$node->isNewRevision()) {
+        db_delete('uc_usps_products')
+          ->condition('vid', $node->getRevisionId())
+          ->execute();
+      }
+
+      db_insert('uc_usps_products')
+        ->fields(array(
+          'vid' => $node->getRevisionId(),
+          'nid' => $node->id(),
+          'container' => $usps_values['container'],
+        ))
+        ->execute();
+    }
+  }
+}
+
+/**
+ * Implements hook_node_load().
+ */
+function uc_usps_node_load($nodes) {
+  $nids = array();
+  foreach ($nodes as $node) {
+    if (uc_product_is_product($node)) {
+      $nids[] = $node->id();
+    }
+  }
+  if (empty($nids)) {
+    return;
+  }
+
+  $vids = array();
+  $usps_config = \Drupal::config('uc_usps.settings');
+  $shipping_type = $usps_config->get('uc_store_shipping_type');
+  $shipping_types = db_query("SELECT id, shipping_type FROM {uc_quote_shipping_types} WHERE id_type = :type AND id IN (:ids[])", array(':type' => 'product', ':ids[]' => $nids))->fetchAllKeyed();
+
+  foreach ($nids as $nid) {
+    if (isset($shipping_types[$nid])) {
+      $nodes[$nid]->shipping_type = $shipping_types[$nid];
+    }
+    else {
+      $nodes[$nid]->shipping_type = $shipping_type;
+    }
+
+    if ($nodes[$nid]->shipping_type == 'small_package') {
+      $vids[$nid] = $nodes[$nid]->getRevisionId();
+    }
+  }
+
+  if ($vids) {
+    $result = db_query("SELECT * FROM {uc_usps_products} WHERE vid IN (:vids[])", array(':vids[]' => $vids), array('fetch' => PDO::FETCH_ASSOC));
+    foreach ($result as $usps) {
+      $nodes[$usps['nid']]->usps = $usps;
+    }
+  }
+}
+
+/**
+ * Implements hook_node_delete().
+ */
+function uc_usps_node_delete($node) {
+  db_delete('uc_usps_products')
+    ->condition('nid', $node->id())
+    ->execute();
+}
+
+/**
+ * Implements hook_node_revision_delete().
+ */
+function uc_usps_node_revision_delete($node) {
+  db_delete('uc_usps_products')
+    ->condition('vid', $node->getRevisionId())
+    ->execute();
+}
+
+/**
+ * Implements hook_uc_shipping_type().
+ */
+function uc_usps_uc_shipping_type() {
+  $quote_config = \Drupal::config('uc_quote.settings');
+  $weight = $quote_config->get('type_weight', array('envelope' => -1, 'small_package' => 0));
+
+  $types = array(
+    'envelope' => array(
+      'id' => 'envelope',
+      'title' => t('Envelope'),
+      'weight' => isset($weight['envelope']) ? $weight['envelope'] : -1,
+    ),
+    'small_package' => array(
+      'id' => 'small_package',
+      'title' => t('Small package'),
+      'weight' => isset($weight['small_package']) ? $weight['small_package'] : 0,
+    ),
+  );
+
+  return $types;
+}
+
+/**
+ * Implements hook_uc_shipping_method().
+ */
+function uc_usps_uc_shipping_method() {
+  $operations = array(
+    'configure' => array(
+      'title' => t('configure'),
+      'url' => Url::fromRoute('uc_usps.settings')->toString(),
+    ),
+  );
+
+  $methods = array(
+    'usps_env' => array(
+      'id' => 'usps_env',
+      'module' => 'uc_usps',
+      'title' => t('U.S. Postal Service (Envelope)'),
+      'operations' => $operations,
+      'quote' => array(
+        'type' => 'envelope',
+        'callback' => 'uc_usps_quote',
+        'accessorials' => \Drupal\uc_usps\USPSUtilities::envelopeServices(),
+      ),
+    ),
+    'usps' => array(
+      'id' => 'usps',
+      'module' => 'uc_usps',
+      'title' => t('U.S. Postal Service (Parcel)'),
+      'operations' => $operations,
+      'quote' => array(
+        'type' => 'small_package',
+        'callback' => 'uc_usps_quote',
+        'accessorials' => \Drupal\uc_usps\USPSUtilities::services(),
+      ),
+    ),
+    'usps_intl_env' => array(
+      'id' => 'usps_intl_env',
+      'module' => 'uc_usps',
+      'title' => t('U.S. Postal Service (Intl., Envelope)'),
+      'operations' => $operations,
+      'quote' => array(
+        'type' => 'envelope',
+        'callback' => 'uc_usps_quote',
+        'accessorials' => \Drupal\uc_usps\USPSUtilities::internationalEnvelopeServices(),
+      ),
+      'weight' => 1,
+    ),
+    'usps_intl' => array(
+      'id' => 'usps_intl',
+      'module' => 'uc_usps',
+      'title' => t('U.S. Postal Service (Intl., Parcel)'),
+      'operations' => $operations,
+      'quote' => array(
+        'type' => 'small_package',
+        'callback' => 'uc_usps_quote',
+        'accessorials' => \Drupal\uc_usps\USPSUtilities::internationalServices(),
+      ),
+      'weight' => 1,
+    ),
+  );
+
+  return $methods;
+}

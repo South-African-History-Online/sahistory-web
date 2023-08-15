@@ -1,0 +1,172 @@
+# Schema for the configuration files of the Comment module.
+
+uc_cart.messages:
+  type: config_object
+  label: 'Default cart messages'
+  mapping:
+    logged_in:
+      type: string
+      label: 'Logged-in user message'
+    existing_user:
+      type: string
+      label: 'Existing user message'
+    new_user:
+      type: string
+      label: 'New user message'
+    new_user_logged_in:
+      type: string
+      label: 'New user logged-in message'
+    langcode:
+      type: string
+      label: 'Language code'
+
+uc_cart.settings:
+  type: config_object
+  label: 'Cart function settings'
+  mapping:
+    ajax:
+      type: mapping
+      label: 'Ajax flag'
+      mapping:
+        checkout:
+          type: sequence
+          label: 'Enable ajax on checkout page?'
+          sequence:
+            type: sequence
+            label: ''
+            sequence:
+              type: string
+              label: ''
+    add_item_msg:
+      type: boolean
+      label: 'Display add item message'
+    add_item_redirect:
+      type: uri
+      label: 'Redirect Uri for add-to-cart.'
+    msg_order_logged_in:
+      type: string
+      label: ''
+    msg_order_existing_user:
+      type: string
+      label: ''
+    msg_order_new_user:
+      type: string
+      label: ''
+    msg_order_new_user_logged_in:
+      type: string
+      label: ''
+    empty_button:
+      type: boolean
+      label: 'Display empty cart button.'
+    minimum_subtotal:
+      type: integer
+      label: ''
+    anon_duration:
+      type: integer
+      label: ''
+    anon_unit:
+      type: string
+      label: ''
+    auth_duration:
+      type: integer
+      label: ''
+    auth_unit:
+      type: string
+      label: ''
+    continue_shopping_type:
+      type: string
+      label: ''
+    continue_shopping_use_last_url:
+      type: boolean
+      label: ''
+    continue_shopping_url:
+      type: uri
+      label: ''
+    breadcrumb_text:
+      type: string
+      label: ''
+    breadcrumb_url:
+      type: uri
+      label: ''
+    new_customer_login:
+      type: boolean
+      label: ''
+    new_customer_email:
+      type: boolean
+      label: ''
+    new_customer_status_active:
+      type: boolean
+      label: ''
+    new_account_name:
+      type: boolean
+      label: ''
+    new_account_password:
+      type: boolean
+      label: ''
+    checkout_email_customer:
+      type: boolean
+      label: 'Send checkout email to customer.'
+    checkout_email_admin:
+      type: boolean
+      label: 'Send checkout email to administrator.'
+    mail_existing:
+      type: boolean
+      label: ''
+    email_validation:
+      type: boolean
+      label: ''
+    checkout_anonymous:
+      type: boolean
+      label: ''
+    checkout_enabled:
+      type: boolean
+      label: ''
+    panes:
+      type: sequence
+      label: 'Pane settings'
+      sequence:
+        type: mapping
+        mapping:
+          id:
+            type: string
+            label: 'Plugin ID'
+          status:
+            type: boolean
+            label: 'Enabled status'
+          weight:
+            type: integer
+            label: 'Ordinal'
+          settings:
+            type: uc_cart_pane.[%parent.id]
+
+uc_cart_pane.billing:
+  type: mapping
+  label: 'Billing cart pane configuration settings'
+  mapping:
+    default_same_address:
+      type: boolean
+      label: 'Use the same address for billing and delivery by default'
+
+uc_cart_pane.delivery:
+  type: mapping
+  label: 'Delivery cart pane configuration settings'
+  mapping:
+    delivery_not_shippable:
+      type: boolean
+      label: 'Hide delivery information when carts have no shippable items'
+
+uc_cart_pane.cart:
+  type: mapping
+  label: 'Cart cart pane configuration settings'
+
+uc_cart_pane.customer:
+  type: mapping
+  label: 'Customer cart pane configuration settings'
+
+uc_cart_pane.comments:
+  type: mapping
+  label: 'Comments cart pane configuration settings'
+
+action.configuration.uc_cart_add_product_action:
+  type: action_configuration_default
+  label: 'Cart add-to-cart configuration'

@@ -1,0 +1,199 @@
+@charset "UTF-8";
+
+//
+// Owl Carousel Theme
+//
+
+.st-owl-theme {
+  .owl-controls {
+    text-align: center;
+    line-height: 0;
+    @media screen and (max-width: 1200px) {
+      display: none;
+    }
+  }
+  // Pagination Dots
+  .owl-pagination {
+    padding: 15px 0;
+  }
+  .owl-page {
+    display: inline-block;
+    width: 9px;
+    height: 9px;
+    margin: 0 3px;
+    background: #ccc;
+    transform-origin: 50% 100%;
+    transition: all 0.3s;
+    &.active {
+      background: #999;
+    }
+  }
+  &.st-owl-pager-inside .owl-pagination {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    .owl-page {
+      background: rgba(0,0,0,0.5);
+      &.active {
+        background: rgba(0,0,0,1);
+      }
+    }
+  }
+  &.st-owl-pager-growTaller .owl-page.active {
+    transform: scaleY(1.8);
+  }
+  &.st-owl-pager-growWider .owl-page.active {
+    transform: scaleX(1.6);
+  }
+  &.st-owl-pager-scaleUp .owl-page.active {
+    transform: scale(1.8, 1.8);
+  }
+  &.st-owl-pager-square {
+    .owl-page {
+      border-radius: 0;
+    }
+  }
+  &.st-owl-pager-circle {
+    .owl-page {
+      border-radius: 100%;
+    }
+    .owl-page.active {
+      border-radius: 100%;
+    }
+  }
+  &.st-owl-pager-bar {
+    .owl-page {
+      width: 30px;
+      height: 4px;
+    }
+  }
+  &.st-owl-pager-triangle {
+    .owl-page {
+      background: transparent;
+      width: 0;
+      height: 0;
+      border-style: solid;
+      border-width: 0 6px 12px 6px;
+      border-color: transparent transparent #ccc transparent;
+      &.active {
+        border-color: transparent transparent #999 transparent;
+      }
+    }
+  }
+
+  // Next / Previous Navigation
+  .owl-buttons .owl-prev,
+  .owl-buttons .owl-next {
+    width: 30px;
+    height: 30px;
+    display: inline-block;
+    position: relative;
+    box-sizing: content-box;
+    transition: all 0.3s;
+    &.owl-next {
+      transform: rotate(180deg);
+    }
+    &::before,
+    &::after {
+      position: absolute;
+      left: 26%;
+      width: 2px;
+      height: 50%;
+      background: #999;
+      content: '';
+      transition: all 0.3s;
+      backface-visibility: hidden;
+    }
+    &::before {
+      transform: translateX(-50%) rotate(45deg);
+      transform-origin: 0 100%;
+    }
+    &:hover::before {
+      transform: translateY(-1px) translateX(-50%) rotate(55deg);
+    }
+    &::after {
+      top: 50%;
+      transform: translateX(-50%) rotate(-45deg);
+      transform-origin: 0 0;
+    }
+    &:hover::after {
+      transform: translateY(1px) translateX(-50%) rotate(-55deg);
+    }
+  }
+  .owl-controls .clickable .owl-buttons .owl-prev:hover,
+  .owl-controls .clickable .owl-buttons .owl-next:hover {
+    text-decoration: none;
+  }
+  &.st-owl-navigation-inside .owl-controls .owl-buttons {
+    .owl-prev,
+    .owl-next {
+      position: block;
+      position: absolute;
+      top: 50%;
+    }
+    .owl-prev {
+      left: 0;
+      transform: translateY(-50%);
+    }
+    .owl-next {
+      right: 0;
+      transform: translateY(-50%) rotate(180deg);
+    }
+  }
+  &.st-owl-navigation-square,
+  &.st-owl-navigation-circle,
+  &.st-owl-navigation-bar {
+    .owl-buttons .owl-prev,
+    .owl-buttons .owl-next {
+      border: 10px solid transparent;
+      background: rgba(0,0,0,0.5);
+      &::after,
+      &::before {
+        background: #fff;
+      }
+    }
+  }
+  &.st-owl-navigation-bar {
+    .owl-buttons .owl-prev,
+    .owl-buttons .owl-next {
+      width: 20px;
+      border-width: 10px 0;
+      &::after,
+      &::before {
+        left: 22%;
+      }
+    }
+  }
+  &.st-owl-navigation-circle {
+    .owl-buttons .owl-prev,
+    .owl-buttons .owl-next {
+      border-radius: 50%;
+      margin: 10px 5px;
+    }
+  }
+  &.st-owl-navigation-outside.st-owl-navigation-bottomRight,
+  &.st-owl-navigation-outside.st-owl-navigation-topRight {
+    .owl-buttons {
+      text-align: right;
+    }
+  }
+  &.st-owl-navigation-outside.st-owl-navigation-adjacent {
+    .owl-buttons:after {
+      content:"";
+      display:block;
+      clear:both;
+    }
+    .owl-buttons .owl-prev {
+      float:left;
+    }
+    .owl-buttons .owl-next {
+      float:right;
+    }
+  }
+}
+
+.owl-item.loading {
+  min-height: 150px;
+  background: url('../images/AjaxLoader.gif') no-repeat center center;
+}

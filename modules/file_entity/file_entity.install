@@ -1,0 +1,199 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the file_entity module.
+ */
+
+use Drupal\Core\Entity\Entity\EntityFormDisplay;
+use Drupal\views\Entity\View;
+
+/**
+ * Implements hook_schema().
+ */
+function file_entity_schema() {
+  $schema['file_metadata'] = array(
+    'description' => 'Cache images dimensions.',
+    'fields' => array(
+      'fid' => array(
+        'description' => 'The {file_managed}.fid of the metadata.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'name' => array(
+        'description' => "The name of the metadata (e.g. 'width').",
+        'type' => 'varchar',
+        'length' => '128',
+        'not null' => TRUE,
+      ),
+      'value' => array(
+        'description' => "The value of the metadata (e.g. '200px').",
+        'type' => 'blob',
+        'not null' => FALSE,
+        'size' => 'big',
+        'serialize' => TRUE,
+      ),
+    ),
+    'primary key' => array('fid', 'name'),
+    'foreign keys' => array(
+      'file_managed' => array(
+        'table' => 'file_managed',
+        'columns' => array('fid' => 'fid'),
+      ),
+    ),
+  );
+  return $schema;
+}
+
+/**
+ * Implements hook_install().
+ */
+function file_entity_install() {
+
+  // Install the type field first, then update the entity type, and then
+  // update the field again.
+
+  /** @var \Drupal\Core\Field\BaseFieldDefinition $type_storage_definition */
+  $type_storage_definition = \Drupal::service('entity_field.manager')->getFieldStorageDefinitions('file')['type'];
+  $type_storage_definition->setInitialValue(FILE_TYPE_NONE);
+  \Drupal::entityDefinitionUpdateManager()->installFieldStorageDefinition('type', 'file', 'file_entity', $type_storage_definition);
+
+  $entity_type = \Drupal::entityDefinitionUpdateManager()->getEntityType('file');
+  $keys = $entity_type->getKeys();
+  $keys['bundle'] = 'type';
+  $entity_type->set('entity_keys', $keys);
+  \Drupal::entityDefinitionUpdateManager()->updateEntityType($entity_type);
+
+  \Drupal::entityDefinitionUpdateManager()->installFieldStorageDefinition('type', 'file', 'file_entity', $type_storage_definition);
+
+  // Set permissions.
+  $roles = user_roles();
+  foreach ($roles as $rid => $role) {
+    user_role_grant_permissions($rid, array('view files'));
+  }
+
+  // Classify existing files according to the currently defined file types.
+  // Queue all files to be classified during cron runs using the Queue API.
+  $queue = \Drupal::queue('file_entity_type_determine');
+  $ids = \Drupal::entityQuery('file')
+    ->execute();
+  foreach ($ids as $id) {
+    $queue->createItem($id);
+  }
+
+  // Warn users that existing files will not have a file type until the queue
+  // has been processed.
+  if ($queue->numberOfItems()) {
+    \Drupal::messenger()->addMessage(t('Existing files must be classified according to the currently defined file types. These files have been queued for processing and will have their file type determined during cron runs.'));
+  }
+
+  // Disable the core files view.
+  if ($view = View::load('files')) {
+    $view->set('status', FALSE);
+    $view->save();
+  }
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function file_entity_uninstall() {
+
+  // Delete all configurable fields first, otherwise they are being deleted
+  // in the wrong order.
+  $field_storages = \Drupal::entityTypeManager()->getStorage('field_storage_config')->loadByProperties(['entity_type' => 'file']);
+  foreach ($field_storages as $field_storage) {
+    $field_storage->delete();
+  }
+
+  // Uninstall the file.type field along with the database column.
+  $update_manager = Drupal::service('entity.definition_update_manager');
+  $definition = $update_manager->getFieldStorageDefinition('type', 'file');
+  $update_manager->uninstallFieldStorageDefinition($definition);
+
+  $entity_type = \Drupal::entityDefinitionUpdateManager()->getEntityType('file');
+  $keys = $entity_type->getKeys();
+  $keys['bundle'] = '';
+  $entity_type->set('entity_keys', $keys);
+  \Drupal::entityDefinitionUpdateManager()->updateEntityType($entity_type);
+}
+
+/**
+ * Update existing bogus entries for File types Document.
+ */
+function file_entity_update_8002(&$sandbox) {
+  foreach (\Drupal::configFactory()->listAll('file_entity') as $config_name) {
+    $config = \Drupal::configFactory()->getEditable($config_name);
+    $config->set('mimetypes', str_replace("\r", "", $config->get('mimetypes')));
+    $config->save();
+  }
+}
+
+/**
+ * Update entity form displays to use the new entity browser widget.
+ */
+function file_entity_update_8003() {
+
+  /** @var \Drupal\Core\Entity\Entity\EntityFormDisplay $form_display */
+  foreach (EntityFormDisplay::loadMultiple() as $form_display) {
+    $components = $form_display->getComponents();
+
+    $changed = FALSE;
+    foreach ($components as $name => $options) {
+      if (isset($options['type']) && $options['type'] == 'file_entity_browser') {
+        $options['type'] = 'entity_browser_file';
+        $form_display->setComponent($name, $options);
+        $changed = TRUE;
+      }
+    }
+
+    if ($changed) {
+      $form_display->save();
+    }
+  }
+
+}
+
+/**
+ * Fix entity field mismatches on the file type field.
+ */
+function file_entity_update_8004() {
+
+  $entity_definition_update_manager = \Drupal::entityDefinitionUpdateManager();
+  $original = $entity_definition_update_manager->getFieldStorageDefinition('type', 'file');
+  $field_storage = \Drupal::service('entity_field.manager')->getFieldStorageDefinitions('file')['type'];
+
+  /** @var \Drupal\Core\Entity\Schema\DynamicallyFieldableEntityStorageSchemaInterface $storage */
+  $storage = \Drupal::entityTypeManager()->getStorage('file');
+
+  // Do nothing if there is no field storage schema change reported.
+  if ($original && !$storage->requiresFieldStorageSchemaChanges($field_storage, $original)) {
+    return;
+  }
+
+  // Ensure that the type field is not null, update the actual schema and the
+  // stored schema.
+  $key_value = \Drupal::keyValue('entity.storage_schema.sql');
+  $key_name = 'file.field_schema_data.type';
+
+  $storage_schema = $key_value->get($key_name);
+  $storage_schema['file_managed']['fields']['type']['not null'] = TRUE;
+
+  \Drupal::database()->schema()->changeField('file_managed', 'type', 'type', $storage_schema['file_managed']['fields']['type']);
+  $key_value->set($key_name, $storage_schema);
+}
+
+/**
+ * Fix the last installed definition for the 'file' entity type.
+ */
+function file_entity_update_8005() {
+  $entity_type = \Drupal::entityDefinitionUpdateManager()->getEntityType('file');
+  $keys = $entity_type->getKeys();
+  if (empty($keys['bundle'])) {
+    $keys['bundle'] = 'type';
+    $entity_type->set('entity_keys', $keys);
+    \Drupal::entityDefinitionUpdateManager()->updateEntityType($entity_type);
+  }
+}

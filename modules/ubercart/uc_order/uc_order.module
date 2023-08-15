@@ -1,0 +1,555 @@
+<?php
+
+/**
+ * @file
+ * Handles all things concerning Ubercart orders.
+ *
+ * The order system allows for backend order creation, editing, and management.
+ * Hooks allow for third party module integration, automated fulfillment, and
+ * more. This module also governs the order review options and invoices
+ * displayed to customers.
+ */
+
+use Drupal\Component\Discovery\YamlDiscovery;
+use Drupal\Component\Utility\Xss;
+use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Render\BubbleableMetadata;
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Template\Attribute;
+use Drupal\Core\Link;
+use Drupal\Core\Url;
+use Drupal\user\UserInterface;
+use Drupal\uc_order\Entity\Order;
+use Drupal\uc_order\OrderInterface;
+
+require_once dirname(__FILE__) . '/uc_order.line_item.inc';
+
+
+/**
+ * Implements hook_help().
+ */
+function uc_order_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    case 'uc_order.workflow':
+      return '<p>' . t('Order statuses with a list position below zero are considered inactive when filtering lists of orders.') . '</p>';
+  }
+}
+
+/**
+ * Implements hook_page_attachments().
+ */
+function uc_order_page_attachments(&$page) {
+  $page['#attached']['library'][] = 'uc_order/uc_order.styles';
+
+  // Load uc_order.js on all order and customer admin pages.
+  $route = \Drupal::routeMatch()->getRouteName();
+  if ($route == 'entity.uc_order.edit_form' ||
+      substr($route, 0, 15) == 'view.uc_orders.' ||
+      substr($route, 0, 18) == 'view.uc_customers.') {
+    $page['#attached']['library'][] = 'uc_order/uc_order.scripts';
+    $page['#attached']['drupalSettings']['ucURL']['adminOrders'] = Url::fromRoute('uc_order.order_admin')->toString();
+  }
+}
+
+/**
+ * Implements hook_theme().
+ */
+function uc_order_theme($existing, $type, $theme, $path) {
+  $theme_hooks = array(
+    'uc_order_invoice' => array(
+      'variables' => array(
+        'order' => NULL,
+        'op' => 'view',
+        'template' => '',
+        'thank_you_message' => FALSE,
+        'help_text' => FALSE,
+        'email_text' => FALSE,
+        'store_footer' => FALSE,
+        'business_header' => FALSE,
+        'shipping_method' => FALSE,
+      ),
+      'template' => 'uc-order-invoice',
+    ),
+    'uc_order_invoice_page' => array(
+      'variables' => array('content' => NULL),
+      'template' => 'uc-order-invoice-page',
+    ),
+  );
+
+  $theme_hooks += array(
+    'uc_order_invoice__admin' => array(
+      'variables' => $theme_hooks['uc_order_invoice']['variables'],
+      'template' => 'uc-order-invoice--admin',
+    ),
+  );
+
+  return $theme_hooks;
+}
+
+/**
+ * Implements hook_entity_bundle_info().
+ */
+function uc_order_entity_bundle_info() {
+  $bundles['uc_order']['uc_order']['label'] = t('Order');
+  $bundles['uc_order_product']['uc_order_product']['label'] = t('Order product');
+  return $bundles;
+}
+
+/**
+ * Implements hook_entity_extra_field_info().
+ */
+function uc_order_entity_extra_field_info() {
+  $panes = \Drupal::service('plugin.manager.uc_order.order_pane')->getDefinitions();
+  $extra = array();
+
+  foreach ($panes as $id => $pane) {
+    $extra_field = array(
+      'label' => $pane['title'],
+      'weight' => $pane['weight'],
+    );
+
+    if (in_array('Drupal\uc_order\EditableOrderPanePluginInterface', class_implements($pane['class']))) {
+      $extra['uc_order']['uc_order']['form'][$id] = $extra_field;
+    }
+
+    $extra['uc_order']['uc_order']['display'][$id] = $extra_field;
+  }
+
+  return $extra;
+}
+
+/**
+ * Implements hook_user_view().
+ */
+function uc_order_user_view(array &$build, UserInterface $account, EntityViewDisplayInterface $display, $view_mode) {
+  $user = \Drupal::currentUser();
+
+  if ($view_mode == 'full' &&
+      $user->isAuthenticated() &&
+      (($user->id() == $account->id() && $user->hasPermission('view own orders')) || $user->hasPermission('view all orders'))) {
+    $build['orders'] = array(
+      '#type' => 'item',
+      '#title' => t('Orders'),
+      '#markup' => Link::createFromRoute(t('Click here to view your order history.'), 'view.uc_order_history.page_1', ['user' => $account->id()])->toString(),
+    );
+  }
+}
+
+/**
+ * Implements hook_mail().
+ */
+function uc_order_mail($key, &$message, $params) {
+  $langcode = isset($message['language']) ? $message['language']->language : NULL;
+
+  // Build the appropriate message parameters based on the e-mail key.
+  switch ($key) {
+    // Setup an e-mailed invoice.
+    case 'invoice':
+      $message['headers']['Content-Type'] = 'text/html; charset=UTF-8; format=flowed';
+      $message['subject'] = t('Your Order Invoice', [], ['langcode' => $langcode]);
+      $message['from'] = uc_store_email_from();
+      $body = array('#theme' => 'uc_order_invoice', '#order' => $params['order'], '#op' => 'admin-mail');
+      $message['body'][] = drupal_render($body);
+      break;
+
+    // Setup a custom e-mail defined by an action on a predicate.
+    case 'action-mail':
+      // Assemble an email message from the conditional actions settings.
+      $message['headers']['Content-Type'] = 'text/html; charset=UTF-8; format=flowed';
+      $message['from'] = $params['from'];
+
+      // Perform token replacement on the subject and body.
+      $token_service = \Drupal::token();
+      $subject = $token_service->replace($params['subject'], $params['replacements'], $langcode ? ['language' => $message['language']] : []);
+      $body = $token_service->replace($params['message'], $params['replacements'], $langcode ? ['language' => $message['language']] : []);
+
+      // Strip newline characters from e-mail subjects.
+      // @todo: Maybe drupal_mail_send() should do this?
+      $message['subject'] = str_replace(array("\r\n", "\r", "\n"), ' ', $subject);
+
+      // Apply an input format to the message body if specified.
+      if (isset($params['format'])) {
+        $message['body'] = explode("\n", check_markup($body, $params['format'], $langcode));
+      }
+      else {
+        $message['body'] = explode("\n", $body);
+      }
+
+      break;
+  }
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter() for views_exposed_form().
+ */
+function uc_order_form_views_exposed_form_alter(&$form, FormStateInterface $form_state) {
+  if (substr($form['#id'], 0, 29) == 'views-exposed-form-uc-orders-') {
+    $form['#submit'][] = 'uc_order_form_views_exposed_form_submit';
+  }
+}
+
+/**
+ * Redirects if a valid order ID was entered in the exposed field.
+ */
+function uc_order_form_views_exposed_form_submit($form, FormStateInterface $form_state) {
+  if (!$form_state->isValueEmpty('order_id') && Order::load($form_state->getValue('order_id'))) {
+    $form_state->setRedirect('entity.uc_order.canonical', ['uc_order' => $form_state->getValue('order_id')]);
+    $form_state->disableRedirect(FALSE);
+  }
+}
+
+/**
+ * Save a product to an order.
+ */
+function uc_order_product_save($order_id, $product) {
+  $product->order_id = $order_id;
+  return $product->save();
+}
+
+/**
+ * Merge fields from their associated nodes into a set of order products.
+ *
+ * @param $products
+ *   An array of order_products.
+ * @param $published
+ *   TRUE to load only published nodes, FALSE to load all nodes.
+ *
+ * @return
+ *   TRUE if the merge was successful for all products in the set. FALSE
+ *   otherwise (i.e. if the associated product node no longer exists).
+ */
+function uc_order_product_revive($products, $published = TRUE) {
+  // Allow invocation for a single product.
+  if (!is_array($products)) {
+    $products = array($products);
+  }
+
+  // Load the nodes associated with each order product.
+  $nids = array();
+  foreach ($products as $product) {
+    $nids[] = $product->nid->target_id;
+  }
+  $nodes = node_load_multiple($nids);
+
+  // Merge in fields from any nodes that still exist (but don't override order
+  // product fields that are already set).
+  $return = TRUE;
+  foreach ($products as &$product) {
+    if (!empty($nodes[$product->nid->target_id]) && (!$published || $nodes[$product->nid->target_id]->isPublished())) {
+      foreach (get_object_vars($nodes[$product->nid->target_id]) as $key => $value) {
+        if (!property_exists($product, $key)) {
+          $product->$key = $value;
+        }
+      }
+      // Order products are always variants.
+      $product->variant = TRUE;
+    }
+    else {
+      $return = FALSE;
+    }
+  }
+
+  return $return;
+}
+
+/**
+ * Returns an array of comments or admin comments for an order.
+ */
+function uc_order_comments_load($order_id, $admin = FALSE) {
+  $table = $admin ? 'uc_order_admin_comments' : 'uc_order_comments';
+  $query = db_select($table, 'oc')
+    ->fields('oc')
+    ->condition('order_id', $order_id)
+    ->orderBy('oc.created')
+    ->orderBy('oc.comment_id');
+
+  $comments = $query->execute()->fetchAll();
+
+  return $comments;
+}
+
+/**
+ * Inserts a comment, $type being either 'order' or 'admin'.
+ */
+function uc_order_comment_save($order_id, $uid, $message, $type = 'admin', $status = 'pending', $notify = FALSE) {
+  if ($type == 'admin') {
+    db_insert('uc_order_admin_comments')
+      ->fields(array(
+        'order_id' => $order_id,
+        'uid' => $uid,
+        'message' => $message,
+        'created' => REQUEST_TIME,
+      ))
+      ->execute();
+  }
+  elseif ($type == 'order') {
+    db_insert('uc_order_comments')
+      ->fields(array(
+        'order_id' => $order_id,
+        'uid' => $uid,
+        'message' => $message,
+        'order_status' => $status,
+        'notified' => $notify ? 1 : 0,
+        'created' => REQUEST_TIME,
+      ))
+      ->execute();
+  }
+}
+
+/**
+ * Determines whether a product is shippable or not.
+ */
+function uc_order_product_is_shippable($product) {
+  // Return FALSE if the product form specifies this as not shippable.
+  if (empty($product->data->shippable)) {
+    return FALSE;
+  }
+
+  // See if any other modules have a say in the matter...
+  $result = \Drupal::moduleHandler()->invokeAll('uc_order_product_can_ship', array($product));
+
+  // Return TRUE by default.
+  if (empty($result) || in_array(TRUE, $result)) {
+    return TRUE;
+  }
+
+  return FALSE;
+}
+
+/**
+ * Preprocesses a formatted invoice with an order's data.
+ *
+ * @see uc_order--admin.tpl.php
+ * @see uc_order--customer.tpl.php
+ */
+function template_preprocess_uc_order_invoice(&$variables) {
+  $order = &$variables['order'];
+
+  switch ($variables['op']) {
+    case 'checkout-mail':
+      $variables['thank_you_message'] = TRUE;
+    case 'admin-mail':
+      $variables['help_text'] = TRUE;
+      $variables['email_text'] = TRUE;
+      $variables['store_footer'] = TRUE;
+    case 'view':
+    case 'print':
+      $variables['business_header'] = TRUE;
+      $variables['shipping_method'] = TRUE;
+      break;
+  }
+
+  $variables['shippable'] = $order->isShippable();
+
+  $variables['products'] = array();
+  if (!empty($order->products)) {
+    foreach ($order->products as $id => $product) {
+      $variables['products'][$id] = new stdClass;
+      $variables['products'][$id]->title = $product->title->value;
+      $variables['products'][$id]->qty = $product->qty->value;
+      $variables['products'][$id]->model = $product->model->value;
+      $variables['products'][$id]->total_price = uc_currency_format($product->price->value * $product->qty->value);
+      if ($product->qty->value > 1) {
+        $variables['products'][$id]->individual_price = t('(@price each)', ['@price' => uc_currency_format($product->price->value)]);
+      }
+      else {
+        $variables['products'][$id]->individual_price = '';
+      }
+
+      $variables['products'][$id]->details = array();
+      if (!empty($product->data->attributes)) {
+        $attributes = array();
+        foreach ($product->data->attributes as $attribute => $option) {
+          $attributes[] = t('@attribute: @options', ['@attribute' => $attribute, '@options' => implode(', ', (array)$option)]);
+        }
+        $variables['products'][$id]->details = array(
+          '#theme' => 'item_list',
+          '#items' => $attributes,
+        );
+      }
+    }
+  }
+
+  $variables['line_items'] = $variables['order']->getDisplayLineItems();
+  $order->line_items = $variables['line_items'];
+
+  // Generate tokens to use as template variables.
+  $types = array(
+    'uc_order' => $order,
+  );
+
+  $token_service = \Drupal::token();
+  $token_info = $token_service->getInfo();
+  $bubbleable_metadata = new BubbleableMetadata();
+
+  $replacements = array();
+  foreach (array('site', 'store', 'uc_order') as $type) {
+    $tokens = array_keys($token_info['tokens'][$type]);
+    $replacements[$type] = $token_service->generate($type, array_combine($tokens, $tokens), $types, [], $bubbleable_metadata);
+  }
+
+  // @todo: Where do we apply the metadata to?
+  //$bubbleable_metadata->applyTo($build);
+
+  foreach ($replacements as $type => $tokens) {
+    foreach ($tokens as $token => $value) {
+      $key = str_replace('-', '_', $type . '_' . $token);
+      $key = str_replace('uc_', '', $key);
+      $variables[$key] = $value;
+    }
+  }
+
+  // Add hook suggestions, default to customer template.
+  if ($variables['template']) {
+    $variables['theme_hook_suggestions'][] =  'uc_order_invoice__' . $variables['template'];
+  }
+}
+
+/**
+ * Preprocesses a printable invoice page.
+ *
+ * @see uc_order-invoice-page.tpl.php
+ */
+function template_preprocess_uc_order_invoice_page(&$variables) {
+  $language_interface = \Drupal::languageManager()->getCurrentLanguage();
+
+  // HTML element attributes.
+  $attributes = array();
+  $attributes['lang'] = $language_interface->getId();
+  $attributes['dir'] = $language_interface->getDirection();
+  $variables['html_attributes'] = new Attribute($attributes);
+
+  $site_config = \Drupal::config('system.site');
+  $head_title = array('name' => $site_config->get('name'));
+  if ($site_config->get('slogan')) {
+    $head_title['slogan'] = strip_tags(Xss::filterAdmin($site_config->get('slogan')));
+  }
+
+  // Add favicon.
+  if (theme_get_setting('features.favicon')) {
+    $favicon = theme_get_setting('favicon.url');
+    $type = theme_get_setting('favicon.mimetype');
+    $build['#attached']['html_head_link'][][] = array(
+      'rel' => 'shortcut icon',
+      'href' => \Drupal\Component\Utility\UrlHelper::stripDangerousProtocols($favicon),
+      'type' => $type,
+    );
+    \Drupal::service('renderer')->render($build);
+  }
+  $variables['head_title'] = implode(' | ', $head_title);
+}
+
+/**
+ * Returns an option list of order states.
+ */
+function uc_order_state_options_list() {
+  $discovery = new YamlDiscovery('uc_order_state', \Drupal::moduleHandler()->getModuleDirectories());
+  $states = [];
+  foreach ($discovery->findAll() as $file) {
+    $states = array_merge($states, $file);
+  }
+  uasort($states, 'Drupal\Component\Utility\SortArray::sortByWeightElement');
+
+  $options = array();
+  foreach ($states as $id => $state) {
+    $options[$id] = $state['label'];
+  }
+  return $options;
+}
+
+/**
+ * Returns the default order status for a particular order state.
+ *
+ * @param $state_id
+ *   The ID of the order state whose default status you want to find.
+ *
+ * @return
+ *   A string containing the default order status ID for the specified state.
+ */
+function uc_order_state_default($state_id) {
+  // Attempt to get the default state from the form.
+  $default = \Drupal::config('uc_order.settings')->get("default_state.$state_id");
+
+  // If it is not found, pick the lightest status for this state.
+  if (!$default) {
+    $result = \Drupal::entityQuery('uc_order_status')
+      ->condition('state', $state_id)
+      ->sort('weight')
+      ->execute();
+    $default = reset($result);
+  }
+
+  return $default;
+}
+
+/**
+ * Returns the actions a user may perform on an order.
+ *
+ * @param $order
+ *   The order to return the actions for.
+ *
+ * @return
+ *   A renderable set of operation links.
+ */
+function uc_order_actions(OrderInterface $order, $icon_html = FALSE) {
+  $user = \Drupal::currentUser();
+
+  $actions = array();
+
+  if ($user->hasPermission('view all orders')) {
+    $actions['view'] = array(
+      'title' => t('View'),
+      'url' => $order->toUrl(),
+      'weight' => 0,
+    );
+    $actions['print'] = array(
+      'title' => t('Print'),
+      'url' => Url::fromRoute('uc_order.admin_invoice_print', ['uc_order' => $order->id()]),
+      'weight' => 5,
+    );
+  }
+  else {
+    if ($order->access('view')) {
+      $actions['view'] = array(
+        'title' => t('View'),
+        'url' => Url::fromRoute('uc_order.user_view', ['user' => $user->id(), 'uc_order' => $order->id()]),
+        'weight' => 0,
+      );
+    }
+    if ($order->access('invoice')) {
+      $actions['print'] = array(
+        'title' => t('Print'),
+        'url' => Url::fromRoute('uc_order.user_invoice_print', ['user' => $user->id(), 'uc_order' => $order->id()]),
+        'weight' => 5,
+      );
+    }
+  }
+
+  if ($order->access('update')) {
+    $actions['edit'] = array(
+      'title' => t('Edit'),
+      'url' => $order->toUrl('edit-form'),
+      'weight' => 10,
+    );
+  }
+
+  if ($order->access('delete')) {
+    $actions['delete'] = array(
+      'title' => t('Delete'),
+      'url' => $order->toUrl('delete-form'),
+      'weight' => 20,
+    );
+  }
+
+  $extra = \Drupal::moduleHandler()->invokeAll('uc_order_actions', array($order));
+  if (count($extra)) {
+    $actions = array_merge($actions, $extra);
+  }
+  \Drupal::moduleHandler()->alter('uc_order_actions', $actions, $order);
+
+  return array(
+    '#type' => 'operations',
+    '#links' => $actions,
+  );
+}

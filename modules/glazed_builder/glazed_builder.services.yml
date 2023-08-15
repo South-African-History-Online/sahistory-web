@@ -1,0 +1,44 @@
+parameters:
+  glazed_builder.service.class: Drupal\glazed_builder\Service\GlazedBuilderService
+  glazed_builder.handler.block.class: Drupal\glazed_builder\Service\Handler\BlockHandler
+  glazed_builder.handler.view.class: Drupal\glazed_builder\Service\Handler\ViewHandler
+  glazed_builder.file.upload.class: Drupal\glazed_builder\Service\UploadHandler
+
+services:
+  glazed_builder.handler.block:
+    class: '%glazed_builder.handler.block.class%'
+    arguments:
+      - '@entity_type.manager'
+      - '@plugin.manager.block'
+      - '@current_user'
+      - '@renderer'
+      - '@entity.repository'
+
+  glazed_builder.handler.view:
+    class: '%glazed_builder.handler.view.class%'
+    arguments:
+      - '@renderer'
+
+  glazed_builder.service:
+    class: '%glazed_builder.service.class%'
+    arguments:
+      - '@request_stack'
+      - '@config.factory'
+      - '@file_system'
+      - '@current_user'
+      - '@module_handler'
+      - '@glazed_builder.handler.block'
+      - '@glazed_builder.handler.view'
+      - '@cache.default'
+      - '@entity.manager'
+      - '@theme_handler'
+      - '@language_manager'
+      - '@plugin.manager.block'
+      - '@csrf_token'
+
+  glazed_builder.file.upload:
+    class: '%glazed_builder.file.upload.class%'
+
+  glazed_builder.profile_handler:
+    class: Drupal\glazed_builder\Service\Handler\ProfileHandler
+    arguments: ['@context.repository', '@plugin.manager.block']

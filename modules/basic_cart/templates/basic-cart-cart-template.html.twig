@@ -1,0 +1,44 @@
+<div class="basic_cart-grid basic-cart-block">
+  {%if basic_cart.empty.status %}
+    {% trans %}
+      {{ basic_cart.empty.text }}
+    {% endtrans %}
+
+  {% else %}
+
+
+    {% for key,value in basic_cart.data.contents %}
+      <div class="basic_cart-cart-contents row">
+        <div class="basic_cart-cart-node-title cell">{{ value.link }} </div>
+            {%if basic_cart.config.quantity_enabled %}
+              <div class="basic_cart-cart-quantity cell">{{ value.quantity }}</div>
+              <div class="basic_cart-cart-x cell">x</div>
+            {%endif%}  
+        <div class="basic_cart-cart-unit-price cell">
+        <strong>{{ value.price_value }}</strong>    
+        </div>
+    </div>
+    {% endfor %}
+  
+  <div class="basic_cart-cart-total-price-contents row">
+        <div class="basic_cart-total-price cell">
+            {{ basic_cart.config.total_price_label }}: <strong> {{ basic_cart.config.total_price }} </strong>
+        </div>
+      </div> 
+
+
+         {%if basic_cart.config.vat_enabled %}
+          <div class="basic_cart-block-total-vat-contents row">
+          <div class="basic_cart-total-vat cell"> {{ basic_cart.config.vat_label }} : <strong>{{ basic_cart.config.total_price_vat }}</strong></div>
+        </div>
+        {%endif%}
+
+
+
+       <div class="basic_cart-cart-checkout-button basic_cart-cart-checkout-button-block row">
+        <a href='{{ basic_cart.config.view_cart_url }}' class='button'>{{ basic_cart.config.view_cart_button }} </a>
+      </div>
+
+
+  {%endif%}
+</div>

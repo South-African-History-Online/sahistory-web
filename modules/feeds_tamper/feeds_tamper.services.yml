@@ -1,0 +1,9 @@
+services:
+  feeds_tamper.feed_type_tamper_manager:
+    class: Drupal\feeds_tamper\FeedTypeTamperManager
+    parent: container.trait
+  feeds_tamper.feeds_subscriber:
+    class: Drupal\feeds_tamper\EventSubscriber\FeedsSubscriber
+    arguments: ['@feeds_tamper.feed_type_tamper_manager']
+    tags:
+      - {name: event_subscriber}

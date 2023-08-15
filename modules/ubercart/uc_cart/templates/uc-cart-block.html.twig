@@ -1,0 +1,59 @@
+{#
+/**
+ * @file
+ * Default theme implementation to display a shopping cart block.
+ *
+ * Available variables:
+ * - items: An associative array of cart item information containing:
+ *   - qty: Quantity in cart.
+ *   - title: Item title.
+ *   - price: Item price.
+ *   - desc: (optional) Item description.
+ * - item_count: The number of items in the shopping cart.
+ * - total: The formatted subtotal of all the products in the shopping cart.
+ * - summary_links: A set of links used in the cart summary.
+ * - attributes: HTML attributes for the main content element.
+ *
+ * @see template_preprocess_uc_cart_block()
+ *
+ * @ingroup themeable
+#}
+{% if items %}
+  <table {{ attributes }}>
+  {% for item in items %}
+    <tr>
+      <td class="cart-block-item-qty">{{ item.qty }} ×</td>
+      {% if item.desc %}
+        <td class="cart-block-item-title">{{ item.title }}<br />
+        <span class="cart-block-item-desc">{{ item.desc }}</span></td>
+      {% else %}
+        <td class="cart-block-item-title">{{ item.title }}</td>
+      {% endif %}
+      <td class="cart-block-item-price">{{ item.price }}</td>
+    </tr>
+  {% endfor %}
+  </table>
+{% else %}
+  <p {{ attributes }}>
+    {{ 'There are no products in your shopping cart.'|t }}
+  </p>
+{% endif %}
+
+<table class="cart-block-summary">
+  <tr>
+    <td class="cart-block-summary-items">
+      {% trans %}
+        <span class="num-items">1</span> Item
+      {% plural item_count %}
+        <span class="num-items">{{ item_count }}</span> Items
+      {% endtrans %}
+    </td>
+    <td class="cart-block-summary-total">
+      <strong>{{ 'Total'|t }}:</strong> {{ total }}
+    </td>
+  </tr>
+</table>
+
+{% if items %}
+  {{ summary_links }}
+{% endif %}

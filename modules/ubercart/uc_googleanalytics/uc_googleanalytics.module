@@ -1,0 +1,191 @@
+<?php
+
+/**
+ * @file
+ * Adds the required Javascript to the checkout completion page to allow
+ * e-commerce statistics tracking through Google Analytics.
+ *
+ * Refer to http://code.google.com/apis/analytics/docs/gaTrackingEcommerce.html
+ * for documentation on the functions used to submit e-commerce statistics to
+ * Google Analytics.
+ */
+
+use Drupal\Component\Serialization\Json;
+use Drupal\uc_order\Entity\Order;
+use Drupal\uc_order\OrderInterface;
+
+/**
+ * Implements hook_enable().
+ */
+function uc_googleanalytics_enable() {
+  // Get the weight of the Google Analytics module.
+  $weight = db_query("SELECT weight FROM {system} WHERE name = :module", array(':module' => 'googleanalytics'))->fetchField();
+
+  // Update the weight of the UC Google Analytics module so its hooks get called
+  // after the actual Google Analytics module.
+  db_update('system')
+    ->fields(array('weight' => max(1000, $weight + 1)))
+    ->condition('name', 'uc_googleanalytics')
+    ->execute();
+}
+
+/**
+ * Implements hook_page_alter().
+ */
+function uc_googleanalytics_page_alter(&$page) {
+  // Check to see if we are at the order completion page.
+  if (uc_googleanalytics_display()) {
+    // If so, then if we can load the order...
+    if (!empty($_SESSION['ucga_order_id']) && $order = Order::load($_SESSION['ucga_order_id'])) {
+      // Build the GA tracking code.
+      $script = uc_googleanalytics_ecommerce_js($order);
+
+      // Add the code to the footer.
+      drupal_add_js($script, array('type' => 'inline', 'scope' => 'footer', 'preprocess' => FALSE));
+    }
+
+    // Clean out the session variable.
+    if (isset($_SESSION['ucga_order_id'])) {
+      unset($_SESSION['ucga_order_id']);
+    }
+  }
+}
+
+/**
+ * Implements hook_uc_order_create().
+ */
+function uc_googleanalytics_uc_order_create(OrderInterface $order) {
+  // If a new order is created during the checkout process...
+  // Store the order ID for later use.
+  $_SESSION['ucga_order_id'] = $order->id();
+}
+
+/**
+ * Determine whether or not to display the e-commerce related JS through GA.
+ *
+ * @return
+ *   TRUE or FALSE indicating whether or not to display the GA e-commerce JS.
+ */
+function uc_googleanalytics_display() {
+  // Display the GA e-commerce JS if the URL is cart/checkout/complete...
+  if (arg(0) == 'cart' && arg(1) == 'checkout' && arg(2) == 'complete') {
+    return TRUE;
+  }
+
+  // Or if another module says this is the page through hook_ucga_display().
+  foreach (\Drupal::moduleHandler()->invokeAll('ucga_display') as $result) {
+    if ($result === TRUE) {
+      return TRUE;
+    }
+  }
+
+  // Otherwise return FALSE.
+  return FALSE;
+}
+
+/**
+ * Build the e-commerce JS passed to Google Analytics for order tracking.
+ *
+ * @param $order
+ *   The fully loaded order object to convert into GA JS.
+ *
+ * @return
+ *   The JS that should be added to the page footer.
+ */
+function uc_googleanalytics_ecommerce_js($order) {
+  $script = '';
+
+  // Calculate order tax and shipping totals.
+  $order->tax_total = 0;
+  $order->shipping_total = 0;
+
+  foreach ($order->line_items as $line_item) {
+    if ($line_item['type'] == 'tax') {
+      $order->tax_total += $line_item['amount'];
+    }
+    elseif ($line_item['type'] == 'shipping') {
+      $order->shipping_total += $line_item['amount'];
+    }
+  }
+
+  // Build the transaction arguments.
+  $country = \Drupal::service('country_manager')->getCountry($order->billing_country);
+  $trans = array(
+    'order_id' => $order->id(),
+    'store' => uc_store_name(),
+    'total' => $order->getTotal(),
+    'tax' => $order->tax_total,
+    'shipping' => $order->shipping_total,
+    'city' => $order->billing_city,
+    'state' => $country->zones[$order->billing_zone_name],
+    'country' => $country->name,
+  );
+
+  // Allow modules to alter the transaction arguments.
+  \Drupal::moduleHandler()->alter('ucga_trans', $trans, $order);
+
+  // Put the arguments into an array that is safe to implode directly.
+  $args = array(
+    '"' . $trans['order_id'] . '"',
+    Json::encode($trans['store']),
+    '"' . $trans['total'] . '"',
+    '"' . $trans['tax'] . '"',
+    '"' . $trans['shipping'] . '"',
+    Json::encode($trans['city']),
+    Json::encode($trans['state']),
+    Json::encode($trans['country']),
+  );
+
+  // Add the transaction line to the JS.
+  $script .= '_gaq.push(["_addTrans", ' . implode(', ', $args) . ']);';
+
+  // Loop through the products on the order.
+  foreach ($order->products as $product) {
+    $product->category = '';
+
+    // Try to find a category (term) for the product. Since products most often
+    // only have one category, the first one returned (in the
+    // $node->taxonomy_catalog) is chosen.
+    if (\Drupal::moduleHandler()->moduleExists('taxonomy')) {
+      $node = node_load($product->nid);
+      if (isset($node->taxonomy_catalog[LANGUAGE_NOT_SPECIFIED][0]['tid'])) {
+        $term = taxonomy_term_load($node->taxonomy_catalog[LANGUAGE_NOT_SPECIFIED][0]['tid']);
+        $product->category = $term->name;
+      }
+    }
+    if (empty($product->category)) {
+      $product->category = t('No category');
+    }
+
+    // Build the item arguments.
+    $item = array(
+      'order_id' => $order->id(),
+      'sku' => $product->model,
+      'name' => $product->title,
+      'category' => $product->category,
+      'price' => $product->price,
+      'qty' => $product->qty,
+    );
+
+    // Allow modules to alter the item arguments.
+    \Drupal::moduleHandler()->alter('ucga_item', $item, $product, $trans, $order);
+
+    // Put the arguments into an array that is safe to implode directly.
+    $args = array(
+      '"' . $item['order_id'] . '"',
+      Json::encode($item['sku']),
+      Json::encode($item['name']),
+      Json::encode((string) $item['category']),
+      '"' . $item['price'] . '"',
+      '"' . $item['qty'] . '"',
+    );
+
+    // Add the item line to the JS.
+    $script .= '_gaq.push(["_addItem", ' . implode(', ', $args) . ']);';
+  }
+
+  // Add the function to submit the transaction to GA.
+  $script .= '_gaq.push(["_trackTrans"]);';
+
+  return $script;
+}

@@ -1,0 +1,76 @@
+<?php
+
+/**
+ * @file
+ * Feeds Tamper hook implementations.
+ */
+
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\feeds\FeedTypeInterface;
+
+/**
+ * Implements hook_entity_operation().
+ */
+function feeds_tamper_entity_operation(EntityInterface $entity) {
+  $operations = [];
+
+  if ($entity->getEntityTypeId() != 'feeds_feed_type') {
+    // Feeds Tamper only provides operations for feed types.
+    return [];
+  }
+
+  $account = \Drupal::currentUser();
+  if (!$account->hasPermission('administer feeds_tamper') && !$account->hasPermission('tamper ' . $entity->id())) {
+    // No access.
+    return [];
+  }
+
+  return [
+    'tamper' => [
+      'title' => t('Tamper'),
+      'url' => $entity->toUrl('tamper'),
+      // Appear after operation "mapping".
+      'weight' => 12,
+    ],
+  ];
+}
+
+/**
+ * Implements hook_menu_links_discovered_alter().
+ */
+function feeds_tamper_menu_links_discovered_alter(&$links) {
+  // Add "Tamper" link for each feed type.
+  foreach (\Drupal::entityTypeManager()->getStorage('feeds_feed_type')->loadMultiple() as $machine_name => $bundle) {
+    $links['entity.feeds_feed_type.tamper' . $machine_name] = [
+      'title' => t('Tamper'),
+      'route_name' => 'entity.feeds_feed_type.tamper',
+      'menu_name' => 'admin',
+      'parent' => 'entity.feeds_feed_type.edit_form.' . $machine_name,
+      'route_parameters' => ['feeds_feed_type' => $machine_name],
+      'weight' => 0,
+    ];
+  }
+}
+
+/**
+ * Implements hook_entity_type_alter().
+ *
+ * Adds link template for tamper operation to the feed type entity.
+ */
+function feeds_tamper_entity_type_alter(array &$entity_types) {
+  if (isset($entity_types['feeds_feed_type'])) {
+    $entity_types['feeds_feed_type']->setLinkTemplate('tamper', '/admin/structure/feeds/manage/{feeds_feed_type}/tamper');
+  }
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_presave() for 'feeds_feed_type'.
+ *
+ * Remove tamper plugin instances for removed mappers.
+ */
+function feeds_tamper_feeds_feed_type_presave(FeedTypeInterface $feed_type) {
+  /** @var \Drupal\feeds_tamper\FeedTypeTamperMetaInterface $feed_type_tamper_meta */
+  $feed_type_tamper_meta = \Drupal::service('feeds_tamper.feed_type_tamper_manager')
+    ->getTamperMeta($feed_type)
+    ->rectifyInstances();
+}

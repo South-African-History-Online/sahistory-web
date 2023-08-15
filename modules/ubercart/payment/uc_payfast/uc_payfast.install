@@ -1,0 +1,118 @@
+<?php
+
+/**
+ * @file
+ * Installs the tables required by The Ubercart PayFast payment method.
+ * Except as expressly indicated in this licence, you may not use, copy, modify or distribute this plugin / code or part thereof in any way.
+ */
+
+/**
+ * Implements hook_schema().
+ */
+function uc_payfast_schema() {
+  $schema = array();
+
+    $schema['uc_payfast_itn'] = array(
+    'description' => 'Stores processed ITNs.',
+    'fields' => array(
+      'itn_id' => array(
+        'description' => 'Serial numeric ID of the ITN in the local database.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'pf_payment_id' => array(
+        'description' => 'The PayFast payment ID.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'merchant_id' => array(
+        'description' => 'The merchant_id of the payment receiever.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'email_address' => array(
+        'description' => 'The e-mail of the payer.',
+        'type' => 'varchar',
+        'length' => 255,
+        'default' => '',
+      ),
+      'order_id' => array(
+        'description' => 'The order ID the payment belongs to.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'transaction_id' => array(
+        'description' => 'The payment transaction ID the payment belongs to.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'amount_gross' => array(
+        'description' => 'The gross payment amount.',
+        'type' => 'numeric',
+        'size' => 'normal',
+        'precision' => 10,
+        'scale' => 2,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'amount_fee' => array(
+        'description' => 'The amount of fees collected by PayFast for this payment.',
+        'type' => 'numeric',
+        'size' => 'normal',
+        'precision' => 10,
+        'scale' => 2,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'payment_status' => array(
+        'description' => 'The status of the payment at PayFast.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'server' => array(
+        'description' => 'The server used to process the payment.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'created' => array(
+        'description' => 'The Unix timestamp when the ITN was received.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'changed' => array(
+        'description' => 'The Unix timestamp when the ITN was last updated.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'primary key' => array('itn_id'),
+    'foreign keys' => array(
+      'order_id' => array(
+        'table' => 'uc_orders',
+        'columns' => array(
+          'order_id' => 'order_id',
+        ),
+      ),
+    ),
+    'indexes' => array(
+      'pf_payment_id' => array('pf_payment_id'),
+    ),
+  );
+
+  return $schema;
+}

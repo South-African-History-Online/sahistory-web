@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+
+		<!-- Don't forget to change the title! -->
+		<title>Theme 7 - Count Everest jQuery Plugin</title>
+		
+		<!-- Load Google Fonts -->
+		<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Exo:100">
+		
+		<!-- Load stylesheet -->
+		<link rel="stylesheet" href="css/counteverest.css">
+
+		<!-- DEMO styles to center countdown vertically and horizontally -->
+		<style type="text/css">
+			html {
+				display: table;
+				height: 100%;
+				width: 100%;
+			}
+
+			body {
+				background: #292929;
+				display: table-cell;
+				margin: 0;
+				padding: 0;
+				vertical-align: middle;
+			}
+
+			.ce-countdown {
+				margin: 0 auto;
+				max-width: 800px;
+				text-align: center;
+			}
+		</style>
+	</head>
+	<body>
+		
+		<!-- Nothing to change here -->
+		<div class="ce-countdown ce-countdown--theme-7">
+			<span class="ce-digits ce-hours"></span> :
+			<span class="ce-digits ce-minutes"></span> :
+			<span class="ce-digits ce-seconds"></span>
+		</div>
+
+		<!-- Load all necessary JavaScript files -->
+		<script src="js/vendor/jquery-1.11.2.min.js"></script>
+		<script src="js/vendor/jquery.counteverest.min.js"></script>
+
+		<!-- Init Count Everest plugin -->
+		<script>
+			$(document).ready(function() {
+
+				$('.ce-countdown').countEverest({
+					//Set your target date here!
+					day: 1,
+					month: 1,
+					year: 2016,
+					onChange: function() {
+						countEverestAnimate($('.ce-digits span'));
+					}
+				});
+
+				function countEverestAnimate($el) {
+					$el.each( function() {
+						var $this = $(this),
+							fieldText = $this.text(),
+							fieldData = $this.attr('data-value'),
+							fieldOld = $this.attr('data-old');
+
+						if (typeof fieldOld === 'undefined') {
+							$this.attr('data-old', fieldText);
+						}
+
+						if (fieldText != fieldData) {
+							$this
+								.attr('data-value', fieldText)
+								.attr('data-old', fieldData)
+								.addClass('ce-animate');
+
+							window.setTimeout(function() {
+								$this
+									.removeClass('ce-animate')
+									.attr('data-old', fieldText);
+							}, 300);
+						}
+					});
+				}
+			});
+		</script>
+	</body>
+</html>

@@ -1,0 +1,292 @@
+<?php
+
+/**
+ * @file
+ * Defines the credit card payment method and hooks in payment gateways.
+ */
+
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Url;
+
+/** Just authorize an amount on a credit card account. */
+define('UC_CREDIT_AUTH_ONLY', 'authorize');
+
+/** Capture funds from a prior authorization. */
+define('UC_CREDIT_PRIOR_AUTH_CAPTURE', 'prior_auth_capture');
+
+/** Authorize and capture money all at once. */
+define('UC_CREDIT_AUTH_CAPTURE', 'auth_capture');
+
+/** Set up a credit card reference through the payment gateway. */
+define('UC_CREDIT_REFERENCE_SET', 'reference_set');
+
+/** Capture funds using a credit card reference. */
+define('UC_CREDIT_REFERENCE_TXN', 'reference_txn');
+
+/** Remove a reference from the payment gateway. */
+define('UC_CREDIT_REFERENCE_REMOVE', 'reference_remove');
+
+/** Credit funds to a reference at the payment gateway. */
+define('UC_CREDIT_REFERENCE_CREDIT', 'reference_credit');
+
+/** Credit funds to a credit card account. */
+define('UC_CREDIT_CREDIT', 'credit');
+
+/** Void a transaction before the transaction clears. */
+define('UC_CREDIT_VOID', 'void');
+
+
+/** Name of encryption key file. */
+define('UC_CREDIT_KEYFILE_NAME', 'uc_credit.key');
+
+
+/**
+ * Implements hook_help().
+ */
+function uc_credit_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    case 'uc_credit.terminal':
+      return '<p>' . t('Use this terminal to process credit card payments through your default gateway.') . '</p>';
+  }
+}
+
+/**
+ * Implements hook_theme().
+ */
+function uc_credit_theme() {
+  return array(
+    'uc_credit_cvv_help' => array(
+      'variables' => array('method' => ''),
+      'file' => 'uc_credit.theme.inc',
+      'function' => 'theme_uc_credit_cvv_help',
+    ),
+  );
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter() for uc_cart_checkout_review_form().
+ */
+function uc_credit_form_uc_cart_checkout_review_form_alter(&$form, FormStateInterface $form_state) {
+  // Encrypted data in the session is from the user coming from the checkout.
+  $session = \Drupal::service('session');
+  if ($session->has('sescrd')) {
+    $form['sescrd'] = array(
+      '#type' => 'hidden',
+      '#value' => base64_encode($session->get('sescrd')),
+    );
+    $session->remove('sescrd');
+  }
+  elseif (isset($_POST['sescrd'])) {
+    // Copy and cache encrypted data that was POSTed in.
+    $form['sescrd'] = array(
+      '#type' => 'hidden',
+      '#value' => $_POST['sescrd'],
+    );
+    uc_credit_cache(base64_decode($_POST['sescrd']));
+  }
+
+  // Add submit handler to preserve CC details for the back button.
+  $form['actions']['back']['#submit'][] = 'uc_credit_cart_review_back_submit';
+}
+
+/**
+ * Store the temporary CC data again if the back button is pressed.
+ */
+function uc_credit_cart_review_back_submit($form, FormStateInterface $form_state) {
+  if ($form_state->hasValue('sescrd')) {
+    \Drupal::service('session')->set('sescrd', base64_decode($form_state->getValue('sescrd')));
+  }
+}
+
+/**
+ * Implements hook_uc_store_status().
+ */
+function uc_credit_uc_store_status() {
+  // Throw up an error row if encryption has not been set up yet.
+  if ($key = uc_credit_encryption_key()) {
+    $statuses[] = array(
+      'status' => 'ok',
+      'title' => t('Credit card encryption'),
+      'desc' => t('Credit card data is encrypted during checkout for maximum security.'),
+    );
+  }
+  else {
+    $statuses[] = array(
+      'status' => 'error',
+      'title' => t('Credit card encryption'),
+      'desc' => t('You must review your <a href=":url">credit card security settings</a> and enable encryption before you can accept credit card payments.', [':url' => Url::fromRoute('uc_credit.settings')->toString()]),
+    );
+  }
+
+  return $statuses;
+}
+
+/**
+ * Caches CC details on a pageload for use in various functions.
+ *
+ * @param string $data
+ *   The encrypted, serialized string containing the CC data.
+ * @param bool $encrypted
+ *   TRUE if the data is encrypted, FALSE otherwise.
+ *
+ * @return array
+ *   An array of credit card details.
+ */
+function uc_credit_cache($data = NULL, $encrypted = TRUE) {
+  // The CC data will be stored in this static variable.
+  $cache = &drupal_static(__FUNCTION__, array());
+
+  if ($data) {
+    if ($encrypted) {
+      // Initialize the encryption key and class.
+      $key = uc_credit_encryption_key();
+      $crypt = \Drupal::service('uc_store.encryption');
+
+      // Save the unencrypted CC details for the duration of this request.
+      $data = @unserialize(base64_decode($crypt->decrypt($key, $data)));
+    }
+    $cache = $data;
+  }
+
+  return $cache;
+}
+
+/**
+ * Loads the key for CC number encryption from a file.
+ *
+ * Path to key file is stored in system variable 'uc_credit_encryption_path'.
+ * Key file name is stored in constant UC_CREDIT_KEYFILE_NAME.
+ *
+ * @return string|false
+ *   Key, or FALSE if no encryption key is found.
+ */
+function uc_credit_encryption_key() {
+  static $key = FALSE;
+
+  if (empty($key)) {
+    $config = \Drupal::config('uc_credit.settings');
+    $key_file = $config->get('encryption_path') . '/' . UC_CREDIT_KEYFILE_NAME;
+    $contents = @file_get_contents($key_file);
+    if (strlen($contents) == 32) {
+      $key = $contents;
+    }
+  }
+
+  return $key;
+}
+
+/**
+ * Returns an array of default credit card transaction types.
+ */
+function uc_credit_transaction_types() {
+  $types = array(
+    UC_CREDIT_AUTH_ONLY => t('Authorization only'),
+    UC_CREDIT_PRIOR_AUTH_CAPTURE => t('Prior authorization capture'),
+    UC_CREDIT_AUTH_CAPTURE => t('Authorize and capture immediately'),
+    UC_CREDIT_REFERENCE_TXN => t('Reference transaction'),
+  );
+
+  return $types;
+}
+
+/**
+ * Stores a credit card authorization to an order's data array.
+ *
+ * @param int $order_id
+ *   The order associated with the credit card authorization.
+ * @param string $auth_id
+ *   The payment service's ID for the authorization.
+ * @param float $amount
+ *   The amount that was authorized on the card.
+ *
+ * @return array
+ *   The entire updated data array for the order.
+ */
+function uc_credit_log_authorization($order_id, $auth_id, $amount) {
+  // Load the existing order data array.
+  $data = db_query("SELECT data FROM {uc_orders} WHERE order_id = :id", [':id' => $order_id])->fetchField();
+  $data = unserialize($data);
+
+  // Add the authorization to the cc_txns.
+  $data['cc_txns']['authorizations'][$auth_id] = array(
+    'amount' => $amount,
+    'authorized' => REQUEST_TIME,
+  );
+
+  // Save the updated data array to the database.
+  db_update('uc_orders')
+    ->fields(array('data' => serialize($data)))
+    ->condition('order_id', $order_id)
+    ->execute();
+
+  return $data;
+}
+
+/**
+ * Logs the capture of a prior authorization to an order's data array.
+ *
+ * @param int $order_id
+ *   The order associated with the credit card capture.
+ * @param string $auth_id
+ *   The payment service's ID for the authorization that was captured.
+ *
+ * @return array|false
+ *   The entire updated data array for the order or FALSE to indicate the
+ *   specified authorization was not found.
+ */
+function uc_credit_log_prior_auth_capture($order_id, $auth_id) {
+  // Load the existing order data array.
+  $data = db_query("SELECT data FROM {uc_orders} WHERE order_id = :id", [':id' => $order_id])->fetchField();
+  $data = unserialize($data);
+
+  // Return FALSE if we can't find the authorization.
+  if (empty($data['cc_txns']['authorizations'][$auth_id])) {
+    return FALSE;
+  }
+
+  // Otherwise log the capture timestamp to the authorization.
+  $data['cc_txns']['authorizations'][$auth_id]['captured'] = REQUEST_TIME;
+
+  // Save the updated data array to the database.
+  db_update('uc_orders')
+    ->fields(array('data' => serialize($data)))
+    ->condition('order_id', $order_id)
+    ->execute();
+
+  return $data;
+}
+
+/**
+ * Logs a credit card reference to an order's data array.
+ *
+ * @param int $order_id
+ *   The order associated with the credit card details.
+ * @param string $ref_id
+ *   The payment service's ID for the reference that may be used to charge the
+ *     same credit card at a later date.
+ * @param string $cc_number
+ *   The credit card number associated with this reference. Only the last 4
+ *     digits will be stored.
+ *
+ * @return array
+ *   The entire updated data array for the order.
+ */
+function uc_credit_log_reference($order_id, $ref_id, $cc_number) {
+  // Load the existing order data array.
+  $data = db_query("SELECT data FROM {uc_orders} WHERE order_id = :id", [':id' => $order_id])->fetchField();
+  $data = unserialize($data);
+
+  $data['cc_txns']['references'][$ref_id] = array(
+    'card' => substr($cc_number, -4),
+    'created' => REQUEST_TIME,
+  );
+
+  // Save the updated data array to the database.
+  db_update('uc_orders')
+    ->fields(array('data' => serialize($data)))
+    ->condition('order_id', $order_id)
+    ->execute();
+
+  return $data;
+}

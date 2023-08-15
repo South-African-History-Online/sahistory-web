@@ -1,0 +1,11 @@
+services:
+  plugin.manager.uc_cart.checkout_pane:
+    class: Drupal\uc_cart\Plugin\CheckoutPaneManager
+    parent: default_plugin_manager
+  uc_cart.breadcrumb:
+    class: Drupal\uc_cart\CartBreadcrumbBuilder
+    tags:
+      - { name: breadcrumb_builder, priority: 100 }
+  uc_cart.manager:
+    class: Drupal\uc_cart\CartManager
+    arguments: ['@current_user', '@session']

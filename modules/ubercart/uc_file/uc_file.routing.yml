@@ -1,0 +1,67 @@
+uc_file.downloads:
+  path: '/admin/store/products/files'
+  defaults:
+    _controller: '\Drupal\uc_file\Controller\FileController::show'
+    _title: 'View file downloads'
+  requirements:
+    _permission: 'administer products'
+
+uc_file.show:
+  path: '/admin/store/products/files/show'
+  defaults:
+    _form: '\Drupal\uc_file\Form\ShowForm'
+    _title: 'View file downloads'
+  requirements:
+    _permission: 'administer products'
+
+uc_file.action:
+  path: '/admin/store/products/files/action'
+  defaults:
+    _form: '\Drupal\uc_file\Form\ActionForm'
+    _title: 'View file downloads'
+  requirements:
+    _permission: 'administer products'
+
+uc_file.delete:
+  path: '/admin/store/products/files/delete'
+  defaults:
+    _form: '\Drupal\uc_file\Form\FileDeleteForm'
+    _title: 'Delete file(s)'
+  requirements:
+    _permission: 'administer products'
+
+uc_file.upload:
+  path: '/admin/store/products/files/upload'
+  defaults:
+    _form: '\Drupal\uc_file\Form\FileUploadForm'
+    _title: 'Upload file(s)'
+  requirements:
+    _permission: 'administer products'
+
+uc_file.download_file:
+  path: '/download/{file}'
+  defaults:
+    _controller: '\Drupal\uc_file\Controller\DownloadController::download'
+    _title: 'Download file'
+  requirements:
+    _permission: 'download file'
+    _csrf_token: 'TRUE'
+
+uc_file.user_downloads:
+  path: '/user/{user}/purchased-files'
+  defaults:
+    _controller: '\Drupal\uc_file\Controller\DownloadController::userDownloads'
+    _title: 'Files'
+#   _description: 'View your purchased files'
+  requirements:
+    _custom_access: '\Drupal\uc_file\Controller\DownloadController::accessUserDownloads'
+  options:
+    _admin_route: TRUE
+    user: \d+
+
+uc_file.autocomplete_filename:
+  path: '/file/autocomplete'
+  defaults:
+    _controller: '\Drupal\uc_file\Controller\FileAutocompleteController::autocompleteFilename'
+  requirements:
+    _permission: 'administer product features'

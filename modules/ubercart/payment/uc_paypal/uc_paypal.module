@@ -1,0 +1,37 @@
+<?php
+
+/**
+ * @file
+ * Integrates various PayPal payment services and IPN with Ubercart.
+ *
+ * You should turn on Instant Payment Notifications in your PayPal profile and
+ * set the IPN URL to http://{yoursite.com}/uc_paypal/ipn. See
+ * https://drupal.org/node/1311198 for further information.
+ */
+
+use Drupal\Core\Routing\RouteMatchInterface;
+
+/**
+ * Implements hook_help().
+ */
+function uc_paypal_help($route_name, RouteMatchInterface $route_match) {
+  // @todo: write better help!
+  // Provide information and instructions on the payment method add form.
+  if ($route_name == 'entity.uc_payment_method.add_form') {
+    if ($route_match->getRawParameter('plugin_id') == 'paypal_ec') {
+      return '<p>' . t('PayPal Express Checkout settings help.') . '</p>';
+    }
+    elseif ($route_match->getRawParameter('plugin_id') == 'paypal_wps') {
+      return '<p>' . t('PayPal Payments Standard settings help.') . '</p>';
+    }
+  }
+  // Provide information and instructions on the payment method edit form.
+  elseif ($route_name == 'entity.uc_payment_method.edit_form') {
+    if ($route_match->getParameter('uc_payment_method')->getPlugin()->getPluginId() == 'paypal_ec') {
+      return '<p>' . t('PayPal Express Checkout settings help.') . '</p>';
+    }
+    elseif ($route_match->getParameter('uc_payment_method')->getPlugin()->getPluginId() == 'paypal_wps') {
+      return '<p>' . t('PayPal Payments Standard settings help.') . '</p>';
+    }
+  }
+}

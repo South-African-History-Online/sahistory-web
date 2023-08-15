@@ -1,0 +1,60 @@
+uc_cart.cart_settings:
+  path: '/admin/store/config/cart'
+  defaults:
+    _form: '\Drupal\uc_cart\Form\CartSettingsForm'
+    _title: 'Cart settings'
+  requirements:
+    _permission: 'administer store'
+
+uc_cart.checkout_settings:
+  path: '/admin/store/config/checkout'
+  defaults:
+    _form: '\Drupal\uc_cart\Form\CheckoutSettingsForm'
+    _title: 'Checkout settings'
+  requirements:
+    _permission: 'administer store'
+
+uc_cart.cart:
+  path: '/cart'
+  defaults:
+    _controller: '\Drupal\uc_cart\Controller\CartController::listing'
+    _title: 'Shopping cart'
+  requirements:
+    _permission: 'access content'
+
+uc_cart.checkout:
+  path: '/cart/checkout'
+  defaults:
+    _title: 'Checkout'
+    _controller: '\Drupal\uc_cart\Controller\CheckoutController::checkout'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE
+
+uc_cart.checkout_review:
+  path: '/cart/checkout/review'
+  defaults:
+    _title: 'Review order'
+    _controller: '\Drupal\uc_cart\Controller\CheckoutController::review'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE
+
+uc_cart.checkout_complete:
+  path: '/cart/checkout/complete'
+  defaults:
+    _title: 'Order complete'
+    _controller: '\Drupal\uc_cart\Controller\CheckoutController::complete'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE
+
+uc_cart.empty:
+  path: '/cart/empty'
+  defaults:
+    _form: '\Drupal\uc_cart\Form\EmptyCartForm'
+  requirements:
+    _permission: 'access content'

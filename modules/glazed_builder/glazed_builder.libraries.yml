@@ -1,0 +1,287 @@
+# Glazed Builder Libraries
+
+core:
+  version: VERSION
+  css:
+    theme:
+      glazed_builder/css/glazed_builder.css: {}
+
+file.upload:
+  version: VERSION
+  js:
+    js/file-upload/js/vendor/jquery.ui.widget.js: {}
+    js/file-upload/js/jquery.iframe-transport.js: {}
+    js/file-upload/js/jquery.fileupload.js: {}
+    js/file-upload/js/jquery.fileupload-process.js: {}
+    js/file-upload/js/jquery.fileupload-validate.js: {}
+  dependencies:
+    - core/jquery
+
+editor.core:
+  version: VERSION
+  css:
+    theme:
+      css/ac_drupal.css: {}
+      glazed_builder/vendor/et-line-font/et-line-font.css: {}
+      glazed_builder/vendor/pe-icon-7-stroke/css/pe-icon-7-stroke.css: {}
+      glazed_builder/css/glazed_builder_backend.css: {}
+  js:
+    js/ac_drupal.js: { weight: -7 }
+    glazed_builder/vendor/bootstrap-notify/bootstrap-notify.min.js: { minified: true }
+  dependencies:
+    - core/jquery
+    - core/drupalSettings
+    - core/jquery.once
+    - core/jquery.ui.sortable
+    - glazed_builder/file.upload
+
+editor.frontend:
+  version: VERSION
+  js:
+    glazed_builder/glazed_frontend.min.js: { minified: true }
+  dependencies:
+    - core/jquery
+    - core/drupalSettings
+    - core/jquery.once
+
+editor.frontend_dev:
+  version: VERSION
+  js:
+    glazed_builder/glazed_frontend.js: {}
+  dependencies:
+    - core/drupalSettings
+    - core/jquery.once
+
+development:
+  version: VERSION
+  js:
+    glazed_builder/glazed_param_types.js: { weight: -5 }
+    glazed_builder/glazed_elements.js: { weight: -4 }
+    glazed_builder/glazed_builder.js: { weight: -3 }
+  dependencies:
+    - glazed_builder/editor.core
+
+production:
+  version: VERSION
+  js:
+    glazed_builder/glazed_param_types.min.js: { minified: true, weight: -5 }
+    glazed_builder/glazed_elements.min.js: { minified: true, weight: -4 }
+    glazed_builder/glazed_builder.min.js: { minified: true, weight: -3 }
+  dependencies:
+    - glazed_builder/editor.core
+
+vendor_base:
+  version: VERSION
+  js:
+    glazed_builder/vendor/underscore/underscore-min.js: { minified: true, weight: -10 }
+
+bootstrap_full:
+  version: VERSION
+  css:
+    theme:
+      glazed_builder/vendor/bootstrap/css/bootstrap.min.css: { minified: true, weight: -10 }
+  js:
+    glazed_builder/vendor/bootstrap/js/bootstrap.min.js: { minified: true, weight: -10 }
+  dependencies:
+    - glazed_builder/vendor_base
+
+bootstrap_light:
+  version: VERSION
+  css:
+    theme:
+      glazed_builder/vendor/bootstrap-custom/css/bootstrap.min.css: { minified: true, weight: -10 }
+  js:
+    glazed_builder/vendor/bootstrap-custom/js/bootstrap.min.js: { minified: true, weight: -10 }
+  dependencies:
+    - glazed_builder/vendor_base
+
+uninstall_page:
+  js:
+    js/uninstall_page.js: {}
+  dependencies:
+    - core/jquery
+    - core/jquery.once
+    - core/drupalSettings
+
+entity_browser_selection:
+  js:
+    js/entity_browser.media_selection.js: {}
+
+# Modal Elements Libraries
+
+elements.waypoints:
+  version: VERSION
+  js:
+    glazed_builder/vendor/jquery.waypoints/lib/jquery.waypoints.min.js: { minified: true }
+
+elements.animate:
+  version: VERSION
+  css:
+    theme:
+      glazed_builder/vendor/animate.css/animate.min.css: { minified: true }
+
+elements.ytplayer:
+  version: VERSION
+  css:
+    theme:
+      glazed_builder/vendor/jquery.mb.YTPlayer/dist/css/jquery.mb.YTPlayer.min.css: { minified: true }
+  js:
+    glazed_builder/vendor/jquery.mb.YTPlayer/dist/jquery.mb.YTPlayer.min.js: { minified: true }
+
+elements.owlcarousel:
+  version: VERSION
+  css:
+    theme:
+      glazed_builder/vendor/owl.carousel/owl-carousel/owl.carousel.css: { minified: false }
+      glazed_builder/vendor/owl.carousel/owl-carousel/owl.transitions.css: { minified: false }
+      glazed_builder/css/st-owl-carousel.css: { minified: true }
+  js:
+    glazed_builder/vendor/owl.carousel/owl-carousel/owl.carousel.js: { minified: true }
+
+elements.icon_helpers:
+  version: VERSION
+  css:
+    theme:
+      glazed_builder/css/icon-helpers.css: { minified: true }
+
+elements.et_line_font:
+  version: VERSION
+  css:
+    theme:
+      glazed_builder/vendor/et-line-font/et-line-font.css: { minified: true }
+
+elements.material_icons:
+  version: VERSION
+  css:
+    theme:
+      glazed_builder/vendor/material-icons/material-icons.css: { minified: true }
+
+elements.font_awesome:
+  version: VERSION
+  css:
+    theme:
+      glazed_builder/vendor/font-awesome/css/font-awesome.min.css: { minified: true }
+
+elements.font_awesome_5_pro:
+  version: VERSION
+  css:
+    theme:
+      glazed_builder/vendor/font-awesome-5-pro/css/fontawesome-all.min.css: { minified: true }
+
+elements.pe_icon_7_stroke:
+  version: VERSION
+  css:
+    theme:
+      glazed_builder/vendor/pe-icon-7-stroke/css/pe-icon-7-stroke.css: { minified: true }
+
+elements.circliful:
+  version: VERSION
+  css:
+    theme:
+      glazed_builder/vendor/jquery.circliful/css/jquery.circliful.css: { minified: false }
+  js:
+    glazed_builder/vendor/jquery.circliful/js/jquery.circliful.min.js: { minified: true }
+  dependencies:
+    - core/jquery
+
+elements.counteverest:
+  version: VERSION
+  css:
+    theme:
+      glazed_builder/vendor/counteverest/css/counteverest.glazed.css: { minified: false }
+  js:
+    glazed_builder/vendor/counteverest/js/vendor/jquery.counteverest.min.js: { minified: true }
+
+elements.countto:
+  version: VERSION
+  js:
+    glazed_builder/vendor/jquery-countTo/jquery.countTo.min.js: { minified: true }
+
+elements.social_icons:
+  version: VERSION
+  css:
+    theme:
+      glazed_builder/css/social.css: { minified: true }
+
+
+# Sidebar Elements Libraries
+
+elements.test:
+  version: VERSION
+  css:
+    theme:
+      glazed_elements/Test Elements//test-1.css: { minified: true }
+  js:
+    glazed_elements/Test Elements/test-1.js: { minified: true }
+
+elements.cta:
+  version: VERSION
+  css:
+    theme:
+      css/elements/cta.css: { minified: true }
+
+elements.wow:
+  version: VERSION
+  js:
+    glazed_builder/vendor/WOW/dist/wow.min.js: { minified: true }
+    glazed_builder/js/glazed.wow.js: { minified: false }
+
+elements.dropshadow:
+  version: VERSION
+  css:
+    theme:
+      css/elements/dropshadow.css: { minified: true }
+
+elements.iconbox:
+  version: VERSION
+  css:
+    theme:
+      css/elements/iconbox.css: { minified: true }
+
+elements.iconwell:
+  version: VERSION
+  css:
+    theme:
+      css/elements/iconwell.css: { minified: true }
+
+elements.imagebox:
+  version: VERSION
+  css:
+    theme:
+      css/elements/imagebox.css: { minified: true }
+
+elements.pricelisting:
+  version: VERSION
+  css:
+    theme:
+      css/elements/pricelisting.css: { minified: true }
+
+elements.pricingtable:
+  version: VERSION
+  css:
+    theme:
+      css/elements/pricingtable.css: { minified: true }
+
+elements.quoteslider:
+  version: VERSION
+  css:
+    theme:
+      css/elements/quoteslider.css: { minified: true }
+
+elements.teambox:
+  version: VERSION
+  css:
+    theme:
+      css/elements/teambox.css: { minified: true }
+
+elements.timeline:
+  version: VERSION
+  css:
+    theme:
+      css/elements/timeline.css: { minified: true }
+
+configuration.profileform:
+  css:
+    theme:
+      css/profile-form.css: {}
+      glazed_builder/vendor/ckeditor/skins/moono-lisa/editor.css: {}

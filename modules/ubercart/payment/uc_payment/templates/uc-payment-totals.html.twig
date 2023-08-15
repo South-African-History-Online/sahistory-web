@@ -1,0 +1,24 @@
+{#
+/**
+ * @file
+ * Default theme implementation to display a summary of line items.
+ *
+ * Available variables:
+ * - order: The order that is being displayed.
+ * - line_items: An associative array of line items containing:
+ *   - type: Line item type.
+ *   - title: Line item title.
+ *   - amount: Line item price.
+ *
+ * @see template_preprocess_uc_payment_totals()
+ *
+ * @ingroup themeable
+#}
+<table class="uc-payment-totals">
+  {% for line in line_items %}
+    <tr class="line-item-{{ line.type }}">
+      <td class="title">{{ line.title }}:</td>
+      <td class="price">{{ line.amount }}</td>
+    </tr>
+  {% endfor %}
+</table>

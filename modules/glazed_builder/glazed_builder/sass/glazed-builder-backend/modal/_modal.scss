@@ -1,0 +1,152 @@
+@charset "UTF-8";
+
+// MODALS
+
+// Disabling the background on Modal Windows
+// Backdrops only work well when modal content is attached to the end of the page
+// In practice glazed builder and custo html snippets will add modals to the body
+// which has a lower z-index so the modal can appear behind the backdrop.
+div.modal-lg {
+  width: 900px;
+}
+div.modal-dialog {
+  padding: 0px;
+}
+.modal-backdrop {
+  z-index: -1!important;
+  width: 1px!important;
+  height: 1px!important;
+}
+.modal.glazed {
+  z-index: 5000;
+  &:before {
+    content: ' ';
+    z-index: 5000;
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background: #000000;
+    opacity: 0.1;
+  }
+  .btn-default {
+    background: #f6f6fb;
+    color: #555;
+    &:hover,
+    &:focus,
+    &:active {
+      background: #f6f6fb;
+      color: #555;
+    }
+  }
+  .btn-primary {
+    background: #0180ef;
+    color: #fff;
+    &:hover,
+    &:focus,
+    &:active {
+      background: #0180ef;
+      color: #fff;
+    }
+  }
+  .modal-dialog {
+    margin-top: 80px;
+    color: #333;
+    // @see bootstrap basethemes overrides.css
+    z-index: 5005;
+    .tab-content {
+      a {
+        color: #0180ef;
+        text-decoration: underline;
+        &:hover,
+        &:focus {
+          color: #0180ef;
+        }
+      }
+      h1, h2, h3, h4, h5, h6 {
+        color: #333;
+      }
+      .chosen-container a {
+        color: inherit;
+        text-decoration: none;
+      }
+    }
+  }
+  .modal-header {
+    border: none;
+    background: #0180ef;
+    color: #fff;
+    font-size: 14px;
+    padding: 13px 20px;
+    position: relative;
+    .modal-title {
+      font-size: 16px;
+      color: #fff;
+    }
+    .close {
+      font-size: 30px;
+      opacity: 1;
+      color: #fff;
+    }
+    .help-link {
+      font-size: 18px;
+      margin: 5px 10px 0 5px;
+    }
+    img {
+      width: 54px;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+  }
+  .modal-content {
+    border-radius: 0;
+    border: none;
+    box-shadow: $glazed-shadow-4;
+  }
+  .tab-content {
+    padding-top: 15px;
+  }
+  .modal-body {
+    border-left: 30px solid #f6f6fb;
+    position: relative;
+    min-height: 110px;
+    &:after {
+      content: ' ';
+      display: block;
+      position: absolute;
+      top: 50%;
+      left: -60px;
+      width: 90px;
+      height: 13px;
+      background: url("../images/sooperthemes.svg") no-repeat center center;
+      background-size: 90px;
+      transform: rotate(-90deg);
+    }
+    .help-block,
+    .help-inline {
+      color: #bbb;
+      font-size: 13px;
+    }
+    .help-block {
+      clear: both;
+    }
+  }
+  .modal-footer {
+    border: none;
+    padding: 0;
+    .btn {
+    border-radius: 0;
+    border: none;
+    font-size: 18px;
+    padding: 10px 20px;
+    margin: 0;
+    width: 50%;
+    }
+    .btn.save {
+      color: #fff;
+      padding: 10px 20px;
+    }
+  }
+}

@@ -1,0 +1,47 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the uc_cart module.
+ */
+
+/**
+ * Implements hook_uninstall().
+ */
+function uc_cart_uninstall() {
+  $statuses = \Drupal\uc_order\Entity\OrderStatus::loadMultiple(['abandoned']);
+  if (!empty($statuses)) {
+    $status_names = array();
+    foreach ($statuses as $status) {
+      $status_names[] = $status->label();
+      // Allow this status to be deleted manually.
+      $status->setLocked(FALSE)->save();
+    }
+    drupal_set_message(\Drupal::translation()->formatPlural(count($status_names),
+      'The order status %status has not been deleted. If you need to delete it, <a href=":url">please do so manually</a>.',
+      'The order statuses %statuses have not been deleted. If you need to delete them, <a href=":url">please do so manually</a>.',
+      array(
+        '%status' => $status_names[0],
+        '%statuses' => implode(', ', $status_names),
+        ':url' => \Drupal\Core\Url::fromRoute('uc_order.workflow')->toString(),
+      )
+    ), 'warning');
+  }
+
+  $styles = \Drupal\image\Entity\ImageStyle::loadMultiple(['uc_cart']);
+  if (!empty($styles)) {
+    $style_names = array();
+    foreach ($styles as $style) {
+      $style_names[] = $style->label();
+    }
+    drupal_set_message(\Drupal::translation()->formatPlural(count($style_names),
+      'The image style %style has not been deleted. If you need to delete it, <a href=":url">please do so manually</a>.',
+      'The image styles %styles have not been deleted. If you need to delete them, <a href=":url">please do so manually</a>.',
+      array(
+        '%style' => $style_names[0],
+        '%styles' => implode(', ', $style_names),
+        ':url' => \Drupal\Core\Url::fromRoute('entity.image_style.collection')->toString(),
+      )
+    ), 'warning');
+  }
+}

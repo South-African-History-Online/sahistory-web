@@ -1,0 +1,506 @@
+<?php
+/**
+ * @file
+ * Primarily Drupal hooks and custom functions for creating
+ * block with pop-up announcement.
+ */
+
+/**
+ * @author
+ * Sergey Serov
+ * www.sergey-serov.ru
+ */
+
+/**
+ * Implements hook_menu().
+ */
+function popup_announcement_menu() {
+  $items = array();
+
+  // for admin page
+  $items['admin/config/popup_announcement'] = array(
+    'title' => 'Popup Announcements',
+    'position' => 'right',
+    'weight' => 90,
+    'page callback' => 'system_admin_menu_block_page',
+    'access arguments' => array('administer blocks'),
+    'file' => 'system.admin.inc',
+    'file path' => drupal_get_path('module', 'system'),
+  );
+  $items['admin/config/popup_announcement/list'] = array(
+    'title' => 'List with all announcements',
+    'page callback' => 'popup_announcement_list',
+    'access arguments' => array('administer blocks'),
+    'type' => MENU_NORMAL_ITEM,
+    'file' => 'popup_announcement.admin.inc',
+    'weight' => 1,
+  );
+  $items['admin/config/popup_announcement/%/delete'] = array(
+    'title' => 'Delete',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('popup_announcement_delete_confirm', 3),
+    'access arguments' => array('administer blocks'), // @todo: access callback???
+    'weight' => 1,
+    'type' => MENU_LOCAL_TASK,
+    'context' => MENU_CONTEXT_INLINE,
+    'file' => 'popup_announcement.admin.inc',
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_block_info().
+ */
+function popup_announcement_block_info() {
+  
+  $blocks = array();
+
+  $pa = new Popup_announcement_block();
+  $bs = $pa->get_blocks();
+  
+  if (!empty($bs)) {
+    foreach ($bs as $bid => $b) {
+      $blocks['popup_announcement_' . $bid] = array(
+        'info' => $b['name'] == FALSE ? 'Popup announcement ' . $bid : $b['name'],
+        'status' => TRUE,
+        'region' => 'content',
+        'weight' => 0,
+        'visibility' => BLOCK_VISIBILITY_LISTED,
+        'pages' => '<front>',
+        'cache' => DRUPAL_NO_CACHE,
+      );      
+    }
+  }
+
+  return $blocks;
+}
+
+/**
+ * Implements hook_block_configure().
+ */
+function popup_announcement_block_configure($delta) {
+  
+  if (strstr($delta, 'popup_announcement_')) {
+    
+    $bid = substr($delta, 19);
+    
+    $pa = new Popup_announcement_block();
+    $b = $pa->get_block($bid);
+  
+    /* $form['info'] = array(
+      '#markup' => '<b>Note:</b> list with all announcements here: ' . l('admin/config/popup_announcement/list', 'admin/config/popup_announcement/list'),
+      '#weight' => 100,
+    ); */
+    
+    // override default title
+    $form['title'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Title'),
+      '#description' => t('Visible only on admin pages'),
+      '#default_value' => $b['name'],
+    );
+    $form['number_visit'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Number of visits when announcement will appear'),
+      '#description' => t('Only numbers separate by commas. Be aware: the pop-up appears at every visit if this field is empty. Default: 1,2,5'),
+      '#default_value' => $b['number_visit'],
+    );
+    $form['text'] = array(
+      '#type' => 'textarea',
+      '#title' => t('Announcement text'),
+      '#description' => t('You may use html here if necessary.'),
+      '#default_value' => $b['text'],
+    );
+    $form['width'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Announcement width'),
+      '#description' => t('In pixels. Just number. Default: 500.'),
+      '#default_value' => $b['width'],
+    );
+    $form['height'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Announcement height'),
+      '#description' => t('In pixels too. Just number. Default: 300.'),
+      '#default_value' => $b['height'],
+    );
+    $form['delay'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Delay'),
+      '#description' => t('In seconds. Just number. Default: 1.'),
+      '#default_value' => $b['delay'],
+    );
+  }
+  
+  return $form;
+}
+
+/**
+ * Implements hook_block_save().
+ */
+function popup_announcement_block_save($delta = '', $edit = array()) {
+  
+  if (strstr($delta, 'popup_announcement_')) {
+    
+    $pa = new Popup_announcement_block();
+    
+    $bid = substr($delta, 19);
+    $b = $pa->get_block($bid);   
+    
+    $b['name'] = $edit['title'];
+    $b['text'] = $edit['text'];
+    $b['number_visit'] = str_replace(' ', '', $edit['number_visit']);
+    $b['width'] = $edit['width'];
+    $b['height'] = $edit['height'];
+    $b['delay'] = empty($edit['delay']) ? 0 : $edit['delay'];
+    
+    $pa->save_block($b);
+  }
+}
+
+/**
+ * Implements hook_block_view().
+ */
+function popup_announcement_block_view($delta) {
+  
+  if (strstr($delta, 'popup_announcement_')) {
+    $bid = substr($delta, 19);
+    $block['content'] = '';
+    $block['content'] = popup_announcement_create_block($bid);
+  }
+  
+  return $block;
+}
+
+/**
+ * Implements hook_block_view_alter().
+ */
+function popup_announcement_block_view_alter(&$data, $block) {
+  if (strstr($block->delta, 'popup_announcement_')) {
+    $block->title = '';
+  }
+}
+
+/**
+ * Implements hook_cron().
+ */
+function popup_announcement_cron() {
+  // no longer than ini_set('session.cookie_lifetime', 2000000) in settings.php.
+  // ~ 23 days
+  db_delete('popup_announcement')->condition('timestamp_first_visit', REQUEST_TIME - 60 * 60 * 24 * 23, '<')->execute();
+}
+
+/**
+ * Implements hook_theme().
+ */
+function popup_announcement_theme() {
+  return array(
+    'popup_announcement' => array(
+      'template' => 'popup-announcement',
+      'arguments' => array('announcement_text' => NULL)),
+  );
+}
+
+
+/**
+ * Create block. Logic.
+ *
+ * @return string
+ *   html
+ */
+function popup_announcement_create_block($bid) {
+
+  // visitor
+  $sid = session_id(); // @todo: add column bid to db table
+  
+  $visitor = new Popup_announcement_visitor($sid);
+
+  if (!isset($_SESSION['popup_announcement'])) {
+    $_SESSION['popup_announcement'] = ''; // just string, it's enough for session
+    $visitor->create_visitor_info();
+  }
+  else {
+    $visitor->update_visitor_info();
+  }
+
+  $visit_number = $visitor->get_visit_number();
+  
+  // announcement
+  $announcement = '';
+  
+  $pa = new Popup_announcement_block();
+  $b = $pa->get_block($bid);
+    
+  $when_visible = $pa->when_visible($bid);
+
+  if (
+    ($when_visible === TRUE || in_array($visit_number, $when_visible))
+    && $visitor->is_visible() == 1
+    && $visitor->is_visible_permanent() == 1) {
+
+    $announcement = theme('popup_announcement', array('announcement_text' => $b['text']));
+
+    drupal_add_js(drupal_get_path('module', 'popup_announcement') . '/popup_announcement.js');
+    drupal_add_css(drupal_get_path('module', 'popup_announcement') . '/popup_announcement.css');
+
+    $settings_for_js = array(
+      'width' => $b['width'],
+      'height' => $b['height'],
+      'delay' => $b['delay'],
+    );
+    drupal_add_js(array('popup_announcement' => $settings_for_js), 'setting');
+
+    $q = db_update('popup_announcement')
+      ->fields(array('is_visible' => 0))
+      ->condition('sid', $sid)
+      ->execute();
+  }
+
+  return $announcement;
+}
+
+/**
+ * Class for work with block with announcements
+ */
+class Popup_announcement_block {
+  
+  /**
+   * Get blocks
+   */  
+  public function get_blocks() {
+    
+    return variable_get('popup_announcement_blocks');
+  }
+  
+  /**
+   * Get block
+   */
+  public function get_block($bid) {
+    
+    $bs = $this->get_blocks();
+    
+    return $bs[$bid];
+  }
+  
+  /**
+   * Save block
+   */
+  public function save_block($b) {
+    
+    $bs = $this->get_blocks();
+    $bid = $b['bid'];
+    
+    // edit old block
+    if ($bid) {
+      $bs[$bid] = $b;
+    }
+    // edit new block, just created
+    else {
+      $bs[] = $b;
+      end($bs);
+      $bid = key($bs);
+      
+      // rewrite key (bid)
+      $bs[$bid]['bid'] = $bid;
+    }    
+    
+    variable_set('popup_announcement_blocks', $bs);
+    
+    block_flush_caches();
+    
+    return $bid;
+  }
+  
+  /**
+   * Create new block with fields
+   */
+  public function create_block() {
+    
+    // welcome text on current language
+    $default_language = language_default();
+    $welcomes = scandir(DRUPAL_ROOT . '/' . drupal_get_path('module', 'popup_announcement') . '/welcomes');
+
+    $f = in_array($default_language->language . '.html', $welcomes) ? $default_language->language . '.html' : 'en.html';
+
+    $text = file_get_contents(DRUPAL_ROOT . '/' . drupal_get_path('module', 'popup_announcement') . '/welcomes/' . $f);
+    
+    return array(
+      'bid' => FALSE,
+      'name' => FALSE,
+      'text' => $text,
+      'number_visit' => '1,2,5',
+      'width' => 500,
+      'height' => 300,
+      'created' => time(),
+      'delay' => 2,
+    );
+  }
+  
+  /**
+   * Delete block
+   */
+  function delete_block($bid) {
+    
+    $bs = $this->get_blocks();
+    unset($bs[$bid]);    
+    
+    variable_set('popup_announcement_blocks', $bs);
+
+    // @todo: travel in debugger when uninstalling module -> find how to delete old blocks more pretty!
+    db_delete('block')->condition('delta', 'popup_announcement_' . $bid)->execute();
+    
+    block_flush_caches(); // @todo: realy need it here?
+  }
+  
+  /**
+   * Get list with visit numbers, when announcement must be visible.
+   *
+   * @return array
+   *   Array or boolean - list whith visit numbers or TRUE if announcement
+   *   must be appears at every visit
+   */
+  public function when_visible($bid) {
+    
+    $b = $this->get_block($bid);
+    
+    return (empty($b['number_visit'])) ? TRUE : explode(',', $b['number_visit']);
+  }
+  
+}
+
+/**
+ * Class for visitor
+ *
+ */
+class Popup_announcement_visitor {
+  
+  protected $sid;
+  
+  function __construct($sid) {
+    $this->sid = $sid;
+  }
+  
+  /**
+   * Get visit number for this visitor.
+   *
+   * @param string $sid
+   *   visitor session id
+   *
+   * @return numeric
+   *   Visit number for this visitor
+   *   If returned FALSE - this visitor first time here
+   *   or was last time more than cron period
+   */
+  public function get_visit_number() {
+    return db_select('popup_announcement', 'a')
+      ->condition('sid', $this->sid)
+      ->fields('a', array('visit_number'))
+      ->execute()
+      ->fetchField();
+  }
+  
+  /**
+   * Check if announcement is vsible for this visit.
+   *
+   * @param string $sid
+   *   visitor session id
+   *
+   * @return numeric
+   *   1 -  if for this visitor announcement can be created
+   *   0 - if not, for example because he made some action
+   *   from thise announcement yet
+   */
+  public function is_visible() {
+    return db_select('popup_announcement', 'a')
+      ->condition('sid', $this->sid)
+      ->fields('a', array('is_visible'))
+      ->execute()
+      ->fetchField();
+  }
+  
+  /**
+   * Check if announcement is visible for this visitor.
+   *
+   * @param string $sid
+   *   visitor session id
+   *
+   * @return numeric
+   *   1 -  if for this visitor announcement can be created
+   *   0 - if not, for example because he made some action
+   *   from thise announcement yet
+   */
+  public function is_visible_permanent() {
+    return db_select('popup_announcement', 'a')
+      ->condition('sid', $this->sid)
+      ->fields('a', array('is_visible_permanent'))
+      ->execute()
+      ->fetchField();
+  }
+   
+  /**
+   * Create record for new visitor.
+   *
+   * @param string $sid
+   *   visitor session id
+   */
+  public function create_visitor_info() {
+    $q = db_insert('popup_announcement')
+      ->fields(array(
+        'sid' => $this->sid,
+        'visit_number' => 1,
+        'is_visible' => 1,
+        'is_visible_permanent' => 1,
+        'timestamp_first_visit' => REQUEST_TIME,
+        'timestamp_last_visit' => REQUEST_TIME,
+    ))
+    ->execute();
+  }
+  
+  /**
+   * Update visitor info.
+   *
+   * Increment visit number and update visit time.
+   *
+   * @param string $sid
+   *   visitor session id
+   */
+  public function update_visitor_info() {
+    $last_request = db_select('popup_announcement', 'a')
+      ->condition('sid', $this->sid)
+      ->fields('a', array('timestamp_last_visit'))
+      ->execute()
+      ->fetchField();
+  
+    // If more then one hour - so, lets think it is new visit.
+    if ($last_request < REQUEST_TIME - 60 * 60) {
+      $q = db_update('popup_announcement')
+        ->expression('visit_number', 'visit_number + :increment', array(':increment' => 1))
+        ->fields(array('is_visible' => 1))
+        ->condition('sid', $this->sid)
+        ->execute();
+    }
+  
+    $q = db_update('popup_announcement')
+      ->fields(array('timestamp_last_visit' => REQUEST_TIME))
+      ->condition('sid', $this->sid)
+      ->execute();
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,24 @@
+{% set date = node.createdtime|date("l, F j, Y") %}
+{% extends "node.html.twig" %}
+{% block content %}
+  {{ content|without('flippy_pager', 'field_cms_blog_comments') }}
+{% endblock %}
+{% block footer %}
+  {% if display_submitted and not teaser %}
+    <footer class="cms-blog-links">
+      <div class="row">
+        <div class="col-sm-4 text-center">
+          {{ node.field_cms_blog_comments.comment_count }} <em class="text-muted">{% trans %}Comments{% endtrans %}</em>
+        </div>
+        <div class="col-sm-4 text-center glazed-service-links">
+
+        </div>
+        <div class="col-sm-4 text-center">
+         <em class="text-muted">{% trans %}{{ date }} By{% endtrans %}</em> <span class="glazed-util-text-uppercase">{{ author_name }}</span>
+        </div>
+      </div>
+    </footer>
+  {% endif %}
+  {{ content.flippy_pager }}
+  {{ content.field_cms_blog_comments }}
+{% endblock %}

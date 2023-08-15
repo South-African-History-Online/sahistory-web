@@ -1,0 +1,124 @@
+# Schema for the configuration files of the uc_quote module.
+
+uc_quote.settings:
+  type: config_object
+  label: 'Store settings'
+  mapping:
+    display_debug:
+      type: boolean
+      label: 'Flag to set debug preference'
+    require_quote:
+      type: boolean
+      label: 'Flag to require quote for checkout'
+    shipping_type:
+      type: string
+      label: ''
+    type_weight:
+      type: mapping
+      label: ''
+      mapping:
+        small_package:
+          type: integer
+          label: ''
+    ship_from_address:
+      type: mapping
+      label: ''
+      mapping:
+        first_name:
+          type: string
+          label: ''
+        last_name:
+          type: string
+          label: ''
+        company:
+          type: string
+          label: ''
+        street1:
+          type: string
+          label: ''
+        street2:
+          type: string
+          label: ''
+        city:
+          type: string
+          label: ''
+        zone:
+          type: string
+          label: ''
+        country:
+          type: string
+          label: ''
+        postal_code:
+          type: string
+          label: ''
+        phone:
+          type: string
+          label: ''
+
+uc_quote.method.*:
+  type: config_entity
+  label: 'Shipping method config'
+  mapping:
+    id:
+      type: string
+      label: 'ID'
+    label:
+      type: label
+      label: 'Label'
+    weight:
+      type: integer
+      label: 'Weight'
+    plugin:
+      type: string
+      label: 'Plugin'
+    settings:
+      type: quote_method.settings.[%parent.plugin]
+
+quote_method.settings.*:
+  type: quote_method_settings
+
+quote_method.settings.flatrate:
+  type: mapping
+  label: 'Shipping quote method configuration settings'
+  mapping:
+    base_rate:
+      type: float
+      label: 'Base rate (per order rate)'
+    product_rate:
+      type: float
+      label: 'Per product rate'
+    field:
+      type: string
+      label: 'Product field holding override values'
+
+quote_method.settings.percentage_rate:
+  type: mapping
+  label: 'Shipping quote method configuration settings'
+  mapping:
+    base_rate:
+      type: float
+      label: 'Base rate (per order rate)'
+    product_rate:
+      type: float
+      label: 'Per product rate'
+    field:
+      type: string
+      label: 'Product field holding override values'
+
+quote_method.settings.weightquote:
+  type: mapping
+  label: 'Shipping quote method configuration settings'
+  mapping:
+    base_rate:
+      type: float
+      label: 'Base rate (per order rate)'
+    product_rate:
+      type: float
+      label: 'Per product rate'
+    field:
+      type: string
+      label: 'Product field holding override values'
+
+uc_cart_pane.quotes:
+  type: mapping
+  label: 'Shipping quotes cart pane configuration settings'

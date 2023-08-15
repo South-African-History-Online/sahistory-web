@@ -1,0 +1,83 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the dbtng_example module.
+ */
+
+/**
+ * Implements hook_schema().
+ *
+ * Defines the database tables used by this module.
+ *
+ * @see hook_schema()
+ *
+ * @ingroup dbtng_example
+ */
+function basic_cart_schema() {
+
+  $schema['basic_cart_order_connect'] = array(
+    'description' => 'Basic cart order registration table.',
+    'fields' => array(
+      'oid' => array(
+        'description' => 'The primary identifier for an order.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'id' => array(
+        'description' => 'Order node.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'entitytype' => array(
+        'description' => 'Entity Type',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => 'node',
+      ),
+      'quantity' => array(
+        'description' => 'Order node quantity.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+    ),
+    'primary key' => array('oid', 'id'),
+  );
+
+  $schema['basic_cart_cart'] = array(
+    'description' => 'Basic cart store table.',
+    'fields' => array(
+      'uid' => array(
+        'description' => 'The primary identifier for an order.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'id' => array(
+        'description' => 'EntityId',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'entitytype' => array(
+        'description' => 'Entity Type',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => 'node',
+      ),
+      'quantity' => array(
+        'description' => 'Order node quantity.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+    ),
+    'primary key' => array('uid', 'id'),
+  );
+  return $schema;
+}

@@ -1,0 +1,316 @@
+<?php
+
+/**
+ * @file
+ * Defines the payment API that lets payment modules interact with Ubercart.
+ *
+ * The payment system in Ubercart relies on hooks to let the main program know
+ * what payment modules are installed and what their current settings are. The
+ * customer can choose a payment type at checkout, and the proper information
+ * will be collected to complete the purchase.
+ */
+
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Component\Utility\Xss;
+use Drupal\uc_order\Entity\Order;
+use Drupal\uc_order\OrderInterface;
+use Drupal\uc_payment\Entity\PaymentMethod;
+use Drupal\uc_payment\Entity\PaymentReceipt;
+use Drupal\uc_payment\ExpressPaymentMethodPluginInterface;
+use Drupal\uc_payment\Form\OffsitePaymentMethodForm;
+use Drupal\uc_payment\OffsitePaymentMethodPluginInterface;
+use Drupal\uc_payment\PaymentReceiptInterface;
+
+/**
+ * Implements hook_theme().
+ */
+function uc_payment_theme() {
+  return array(
+    'uc_payment_totals' => array(
+      'variables' => array('order' => NULL),
+      'template' => 'uc-payment-totals',
+    ),
+  );
+}
+
+/**
+ * Prepares variables for the payment totals template.
+ *
+ * Default template: uc-payment-totals.html.twig.
+ */
+function template_preprocess_uc_payment_totals(&$variables) {
+  $variables['line_items'] = $variables['order']->getDisplayLineItems();
+
+  foreach ($variables['line_items'] as $key => $line) {
+    $variables['line_items'][$key]['title'] = Xss::filter($line['title']);
+    $variables['line_items'][$key]['amount'] = uc_currency_format($line['amount']);
+  }
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter() for uc_cart_view_form().
+ *
+ * Adds express buttons for enabled payment methods directly to the cart page.
+ */
+function uc_payment_form_uc_cart_view_form_alter(&$form, FormStateInterface $form_state) {
+  $methods = PaymentMethod::loadMultiple();
+  foreach ($methods as $method) {
+    $plugin = $method->getPlugin();
+    if ($plugin instanceof ExpressPaymentMethodPluginInterface) {
+      $form['actions']['checkout'][$method->id()] = $plugin->getExpressButton($method->id());
+    }
+  }
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter() for uc_cart_checkout_review_form().
+ *
+ * If a payment method redirects off-site, add the required form to the review
+ * page.
+ */
+function uc_payment_form_uc_cart_checkout_review_form_alter(&$form, FormStateInterface $form_state) {
+  $form['#validate'][] = 'uc_payment_checkout_review_form_validate';
+
+  $order = $form_state->get('uc_order');
+  /** @var \Drupal\uc_payment\PaymentMethodPluginInterface $plugin */
+  $plugin = \Drupal::service('plugin.manager.uc_payment.method')->createFromOrder($order);
+
+  if ($plugin instanceof OffsitePaymentMethodPluginInterface) {
+    $offsite_form = new OffsitePaymentMethodForm($plugin);
+    $suffix = \Drupal::formBuilder()->getForm($offsite_form, $order);
+    if (!empty($suffix['actions'])) {
+      unset($form['actions']['submit']);
+      $form['#suffix'] = \Drupal::service('renderer')->renderPlain($suffix);
+    }
+  }
+}
+
+/**
+ * Validation callback for the checkout review form.
+ */
+function uc_payment_checkout_review_form_validate($form, FormStateInterface $form_state) {
+  $order = $form_state->get('uc_order');
+  /** @var \Drupal\uc_payment\PaymentMethodPluginInterface $plugin */
+  $plugin = \Drupal::service('plugin.manager.uc_payment.method')->createFromOrder($order);
+
+  // If the plugin failed for any reason, show the message to the user.
+  if ($message = $plugin->orderSubmit($order)) {
+    $form_state->setErrorByName('', $message);
+  }
+}
+
+/**
+ * Implements hook_uc_payment_method_checkout_alter().
+ */
+function uc_payment_uc_payment_method_checkout_alter(array &$methods, OrderInterface $order) {
+  if (isset($methods['free_order'])) {
+    if ($order->getTotal() < 0.01) {
+      // Unset all other payment methods if this is a free order.
+      foreach (array_keys($methods) as $key) {
+        if ($key != 'free_order') {
+          unset($methods[$key]);
+        }
+      }
+    }
+    else {
+      // Disallow this payment method if the order is not free.
+      unset($methods['free_order']);
+    }
+  }
+}
+
+/**
+ * Enters a payment for an order.
+ *
+ * @param int $order_id
+ *   The order ID to apply the payment to.
+ * @param string $method
+ *   The payment method ID.
+ * @param float $amount
+ *   The amount of the payment.
+ * @param int $uid
+ *   (optional) The user ID of the person logging the payment, or 0 if the
+ *   payment was processed automatically.
+ * @param array $data
+ *   (optional) Any data that should be serialized and stored with the
+ *   payment.
+ * @param string $comment
+ *   (optional) The comment to enter in the payment log.
+ * @param int $received
+ *   (optional) The timestamp at which the payment was received.
+ *
+ * @return string
+ *   A unique ID identifying the PaymentReceipt entity.
+ */
+function uc_payment_enter($order_id, $method, $amount, $uid = 0, $data = NULL, $comment = '', $received = REQUEST_TIME) {
+  $order = Order::load($order_id);
+  $receipt = PaymentReceipt::create([
+    'order_id' => $order_id,
+    'method' => $method,
+    'amount' => $amount,
+    'currency' => $order->getCurrency(),
+    'uid' => $uid,
+    'data' => is_array($data) ? $data : serialize($data),
+    'comment' => $comment,
+    'received' => $received,
+  ]);
+  $receipt->save();
+  return $receipt->id();
+}
+
+/**
+ * Implements hook_uc_payment_receipt_insert().
+ */
+function uc_payment_uc_payment_receipt_insert(PaymentReceiptInterface $payment) {
+  $order = $payment->getOrder();
+
+  // Log a message against the order.
+  $method_name = $payment->getMethod() ? $payment->getMethod()->getPlugin()->cartReviewTitle() : t('Other');
+  $log_message = t('@method payment for @amount entered.', array('@method' => $method_name, '@amount' => uc_currency_format($payment->getAmount())));
+  $order->logChanges(array($log_message));
+
+  // Automatically mark paid orders as "payment received".
+  // @todo Remove when Rules is available.
+  if (uc_payment_balance($order) <= 0) {
+    $state = $order->getStateId();
+    if ($state == 'in_checkout' || $state == 'post_checkout') {
+      $order->setStatusId('payment_received')->save();
+    }
+  }
+}
+
+/**
+ * Implements hook_uc_payment_receipt_delete().
+ */
+function uc_payment_uc_payment_receipt_delete(PaymentReceiptInterface $payment) {
+  $order = $payment->getOrder();
+
+  // Log a message against the order.
+  $method_name = $payment->getMethod() ? $payment->getMethod()->getPlugin()->cartReviewTitle() : t('Other');
+  $log_message = t('@method payment for @amount deleted.', array('@method' => $method_name, '@amount' => uc_currency_format($payment->getAmount())));
+  $order->logChanges(array($log_message));
+}
+
+/**
+ * Implements hook_uc_order_load().
+ */
+function uc_payment_uc_order_load($orders) {
+  foreach ($orders as $order) {
+    if ($order->getPaymentMethodId()) {
+      \Drupal::service('plugin.manager.uc_payment.method')->createFromOrder($order)->orderLoad($order);
+    }
+  }
+}
+
+/**
+ * Implements hook_uc_order_presave().
+ */
+function uc_payment_uc_order_presave(OrderInterface $order) {
+  if ($order->getPaymentMethodId()) {
+    \Drupal::service('plugin.manager.uc_payment.method')->createFromOrder($order)->orderSave($order);
+  }
+
+  // Move non-shippable orders from "payment received" to "completed".
+  // @todo Remove when Rules is available.
+  if ($order->getStatusId() == 'payment_received' && !$order->isShippable()) {
+    $order->setStatusId('completed');
+  }
+}
+
+/**
+ * Implements hook_uc_order_can_delete().
+ */
+function uc_payment_uc_order_can_delete(OrderInterface $order) {
+  if (uc_payment_load_payments($order->id())) {
+    return FALSE;
+  }
+}
+
+/**
+ * Implements hook_uc_order_delete().
+ */
+function uc_payment_uc_order_delete(OrderInterface $order) {
+  $result = \Drupal::entityQuery('uc_payment_receipt')
+    ->condition('order_id', $order->id())
+    ->execute();
+
+  if (!empty($result)) {
+    $storage = \Drupal::entityTypeManager()->getStorage('uc_payment_receipt');
+    $entities = $storage->loadMultiple(array_keys($result));
+    $storage->delete($entities);
+  }
+
+  // Call each payment method to delete method-specific data from the database.
+  foreach (uc_payment_method_list() as $id => $method) {
+    \Drupal::service('plugin.manager.uc_payment.method')->createInstance($id)->orderDelete($order);
+  }
+}
+
+/**
+ * Deletes a payment from the database.
+ *
+ * @param string $receipt_id
+ *   A PaymentReceipt entity id.
+ */
+function uc_payment_delete($receipt_id) {
+  if (!is_numeric($receipt_id)) {
+    return FALSE;
+  }
+  /** @var \Drupal\uc_payment\PaymentReceiptInterface $payment */
+  $payment = PaymentReceipt::load($receipt_id);
+  $payment->delete();
+}
+
+/**
+ * Returns the balance of payments on an order.
+ *
+ * @param \Drupal\uc_order\OrderInterface $order
+ *   An order entity.
+ */
+function uc_payment_balance(OrderInterface $order) {
+  $total = $order->getTotal();
+  $payments = uc_payment_load_payments($order->id());
+
+  if ($payments === FALSE) {
+    return $total;
+  }
+
+  foreach ($payments as $payment) {
+    $total -= $payment->getAmount();
+  }
+
+  return $total;
+}
+
+/**
+ * Loads an array of all the payments for an order.
+ *
+ * @param int $order_id
+ *   The order's id.
+ *
+ * @return \Drupal\uc_payment\PaymentReceiptInterface[]
+ *   Array of PaymentReceipt entities.
+ */
+function uc_payment_load_payments($order_id) {
+  $result = \Drupal::entityQuery('uc_payment_receipt')
+    ->condition('order_id', $order_id)
+    ->sort('received')
+    ->execute();
+
+  if (!empty($result)) {
+    $storage = \Drupal::entityTypeManager()->getStorage('uc_payment_receipt');
+    return $storage->loadMultiple(array_keys($result));
+  }
+
+  return [];
+}
+
+/**
+ * Returns a list of available payment methods plugins.
+ *
+ * @return array
+ *   An array of payment method definitions, keyed by method ID.
+ */
+function uc_payment_method_list() {
+  return \Drupal::service('plugin.manager.uc_payment.method')->getDefinitions();
+}

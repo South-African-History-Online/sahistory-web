@@ -1,0 +1,19 @@
+<?php
+
+/**
+ * @file
+ * Install, update, and uninstall functions for the uc_country module.
+ */
+
+/**
+ * Implements hook_install().
+ */
+function uc_country_install() {
+  // Use the site default country to determine which country should
+  // be enabled by default. All others will be available but disabled.
+
+  $site_country = \Drupal::config('system.date')->get('country.default');
+  if ($site_country) {
+    \Drupal\uc_country\Entity\Country::load($site_country)->enable()->save();
+  }
+}

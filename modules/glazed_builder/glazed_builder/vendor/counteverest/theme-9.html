@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+
+		<!-- Don't forget to change the title! -->
+		<title>Theme 9 - Count Everest jQuery Plugin</title>
+		
+		<!-- Load Google Fonts -->
+		<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Open+Sans:300">
+		
+		<!-- Load stylesheet -->
+		<link rel="stylesheet" href="css/counteverest.css">
+
+		<!-- DEMO styles to center countdown vertically and horizontally -->
+		<style type="text/css">
+			html {
+				display: table;
+				height: 100%;
+				width: 100%;
+			}
+
+			body {
+				background: #000;
+				display: table-cell;
+				margin: 0;
+				padding: 0;
+				vertical-align: middle;
+			}
+
+			.ce-countdown {
+				margin: 0 auto;
+				max-width: 800px;
+			}
+		</style>
+	</head>
+	<body>
+		
+		<!-- Nothing to change here -->
+		<div class="ce-countdown ce-countdown--theme-9">
+			<div class="ce-circle">
+				<canvas id="ce-days" width="408" height="408"></canvas>
+				<div class="ce-circle__values">
+					<span class="ce-digit ce-days"></span>
+					<span class="ce-label ce-days-label"></span>
+				</div>
+			</div>
+			<div class="ce-circle">
+				<canvas id="ce-hours" width="408" height="408"></canvas>
+				<div class="ce-circle__values">
+					<span class="ce-digit ce-hours"></span>
+					<span class="ce-label ce-hours-label"></span>
+				</div>
+			</div>
+			<div class="ce-circle">
+				<canvas id="ce-minutes" width="408" height="408"></canvas>
+				<div class="ce-circle__values">
+					<span class="ce-digit ce-minutes"></span>
+					<span class="ce-label ce-minutes-label"></span>
+				</div>
+			</div>
+			<div class="ce-circle">
+				<canvas id="ce-seconds" width="408" height="408"></canvas>
+				<div class="ce-circle__values">
+					<span class="ce-digit ce-seconds"></span>
+					<span class="ce-label ce-seconds-label"></span>
+				</div>
+			</div>
+		</div>
+
+		<!-- Load all necessary JavaScript files -->
+		<script src="js/vendor/jquery-1.11.2.min.js"></script>
+		<script src="js/vendor/jquery.counteverest.min.js"></script>
+
+		<!-- Init Count Everest plugin -->
+		<script>
+			$(document).ready(function() {
+				$('.ce-countdown').countEverest({
+					//Set your target date here!
+					day: 30,
+					month: 6,
+					year: 2015,
+					leftHandZeros: false,
+					onChange: function() {
+						drawCircle($('#ce-days').get(0), this.days, 365);
+						drawCircle($('#ce-hours').get(0), this.hours, 24);
+						drawCircle($('#ce-minutes').get(0), this.minutes, 60);
+						drawCircle($('#ce-seconds').get(0), this.seconds, 60);
+					}
+				});
+
+				function deg(v) {
+					return (Math.PI/180) * v - (Math.PI/2);
+				}
+
+				function drawCircle(canvas, value, max) {
+					var	primaryColor = '#117d8b',
+						secondaryColor = '#282828',
+						circle = canvas.getContext('2d');
+					
+					circle.clearRect(0, 0, canvas.width, canvas.height);
+					circle.lineWidth = 4;
+
+					circle.beginPath();
+					circle.arc(
+						canvas.width / 2, 
+						canvas.height / 2, 
+						canvas.width / 2 - circle.lineWidth, 
+						deg(0), 
+						deg(360 / max * (max - value)), 
+						false);
+					circle.strokeStyle = secondaryColor;
+					circle.stroke();
+
+					circle.beginPath();
+					circle.arc(
+						canvas.width / 2, 
+						canvas.height / 2, 
+						canvas.width / 2 - circle.lineWidth, 
+						deg(0), 
+						deg(360 / max * (max - value)), 
+						true);
+					circle.strokeStyle = primaryColor;
+					circle.stroke();
+				}
+			});
+		</script>
+	</body>
+</html>

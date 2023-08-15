@@ -1,0 +1,23 @@
+uc_credit.settings:
+  path: '/admin/store/config/payment/credit'
+  defaults:
+    _form: '\Drupal\uc_credit\Form\CreditSettingsForm'
+    _title: 'Credit card security'
+  requirements:
+    _permission: 'administer credit cards'
+
+uc_credit.terminal:
+  path: '/admin/store/orders/{uc_order}/credit/{uc_payment_method}'
+  defaults:
+    _form: '\Drupal\uc_credit\Form\CreditCardTerminalForm'
+    _title_callback: '\Drupal\uc_order\Controller\OrderController::pageTitle'
+  requirements:
+    _permission: 'process credit cards'
+
+uc_credit.cvv:
+  path: '/cart/checkout/credit/cvv_info/{uc_payment_method}'
+  defaults:
+    _controller: '\Drupal\uc_credit\Controller\CreditController::cvvInfo'
+    _title: 'CVV information'
+  requirements:
+    _permission: 'access content'

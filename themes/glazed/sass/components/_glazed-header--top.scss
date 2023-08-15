@@ -1,0 +1,228 @@
+@charset "UTF-8";
+
+.body--glazed-nav-desktop {
+  &.body--glazed-header-fixed.body--glazed-header-not-overlay {
+    padding-top: 100px;
+  }
+  .glazed-header--top {
+    width: 100%;
+    .glazed-main-menu {
+      height: 100px;
+      position: relative;
+    }
+    #logo {
+      max-height: 100px;
+    }
+    &.glazed-header--fixed {
+      position: fixed;
+      left: 0;
+      right: 0;
+      top: 0;
+    }
+    &.glazed-header--fixed,
+    &.affix {
+      box-shadow: 0 3px 10px 0 rgba(50, 50, 50, 0.05);
+    }
+    // &.affix {
+    //   border-bottom: 1px solid rgba(0,0,0,0.04);
+    // }
+    &.glazed-header--overlay {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 30px;
+      &.glazed-header--fixed {
+        position: fixed;
+      }
+      &.glazed-header--sticky {
+        transition: opacity 600ms, background-color 600ms;
+      }
+      &.affix {
+        top: 0;
+      }
+    }
+    &.glazed-header--navbar-pull-down {
+      .container-row > .col-sm-12 {
+        background: $header-color;
+      }
+    }
+    &.affix {
+      opacity: 1;
+      position: fixed;
+      top: 0;
+      .navbar-header {
+        padding-top: 0;
+        padding-bottom: 0;
+      }
+      .navbar-brand {
+        font-size: $font-size-large;
+      }
+    }
+    .navbar-header {
+      float: left;
+      display: table;
+      position: relative;
+      z-index: 4050;
+    }
+    .wrap-branding {
+      display: table;
+      .logo,
+      .navbar-brand {
+        display: table-cell;
+        vertical-align: middle;
+        padding-right: 15px;
+        img {
+          display: inline;
+        }
+      }
+    }
+    .navbar-collapse {
+      display: inline-block;
+    }
+    &.glazed-header--logo-center-menu-left,
+    &.glazed-header--logo-center-menu-right {
+      .navbar-header {
+        position: absolute;
+        left: 50%;
+      }
+      .wrap-branding {
+        margin-left: -50%;
+        .logo {
+          padding-right: 10px;
+          padding-left: 10px;
+        }
+      }
+    }
+    &.glazed-header--logo-left-menu-left,
+    &.glazed-header--logo-center-menu-left {
+      .menu,
+      .block {
+        float: left;
+      }
+    }
+    &.glazed-header--logo-right-menu-left {
+      .menu,
+      .block {
+        float: left;
+      }
+      .navbar-header,
+      .wrap-branding {
+        float: right;
+      }
+    }
+    &.glazed-header--centered {
+      text-align: center;
+      .region-navigation {
+        text-align: center;
+      }
+      .navbar-brand {
+        margin: 0 auto;
+        text-align: center;
+        clear: both;
+      }
+      .navbar-header,
+      .block {
+        margin: 0 auto;
+        text-align:center;
+        float: none;
+        clear: both;
+        display: inline-block;
+        vertical-align: top;
+      }
+    }
+    &.glazed-header--centered-inline {
+      text-align: center;
+      .block,
+      .navbar-header,
+      #glazed-main-menu {
+        display: inline-block;
+        vertical-align: top;
+        float: none;
+      }
+    }
+    // @todo remove this when safari fixes their bug
+    // transform CSS forces a redraw of the element and this fixes a safari-only
+    // problem with box-shadow/border remaining visible with the menu @ display:none
+    .dropdown-menu {transform: translateZ(0);}
+    li.dropdown:hover,
+    li.dropdown:focus {
+      .dropdown-menu {
+        display:block;
+      }
+    }
+    .block {
+      float: right;
+      position:static;
+    }
+    .nav {
+      float: right;
+      > li {
+        display: table;
+        height: 100%;
+        float: left;
+      }
+      > li > a {
+        font-size: $font-size-large;
+        display: table-cell;
+        vertical-align: middle;
+        height: 100px;
+        padding-top: 0;
+        padding-bottom: 0;
+      }
+      .dropdown-menu li {
+        width: 100%;
+        > a {
+          font-size: $font-size-base;
+          font-weight: normal;
+          padding: 10px 20px;
+          display:block;
+          &.glazed-megamenu__heading {
+            font-size: $font-size-large;
+            font-weight: 300;
+          }
+        }
+      }
+    }
+    .glazed-megamenu__heading {
+      font-size: 18px;
+      font-weight: 300;
+    }
+    // TB Mega Menu
+    .nav-child-fixed-width {
+      left: 0;
+      right: 0;
+      position: absolute;
+      top: 100px;
+    }
+    .block-glazed-helper,
+    .wrap-branding {
+      height: 100px;
+      line-height: 100px;
+    }
+  }
+}
+
+// Toolbar fixes
+html.js .body--glazed-nav-desktop {
+  &.toolbar-fixed.toolbar-horizontal .glazed-header--top.glazed-header--overlay {
+    top: 69px;
+  }
+  &.toolbar-fixed.toolbar-horizontal.toolbar-tray-open.toolbar-horizontal .glazed-header--top.glazed-header--overlay {
+    top: 110px;
+  }
+  &.toolbar-fixed.toolbar-horizontal .glazed-header--top.glazed-header--fixed,
+  &.toolbar-fixed.toolbar-horizontal .glazed-header--top.affix {
+    top: 39px!important;
+  }
+  &.toolbar-fixed.toolbar-horizontal.toolbar-tray-open.toolbar-horizontal .glazed-header--top.glazed-header--fixed,
+  &.toolbar-fixed.toolbar-horizontal.toolbar-tray-open.toolbar-horizontal .glazed-header--top.affix {
+    top: 80px!important;
+  }
+
+  &.body--glazed-header-fixed.toolbar-fixed.toolbar-horizontal.toolbar-tray-open.toolbar-horizontal.body--glazed-header-not-overlay {
+    padding-top: 180px!important;
+  }
+  &.body--glazed-header-fixed.toolbar-fixed.toolbar-horizontal.body--glazed-header-not-overlay {
+    padding-top: 139px!important;
+  }
+}

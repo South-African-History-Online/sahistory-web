@@ -1,0 +1,14 @@
+uc_tax_report.reports:
+  path: '/admin/store/reports/tax/{start_date}/{end_date}/{statuses}'
+  defaults:
+    _controller: '\Drupal\uc_tax_report\Controller\SalesTaxReport::report'
+    _title: 'Sales tax report'
+    start_date: ''
+    end_date: ''
+    statuses: ''
+  requirements:
+    _module_dependencies: 'uc_report'
+    _permission: 'view reports'
+    start_date: '\d{1,10}'
+    end_date: '\d{1,10}'
+    statuses: '[0-9a-zA-Z_,]+'

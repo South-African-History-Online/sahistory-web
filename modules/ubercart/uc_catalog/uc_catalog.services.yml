@@ -1,0 +1,11 @@
+services:
+  uc_catalog.breadcrumb:
+    class: Drupal\uc_catalog\CatalogBreadcrumbBuilder
+    arguments: ['@entity_type.manager']
+    tags:
+      - { name: breadcrumb_builder, priority: 100 }
+  uc_catalog.route_processor:
+    class: Drupal\uc_catalog\Access\RouteProcessor
+    arguments: ['@config.factory', '@entity_type.manager']
+    tags:
+      - { name: route_processor_outbound }

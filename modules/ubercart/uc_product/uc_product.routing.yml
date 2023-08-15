@@ -1,0 +1,79 @@
+uc_product.admin:
+  path: '/admin/store/products'
+  defaults:
+    _controller: '\Drupal\system\Controller\SystemController::systemAdminMenuBlockPage'
+    _title: 'Products'
+  requirements:
+    _permission: 'access administration pages'
+
+uc_product.classes:
+  path: '/admin/store/products/classes'
+  defaults:
+    _controller: '\Drupal\uc_product\Controller\ProductController::classOverview'
+    _title: 'Product classes'
+  requirements:
+    _permission: 'administer product classes'
+
+uc_product.settings:
+  path: '/admin/store/config/products'
+  defaults:
+    _form: '\Drupal\uc_product\Form\ProductSettingsForm'
+    _title: 'Product settings'
+  requirements:
+    _permission: 'administer products'
+
+uc_product.image_defaults:
+  path: '/admin/store/config/products/defaults'
+  defaults:
+    _controller: '\Drupal\uc_product\Controller\ProductController::setImageDefaults'
+  requirements:
+    _permission: 'administer products'
+
+uc_product.features:
+  path: '/node/{node}/edit/features'
+  defaults:
+    _controller: '\Drupal\uc_product\Controller\ProductFeaturesController::featuresOverview'
+    _title: 'Product features'
+  requirements:
+    _uc_product_is_product: 'TRUE'
+    _permission: 'administer product features'
+    _entity_access: 'node.update'
+  options:
+    _admin_route: TRUE
+
+uc_product.feature_add:
+  path: '/node/{node}/edit/features/{fid}/add'
+  defaults:
+    _controller: '\Drupal\uc_product\Controller\ProductFeaturesController::featureAdd'
+    _title: 'Add feature'
+  requirements:
+    _uc_product_is_product: 'TRUE'
+    _permission: 'administer product features'
+    _entity_access: 'node.update'
+  options:
+    _admin_route: TRUE
+
+uc_product.feature_edit:
+  path: '/node/{node}/edit/features/{fid}/{pfid}'
+  defaults:
+    _controller: '\Drupal\uc_product\Controller\ProductFeaturesController::featureEdit'
+    _title: 'Edit feature'
+  requirements:
+    pfid: \d+
+    _uc_product_is_product: 'TRUE'
+    _permission: 'administer product features'
+    _entity_access: 'node.update'
+  options:
+    _admin_route: TRUE
+
+uc_product.feature_delete:
+  path: '/node/{node}/edit/features/{fid}/{pfid}/delete'
+  defaults:
+    _form: '\Drupal\uc_product\Form\ProductFeatureDeleteForm'
+  requirements:
+    pfid: \d+
+    _uc_product_is_product: 'TRUE'
+    _permission: 'administer product features'
+    _entity_access: 'node.update'
+  options:
+    _admin_route: TRUE

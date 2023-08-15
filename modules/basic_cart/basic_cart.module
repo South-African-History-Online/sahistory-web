@@ -1,0 +1,398 @@
+<?php
+
+/**
+ * @file
+ * Basic cart module file.
+ */
+
+use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\basic_cart\Utility;
+use Drupal\Component\Utility\Html;
+use Drupal\Component\Utility\Xss;
+use Drupal\Core\Render\BubbleableMetadata;
+use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\Url;
+use Drupal\node\NodeInterface;
+
+/**
+ * Implements hook_theme() for node entities.
+ */
+function basic_cart_theme($existing, $type, $theme, $path) {
+  global $base_url;
+  return array(
+    'basic_cart_cart_template' => array(
+      'variables' => array('basic_cart' => NULL),
+    ),
+    'basic_cart_total_price_markup' => array(
+      'variables' => array('basic_cart' => NULL),
+    ),
+    'basic_cart_cart_form' => array(
+      'render element' => 'form',
+    ),
+    'basic_cart_quantity_prefix' => array(
+      'variables' => array('basic_cart' => NULL),
+    ),
+    'basic_cart_quantity_suffix' => array(
+      'variables' => array('basic_cart' => NULL),
+    ),
+    'basic_cart_thank_you' => array(
+      'variables' => array('basic_cart' => NULL),
+    ),
+    'basic_cart_count_block' => array(
+      'variables' => array(
+        'cartcount' => NULL,
+        'module_url' => $base_url . '/' . drupal_get_path('module', 'basic_cart'),
+        'size' => "48x39",
+        'float' => 'right',
+        'right' => '7px',
+        'left' => '0',
+        'top' => '6px',
+        'bottom' => 0,
+        'size_class' => '-48-39',
+      ),
+    ),
+  );
+}
+
+/**
+ * Implements hook_page_attachments().
+ */
+function basic_cart_page_attachments(array &$page) {
+  $page['#attached']['library'][] = 'basic_cart/basic_cart';
+}
+
+/**
+ * Implements hook_entity_insert().
+ */
+function basic_cart_entity_insert(EntityInterface $node) {
+  $utility = new Utility();
+  if (Utility::isBasicCartOrder($node->bundle())) {
+    basic_cart_order_send_notifications($node);
+    $utility::emptyCart();
+  }
+}
+
+/**
+ * Implements hook_form_alter().
+ */
+function basic_cart_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  $config = \Drupal::config('basic_cart.settings');
+  $form_ids = array('node_basic_cart_order_edit_form', 'node_basic_cart_order_form');
+  if (in_array($form_id, $form_ids)) {
+    $form['title']['widget'][0]['value']['#title'] = t('Name');
+
+    unset($form['basic_cart_vat']);
+    unset($form['basic_cart_total_price']);
+    unset($form['basic_cart_content']);
+    $form['actions']['submit']['#value'] = (trim($config->get('placeorder_button_name'))!="" ?$config->get('placeorder_button_name'):'Place order');
+    foreach (array_keys($form['actions']) as $action) {
+      if ($action != 'preview' && isset($form['actions'][$action]['#type']) && $form['actions'][$action]['#type'] === 'submit') {
+        $form['actions'][$action]['#submit'][] = 'basic_cart_order_submit';
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_entity_presave().
+ */
+function basic_cart_entity_presave(EntityInterface $node) {
+  // Get the cart contents for a new orders unless order already has filled data
+  // to allow programmatical creation of an order.
+  if (
+    $node->isNew() &&
+    Utility::isBasicCartOrder($node->bundle()) &&
+    Utility::isOrderEmpty($node)
+  ) {
+    $get_price = Utility::getTotalPrice();
+    $cart = Utility::getCart();
+
+    $target_ids = [];
+    if (!empty($cart['cart_quantity'])) {
+      foreach ($cart['cart_quantity'] as $key => $value) {
+        $target_ids[] = ['target_id' => $key, 'quantity' => $value];
+      }
+    }
+    elseif (!empty($cart['cart'])) {
+      $target_ids = array_keys($cart['cart']);
+    }
+
+    $node->set('basic_cart_vat', $get_price->vat);
+    $node->set('basic_cart_total_price', $get_price->total);
+    $node->set('basic_cart_content', $target_ids);
+  }
+}
+
+/**
+ * Implements hook_mail().
+ */
+function basic_cart_mail($key, &$message, $params) {
+  $utility = new Utility();
+  $config = $utility->checkoutSettings();
+ /* $options = array(
+    'langcode' => $message['langcode'],
+  );*/
+  $message['from'] = \Drupal::config('system.site')->get('mail');
+  switch ($key) {
+    case 'admin_mail':
+      $message['subject'] = Html::escape($config->get('admin')['subject']);
+      $message['body'][] = Xss::filter($params['admin_message']);
+      break;
+
+    case 'user_mail':
+      $message['subject'] = Html::escape($config->get('user')['subject']);
+      $message['body'][] = Xss::filter($params['user_message']);
+      break;
+  }
+
+}
+
+/**
+ * Sending emails.
+ */
+function basic_cart_order_send_notifications($order) {
+
+  $mailManager = \Drupal::service('plugin.manager.mail');
+  // Admin message.
+  $utility = new Utility();
+  $token = \Drupal::token();
+
+  $config = $utility->checkoutSettings();
+  $message_html = $config->get('admin')['body'];
+
+  // Token data.
+  $data = array('node' => $order);
+  $message_html = $token->replace($message_html, $data, array(
+    'callback' => 'basic_cart_order_tokens_format',
+    'clear' => TRUE,
+  ));
+
+  // Admin mail.
+  $params['admin_message'] = $message_html;
+  $site_mail = \Drupal::config('system.site')->get('mail');
+  $send = TRUE;
+  $admin_emails = $config->get('admin_emails');
+  $langcode = \Drupal::currentUser()->getPreferredLangcode();
+  if (empty($admin_emails)) {
+    // Sending mail to admin.
+    $message = $mailManager->mail('basic_cart', 'admin_mail', $site_mail, $langcode, $params, NULL, $send);
+
+    $mails_sent = 0;
+    if ($message['result']) {
+      $mails_sent++;
+    }
+  }
+  else {
+    $admin_emails = explode("\n", $admin_emails);
+    if (is_array($admin_emails) && !empty($admin_emails)) {
+      $ok = FALSE;
+      foreach ($admin_emails as $admin_email) {
+        // Sending mail to each admin.
+        $message = $mailManager->mail('basic_cart', 'admin_mail', $admin_email, $langcode, $params, NULL, $send);
+
+        // Verifing that the mail was sent for at least one email address.
+        if ($message['result']) {
+          $ok = TRUE;
+        }
+      }
+
+      $mails_sent = 0;
+      if ($ok) {
+        $mails_sent++;
+      }
+    }
+  }
+
+  // User email.
+  $send_user_mail = $config->get('send_emailto_user');
+  if ($send_user_mail) {
+    $message_html = $config->get('user')['body'];
+    // Token data.
+    $data = array('node' => $order);
+    $message_html = $token->replace($message_html, $data, array(
+      'callback' => 'basic_cart_order_tokens_format',
+      'clear' => TRUE,
+    ));
+    $params['user_message'] = $message_html;
+    // Sending mail.
+    if ($order->isTranslatable()) {
+      $order = $order->getTranslation($langcode);
+    }
+    $email = $order->get('basic_cart_email')->getValue();
+    $email = $email[0]['value'];
+    $message = $mailManager->mail('basic_cart', 'user_mail', $email, $langcode, $params, NULL, $send);
+    if ($message['result']) {
+      $mails_sent++;
+    }
+  }
+
+  return $mails_sent;
+}
+
+/**
+ * Callback function for formatting the order tokens.
+ *
+ * @param array $tokens
+ *   The tockens list.
+ *
+ * @return array
+ *   The formatted list of tokens
+ */
+function basic_cart_order_tokens_format(array &$tokens) {
+  $utility = new Utility();
+  if (is_array($tokens) && count($tokens) > 0) {
+    foreach ($tokens as $token => $value) {
+      switch ($token) {
+        case '[basic_cart_order:basic_cart_total_price]':
+          $tokens[$token] = $utility::formatPrice($value->__toString());
+          break;
+
+        case '[basic_cart_order:basic_cart_vat]':
+          $tokens[$token] = $utility::formatPrice($value->__toString());
+          break;
+      }
+    }
+  }
+  return $tokens;
+}
+
+/**
+ * Implements hook_tokens().
+ */
+function basic_cart_tokens($type, $tokens, array $data, array $options, BubbleableMetadata $bubbleable_metadata) {
+  $replacements = array();
+  $utility = new Utility();
+  $order = isset($data["node"]) ? $data["node"] : array();
+  // The first thing that we're going to check for is the type of token - node,
+  // user etc...
+  if ($type == 'basic_cart_order') {
+    // Loop through each of the available tokens.
+    foreach ($tokens as $name => $original) {
+      // Find the desired token by name.
+      switch ($name) {
+        case 'products':
+          $new = '';
+          $get_cart = $utility::getCart();
+          $cart = $get_cart['cart'];
+          // Building the order details.
+          $i = 0;
+          foreach ($cart as $nid => $node) {
+            $langcode = $node->language()->getId();
+            if ($node->isTranslatable()) {
+              $node = $node->getTranslation($langcode);
+            }
+            $price_value = $node->get('add_to_cart_price')->getValue();
+            $title = $node->get('title')->getValue();
+            $unit_price = $utility::formatPrice($price_value[0]['value']);
+            $new .= ++$i . '. ' . $title[0]['value'] . "\t" .
+                              $get_cart['cart_quantity'][$nid] . ' x ' . $unit_price . "\n";
+          }
+
+          // Add the new value into the replacements array.
+          $replacements[$original] = $new;
+          break;
+
+        case 'basic_cart_total_price':
+          $total = Utility::getTotalPrice();
+          $langcode = $order->language()->getId();
+          if ($order->isTranslatable()) {
+            $order = $order->getTranslation($langcode);
+          }
+          $title = $order->get('title')->getValue();
+          $replacements[$original] = !empty($total) && isset($total->total) ? $total->total : 0;
+          break;
+
+        case 'basic_cart_email':
+          $langcode = $order->language()->getId();
+          if ($order->isTranslatable()) {
+            $order = $order->getTranslation($langcode);
+          }
+          $email = $order->get('basic_cart_email')->getValue();
+          $replacements[$original] = isset($email[0]['value']) ? $email[0]['value'] : "";
+          break;
+
+        case 'basic_cart_vat':
+          $order = $data["node"];
+          $total = Utility::getTotalPrice();
+          $langcode = $order->language()->getId();
+          if ($order->isTranslatable()) {
+            $order = $order->getTranslation($langcode);
+          }
+          $vat = $order->get('basic_cart_vat')->getValue();
+          $replacements[$original] = isset($vat[0]['value']) ? $vat[0]['value'] : 0;
+          break;
+      }
+    }
+  }
+  // Return the replacements.
+  return $replacements;
+}
+
+/**
+ * Implements hook_token_info().
+ */
+function basic_cart_token_info() {
+  $info = array();
+
+  // Add any new tokens.
+  $info['tokens']['basic_cart_order']['products'] = [
+    'name' => t('Products'),
+    'description' => t('Listing of ordered products.')
+  ];
+  $info['tokens']['basic_cart_order']['basic_cart_total_price'] = [
+    'name' => t('Basic cart total price'),
+    'description' => t('Total price of the order'),
+  ];
+  $info['tokens']['basic_cart_order']['basic_cart_vat'] = [
+    'name' => t('Basic cart VAT'),
+    'description' => t('VAT value of the order.'),
+  ];
+  $info['tokens']['basic_cart_order']['basic_cart_email'] = [
+    'name' => t('Basic cart email'),
+    'description' => t('Email defined with the order.'),
+  ];
+
+  // Return them.
+  return $info;
+}
+
+/**
+ * Implements hook_user_login().
+ */
+function basic_cart_user_login($account) {
+  $utility = new Utility();
+  $utility->loggedInActionCart();
+}
+
+/**
+ * Custom form submit function.
+ */
+function basic_cart_order_submit(&$form, FormStateInterface $form_state) {
+
+  $utility = new Utility();
+  $config = $utility->checkoutSettings();
+  $location = trim($config->get('thankyou')['custom_page']);
+  if ($location) {
+    $redirect = \Drupal::pathValidator()
+      ->getUrlIfValid($location);
+    $form_state->setRedirectUrl($redirect);
+  }
+  else {
+    $url = Url::fromRoute('basic_cart.thankyou');
+    $form_state->setRedirectUrl($url);
+  }
+}
+
+/**
+ * Implements hook_node_access().
+ */
+function basic_cart_node_access(NodeInterface $node, $op, AccountInterface $account) {
+  // Restrict access to view of order by permission.
+  if ($op === 'view' && $node->bundle() === Utility::BASICCART_ORDER) {
+    return AccessResult::forbiddenIf(!$account->hasPermission('basic_cart view_orders'))->addCacheContexts(['user.permissions']);
+  }
+
+  return AccessResult::neutral();
+}

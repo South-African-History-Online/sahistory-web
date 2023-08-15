@@ -1,0 +1,82 @@
+basic_cart.cart:
+ path: '/cart'
+ defaults:
+  _controller: '\Drupal\basic_cart\Controller\CartController::cart'
+  _title_callback: '\Drupal\basic_cart\Controller\CartController::getCartPageTitle'
+ requirements:
+  _permission: 'basic_cart use_cart'
+basic_cart.checkout:
+ path: '/checkout'
+ defaults:
+  _controller: '\Drupal\basic_cart\Controller\CartController::checkout'
+  _title: 'Create Order'
+ requirements:
+  _permission: 'basic_cart use_cart'
+basic_cart.cartremove:
+ path: '/cart/remove/{nid}'
+ defaults:
+  _controller: '\Drupal\basic_cart\Controller\CartController::removeFromCart'
+  _title_callback: '\Drupal\basic_cart\Controller\CartController::getCartPageTitle'
+ requirements:
+  _permission: 'basic_cart use_cart'
+ options:
+  parameters:
+   nid:
+    with_config_overrides: TRUE
+basic_cart.cartadd:
+ path: '/cart/add/{nid}'
+ defaults:
+  _controller: '\Drupal\basic_cart\Controller\CartController::addToCart'
+  _title_callback: '\Drupal\basic_cart\Controller\CartController::getCartPageTitle'
+ requirements:
+  _permission: 'basic_cart use_cart'
+ options:
+  parameters:
+   nid:
+    with_config_overrides: TRUE            
+basic_cart.create_direct_order:
+ path: 'node/add/basic_cart_order'
+ defaults:
+  _controller: '\Drupal\basic_cart\Controller\CartController::orderCreate'
+  _title: 'Create Order'
+ requirements:
+  _permission: 'basic_cart create_direct_orders'
+basic_cart.admin:
+ path: 'admin/config/basic_cart'
+ defaults:
+  _form: '\Drupal\basic_cart\Form\CartSettingsForm'
+  _title: 'Basic Cart Settings'
+ requirements:
+  _permission: 'basic_cart admin_cart'
+basic_cart.settings:
+ path: 'admin/config/basic_cart/settings'
+ defaults:
+  _form: '\Drupal\basic_cart\Form\CartSettingsForm'
+  _title: 'Basic Cart Settings'
+ requirements:
+  _permission: 'basic_cart admin_cart'
+basic_cart.checkout_settings:
+ path: 'admin/config/basic_cart/checkout'
+ defaults:
+  _form: '\Drupal\basic_cart\Form\CheckOutSettingsForm'
+  _title: 'Basic Cart Settings'
+ requirements:
+  _permission: 'basic_cart admin_cart'
+basic_cart.cartadddirect:
+ path: '/cart/add/direct/{nid}'
+ defaults:
+  _controller: '\Drupal\basic_cart\Controller\CartController::addToCartNoRedirect'
+  _title_callback: '\Drupal\basic_cart\Controller\CartController::getCartPageTitle'
+ requirements:
+  _permission: 'basic_cart use_cart'
+ options:
+  parameters:
+   nid:
+    with_config_overrides: TRUE
+basic_cart.thankyou:
+ path: 'thankyou'
+ defaults:
+  _controller: '\Drupal\basic_cart\Controller\CartController::thankYouPage'
+  _title_callback: '\Drupal\basic_cart\Controller\CartController::getThankyouPageTitle'
+ requirements:
+  _permission: 'basic_cart use_cart'    

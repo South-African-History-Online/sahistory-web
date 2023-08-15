@@ -1,0 +1,52 @@
+<?php
+
+/**
+ * @file
+ * Allows store owners to create links to add products to carts and send
+ * customers on to checkout.
+ */
+
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Url;
+use Drupal\uc_cart_links\Controller\CartLinksHelp;
+
+/**
+ * Implements hook_help().
+ */
+function uc_cart_links_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    case 'uc_cart_links.settings':
+      return '<p>' . t('<a href=":url">View the help page</a> to learn how to create Cart Links.', [':url' => Url::fromRoute('help.page', ['name' => 'uc_cart_links'])->toString()]) . '</p>';
+
+    case 'help.page.uc_cart_links':
+      $build = CartLinksHelp::creationHelp();
+      return drupal_render($build);
+  }
+}
+
+/**
+ * Implements hook_uc_add_to_cart().
+ */
+function uc_cart_links_uc_add_to_cart($nid, $qty, $data) {
+  if (\Drupal::currentUser()->hasPermission('administer cart links') &&
+      \Drupal::config('uc_cart_links.settings')->get('add_show')) {
+    $cart_link = 'p' . $nid . '_q' . $qty;
+    if (!empty($data['attributes'])) {
+      foreach ($data['attributes'] as $attribute => $option) {
+        if (is_array($option)) {
+          // Checkbox options are stored in an array.
+          foreach ($option as $oid => $ovalue) {
+            if ($ovalue != 0) {
+              $cart_link .= '_a' . $attribute . 'o' . $oid;
+            }
+          }
+        }
+        else {
+          // Textfield, Select, or Radio options.
+          $cart_link .= '_a' . $attribute . 'o' . $option;
+        }
+      }
+    }
+    drupal_set_message(t('Cart Link product action: @cart_link', array('@cart_link' => $cart_link)));
+  }
+}

@@ -1,0 +1,58 @@
+# Schema for uc_tax configuration files.
+
+uc_tax.rate.*:
+  type: config_entity
+  label: 'Tax rate'
+  mapping:
+    id:
+      type: string
+      label: 'Machine-readable name'
+    label:
+      type: label
+      label: 'Name'
+    weight:
+      type: integer
+      label: 'Relative weight'
+    shippable:
+      type: boolean
+      label: 'Shippable'
+    display_include:
+      type: boolean
+      label: 'Display tax included'
+    inclusion_text:
+      type: text
+      label: 'Text for included tax'
+    product_types:
+      type: sequence
+      label: 'Product types to tax'
+      sequence:
+        type: label
+        label: 'Product type label'
+    line_item_types:
+      type: sequence
+      label: 'Line item types to tax'
+      sequence:
+        type: label
+        label: 'Line item type label'
+    plugin:
+      type: string
+      label: 'Plugin'
+    settings:
+      type: tax_rate.settings.[%parent.plugin]
+
+tax_rate.settings.*:
+  type: tax_rate
+
+tax_rate.settings.percentage_rate:
+  type: mapping
+  label: 'Tax rate configuration settings'
+  mapping:
+    rate:
+      type: float
+      label: 'Tax rate (per order rate)'
+    jurisdiction:
+      type: string
+      label: 'Tax jurisdiction'
+    field:
+      type: string
+      label: 'Product field holding override values'

@@ -1,0 +1,34 @@
+# IPN, always accessible, helps for testing while site is offline.
+uc_paypal.ipn:
+  path: '/uc_paypal/ipn'
+  defaults:
+    _controller: '\Drupal\uc_paypal\Controller\PayPalController::ipn'
+    _title: 'PayPal IPN'
+  requirements:
+    _access: 'TRUE'
+
+# Callback functions for Express Checkout.
+uc_paypal.ec_complete:
+  path: '/cart/echeckout/complete'
+  defaults:
+    _controller: '\Drupal\uc_paypal\Controller\EcController::ecComplete'
+    _title: 'Review order'
+  requirements:
+    _permission: 'access content'
+
+uc_paypal.ec_review:
+  path: '/cart/echeckout/review'
+  defaults:
+    _controller: '\Drupal\uc_paypal\Controller\EcController::ecReview'
+    _title: 'Review payment'
+  requirements:
+    _access: 'TRUE'
+
+# Callback functions for PayPal Payments Standard.
+uc_paypal.wps_complete:
+  path: '/uc_paypal/wps/complete/{uc_order}'
+  defaults:
+    _controller: '\Drupal\uc_paypal\Controller\WpsController::wpsComplete'
+    _title: 'PayPal payment complete'
+  requirements:
+    _permission: 'access content'

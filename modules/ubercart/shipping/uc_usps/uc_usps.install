@@ -1,0 +1,52 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the uc_usps module.
+ */
+
+/**
+ * Implements hook_schema().
+ */
+function uc_usps_schema() {
+  $schema = array();
+
+  $schema['uc_usps_products'] = array(
+    'description' => 'Stores product information for USPS shipping quotes.',
+    'fields' => array(
+      'vid' => array(
+        'description' => 'The {uc_products}.vid.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'nid' => array(
+        'description' => 'The {uc_products}.nid.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'container' => array(
+        'description' => 'The package type in which the product will be shipped.',
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => TRUE,
+        'default' => '',
+      ),
+    ),
+    'primary key' => array('vid'),
+    'foreign keys' => array(
+      'uc_products' => array(
+        'table' => 'uc_products',
+        'columns' => array(
+          'nid' => 'nid',
+          'vid' => 'vid',
+        ),
+      ),
+    ),
+  );
+
+  return $schema;
+}

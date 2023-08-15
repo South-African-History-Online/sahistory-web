@@ -1,0 +1,39 @@
+# Schema for the configuration files of the uc_payment module.
+
+uc_payment.method.*:
+  type: config_entity
+  label: 'Payment method'
+  mapping:
+    id:
+      type: string
+      label: 'ID'
+    label:
+      type: label
+      label: 'Label'
+    weight:
+      type: integer
+      label: 'Weight'
+    locked:
+      type: boolean
+      label: 'Locked'
+    plugin:
+      type: string
+      label: 'Plugin'
+    settings:
+      type: payment_method.settings.[%parent.plugin]
+
+payment_method.settings.*:
+  type: payment_method_settings
+
+payment_method.settings.free_order:
+  type: mapping
+  label: 'Free order method configuration settings'
+  mapping:
+
+uc_cart_pane.payment:
+  type: mapping
+  label: 'Payment cart pane configuration settings'
+  mapping:
+    show_preview:
+      type: boolean
+      label: 'Show the order total preview on the payment pane'

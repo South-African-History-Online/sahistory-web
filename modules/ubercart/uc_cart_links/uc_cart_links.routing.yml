@@ -1,0 +1,23 @@
+uc_cart_links.settings:
+  path: '/admin/store/config/cart-links'
+  defaults:
+    _form: '\Drupal\uc_cart_links\Form\CartLinksSettingsForm'
+    _title: 'Cart Links settings'
+  requirements:
+    _permission: 'administer cart links'
+
+#
+# This route is provided by a View. Listed here for documentation purposes only.
+#
+#view.uc_cart_links.report:
+#  path: '/admin/store/reports/cart-links'
+#  requirements:
+#    _permission: 'view cart links report'
+
+uc_cart_links.process:
+  path: '/cart/add/{actions}'
+  defaults:
+    _form: '\Drupal\uc_cart_links\Form\CartLinksForm'
+  requirements:
+    _permission: 'access content'
+    actions: '(e-)?(p[1-9][0-9]*(_q[1-9][0-9]*)*(_a[1-9][0-9]*o[a-zA-Z0-9%]+)*(_s)?)+(-m[0-9]+|-i[a-zA-Z0-9]+)*(\?destination=[a-zA-Z0-9/%]+)?'

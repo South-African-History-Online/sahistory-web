@@ -1,0 +1,58 @@
+<?php
+
+/**
+ * @file
+ * This file defines the theme to render the display formats for pdf files.
+ */
+
+/**
+ * Implements hook_theme().
+ */
+function pdf_reader_theme($existing, $type, $theme, $path) {
+  $pdf_reader_theme = [
+    'pdf_reader' => [
+      'variables' => [
+        'service' => NULL,
+        'top' => NULL,
+        'bottom' => NULL,
+        'download_link' => NULL,
+        'file_url' => NULL ,
+        'width' => NULL,
+        'height' => NULL,
+      ],
+    ],
+    'pdf_reader_embed' => [
+      'variables' => [
+        'download_link' => NULL,
+        'service' => NULL,
+        'top' => NULL,
+        'bottom' => NULL,
+        'file_url' => NULL ,
+        'width' => NULL,
+        'height' => NULL,
+      ],
+    ],
+    'pdf_reader_js' => [
+      'variables' => [
+        'file' => NULL,
+        'download_link' => NULL,
+        'top' => NULL,
+        'bottom' => NULL,
+        'service' => NULL,
+      ],
+    ],
+  ];
+  if (\Drupal::moduleHandler()->moduleExists('colorbox')) {
+    $pdf_reader_theme['pdf_reader_colorbox'] = [
+      'variables' => [
+        'service' => NULL,
+        'download_link' => NULL,
+        'top' => NULL,
+        'bottom' => NULL,
+        'file_url' => NULL ,
+        'file_name' => NULL,
+      ],
+    ];
+  }
+  return $pdf_reader_theme;
+}

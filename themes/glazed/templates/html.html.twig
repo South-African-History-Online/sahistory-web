@@ -1,0 +1,101 @@
+{#
+/**
+ * @file
+ * Default theme implementation to display the basic html structure of a single
+ * Drupal page.
+ *
+ * Variables:
+ * - $css: An array of CSS files for the current page.
+ * - $language: (object) The language the site is being displayed in.
+ *   $language->language contains its textual representation.
+ *   $language->dir contains the language direction. It will either be 'ltr' or
+ *   'rtl'.
+ * - $rdf_namespaces: All the RDF namespace prefixes used in the HTML document.
+ * - $grddl_profile: A GRDDL profile allowing agents to extract the RDF data.
+ * - $head_title: A modified version of the page title, for use in the TITLE
+ *   tag.
+ * - $head_title_array: (array) An associative array containing the string parts
+ *   that were used to generate the $head_title variable, already prepared to be
+ *   output as TITLE tag. The key/value pairs may contain one or more of the
+ *   following, depending on conditions:
+ *   - title: The title of the current page, if any.
+ *   - name: The name of the site.
+ *   - slogan: The slogan of the site, if any, and if there is no title.
+ * - $head: Markup for the HEAD section (including meta tags, keyword tags, and
+ *   so on).
+ * - $styles: Style tags necessary to import all CSS files for the page.
+ * - $scripts: Script tags necessary to load the JavaScript files and settings
+ *   for the page.
+ * - $page_top: Initial markup from any modules that have altered the
+ *   page. This variable should always be output first, before all other dynamic
+ *   content.
+ * - $page: The rendered page content.
+ * - $page_bottom: Final closing markup from any modules that have altered the
+ *   page. This variable should always be output last, after all other dynamic
+ *   content.
+ * - $classes String of classes that can be used to style contextually through
+ *   CSS.
+ *
+ * @ingroup templates
+ *
+ * @see bootstrap_preprocess_html()
+ * @see template_preprocess()
+ * @see template_preprocess_html()
+ * @see template_process()
+ */
+#}
+{%
+  set html_classes = [
+    theme.settings.sticky_footer and not theme.settings.boxed_layout ? 'html--glazed-sticky-footer',
+  ]
+%}
+{%
+  set body_classes = [
+    'html',
+    logged_in ? 'user-logged-in',
+    not root_path ? 'path-frontpage' : 'path-' ~ root_path|clean_class,
+    node_type ? 'page-node-type-' ~ node_type|clean_class,
+    db_offline ? 'db-offline',
+    theme.settings.navbar_position ? 'navbar-is-' ~ theme.settings.navbar_position,
+    theme.has_glyphicons ? 'has-glyphicons',
+    theme.settings.header_position ? 'body--glazed-header-side' : 'body--glazed-header-top',
+    not theme.settings.header_position and theme.settings.header_style != 'overlay' ? 'body--glazed-header-not-overlay',
+    not theme.settings.header_position ? 'body--glazed-header-' ~ theme.settings.header_style|clean_class,
+    not theme.settings.header_position and not theme.settings.header_top_sticky and theme.settings.header_top_fixed ? 'body--glazed-header-fixed',
+    page_title in node.field_glazed_hide_regions.getValue|keys ? 'body--primary-tabs-float',
+  ]
+%}
+{% if node.field_glazed_body_background and node.field_glazed_body_background.getValue %}
+  {% set style = 'background-image:url(' ~ file_url(node.field_glazed_body_background.entity.getFileUri) ~ ');' %}
+  {% set attributes = attributes.setAttribute('style', style) %}
+{% endif %}
+<!DOCTYPE html>
+<html {{ html_attributes.addClass(html_classes) }}>
+  <head>
+    <head-placeholder token="{{ placeholder_token|raw }}">
+    <title>{{ head_title|safe_join(' | ') }}</title>
+    <style>ul.dropdown-menu {display: none;}</style>
+    <css-placeholder token="{{ placeholder_token|raw }}">
+    <js-placeholder token="{{ placeholder_token|raw }}">
+  </head>
+  <body{{ attributes.addClass(body_classes) }}>
+  {% set breakpoint = theme.settings.header_mobile_breakpoint > 4099 ? '99999' : theme.settings.header_mobile_breakpoint %}
+  <script>
+  var glazedNavBreakpoint = {{ breakpoint }};
+  var glazedWindowWidth = window.innerWidth;
+  if (glazedWindowWidth > glazedNavBreakpoint) {
+    document.body.className += ' body--glazed-nav-desktop';
+  }
+  else {
+    document.body.className += ' body--glazed-nav-mobile';
+  }
+  </script>
+    <a href="#main-content" class="visually-hidden focusable skip-link">
+      {{ 'Skip to main content'|t }}
+    </a>
+    {{ page_top }}
+    {{ page }}
+    <js-bottom-placeholder token="{{ placeholder_token|raw }}">
+    {{ page_bottom }}
+  </body>
+</html>

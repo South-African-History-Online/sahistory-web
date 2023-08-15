@@ -1,0 +1,31 @@
+{#
+/**
+ * @file
+ * Default theme implementation to display the shopping cart block title.
+ *
+ * Available variables:
+ * - title: The text to use for the title of the block.
+ * - show_icon: TRUE if the cart icon is to be displayed.
+ * - empty: TRUE if the cart is empty.
+ * - collapsible: TRUE if the cart block is collapsible.
+ * - collapsed: TRUE if the cart block is collapsed initially.
+ * - cart_url: The URL of the cart page.
+ *
+ * @see uc_cart_preprocess_block()
+ * @see template_preprocess_uc_cart_block_title()
+ *
+ * @ingroup themeable
+#}
+{% if show_icon and cart_empty %}
+  <a href="{{ cart_url }}"><span class="cart-block-icon empty" title="{{ 'View your shopping cart.'|t }}"></span></a>
+{% elseif show_icon %}
+  <a href="{{ cart_url }}"><span class="cart-block-icon" title="{{ 'View your shopping cart.'|t }}"></span></a>
+{% endif %}
+
+{% if collapsible and collapsed %}
+  <span class="cart-block-arrow collapsed" title="{{ 'Show/hide shopping cart contents.'|t }}">{{ title }}</span>
+{% elseif collapsible %}
+  <span class="cart-block-arrow" title="{{ 'Show/hide shopping cart contents.'|t }}">{{ title }}</span>
+{% else %}
+  {{ title }}
+{% endif %}

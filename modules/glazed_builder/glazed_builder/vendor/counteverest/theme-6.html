@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+
+		<!-- Don't forget to change the title! -->
+		<title>Theme 6 - Count Everest jQuery Plugin</title>
+
+		<!-- Load Google Fonts -->
+		<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Roboto:300,400">
+		
+		<!-- Load stylesheet -->
+		<link rel="stylesheet" href="css/counteverest.css">
+
+		<!-- DEMO styles to center countdown vertically and horizontally -->
+		<style type="text/css">
+			html {
+				display: table;
+				height: 100%;
+				width: 100%;
+			}
+
+			body {
+				background: #31facd;
+				display: table-cell;
+				margin: 0;
+				padding: 0;
+				vertical-align: middle;
+			}
+
+			.ce-countdown {
+				margin: 0 auto;
+				max-width: 864px;
+				text-align: center;
+			}
+		</style>
+	</head>
+	<body>
+		
+		<!-- Nothing to change here -->
+		<div class="ce-countdown ce-countdown--theme-6">
+			<div class="ce-col">
+				<div class="ce-hours">
+					<div class="ce-flip-wrap">
+						<div class="ce-flip-front"></div>
+						<div class="ce-flip-back"></div>
+					</div>
+				</div>
+				<span class="ce-hours-label"></span>
+			</div>
+			<div class="ce-col">
+				<div class="ce-minutes">
+					<div class="ce-flip-wrap">
+						<div class="ce-flip-front"></div>
+						<div class="ce-flip-back"></div>
+					</div>
+				</div>
+				<span class="ce-minutes-label"></span>
+			</div>
+			<div class="ce-col">
+				<div class="ce-seconds">
+					<div class="ce-flip-wrap">
+						<div class="ce-flip-front"></div>
+						<div class="ce-flip-back"></div>
+					</div>
+				</div>
+				<span class="ce-seconds-label"></span>
+			</div>
+		</div>
+
+		<!-- Load all necessary JavaScript files -->
+		<script src="js/vendor/jquery-1.11.2.min.js"></script>
+		<script src="js/vendor/jquery.counteverest.min.js"></script>
+
+		<!-- Init Count Everest plugin -->
+		<script>
+			$(document).ready(function() {
+				$('.ce-countdown').countEverest({
+					//Set your target date here!
+					day: 1,
+					month: 1,
+					year: 2016,
+					hoursWrapper: '.ce-hours .ce-flip-back',
+					minutesWrapper: '.ce-minutes .ce-flip-back',
+					secondsWrapper: '.ce-seconds .ce-flip-back',
+					wrapDigits: false,
+					onChange: function() {
+						countEverestAnimate($('.ce-countdown .ce-col>div'), this);
+					}
+				});
+
+				function countEverestAnimate($el, data) {
+					$el.each( function(index) {
+						var $this = $(this),
+							$flipFront = $this.find('.ce-flip-front'),
+							$flipBack = $this.find('.ce-flip-back'),
+							field = $flipBack.text(),
+							fieldOld = $this.attr('data-old');
+						if (typeof fieldOld === 'undefined') {
+							$this.attr('data-old', field);
+						}
+						if (field != fieldOld) {
+							$this.addClass('ce-animate');
+							window.setTimeout(function() {
+								$flipFront.text(field);
+								$this
+									.removeClass('ce-animate')
+									.attr('data-old', field);
+							}, 800);
+						}
+					});
+				}
+
+				//Fallback for Internet Explorer
+				if (navigator.userAgent.indexOf('MSIE') !== -1 || navigator.appVersion.indexOf('Trident/') > 0) {
+					$('html').addClass('ce-ie');
+				}
+			});
+		</script>
+	</body>
+</html>
