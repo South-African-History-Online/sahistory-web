@@ -1,0 +1,14 @@
+How To Use Traefik v2 as a Reverse Proxy for Docker Containers on Ubuntu 22.04
+
+RUN WITH:
+
+    docker run -d --restart=always \
+      -v /var/run/docker.sock:/var/run/docker.sock \
+      -v $PWD/traefik.toml:/traefik.toml \
+      -v $PWD/traefik_dynamic.toml:/traefik_dynamic.toml \
+      -v $PWD/acme.json:/acme.json \
+      -p 80:80 \
+      -p 443:443 \
+      --network web \
+      --name traefik2023 \
+      traefik:v2.2
