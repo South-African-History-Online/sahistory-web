@@ -55,7 +55,7 @@ services:
       - ./.novi/hosting/data/mysql:/var/lib/mysql
     environment:
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
-      - MYSQL_DATABASE=${DB_SCHEMA}
+      - MYSQL_DATABASE=${DB_NAME}
       - MYSQL_USER=${DB_USER}
       - MYSQL_PASSWORD=${DB_PASS}
     networks:
@@ -88,7 +88,7 @@ services:
   web:
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.web.rule=Host(`${DOMAIN_NAME}`,`${PARTNER_DOMAIN_NAME}`)"
+      - "traefik.http.routers.web.rule=Host(`${DOMAIN_NAME}`)"
       - "traefik.http.routers.web.entrypoints=websecure"
       - "traefik.http.services.web.loadbalancer.server.port=8080"
       - "traefik.http.routers.web.middlewares=web,chain-no-auth@file"
@@ -123,7 +123,7 @@ services:
       TRUSTED_HOST_PATTERNS: ${TRUSTED_HOST_PATTERNS}
       DB_USER: ${DB_USER}
       DB_PASS: ${DB_PASS}
-      DB_SCHEMA: ${DB_SCHEMA}
+      DB_SCHEMA: ${DB_NAME}
       DB_HOST: ${DB_HOST}
       DB_PORT: 3306
       HASH_SALT: ${HASH_SALT}
