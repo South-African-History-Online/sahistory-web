@@ -1,15 +1,106 @@
+# This file contains default .gitignore rules. To use it, copy it to .gitignore,
+# and it will cause files like your settings.php and user-uploaded files to be
+# excluded from Git version control. This is a common strategy to avoid
+# accidentally including private information in public repositories and patch
+# files.
+#
+# Because .gitignore can be specific to your site, this file has a different
+# name; updating Drupal core will not override your custom .gitignore file.
+
+# Ignore core when managing all of a project's dependencies with Composer
+# including Drupal core.
+webroot/core
+
+# Core's dependencies are managed with Composer.
+vendor
+
+# Ignore various frontend assets.
+webroot/sites/*/themes/custom/*/dist
+webroot/sites/*/themes/custom/*/node_modules
+
+# Ignore contributed packages, since we manage them with composer
+webroot/modules/contrib
+webroot/themes/contrib
+webroot/profiles/contrib
+webroot/libraries
+
 # Ignore configuration files that may contain sensitive information.
-sites/*/settings*.php
+webroot/sites/*/settings.*.php
+webroot/sites/*/services.*.yml
+webroot/sites/*services*.yml
+webroot/sites/sites.*.php
 
 # Ignore paths that contain user-generated content.
-sites/*/files
-sites/*/private
+webroot/sites/*/files
+webroot/sites/*/private
 
-# vscode settings
-.vscode/*
+# Ignore SimpleTest multi-site environment.
+webroot/sites/simpletest
 
-# vendor directory
-vendor/
+# If you prefer to store your .gitignore file in the sites/ folder, comment
+# or delete the previous settings and uncomment the following ones, instead.
 
-# database dump files
+# Ignore configuration files that may contain sensitive information.
+# */settings*.php
+
+# Ignore paths that contain user-generated content.
+# */files
+*/private
+
+# Ignore SimpleTest multi-site environment.
+# simpletest
+
+# Since we are using drupal-scaffold the files are create on composer-update
+# so there is no reason to save them in version-control.
+.editorconfig
+.gitattributes
+webroot/.csslintrc
+webroot/.eslintignore
+webroot/.eslintrc.json
+webroot/.ht.router.php
+webroot/.htaccess
+webroot/autoload.php
+webroot/example.gitignore
+webroot/index.php
+webroot/INSTALL.txt
+webroot/README.txt
+webroot/robots.txt
+webroot/update.php
+webroot/web.config
+webroot/modules/README.txt
+webroot/profiles/README.txt
+webroot/sites/example.settings.local.php
+webroot/sites/example.sites.php
+webroot/sites/README.txt
+webroot/sites/default*
+webroot/themes/README.txt
+
+.env
+*/node_modules
+.idea/
+logs/*
+/sql
+.composer
+!*/.keep
+composer-src/
+
+# Devspace
+.devspace/
+.novi/dbdumps
+.novi/state/*
+
+# Seed folder
+seed/*
+
+# vscode
+.vscode
 *.sql
+
+# Hosting
+.novi/hosting/data/*
+.novi/hosting/traefik/*
+.novi/hosting/traefik/ssl/*
+
+# Ignore backups
+.novi/backups/*
+.build/

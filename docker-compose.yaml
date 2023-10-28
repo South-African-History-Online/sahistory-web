@@ -1,0 +1,226 @@
+version: "3.9"
+
+networks:
+  internet:
+    external: true
+
+services:
+  ofelia:
+    image: mcuadros/ofelia:latest
+    container_name: ofelia
+    restart: unless-stopped
+    command: daemon --docker
+    networks:
+      - internet
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+
+  traefik:
+    image: library/traefik:latest
+    container_name: traefik
+    restart: unless-stopped
+    network_mode: host
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+    volumes:
+      - ./.novi/hosting/traefik:/etc/traefik
+      - /var/run/docker.sock:/var/run/docker.sock
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik.rule=Host(`traefik.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.traefik.entrypoints=websecure"
+      - "traefik.http.services.traefik.loadbalancer.server.port=8042"
+      - "traefik.http.routers.traefik.service=api@internal"
+      - "traefik.http.routers.traefik.middlewares=chain-no-auth@file"
+
+  mysql:
+    image: library/mariadb:10.6
+    container_name: mysql
+    command:
+      [
+        mysqld,
+        --character-set-server=utf8mb4,
+        --collation-server=utf8mb4_unicode_ci,
+        --default-authentication-plugin=mysql_native_password
+      ]
+    volumes:
+      - ./.novi/hosting/data/mysql:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${DB_SCHEMA}
+      - MYSQL_USER=${DB_USER}
+      - MYSQL_PASSWORD=${DB_PASS}
+    networks:
+      - internet
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+
+  redis:
+    image: library/redis:latest
+    container_name: redis
+    volumes:
+      - ./.novi/hosting/data/redis:/data
+    command: [ "redis-server" ]
+    networks:
+      - internet
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 5s
+      timeout: 20s
+      retries: 10
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+
+  web:
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.web.rule=Host(`${DOMAIN_NAME}`,`${PARTNER_DOMAIN_NAME}`)"
+      - "traefik.http.routers.web.entrypoints=websecure"
+      - "traefik.http.services.web.loadbalancer.server.port=8080"
+      - "traefik.http.routers.web.middlewares=web,chain-no-auth@file"
+      - "traefik.http.middlewares.web.headers.stsSeconds=155520011"
+      - "traefik.http.middlewares.web.headers.stsPreload=true"
+      - "traefik.http.middlewares.web.headers.contentTypeNosniff=true"
+      - "traefik.http.middlewares.web.headers.browserXSSFilter=true"
+      - "traefik.http.middlewares.chain-redirect-to-https.redirectscheme.scheme=https"
+      - "ofelia.enabled=true"
+      - "ofelia.job-exec.drupal.user=0"
+      - "ofelia.job-exec.drupal.schedule=@every 1m"
+      - "ofelia.job-exec.drupal.command=/usr/bin/php /var/www/vendor/drush/drush/drush -l ${WEBROOT_SITE} core:cron"
+    image: novicellphp.azurecr.io/beierholm/web:latest
+    container_name: web
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./.novi/hosting/nginx.www.conf.tmpl:/etc/nginx/conf.d/www.conf.tmpl
+      - ./.novi/hosting/drupal.php.ini:/etc/php/8.1/fpm/conf.d/drupal.php.ini
+      - ./.novi/hosting/data/web/private:/var/www/private
+      - ./.novi/hosting/data/web/files:/var/www/webroot/sites/${WEBROOT_SITE}/files
+      - ./.novi/hosting/data/web/logs:/var/www/logs
+      - ./.novi/hosting/traefik/ssl/:/var/www/ssl
+      - ./.novi/dbdumps:/var/www/.novi/dbdumps
+      - ./.novi/backups:/var/www/.novi/backups
+      - ./webroot/sites/intra.beierholm.dk/settings.php:/var/www/webroot/sites/intra.beierholm.dk/settings.php
+      - ./webroot/sites/sites.php:/var/www/webroot/sites/sites.php
+    env_file:
+      - .env
+    environment:
+      WEBROOT_SITE: ${WEBROOT_SITE}
+      DOMAIN: ${DOMAIN_NAME}
+      TRUSTED_HOST_PATTERNS: ${TRUSTED_HOST_PATTERNS}
+      DB_USER: ${DB_USER}
+      DB_PASS: ${DB_PASS}
+      DB_SCHEMA: ${DB_SCHEMA}
+      DB_HOST: ${DB_HOST}
+      DB_PORT: 3306
+      HASH_SALT: ${HASH_SALT}
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      REDIS_PORT: 6379
+    networks:
+      - internet
+    depends_on:
+      - traefik
+      - mysql
+      - redis
+    restart: unless-stopped
+
+  solr:
+    image: solr:8.11.2
+    container_name: solr
+    ports:
+     - "8983:8983"
+    volumes:
+      - ./.novi/hosting/data/solr:/var/solr
+      - ./.novi/hosting/solr/beierholm:/opt/solr/server/solr/beierholm
+    restart: unless-stopped
+    networks:
+      - internet
+
+  matomodb:
+    image: library/mariadb:10.6
+    container_name: matomodb
+    command:
+      [
+        mysqld,
+        --character-set-server=utf8mb4,
+        --collation-server=utf8mb4_unicode_ci,
+        --default-authentication-plugin=mysql_native_password,
+        --max_allowed_packet=256M
+      ]
+    volumes:
+      - ./.novi/hosting/data/matomodb:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=drupal
+      - MYSQL_USER=${DB_USER}
+      - MYSQL_PASSWORD=${DB_PASS}
+    networks:
+      - internet
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+
+  matomo:
+    image: matomo:4.14.2
+    container_name: matomo
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.matomo.rule=Host(`matomo.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.matomo.entrypoints=websecure"
+      - "traefik.http.services.matomo.loadbalancer.server.port=80"
+      - "traefik.http.routers.matomo.middlewares=web,chain-no-auth@file"
+      - "traefik.http.middlewares.matomo.headers.contentTypeNosniff=true"
+      - "traefik.http.middlewares.matomo.headers.browserXSSFilter=true"
+      - "ofelia.enabled=true"
+      - "ofelia.job-exec.matomo.user=0"
+      - "ofelia.job-exec.matomo.schedule=@every 1h"
+      - "ofelia.job-exec.matomo.command=/usr/local/bin/php /var/www/html/console --matomo-domain=https://matomo.${DOMAIN_NAME} core:archive"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./.novi/hosting/data/matomo:/var/www/html
+      - ./.novi/hosting/traefik/ssl/:/var/www/ssl
+      - ./.novi/hosting/matomo.php.ini:/usr/local/etc/php/conf.d/matomo.php.ini
+    command:
+      # Command to make /var/www/ssl readable by www-data
+      [
+        sh,
+        -c,
+        "chown -R www-data:www-data /var/www/ssl && chmod -R 775 /var/www/ssl && docker-php-entrypoint apache2-foreground"
+      ]
+    environment:
+      - MATOMO_DATABASE_HOST=matomodb
+      - MATOMO_DATABASE_USERNAME=${DB_USER}
+      - MATOMO_DATABASE_PASSWORD=${DB_PASS}
+      - MATOMO_DATABASE_DBNAME=drupal
+      - MATOMO_SITE_NAME=Matomo
+      - MATOMO_USERNAME=${MATOMO_USERNAME}
+      - MATOMO_PASSWORD=${MATOMO_PASSWORD}
+      - MATOMO_EMAIL=${MATOMO_EMAIL}
+      - MATOMO_SKIP_BOOTSTRAP=1
+      - MATOMO_DATABASE_ADAPTER=mysql
+      - MATOMO_DATABASE_TABLES_PREFIX=matomo_
+    depends_on:
+      - matomodb
+    networks:
+      - internet
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
