@@ -43,30 +43,45 @@
             }
         },
         "installer-paths": {
-            "core": [
+            "webroot/core": [
                 "type:drupal-core"
             ],
-            "libraries/{$name}": [
-                "type:drupal-library"
+            "webroot/libraries/{$name}": [
+                "type:drupal-library",
+                "type:npm-asset",
+                "type:bower-asset"
             ],
-            "modules/contrib/{$name}": [
+            "webroot/modules/contrib/{$name}": [
                 "type:drupal-module"
             ],
-            "profiles/contrib/{$name}": [
+            "webroot/profiles/contrib/{$name}": [
                 "type:drupal-profile"
             ],
-            "themes/contrib/{$name}": [
+            "webroot/themes/contrib/{$name}": [
                 "type:drupal-theme"
             ],
-            "drush/Commands/contrib/{$name}": [
+            "webroot/drush/Commands/contrib/{$name}": [
                 "type:drupal-drush"
             ],
-            "modules/custom/{$name}": [
+            "webroot/modules/custom/{$name}": [
                 "type:drupal-custom-module"
             ],
-            "themes/custom/{$name}": [
+            "webroot/themes/custom/{$name}": [
                 "type:drupal-custom-theme"
             ]
+        },
+        "installer-types": [
+            "npm-asset",
+            "bower-asset"
+        ],
+        "merge-plugin": {
+            "include": [
+                "webroot/modules/contrib/webform/composer.libraries.json",
+                "webroot/modules/contrib/media_directories/composer.libraries.json"
+            ],
+            "merge-extra": true,
+            "merge-extra-deep": true,
+            "merge-scripts": true
         },
         "drupal-core-project-message": {
             "include-keys": [
