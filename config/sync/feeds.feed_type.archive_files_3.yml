@@ -1,0 +1,69 @@
+uuid: 8209931c-ec72-48df-9132-a900cf67a195
+langcode: en
+status: true
+dependencies:
+  config:
+    - core.base_field_override.node.archive.title
+    - node.type.archive
+  module:
+    - node
+id: archive_files_3
+label: 'Archive Files 3'
+description: ''
+help: null
+import_period: -1
+fetcher: upload
+fetcher_configuration:
+  allowed_extensions: 'txt csv tsv xml opml'
+  directory: 'public://feeds'
+parser: csv
+parser_configuration:
+  delimiter: ','
+  no_headers: false
+  line_limit: 100
+processor: 'entity:node'
+processor_configuration:
+  update_existing: 2
+  update_non_existent: _keep
+  expire: -1
+  owner_feed_author: false
+  owner_id: 0
+  authorize: false
+  skip_hash_check: false
+  values:
+    type: archive
+  insert_new: 1
+  langcode: en
+custom_sources:
+  nid:
+    label: nid
+    value: nid
+    machine_name: nid
+    type: csv
+  title32:
+    label: title
+    value: title
+    machine_name: title32
+    type: csv
+  nid32:
+    label: nid
+    value: nid
+    machine_name: nid32
+    type: csv
+  title3232:
+    label: title
+    value: title
+    machine_name: title3232
+    type: csv
+  files:
+    label: files
+    value: files
+    machine_name: files
+    type: csv
+mappings:
+  -
+    target: title
+    map:
+      value: title3232
+    unique:
+      value: '1'

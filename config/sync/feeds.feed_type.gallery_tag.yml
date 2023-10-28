@@ -1,0 +1,69 @@
+uuid: 26cb05f5-e48e-44e3-b880-9809e8223ca9
+langcode: en
+status: true
+dependencies:
+  config:
+    - core.base_field_override.node.biography.title
+    - field.field.node.biography.field_gallery_tag
+    - node.type.biography
+  module:
+    - node
+id: gallery_tag
+label: 'gallery tag'
+description: ''
+help: null
+import_period: -1
+fetcher: directory
+fetcher_configuration:
+  allowed_extensions: 'txt csv tsv xml opml'
+  allowed_schemes:
+    public: public
+  recursive_scan: false
+parser: csv
+parser_configuration:
+  delimiter: ','
+  no_headers: false
+  line_limit: 100
+processor: 'entity:node'
+processor_configuration:
+  update_existing: 2
+  update_non_existent: _keep
+  expire: -1
+  owner_feed_author: false
+  owner_id: 0
+  authorize: true
+  skip_hash_check: false
+  values:
+    type: biography
+  insert_new: 1
+  langcode: en
+custom_sources:
+  title465:
+    label: title
+    value: title
+    machine_name: title465
+    type: csv
+  title4655:
+    label: title
+    value: title
+    machine_name: title4655
+    type: csv
+  galleries:
+    label: galleries
+    value: galleries
+    machine_name: galleries
+    type: csv
+mappings:
+  -
+    target: title
+    map:
+      value: title4655
+    unique:
+      value: '1'
+  -
+    target: field_gallery_tag
+    map:
+      target_id: galleries
+    settings:
+      reference_by: name
+      autocreate: false

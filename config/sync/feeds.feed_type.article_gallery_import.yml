@@ -1,0 +1,69 @@
+uuid: 1c7dd972-7336-444d-be08-9c82331d99e0
+langcode: en
+status: true
+dependencies:
+  config:
+    - core.base_field_override.node.article.title
+    - field.field.node.article.field_gallery_tag
+    - node.type.article
+  module:
+    - node
+id: article_gallery_import
+label: 'Article Gallery Import'
+description: ''
+help: null
+import_period: -1
+fetcher: directory
+fetcher_configuration:
+  allowed_extensions: 'txt csv tsv xml opml'
+  allowed_schemes:
+    public: public
+  recursive_scan: false
+parser: csv
+parser_configuration:
+  delimiter: ','
+  no_headers: false
+  line_limit: 100
+processor: 'entity:node'
+processor_configuration:
+  update_existing: 2
+  update_non_existent: _keep
+  expire: -1
+  owner_feed_author: false
+  owner_id: 0
+  authorize: false
+  skip_hash_check: false
+  values:
+    type: article
+  insert_new: 1
+  langcode: en
+custom_sources:
+  title:
+    label: title
+    value: title
+    machine_name: title
+    type: csv
+  title2121:
+    label: title
+    value: title
+    machine_name: title2121
+    type: csv
+  galleries:
+    label: galleries
+    value: galleries
+    machine_name: galleries
+    type: csv
+mappings:
+  -
+    target: title
+    map:
+      value: title2121
+    unique:
+      value: '1'
+  -
+    target: field_gallery_tag
+    map:
+      target_id: galleries
+    settings:
+      reference_by: name
+      autocreate: false

@@ -1,0 +1,294 @@
+uuid: 755483c0-41a6-41d0-aa58-3b9ad8e2e1d1
+langcode: en
+status: true
+dependencies: {  }
+id: upgrade_d7_node_revision_article
+class: Drupal\migrate\Plugin\Migration
+field_plugin_method: alterFieldWidgetMigration
+cck_plugin_method: null
+migration_tags:
+  - 'Drupal 7'
+  - Content
+migration_group: migrate_drupal_7
+label: 'Node revisions (Article)'
+source:
+  plugin: d7_node_revision
+  node_type: article
+process:
+  nid:
+    -
+      plugin: get
+      source: nid
+  vid:
+    -
+      plugin: get
+      source: vid
+  langcode:
+    -
+      plugin: default_value
+      source: language
+      default_value: und
+  title:
+    -
+      plugin: get
+      source: title
+  uid:
+    -
+      plugin: get
+      source: node_uid
+  status:
+    -
+      plugin: get
+      source: status
+  created:
+    -
+      plugin: get
+      source: created
+  changed:
+    -
+      plugin: get
+      source: changed
+  promote:
+    -
+      plugin: get
+      source: promote
+  sticky:
+    -
+      plugin: get
+      source: sticky
+  revision_uid:
+    -
+      plugin: get
+      source: revision_uid
+  revision_log:
+    -
+      plugin: get
+      source: log
+  revision_timestamp:
+    -
+      plugin: get
+      source: timestamp
+  comment_node_article/0/status:
+    -
+      plugin: get
+      source: comment
+  body:
+    -
+      plugin: get
+      source: body
+  field_feature_banner:
+    -
+      plugin: sub_process
+      source: field_feature_banner
+      process:
+        target_id: fid
+        alt: alt
+        title: title
+        width: width
+        height: height
+  field_article_image:
+    -
+      plugin: sub_process
+      source: field_article_image
+      process:
+        target_id: fid
+        alt: alt
+        title: title
+        width: width
+        height: height
+  field_highlight:
+    -
+      plugin: get
+      source: field_highlight
+  field_ref_str:
+    -
+      plugin: get
+      source: field_ref_str
+  field_synopsis:
+    -
+      plugin: get
+      source: field_synopsis
+  field_timeline_categories_type:
+    -
+      plugin: sub_process
+      source: field_timeline_categories_type
+      process:
+        target_id: tid
+  field_politics_society_categorie:
+    -
+      plugin: sub_process
+      source: field_politics_society_categorie
+      process:
+        target_id: tid
+  field_places_level3:
+    -
+      plugin: sub_process
+      source: field_places_level3
+      process:
+        target_id: tid
+  field_people_level3_cat:
+    -
+      plugin: sub_process
+      source: field_people_level3_cat
+      process:
+        target_id: tid
+  field_place_type_category:
+    -
+      plugin: sub_process
+      source: field_place_type_category
+      process:
+        target_id: tid
+  field_media_library_type:
+    -
+      plugin: sub_process
+      source: field_media_library_type
+      process:
+        target_id: tid
+  field_spotlights:
+    -
+      plugin: sub_process
+      source: field_spotlights
+      process:
+        target_id: fid
+        alt: alt
+        title: title
+        width: width
+        height: height
+  field_old_filename:
+    -
+      plugin: get
+      source: field_old_filename
+  field_classroom_categories:
+    -
+      plugin: sub_process
+      source: field_classroom_categories
+      process:
+        target_id: tid
+  field_file_upload:
+    -
+      plugin: sub_process
+      source: field_file_upload
+      process:
+        target_id: fid
+        display: display
+        description: description
+  field_parent:
+    -
+      plugin: sub_process
+      source: field_parent
+      process:
+        target_id: tid
+  field_node_image_caption:
+    -
+      plugin: get
+      source: field_node_image_caption
+  field_further_reading:
+    -
+      plugin: get
+      source: field_further_reading
+  field_article_author:
+    -
+      plugin: get
+      source: field_article_author
+  field_article_editors:
+    -
+      plugin: get
+      source: field_article_editors
+  field_africa_category:
+    -
+      plugin: sub_process
+      source: field_africa_category
+      process:
+        target_id: tid
+  field_african_country:
+    -
+      plugin: sub_process
+      source: field_african_country
+      process:
+        target_id: tid
+  field_student_movement:
+    -
+      plugin: get
+      source: field_student_movement
+  field_featured:
+    -
+      plugin: get
+      source: field_featured
+  field_topics_related_tab:
+    -
+      plugin: get
+      source: field_topics_related_tab
+  field_people_related_tab:
+    -
+      plugin: get
+      source: field_people_related_tab
+  field_timelines_related_tab:
+    -
+      plugin: get
+      source: field_timelines_related_tab
+  field_organizations_related_tab:
+    -
+      plugin: get
+      source: field_organizations_related_tab
+  field_media_library_related_tab:
+    -
+      plugin: get
+      source: field_media_library_related_tab
+  field_default_article_relate_tab:
+    -
+      plugin: get
+      source: field_default_article_relate_tab
+  field_feature_parent:
+    -
+      plugin: get
+      source: field_feature_parent
+  field_tags:
+    -
+      plugin: get
+      source: field_tags
+  field_article_type:
+    -
+      plugin: get
+      source: field_article_type
+  field_feature_tag:
+    -
+      plugin: get
+      source: field_feature_tag
+  field_arts_culture_categories:
+    -
+      plugin: get
+      source: field_arts_culture_categories
+  field_public_ex_categorie:
+    -
+      plugin: get
+      source: field_public_ex_categorie
+destination:
+  plugin: 'entity_revision:node'
+  default_bundle: article
+migration_dependencies:
+  required:
+    - upgrade_d7_node_archive
+    - upgrade_d7_node_article
+    - upgrade_d7_node_biography
+    - upgrade_d7_node_blog
+    - upgrade_d7_node_book
+    - upgrade_d7_node_button
+    - upgrade_d7_node_event
+    - upgrade_d7_node_forum
+    - upgrade_d7_node_frontpagecustom
+    - upgrade_d7_node_image
+    - upgrade_d7_node_landing_page_banners
+    - upgrade_d7_node_newsletter
+    - upgrade_d7_node_node_gallery_gallery
+    - upgrade_d7_node_node_gallery_item
+    - upgrade_d7_node_page
+    - upgrade_d7_node_panel
+    - upgrade_d7_node_place
+    - upgrade_d7_node_pmticket
+    - upgrade_d7_node_pmtimetracking
+    - upgrade_d7_node_poll
+    - upgrade_d7_node_product
+    - upgrade_d7_node_product_kit
+    - upgrade_d7_node_upcomingevent
+    - upgrade_d7_node_webform
+  optional: {  }
