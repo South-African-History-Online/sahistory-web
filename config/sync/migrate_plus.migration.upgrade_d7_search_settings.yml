@@ -1,0 +1,64 @@
+uuid: 2ff3c386-e6a7-4aff-9e74-981d1a629a2b
+langcode: en
+status: true
+dependencies: {  }
+id: upgrade_d7_search_settings
+class: Drupal\migrate\Plugin\Migration
+field_plugin_method: null
+cck_plugin_method: null
+migration_tags:
+  - 'Drupal 7'
+  - Configuration
+migration_group: migrate_drupal_7
+label: 'Search configuration'
+source:
+  plugin: variable
+  constants:
+    status: true
+  variables:
+    - minimum_word_size
+    - overlap_cjk
+    - search_cron_limit
+    - search_tag_weights
+    - search_and_or_limit
+    - search_default_module
+  source_module: search
+process:
+  index/minimum_word_size:
+    -
+      plugin: get
+      source: minimum_word_size
+  index/overlap_cjk:
+    -
+      plugin: get
+      source: overlap_cjk
+  index/cron_limit:
+    -
+      plugin: get
+      source: search_cron_limit
+  index/tag_weights:
+    -
+      plugin: get
+      source: search_tag_weights
+  and_or_limit:
+    -
+      plugin: get
+      source: search_and_or_limit
+  logging:
+    -
+      plugin: get
+      source: constants/status
+  default_page:
+    -
+      plugin: static_map
+      source:
+        - search_default_module
+      map:
+        node: node_search
+        user: user_search
+destination:
+  plugin: config
+  config_name: search.settings
+migration_dependencies:
+  required: {  }
+  optional: {  }

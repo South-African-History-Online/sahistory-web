@@ -1,0 +1,118 @@
+uuid: 3008cc7a-e25d-4d74-beb7-8d68b3567665
+langcode: en
+status: true
+dependencies: {  }
+id: upgrade_d7_node_revision_webform
+class: Drupal\migrate\Plugin\Migration
+field_plugin_method: alterFieldWidgetMigration
+cck_plugin_method: null
+migration_tags:
+  - 'Drupal 7'
+  - Content
+migration_group: migrate_drupal_7
+label: 'Node revisions (Webform)'
+source:
+  plugin: d7_node_revision
+  node_type: webform
+process:
+  nid:
+    -
+      plugin: get
+      source: nid
+  vid:
+    -
+      plugin: get
+      source: vid
+  langcode:
+    -
+      plugin: default_value
+      source: language
+      default_value: und
+  title:
+    -
+      plugin: get
+      source: title
+  uid:
+    -
+      plugin: get
+      source: node_uid
+  status:
+    -
+      plugin: get
+      source: status
+  created:
+    -
+      plugin: get
+      source: created
+  changed:
+    -
+      plugin: get
+      source: changed
+  promote:
+    -
+      plugin: get
+      source: promote
+  sticky:
+    -
+      plugin: get
+      source: sticky
+  revision_uid:
+    -
+      plugin: get
+      source: revision_uid
+  revision_log:
+    -
+      plugin: get
+      source: log
+  revision_timestamp:
+    -
+      plugin: get
+      source: timestamp
+  comment_node_webform/0/status:
+    -
+      plugin: get
+      source: comment
+  body:
+    -
+      plugin: get
+      source: body
+  field_parent:
+    -
+      plugin: sub_process
+      source: field_parent
+      process:
+        target_id: tid
+  field_bottom_message:
+    -
+      plugin: get
+      source: field_bottom_message
+destination:
+  plugin: 'entity_revision:node'
+  default_bundle: webform
+migration_dependencies:
+  required:
+    - upgrade_d7_node_archive
+    - upgrade_d7_node_article
+    - upgrade_d7_node_biography
+    - upgrade_d7_node_blog
+    - upgrade_d7_node_book
+    - upgrade_d7_node_button
+    - upgrade_d7_node_event
+    - upgrade_d7_node_forum
+    - upgrade_d7_node_frontpagecustom
+    - upgrade_d7_node_image
+    - upgrade_d7_node_landing_page_banners
+    - upgrade_d7_node_newsletter
+    - upgrade_d7_node_node_gallery_gallery
+    - upgrade_d7_node_node_gallery_item
+    - upgrade_d7_node_page
+    - upgrade_d7_node_panel
+    - upgrade_d7_node_place
+    - upgrade_d7_node_pmticket
+    - upgrade_d7_node_pmtimetracking
+    - upgrade_d7_node_poll
+    - upgrade_d7_node_product
+    - upgrade_d7_node_product_kit
+    - upgrade_d7_node_upcomingevent
+    - upgrade_d7_node_webform
+  optional: {  }

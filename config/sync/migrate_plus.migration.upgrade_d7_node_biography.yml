@@ -1,0 +1,336 @@
+uuid: 4b3292b5-bfe5-43fb-90c0-1f73a2cbff13
+langcode: en
+status: true
+dependencies: {  }
+id: upgrade_d7_node_biography
+class: Drupal\migrate\Plugin\Migration
+field_plugin_method: alterFieldInstanceMigration
+cck_plugin_method: null
+migration_tags:
+  - 'Drupal 7'
+  - Content
+migration_group: migrate_drupal_7
+label: 'Nodes (Biography)'
+source:
+  plugin: d7_node
+  node_type: biography
+process:
+  nid:
+    -
+      plugin: get
+      source: tnid
+  vid:
+    -
+      plugin: get
+      source: vid
+  langcode:
+    -
+      plugin: default_value
+      source: language
+      default_value: und
+  title:
+    -
+      plugin: get
+      source: title
+  uid:
+    -
+      plugin: get
+      source: node_uid
+  status:
+    -
+      plugin: get
+      source: status
+  created:
+    -
+      plugin: get
+      source: created
+  changed:
+    -
+      plugin: get
+      source: changed
+  promote:
+    -
+      plugin: get
+      source: promote
+  sticky:
+    -
+      plugin: get
+      source: sticky
+  revision_uid:
+    -
+      plugin: get
+      source: revision_uid
+  revision_log:
+    -
+      plugin: get
+      source: log
+  revision_timestamp:
+    -
+      plugin: get
+      source: timestamp
+  comment_node_biography/0/status:
+    -
+      plugin: get
+      source: comment
+  body:
+    -
+      plugin: get
+      source: body
+  field_dob:
+    -
+      plugin: get
+      source: field_dob
+  field_birth_location:
+    -
+      plugin: get
+      source: field_birth_location
+  field_dod:
+    -
+      plugin: get
+      source: field_dod
+  field_death_location:
+    -
+      plugin: get
+      source: field_death_location
+  field_gender:
+    -
+      plugin: get
+      source: field_gender
+  field_rel_str_value:
+    -
+      plugin: get
+      source: field_rel_str_value
+  field_rel_str_format:
+    -
+      plugin: get
+      source: field_rel_str_format
+  field_age:
+    -
+      plugin: get
+      source: field_age
+  field_affiliation:
+    -
+      plugin: get
+      source: field_affiliation
+  field_days_detained:
+    -
+      plugin: get
+      source: field_days_detained
+  field_cod:
+    -
+      plugin: get
+      source: field_cod
+  field_prison_number:
+    -
+      plugin: get
+      source: field_prison_number
+  field_date_admitted:
+    -
+      plugin: get
+      source: field_date_admitted
+  field_date_released:
+    -
+      plugin: get
+      source: field_date_released
+  field_prison_name:
+    -
+      plugin: get
+      source: field_prison_name
+  field_miscellaneous:
+    -
+      plugin: get
+      source: field_miscellaneous
+  field_ban_information:
+    -
+      plugin: get
+      source: field_ban_information
+  field_position:
+    -
+      plugin: get
+      source: field_position
+  field_position_format:
+    -
+      plugin: get
+      source: field_position_format
+  field_ref_str:
+    -
+      plugin: get
+      source: field_ref_str
+  field_people_category:
+    -
+      plugin: sub_process
+      source: field_people_category
+      process:
+        target_id: tid
+  field_bio_pic:
+    -
+      plugin: sub_process
+      source: field_bio_pic
+      process:
+        target_id: fid
+        alt: alt
+        title: title
+        width: width
+        height: height
+  field_firstname:
+    -
+      plugin: get
+      source: field_firstname
+  field_lastnamebio:
+    -
+      plugin: get
+      source: field_lastnamebio
+  field_old_filename:
+    -
+      plugin: get
+      source: field_old_filename
+  field_synopsis:
+    -
+      plugin: get
+      source: field_synopsis
+  field_spotlights:
+    -
+      plugin: sub_process
+      source: field_spotlights
+      process:
+        target_id: fid
+        alt: alt
+        title: title
+        width: width
+        height: height
+  field_feature_banner:
+    -
+      plugin: sub_process
+      source: field_feature_banner
+      process:
+        target_id: fid
+        alt: alt
+        title: title
+        width: width
+        height: height
+  field_highlight:
+    -
+      plugin: get
+      source: field_highlight
+  field_title:
+    -
+      plugin: get
+      source: field_title
+  field_middlename:
+    -
+      plugin: get
+      source: field_middlename
+  field_file_upload:
+    -
+      plugin: sub_process
+      source: field_file_upload
+      process:
+        target_id: fid
+        display: display
+        description: description
+  field_parent:
+    -
+      plugin: sub_process
+      source: field_parent
+      process:
+        target_id: tid
+  field_node_image_caption:
+    -
+      plugin: get
+      source: field_node_image_caption
+  field_people_level3_cat:
+    -
+      plugin: sub_process
+      source: field_people_level3_cat
+      process:
+        target_id: tid
+  field_position_held:
+    -
+      plugin: get
+      source: field_position_held
+  field_further_reading:
+    -
+      plugin: get
+      source: field_further_reading
+  field_article_author:
+    -
+      plugin: get
+      source: field_article_author
+  field_article_editors:
+    -
+      plugin: get
+      source: field_article_editors
+  field_editors:
+    -
+      plugin: get
+      source: field_editors
+  field_african_country:
+    -
+      plugin: sub_process
+      source: field_african_country
+      process:
+        target_id: tid
+  field_biography_art_category:
+    -
+      plugin: sub_process
+      source: field_biography_art_category
+      process:
+        target_id: tid
+  field_bio_birthdate:
+    -
+      plugin: sub_process
+      source: field_bio_birthdate
+      process:
+        value:
+          plugin: format_date
+          from_format: 'Y-m-d H:i:s'
+          to_format: 'Y-m-d\TH:i:s'
+          source: value
+  field_bio_deathdate:
+    -
+      plugin: sub_process
+      source: field_bio_deathdate
+      process:
+        value:
+          plugin: format_date
+          from_format: 'Y-m-d H:i:s'
+          to_format: 'Y-m-d\TH:i:s'
+          source: value
+  field_feature_link:
+    -
+      plugin: get
+      source: field_feature_link
+  field_topics_related_tab:
+    -
+      plugin: get
+      source: field_topics_related_tab
+  field_people_related_tab:
+    -
+      plugin: get
+      source: field_people_related_tab
+  field_organizations_related_tab:
+    -
+      plugin: get
+      source: field_organizations_related_tab
+  field_feature_parent:
+    -
+      plugin: get
+      source: field_feature_parent
+  field_feature_tag:
+    -
+      plugin: get
+      source: field_feature_tag
+  field_member_of_organisation:
+    -
+      plugin: get
+      source: field_member_of_organisation
+destination:
+  plugin: 'entity:node'
+  default_bundle: biography
+migration_dependencies:
+  required:
+    - upgrade_d7_user
+    - upgrade_d7_node_type
+  optional:
+    - upgrade_d7_field_instance
+    - upgrade_d7_comment_field_instance

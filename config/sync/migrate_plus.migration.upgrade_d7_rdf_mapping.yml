@@ -1,0 +1,57 @@
+uuid: d1f89cf5-9b92-447f-814a-4f7b3cc894de
+langcode: en
+status: true
+dependencies: {  }
+id: upgrade_d7_rdf_mapping
+class: Drupal\migrate\Plugin\Migration
+field_plugin_method: alterFieldWidgetMigration
+cck_plugin_method: null
+migration_tags:
+  - 'Drupal 7'
+  - Configuration
+migration_group: migrate_drupal_7
+label: 'Drupal 7 RDF Mappings'
+source:
+  plugin: d7_rdf_mapping
+process:
+  id:
+    -
+      plugin: concat
+      source:
+        - type
+        - bundle
+      delimiter: .
+  targetEntityType:
+    -
+      plugin: get
+      source: type
+  bundle:
+    -
+      plugin: get
+      source: bundle
+  types:
+    -
+      plugin: get
+      source: types
+  fieldMappings:
+    -
+      plugin: sub_process
+      source: fieldMappings
+      process:
+        properties: predicates
+        datatype: datatype
+        datatype_callback/callable:
+          plugin: static_map
+          source: callback
+          bypass: true
+          map:
+            date_iso8601: 'Drupal\rdf\CommonDataConverter::dateIso8601Value'
+        mapping_type: type
+destination:
+  plugin: 'entity:rdf_mapping'
+migration_dependencies:
+  optional:
+    - upgrade_d7_comment_type
+    - upgrade_d7_node_type
+    - upgrade_d7_taxonomy_vocabulary
+  required: {  }

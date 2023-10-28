@@ -1,0 +1,104 @@
+uuid: 6c86f621-1087-40b5-9318-f04c3c4b1063
+langcode: en
+status: true
+dependencies:
+  config:
+    - core.base_field_override.node.image.title
+    - field.field.node.image.field_image
+    - node.type.image
+  module:
+    - node
+id: images
+label: Images
+description: ''
+help: null
+import_period: -1
+fetcher: upload
+fetcher_configuration:
+  allowed_extensions: 'txt csv tsv xml opml'
+  directory: 'public://feeds'
+parser: csv
+parser_configuration:
+  delimiter: ','
+  no_headers: false
+  line_limit: 100
+processor: 'entity:node'
+processor_configuration:
+  update_existing: 2
+  update_non_existent: _keep
+  expire: -1
+  owner_feed_author: false
+  owner_id: 0
+  authorize: false
+  skip_hash_check: false
+  values:
+    type: image
+  insert_new: 1
+  langcode: en
+custom_sources:
+  title222222222:
+    label: Title
+    value: Title
+    machine_name: title222222222
+    type: csv
+  imagestitle:
+    label: Title
+    value: Title
+    machine_name: imagestitle
+    type: csv
+  name:
+    label: Name
+    value: Name
+    machine_name: name
+    type: csv
+  path:
+    label: Path
+    value: Path
+    machine_name: path
+    type: csv
+  alt:
+    label: Alt
+    value: Alt
+    machine_name: alt
+    type: csv
+  imagetitle:
+    label: Imagetitle
+    value: Imagetitle
+    machine_name: imagetitle
+    type: csv
+  alt23:
+    label: Alt
+    value: Alt
+    machine_name: alt23
+    type: csv
+  imagetitle23:
+    label: Imagetitle
+    value: Imagetitle
+    machine_name: imagetitle23
+    type: csv
+  sticky:
+    label: Sticky
+    value: Sticky
+    machine_name: sticky
+    type: csv
+mappings:
+  -
+    target: title
+    map:
+      value: imagestitle
+    unique:
+      value: '1'
+  -
+    target: field_image
+    map:
+      target_id: path
+      alt: alt23
+      title: imagetitle23
+    settings:
+      existing: 2
+      reference_by: filename
+      autocreate: false
+  -
+    target: sticky
+    map:
+      value: sticky
