@@ -23,6 +23,7 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.traefik.rule=Host(`traefik.${DOMAIN_NAME}`)"
       - "traefik.http.routers.traefik.entrypoints=websecure"
+      - "traefik.http.routers.traefik.tls.certresolver=cloudflare"
       - "traefik.http.services.traefik.loadbalancer.server.port=8042"
       - "traefik.http.routers.traefik.service=api@internal"
       - "traefik.http.routers.traefik.middlewares=chain-no-auth@file"
@@ -80,14 +81,15 @@ services:
   nginx:
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.web.rule=Host(`${DOMAIN_NAME}`)"
-      - "traefik.http.routers.web.entrypoints=websecure"
-      - "traefik.http.services.web.loadbalancer.server.port=8080"
-      - "traefik.http.routers.web.middlewares=web,chain-no-auth@file"
-      - "traefik.http.middlewares.web.headers.stsSeconds=155520011"
-      - "traefik.http.middlewares.web.headers.stsPreload=true"
-      - "traefik.http.middlewares.web.headers.contentTypeNosniff=true"
-      - "traefik.http.middlewares.web.headers.browserXSSFilter=true"
+      - "traefik.http.routers.nginx.rule=Host(`${DOMAIN_NAME}`)"
+      - "traefik.http.routers.nginx.entrypoints=websecure"
+      - "traefik.http.routers.nginx.tls.certresolver=cloudflare"
+      - "traefik.http.services.nginx.loadbalancer.server.port=8080"
+      - "traefik.http.routers.nginx.middlewares=web,chain-no-auth@file"
+      - "traefik.http.middlewares.nginx.headers.stsSeconds=155520011"
+      - "traefik.http.middlewares.nginx.headers.stsPreload=true"
+      - "traefik.http.middlewares.nginx.headers.contentTypeNosniff=true"
+      - "traefik.http.middlewares.nginx.headers.browserXSSFilter=true"
       - "traefik.http.middlewares.chain-redirect-to-https.redirectscheme.scheme=https"
     image: sahistory/nginx:latest
     container_name: nginx
