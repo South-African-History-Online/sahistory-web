@@ -80,7 +80,7 @@ services:
   nginx:
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.web.rule=Host(`${DOMAIN_NAME}`,`${PARTNER_DOMAIN_NAME}`)"
+      - "traefik.http.routers.web.rule=Host(`${DOMAIN_NAME}`)"
       - "traefik.http.routers.web.entrypoints=websecure"
       - "traefik.http.services.web.loadbalancer.server.port=8080"
       - "traefik.http.routers.web.middlewares=web,chain-no-auth@file"
@@ -131,7 +131,6 @@ services:
       DB_PORT: 3306
       HASH_SALT: ${HASH_SALT}
       REDIS_HOST: ${REDIS_HOST}
-      REDIS_PASSWORD: ${REDIS_PASSWORD}
       REDIS_PORT: 6379
     networks:
       - internet
