@@ -1,0 +1,57 @@
+http:
+  middlewares:
+    gzip:
+      compress: {}
+
+    https-proto:
+      headers:
+        customRequestHeaders:
+          X-Forwarded-Proto: https
+
+    redirecthttptohttps:
+      redirectScheme:
+        scheme: https
+
+    rate-limit:
+      rateLimit:
+        average: 100
+        burst: 50
+    chain-no-auth:
+      chain:
+        middlewares:
+          - gzip
+          - rate-limit
+
+  routers:
+    redirecttohttps:
+      entrypoints:
+        - web
+      middlewares:
+        - chain-no-auth@file
+        - redirecthttptohttps@file
+      rule: HostRegexp(`{host:.+}`)
+      service: noop
+
+  services:
+    noop:
+      loadBalancer:
+        servers:
+          url: "http://127.0.0.1"
+
+## TLS
+tls:
+  certificates:
+    - certFile: /etc/traefik/ssl/wildcard.beierholm.dk-with-intermediate.cer
+      keyFile: /etc/traefik/ssl/wildcard.beierholm.dk.key
+  options:
+    mintls12:
+      minVersion: "VersionTLS12" # <======= TLS 1.2 / TLS 1.3
+      cipherSuites:
+        - "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256"
+        - "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256"
+        - "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384"
+        - "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"
+      curvePreferences:
+        - "CurveP521"
+        - "CurveP384"
+      sniStrict: true
