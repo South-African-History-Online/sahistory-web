@@ -46,7 +46,7 @@ services:
       - ./.novi/hosting/data/mysql:/var/lib/mysql
     environment:
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
-      - MYSQL_DATABASE=${DB_SCHEMA}
+      - MYSQL_DATABASE=${DB_NAME}
       - MYSQL_USER=${DB_USER}
       - MYSQL_PASSWORD=${DB_PASS}
     networks:
@@ -126,7 +126,7 @@ services:
       TRUSTED_HOST_PATTERNS: ${TRUSTED_HOST_PATTERNS}
       DB_USER: ${DB_USER}
       DB_PASS: ${DB_PASS}
-      DB_SCHEMA: ${DB_SCHEMA}
+      DB_NAME: ${DB_NAME}
       DB_HOST: ${DB_HOST}
       DB_PORT: 3306
       HASH_SALT: ${HASH_SALT}
@@ -163,7 +163,7 @@ services:
      - "8983:8983"
     volumes:
       - ./.novi/hosting/data/solr:/var/solr
-      - ./.novi/hosting/solr:/opt/solr/server/solr/beierholm
+      - ./.novi/hosting/solr:/opt/solr/server/solr/saho
     restart: unless-stopped
     depends_on:
       - phpfpm
