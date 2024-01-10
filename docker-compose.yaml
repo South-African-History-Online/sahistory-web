@@ -16,6 +16,9 @@ services:
       driver: "json-file"
       options:
         max-size: "50m"
+    environment:
+      - CF_API_EMAIL=${CLOUDFLARE_EMAIL}
+      - CF_API_KEY=${CLOUDFLARE_API_TOKEN}
     volumes:
       - ./.novi/hosting/traefik:/etc/traefik
       - /var/run/docker.sock:/var/run/docker.sock
@@ -84,8 +87,8 @@ services:
       - "traefik.http.routers.nginx.rule=Host(`${DOMAIN_NAME}`)"
       - "traefik.http.routers.nginx.entrypoints=websecure"
       - "traefik.http.routers.nginx.tls.certresolver=cloudflare"
-      - "traefik.http.services.nginx.loadbalancer.server.port=8080"
-      - "traefik.http.routers.nginx.middlewares=web,chain-no-auth@file"
+      - "traefik.http.services.nginx.loadbalancer.server.port=80"
+      - "traefik.http.routers.nginx.middlewares=nginx,chain-no-auth@file"
       - "traefik.http.middlewares.nginx.headers.stsSeconds=155520011"
       - "traefik.http.middlewares.nginx.headers.stsPreload=true"
       - "traefik.http.middlewares.nginx.headers.contentTypeNosniff=true"
