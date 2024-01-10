@@ -14,15 +14,15 @@ docker-compose pull
 docker-compose create
 docker-compose start
 
+# Update composer packages
+docker run -it -v /web:/app --network internet --env-file /web/.env --rm sahistory/jobs:latest composer install
+
 # Wait till Redis is healthy
 until docker exec -it redis redis-cli ping; do echo "Waiting for Redis to be available..."; sleep 5; done
 
 # Wait till MySQL is healthy
 until docker run -it -v /web:/app --network internet --env-file /web/.env --rm sahistory/jobs:latest /usr/local/bin/drush sql:query 'SHOW TABLES;'; do echo "Waiting for DB to be available..."; sleep 5; done
 echo "DB is available"
-
-# Update composer packages
-docker run -it -v /web:/app --network internet --env-file /web/.env --rm sahistory/jobs:latest composer install
 
 # Setup Solr
 echo "Creating SAHO Solr core"
