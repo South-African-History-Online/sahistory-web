@@ -21,6 +21,9 @@ until docker exec -it redis redis-cli ping; do echo "Waiting for Redis to be ava
 until docker run -it -v /web:/app --network internet --env-file /web/.env --rm sahistory/jobs:latest /usr/local/bin/drush sql:query 'SHOW TABLES;'; do echo "Waiting for DB to be available..."; sleep 5; done
 echo "DB is available"
 
+# Update composer packages
+docker run -it -v /web:/app --network internet --env-file /web/.env --rm sahistory/jobs:latest composer install
+
 # Setup Solr
 echo "Creating SAHO Solr core"
 docker exec -it solr /opt/solr/bin/solr create_core -c saho -d /opt/solr/server/solr/saho -n saho
