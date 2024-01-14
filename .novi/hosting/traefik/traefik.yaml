@@ -1,0 +1,56 @@
+log:
+  level: INFO
+
+global:
+  checkNewVersion: false
+  sendAnonymousUsage: false
+
+entrypoints:
+  web:
+    address: ":80"
+  websecure:
+    address: ":443"
+    http:
+      tls:
+        options: "mintls12@file"
+
+  traefik:
+    address: ":8042"
+
+providers:
+  docker:
+    exposedByDefault: false
+  file:
+    filename: "/etc/traefik/dynamic.yaml"
+    watch: true
+
+api:
+  insecure: true
+  dashboard: true
+
+ping:
+
+accessLog:
+  filePath: "/etc/traefik/access.log"
+  bufferingSize: 100
+  filters:
+    statusCodes: "400-499"
+
+certificatesResolvers:
+  cloudflare:
+    acme:
+      email: "michael@karbowiak.dk"
+      storage: "/etc/traefik/acme.json"
+      dnsChallenge:
+        provider: "cloudflare"
+        resolvers: "1.1.1.1:53"
+  leresolver:
+    acme:
+      email: "michael@karbowiak.dk"
+      storage: "/etc/traefik/acme.json"
+      tlsChallenge:
+      dnsChallenge:
+        provider: cloudflare
+
+serversTransport:
+  insecureSkipVerify: true
