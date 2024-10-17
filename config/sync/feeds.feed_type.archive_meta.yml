@@ -1,0 +1,180 @@
+uuid: 61028295-0f1e-433d-9846-5ec0b94b1d2a
+langcode: en
+status: true
+dependencies:
+  config:
+    - core.base_field_override.node.archive.title
+    - field.field.node.archive.field_author
+    - field.field.node.archive.field_contributor
+    - field.field.node.archive.field_isbn
+    - field.field.node.archive.field_media_library_type
+    - field.field.node.archive.field_publication_date_archive
+    - field.field.node.archive.field_publication_place
+    - field.field.node.archive.field_publishers
+    - field.field.node.archive.field_source
+    - node.type.archive
+  module:
+    - feeds_tamper
+    - node
+third_party_settings:
+  feeds_tamper:
+    tampers:
+      98278db4-086c-443a-9b14-6afc471d607b:
+        default_value: Article
+        only_if_empty: true
+        uuid: 98278db4-086c-443a-9b14-6afc471d607b
+        plugin: default_value
+        source: archive_category22
+        weight: 0
+        label: 'Set value or default value'
+label: 'Archive Meta'
+id: archive_meta
+description: ''
+help: null
+import_period: -1
+fetcher: upload
+fetcher_configuration:
+  allowed_extensions: 'txt csv tsv xml opml'
+  directory: 'public://feeds'
+parser: csv
+parser_configuration:
+  delimiter: ','
+  no_headers: false
+  line_limit: 100
+processor: 'entity:node'
+processor_configuration:
+  values:
+    type: archive
+  langcode: en
+  insert_new: 1
+  update_existing: 2
+  update_non_existent: _keep
+  skip_hash_check: false
+  authorize: false
+  expire: -1
+  owner_feed_author: false
+  owner_id: 0
+custom_sources:
+  title:
+    value: Title
+    label: Title
+    machine_name: title
+    type: csv
+  publication_title:
+    value: 'Publication Title'
+    label: 'Publication Title'
+    machine_name: publication_title
+    type: csv
+  author:
+    value: Author
+    label: Author
+    machine_name: author
+    type: csv
+  contributor:
+    value: Contributor
+    label: Contributor
+    machine_name: contributor
+    type: csv
+  publishers:
+    value: Publishers
+    label: Publishers
+    machine_name: publishers
+    type: csv
+  publication_date:
+    value: 'Publication date'
+    label: 'Publication date'
+    machine_name: publication_date
+    type: csv
+  publication_place_of_archive_item:
+    value: 'Publication Place of Archive Item'
+    label: 'Publication Place of Archive Item'
+    machine_name: publication_place_of_archive_item
+    type: csv
+  isbn:
+    value: ISBN
+    label: ISBN
+    machine_name: isbn
+    type: csv
+  source:
+    value: Source
+    label: Source
+    machine_name: source
+    type: csv
+  archive_category:
+    value: 'Archive Category'
+    label: 'Archive Category'
+    machine_name: archive_category
+    type: csv
+  subtitle:
+    value: Subtitle
+    label: Subtitle
+    machine_name: subtitle
+    type: csv
+  archive_category22:
+    value: 'Archive Category'
+    label: 'Archive Category'
+    machine_name: archive_category22
+    type: csv
+  source22:
+    value: Source
+    label: Source
+    machine_name: source22
+    type: csv
+  sticky:
+    value: Sticky
+    label: Sticky
+    machine_name: sticky
+    type: csv
+mappings:
+  -
+    target: title
+    map:
+      value: title
+    unique:
+      value: '1'
+  -
+    target: field_author
+    map:
+      value: author
+    unique: {  }
+  -
+    target: field_contributor
+    map:
+      value: contributor
+    unique: {  }
+  -
+    target: field_publishers
+    map:
+      value: publishers
+  -
+    target: field_publication_date_archive
+    map:
+      value: publication_date
+    unique: {  }
+  -
+    target: field_publication_place
+    map:
+      value: publication_place_of_archive_item
+    unique: {  }
+  -
+    target: field_isbn
+    map:
+      value: isbn
+    unique: {  }
+  -
+    target: field_media_library_type
+    map:
+      target_id: archive_category22
+    settings:
+      reference_by: name
+      autocreate: false
+  -
+    target: field_source
+    map:
+      value: source22
+    settings:
+      format: filtered_html
+  -
+    target: sticky
+    map:
+      value: sticky

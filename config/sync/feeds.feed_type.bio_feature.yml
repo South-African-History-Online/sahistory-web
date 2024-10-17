@@ -1,0 +1,80 @@
+uuid: 585865c7-8e50-44dd-b4b5-2ddd112cb95f
+langcode: en
+status: true
+dependencies:
+  config:
+    - core.base_field_override.node.biography.title
+    - field.field.node.biography.field_feature_parent
+    - node.type.biography
+  module:
+    - feeds_tamper
+    - node
+third_party_settings:
+  feeds_tamper:
+    tampers:
+      214a819c-5780-46c4-bb78-74c8a73775df:
+        separator: ',%s'
+        limit: null
+        uuid: 214a819c-5780-46c4-bb78-74c8a73775df
+        plugin: explode
+        source: feature_parent
+        weight: 0
+        label: Explode
+label: 'Bio Feature Parent'
+id: bio_feature
+description: ''
+help: null
+import_period: -1
+fetcher: upload
+fetcher_configuration:
+  allowed_extensions: 'txt csv tsv xml opml'
+  directory: 'public://feeds'
+parser: csv
+parser_configuration:
+  delimiter: ','
+  no_headers: false
+  line_limit: 100
+processor: 'entity:node'
+processor_configuration:
+  values:
+    type: biography
+  langcode: en
+  insert_new: 1
+  update_existing: 2
+  update_non_existent: _keep
+  skip_hash_check: false
+  authorize: false
+  expire: -1
+  owner_feed_author: false
+  owner_id: 4911
+custom_sources:
+  title:
+    value: Title
+    label: Title
+    machine_name: title
+    type: csv
+  title2222222:
+    value: Title
+    label: Title
+    machine_name: title2222222
+    type: csv
+  feature_parent:
+    value: 'Feature Parent'
+    label: 'Feature Parent'
+    machine_name: feature_parent
+    type: csv
+mappings:
+  -
+    target: title
+    map:
+      value: title2222222
+    unique:
+      value: '1'
+  -
+    target: field_feature_parent
+    map:
+      target_id: feature_parent
+    settings:
+      reference_by: nid
+      feeds_item: guid
+      autocreate: 0
