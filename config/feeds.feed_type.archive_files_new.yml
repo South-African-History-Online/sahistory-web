@@ -1,0 +1,130 @@
+uuid: 188eae3f-e9a7-401f-8c64-673ed701aa82
+langcode: en
+status: true
+dependencies:
+  config:
+    - core.base_field_override.node.archive.title
+    - field.field.node.archive.field_file_upload
+    - node.type.archive
+  module:
+    - node
+label: 'Archive Files New'
+id: archive_files_new
+description: ''
+help: null
+import_period: -1
+fetcher: directory
+fetcher_configuration:
+  allowed_extensions: 'txt csv tsv xml opml'
+  allowed_schemes:
+    public: public
+  recursive_scan: false
+parser: csv
+parser_configuration:
+  delimiter: ','
+  no_headers: false
+  line_limit: 100
+processor: 'entity:node'
+processor_configuration:
+  values:
+    type: archive
+  langcode: en
+  insert_new: 1
+  update_existing: 2
+  update_non_existent: _keep
+  skip_hash_check: false
+  authorize: false
+  expire: -1
+  owner_feed_author: false
+  owner_id: 0
+custom_sources:
+  title_archive_file:
+    value: title
+    label: title
+    machine_name: title_archive_file
+    type: csv
+  title_archive_files:
+    value: title
+    label: title
+    machine_name: title_archive_files
+    type: csv
+  file:
+    value: file
+    label: file
+    machine_name: file
+    type: csv
+  title_archive_files_2:
+    value: title
+    label: title
+    machine_name: title_archive_files_2
+    type: csv
+  files:
+    value: file
+    label: file
+    machine_name: files
+    type: csv
+  files22:
+    value: files
+    label: files
+    machine_name: files22
+    type: csv
+  nid:
+    value: nid
+    label: nid
+    machine_name: nid
+    type: csv
+  title69:
+    value: Title
+    label: Title
+    machine_name: title69
+    type: csv
+  file69:
+    value: File
+    label: File
+    machine_name: file69
+    type: csv
+  image69:
+    value: Image
+    label: Image
+    machine_name: image69
+    type: csv
+  title_69:
+    value: Title
+    label: Title
+    machine_name: title_69
+    type: csv
+  file_69:
+    value: File
+    label: File
+    machine_name: file_69
+    type: csv
+  image_69:
+    value: Image
+    label: Image
+    machine_name: image_69
+    type: csv
+  sticky69:
+    value: Sticky
+    label: Sticky
+    machine_name: sticky69
+    type: csv
+mappings:
+  -
+    target: title
+    map:
+      value: title_69
+    unique:
+      value: '1'
+  -
+    target: field_file_upload
+    map:
+      target_id: file_69
+      description: ''
+    settings:
+      existing: 2
+      reference_by: filename
+      autocreate: false
+  -
+    target: sticky
+    map:
+      value: sticky69

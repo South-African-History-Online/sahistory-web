@@ -1,0 +1,196 @@
+uuid: 6e3a44b7-39af-4d31-b3dc-4ad8a9d12c84
+langcode: en
+status: true
+dependencies:
+  config:
+    - core.base_field_override.node.image.title
+    - field.field.node.image.body
+    - field.field.node.image.field_african_country
+    - field.field.node.image.field_feature_link
+    - field.field.node.image.field_feature_parent
+    - field.field.node.image.field_gallery_tag
+    - field.field.node.image.field_image
+    - field.field.node.image.field_media_library_type
+    - field.field.node.image.field_source
+    - node.type.image
+  module:
+    - node
+label: 'Recent Images'
+id: recent_images
+description: ''
+help: null
+import_period: -1
+fetcher: upload
+fetcher_configuration:
+  allowed_extensions: 'txt csv tsv xml opml'
+  directory: 'public://feeds'
+parser: csv
+parser_configuration:
+  delimiter: ','
+  no_headers: false
+  line_limit: 100
+processor: 'entity:node'
+processor_configuration:
+  values:
+    type: image
+  langcode: en
+  insert_new: 1
+  update_existing: 2
+  update_non_existent: _keep
+  skip_hash_check: false
+  authorize: false
+  expire: -1
+  owner_feed_author: false
+  owner_id: 0
+custom_sources:
+  title:
+    value: title
+    label: title
+    machine_name: title
+    type: csv
+  name:
+    value: Name
+    label: Name
+    machine_name: name
+    type: csv
+  african_country:
+    value: 'African Country'
+    label: 'African Country'
+    machine_name: african_country
+    type: csv
+  archive_category:
+    value: 'Archive Category'
+    label: 'Archive Category'
+    machine_name: archive_category
+    type: csv
+  body:
+    value: Body
+    label: Body
+    machine_name: body
+    type: csv
+  feature_link:
+    value: 'Feature Link'
+    label: 'Feature Link'
+    machine_name: feature_link
+    type: csv
+  feature_parent:
+    value: 'Feature Parent'
+    label: 'Feature Parent'
+    machine_name: feature_parent
+    type: csv
+  galleries_tag:
+    value: 'Galleries Tag'
+    label: 'Galleries Tag'
+    machine_name: galleries_tag
+    type: csv
+  african_country33:
+    value: 'African Country'
+    label: 'African Country'
+    machine_name: african_country33
+    type: csv
+  archive_category33:
+    value: 'Archive Category'
+    label: 'Archive Category'
+    machine_name: archive_category33
+    type: csv
+  body33:
+    value: Body
+    label: Body
+    machine_name: body33
+    type: csv
+  feature_link33:
+    value: 'Feature Link'
+    label: 'Feature Link'
+    machine_name: feature_link33
+    type: csv
+  feature_parent33:
+    value: 'Feature Parent'
+    label: 'Feature Parent'
+    machine_name: feature_parent33
+    type: csv
+  galleries_tag33:
+    value: 'Galleries Tag'
+    label: 'Galleries Tag'
+    machine_name: galleries_tag33
+    type: csv
+  source:
+    value: Source
+    label: Source
+    machine_name: source
+    type: csv
+  sticky:
+    value: Sticky
+    label: Sticky
+    machine_name: sticky
+    type: csv
+mappings:
+  -
+    target: title
+    map:
+      value: title
+    unique:
+      value: '1'
+  -
+    target: field_image
+    map:
+      target_id: name
+      alt: ''
+      title: ''
+    settings:
+      existing: 2
+      reference_by: filename
+      autocreate: false
+  -
+    target: field_african_country
+    map:
+      target_id: african_country33
+    settings:
+      reference_by: name
+      autocreate: false
+  -
+    target: field_media_library_type
+    map:
+      target_id: archive_category33
+    settings:
+      reference_by: name
+      autocreate: false
+  -
+    target: body
+    map:
+      value: body33
+      summary: ''
+    settings:
+      format: plain_text
+  -
+    target: field_feature_link
+    map:
+      target_id: feature_link33
+    settings:
+      reference_by: title
+      autocreate: false
+      feeds_item: false
+  -
+    target: field_feature_parent
+    map:
+      target_id: feature_parent33
+    settings:
+      reference_by: title
+      autocreate: false
+      feeds_item: false
+  -
+    target: field_gallery_tag
+    map:
+      target_id: galleries_tag33
+    settings:
+      reference_by: name
+      autocreate: false
+  -
+    target: field_source
+    map:
+      value: source
+    settings:
+      format: plain_text
+  -
+    target: sticky
+    map:
+      value: sticky
