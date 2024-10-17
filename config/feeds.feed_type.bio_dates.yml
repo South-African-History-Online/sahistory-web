@@ -1,0 +1,93 @@
+uuid: 7ea6a88e-3443-4d2d-a952-7001e87d81aa
+langcode: en
+status: true
+dependencies:
+  config:
+    - core.base_field_override.node.biography.title
+    - field.field.node.biography.field_drupal_birth_date
+    - field.field.node.biography.field_drupal_death_date
+    - node.type.biography
+  module:
+    - node
+label: 'Bio Dates'
+id: bio_dates
+description: ''
+help: null
+import_period: -1
+fetcher: upload
+fetcher_configuration:
+  allowed_extensions: 'txt csv tsv xml opml'
+  directory: 'public://feeds'
+parser: csv
+parser_configuration:
+  delimiter: ','
+  no_headers: false
+  line_limit: 100
+processor: 'entity:node'
+processor_configuration:
+  values:
+    type: biography
+  langcode: en
+  insert_new: 1
+  update_existing: 2
+  update_non_existent: _keep
+  skip_hash_check: false
+  authorize: false
+  expire: -1
+  owner_feed_author: false
+  owner_id: 0
+custom_sources:
+  title:
+    value: title
+    label: title
+    machine_name: title
+    type: csv
+  drupal_birthdate:
+    value: 'Drupal Birthdate'
+    label: 'Drupal Birthdate'
+    machine_name: drupal_birthdate
+    type: csv
+  drupal_birthdate11:
+    value: 'Drupal Birthdate'
+    label: 'Drupal Birthdate'
+    machine_name: drupal_birthdate11
+    type: csv
+  drupal_deathdate:
+    value: 'Drupal Deathdate'
+    label: 'Drupal Deathdate'
+    machine_name: drupal_deathdate
+    type: csv
+  title34343:
+    value: title
+    label: title
+    machine_name: title34343
+    type: csv
+  drupal_birthdate1234:
+    value: 'Drupal Birthdate'
+    label: 'Drupal Birthdate'
+    machine_name: drupal_birthdate1234
+    type: csv
+  drupal_deathdate1234:
+    value: 'Drupal Deathdate'
+    label: 'Drupal Deathdate'
+    machine_name: drupal_deathdate1234
+    type: csv
+mappings:
+  -
+    target: title
+    map:
+      value: title34343
+    unique:
+      value: '1'
+  -
+    target: field_drupal_birth_date
+    map:
+      value: drupal_birthdate1234
+    settings:
+      timezone: UTC
+  -
+    target: field_drupal_death_date
+    map:
+      value: drupal_deathdate1234
+    settings:
+      timezone: UTC
