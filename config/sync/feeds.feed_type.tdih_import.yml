@@ -1,0 +1,92 @@
+uuid: 06eb5dd1-4dbd-41f0-803c-c64de5483c6b
+langcode: en
+status: true
+dependencies:
+  config:
+    - core.base_field_override.node.event.title
+    - field.field.node.event.field_event_image
+    - field.field.node.event.field_this_day_in_history_3
+    - node.type.event
+  module:
+    - node
+label: 'TDIH Import'
+id: tdih_import
+description: ''
+help: null
+import_period: -1
+fetcher: upload
+fetcher_configuration:
+  allowed_extensions: 'txt csv tsv xml opml'
+  directory: 'public://feeds'
+parser: csv
+parser_configuration:
+  delimiter: ','
+  no_headers: false
+  line_limit: 100
+processor: 'entity:node'
+processor_configuration:
+  values:
+    type: event
+  langcode: en
+  insert_new: 1
+  update_existing: 2
+  update_non_existent: _keep
+  skip_hash_check: false
+  authorize: false
+  expire: -1
+  owner_feed_author: false
+  owner_id: 0
+custom_sources:
+  fid:
+    value: FID
+    label: FID
+    machine_name: fid
+    type: csv
+  title:
+    value: title
+    label: title
+    machine_name: title
+    type: csv
+  fid1:
+    value: FID
+    label: FID
+    machine_name: fid1
+    type: csv
+  title1:
+    value: title
+    label: title
+    machine_name: title1
+    type: csv
+  date:
+    value: date
+    label: date
+    machine_name: date
+    type: csv
+  path:
+    value: Path
+    label: Path
+    machine_name: path
+    type: csv
+mappings:
+  -
+    target: title
+    map:
+      value: title1
+    unique:
+      value: '1'
+  -
+    target: field_this_day_in_history_3
+    map:
+      value: date
+    settings:
+      timezone: UTC
+  -
+    target: field_event_image
+    map:
+      target_id: path
+      alt: ''
+      title: ''
+    settings:
+      existing: 2
+      reference_by: filename
+      autocreate: false

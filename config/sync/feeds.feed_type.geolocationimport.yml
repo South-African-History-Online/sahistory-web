@@ -1,0 +1,71 @@
+uuid: 7ef5cbbb-2552-4888-8952-2d6772673bfa
+langcode: en
+status: true
+dependencies:
+  config:
+    - core.base_field_override.node.place.title
+    - field.field.node.place.field_geofield
+    - node.type.place
+  module:
+    - geofield
+    - node
+label: Geolocationimport
+id: geolocationimport
+description: ''
+help: null
+import_period: -1
+fetcher: upload
+fetcher_configuration:
+  allowed_extensions: 'txt csv tsv xml opml'
+  directory: 'public://feeds'
+parser: csv
+parser_configuration:
+  delimiter: ','
+  no_headers: false
+  line_limit: 100
+processor: 'entity:node'
+processor_configuration:
+  values:
+    type: place
+  langcode: en
+  insert_new: 1
+  update_existing: 2
+  update_non_existent: _keep
+  skip_hash_check: false
+  authorize: false
+  expire: -1
+  owner_feed_author: false
+  owner_id: 0
+custom_sources:
+  title:
+    value: title
+    label: title
+    machine_name: title
+    type: csv
+  latitude:
+    value: Latitude
+    label: Latitude
+    machine_name: latitude
+    type: csv
+  longitude:
+    value: longitude
+    label: longitude
+    machine_name: longitude
+    type: csv
+  latitude1:
+    value: latitude
+    label: latitude
+    machine_name: latitude1
+    type: csv
+mappings:
+  -
+    target: title
+    map:
+      value: title
+    unique:
+      value: '1'
+  -
+    target: field_geofield
+    map:
+      lat: latitude1
+      lon: longitude

@@ -1,0 +1,84 @@
+uuid: 4dc36bee-986e-4623-bd25-44c4f5a33576
+langcode: en
+status: true
+dependencies:
+  config:
+    - core.base_field_override.node.archive.title
+    - field.field.node.archive.field_file_upload
+    - node.type.archive
+  module:
+    - node
+label: 'Archive Files'
+id: archive_files
+description: ''
+help: null
+import_period: -1
+fetcher: upload
+fetcher_configuration:
+  allowed_extensions: 'txt csv tsv xml opml'
+  directory: 'public://feeds'
+parser: csv
+parser_configuration:
+  delimiter: ','
+  no_headers: false
+  line_limit: 100
+processor: 'entity:node'
+processor_configuration:
+  values:
+    type: archive
+  langcode: en
+  insert_new: 1
+  update_existing: 2
+  update_non_existent: _keep
+  skip_hash_check: false
+  authorize: false
+  expire: -1
+  owner_feed_author: false
+  owner_id: 0
+custom_sources:
+  title:
+    value: Title
+    label: Title
+    machine_name: title
+    type: csv
+  name:
+    value: Name
+    label: Name
+    machine_name: name
+    type: csv
+  titlearchivefile:
+    value: Title
+    label: Title
+    machine_name: titlearchivefile
+    type: csv
+  namearchivefile:
+    value: Name
+    label: Name
+    machine_name: namearchivefile
+    type: csv
+  files:
+    value: files
+    label: files
+    machine_name: files
+    type: csv
+  title22222:
+    value: title
+    label: title
+    machine_name: title22222
+    type: csv
+mappings:
+  -
+    target: title
+    map:
+      value: title22222
+    unique:
+      value: '1'
+  -
+    target: field_file_upload
+    map:
+      target_id: files
+      description: ''
+    settings:
+      reference_by: filename
+      existing: '2'
+      autocreate: 0
