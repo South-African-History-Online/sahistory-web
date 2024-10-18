@@ -1,1 +1,0 @@
- var kDefaultURL  = drupalSettings.pdf_reader.file_url;
