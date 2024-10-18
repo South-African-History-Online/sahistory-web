@@ -1,7 +1,9 @@
 uuid: 0259b6a4-1ef1-4ac3-8843-0bade78744a4
 langcode: en
 status: true
-dependencies: {  }
+dependencies:
+  module:
+    - media
 name: 'Filtered HTML'
 format: filtered_html
 weight: -9
@@ -9,7 +11,7 @@ filters:
   filter_autop:
     id: filter_autop
     provider: filter
-    status: true
+    status: false
     weight: -50
     settings: {  }
   filter_html:
@@ -30,7 +32,21 @@ filters:
   filter_url:
     id: filter_url
     provider: filter
-    status: true
+    status: false
     weight: -49
     settings:
       filter_url_length: 72
+  media_embed:
+    id: media_embed
+    provider: media
+    status: true
+    weight: 100
+    settings:
+      default_view_mode: default
+      allowed_view_modes: {  }
+      allowed_media_types:
+        audio: audio
+        file: file
+        image: image
+        remote_video: remote_video
+        video: video
