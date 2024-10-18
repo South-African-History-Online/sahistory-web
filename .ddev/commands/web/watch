@@ -1,0 +1,20 @@
+#!/bin/bash
+
+## Description: Installs nvm version and runs npm watch
+## Usage: theme:watch
+## Example: ddev theme:watch saho
+
+GREEN='\033[0;32m'
+RED='\033[0;31m'
+NC='\033[0m\n' # set no color and line end
+
+printf "${GREEN}Launching npm install inside ddev${NC}"
+
+if [ -z "$1" ]; then
+    echo "Please provide a theme name. Usage: ddev theme:watch saho"
+    exit 1
+fi
+
+cd webroot/themes/custom/$1
+nvm alias default `cat .nvmrc`
+npm run watch

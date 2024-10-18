@@ -1,0 +1,27 @@
+// Add custom background and text utility classes based on $colors, eg. bg-pine-green, text-pine-green
+// You may override the $colors:() list in _variables.scss file.
+@use "sass:map";
+
+$utilities: map.merge(
+  $utilities,
+  (
+    "background-color": (
+      property: background-color,
+      class: bg,
+      local-vars: (
+        "bg-opacity": 1,
+      ),
+      responsive: false,
+      values: map.merge($utilities-bg-colors, ($colors)),
+    ),
+    "color": (
+      property: color,
+      class: text,
+      local-vars: (
+        "text-opacity": 1,
+      ),
+      responsive: false,
+      values: map.merge($utilities-text-colors, ($colors)),
+    ),
+  )
+);
