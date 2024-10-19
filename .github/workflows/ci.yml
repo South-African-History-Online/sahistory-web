@@ -1,0 +1,51 @@
+name: PR Build and Test
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: Build and Test
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: drupal
+          MYSQL_USER: drupal
+          MYSQL_PASSWORD: drupal
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.3
+          tools: composer
+
+      - name: Install Composer dependencies
+        run: composer install --prefer-dist --no-progress --no-suggest
+
+      - name: Wait for MySQL to be ready
+        run: |
+          dockerize -wait tcp://127.0.0.1:3306 -timeout 1m
+
+      - name: Install Drupal site
+        env:
+          SIMPLETEST_BASE_URL: "http://127.0.0.1"
+          DB_URL: "mysql://drupal:drupal@127.0.0.1:3306/drupal"
+        run: |
+          php core/scripts/drupal install --db-url=$DB_URL --yes
