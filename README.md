@@ -177,6 +177,54 @@ For detailed information on Radix, you can visit [Radix Documentation](https://r
   npm run build
   ```
 
+# Using the Drupal Radix CLI with DDEV
+
+The following steps will help you use the `drupal-radix-cli` command within a DDEV environment for managing Radix themes.
+
+## Step-by-Step Instructions
+
+1. **List Available Components**
+   To list all components available in your Radix theme, run:
+   ```sh
+   drupal-radix-cli list
+   ```
+
+2. **Add a Radix Component**
+   To add a Radix component to your current theme, use:
+   ```sh
+   drupal-radix-cli add
+   ```
+   Use the `--radix-path` flag to specify a custom Radix components directory if your Radix base theme is installed in a non-standard location:
+   ```sh
+   drupal-radix-cli add --radix-path ../../radix/components
+   ```
+
+3. **Generate a New Component**
+   To generate a clean new component folder within your subtheme components directory:
+   ```sh
+   drupal-radix-cli generate
+   ```
+   This will generate a new component folder with the following files:
+   - `[component-name]/[component-name].twig`
+   - `[component-name]/[component-name].component.yml`
+   - `[component-name]/[component-name].scss`
+   - `[component-name]/_[component-name].js`
+   - `[component-name]/README.md`
+
+   Make sure to remove any unwanted files and update your files accordingly.
+
+4. **Help**
+   To display usage instructions:
+   ```sh
+   drupal-radix-cli --help
+   ```
+   Or simply run:
+   ```sh
+   drupal-radix-cli
+   ```
+
+The `drupal-radix-cli` provides various commands to help manage and work with Radix themes effectively. You can explore more commands and options by referring to the [official Radix documentation](https://radix.trydrupal.com/radix/working-with-the-components/the-drupal-radix-cli).
+
 ### Git Strategy & Collaboration
 We use Git to facilitate collaboration and versioning of our code. Our Git strategy aims to keep things lean and straightforward, allowing for a dynamic workflow suitable for the size of the project and developer team.
 
