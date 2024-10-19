@@ -1,6 +1,8 @@
 # South African History Online (SAHO)
 The primary Git repository for the South African History Online (SAHO) website - sahistory.org.za
 
+This is a project supported and developed by novicell.dk
+
 ## Stack Overview
 The full stack is:
 - **Drupal 10.3.6** (upgraded from Drupal 8)
