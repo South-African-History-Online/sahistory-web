@@ -7,58 +7,87 @@ on:
       - main
 
 jobs:
-  build:
-    name: Build and Test
+  validate-composer:
+    name: Validate Composer
     runs-on: ubuntu-latest
-
-    services:
-      mysql:
-        image: mysql:8.0.40
-        env:
-          MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: drupal
-          MYSQL_USER: drupal
-          MYSQL_PASSWORD: drupal
-        ports:
-          - 3306:3306
-        options: >-
-          --health-cmd="mysqladmin ping --silent"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=3
-
+    strategy:
+      matrix:
+        php-versions: [ '8.3' ]
+        dependency-version: [ prefer-lowest, prefer-stable ]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Set up PHP
+      - name: Setup PHP, with Composer
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-versions }}
+          tools: composer:v2
+
+      - name: Get composer cache directory
+        id: composer-cache
+        run: echo "::set-output name=dir::$(composer config cache-files-dir)"
+
+      - name: Cache dependencies
+        uses: actions/cache@v2
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      - name: Validate Composer files
+        run: |
+          composer config --no-plugins allow-plugins.mglaman/composer-drupal-lenient true
+          composer validate --strict composer.json
+          composer update --${{ matrix.dependency-version }} --prefer-dist --no-interaction
+
+  php-coding-standards:
+    name: PHP Coding Standards
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup PHP, with Composer
         uses: shivammathur/setup-php@v2
         with:
           php-version: 8.3
-          tools: composer
+          tools: composer:v2
 
-      - name: Install Composer dependencies
-        run: composer install --prefer-dist --no-progress --no-suggest
+      - name: Get composer cache directory
+        id: composer-cache
+        run: echo "::set-output name=dir::$(composer config cache-files-dir)"
 
-      - name: Wait for MySQL to be ready
+      - name: Cache dependencies
+        uses: actions/cache@v2
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      - name: Install Dependencies
         run: |
-          until mysqladmin ping -h 127.0.0.1 -u drupal -pdrupal --silent; do
-            echo "Waiting for MySQL..."
-            sleep 5
-          done
+          composer config --no-plugins allow-plugins.mglaman/composer-drupal-lenient true
+          composer install --no-interaction --no-progress
 
-      - name: Install Drush
-        run: composer require drush/drush
+      - name: PHPCS
+        run: ./vendor/bin/phpcs
 
-      - name: Install Drupal site using Drush
-        env:
-          DB_URL: "mysql://drupal:drupal@127.0.0.1:3306/drupal"
-        run: ./vendor/bin/drush site-install standard --db-url=$DB_URL --yes
+  drupal-check:
+    name: Drupal Best Practices
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup PHP, with Composer
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.3
+          tools: composer:v2
+
       - name: Install Drupal Check
         run: composer require mglaman/drupal-check --dev
 
       - name: Run Drupal Best Practices Check
-        run: ./vendor/bin/drupal-check .
-
-      - name: Check Drupal Status with Drush
-        run: ./vendor/bin/drush status
+        run: ./vendor/bin/drupal-check webroot/modules/custom webroot/themes/custom
