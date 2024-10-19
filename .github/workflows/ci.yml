@@ -47,13 +47,13 @@ jobs:
             sleep 5
           done
 
-      - name: Install Drupal site
-        env:
-          SIMPLETEST_BASE_URL: "http://127.0.0.1"
-          DB_URL: "mysql://drupal:drupal@127.0.0.1:3306/drupal"
-        run: |
-          php core/scripts/drupal install --db-url=$DB_URL --yes
+      - name: Install Drush
+        run: composer require drush/drush
 
+      - name: Install Drupal site using Drush
+        env:
+          DB_URL: "mysql://drupal:drupal@127.0.0.1:3306/drupal"
+        run: ./vendor/bin/drush site-install standard --db-url=$DB_URL --yes
       - name: Install Drupal Check
         run: composer require mglaman/drupal-check --dev
 
