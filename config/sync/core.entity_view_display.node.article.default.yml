@@ -6,7 +6,6 @@ dependencies:
     - field.field.node.article.body
     - field.field.node.article.comment
     - field.field.node.article.comment_node_article
-    - field.field.node.article.feeds_item
     - field.field.node.article.field_africa_category
     - field.field.node.article.field_african_country
     - field.field.node.article.field_archive_page_feature
@@ -58,59 +57,52 @@ dependencies:
     - field.field.node.article.field_topics_related_tab
     - image.style.large
     - node.type.article
+    - views.view.feature_children
+    - views.view.feature_parent
   module:
     - image
     - layout_builder
+    - layout_discovery
     - text
     - user
+    - views
 third_party_settings:
   layout_builder:
     enabled: true
     allow_custom: false
     sections:
       -
-        layout_id: layout_onecol
+        layout_id: layout_threecol_section
         layout_settings:
           label: ''
+          context_mapping: {  }
+          column_widths: 25-50-25
         components:
           a8e2ee97-a3b5-45ea-9465-42e176059305:
             uuid: a8e2ee97-a3b5-45ea-9465-42e176059305
-            region: content
+            region: first
             configuration:
               id: 'field_block:node:article:field_image'
+              label: Image
               label_display: '0'
+              provider: layout_builder
               context_mapping:
                 entity: layout_builder.entity
+                view_mode: view_mode
               formatter:
                 type: image
                 label: hidden
                 settings:
                   image_link: ''
-                  image_style: large
+                  image_style: article_image
                   image_loading:
                     attribute: lazy
                 third_party_settings: {  }
             weight: 0
             additional: {  }
-          d0eb10f0-09eb-44cb-8dfa-1babde4accc8:
-            uuid: d0eb10f0-09eb-44cb-8dfa-1babde4accc8
-            region: content
-            configuration:
-              id: 'field_block:node:article:field_public_ex_categorie'
-              label_display: '0'
-              context_mapping:
-                entity: layout_builder.entity
-              formatter:
-                type: entity_reference_label
-                label: hidden
-                settings:
-                  link: true
-                third_party_settings: {  }
-            weight: 1
-            additional: {  }
           ad0e41dc-96b2-413d-91aa-f6b6c08493af:
             uuid: ad0e41dc-96b2-413d-91aa-f6b6c08493af
-            region: content
+            region: second
             configuration:
               id: 'field_block:node:article:body'
               label_display: '0'
@@ -121,11 +113,11 @@ third_party_settings:
                 label: hidden
                 settings: {  }
                 third_party_settings: {  }
-            weight: 2
+            weight: 0
             additional: {  }
           469d20e1-4b95-4273-8199-0ea349e94659:
             uuid: 469d20e1-4b95-4273-8199-0ea349e94659
-            region: content
+            region: second
             configuration:
               id: 'field_block:node:article:field_ref_str'
               label_display: '0'
@@ -136,11 +128,11 @@ third_party_settings:
                 label: above
                 settings: {  }
                 third_party_settings: {  }
-            weight: 3
+            weight: 1
             additional: {  }
           360d08b3-91c5-408f-a75f-438862c64a96:
             uuid: 360d08b3-91c5-408f-a75f-438862c64a96
-            region: content
+            region: second
             configuration:
               id: 'field_block:node:article:field_further_reading'
               label_display: '0'
@@ -151,11 +143,11 @@ third_party_settings:
                 label: above
                 settings: {  }
                 third_party_settings: {  }
-            weight: 4
+            weight: 2
             additional: {  }
           c79cfa18-2e33-423b-9e7c-2a28fcf1efa8:
             uuid: c79cfa18-2e33-423b-9e7c-2a28fcf1efa8
-            region: content
+            region: second
             configuration:
               id: 'field_block:node:article:field_navigation_links_placehold'
               label_display: '0'
@@ -166,8 +158,213 @@ third_party_settings:
                 label: hidden
                 settings: {  }
                 third_party_settings: {  }
-            weight: 5
+            weight: 3
             additional: {  }
+          d0eb10f0-09eb-44cb-8dfa-1babde4accc8:
+            uuid: d0eb10f0-09eb-44cb-8dfa-1babde4accc8
+            region: first
+            configuration:
+              id: 'field_block:node:article:field_public_ex_categorie'
+              label: 'Publication or Exhibition'
+              label_display: visible
+              provider: layout_builder
+              context_mapping:
+                entity: layout_builder.entity
+                view_mode: view_mode
+              formatter:
+                type: entity_reference_label
+                label: hidden
+                settings:
+                  link: true
+                third_party_settings: {  }
+            weight: 1
+            additional: {  }
+          4561bf2c-8168-4b01-9632-a69ea9a1fadf:
+            uuid: 4561bf2c-8168-4b01-9632-a69ea9a1fadf
+            region: third
+            configuration:
+              id: 'views_block:feature_children-block_2'
+              label: ''
+              label_display: visible
+              provider: views
+              context_mapping: {  }
+              views_label: ''
+              items_per_page: none
+            weight: 3
+            additional: {  }
+          59bda4ea-8880-4f58-b74b-ae599df0ccee:
+            uuid: 59bda4ea-8880-4f58-b74b-ae599df0ccee
+            region: first
+            configuration:
+              id: 'field_block:node:article:created'
+              label: 'Published date'
+              label_display: visible
+              provider: layout_builder
+              context_mapping:
+                entity: layout_builder.entity
+                view_mode: view_mode
+              formatter:
+                type: timestamp
+                label: hidden
+                settings:
+                  date_format: short
+                  custom_date_format: ''
+                  timezone: ''
+                  tooltip:
+                    date_format: short
+                    custom_date_format: ''
+                  time_diff:
+                    enabled: false
+                    future_format: '@interval hence'
+                    past_format: '@interval ago'
+                    granularity: 2
+                    refresh: 60
+                    description: ''
+                third_party_settings: {  }
+            weight: 2
+            additional: {  }
+          19b8b398-0520-42b1-8425-9321fc805df4:
+            uuid: 19b8b398-0520-42b1-8425-9321fc805df4
+            region: first
+            configuration:
+              id: 'field_block:node:article:revision_timestamp'
+              label: 'Last updated'
+              label_display: visible
+              provider: layout_builder
+              context_mapping:
+                entity: layout_builder.entity
+                view_mode: view_mode
+              formatter:
+                type: timestamp
+                label: hidden
+                settings:
+                  date_format: short
+                  custom_date_format: ''
+                  timezone: ''
+                  tooltip:
+                    date_format: short
+                    custom_date_format: ''
+                  time_diff:
+                    enabled: false
+                    future_format: '@interval hence'
+                    past_format: '@interval ago'
+                    granularity: 2
+                    refresh: 60
+                    description: ''
+                third_party_settings: {  }
+            weight: 3
+            additional: {  }
+          b9969525-2862-4c5a-884b-e6b81b15e5e1:
+            uuid: b9969525-2862-4c5a-884b-e6b81b15e5e1
+            region: third
+            configuration:
+              id: 'views_block:feature_children-block_9'
+              label: ''
+              label_display: visible
+              provider: views
+              context_mapping: {  }
+              views_label: ''
+              items_per_page: none
+            weight: 6
+            additional: {  }
+          a153f474-9ac2-44a3-8577-facb69213738:
+            uuid: a153f474-9ac2-44a3-8577-facb69213738
+            region: third
+            configuration:
+              id: 'views_block:feature_children-block_1'
+              label: ''
+              label_display: visible
+              provider: views
+              context_mapping: {  }
+              views_label: ''
+              items_per_page: none
+            weight: 2
+            additional: {  }
+          0ba7f8fe-d7be-4970-9ee8-7b25e9f8ba9d:
+            uuid: 0ba7f8fe-d7be-4970-9ee8-7b25e9f8ba9d
+            region: third
+            configuration:
+              id: 'views_block:feature_parent-block_1'
+              label: ''
+              label_display: visible
+              provider: views
+              context_mapping: {  }
+              views_label: ''
+              items_per_page: none
+            weight: 13
+            additional: {  }
+          a8314bbc-aaf9-4b6f-8fbf-55d3fdadd803:
+            uuid: a8314bbc-aaf9-4b6f-8fbf-55d3fdadd803
+            region: third
+            configuration:
+              id: 'views_block:feature_parent-block_3'
+              label: ''
+              label_display: visible
+              provider: views
+              context_mapping: {  }
+              views_label: ''
+              items_per_page: none
+            weight: 14
+            additional: {  }
+          83460258-d87a-46a4-856a-f88e26ae51d5:
+            uuid: 83460258-d87a-46a4-856a-f88e26ae51d5
+            region: third
+            configuration:
+              id: 'views_block:feature_children-block_3'
+              label: ''
+              label_display: visible
+              provider: views
+              context_mapping: {  }
+              views_label: ''
+              items_per_page: none
+            weight: 9
+            additional: {  }
+          68d1def4-dc70-4247-a124-e16ef4c49457:
+            uuid: 68d1def4-dc70-4247-a124-e16ef4c49457
+            region: third
+            configuration:
+              id: 'views_block:feature_children-block_4'
+              label: ''
+              label_display: visible
+              provider: views
+              context_mapping: {  }
+              views_label: ''
+              items_per_page: none
+            weight: 10
+            additional: {  }
+          c56c7d56-d2fe-4ccf-9ea6-bef9100a0b5a:
+            uuid: c56c7d56-d2fe-4ccf-9ea6-bef9100a0b5a
+            region: third
+            configuration:
+              id: 'views_block:feature_children-block_7'
+              label: ''
+              label_display: visible
+              provider: views
+              context_mapping:
+                nid: layout_builder.entity
+              views_label: ''
+              items_per_page: none
+            weight: 12
+            additional: {  }
+          8bf58edf-72c2-4e26-a87e-805f8454dff4:
+            uuid: 8bf58edf-72c2-4e26-a87e-805f8454dff4
+            region: third
+            configuration:
+              id: 'views_block:feature_children-block_10'
+              label: ''
+              label_display: visible
+              provider: views
+              context_mapping: {  }
+              views_label: ''
+              items_per_page: '10'
+            weight: 11
+            additional: {  }
+        third_party_settings: {  }
+      -
+        layout_id: layout_onecol
+        layout_settings:
+          label: ''
+        components: {  }
         third_party_settings: {  }
 _core:
   default_config_hash: ChmU3AVqDKU32A_fyChG0W9dTRKmVBR58B6OClCLvZI
@@ -226,7 +423,6 @@ content:
 hidden:
   comment: true
   comment_node_article: true
-  feeds_item: true
   field_africa_category: true
   field_african_country: true
   field_archive_page_feature: true
