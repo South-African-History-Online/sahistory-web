@@ -8,11 +8,18 @@ dependencies:
     - field.storage.node.field_bio_pic
     - field.storage.node.field_place_image
     - field.storage.node.field_tdih_image
+    - image.style.default_bio_width_210_
+    - image.style.lp_new
     - image.style.square_fit
-    - image.style.square_images
     - node.type.place
     - taxonomy.vocabulary.african_country
+    - taxonomy.vocabulary.artist_category
+    - taxonomy.vocabulary.field_classroom_categories
+    - taxonomy.vocabulary.field_media_library_type
+    - taxonomy.vocabulary.field_people_level3_cat
     - taxonomy.vocabulary.field_place_type
+    - taxonomy.vocabulary.field_tags
+    - taxonomy.vocabulary.field_timeline_categories_type
   content:
     - 'taxonomy_term:african_country:a013eabf-bb5d-46d8-863e-0ee005fd9e4a'
     - 'taxonomy_term:field_place_type:df10b164-5f3f-4e63-97fd-280e2d34d81f'
@@ -24,9 +31,9 @@ dependencies:
 _core:
   default_config_hash: Gy5PaLdfFhtFSRqJxV-DBTF5AocKgNA2CsCNNEbvx4c
 id: taxonomy_term
-label: 'Taxonomy term'
+label: 'All taxonomies (landing pages)'
 module: taxonomy
-description: 'Content belonging to a certain taxonomy term.'
+description: 'Content belonging to a certain taxonomy term. The default display of Taxonomies across category. These are the default landing p'
 tag: default
 base_table: node_field_data
 base_field: nid
@@ -92,7 +99,7 @@ display:
           type: image
           settings:
             image_link: content
-            image_style: square_images
+            image_style: lp_new
             image_loading:
               attribute: lazy
           group_column: ''
@@ -158,7 +165,7 @@ display:
           type: image
           settings:
             image_link: content
-            image_style: square_images
+            image_style: lp_new
             image_loading:
               attribute: lazy
           group_column: ''
@@ -224,7 +231,7 @@ display:
           type: image
           settings:
             image_link: content
-            image_style: square_images
+            image_style: default_bio_width_210_
             image_loading:
               attribute: lazy
           group_column: ''
@@ -290,7 +297,7 @@ display:
           type: image
           settings:
             image_link: content
-            image_style: square_images
+            image_style: lp_new
             image_loading:
               attribute: lazy
           group_column: ''
@@ -356,7 +363,7 @@ display:
           type: image
           settings:
             image_link: content
-            image_style: square_images
+            image_style: lp_new
             image_loading:
               attribute: lazy
           group_column: ''
@@ -435,24 +442,27 @@ display:
           separator: ', '
           field_api_classes: false
       pager:
-        type: mini
+        type: full
         options:
           offset: 0
-          items_per_page: 9
+          pagination_heading_level: h4
+          items_per_page: 40
           total_pages: 0
           id: 0
           tags:
             next: ››
             previous: ‹‹
+            first: '« First'
+            last: 'Last »'
           expose:
             items_per_page: false
             items_per_page_label: 'Items per page'
-            items_per_page_options: '5, 10, 25, 50'
+            items_per_page_options: '10, 25, 50'
             items_per_page_options_all: false
             items_per_page_options_all_label: '- All -'
             offset: false
             offset_label: Offset
-          pagination_heading_level: h4
+          quantity: 9
       exposed_form:
         type: basic
         options:
@@ -636,11 +646,16 @@ display:
             default_group_multiple: {  }
             group_items: {  }
       style:
-        type: default
+        type: grid
         options:
           grouping: {  }
-          row_class: ''
-          default_row_class: true
+          columns: 4
+          automatic_width: true
+          alignment: horizontal
+          row_class_custom: ''
+          row_class_default: true
+          col_class_custom: ''
+          col_class_default: true
       row:
         type: fields
         options:
@@ -1144,7 +1159,7 @@ display:
         - 'config:field.storage.node.field_tdih_image'
   page_1:
     id: page_1
-    display_title: Page
+    display_title: 'All taxonomies (landing pages)'
     display_plugin: page
     position: 1
     display_options:
@@ -1195,48 +1210,6 @@ display:
           depth: 2
           use_taxonomy_term_path: false
       filters:
-        langcode:
-          id: langcode
-          table: node_field_data
-          field: langcode
-          relationship: none
-          group_type: group
-          admin_label: ''
-          entity_type: node
-          entity_field: langcode
-          plugin_id: language
-          operator: in
-          value:
-            '***LANGUAGE_language_content***': '***LANGUAGE_language_content***'
-          group: 1
-          exposed: false
-          expose:
-            operator_id: ''
-            label: ''
-            description: ''
-            use_operator: false
-            operator: ''
-            operator_limit_selection: false
-            operator_list: {  }
-            identifier: ''
-            required: false
-            remember: false
-            multiple: false
-            remember_roles:
-              authenticated: authenticated
-            reduce: false
-          is_grouped: false
-          group_info:
-            label: ''
-            description: ''
-            identifier: ''
-            optional: true
-            widget: select
-            multiple: false
-            remember: false
-            default_group: All
-            default_group_multiple: {  }
-            group_items: {  }
         status:
           id: status
           table: taxonomy_index
@@ -1275,6 +1248,369 @@ display:
             default_group: All
             default_group_multiple: {  }
             group_items: {  }
+        field_africa_category_target_id:
+          id: field_africa_category_target_id
+          table: node__field_africa_category
+          field: field_africa_category_target_id
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: taxonomy_index_tid
+          operator: or
+          value: {  }
+          group: 1
+          exposed: true
+          expose:
+            operator_id: field_africa_category_target_id_op
+            label: 'Africa Category (field_africa_category)'
+            description: ''
+            use_operator: false
+            operator: field_africa_category_target_id_op
+            operator_limit_selection: false
+            operator_list: {  }
+            identifier: field_africa_category_target_id
+            required: false
+            remember: false
+            multiple: true
+            remember_roles:
+              authenticated: authenticated
+              anonymous: '0'
+              administrator: '0'
+              alex: '0'
+              editor: '0'
+              researcher: '0'
+              superadmin: '0'
+              moderator: '0'
+              researcher_advanced_: '0'
+            reduce: false
+          is_grouped: false
+          group_info:
+            label: 'Africa Category (field_africa_category)'
+            description: null
+            identifier: field_africa_category_target_id
+            optional: true
+            widget: select
+            multiple: false
+            remember: false
+            default_group: All
+            default_group_multiple: {  }
+            group_items:
+              1: {  }
+              2: {  }
+              3: {  }
+          reduce_duplicates: false
+          vid: african_country
+          type: select
+          hierarchy: false
+          limit: true
+          error_message: true
+        field_media_library_type_target_id:
+          id: field_media_library_type_target_id
+          table: node__field_media_library_type
+          field: field_media_library_type_target_id
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: taxonomy_index_tid
+          operator: or
+          value: {  }
+          group: 1
+          exposed: true
+          expose:
+            operator_id: field_media_library_type_target_id_op
+            label: 'Archive Category (field_media_library_type)'
+            description: ''
+            use_operator: false
+            operator: field_media_library_type_target_id_op
+            operator_limit_selection: false
+            operator_list: {  }
+            identifier: field_media_library_type_target_id
+            required: false
+            remember: false
+            multiple: true
+            remember_roles:
+              authenticated: authenticated
+              anonymous: '0'
+              administrator: '0'
+              alex: '0'
+              editor: '0'
+              researcher: '0'
+              superadmin: '0'
+              moderator: '0'
+              researcher_advanced_: '0'
+            reduce: false
+          is_grouped: false
+          group_info:
+            label: ''
+            description: ''
+            identifier: ''
+            optional: true
+            widget: select
+            multiple: false
+            remember: false
+            default_group: All
+            default_group_multiple: {  }
+            group_items: {  }
+          reduce_duplicates: false
+          vid: field_media_library_type
+          type: select
+          hierarchy: false
+          limit: true
+          error_message: true
+        field_biography_art_category_target_id:
+          id: field_biography_art_category_target_id
+          table: node__field_biography_art_category
+          field: field_biography_art_category_target_id
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: taxonomy_index_tid
+          operator: or
+          value: {  }
+          group: 1
+          exposed: true
+          expose:
+            operator_id: field_biography_art_category_target_id_op
+            label: 'Art Category (field_biography_art_category)'
+            description: ''
+            use_operator: false
+            operator: field_biography_art_category_target_id_op
+            operator_limit_selection: false
+            operator_list: {  }
+            identifier: field_biography_art_category_target_id
+            required: false
+            remember: false
+            multiple: true
+            remember_roles:
+              authenticated: authenticated
+              anonymous: '0'
+              administrator: '0'
+              alex: '0'
+              editor: '0'
+              researcher: '0'
+              superadmin: '0'
+              moderator: '0'
+              researcher_advanced_: '0'
+            reduce: false
+          is_grouped: false
+          group_info:
+            label: ''
+            description: ''
+            identifier: ''
+            optional: true
+            widget: select
+            multiple: false
+            remember: false
+            default_group: All
+            default_group_multiple: {  }
+            group_items: {  }
+          reduce_duplicates: false
+          vid: artist_category
+          type: select
+          hierarchy: false
+          limit: true
+          error_message: true
+        field_classroom_categories_target_id:
+          id: field_classroom_categories_target_id
+          table: node__field_classroom_categories
+          field: field_classroom_categories_target_id
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: taxonomy_index_tid
+          operator: or
+          value: {  }
+          group: 1
+          exposed: true
+          expose:
+            operator_id: field_classroom_categories_target_id_op
+            label: 'Classroom category (field_classroom_categories)'
+            description: ''
+            use_operator: false
+            operator: field_classroom_categories_target_id_op
+            operator_limit_selection: false
+            operator_list: {  }
+            identifier: field_classroom_categories_target_id
+            required: false
+            remember: false
+            multiple: true
+            remember_roles:
+              authenticated: authenticated
+              anonymous: '0'
+              administrator: '0'
+              alex: '0'
+              editor: '0'
+              researcher: '0'
+              superadmin: '0'
+              moderator: '0'
+              researcher_advanced_: '0'
+            reduce: false
+          is_grouped: false
+          group_info:
+            label: ''
+            description: ''
+            identifier: ''
+            optional: true
+            widget: select
+            multiple: false
+            remember: false
+            default_group: All
+            default_group_multiple: {  }
+            group_items: {  }
+          reduce_duplicates: false
+          vid: field_classroom_categories
+          type: select
+          hierarchy: true
+          limit: true
+          error_message: true
+        field_timeline_categories_type_target_id:
+          id: field_timeline_categories_type_target_id
+          table: node__field_timeline_categories_type
+          field: field_timeline_categories_type_target_id
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: taxonomy_index_tid
+          operator: or
+          value: {  }
+          group: 1
+          exposed: true
+          expose:
+            label: 'Timeline category (field_timeline_categories_type)'
+            description: null
+            use_operator: false
+            operator: field_timeline_categories_type_target_id_op
+            operator_limit_selection: false
+            operator_list: {  }
+            identifier: field_timeline_categories_type_target_id
+            required: false
+            remember: false
+            multiple: false
+            reduce: false
+          is_grouped: false
+          group_info:
+            label: ''
+            description: ''
+            identifier: ''
+            optional: true
+            widget: select
+            multiple: false
+            remember: false
+            default_group: All
+            default_group_multiple: {  }
+            group_items: {  }
+          reduce_duplicates: false
+          vid: field_timeline_categories_type
+          type: textfield
+          hierarchy: false
+          limit: true
+          error_message: true
+        field_tags_target_id:
+          id: field_tags_target_id
+          table: node__field_tags
+          field: field_tags_target_id
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: taxonomy_index_tid
+          operator: or
+          value: {  }
+          group: 1
+          exposed: true
+          expose:
+            operator_id: field_tags_target_id_op
+            label: 'Keywords (autocomplete)'
+            description: ''
+            use_operator: false
+            operator: field_tags_target_id_op
+            operator_limit_selection: false
+            operator_list: {  }
+            identifier: field_tags_target_id
+            required: false
+            remember: false
+            multiple: false
+            remember_roles:
+              authenticated: authenticated
+              anonymous: '0'
+              administrator: '0'
+              alex: '0'
+              editor: '0'
+              researcher: '0'
+              superadmin: '0'
+              moderator: '0'
+              researcher_advanced_: '0'
+            reduce: false
+          is_grouped: false
+          group_info:
+            label: ''
+            description: ''
+            identifier: ''
+            optional: true
+            widget: select
+            multiple: false
+            remember: false
+            default_group: All
+            default_group_multiple: {  }
+            group_items: {  }
+          reduce_duplicates: false
+          vid: field_tags
+          type: textfield
+          hierarchy: false
+          limit: true
+          error_message: true
+        field_people_level3_cat_target_id:
+          id: field_people_level3_cat_target_id
+          table: node__field_people_level3_cat
+          field: field_people_level3_cat_target_id
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: taxonomy_index_tid
+          operator: or
+          value: {  }
+          group: 1
+          exposed: true
+          expose:
+            operator_id: field_people_level3_cat_target_id_op
+            label: 'People keywords'
+            description: ''
+            use_operator: false
+            operator: field_people_level3_cat_target_id_op
+            operator_limit_selection: false
+            operator_list: {  }
+            identifier: field_people_level3_cat_target_id
+            required: false
+            remember: false
+            multiple: false
+            remember_roles:
+              authenticated: authenticated
+              anonymous: '0'
+              administrator: '0'
+              alex: '0'
+              editor: '0'
+              researcher: '0'
+              superadmin: '0'
+              moderator: '0'
+              researcher_advanced_: '0'
+            reduce: false
+          is_grouped: false
+          group_info:
+            label: ''
+            description: ''
+            identifier: ''
+            optional: true
+            widget: select
+            multiple: false
+            remember: false
+            default_group: All
+            default_group_multiple: {  }
+            group_items: {  }
+          reduce_duplicates: false
+          vid: field_people_level3_cat
+          type: textfield
+          hierarchy: false
+          limit: true
+          error_message: true
       filter_groups:
         operator: AND
         groups:
@@ -1288,6 +1624,7 @@ display:
         filters: false
         filter_groups: false
         header: false
+      display_description: 'The default display of Taxonomies across category. These are the default landing pages and block.'
       header:
         entity_taxonomy_term:
           id: entity_taxonomy_term
@@ -1330,6 +1667,7 @@ display:
         type: mini
         options:
           offset: 0
+          pagination_heading_level: h4
           items_per_page: 3
           total_pages: null
           id: 0
@@ -1344,7 +1682,6 @@ display:
             items_per_page_options_all_label: '- All -'
             offset: false
             offset_label: Offset
-          pagination_heading_level: h4
       arguments:
         term_node_tid_depth:
           id: term_node_tid_depth
