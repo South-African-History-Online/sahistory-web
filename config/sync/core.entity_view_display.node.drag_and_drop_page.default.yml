@@ -3,6 +3,8 @@ langcode: en
 status: true
 dependencies:
   config:
+    - block_content.type.basic
+    - block_content.type.button
     - field.field.node.drag_and_drop_page.body
     - field.field.node.drag_and_drop_page.field_glazed_body_background
     - field.field.node.drag_and_drop_page.field_glazed_builder_attachments
@@ -10,10 +12,121 @@ dependencies:
     - field.field.node.drag_and_drop_page.field_glazed_main_content_width
     - field.field.node.drag_and_drop_page.field_glazed_page_layout
     - field.field.node.drag_and_drop_page.field_glazed_page_title_backgrou
+    - field.field.node.drag_and_drop_page.layout_builder__layout
     - node.type.drag_and_drop_page
+    - views.view.featured_content
+    - views.view.history_in_images
+    - views.view.this_day_in_history
   module:
+    - layout_builder
+    - layout_discovery
     - text
     - user
+    - views
+third_party_settings:
+  layout_builder:
+    enabled: true
+    allow_custom: true
+    sections:
+      -
+        layout_id: layout_twocol_section
+        layout_settings:
+          label: 'Featured topics'
+          context_mapping: {  }
+          column_widths: 50-50
+        components:
+          82860485-ce79-4fbf-bb7d-05a951620ae4:
+            uuid: 82860485-ce79-4fbf-bb7d-05a951620ae4
+            region: first
+            configuration:
+              id: 'views_block:featured_content-block_1'
+              label: ''
+              label_display: '0'
+              provider: views
+              context_mapping: {  }
+              views_label: ''
+              items_per_page: '5'
+            weight: 3
+            additional: {  }
+          a6e58842-6ebe-4d07-a210-2ec2a0ee881b:
+            uuid: a6e58842-6ebe-4d07-a210-2ec2a0ee881b
+            region: first
+            configuration:
+              id: 'inline_block:basic'
+              label: 'Featured topics'
+              label_display: visible
+              provider: layout_builder
+              view_mode: full
+              context_mapping: {  }
+              block_id: 76
+              block_revision_id: 216
+              block_serialized: null
+            weight: 2
+            additional: {  }
+          bf2f0b75-0aba-445f-acdf-5acf62471517:
+            uuid: bf2f0b75-0aba-445f-acdf-5acf62471517
+            region: first
+            configuration:
+              id: 'inline_block:button'
+              label: 'more features'
+              label_display: '0'
+              provider: layout_builder
+              view_mode: full
+              context_mapping: {  }
+              block_id: 77
+              block_revision_id: 217
+              block_serialized: null
+            weight: 4
+            additional: {  }
+          b2949725-6df6-4f8c-97c1-dbb460a228c2:
+            uuid: b2949725-6df6-4f8c-97c1-dbb460a228c2
+            region: second
+            configuration:
+              id: 'inline_block:basic'
+              label: 'This day in history'
+              label_display: visible
+              provider: layout_builder
+              view_mode: full
+              context_mapping: {  }
+              block_id: 78
+              block_revision_id: 218
+              block_serialized: null
+            weight: 0
+            additional: {  }
+          59d1fded-d39e-4a23-9b03-bf6834887108:
+            uuid: 59d1fded-d39e-4a23-9b03-bf6834887108
+            region: second
+            configuration:
+              id: 'views_block:this_day_in_history-block_1'
+              label: ''
+              label_display: '0'
+              provider: views
+              context_mapping: {  }
+              views_label: ''
+              items_per_page: none
+            weight: 1
+            additional: {  }
+        third_party_settings: {  }
+      -
+        layout_id: layout_onecol
+        layout_settings:
+          label: 'History in Images'
+          context_mapping: {  }
+        components:
+          2ccb523e-e234-4e71-b091-e804c861a0cb:
+            uuid: 2ccb523e-e234-4e71-b091-e804c861a0cb
+            region: content
+            configuration:
+              id: 'views_block:history_in_images-block_1'
+              label: ''
+              label_display: visible
+              provider: views
+              context_mapping: {  }
+              views_label: ''
+              items_per_page: '6'
+            weight: 0
+            additional: {  }
+        third_party_settings: {  }
 id: node.drag_and_drop_page.default
 targetEntityType: node
 bundle: drag_and_drop_page
@@ -39,4 +152,5 @@ hidden:
   field_glazed_page_layout: true
   field_glazed_page_title_backgrou: true
   langcode: true
+  layout_builder__layout: true
   search_api_excerpt: true
