@@ -8261,10 +8261,140 @@ __webpack_require__.r(__webpack_exports__);
 
 /***/ }),
 
+/***/ "./components/navbar-brand/navbar-brand.scss":
+/*!***************************************************!*\
+  !*** ./components/navbar-brand/navbar-brand.scss ***!
+  \***************************************************/
+/***/ (function(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+// extracted by mini-css-extract-plugin
+
+
+/***/ }),
+
+/***/ "./components/navbar/navbar.scss":
+/*!***************************************!*\
+  !*** ./components/navbar/navbar.scss ***!
+  \***************************************/
+/***/ (function(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+// extracted by mini-css-extract-plugin
+
+
+/***/ }),
+
+/***/ "./components/page-content/page-content.scss":
+/*!***************************************************!*\
+  !*** ./components/page-content/page-content.scss ***!
+  \***************************************************/
+/***/ (function(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+// extracted by mini-css-extract-plugin
+
+
+/***/ }),
+
+/***/ "./components/page-footer/page-footer.scss":
+/*!*************************************************!*\
+  !*** ./components/page-footer/page-footer.scss ***!
+  \*************************************************/
+/***/ (function(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+// extracted by mini-css-extract-plugin
+
+
+/***/ }),
+
+/***/ "./components/page-navigation/page-navigation.scss":
+/*!*********************************************************!*\
+  !*** ./components/page-navigation/page-navigation.scss ***!
+  \*********************************************************/
+/***/ (function(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+// extracted by mini-css-extract-plugin
+
+
+/***/ }),
+
+/***/ "./components/page/page.scss":
+/*!***********************************!*\
+  !*** ./components/page/page.scss ***!
+  \***********************************/
+/***/ (function(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+// extracted by mini-css-extract-plugin
+
+
+/***/ }),
+
 /***/ "./src/scss/main.style.scss":
 /*!**********************************!*\
   !*** ./src/scss/main.style.scss ***!
   \**********************************/
+/***/ (function(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+// extracted by mini-css-extract-plugin
+
+
+/***/ }),
+
+/***/ "./components/block/block.scss":
+/*!*************************************!*\
+  !*** ./components/block/block.scss ***!
+  \*************************************/
+/***/ (function(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+// extracted by mini-css-extract-plugin
+
+
+/***/ }),
+
+/***/ "./components/local-tasks/local-tasks.scss":
+/*!*************************************************!*\
+  !*** ./components/local-tasks/local-tasks.scss ***!
+  \*************************************************/
+/***/ (function(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+// extracted by mini-css-extract-plugin
+
+
+/***/ }),
+
+/***/ "./components/nav-item/nav-item.scss":
+/*!*******************************************!*\
+  !*** ./components/nav-item/nav-item.scss ***!
+  \*******************************************/
+/***/ (function(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+// extracted by mini-css-extract-plugin
+
+
+/***/ }),
+
+/***/ "./components/nav/nav.scss":
+/*!*********************************!*\
+  !*** ./components/nav/nav.scss ***!
+  \*********************************/
 /***/ (function(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -8387,7 +8517,17 @@ __webpack_require__.r(__webpack_exports__);
 /******/ 		// [resolve, reject, Promise] = chunk loading, 0 = chunk loaded
 /******/ 		var installedChunks = {
 /******/ 			"/build/js/main.script": 0,
-/******/ 			"build/css/main.style": 0
+/******/ 			"components/nav/nav": 0,
+/******/ 			"components/nav-item/nav-item": 0,
+/******/ 			"components/local-tasks/local-tasks": 0,
+/******/ 			"components/block/block": 0,
+/******/ 			"build/css/main.style": 0,
+/******/ 			"components/page/page": 0,
+/******/ 			"components/page-navigation/page-navigation": 0,
+/******/ 			"components/page-footer/page-footer": 0,
+/******/ 			"components/page-content/page-content": 0,
+/******/ 			"components/navbar/navbar": 0,
+/******/ 			"components/navbar-brand/navbar-brand": 0
 /******/ 		};
 /******/ 		
 /******/ 		// no chunk on demand loading
@@ -8439,8 +8579,18 @@ __webpack_require__.r(__webpack_exports__);
 /******/ 	// startup
 /******/ 	// Load entry module and return exports
 /******/ 	// This entry module depends on other loaded chunks and execution need to be delayed
-/******/ 	__webpack_require__.O(undefined, ["build/css/main.style"], function() { return __webpack_require__("./src/js/main.script.js"); })
-/******/ 	var __webpack_exports__ = __webpack_require__.O(undefined, ["build/css/main.style"], function() { return __webpack_require__("./src/scss/main.style.scss"); })
+/******/ 	__webpack_require__.O(undefined, ["components/nav/nav","components/nav-item/nav-item","components/local-tasks/local-tasks","components/block/block","build/css/main.style","components/page/page","components/page-navigation/page-navigation","components/page-footer/page-footer","components/page-content/page-content","components/navbar/navbar","components/navbar-brand/navbar-brand"], function() { return __webpack_require__("./src/js/main.script.js"); })
+/******/ 	__webpack_require__.O(undefined, ["components/nav/nav","components/nav-item/nav-item","components/local-tasks/local-tasks","components/block/block","build/css/main.style","components/page/page","components/page-navigation/page-navigation","components/page-footer/page-footer","components/page-content/page-content","components/navbar/navbar","components/navbar-brand/navbar-brand"], function() { return __webpack_require__("./src/scss/main.style.scss"); })
+/******/ 	__webpack_require__.O(undefined, ["components/nav/nav","components/nav-item/nav-item","components/local-tasks/local-tasks","components/block/block","build/css/main.style","components/page/page","components/page-navigation/page-navigation","components/page-footer/page-footer","components/page-content/page-content","components/navbar/navbar","components/navbar-brand/navbar-brand"], function() { return __webpack_require__("./components/block/block.scss"); })
+/******/ 	__webpack_require__.O(undefined, ["components/nav/nav","components/nav-item/nav-item","components/local-tasks/local-tasks","components/block/block","build/css/main.style","components/page/page","components/page-navigation/page-navigation","components/page-footer/page-footer","components/page-content/page-content","components/navbar/navbar","components/navbar-brand/navbar-brand"], function() { return __webpack_require__("./components/local-tasks/local-tasks.scss"); })
+/******/ 	__webpack_require__.O(undefined, ["components/nav/nav","components/nav-item/nav-item","components/local-tasks/local-tasks","components/block/block","build/css/main.style","components/page/page","components/page-navigation/page-navigation","components/page-footer/page-footer","components/page-content/page-content","components/navbar/navbar","components/navbar-brand/navbar-brand"], function() { return __webpack_require__("./components/nav-item/nav-item.scss"); })
+/******/ 	__webpack_require__.O(undefined, ["components/nav/nav","components/nav-item/nav-item","components/local-tasks/local-tasks","components/block/block","build/css/main.style","components/page/page","components/page-navigation/page-navigation","components/page-footer/page-footer","components/page-content/page-content","components/navbar/navbar","components/navbar-brand/navbar-brand"], function() { return __webpack_require__("./components/nav/nav.scss"); })
+/******/ 	__webpack_require__.O(undefined, ["components/nav/nav","components/nav-item/nav-item","components/local-tasks/local-tasks","components/block/block","build/css/main.style","components/page/page","components/page-navigation/page-navigation","components/page-footer/page-footer","components/page-content/page-content","components/navbar/navbar","components/navbar-brand/navbar-brand"], function() { return __webpack_require__("./components/navbar-brand/navbar-brand.scss"); })
+/******/ 	__webpack_require__.O(undefined, ["components/nav/nav","components/nav-item/nav-item","components/local-tasks/local-tasks","components/block/block","build/css/main.style","components/page/page","components/page-navigation/page-navigation","components/page-footer/page-footer","components/page-content/page-content","components/navbar/navbar","components/navbar-brand/navbar-brand"], function() { return __webpack_require__("./components/navbar/navbar.scss"); })
+/******/ 	__webpack_require__.O(undefined, ["components/nav/nav","components/nav-item/nav-item","components/local-tasks/local-tasks","components/block/block","build/css/main.style","components/page/page","components/page-navigation/page-navigation","components/page-footer/page-footer","components/page-content/page-content","components/navbar/navbar","components/navbar-brand/navbar-brand"], function() { return __webpack_require__("./components/page-content/page-content.scss"); })
+/******/ 	__webpack_require__.O(undefined, ["components/nav/nav","components/nav-item/nav-item","components/local-tasks/local-tasks","components/block/block","build/css/main.style","components/page/page","components/page-navigation/page-navigation","components/page-footer/page-footer","components/page-content/page-content","components/navbar/navbar","components/navbar-brand/navbar-brand"], function() { return __webpack_require__("./components/page-footer/page-footer.scss"); })
+/******/ 	__webpack_require__.O(undefined, ["components/nav/nav","components/nav-item/nav-item","components/local-tasks/local-tasks","components/block/block","build/css/main.style","components/page/page","components/page-navigation/page-navigation","components/page-footer/page-footer","components/page-content/page-content","components/navbar/navbar","components/navbar-brand/navbar-brand"], function() { return __webpack_require__("./components/page-navigation/page-navigation.scss"); })
+/******/ 	var __webpack_exports__ = __webpack_require__.O(undefined, ["components/nav/nav","components/nav-item/nav-item","components/local-tasks/local-tasks","components/block/block","build/css/main.style","components/page/page","components/page-navigation/page-navigation","components/page-footer/page-footer","components/page-content/page-content","components/navbar/navbar","components/navbar-brand/navbar-brand"], function() { return __webpack_require__("./components/page/page.scss"); })
 /******/ 	__webpack_exports__ = __webpack_require__.O(__webpack_exports__);
 /******/ 	
 /******/ })()

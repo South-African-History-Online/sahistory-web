@@ -1,0 +1,28 @@
+{#
+/**
+ * @file
+ * Template for a Page Footer component.
+ *
+#}
+{% apply spaceless %}
+
+{% set footer_attributes = footer_attributes ?: create_attribute() %}
+{%
+  set footer_classes = [
+    'page__footer',
+  ]|merge(footer_utility_classes ?: [])
+%}
+
+{% if page.footer %}
+  <footer {{ footer_attributes.addClass(footer_classes) }}>
+    <div class="container">
+      <div class="d-flex flex-wrap justify-content-md-between align-items-md-center">
+        {% block page_inner_footer %}
+          {{ page.footer }}
+        {% endblock %}
+      </div>
+    </div>
+  </footer>
+{% endif %}
+
+{% endapply %}
