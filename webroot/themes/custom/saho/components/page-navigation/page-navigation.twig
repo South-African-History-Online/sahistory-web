@@ -1,0 +1,37 @@
+{#
+/**
+ * @file
+ * Template for a Page Navigation component.
+ *
+#}
+{% apply spaceless %}
+
+{%
+  embed 'saho:navbar' with {
+    container: 'fixed',
+    navbar_theme: 'light',
+    navbar_utility_classes: [
+      'justify-content-center',
+    ],
+  }
+%}
+  {% block branding %}
+    {% if page.navbar_branding %}
+      {{ page.navbar_branding }}
+    {% endif %}
+  {% endblock %}
+
+  {% block left %}
+    {% if page.navbar_left %}
+      {{ page.navbar_left }}
+    {% endif %}
+  {% endblock %}
+
+  {% block right %}
+    {% if page.navbar_right %}
+      {{ page.navbar_right }}
+    {% endif %}
+  {% endblock %}
+{% endembed %}
+
+{% endapply %}

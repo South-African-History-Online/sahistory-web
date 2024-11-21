@@ -1,0 +1,72 @@
+{#
+/**
+ * @file
+ * Template for Navbar component.
+ *
+ * Available config:
+ * - navbar_container_type: false | sm | md | lg | xl | xxl | fluid
+ * - placement: default | fixed-top | fixed-bottom | sticky-top
+ * - navbar_expand: sm | md | lg | xl | false
+ * - navbar_theme: dark | light (default: light)
+ * - navbar_utility_classes: An array of utility classes.
+ *
+ * Available blocks:
+ * - branding
+ * - left
+ * - right
+ */
+#}
+{% apply spaceless %}
+
+{% set nav_attributes = nav_attributes ?: create_attribute() %}
+{% set navbar_container_attributes = navbar_container_attributes ?: create_attribute() %}
+
+{% set placement = placement ?? '' %}
+{% set navbar_expand = navbar_expand ?? 'lg' %}
+{% set navbar_theme = navbar_theme ?? null %}
+
+{%
+  set navbar_container_classes = [
+    navbar_container_type is null ? 'container' : '',
+    navbar_container_type ? 'container' ~ (navbar_container_type ? '-' ~ navbar_container_type : '') : '',
+  ]|merge(navbar_container_utility_classes ?: [])
+%}
+
+{%
+  set nav_classes = [
+    'navbar',
+    navbar_expand ? 'navbar-expand-' ~ navbar_expand : '',
+  ]|merge(navbar_utility_classes ?: [])
+%}
+
+{% if navbar_theme %}
+  {% set nav_attributes = nav_attributes.setAttribute('data-bs-theme', navbar_theme) %}
+{% endif %}
+
+<nav {{ nav_attributes.addClass(nav_classes) }}>
+  <div {{ navbar_container_attributes.addClass(navbar_container_classes) }}>
+    {% block branding %}
+      {{ branding }}
+    {% endblock %}
+  </div>
+
+  <div {{ navbar_container_attributes.addClass(navbar_container_classes) }}>
+    {% block navbar_toggler %}
+      <button class="navbar-toggler collapsed" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbar-collapse" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+    {% endblock %}
+
+    <div class="collapse navbar-collapse text-enter">
+      {% block left %}
+        {{ left }}
+      {% endblock %}
+
+      {% block right %}
+        {{ right }}
+      {% endblock %}
+    </div>
+  </div>
+</nav>
+
+{% endapply %}

@@ -1,0 +1,69 @@
+{#
+/**
+ * @file
+ * Template for page-content component.
+ *
+ * Available config:
+ * - page_header_container_type: sm | md | lg | xl | xxl | fluid.
+ * - page_header_container_utility_classes: An array of utility classes.
+ * - page_content_container_type: sm | md | lg | xl | xxl | fluid | false | true.
+ * - page_content_container_utility_classes: An array of utility classes.
+ * - page_main_utility_classes: An array of utility classes.
+ *
+ * Available blocks:
+ * - page_header
+ * - page_inner_content
+ */
+#}
+{% set page_header_container_attributes = page_header_container_attributes ?: create_attribute() %}
+{% set page_content_container_attributes = page_content_container_attributes ?: create_attribute() %}
+
+{% 
+  set page_main_classes = []|merge(page_main_utility_classes ?: []) 
+%}
+
+{% set header_container_class = '' %}
+{% if page_header_container_type is null %}
+  {% set header_container_class = 'container' %}
+{% elseif page_header_container_type is not empty %}
+  {% set header_container_class = 'container-' ~ page_header_container_type %}
+{% endif %}
+{%
+  set page_header_container_classes = [
+    header_container_class
+  ]|merge(page_header_container_utility_classes ?: [])
+%}
+
+{% set content_container_class = '' %}
+{% if page_content_container_type is null %}
+  {% set content_container_class = 'container' %}
+{% elseif page_content_container_type is not empty %}
+  {% set content_container_class = 'container-' ~ page_content_container_type %}
+{% endif %}
+{%
+  set page_content_container_classes = [
+    content_container_class
+  ]|merge(page_content_container_utility_classes ?: [])
+%}
+
+<main{{content_attributes.addClass(page_main_classes)}}>
+	{% if page.header %}
+		<header class="page__header">
+			<div {{ page_header_container_attributes.addClass(page_header_container_classes) }}>
+				{% block page_header %}
+					{{ page.header }}
+				{% endblock %}
+			</div>
+		</header>
+	{% endif %}
+
+	{% if page.content %}
+    <div class="page__content" id="main-content">
+      <div {{ page_content_container_attributes.addClass(page_content_container_classes) }}>
+        {% block page_inner_content %}
+          {{ page.content }}
+        {% endblock %}
+      </div>
+    </div>
+  {% endif %}
+</main>
