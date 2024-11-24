@@ -93,7 +93,7 @@ For frontend developers working in DDEV, follow these commands to set up and bui
    ```sh
 3. **Go to the saho theme directory**: Navigate to the saho theme directory for further steps:
    ```sh
-   cd web/themes/custom/saho
+   cd webroot/themes/custom/saho
    ```
 
    ddev ssh
@@ -101,7 +101,7 @@ For frontend developers working in DDEV, follow these commands to set up and bui
    ```
 3. **Build the SCSS files**: Compile the styles using the provided build script:
    ```sh
-   npm run build
+   npm run production
    ```
 4. **Watch for SCSS changes**: If making frequent changes to styles, use the watch command:
    ```sh
