@@ -38,7 +38,7 @@ $settings['class_loader_auto_detect'] = FALSE;
 
 // Set $settings['config_sync_directory'] if not set in settings.php.
 if (empty($settings['config_sync_directory'])) {
-  $settings['config_sync_directory'] = 'sites/default/files/sync';
+  $settings['config_sync_directory'] = '../config/sync';
 }
 
 // Override drupal/symfony_mailer default config to use Mailpit.

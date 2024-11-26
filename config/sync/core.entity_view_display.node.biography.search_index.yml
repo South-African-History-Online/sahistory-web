@@ -1,8 +1,9 @@
-uuid: b683501d-be3e-4ba8-ab68-a52945c2cf8b
+uuid: edc97007-6a31-4009-933c-1e4f5b937228
 langcode: en
 status: true
 dependencies:
   config:
+    - core.entity_view_mode.node.search_index
     - field.field.node.biography.body
     - field.field.node.biography.comment_node_biography
     - field.field.node.biography.field_affiliation
@@ -76,42 +77,16 @@ dependencies:
     - node.type.biography
   module:
     - layout_builder
-    - layout_discovery
     - search_api_solr
     - user
 third_party_settings:
   layout_builder:
-    enabled: true
-    allow_custom: true
-    sections:
-      -
-        layout_id: layout_onecol
-        layout_settings:
-          label: ''
-        components:
-          848d3fcf-ee54-41a2-8a75-78d3d4d43f42:
-            uuid: 848d3fcf-ee54-41a2-8a75-78d3d4d43f42
-            region: content
-            configuration:
-              id: 'field_block:node:biography:body'
-              label_display: '0'
-              context_mapping:
-                entity: layout_builder.entity
-              formatter:
-                type: solr_highlighted_text_default
-                label: hidden
-                settings:
-                  prefix: '<strong>'
-                  suffix: '</strong>'
-                  strict: false
-                third_party_settings: {  }
-            weight: 0
-            additional: {  }
-        third_party_settings: {  }
-id: node.biography.default
+    enabled: false
+    allow_custom: false
+id: node.biography.search_index
 targetEntityType: node
 bundle: biography
-mode: default
+mode: search_index
 content:
   body:
     type: solr_highlighted_text_default
