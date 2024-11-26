@@ -1,9 +1,9 @@
-uuid: 84a660dc-2bc7-47db-be6f-bf200792f0bb
+uuid: 48e25f81-f206-4f4b-9967-0fb16d19cb57
 langcode: en
 status: true
 dependencies:
   config:
-    - core.entity_view_mode.node.another_teaser_frontpage
+    - core.entity_view_mode.node.search_result
     - field.field.node.place.body
     - field.field.node.place.comment_node_place
     - field.field.node.place.field_african_country
@@ -44,37 +44,27 @@ dependencies:
     - field.field.node.place.field_topics_related_tab
     - node.type.place
   module:
-    - image
-    - text
+    - layout_builder
+    - search_api_solr
     - user
-id: node.place.another_teaser_frontpage
+third_party_settings:
+  layout_builder:
+    enabled: false
+    allow_custom: false
+id: node.place.search_result
 targetEntityType: node
 bundle: place
-mode: another_teaser_frontpage
+mode: search_result
 content:
   body:
-    type: text_summary_or_trimmed
+    type: solr_highlighted_text_default
     label: hidden
     settings:
-      trim_length: 600
-    third_party_settings: {  }
-    weight: 1
-    region: content
-  field_place_image:
-    type: image
-    label: hidden
-    settings:
-      image_link: ''
-      image_style: ''
-      image_loading:
-        attribute: lazy
+      prefix: '<strong>'
+      suffix: '</strong>'
+      strict: false
     third_party_settings: {  }
     weight: 0
-    region: content
-  links:
-    settings: {  }
-    third_party_settings: {  }
-    weight: 100
     region: content
 hidden:
   comment_node_place: true
@@ -105,6 +95,7 @@ hidden:
   field_parent_loc: true
   field_people_related_tab: true
   field_place_category: true
+  field_place_image: true
   field_place_type: true
   field_places_level3: true
   field_ref_str: true
@@ -114,4 +105,5 @@ hidden:
   field_timelines_related_tab: true
   field_topics_related_tab: true
   langcode: true
+  links: true
   search_api_excerpt: true

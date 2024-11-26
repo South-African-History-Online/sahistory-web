@@ -1,40 +1,41 @@
-uuid: d9f72ed2-5183-42a2-9337-8f8372ca4ae9
+uuid: 0ee9e47e-5b5c-45f0-b5ae-091971ec7044
 langcode: en
-status: false
+status: true
 dependencies:
+  config:
+    - search_api.index.default_index
   module:
-    - node
-    - user
-id: content2
-label: Content2
+    - search_api
+id: saho_search
+label: 'SAHO search'
 module: views
-description: ''
+description: 'This is the main search page and block of the SAHO website'
 tag: ''
-base_table: node_field_data
-base_field: nid
+base_table: search_api_index_default_index
+base_field: search_api_id
 display:
   default:
     id: default
-    display_title: Master
+    display_title: Default
     display_plugin: default
     position: 0
     display_options:
+      title: 'SAHO search'
       fields:
         title:
           id: title
-          table: node_field_data
+          table: search_api_datasource_default_index_entity_node
           field: title
           relationship: none
           group_type: group
           admin_label: ''
           entity_type: node
-          entity_field: title
-          plugin_id: field
-          label: Title
+          plugin_id: search_api_field
+          label: ''
           exclude: false
           alter:
-            alter_text: false
-            text: ''
+            alter_text: true
+            text: '<h3>{{ title }}</h3>'
             make_link: false
             path: ''
             absolute: false
@@ -50,8 +51,8 @@ display:
             target: ''
             nl2br: false
             max_length: 0
-            word_boundary: false
-            ellipsis: false
+            word_boundary: true
+            ellipsis: true
             more_link: false
             more_link_text: ''
             more_link_path: ''
@@ -63,7 +64,7 @@ display:
           element_class: ''
           element_label_type: ''
           element_label_class: ''
-          element_label_colon: true
+          element_label_colon: false
           element_wrapper_type: ''
           element_wrapper_class: ''
           element_default_classes: true
@@ -85,16 +86,22 @@ display:
           multi_type: separator
           separator: ', '
           field_api_classes: false
-        node_bulk_form:
-          id: node_bulk_form
-          table: node
-          field: node_bulk_form
+          field_rendering: true
+          fallback_handler: search_api
+          fallback_options:
+            link_to_item: false
+            use_highlighting: false
+            multi_type: separator
+            multi_separator: ', '
+        search_api_excerpt:
+          id: search_api_excerpt
+          table: search_api_index_default_index
+          field: search_api_excerpt
           relationship: none
           group_type: group
           admin_label: ''
-          entity_type: node
-          plugin_id: node_bulk_form
-          label: 'Node operations bulk form'
+          plugin_id: search_api
+          label: ''
           exclude: false
           alter:
             alter_text: false
@@ -127,7 +134,7 @@ display:
           element_class: ''
           element_label_type: ''
           element_label_class: ''
-          element_label_colon: true
+          element_label_colon: false
           element_wrapper_type: ''
           element_wrapper_class: ''
           element_default_classes: true
@@ -135,14 +142,16 @@ display:
           hide_empty: false
           empty_zero: false
           hide_alter_empty: true
-          action_title: Action
-          include_exclude: exclude
-          selected_actions: {  }
+          link_to_item: false
+          use_highlighting: true
+          multi_type: separator
+          multi_separator: ', '
       pager:
         type: mini
         options:
           offset: 0
-          items_per_page: 10
+          pagination_heading_level: h4
+          items_per_page: 20
           total_pages: null
           id: 0
           tags:
@@ -156,7 +165,6 @@ display:
             items_per_page_options_all_label: '- All -'
             offset: false
             offset_label: Offset
-          pagination_heading_level: h4
       exposed_form:
         type: basic
         options:
@@ -168,62 +176,72 @@ display:
           sort_asc_label: Asc
           sort_desc_label: Desc
       access:
-        type: perm
-        options:
-          perm: 'access content'
+        type: none
+        options: {  }
       cache:
-        type: tag
+        type: search_api_none
         options: {  }
       empty: {  }
-      sorts:
-        created:
-          id: created
-          table: node_field_data
-          field: created
+      sorts: {  }
+      arguments: {  }
+      filters:
+        search_api_fulltext:
+          id: search_api_fulltext
+          table: search_api_index_default_index
+          field: search_api_fulltext
           relationship: none
           group_type: group
           admin_label: ''
-          entity_type: node
-          entity_field: created
-          plugin_id: date
-          order: DESC
-          expose:
-            label: ''
-            field_identifier: created
-          exposed: false
-          granularity: second
-      arguments: {  }
-      filters:
-        status:
-          id: status
-          table: node_field_data
-          field: status
-          entity_type: node
-          entity_field: status
-          plugin_id: boolean
-          value: '1'
+          plugin_id: search_api_fulltext
+          operator: or
+          value: ''
           group: 1
+          exposed: true
           expose:
-            operator: ''
+            operator_id: search_api_fulltext_op
+            label: 'Fulltext search'
+            description: ''
+            use_operator: false
+            operator: search_api_fulltext_op
             operator_limit_selection: false
             operator_list: {  }
+            identifier: search_api_fulltext
+            required: false
+            remember: false
+            multiple: false
+            remember_roles:
+              authenticated: authenticated
+              anonymous: '0'
+              administrator: '0'
+              alex: '0'
+              editor: '0'
+              researcher: '0'
+              superadmin: '0'
+              moderator: '0'
+              researcher_advanced_: '0'
+            expose_fields: false
+            placeholder: 'Search keyword, year, phras, author, etc.'
+            searched_fields_id: search_api_fulltext_searched_fields
+            value_maxlength: 128
+          is_grouped: false
+          group_info:
+            label: ''
+            description: ''
+            identifier: ''
+            optional: true
+            widget: select
+            multiple: false
+            remember: false
+            default_group: All
+            default_group_multiple: {  }
+            group_items: {  }
+          parse_mode: sloppy_phrase
+          min_length: null
+          fields:
+            - body
+            - title
       style:
-        type: table
-        options:
-          grouping: {  }
-          row_class: ''
-          default_row_class: true
-          uses_fields: false
-          columns: {  }
-          default: ''
-          info: {  }
-          override: true
-          sticky: false
-          summary: ''
-          order: asc
-          empty_table: false
-          caption: ''
-          description: ''
+        type: default
       row:
         type: fields
         options:
@@ -232,23 +250,43 @@ display:
           separator: ''
           hide_empty: false
       query:
-        type: views_query
+        type: search_api_query
         options:
-          query_comment: ''
-          disable_sql_rewrite: false
-          distinct: false
-          replica: false
+          bypass_access: false
+          skip_access: false
+          preserve_facet_query_args: false
           query_tags: {  }
       relationships: {  }
       header: {  }
       footer: {  }
       display_extenders: {  }
     cache_metadata:
-      max-age: 0
+      max-age: -1
       contexts:
         - 'languages:language_content'
         - 'languages:language_interface'
+        - url
         - url.query_args
         - 'user.node_grants:view'
-        - user.permissions
-      tags: {  }
+      tags:
+        - 'config:search_api.index.default_index'
+        - 'search_api_list:default_index'
+  page_1:
+    id: page_1
+    display_title: Page
+    display_plugin: page
+    position: 1
+    display_options:
+      display_extenders: {  }
+      path: search
+    cache_metadata:
+      max-age: -1
+      contexts:
+        - 'languages:language_content'
+        - 'languages:language_interface'
+        - url
+        - url.query_args
+        - 'user.node_grants:view'
+      tags:
+        - 'config:search_api.index.default_index'
+        - 'search_api_list:default_index'
