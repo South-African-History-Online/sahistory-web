@@ -4,8 +4,8 @@ cd /web
 
 # Start backup
 #echo "Starting backup"
-#docker run -it -v /web:/app --network internet --env-file /web/.env --rm sahistory/jobs:latest /usr/local/bin/drush status
-#docker run -it -v /web:/app --network internet --env-file /web/.env --rm sahistory/jobs:latest /usr/local/bin/drush sql-dump --gzip --result-file=/app/.novi/backups/saho-$(date +%Y-%m-%d-%H-%M-%S).sql
+docker run -it -v /web:/app --network internet --env-file /web/.env --rm sahistory/jobs:latest /usr/local/bin/drush status
+docker run -it -v /web:/app --network internet --env-file /web/.env --rm sahistory/jobs:latest /usr/local/bin/drush sql-dump --gzip --result-file=/app/.novi/backups/saho-$(date +%Y-%m-%d-%H-%M-%S).sql
 #echo "Backup done"
 
 # Start deploy
