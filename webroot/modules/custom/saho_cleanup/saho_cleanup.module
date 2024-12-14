@@ -1,0 +1,100 @@
+<?php
+
+use Drupal\Core\Database\Database;
+
+/**
+ * Cleans up lingering references in the key_value store related to add_to_cart_price, basic_cart, and ubercart.
+ */
+function saho_cleanup_cleanup_key_value_smart() {
+  $connection = Database::getConnection();
+  $key_value_store = \Drupal::service('keyvalue')->get('config.entity.key_store');
+
+  // 1. Delete specific UUID-based keys.
+  $keys_to_delete = [
+    'uuid:2e04658e-af71-454c-8300-e04964849d99',
+    'uuid:857a08bc-e40e-41ab-800c-eb0f2e6033c8',
+    'uuid:f6902251-3d1d-4119-9057-920fe828e3cc',
+    'uuid:4a64dc77-48d0-45d9-b526-cb19d5db1e5d',
+    'uuid:151917b7-2916-4bb6-b046-8ced2bc2c335',
+    'uuid:3c840126-4ecc-4d2f-ad4b-8fbf01ad8b5b',
+    'uuid:514bf187-b939-4fa7-800c-459ddb4eb6c4',
+    'uuid:51ef1fdd-649b-4b9a-b870-ea989e8ca7f0',
+    'uuid:62e95c4d-eb46-42ee-b4dd-40b20f30bb78',
+    'uuid:73fe9bd4-430f-4124-812e-c545f934d7f7',
+    'uuid:9f2a4260-cdb8-4bd5-a444-fb9074a2f8aa',
+    'uuid:a2333a4e-520b-47e0-b115-91c1952b27a2',
+    'uuid:a357fab2-50bf-494c-bfd4-3db6d63d9bdc',
+    'uuid:c837c281-8ce2-47db-a2bc-5819cf9af072',
+  ];
+
+  foreach ($keys_to_delete as $key) {
+    $key_value_store->delete($key);
+    \Drupal::logger('saho_cleanup')->info("Deleted key_value entry: {key}", ['key' => $key]);
+  }
+
+  // 2. Iterate over key_value entries to find lingering references.
+  $query = $connection->select('key_value', 'kv')
+    ->fields('kv', ['name', 'value'])
+    ->condition('value', '%add_to_cart%', 'LIKE')
+    ->condition('value', '%add_to_cart_price%', 'LIKE', 'OR')
+    ->condition('value', '%basic_cart%', 'LIKE', 'OR')
+    ->condition('value', '%ubercart%', 'LIKE', 'OR');
+  $results = $query->execute();
+
+  foreach ($results as $result) {
+    $original_value = unserialize($result->value);
+
+    if (is_array($original_value)) {
+      // Remove add_to_cart, add_to_cart_price, basic_cart, and ubercart references dynamically.
+      $updated_value = recursive_cleanup($original_value);
+
+      if ($original_value !== $updated_value) {
+        // Save the cleaned entry back to the key_value table.
+        $connection->update('key_value')
+          ->fields(['value' => serialize($updated_value)])
+          ->condition('name', $result->name)
+          ->execute();
+        \Drupal::logger('saho_cleanup')->info("Updated key_value entry: {name}", ['name' => $result->name]);
+      }
+    }
+  }
+
+  // 4. Delete entities safely with access checks disabled.
+  $entity_type_manager = \Drupal::entityTypeManager();
+  $node_storage = $entity_type_manager->getStorage('node');
+  
+  // Get node IDs safely and disable access checks.
+  $node_ids = $node_storage->getQuery()
+    ->condition('type', ['add_to_cart', 'basic_cart'], 'IN')
+    ->accessCheck(FALSE) // Explicitly disable access checks.
+    ->execute();
+
+  if (!empty($node_ids)) {
+    $nodes = $node_storage->loadMultiple($node_ids);
+    $node_storage->delete($nodes);
+    \Drupal::logger('saho_cleanup')->info('Deleted nodes related to add_to_cart and basic_cart.');
+  }
+}
+
+/**
+ * Recursively clean up unwanted references from the given array.
+ *
+ * @param array $data
+ *   The data to clean up.
+ *
+ * @return array
+ *   The cleaned data.
+ */
+function recursive_cleanup(array $data) {
+  foreach ($data as $key => &$value) {
+    if (is_array($value)) {
+      $value = recursive_cleanup($value);
+    }
+
+    if (strpos($key, 'add_to_cart') !== false || strpos($key, 'basic_cart') !== false || strpos($key, 'ubercart') !== false) {
+      unset($data[$key]);
+      \Drupal::logger('saho_cleanup')->info("Removed key: {key}", ['key' => $key]);
+    }
+  }
+  return $data;
+}
