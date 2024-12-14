@@ -1,0 +1,148 @@
+<?php
+
+/**
+ * Implements hook_install().
+ */
+function saho_cleanup_install() {
+  \Drupal::logger('saho_cleanup')->info('SAHO Cleanup module installed.');
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function saho_cleanup_uninstall() {
+  \Drupal::logger('saho_cleanup')->info('SAHO Cleanup module uninstalled.');
+}
+
+/**
+ * Implements hook_update_N().
+ */
+function saho_cleanup_update_10300() {
+  saho_cleanup_cleanup_key_value_smart();
+
+  $connection = \Drupal::database();
+  $schema = $connection->schema();
+
+  // Create `node__add_to_cart` table.
+  if (!$schema->tableExists('node__add_to_cart')) {
+    $schema->createTable('node__add_to_cart', [
+      'fields' => [
+        'entity_id' => [
+          'type' => 'int',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+          'description' => 'The entity ID to which this data is attached.',
+        ],
+        'revision_id' => [
+          'type' => 'int',
+          'unsigned' => TRUE,
+          'not null' => FALSE,
+          'description' => 'The revision ID to which this data is attached.',
+        ],
+        'bundle' => [
+          'type' => 'varchar',
+          'length' => 128,
+          'not null' => TRUE,
+          'default' => '',
+          'description' => 'The field instance bundle to which this row belongs.',
+        ],
+        'deleted' => [
+          'type' => 'int',
+          'size' => 'tiny',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+          'default' => 0,
+          'description' => 'A boolean indicating whether this data item has been deleted.',
+        ],
+        'delta' => [
+          'type' => 'int',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+          'default' => 0,
+          'description' => 'The sequence number for this data item.',
+        ],
+        'langcode' => [
+          'type' => 'varchar',
+          'length' => 32,
+          'not null' => TRUE,
+          'default' => '',
+          'description' => 'The language code for this data item.',
+        ],
+        'add_to_cart_price' => [
+          'type' => 'varchar',
+          'length' => 255,
+          'not null' => FALSE,
+          'description' => 'The "add to cart" price field.',
+        ],
+      ],
+      'primary key' => ['entity_id', 'deleted', 'delta', 'langcode'],
+      'indexes' => [
+        'bundle' => ['bundle'],
+        'revision_id' => ['revision_id'],
+        'langcode' => ['langcode'],
+      ],
+    ]);
+    \Drupal::logger('saho_cleanup')->info('Created table: node__add_to_cart');
+  }
+
+  // Create `node_revision__add_to_cart` table.
+  if (!$schema->tableExists('node_revision__add_to_cart')) {
+    $schema->createTable('node_revision__add_to_cart', [
+      'fields' => [
+        'entity_id' => [
+          'type' => 'int',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+          'description' => 'The entity ID to which this data is attached.',
+        ],
+        'revision_id' => [
+          'type' => 'int',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+          'description' => 'The revision ID to which this data is attached.',
+        ],
+        'bundle' => [
+          'type' => 'varchar',
+          'length' => 128,
+          'not null' => TRUE,
+          'default' => '',
+          'description' => 'The field instance bundle to which this row belongs.',
+        ],
+        'deleted' => [
+          'type' => 'int',
+          'size' => 'tiny',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+          'default' => 0,
+          'description' => 'A boolean indicating whether this data item has been deleted.',
+        ],
+        'delta' => [
+          'type' => 'int',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+          'default' => 0,
+          'description' => 'The sequence number for this data item.',
+        ],
+        'langcode' => [
+          'type' => 'varchar',
+          'length' => 32,
+          'not null' => TRUE,
+          'default' => '',
+          'description' => 'The language code for this data item.',
+        ],
+        'add_to_cart_price' => [
+          'type' => 'varchar',
+          'length' => 255,
+          'not null' => FALSE,
+          'description' => 'The "add to cart" price field.',
+        ],
+      ],
+      'primary key' => ['entity_id', 'revision_id', 'delta', 'langcode'],
+      'indexes' => [
+        'bundle' => ['bundle'],
+        'langcode' => ['langcode'],
+      ],
+    ]);
+    \Drupal::logger('saho_cleanup')->info('Created table: node_revision__add_to_cart');
+  }
+}
