@@ -1,5 +1,7 @@
 <?php
 
+use Drupal\node\Entity\Node;
+
 /**
  * @file
  * Theme functions.
@@ -9,4 +11,24 @@
 $includes_path = dirname(__FILE__) . '/includes/*.theme';
 foreach (glob($includes_path) as $file) {
   require_once dirname(__FILE__) . '/includes/' . basename($file);
+}
+
+/**
+ * Implements hook_preprocess_block().
+ */
+function saho_preprocess_block(&$variables) {
+  // Process the TDIH block.
+  if ($variables['plugin_id'] === 'inline_block:tdih') {
+    // Check if field exists.
+    if (isset($variables['content']['field_tdih']['#items'][0])) {
+      // Load the referenced node entity.
+      $node_id = $variables['content']['field_tdih']['#items'][0]->target_id;
+      $node = Node::load($node_id);
+
+      if ($node) {
+        // Pass node object to Twig template.
+        $variables['tdih_node'] = $node;
+      }
+    }
+  }
 }
