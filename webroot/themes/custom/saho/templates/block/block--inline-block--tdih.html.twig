@@ -1,0 +1,40 @@
+<div {{ attributes.addClass('tdih-block') }}>
+  {{ title_prefix }}
+  <h2 class="block-title">{{ label }}</h2>
+  {{ title_suffix }}
+
+  <p class="block-intro">{{ tdih_intro_text|raw }}</p>
+  <hr>
+
+  {% for node in tdih_nodes|slice(0, 1) %}
+    <div class="history-entry featured-entry">
+      <div class="entry-card">
+        {# Render Image #}
+        {% if node.image %}
+          <img src="{{ node.image }}" alt="{{ node.title }}" class="entry-image">
+        {% endif %}
+
+        {# Render Date #}
+        {% if node.date %}
+          <p class="entry-date">{{ node.date|date('d F Y') }}</p>
+        {% endif %}
+
+        {# Render Title #}
+        <h3 class="entry-title">
+          <a href="{{ node.url }}">
+            {{ node.title }}
+          </a>
+        </h3>
+
+        {# Render Summary (Optional) #}
+        {% if node.summary %}
+          <p class="entry-summary">{{ node.summary }}</p>
+        {% endif %}
+      </div>
+    </div>
+  {% endfor %}
+
+  <div class="more-events">
+    <a href="/this-day-in-history" class="btn btn-outline-primary">More Events</a>
+  </div>
+</div>
