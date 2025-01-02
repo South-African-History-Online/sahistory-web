@@ -27,6 +27,7 @@ dependencies:
     - field.field.node.event.field_topics_related_tab
     - node.type.event
   module:
+    - datetime
     - image
     - text
     - user
@@ -36,10 +37,9 @@ bundle: event
 mode: teaser
 content:
   body:
-    type: text_summary_or_trimmed
+    type: text_default
     label: hidden
-    settings:
-      trim_length: 600
+    settings: {  }
     third_party_settings: {  }
     weight: 2
     region: content
@@ -47,17 +47,21 @@ content:
     type: image
     label: hidden
     settings:
-      image_link: ''
+      image_link: content
       image_style: ''
       image_loading:
         attribute: lazy
     third_party_settings: {  }
-    weight: 1
+    weight: 0
     region: content
-  links:
-    settings: {  }
+  field_this_day_in_history_3:
+    type: datetime_default
+    label: hidden
+    settings:
+      timezone_override: ''
+      format_type: tdih_date
     third_party_settings: {  }
-    weight: 100
+    weight: 1
     region: content
 hidden:
   comment_node_event: true
@@ -76,8 +80,8 @@ hidden:
   field_ref_str: true
   field_synopsis: true
   field_tdih_image: true
-  field_this_day_in_history_3: true
   field_this_day_in_history_date_2: true
   field_topics_related_tab: true
   langcode: true
+  links: true
   search_api_excerpt: true
