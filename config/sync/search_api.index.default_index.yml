@@ -7,7 +7,46 @@ dependencies:
     - search_api.server.default_server
   module:
     - node
+    - search_api_solr
     - search_api_sort_priority
+third_party_settings:
+  search_api_solr:
+    finalize: false
+    commit_before_finalize: false
+    commit_after_finalize: false
+    highlighter:
+      maxAnalyzedChars: 51200
+      fragmenter: gap
+      usePhraseHighlighter: true
+      highlightMultiTerm: true
+      preserveMulti: false
+      regex:
+        slop: 0.5
+        pattern: blank
+        maxAnalyzedChars: 10000
+      highlight:
+        mergeContiguous: false
+        requireFieldMatch: false
+        snippets: 3
+        fragsize: 0
+    mlt:
+      mintf: 1
+      mindf: 1
+      maxdf: 0
+      maxdfpct: 0
+      minwl: 0
+      maxwl: 0
+      maxqt: 100
+      maxntp: 2000
+      boost: false
+      interestingTerms: none
+    advanced:
+      index_prefix: ''
+      collection: ''
+      timezone: ''
+    multilingual:
+      limit_to_content_language: false
+      include_language_independent: true
 _core:
   default_config_hash: GLmLegZGHtMF6annRqgjizJAoiAip-IT-XOsDMCZfog
 id: default_index
@@ -20,7 +59,7 @@ field_settings:
     datasource_id: 'entity:node'
     property_path: body
     type: text
-    boost: 1.3
+    boost: 0.1
     dependencies:
       config:
         - field.storage.node.body
@@ -119,19 +158,18 @@ processor_settings:
         weight: '-7'
       event:
         weight: '-6'
+      image:
+        weight: '-5'
     weight: 0
-  custom_value: {  }
   entity_status:
     weights:
       preprocess_index: -10
-  entity_type: {  }
   highlight:
     weights:
       postprocess_query: 0
     prefix: '<strong>'
     suffix: '</strong>'
     excerpt: true
-    excerpt_always: false
     excerpt_length: 512
     exclude_fields:
       - title
@@ -167,6 +205,9 @@ processor_settings:
     weights:
       add_properties: 0
       pre_index_save: -10
+  solr_date_range:
+    weights:
+      preprocess_index: 0
   stopwords:
     weights:
       preprocess_index: -5
@@ -219,8 +260,8 @@ processor_settings:
     fields:
       - body
       - title
-    spaces: ._-
-    ignored: ''
+    spaces: ''
+    ignored: ._-
     overlap_cjk: 1
     minimum_word_size: '3'
   transliteration:
@@ -246,8 +287,7 @@ tracker_settings:
   default:
     indexing_order: lifo
 options:
-  cron_limit: 1000
-  delete_on_fail: true
+  cron_limit: 100
   index_directly: false
   track_changes_in_references: true
 server: default_server
