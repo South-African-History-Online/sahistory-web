@@ -31,4 +31,23 @@ function saho_preprocess_block(&$variables) {
       }
     }
   }
+  
+  if ($variables['base_plugin_id'] == 'block_content' && $variables['derivative_plugin_id'] == 'inline_block:tdih') {
+    // Get field values.
+    $node = $variables['content']['field_tdih_entries'][0]['#node'] ?? null;
+    if ($node) {
+      $variables['label'] = $variables['label'] ?? 'This Day in History';
+      $variables['intro_text'] = $variables['content']['field_intro_text']['#items'][0]->value ?? '';
+      $variables['event_title'] = $node->getTitle();
+      $variables['event_date'] = $node->get('field_this_day_in_history_3')->value ?? '';
+      $variables['event_link'] = $node->toUrl()->toString();
+      $variables['event_image'] = '';
+
+      if ($node->hasField('field_event_image') && !$node->get('field_event_image')->isEmpty()) {
+        $file = $node->get('field_event_image')->entity;
+        $uri = $file->getFileUri();
+        $variables['event_image'] = \Drupal::service('file_url_generator')->generateAbsoluteString($uri);
+      }
+    }
+  }
 }
