@@ -5,9 +5,13 @@
   {% if tdih_node %}
     <div class="history-entry featured-entry">
       <div class="entry-card">
-        {# Render Image #}
+        {# Render Image with Link #}
         {% if tdih_node.field_event_image.entity.uri.value %}
-          <img src="{{ file_url(tdih_node.field_event_image.entity.uri.value) }}" alt="{{ tdih_node.title.value }}" class="entry-image">
+          <a href="{{ url('entity.node.canonical', {'node': tdih_node.id()}) }}">
+            <img src="{{ file_url(tdih_node.field_event_image.entity.uri.value) }}" 
+                 alt="{{ tdih_node.title.value }}" 
+                 class="entry-image">
+          </a>
         {% endif %}
 
         {# Render Date #}
