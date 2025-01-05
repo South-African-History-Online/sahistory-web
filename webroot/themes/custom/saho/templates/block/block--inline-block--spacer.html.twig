@@ -1,0 +1,22 @@
+{#
+/**
+ * @file
+ * Template for the Spacer Block with predefined heights.
+ */
+#}
+
+{# Map height classes #}
+{% set height_classes = {
+  'Small (20px)': 'spacer-small',
+  'Medium (40px)': 'spacer-medium',
+  'Large (60px)': 'spacer-large'
+} %}
+
+{# Get the height value from the field #}
+{% set height_value = content.field_height.0['#markup'] ?? 'Medium (40px)' %}
+{% set height_class = height_classes[height_value] ?? 'spacer-medium' %}
+
+{# Ensure contextual attributes are preserved #}
+<div {{ attributes.addClass('spacer-block', height_class).setAttribute('data-block-id', content['#block_content'].id()) }}>
+  {# Render spacer block #}
+</div>

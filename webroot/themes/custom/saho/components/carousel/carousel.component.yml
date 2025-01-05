@@ -1,0 +1,131 @@
+$schema: https://git.drupalcode.org/project/drupal/-/raw/10.1.x/core/modules/sdc/src/metadata.schema.json
+name: Carousel
+status: experimental
+description: 'Carousel component, see Bootstrap Documentation: https://getbootstrap.com/docs/5.3/components/carousel/'
+props:
+  type: object
+  properties:
+    carousel_theme: 
+      type: string
+      title: Theme
+      description: The theme of the carousel.
+      enum:
+        - dark
+        - light
+      default: light
+    show_carousel_control:  
+      type: boolean
+      title: Show Carousel Control
+      description: Show carousel control.
+      default: true
+    show_carousel_indicator: 
+      type: boolean
+      title: Show Carousel Indicator
+      description: Show carousel indicator.
+      default: true
+    show_carousel_caption:
+      type: boolean
+      title: Show Carousel Caption
+      description: Show carousel caption.
+      default: true
+    autoplay:
+      type: ['string']
+      title: Autoplay
+      description: You can make your carousels autoplay on page load by setting the ride option to carousel. When the ride option is set to true, rather than carousel, the carousel wont automatically start to cycle on page load. Instead, it will only start after the first user interaction.
+      enum:
+        - 'carousel'
+        - 'true'
+    id:
+      type: ['string']
+      title: ID
+      description: Unique ID for the accordion component.
+      default: 0
+    carousel_utility_classes:
+      type: ['string', 'array']
+      items:
+        type: string
+        title: Utility Classes
+        description: An array of utility classes to add to the carousel.
+    carousel_item_utility_classes:
+      type: ['string', 'array']
+      items:
+        type: string
+        title: Utility Classes
+        description: An array of utility classes to add to the carousel items.
+    carousel_caption_utility_classes:
+      type: ['string', 'array']
+      items:
+        type: string
+        title: Utility Classes
+        description: An array of utility classes to add to the carousel captions.
+    carousel_attributes:
+      type: Drupal\Core\Template\Attribute
+      title: Carousel Attributes
+      description: Attributes for the carousel.
+    media_attributes: 
+      type: Drupal\Core\Template\Attribute
+      title: Media Attributes
+      description: Attributes for the carousel media.
+    item_image_attributes:
+      type: Drupal\Core\Template\Attribute
+      title: Item Image Attributes
+      description: Attributes for the carousel item image.
+    items:
+      type: array
+      title: Items
+      description: An array of items inside the carousel. Each item is an object that has caption_title, caption_title_tag, carousel_caption, caption_content_tag, image_src, image_alt.
+      default: [{}]
+      item: 
+        type: object
+        properties:
+          caption_title:
+            type: string
+            title: Caption Title
+            description: Title text for the carousel item.
+            default: ''
+          caption_title_tag:
+            type: string
+            title: Caption Title Tag
+            description: HTML tag for the caption title.
+            default: h3
+          carousel_caption:
+            type: string
+            title: Carousel Caption
+            description: Caption text for the carousel item.
+            default: ''
+          caption_content_tag:
+            type: string
+            title: Caption Content Tag
+            description: HTML tag for the caption content.
+            default: p
+          image_src:
+            type: string
+            title: Image Source
+            description: Image source for the carousel item.
+            default: ''
+          image_alt:
+            type: string
+            title: Image Alt
+            description: Image alt text for the carousel item.
+            default: ''
+          media:
+            type: object
+            title: Media
+            description: Media object for the carousel item.
+          interval: 
+            type: integer
+            title: Interval
+            description: The amount of time to delay between automatically cycling an item. If false, carousel will not automatically cycle.
+slots:
+  carousel_indicators:
+    title: Carousel Indicators
+    description: Slot for carousel indicators.
+  carousel_inner:
+    title: Carousel Inner
+    description: Slot for carousel inner.
+  carousel_caption:
+    title: Carousel Caption
+    description: Slot for carousel caption.
+  carousel_control:
+    title: Carousel Control
+    description: Slot for carousel control.

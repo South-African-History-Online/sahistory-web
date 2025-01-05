@@ -31,23 +31,95 @@ function saho_preprocess_block(&$variables) {
       }
     }
   }
-  
-  if ($variables['base_plugin_id'] == 'block_content' && $variables['derivative_plugin_id'] == 'inline_block:tdih') {
-    // Get field values.
-    $node = $variables['content']['field_tdih_entries'][0]['#node'] ?? null;
-    if ($node) {
-      $variables['label'] = $variables['label'] ?? 'This Day in History';
-      $variables['intro_text'] = $variables['content']['field_intro_text']['#items'][0]->value ?? '';
-      $variables['event_title'] = $node->getTitle();
-      $variables['event_date'] = $node->get('field_this_day_in_history_3')->value ?? '';
-      $variables['event_link'] = $node->toUrl()->toString();
-      $variables['event_image'] = '';
 
-      if ($node->hasField('field_event_image') && !$node->get('field_event_image')->isEmpty()) {
-        $file = $node->get('field_event_image')->entity;
-        $uri = $file->getFileUri();
-        $variables['event_image'] = \Drupal::service('file_url_generator')->generateAbsoluteString($uri);
+  // Process the This Day in History block.
+  if ($variables['plugin_id'] == 'inline_block:tdih') {
+    $variables['tdih_nodes'] = [];
+
+    // Handle intro text.
+    $variables['tdih_intro_text'] = $variables['content']['field_intro_text']['#items'][0]->value ?? '';
+
+    // Process referenced TDIH entries.
+    if (isset($variables['content']['field_tdih_entries']['#items'])) {
+      foreach ($variables['content']['field_tdih_entries']['#items'] as $delta => $item) {
+        if (isset($item->target_id)) {
+          $node = \Drupal\node\Entity\Node::load($item->target_id);
+          if ($node) {
+            $image_url = '';
+
+            // Load image.
+            if ($node->hasField('field_event_image') && !$node->get('field_event_image')->isEmpty()) {
+              $file = $node->get('field_event_image')->entity;
+              $uri = $file->getFileUri();
+              $image_url = \Drupal::service('file_url_generator')->generateAbsoluteString($uri);
+            }
+
+            $variables['tdih_nodes'][$delta] = [
+              'id' => $node->id(),
+              'title' => $node->getTitle(),
+              'url' => $node->toUrl()->toString(),
+              'image' => $image_url,
+              'date' => $node->get('field_this_day_in_history_3')->value ?? '',
+              'summary' => $node->get('body')->summary ?? '',
+            ];
+          }
+        }
       }
+    }
+  }
+
+  // Process the History Pictures block.
+  // Check for the specific block type.
+  if ($variables['base_plugin_id'] == 'block_content' && $variables['derivative_plugin_id'] == 'inline_block:history_in_pictures') {
+
+    // Intro text.
+    $variables['intro_text'] = $variables['content']['field_intro_text']['#items'][0]->value ?? '';
+
+    // Carousel items.
+    $variables['carousel_items'] = [];
+    if (isset($variables['content']['field_carousel_items']['#items'])) {
+      foreach ($variables['content']['field_carousel_items']['#items'] as $delta => $item) {
+        // Load the referenced node.
+        $node = $item['#node'];
+        if ($node) {
+          // Get image URL.
+          $image_url = '';
+          if ($node->hasField('field_image') && !$node->get('field_image')->isEmpty()) {
+            $file = $node->get('field_image')->entity;
+            $uri = $file->getFileUri();
+            $image_url = \Drupal::service('file_url_generator')->generateAbsoluteString($uri);
+          }
+
+          // Add node details to carousel items.
+          $variables['carousel_items'][] = [
+            'caption_title' => $node->getTitle(),
+            'caption_content' => $node->get('body')->summary ?? '',
+            'image_src' => $image_url,
+            'interval' => 5000, // Default interval.
+          ];
+        }
+      }
+    }
+  }
+
+  // Handle the Spacer Block.
+  if ($variables['plugin_id'] === 'inline_block:spacer') {
+
+    // Extract the block content.
+    if (isset($variables['content']['#block_content']) && $variables['content']['#block_content'] instanceof Drupal\block_content\Entity\BlockContent) {
+      $block_content = $variables['content']['#block_content'];
+
+      // Extract the height field.
+      $height_value = $block_content->get('field_height')->value ?? 'Medium (40px)';
+      $height_classes = [
+        'Small (20px)' => 'spacer-small',
+        'Medium (40px)' => 'spacer-medium',
+        'Large (60px)' => 'spacer-large',
+      ];
+      $variables['height_class'] = $height_classes[$height_value] ?? 'spacer-medium';
+
+      // Add contextual links for Layout Builder.
+      $variables['attributes']['data-contextual-id'] = 'block_content:' . $variables['content']['#block_content']->id();
     }
   }
 }

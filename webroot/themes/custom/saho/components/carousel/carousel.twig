@@ -1,0 +1,221 @@
+{#
+/**
+  * @file
+  * Accordion component.
+  *
+  * Bootstrap Documentation
+  * https://getbootstrap.com/docs/5.3/components/carousel/
+  *
+  * Full List Utility Classes
+  * https://github.com/twbs/bootstrap/blob/v5.3.0/dist/css/bootstrap.css#L214
+  *
+  * Available properties:
+  * - carousel_theme (string) (default: 'light')
+  * - crossfade (bool) (default: false)
+  * - autoplay  (string) (default: '' | 'carousel' | 'true')
+  * - id (int) (default: random(1000))
+  * - show_carousel_control (bool) (default: true)
+  * - show_carousel_indicators (bool) (default: true)
+  * - show_carousel_caption (bool) (default: true)
+  * - carousel_utility_classes (array) (default: []): Additional classes to add to the carousel.
+  * - carousel_item_utility_classes (array) (default: []): Additional classes to add to the carousel item.
+  * - carousel_caption_utility_classes (array) (default: []): Additional classes to add to the carousel caption.
+  * - carousel_indicator_utility_classes (array) (default: []): Additional classes to add to the carousel indicator.
+  * - media_attributes (array) (default: []): Media attributes.
+  * - item_image_attributes (array) (default: []): Item image attributes.
+  * - items (array) (default: []): format: [
+  *     {
+  *       caption_title: (optional) (string),
+  *       caption_title_tag: (optional) (string),
+  *       carousel_caption: (optional) (string),
+  *       caption_content_tag: (optional) (string),
+  *       image_src: (optional) Item image source.
+  *       image_alt: (optional) Item image alt.
+  *       media: (optional) Media render array.
+  *       interval (int) (default: 3000)
+  *     },
+  *   ]
+  * - open_item_id (int) (default: 0)
+  *
+  * usage example: @see README.md
+  *
+*/
+#}
+{% apply spaceless %}
+
+{% set carousel_theme = carousel_theme|default('light') %}
+{% set show_carousel_control = show_carousel_control|default('true') %}
+{% set show_carousel_indicators = show_carousel_indicators|default('true') %}
+{% set show_carousel_caption = show_carousel_caption|default('true') %}
+{% set id = id|default('carousel-' ~ random(1000)) %}
+{% set items = items|default([]) %}
+{% set caption_title_tag = caption_title_tag|default('h3') %}
+{% set caption_content_tag = caption_content_tag|default('p') %}
+
+{%
+  set carousel_classes = [
+    'carousel',
+    'slide',
+    crossfade ? 'carousel-fade' : '',
+    carousel_theme ? 'carousel-' ~ carousel_theme : '',
+  ]|merge(carousel_utility_classes ?: [])
+%}
+{%
+  set carousel_item_classes = [
+    'carousel-item'
+  ]|merge(carousel_item_utility_classes ?: [])
+%}
+
+{%
+  set carousel_caption_classes = [
+    'carousel-caption'
+  ]|merge(carousel_caption_utility_classes ?: [])
+%}
+
+{% set carousel_attributes = carousel_attributes ?: create_attribute() %}
+{%
+  set carousel_attributes = carousel_attributes
+    .addClass(carousel_classes)
+    .setAttribute('id', id)
+    .setAttribute('data-bs-theme', carousel_theme)
+%}
+
+{% if autoplay %}
+  {%
+    set carousel_attributes = carousel_attributes
+      .setAttribute('data-bs-ride', autoplay)
+  %}
+{% endif %}
+
+{% set media_attributes = media_attributes ?: create_attribute() %}
+{% set item_image_attributes = item_image_attributes ?: create_attribute() %}
+
+{% if items is not empty %}
+  <div {{ carousel_attributes.addClass(carousel_classes) }}>
+    {% if show_carousel_indicators %}
+      {% block carousel_indicators %}
+        <div class="carousel-indicators">
+          {% for item in items %}
+            {%
+              set carousel_indicator_attributes = create_attribute()
+                .addClass(carousel_indicator_utility_classes ?: [])
+                .addClass(loop.first ? 'active' : '')
+                .setAttribute('type', 'button')
+                .setAttribute('data-bs-target', '#' ~ id)
+                .setAttribute('data-bs-slide-to', (loop.index - 1))
+                .setAttribute('aria-label', 'Slide ' ~ loop.index)
+                .setAttribute('aria-current', loop.first ? 'true' : 'false')
+            %}
+            {%
+              include 'radix:button' with {
+                button_attributes: carousel_indicator_attributes,
+              }
+            %}
+          {% endfor %}
+        </div>
+      {% endblock %}
+    {% endif %}
+
+    {% block carousel_inner %}
+      <div class="carousel-inner">
+        {% for item in items %}
+          {%
+            set carousel_item_attributes = create_attribute()
+              .addClass(carousel_item_classes)
+              .addClass(loop.first ? 'active' : '')
+          %}
+          {% if item.interval %}
+            {%
+              set carousel_item_attributes = carousel_item_attributes
+                .setAttribute('data-bs-interval', item.interval)
+            %}
+          {% endif %}
+
+          <div {{ carousel_item_attributes }}>
+            {% if item.media|render %}
+              {%
+                include 'radix:media' with {
+                  content: item.media,
+                  attributes: media_attributes,
+                }
+              %}
+            {% elseif item.image_src %}
+              {%
+                include 'radix:image' with {
+                  src: item.image_src,
+                  alt: item.image_alt,
+                  image_utility_classes: ['w-100']
+                }
+              %}
+            {% endif %}
+
+            {% if show_carousel_caption %}
+              {% block carousel_caption %}
+                <div class="{{ carousel_caption_classes|join(' ') }}">
+                  {% if item.caption_title %}
+                    {%
+                      include 'radix:heading' with {
+                        heading_html_tag: caption_title_tag,
+                        content: item.caption_title,
+                        heading_attributes: title_attributes,
+                        heading_utility_classes: ['caption-title']
+                      }
+                    %}
+                  {% endif %}
+
+                  {% if item.caption_content %}
+                    <{{caption_content_tag}} class="caption-content">
+                      {{ item.caption_content }}
+                    </{{caption_content_tag}}>
+                  {% endif %}
+                </div>
+              {% endblock  %}
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
+    {% endblock %}
+
+    {% if show_carousel_control %}
+      {% block carousel_control %}
+        {%
+          set carousel_control_prev_attributes = create_attribute()
+            .addClass('carousel-control carousel-control-prev')
+            .setAttribute('type', 'button')
+            .setAttribute('data-bs-target', '#' ~ id)
+            .setAttribute('data-bs-slide', 'prev')
+        %}
+        {%
+          embed 'radix:button' with {
+            button_attributes: carousel_control_prev_attributes,
+          }
+        %}
+          {% block content %}
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">{{ 'Previous'|trans }}</span>
+          {% endblock %}
+        {% endembed %}
+
+        {%
+          set carousel_control_next_attributes = create_attribute()
+            .addClass('carousel-control carousel-control-next')
+            .setAttribute('type', 'button')
+            .setAttribute('data-bs-target', '#' ~ id)
+            .setAttribute('data-bs-slide', 'next')
+        %}
+        {%
+          embed 'radix:button' with {
+            button_attributes: carousel_control_next_attributes,
+          }
+        %}
+          {% block content %}
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">{{ 'Next'|trans }}</span>
+          {% endblock %}
+        {% endembed %}
+      {% endblock %}
+    {% endif %}
+  </div>
+{% endif %}
+
+{% endapply %}
