@@ -1,6 +1,7 @@
 <?php
 
 use Drupal\node\Entity\Node;
+use Drupal\Core\Datetime\DateFormatter;
 
 /**
  * @file
@@ -17,53 +18,51 @@ foreach (glob($includes_path) as $file) {
  * Implements hook_preprocess_block().
  */
 function saho_preprocess_block(&$variables) {
-  // Process the TDIH block.
+  // Only preprocess the 'This Day in History' block.
   if ($variables['plugin_id'] === 'inline_block:tdih') {
-    // Check if field exists.
-    if (isset($variables['content']['field_tdih']['#items'][0])) {
-      // Load the referenced node entity.
-      $node_id = $variables['content']['field_tdih']['#items'][0]->target_id;
-      $node = Node::load($node_id);
 
-      if ($node) {
-        // Pass node object to Twig template.
-        $variables['tdih_node'] = $node;
-      }
-    }
-  }
-
-  // Process the This Day in History block.
-  if ($variables['plugin_id'] == 'inline_block:tdih') {
+    // Initialize an empty array for entries.
     $variables['tdih_nodes'] = [];
 
-    // Handle intro text.
-    $variables['tdih_intro_text'] = $variables['content']['field_intro_text']['#items'][0]->value ?? '';
+    // Get today's day and month.
+    $today = new \DateTime('now', new \DateTimeZone('UTC'));
+    $day = $today->format('d');
+    $month = $today->format('m');
 
-    // Process referenced TDIH entries.
-    if (isset($variables['content']['field_tdih_entries']['#items'])) {
-      foreach ($variables['content']['field_tdih_entries']['#items'] as $delta => $item) {
-        if (isset($item->target_id)) {
-          $node = \Drupal\node\Entity\Node::load($item->target_id);
-          if ($node) {
-            $image_url = '';
+    // Query nodes matching today's date.
+    $query = \Drupal::entityQuery('node')
+      ->condition('status', 1) // Published nodes only.
+      ->condition('type', 'event') // Content type: event.
+      ->condition('field_this_day_in_history_3', "%-$month-$day", 'LIKE') // Match day and month.
+      ->accessCheck(TRUE) // Ensure access control checks.
+      ->execute();
 
-            // Load image.
-            if ($node->hasField('field_event_image') && !$node->get('field_event_image')->isEmpty()) {
-              $file = $node->get('field_event_image')->entity;
-              $uri = $file->getFileUri();
-              $image_url = \Drupal::service('file_url_generator')->generateAbsoluteString($uri);
-            }
+    // Randomize and limit to 1 result.
+    if (!empty($query)) {
+      $nids = array_values($query);
+      shuffle($nids); // Randomize order.
+      $nid = reset($nids); // Pick one node.
 
-            $variables['tdih_nodes'][$delta] = [
-              'id' => $node->id(),
-              'title' => $node->getTitle(),
-              'url' => $node->toUrl()->toString(),
-              'image' => $image_url,
-              'date' => $node->get('field_this_day_in_history_3')->value ?? '',
-              'summary' => $node->get('body')->summary ?? '',
-            ];
-          }
+      // Load node.
+      $node = Node::load($nid);
+      if ($node) {
+        // Image handling.
+        $image_url = '';
+        if ($node->hasField('field_event_image') && !$node->get('field_event_image')->isEmpty()) {
+          $file = $node->get('field_event_image')->entity;
+          $uri = $file->getFileUri();
+          $image_url = \Drupal::service('file_url_generator')->generateAbsoluteString($uri);
         }
+
+        // Prepare variables for template.
+        $variables['tdih_nodes'][] = [
+          'id' => $node->id(),
+          'title' => $node->getTitle(),
+          'url' => $node->toUrl()->toString(),
+          'image' => $image_url,
+          'date' => $node->get('field_this_day_in_history_3')->value ?? '',
+          'summary' => $node->get('body')->summary ?? '',
+        ];
       }
     }
   }
