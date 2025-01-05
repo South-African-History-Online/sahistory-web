@@ -1,0 +1,67 @@
+# Carousel
+
+The carousel is a slideshow component for cycling through elements—images or slides of text.
+
+## Bootstrap Documentation
+
+[Bootstrap Carousel Documentation](https://getbootstrap.com/docs/5.3/components/carousel/)
+
+
+## Component Properties
+
+The Carousel component takes a variety of properties to customize its appearance and content:
+
+- `carousel_theme` (string) (default: 'light')
+- `id` (intdefault: random(1000))
+- `crossfade` (bool) (default: false)
+- `show_carousel_control` (bool) (default: true)
+- `show_carousel_indicators` (bool) (default: true)
+- `show_carousel_caption` (bool) (default: true)
+- `carousel_utility_classes` (arraydefault: []): Additional classes to add to the carousel.
+- `carousel_item_utility_classes` (arraydefault: []): Additional classes to add to the carousel item.
+- `carousel_caption_utility_classes` (array) (default: []): Additional classes to add to the carousel caption.
+- `carousel_indicator_utility_classes` (array) (default: []): Additional classes to add to the carousel indicator.
+- `media_attributes` (array) (default: []): Media attributes.
+- `item_image_attributes` (array) (default: []): Item image attributes.
+- `caption_title_tag` (string) (default: 'h5'): Caption title tag.
+- `caption_content_tag` (string) (default: 'p'): Caption content tag.
+- `items` (array) (default: []): Carousel items.
+- `items.item` (array) (default: []): Carousel item.
+- `items.item.caption_title` (string) (default: ''): Caption title.
+- `items.item.caption_content` (string) (default: ''): Caption content.
+- `items.item.image_src` (string) (default: ''): Image source.
+- `items.item.media` (array) (default: []): Media.
+- `items.item.interval` (int) (default: 5000): Interval.
+
+## Usage
+
+```twig
+{%
+  include 'radix:carousel' with {
+    show_carousel_control: true,
+    show_carousel_indicators: true,
+    show_carousel_caption: true,
+    caption_title_tag: 'h1',
+    caption_content_tag: 'h4',
+    items: [
+      {
+        caption_title: 'Item 1',
+        interval: 3000,
+        image_src: 'https://picsum.photos/id/140/600.jpg',
+        caption_content: 'Content 1 Excepteur occaecat deserunt aliquip qui veniam magna ad.',
+      },
+      {
+        caption_title: 'Item 2',
+        interval: 5000,
+        image_src: 'https://picsum.photos/id/280/600.jpg',
+        caption_content: 'Content 2 Excepteur occaecat deserunt aliquip qui veniam magna ad.',
+      },
+      {
+        caption_title: 'Item 3',
+        media: content.field_media,
+        caption_content: 'Content 3 Excepteur occaecat deserunt aliquip qui veniam magna ad.',
+      },
+    ]
+  }
+%}
+```

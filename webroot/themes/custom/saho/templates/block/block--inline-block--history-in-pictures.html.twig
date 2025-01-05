@@ -1,0 +1,25 @@
+<div class="history-pictures-block">
+  <h2 class="block-title">{{ label }}</h2>
+  <p class="block-intro">{{ content.field_intro_text|raw }}</p>
+
+  {% set carousel_items = [] %}
+  {% for item in content.field_carousel_items %}
+    {% set carousel_items = carousel_items|merge([{
+      caption_title: item['#node'].title.value,
+      caption_content: item['#node'].body.summary ?? '',
+      image_src: item['#node'].field_event_image.entity.uri.value
+        ? file_url(item['#node'].field_event_image.entity.uri.value)
+        : '/themes/custom/saho/images/default-image.jpg'
+    }]) %}
+  {% endfor %}
+
+  {% include 'radix:carousel' with {
+    id: 'historyCarousel',
+    show_carousel_control: true,
+    show_carousel_indicators: true,
+    show_carousel_caption: true,
+    caption_title_tag: 'h3',
+    caption_content_tag: 'p',
+    items: carousel_items
+  } %}
+</div>
