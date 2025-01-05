@@ -1,35 +1,27 @@
 <div class="tdih-block">
   <h2 class="block-title">{{ label }}</h2>
-  <p class="block-intro">{{ content.field_intro_text|raw }}</p>
 
-  {% if tdih_node %}
-    <div class="history-entry featured-entry">
+  {% for node in tdih_nodes %}
+    <div class="history-entry">
       <div class="entry-card">
+
         {# Render Image with Link #}
-        {% if tdih_node.field_event_image.entity.uri.value %}
-          <a href="{{ url('entity.node.canonical', {'node': tdih_node.id()}) }}">
-            <img src="{{ file_url(tdih_node.field_event_image.entity.uri.value) }}" 
-                 alt="{{ tdih_node.title.value }}" 
-                 class="entry-image">
+        {% if node.image %}
+          <a href="{{ node.url }}">
+            <img src="{{ node.image }}" alt="{{ node.title }}" class="entry-image">
           </a>
         {% endif %}
 
         {# Render Date #}
-        {% if tdih_node.field_this_day_in_history_3.value %}
-          <p class="entry-date">{{ tdih_node.field_this_day_in_history_3.value|date('d F Y') }}</p>
+        {% if node.date %}
+          <p class="entry-date">{{ node.date|date('d F Y') }}</p>
         {% endif %}
 
         {# Render Title with Link #}
         <h3 class="entry-title">
-          <a href="{{ url('entity.node.canonical', {'node': tdih_node.id()}) }}">
-            {{ tdih_node.title.value }}
-          </a>
+          <a href="{{ node.url }}">{{ node.title }}</a>
         </h3>
       </div>
     </div>
-  {% endif %}
-
-  <div class="more-events">
-    <a href="/this-day-in-history" class="btn btn-outline-primary">More Events</a>
-  </div>
+  {% endfor %}
 </div>
