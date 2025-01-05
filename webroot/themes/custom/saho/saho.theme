@@ -18,43 +18,37 @@ foreach (glob($includes_path) as $file) {
  * Implements hook_preprocess_block().
  */
 function saho_preprocess_block(&$variables) {
-  // Only preprocess the 'This Day in History' block.
   if ($variables['plugin_id'] === 'inline_block:tdih') {
-
-    // Initialize an empty array for entries.
     $variables['tdih_nodes'] = [];
 
-    // Get today's day and month.
     $today = new \DateTime('now', new \DateTimeZone('UTC'));
     $day = $today->format('d');
     $month = $today->format('m');
 
-    // Query nodes matching today's date.
     $query = \Drupal::entityQuery('node')
-      ->condition('status', 1) // Published nodes only.
-      ->condition('type', 'event') // Content type: event.
-      ->condition('field_this_day_in_history_3', "%-$month-$day", 'LIKE') // Match day and month.
-      ->accessCheck(TRUE) // Ensure access control checks.
+      ->condition('status', 1)
+      ->condition('type', 'event')
+      ->condition('field_this_day_in_history_3', "%-$month-$day", 'LIKE')
+      ->accessCheck(TRUE)
       ->execute();
 
-    // Randomize and limit to 1 result.
     if (!empty($query)) {
       $nids = array_values($query);
-      shuffle($nids); // Randomize order.
-      $nid = reset($nids); // Pick one node.
+      shuffle($nids); // Randomize entries.
+      $nid = reset($nids); // Select one.
 
-      // Load node.
       $node = Node::load($nid);
       if ($node) {
-        // Image handling.
         $image_url = '';
+
+        // Use image style for consistent sizing.
         if ($node->hasField('field_event_image') && !$node->get('field_event_image')->isEmpty()) {
           $file = $node->get('field_event_image')->entity;
-          $uri = $file->getFileUri();
-          $image_url = \Drupal::service('file_url_generator')->generateAbsoluteString($uri);
+          $image_url = \Drupal\image\Entity\ImageStyle::load('tdih_thumbnail')
+            ->buildUrl($file->getFileUri());
         }
 
-        // Prepare variables for template.
+        // Prepare variables for the template.
         $variables['tdih_nodes'][] = [
           'id' => $node->id(),
           'title' => $node->getTitle(),
