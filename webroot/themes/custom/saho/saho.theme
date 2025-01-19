@@ -21,46 +21,78 @@ function saho_preprocess_block(&$variables) {
   if ($variables['plugin_id'] === 'inline_block:tdih') {
     $variables['tdih_nodes'] = [];
 
-    $today = new \DateTime('now', new \DateTimeZone('UTC'));
-    $day = $today->format('d');
-    $month = $today->format('m');
+    // Add contextual links for the block.
+    $variables['contextual_links'] = [
+      'block' => [
+        'route_parameters' => ['block_content' => $variables['elements']['#id']],
+      ],
+    ];
 
-    $query = \Drupal::entityQuery('node')
-      ->condition('status', 1)
-      ->condition('type', 'event')
-      ->condition('field_this_day_in_history_3', "%-$month-$day", 'LIKE')
-      ->accessCheck(TRUE)
-      ->execute();
+    // Safely get the raw boolean value for the manual override field.
+    $manual_override = !empty($variables['content']['field_use_manual_override']['#items'][0]) &&
+      (bool) $variables['content']['field_use_manual_override']['#items'][0]->value;
 
-    if (!empty($query)) {
-      $nids = array_values($query);
-      shuffle($nids); // Randomize entries.
-      $nid = reset($nids); // Select one.
+    // Get the manually selected entity, if any.
+    $manual_entity = !empty($variables['content']['field_manual_entity']['#items'][0]) 
+      ? $variables['content']['field_manual_entity']['#items'][0] 
+      : NULL;
 
-      $node = Node::load($nid);
-      if ($node) {
-        $image_url = '';
+    $node = NULL;
 
-        // Use image style for consistent sizing.
-        if ($node->hasField('field_event_image') && !$node->get('field_event_image')->isEmpty()) {
-          $file = $node->get('field_event_image')->entity;
-          $image_url = \Drupal\image\Entity\ImageStyle::load('tdih_thumbnail')
-            ->buildUrl($file->getFileUri());
-        }
+    if ($manual_override && $manual_entity) {
+      // Use the manually selected node.
+      $node = \Drupal\node\Entity\Node::load($manual_entity->getValue()['target_id']);
+    } else {
+      // Automated selection based on today's date.
+      $today = new \DateTime('now', new \DateTimeZone('UTC'));
+      $day = $today->format('d');
+      $month = $today->format('m');
 
-        // Prepare variables for the template.
-        $variables['tdih_nodes'][] = [
-          'id' => $node->id(),
-          'title' => $node->getTitle(),
-          'url' => $node->toUrl()->toString(),
-          'image' => $image_url,
-          'date' => $node->get('field_this_day_in_history_3')->value ?? '',
-          'summary' => $node->get('body')->summary ?? '',
-        ];
+      // Query nodes matching today's date.
+      $query = \Drupal::entityQuery('node')
+        ->condition('status', 1)
+        ->condition('type', 'event')
+        ->condition('field_this_day_in_history_3', "%-$month-$day", 'LIKE')
+        ->condition('field_home_page_feature', 1) // Boolean field indicating front-page feature.
+        ->accessCheck(TRUE)
+        ->execute();
+
+      if (!empty($query)) {
+        $nids = array_values($query);
+
+        // Randomize the selection for each page load.
+        $nid = $nids[array_rand($nids)];
+        $node = \Drupal\node\Entity\Node::load($nid);
       }
     }
-  }
 
+    if (!empty($node)) {
+      $image_url = '';
+
+      // Directly get the image URL from the node field.
+      if ($node->hasField('field_event_image') && !$node->get('field_event_image')->isEmpty()) {
+        $file = $node->get('field_event_image')->entity;
+        if ($file) {
+          $image_url = \Drupal::service('file_url_generator')->generateAbsoluteString($file->getFileUri());
+        }
+      }
+
+      // Use the ViewBuilder to render the entity in the 'teaser' view mode.
+      $view_builder = \Drupal::entityTypeManager()->getViewBuilder('node');
+      $rendered_entity = $view_builder->view($node, 'teaser');
+
+      // Pass the rendered entity to the template.
+      $variables['tdih_nodes'][] = [
+        'rendered' => $rendered_entity, // Rendered teaser view.
+        'id' => $node->id(),
+        'title' => $node->getTitle(),
+        'url' => $node->toUrl()->toString(),
+        'image' => $image_url, // Image URL fetched directly from the node field.
+        'date' => $node->get('field_this_day_in_history_3')->value ?? '',
+      ];
+    }
+  }
+  
   // Process the History Pictures block.
   // Check for the specific block type.
   if ($variables['base_plugin_id'] == 'block_content' && $variables['derivative_plugin_id'] == 'inline_block:history_in_pictures') {
