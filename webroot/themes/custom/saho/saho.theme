@@ -21,13 +21,6 @@ function saho_preprocess_block(&$variables) {
   if ($variables['plugin_id'] === 'inline_block:tdih') {
     $variables['tdih_nodes'] = [];
 
-    // Add contextual links for the block.
-    $variables['contextual_links'] = [
-      'block' => [
-        'route_parameters' => ['block_content' => $variables['elements']['#id']],
-      ],
-    ];
-
     // Safely get the raw boolean value for the manual override field.
     $manual_override = !empty($variables['content']['field_use_manual_override']['#items'][0]) &&
       (bool) $variables['content']['field_use_manual_override']['#items'][0]->value;
