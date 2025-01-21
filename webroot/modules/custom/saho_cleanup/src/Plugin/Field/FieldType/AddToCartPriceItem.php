@@ -17,48 +17,53 @@ use Drupal\Core\TypedData\DataDefinition;
  *   default_formatter = "string"
  * )
  */
-class AddToCartPriceItem extends FieldItemBase {
+class AddToCartPriceItem extends FieldItemBase
+{
 
-  /**
-   * Defines the schema for the field's database columns.
-   */
-  public static function schema(FieldStorageDefinitionInterface $field_storage_definition) {
-    return [
-      'columns' => [
+    /**
+     * Defines the schema for the field's database columns.
+     */
+    public static function schema(FieldStorageDefinitionInterface $field_storage_definition)
+    {
+        return [
+        'columns' => [
         'value' => [
           'type' => 'text',
           'size' => 'normal',
-          'not null' => FALSE,
+          'not null' => false,
         ],
-      ],
-    ];
-  }
+        ],
+        ];
+    }
 
-  /**
-   * Returns an array of property definitions for each data element in the field item.
-   */
-  public static function propertyDefinitions(FieldStorageDefinitionInterface $field_definition) {
-    $properties = [];
-    $properties['value'] = DataDefinition::create('string')
-      ->setLabel(t('Price Value'))
-      ->setRequired(FALSE);
+    /**
+     * Returns an array of property definitions for each data element in the field item.
+     */
+    public static function propertyDefinitions(FieldStorageDefinitionInterface $field_definition)
+    {
+        $properties = [];
+        $properties['value'] = DataDefinition::create('string')
+            ->setLabel(t('Price Value'))
+            ->setRequired(false);
 
-    return $properties;
-  }
+        return $properties;
+    }
 
-  /**
-   * The main property name of the field (e.g., "value", "target_id", etc.).
-   */
-  public static function mainPropertyName() {
-    return 'value';
-  }
+    /**
+     * The main property name of the field (e.g., "value", "target_id", etc.).
+     */
+    public static function mainPropertyName()
+    {
+        return 'value';
+    }
 
-  /**
-   * Determines if this field item is empty.
-   */
-  public function isEmpty() {
-    $value = $this->get('value')->getValue();
-    return $value === NULL || $value === '';
-  }
+    /**
+     * Determines if this field item is empty.
+     */
+    public function isEmpty()
+    {
+        $value = $this->get('value')->getValue();
+        return $value === null || $value === '';
+    }
 
 }
