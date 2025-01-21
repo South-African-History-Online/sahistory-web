@@ -1,0 +1,25 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the saho_cleanup module.
+ */
+
+use Drupal\Core\Entity\EntityDefinitionUpdateManagerInterface;
+
+/**
+ * Post-update: Remove leftover add_to_cart fields that reference missing plugins.
+ */
+function saho_cleanup_post_update_remove_add_to_cart_fields(&$sandbox) {
+  $manager = \Drupal::entityDefinitionUpdateManager();
+
+  // Uninstall 'add_to_cart' if it exists.
+  if ($definition = $manager->getFieldStorageDefinition('add_to_cart', 'node')) {
+    $manager->uninstallFieldStorageDefinition($definition);
+  }
+
+  // Uninstall 'add_to_cart_price' if it exists.
+  if ($definition = $manager->getFieldStorageDefinition('add_to_cart_price', 'node')) {
+    $manager->uninstallFieldStorageDefinition($definition);
+  }
+}
