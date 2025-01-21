@@ -1,0 +1,34 @@
+<div class="tdih-block">
+  <h2 class="block-title">{{ label }}</h2>
+
+  {# Render the intro text with raw HTML #}
+  {% if intro_text %}
+    <div class="block-intro">
+      {{ intro_text|raw }}
+    </div>
+  {% endif %}
+
+  {% for node in tdih_nodes %}
+    <div class="history-entry">
+      <div class="entry-card">
+
+        {# Render Image with Link #}
+        {% if node.image %}
+          <a href="{{ node.url }}">
+            <img src="{{ node.image }}" alt="{{ node.title }}" class="entry-image">
+          </a>
+        {% endif %}
+
+        {# Render Date #}
+        {% if node.date %}
+          <p class="entry-date">{{ node.date|date('d F Y') }}</p>
+        {% endif %}
+
+        {# Render Title with Link #}
+        <h3 class="entry-title">
+          <a href="{{ node.url }}">{{ node.title }}</a>
+        </h3>
+      </div>
+    </div>
+  {% endfor %}
+</div>
