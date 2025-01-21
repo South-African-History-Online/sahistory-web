@@ -1,0 +1,24 @@
+<?php
+
+use Drupal\Core\Extension\ExtensionPathResolver;
+
+/**
+ * Implements hook_theme().
+ *
+ * Registers a theme hook 'saho_example_block' that maps to
+ * saho-example-block.html.twig in the module's /templates folder.
+ */
+function saho_example_block_theme($existing, $type, $theme, $path) {
+  // Safely get the path to this module:
+  $module_path = \Drupal::service('extension.list.module')->getPath('saho_example_block');
+
+  return [
+    'saho_example_block' => [
+      'variables' => [
+        'my_variable' => NULL,
+      ],
+      'template' => 'saho-example-block',  // The base file name (without .html.twig)
+      'path' => $module_path . '/templates',
+    ],
+  ];
+}
