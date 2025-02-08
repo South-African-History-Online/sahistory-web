@@ -1,4 +1,10 @@
 services:
+  logger.channel.tdih:
+    class: Drupal\Core\Logger\LoggerChannel
+    factory: ['@logger.factory', get']
+    arguments: ['tdih']
   tdih.node_fetcher:
     class: Drupal\tdih\Service\NodeFetcher
-    arguments: ['@entity_type.manager']
+    arguments:
+      - '@entity_type.manager'
+      - '@logger.factory'
