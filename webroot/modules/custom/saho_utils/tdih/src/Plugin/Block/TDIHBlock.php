@@ -32,7 +32,7 @@ class TDIHBlock extends BlockBase {
    */
   public function build() {
     return [
-      '#theme' => 'block__inline_block__tdih', // Must match `block--inline-block--tdih.html.twig`.
+      '#theme' => 'tdih_block', 
       '#cache' => [
         'contexts' => ['user.permissions'],
         'tags' => ['node_list'],
