@@ -3,33 +3,36 @@
 namespace Drupal\tdih\Service;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Psr\Log\LoggerInterface;
 
-/**
- * Sample reusable service for date-specific queries.
- */
 class NodeFetcher {
 
-  /**
-   * The entity type manager.
-   */
   protected $entityTypeManager;
+  protected $logger;
 
-  public function __construct(EntityTypeManagerInterface $entityTypeManager) {
+  /**
+   * Constructor.
+   */
+  public function __construct(EntityTypeManagerInterface $entityTypeManager, LoggerInterface $logger) {
     $this->entityTypeManager = $entityTypeManager;
+    $this->logger = $logger;
   }
 
   /**
-   * Fetch nodes matching a specific day/month.
+   * Fetch nodes for TDIH.
    */
-  public function getNodesByDate($day, $month) {
-    $query = \Drupal::entityQuery('node')
-      ->condition('type', 'event')
+  public function getNodes() {
+    $query = $this->entityTypeManager->getStorage('node')->getQuery()
       ->condition('status', 1)
-      ->condition('field_this_day_in_history_3', "%-$month-$day", 'LIKE')
-      ->accessCheck(true);
+      ->condition('type', 'event')
+      ->range(0, 5)
+      ->accessCheck(TRUE); // Ensure access check is explicitly defined.
 
     $nids = $query->execute();
+
+    // Log the fetched node IDs for debugging purposes.
+    $this->logger->debug('Fetched node IDs: @nids', ['@nids' => json_encode($nids)]);
+
     return $this->entityTypeManager->getStorage('node')->loadMultiple($nids);
   }
-
 }
