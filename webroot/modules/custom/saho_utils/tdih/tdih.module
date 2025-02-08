@@ -1,23 +1,31 @@
 <?php
 
-/**
- * @file
- * Implements hook_theme() for TDIH submodule.
- */
+use Drupal\node\Entity\Node;
+use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 
 /**
- * Implements hook_theme().
+ * Implements hook_preprocess_HOOK().
  */
-function tdih_theme($existing, $type, $theme, $path) {
-  $module_path = \Drupal::service('extension.list.module')->getPath('tdih');
+function tdih_preprocess_block(array &$variables) {
+  if ($variables['plugin_id'] === 'inline_block:tdih') {
+    // Use the logger directly.
+    $logger = \Drupal::logger('tdih');
+    $logger->debug('Preprocessing TDIH block.');
 
-  return [
-    'tdih_block' => [
-      'variables' => [
-        'nodes_data' => NULL,
-      ],
-      'template' => 'block--inline-block--tdih',
-      'path' => $module_path . '/templates',
-    ],
-  ];
+    $node_fetcher = new \Drupal\tdih\Service\NodeFetcher(
+      \Drupal::entityTypeManager(),
+      $logger
+    );
+
+    $variables['nodes_data'] = [];
+    $nodes = $node_fetcher->getNodes();
+
+    foreach ($nodes as $node) {
+      $variables['nodes_data'][] = [
+        'title' => $node->label(),
+        'url' => $node->toUrl()->toString(),
+        'created' => $node->getCreatedTime(),
+      ];
+    }
+  }
 }
