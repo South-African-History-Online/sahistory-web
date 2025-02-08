@@ -33,8 +33,8 @@ class TDIHBlock extends BlockBase {
    * {@inheritdoc}
    */
   public function build() {
-    $render_array = [
-      '#theme' => 'tdih',
+    return [
+      '#theme' => 'tdih_block', 
       '#cache' => [
         'contexts' => ['user.permissions'],
         'tags' => ['node_list'],
