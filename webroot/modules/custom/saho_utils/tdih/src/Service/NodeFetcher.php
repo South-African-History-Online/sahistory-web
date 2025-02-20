@@ -2,37 +2,32 @@
 
 namespace Drupal\tdih\Service;
 
-use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Psr\Log\LoggerInterface;
+use Drupal\node\Entity\Node;
 
+/**
+ * Service to fetch nodes for "Today in History" logic.
+ */
 class NodeFetcher {
 
-  protected $entityTypeManager;
-  protected $logger;
-
   /**
-   * Constructor.
+   * Load nodes matching today's month/day.
+   *
+   * Adjust your field and content type as needed.
    */
-  public function __construct(EntityTypeManagerInterface $entityTypeManager, LoggerInterface $logger) {
-    $this->entityTypeManager = $entityTypeManager;
-    $this->logger = $logger;
-  }
-
-  /**
-   * Fetch nodes for TDIH.
-   */
-  public function getNodes() {
-    $query = $this->entityTypeManager->getStorage('node')->getQuery()
-      ->condition('status', 1)
+  public function loadTodayNodes($month, $day) {
+    // Example query: load published "event" nodes with date field matching mm-dd.
+    $nids = \Drupal::entityQuery('node')
       ->condition('type', 'event')
-      ->range(0, 5)
-      ->accessCheck(TRUE); // Ensure access check is explicitly defined.
+      ->condition('status', 1)
+      ->condition('field_this_day_in_history_3', "%-$month-$day", 'LIKE')
+      ->condition('field_home_page_feature', 1) 
+      ->accessCheck(TRUE)
+      ->execute();
 
-    $nids = $query->execute();
-
-    // Log the fetched node IDs for debugging purposes.
-    $this->logger->debug('Fetched node IDs: @nids', ['@nids' => json_encode($nids)]);
-
-    return $this->entityTypeManager->getStorage('node')->loadMultiple($nids);
+    if ($nids) {
+      return Node::loadMultiple($nids);
+    }
+    return [];
   }
+
 }
