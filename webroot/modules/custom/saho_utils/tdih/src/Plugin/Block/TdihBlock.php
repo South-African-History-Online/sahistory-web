@@ -14,8 +14,8 @@ use Drupal\node\Entity\Node;
  *
  * @Block(
  *   id = "tdih_block",
- *   admin_label = @Translation("TDIH Block (Plugin)"),
- *   category = @Translation("Custom")
+ *   admin_label = @Translation("TDIH Block"),
+ *   category = @Translation("All custom")
  * )
  */
 class TdihBlock extends BlockBase implements ContainerFactoryPluginInterface {
