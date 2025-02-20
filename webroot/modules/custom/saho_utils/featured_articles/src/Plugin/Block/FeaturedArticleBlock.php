@@ -14,7 +14,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * @Block(
  *   id = "featured_article_block",
  *   admin_label = @Translation("Featured Article Block"),
- *   category = @Translation("Custom")
+ *   category = @Translation("All custom")
  * )
  */
 class FeaturedArticleBlock extends BlockBase implements ContainerFactoryPluginInterface {
