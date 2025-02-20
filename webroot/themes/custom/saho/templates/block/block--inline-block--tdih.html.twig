@@ -1,0 +1,46 @@
+{#
+/**
+ * @file
+ * TDIH block template.
+ *
+ * This template renders a "Today in History" block with an optional image,
+ * title link, and date. If no matching nodes are found, it displays a
+ * fallback message. A "View more events" button links to /this-day-in-history.
+ */
+#}
+
+<div class="tdih-block">
+  <h2 class="block-title">{{ 'This Day in History'|t }}</h2>
+  <p class="intro-text">{{ 'Find out who was born, who died and other significant events from this day in history.'|t }}</p>
+  <div class="tdih-separator"></div>
+
+  {% if tdih_nodes %}
+    <div class="tdih-list">
+      {% for item in tdih_nodes %}
+        <article class="tdih-item">
+          {% if item.image %}
+            <a href="{{ item.url }}">
+              <img src="{{ item.image }}" alt="{{ item.title|striptags }}" class="tdih-image" />
+            </a>
+          {% endif %}
+
+          {% if item.event_date %}
+            <p class="date">{{ item.event_date|date('j F Y') }}</p>
+          {% endif %}
+
+          <h3>
+            <a href="{{ item.url }}">{{ item.title }}</a>
+          </h3>
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p>{{ 'No events found.'|t }}</p>
+  {% endif %}
+
+  <div class="tdih-button-wrapper">
+    <a href="/this-day-in-history" class="btn-view-more">
+      {{ 'More events'|t }}
+    </a>
+  </div>
+</div>
