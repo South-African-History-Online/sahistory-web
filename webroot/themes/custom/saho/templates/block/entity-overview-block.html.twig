@@ -1,0 +1,26 @@
+<div class="entity-overview-block">
+  <h2 class="block-title">{{ block_title|default('') }}</h2>
+  <p class="intro-text">
+    {{ (intro_text|default('Displaying the latest content from the %title section of the site.'))|t({'%title': block_title|default('')}) }}
+  </p>
+  
+  {% if items %}
+    <div class="entity-overview-list">
+      {% for item in items %}
+        <article class="entity-overview-item">
+          {% if item.image %}
+            <a href="{{ item.url }}">
+              <img src="{{ item.image }}" alt="{{ item.title|striptags }}" class="entity-overview-image" />
+            </a>
+          {% endif %}
+          <h3>
+            <a href="{{ item.url }}">{{ item.title }}</a>
+          </h3>
+          <p class="date">{{ item.created|date('F j, Y') }}</p>
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p>{{ 'No content found.'|t }}</p>
+  {% endif %}
+</div>
