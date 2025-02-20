@@ -15,7 +15,7 @@ use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
  * @Block(
  *   id = "entity_overview_block",
  *   admin_label = @Translation("Entity Overview Block"),
- *   category = @Translation("SAHO Utilities")
+ *   category = @Translation("All custom")
  * )
  */
 class EntityOverviewBlock extends BlockBase implements ContainerFactoryPluginInterface {
