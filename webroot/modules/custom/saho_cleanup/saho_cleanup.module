@@ -23,3 +23,37 @@ function saho_cleanup_post_update_remove_add_to_cart_fields(&$sandbox) {
     $manager->uninstallFieldStorageDefinition($definition);
   }
 }
+
+/**
+ * Delete old custom blocks of specified block types.
+ */
+function saho_cleanup_update_10001() {
+  $block_types_to_delete = [
+    'drag_and_drop_block',
+    'history_in_pictures',
+    'spacer',
+    'tdih',
+  ];
+
+  $storage = \Drupal::entityTypeManager()->getStorage('block_content');
+
+  foreach ($block_types_to_delete as $block_type) {
+    $ids = \Drupal::entityQuery('block_content')
+    ->condition('type', $block_type)
+    ->accessCheck(FALSE)
+    ->execute();  
+
+    if (!empty($ids)) {
+      $blocks = $storage->loadMultiple($ids);
+      $storage->delete($blocks);
+
+      \Drupal::messenger()->addStatus(t(
+        'Deleted @count blocks of type "@type".',
+        [
+          '@count' => count($blocks),
+          '@type' => $block_type,
+        ]
+      ));
+    }
+  }
+}
