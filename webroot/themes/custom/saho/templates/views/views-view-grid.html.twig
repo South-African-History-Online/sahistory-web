@@ -1,0 +1,57 @@
+{#
+/**
+ * @file
+ * Global override for the Views Grid style plugin.
+ *
+ * This applies site-wide to *all* displays using the "Grid" format,
+ * unless there's a more specific override (like views-view--VIEW--DISPLAY--grid.html.twig).
+ *
+ * Variables commonly available:
+ * - options: The grid plugin options (e.g. columns, alignment, row_class_default, col_class_default).
+ * - items: A list of row/column data or column/row data (depending on "alignment").
+ * - attributes: The container’s HTML attributes.
+ * - title: The optional title from the Views UI.
+ * - rows: A raw fallback (some versions use rows or items).
+ *
+ * Template Preprocess: template_preprocess_views_view_grid()
+ */
+#}
+
+{% set classes = [
+  'views-view--grid',
+  options.alignment,
+  (options.alignment == 'vertical') ? 'row' : '',
+  'cols-' ~ options.columns,
+  'clearfix'
+] %}
+
+<div{{ attributes.addClass(classes) }}>
+  {# If you want to print a title. #}
+  {% if title %}
+    <h2 class="grid-title">{{ title }}</h2>
+  {% endif %}
+
+  {# If the grid is horizontally aligned, each item is a "row" with columns. #}
+  {% if options.alignment == 'horizontal' %}
+    {% for row in items %}
+      <div{{ row.attributes.addClass('views-row') }}>
+        {% for column in row.content %}
+          <div{{ column.attributes.addClass('views-col') }}>
+            {{ column.content }}
+          </div>
+        {% endfor %}
+      </div>
+    {% endfor %}
+  {# Otherwise, vertical means each item is a "column" with multiple rows. #}
+  {% else %}
+    {% for column in items %}
+      <div{{ column.attributes.addClass('views-col') }}>
+        {% for row in column.content %}
+          <div{{ row.attributes.addClass('views-row') }}>
+            {{ row.content }}
+          </div>
+        {% endfor %}
+      </div>
+    {% endfor %}
+  {% endif %}
+</div>
