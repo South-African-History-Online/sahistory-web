@@ -1,0 +1,60 @@
+{#
+/**
+ * @file
+ * Custom override for the "archive_pages" view, display "page_1."
+ *
+ * This template lets you style the entire view in one place:
+ * - The exposed filters (exposed)
+ * - The header (header)
+ * - The rows of results (rows)
+ * - The empty text (empty), if no results
+ * - The pager (pager)
+ *
+ * Variables:
+ * - attributes: HTML attributes for the main wrapper
+ * - exposed: The rendered exposed form
+ * - header: The optional header area
+ * - rows: The rendered results
+ * - empty: Content if no results
+ * - pager: Next/prev pagination
+ * - title: (Used in admin preview, or if you want a heading)
+ * - feed_icons, more, attachment_before, attachment_after, etc. for advanced usage
+ */
+#}
+{% apply spaceless %}
+<div{{ attributes.addClass('archive-view') }}>
+
+  {# If you want to show the exposed form in a container #}
+  {% if exposed %}
+    <div class="archive-exposed">
+      {{ exposed }}
+    </div>
+  {% endif %}
+
+  {# Optional "header" content from the Views UI #}
+  {% if header %}
+    <div class="archive-header">
+      {{ header }}
+    </div>
+  {% endif %}
+
+  {# If we have rows, display them. Otherwise show empty text. #}
+  {% if rows %}
+    <div class="archive-rows">
+      {{ rows }}
+    </div>
+  {% elseif empty %}
+    <div class="archive-empty">
+      {{ empty }}
+    </div>
+  {% endif %}
+
+  {# Pager at the bottom #}
+  {% if pager %}
+    <div class="archive-pager">
+      {{ pager }}
+    </div>
+  {% endif %}
+
+</div>
+{% endapply %}
