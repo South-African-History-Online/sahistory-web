@@ -5,24 +5,64 @@
  *
 #}
 {% apply spaceless %}
-
 {% set footer_attributes = footer_attributes ?: create_attribute() %}
-{%
-  set footer_classes = [
-    'page__footer',
-  ]|merge(footer_utility_classes ?: [])
-%}
+{% set footer_classes = ['page__footer']|merge(footer_utility_classes ?: []) %}
 
-{% if page.footer %}
-  <footer {{ footer_attributes.addClass(footer_classes) }}>
-    <div class="container">
-      <div class="d-flex flex-wrap justify-content-md-between align-items-md-center">
-        {% block page_inner_footer %}
-          {{ page.footer }}
-        {% endblock %}
+<footer {{ footer_attributes.addClass(footer_classes) }}>
+  <!-- Thick red top border -->
+  <div class="footer-top-border"></div>
+
+  <!-- White background for the footer content -->
+  <div class="footer-bg">
+    <div class="container py-4">
+      <!-- Adjust `g-5` if you want even more spacing between columns -->
+      <div class="row g-5 align-items-start">
+        
+        <!-- Column 1: Donate button + SAHO logo -->
+        <div class="col-md-3 text-center text-md-start">
+          <a href="/support-saho" class="footer-link donate-btn d-block mb-3">
+            Donate to SAHO
+          </a>
+          <img
+            src="/themes/custom/saho/logo.svg"
+            alt="SAHO Logo"
+            class="footer-logo-img"
+          />
+        </div>
+
+        <!-- Column 2: First half of link list -->
+        <div class="col-md-3 text-center text-md-start">
+          <ul class="list-unstyled mb-0">
+            <li><a href="/about-us" class="footer-link">About Us</a></li>
+            <li><a href="/donate" class="footer-link">Donate to SAHO</a></li>
+            <li><a href="/saho-timeline" class="footer-link">SAHO Timeline &amp; Milestones</a></li>
+            <li><a href="/board-members" class="footer-link">SAHO Board Members</a></li>
+            <li><a href="/partners" class="footer-link">Partners</a></li>
+          </ul>
+        </div>
+
+        <!-- Column 3: Second half of link list -->
+        <div class="col-md-3 text-center text-md-start">
+          <ul class="list-unstyled mb-0">
+            <li><a href="/contact-us" class="footer-link">Contact Us</a></li>
+            <li><a href="/form/contribute" class="footer-link">Contribute</a></li>
+            <li><a href="/policy" class="footer-link">Copyright &amp; Disclaimer</a></li>
+            <li><a href="/funders" class="footer-link">Funders</a></li>
+          </ul>
+        </div>
+
+        <!-- Column 4: Social media links -->
+        <div class="col-md-3 text-center text-md-start">
+          <h6 class="footer-heading">Follow us</h6>
+          <ul class="list-unstyled mb-0">
+            <li><a href="https://www.facebook.com/sahistoryonline" target="_blank" class="footer-link">Facebook</a></li>
+            <li><a href="https://www.instagram.com/sa_history_online" target="_blank" class="footer-link">Instagram</a></li>
+            <li><a href="https://www.youtube.com/@sahistoryonline1" target="_blank" class="footer-link">YouTube</a></li>
+          </ul>
+        </div>
+
       </div>
     </div>
-  </footer>
-{% endif %}
-
+  </div>
+</footer>
 {% endapply %}
