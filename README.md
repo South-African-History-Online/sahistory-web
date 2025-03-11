@@ -174,10 +174,6 @@ For detailed information on Radix, you can visit [Radix Documentation](https://r
 - Use Radix's built-in tools for consistent styling and JS integration.
 - Theming is done by extending Radix templates within the "saho" theme directory, which keeps the customizations modular and easy to maintain.
 - SCSS files are used to create styles, and they are compiled using Node.js. Ensure you run `npm install` in the theme directory to get the required dependencies.
-- To build SCSS, run:
-  ```sh
-  npm run build
-  ```
 
 # Using the Drupal Radix CLI with DDEV
 
@@ -186,12 +182,22 @@ The following steps will help you use the `drupal-radix-cli` command within a DD
 ## Step-by-Step Instructions
 
 1. **List Available Components**
+   To use the Radix CLI we have to enter our Drupal container within DDEV, run:
+   ```sh
+   ddev ssh
+   ```
+   You are now in your Drupal and you can use the radix CLI:
+   ```sh
+   cd webroot/themes/contrib/radix
+   ```
+
+2. **List Available Components**
    To list all components available in your Radix theme, run:
    ```sh
    drupal-radix-cli list
    ```
 
-2. **Add a Radix Component**
+3. **Add a Radix Component**
    To add a Radix component to your current theme, use:
    ```sh
    drupal-radix-cli add
@@ -201,7 +207,7 @@ The following steps will help you use the `drupal-radix-cli` command within a DD
    drupal-radix-cli add --radix-path ../../radix/components
    ```
 
-3. **Generate a New Component**
+4. **Generate a New Component**
    To generate a clean new component folder within your subtheme components directory:
    ```sh
    drupal-radix-cli generate
@@ -215,7 +221,7 @@ The following steps will help you use the `drupal-radix-cli` command within a DD
 
    Make sure to remove any unwanted files and update your files accordingly.
 
-4. **Help**
+5. **Help**
    To display usage instructions:
    ```sh
    drupal-radix-cli --help
