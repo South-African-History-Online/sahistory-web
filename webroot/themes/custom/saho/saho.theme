@@ -152,3 +152,64 @@ function saho_preprocess_block(&$variables) {
     }
   }
 }
+
+/**
+ * Implements hook_theme_suggestions_alter().
+ */
+function saho_theme_suggestions_alter(array &$suggestions, array $variables, $hook) {
+  // Check if the element is part of a Gin Layout Builder form.
+  if (isset($variables['element']['#gin_lb_form'])) {
+    // Remove Bootstrap-related suggestions if present.
+    $found = FALSE;
+    foreach ($suggestions as $suggestion) {
+      // Check for Bootstrap-specific patterns in suggestions.
+      if (strpos($suggestion, '__bs') !== FALSE) {
+        $found = TRUE;
+        break;
+      }
+      // Check for label-related suggestions with Bootstrap context.
+      if (strpos($suggestion, 'label') !== FALSE && isset($variables['element']['#bs'])) {
+        $found = TRUE;
+        break;
+      }
+    }
+
+    // If any matching suggestions are found, remove them.
+    if ($found) {
+      $suggestions = preg_grep("/__gin_lb/", $suggestions, PREG_GREP_INVERT);
+    }
+  }
+}
+
+/**
+ * Implements hook_preprocess_form_element().
+ */
+function saho_preprocess_form_element(array &$variables) {
+  // Check if the form element has array parents defined.
+  $parents = $variables['element']['#array_parents'] ?? FALSE;
+  $bs_parents = ['ui', 'tab_content', 'appearance', 'layout_settings'];
+
+  // Ensure the form element belongs to a Bootstrap-related context.
+  if ($parents && count(array_intersect($bs_parents, $parents)) >= 3) {
+    // Add a flag to the label to indicate it belongs to a Bootstrap form element.
+    $variables['label']['#bs'] = TRUE;
+  }
+}
+
+/**
+ * Implements hook_theme_suggestions_alter() with fallback for missing cases.
+ */
+function saho_theme_suggestions_alter_with_fallback(array &$suggestions, array $variables, $hook) {
+  // If the element is part of a Gin Layout Builder form, skip further processing.
+  if (isset($variables['element']['#gin_lb_form'])) {
+    return;
+  }
+
+  // Additional fallback logic for other cases.
+  foreach ($suggestions as $key => $suggestion) {
+    // Remove any suggestions that are not relevant to the current theme.
+    if (strpos($suggestion, '__irrelevant') !== FALSE) {
+      unset($suggestions[$key]);
+    }
+  }
+}
