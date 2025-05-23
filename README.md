@@ -91,12 +91,8 @@ For frontend developers working in DDEV, follow these commands to set up and bui
    ```
 2. **Install Node.js dependencies**: Install required Node.js packages:
    ```sh
-3. **Go to the saho theme directory**: Navigate to the saho theme directory for further steps:
-   ```sh
-   cd webroot/themes/custom/saho
-   ```
-
    ddev ssh
+   cd webroot/themes/custom/saho
    npm install
    ```
 3. **Build the SCSS files**: Compile the styles using the provided build script:
