@@ -215,6 +215,7 @@ function saho_theme_suggestions_alter_with_fallback(array &$suggestions, array $
 }
 
 function saho_preprocess_node(array &$variables) {
+  // set the appropriate classes and accordion views with conditional logic.
   $node = $variables['node'];
 
   if ($node->bundle() === 'article') {
@@ -250,4 +251,10 @@ function saho_preprocess_node(array &$variables) {
 
     $variables['accordion_views'] = $accordion_views;
   }
+}
+
+function saho_preprocess_page(array &$variables) {
+  // Make logo available to all templates using page.html.twig.
+  $logo = \Drupal::theme()->getActiveTheme()->getLogo();
+  $variables['site_logo'] = $logo;
 }
