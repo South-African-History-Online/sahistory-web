@@ -1,0 +1,189 @@
+{#
+/**
+ * @file
+ * Custom SAHO node template.
+ *
+ * Title is handled globally and not rendered here.
+ * Layout Builder is disabled — fields are output directly via Twig.
+ */
+#}
+
+<article{{ attributes.addClass('saho-article-wrapper') }}>
+
+  <div class="saho-article-grid">
+
+    {# LEFT: Main content column #}
+    <div class="saho-main-content">
+
+      {% if node.field_feature_banner.entity %}
+        <div class="saho-feature-banner">
+          <img
+            src="{{ file_url(node.field_feature_banner.entity.uri.value) }}"
+            alt="{{ node.field_feature_banner.alt }}"
+            class="saho-feature-banner-image"
+          >
+        </div>
+      {% endif %}
+
+      <div class="saho-article-meta">
+        {% if node.getCreatedTime() %}
+          <span>Published {{ node.getCreatedTime()|date("F j, Y") }}</span>
+        {% endif %}
+        {% if node.getChangedTime() != node.getCreatedTime() %}
+          <span>Updated {{ node.getChangedTime()|date("F j, Y") }}</span>
+        {% endif %}
+      </div>
+
+      {% if content.body %}
+        <div class="saho-article-body">
+          {{ content.body }}
+        </div>
+      {% endif %}
+
+      {% if content.field_highlight %}
+        <div class="saho-highlight">
+          {{ content.field_highlight }}
+        </div>
+      {% endif %}
+
+      {# Render remaining fields not already shown manually #}
+      {{ content|without(
+        'body',
+        'field_highlight',
+        'field_further_reading',
+        'field_article_image',
+        'field_node_image_caption',
+        'field_ref_str',
+        'field_african_country',
+        'field_article_type',
+        'field_tags',
+        'field_topics_related_tab',
+        'field_people_related_tab',
+        'field_archive_page_feature',
+        'field_feature_parent',
+        'field_parent',
+        'field_feature_tag',
+        'field_politics_society_categorie',
+        'field_timeline_categories_type',
+        'field_feature_banner',
+        'field_africa_category',
+        'field_image',
+      ) }}
+
+    </div>
+
+    {# RIGHT: Sidebar #}
+    <aside class="saho-article-sidebar">
+
+      {% if node.field_article_image.entity %}
+        <div class="saho-image-block">
+          <img
+            src="{{ file_url(node.field_article_image.entity.uri.value) }}"
+            alt="{{ node.field_article_image.alt }}"
+            class="saho-image"
+          >
+          {% if node.field_node_image_caption.value %}
+            <div class="caption">
+              {{ node.field_node_image_caption.value|raw }}
+            </div>
+          {% endif %}
+        </div>
+      {% endif %}
+
+      {% if content.field_african_country is defined and content.field_african_country|render|trim %}
+        <div class="saho-taxonomy-group">
+          <h4>African Country</h4>
+          {{ content.field_african_country }}
+        </div>
+      {% endif %}
+
+      {% if content.field_article_type is defined and content.field_article_type|render|trim %}
+        <div class="saho-taxonomy-group">
+          <h4>Article Type</h4>
+          {{ content.field_article_type }}
+        </div>
+      {% endif %}
+
+      {% if content.field_tags is defined and content.field_tags|render|trim %}
+        <div class="saho-taxonomy-group">
+          <h4>Tags</h4>
+          {{ content.field_tags }}
+        </div>
+      {% endif %}
+
+      {% if content.field_topics_related_tab is defined and content.field_topics_related_tab|render|trim %}
+        <div class="saho-taxonomy-group">
+          <h4>Related Topics</h4>
+          {{ content.field_topics_related_tab }}
+        </div>
+      {% endif %}
+
+      {% if content.field_people_related_tab is defined and content.field_people_related_tab|render|trim %}
+        <div class="saho-taxonomy-group">
+          <h4>Related People</h4>
+          {{ content.field_people_related_tab }}
+        </div>
+      {% endif %}
+
+      {% if content.field_feature_parent is defined and content.field_feature_parent|render|trim %}
+        <div class="saho-taxonomy-group">
+          <h4>Feature Parent</h4>
+          {{ content.field_feature_parent }}
+        </div>
+      {% endif %}
+
+      {% if content.field_parent is defined and content.field_parent|render|trim %}
+        <div class="saho-taxonomy-group">
+          <h4>Parent Theme</h4>
+          {{ content.field_parent }}
+        </div>
+      {% endif %}
+
+      {% if content.field_feature_tag is defined and content.field_feature_tag|render|trim %}
+        <div class="saho-taxonomy-group">
+          <h4>Feature Tag</h4>
+          {{ content.field_feature_tag }}
+        </div>
+      {% endif %}
+
+      {% if content.field_politics_society_categorie is defined and content.field_politics_society_categorie|render|trim %}
+        <div class="saho-taxonomy-group">
+          <h4>Politics & Society</h4>
+          {{ content.field_politics_society_categorie }}
+        </div>
+      {% endif %}
+
+      {% if content.field_timeline_categories_type is defined and content.field_timeline_categories_type|render|trim %}
+        <div class="saho-taxonomy-group">
+          <h4>Timeline Context</h4>
+          {{ content.field_timeline_categories_type }}
+        </div>
+      {% endif %}
+
+      {% if content.field_further_reading %}
+        <div class="saho-further-reading">
+          <h4>Further Reading</h4>
+          {{ content.field_further_reading }}
+        </div>
+      {% endif %}
+
+      {# References block remains as is — well formatted #}
+      {% if node.field_ref_str.value %}
+        {% set refs = node.field_ref_str.value|split('|') %}
+        <div class="saho-references">
+          <h3>References</h3>
+          <ul class="saho-reference-list">
+            {% for ref in refs %}
+              {% if ref|trim %}
+                <li>{{ ref|trim|raw }}</li>
+              {% endif %}
+            {% endfor %}
+          </ul>
+        </div>
+      {% endif %}
+
+    </aside>
+
+  </div>
+
+</article>
