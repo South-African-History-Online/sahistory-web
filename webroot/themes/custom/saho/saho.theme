@@ -215,6 +215,10 @@ function saho_theme_suggestions_alter_with_fallback(array &$suggestions, array $
 }
 
 function saho_preprocess_node(array &$variables) {
+ // Make logo available to all templates using page.html.twig.
+ $logo = \Drupal::theme()->getActiveTheme()->getLogo();
+ $variables['site_logo'] = $logo;
+ 
   // set the appropriate classes and accordion views with conditional logic.
   $node = $variables['node'];
 
