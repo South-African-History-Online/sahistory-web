@@ -213,3 +213,41 @@ function saho_theme_suggestions_alter_with_fallback(array &$suggestions, array $
     }
   }
 }
+
+function saho_preprocess_node(array &$variables) {
+  $node = $variables['node'];
+
+  if ($node->bundle() === 'article') {
+    $view_ids = [
+      'articles' => ['view' => 'feature_children', 'block' => 'block_1'],
+      'people' => ['view' => 'feature_children', 'block' => 'block_2'],
+      'places' => ['view' => 'feature_children', 'block' => 'block_9'],
+      'organisations' => ['view' => 'feature_children', 'block' => 'block_3'],
+      'timelines' => ['view' => 'feature_children', 'block' => 'block_4'],
+      'archive' => ['view' => 'feature_children', 'block' => 'block_5'],
+      'galleries' => ['view' => 'feature_children', 'block' => 'block_7'],
+    ];
+
+    $accordion_views = [];
+
+    foreach ($view_ids as $id => $data) {
+      $view = \Drupal\views\Views::getView($data['view']);
+      if ($view) {
+        $view->setDisplay($data['block']);
+        $view->setArguments([$node->id()]);
+        $view->execute();
+
+        if (!empty($view->result)) {
+          $accordion_views[] = [
+            'id' => $id,
+            'title' => ucfirst($id),
+            'view' => $data['view'],
+            'block' => $data['block'],
+          ];
+        }
+      }
+    }
+
+    $variables['accordion_views'] = $accordion_views;
+  }
+}
