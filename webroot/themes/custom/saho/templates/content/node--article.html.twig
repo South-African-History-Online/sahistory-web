@@ -40,6 +40,21 @@
         </div>
       {% endif %}
 
+      {% if content.field_tags is defined and content.field_tags|render|trim %}
+        <div class="saho-tags">
+          <h4>Tags</h4>
+          <ul class="saho-tags-list">
+            {% for item in node.field_tags %}
+              <li>
+                <a href="{{ path('entity.taxonomy_term.canonical', {'taxonomy_term': item.target_id}) }}">
+                  {{ item.entity.label }}
+                </a>
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
+      {% endif %}
+
       {% if content.field_highlight %}
         <div class="saho-highlight">
           {{ content.field_highlight }}
@@ -90,24 +105,26 @@
         </div>
       {% endif %}
 
+      {% if content.field_feature_parent is defined and content.field_feature_parent|render|trim %}
+        <div class="saho-taxonomy-group">
+          <h4>Articles</h4>
+          {{ content.field_feature_parent }}
+        </div>
+      {% endif %}
+
       {% if content.field_african_country is defined and content.field_african_country|render|trim %}
         <div class="saho-taxonomy-group">
-          <h4>African Country</h4>
+          <h4>Country</h4>
           {{ content.field_african_country }}
         </div>
       {% endif %}
 
-      {% if content.field_article_type is defined and content.field_article_type|render|trim %}
-        <div class="saho-taxonomy-group">
-          <h4>Article Type</h4>
-          {{ content.field_article_type }}
-        </div>
-      {% endif %}
-
       {% if content.field_tags is defined and content.field_tags|render|trim %}
-        <div class="saho-taxonomy-group">
-          <h4>Tags</h4>
-          {{ content.field_tags }}
+        <div class="saho-tags">
+          <h4>Tags:</h4>
+          <ul class="saho-tags-list">
+            {{ content.field_tags }}
+          </ul>
         </div>
       {% endif %}
 
@@ -127,7 +144,7 @@
 
       {% if content.field_feature_parent is defined and content.field_feature_parent|render|trim %}
         <div class="saho-taxonomy-group">
-          <h4>Feature Parent</h4>
+          <h4>Related Content</h4>
           {{ content.field_feature_parent }}
         </div>
       {% endif %}
