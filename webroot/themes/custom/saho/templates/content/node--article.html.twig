@@ -83,6 +83,9 @@
         'field_feature_banner',
         'field_africa_category',
         'field_image',
+        'field_featured',
+        'field_gallery_tag',
+        'field_timelines_related_tab',
       ) }}
 
     </div>
@@ -105,26 +108,36 @@
         </div>
       {% endif %}
 
-      {% if content.field_feature_parent is defined and content.field_feature_parent|render|trim %}
-        <div class="saho-taxonomy-group">
-          <h4>Articles</h4>
-          {{ content.field_feature_parent }}
+      {% if accordion_views is not empty %}
+        <div class="accordion saho-accordion mb-5" id="sahoFeatureAccordion">
+          {% for item in accordion_views %}
+            <div class="accordion-item">
+              <h2 class="accordion-header" id="heading-{{ item.id }}">
+                <button class="accordion-button {% if not loop.first %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-{{ item.id }}" aria-expanded="{{ loop.first ? 'true' : 'false' }}" aria-controls="collapse-{{ item.id }}">
+                  {{ item.title }}
+                </button>
+              </h2>
+              <div id="collapse-{{ item.id }}" class="accordion-collapse collapse {% if loop.first %}show{% endif %}" aria-labelledby="heading-{{ item.id }}" data-bs-parent="#sahoFeatureAccordion">
+                <div class="accordion-body">
+                  {{ drupal_view(item.view, item.block, node.id()) }}
+                </div>
+              </div>
+            </div>
+          {% endfor %}
         </div>
       {% endif %}
 
-      {% if content.field_african_country is defined and content.field_african_country|render|trim %}
+      {% if content.field_archive_page_feature is defined and content.field_archive_page_feature|render|trim %}
         <div class="saho-taxonomy-group">
-          <h4>Country</h4>
-          {{ content.field_african_country }}
+          <h4>Archive Page Feature</h4>
+          {{ content.field_archive_page_feature }}
         </div>
       {% endif %}
 
-      {% if content.field_tags is defined and content.field_tags|render|trim %}
-        <div class="saho-tags">
-          <h4>Tags:</h4>
-          <ul class="saho-tags-list">
-            {{ content.field_tags }}
-          </ul>
+      {% if content.field_africa_category is defined and content.field_africa_category|render|trim %}
+        <div class="saho-taxonomy-group">
+          <h4>Africa Category</h4>
+          {{ content.field_africa_category }}
         </div>
       {% endif %}
 
@@ -149,27 +162,6 @@
         </div>
       {% endif %}
 
-      {% if content.field_parent is defined and content.field_parent|render|trim %}
-        <div class="saho-taxonomy-group">
-          <h4>Parent Theme</h4>
-          {{ content.field_parent }}
-        </div>
-      {% endif %}
-
-      {% if content.field_feature_tag is defined and content.field_feature_tag|render|trim %}
-        <div class="saho-taxonomy-group">
-          <h4>Feature Tag</h4>
-          {{ content.field_feature_tag }}
-        </div>
-      {% endif %}
-
-      {% if content.field_politics_society_categorie is defined and content.field_politics_society_categorie|render|trim %}
-        <div class="saho-taxonomy-group">
-          <h4>Politics & Society</h4>
-          {{ content.field_politics_society_categorie }}
-        </div>
-      {% endif %}
-
       {% if content.field_timeline_categories_type is defined and content.field_timeline_categories_type|render|trim %}
         <div class="saho-taxonomy-group">
           <h4>Timeline Context</h4>
@@ -177,7 +169,7 @@
         </div>
       {% endif %}
 
-      {% if content.field_further_reading %}
+      {% if content.field_further_reading is defined and content.field_further_reading|render|trim %}
         <div class="saho-further-reading">
           <h4>Further Reading</h4>
           {{ content.field_further_reading }}
