@@ -264,6 +264,272 @@ function saho_preprocess_page(array &$variables) {
 }
 
 /**
+ * Implements hook_preprocess_HOOK() for block--page-title-block.html.twig.
+ */
+function saho_preprocess_block__page_title_block(array &$variables) {
+  // Get the current route match.
+  $route_match = \Drupal::routeMatch();
+  
+  // Check if we're on a node page.
+  $node = $route_match->getParameter('node');
+  
+  // If we have a node, customize the breadcrumb based on content type and navigation path.
+  if ($node instanceof \Drupal\node\NodeInterface) {
+    // Create a link to the homepage.
+    $links = [];
+    $links[] = \Drupal\Core\Link::createFromRoute('Home', '<front>');
+    
+    // Check if we can determine the user's navigation path
+    $parent_from_navigation = NULL;
+    $referer_url = \Drupal::request()->server->get('HTTP_REFERER');
+    $used_navigation_parent = FALSE;
+    
+    if ($referer_url) {
+      // Extract the path from the referer URL
+      $referer_path = parse_url($referer_url, PHP_URL_PATH);
+      
+      if ($referer_path) {
+        // Try to get the node ID from the path
+        try {
+          $url_object = \Drupal::service('path.validator')->getUrlIfValid($referer_path);
+          if ($url_object && $url_object->getRouteName() === 'entity.node.canonical') {
+            $route_params = $url_object->getRouteParameters();
+            if (isset($route_params['node'])) {
+              $referer_nid = $route_params['node'];
+              
+              // Check if the current node has this node as a parent
+              if ($node->hasField('field_feature_parent') && !$node->get('field_feature_parent')->isEmpty()) {
+                foreach ($node->get('field_feature_parent') as $parent_item) {
+                  if ($parent_item->target_id == $referer_nid) {
+                    // We found a match! Load the parent node
+                    $parent_from_navigation = \Drupal\node\Entity\Node::load($referer_nid);
+                    $used_navigation_parent = TRUE;
+                    break;
+                  }
+                }
+              }
+            }
+          }
+        }
+        catch (\Exception $e) {
+          // If there's an error resolving the path, just continue with the default breadcrumb
+          \Drupal::logger('saho')->notice('Error resolving referer path for breadcrumb: @message', ['@message' => $e->getMessage()]);
+        }
+      }
+    }
+    
+    // Helper function to truncate text with ellipsis
+    $truncate_text = function($text, $length = 70) {
+      if (mb_strlen($text) <= $length) {
+        return $text;
+      }
+      return mb_substr($text, 0, $length - 1) . '…';
+    };
+    
+    // If we found a parent from navigation, use it in the breadcrumb
+    if ($parent_from_navigation) {
+      $links[] = \Drupal\Core\Link::createFromRoute(
+        $truncate_text($parent_from_navigation->getTitle(), 70),
+        'entity.node.canonical',
+        ['node' => $parent_from_navigation->id()]
+      );
+    }
+    // Otherwise, use the taxonomy-based breadcrumb
+    else {
+      // Get the node type.
+      $node_type = $node->getType();
+      
+      // Customize breadcrumb based on content type.
+      switch ($node_type) {
+        case 'article':
+          // Define the taxonomy fields in priority order
+          $taxonomy_fields = [
+            'field_politics_society_categorie',
+            'field_arts_culture_categories',
+            'field_africa_category',
+            'field_timeline_categories_type',
+            'field_place_type_category',
+            'field_classroom_categories',
+          ];
+          
+          // Track which fields have values
+          $fields_with_values = [];
+          
+          // Check each field for values
+          foreach ($taxonomy_fields as $field_name) {
+            if ($node->hasField($field_name) && !$node->get($field_name)->isEmpty()) {
+              $term = $node->get($field_name)->entity;
+              if ($term) {
+                $fields_with_values[$field_name] = [
+                  'term' => $term,
+                  'label' => $term->label(),
+                  'id' => $term->id(),
+                ];
+              }
+            }
+          }
+          
+          // If we have values, add the highest priority one to the breadcrumb
+          if (!empty($fields_with_values)) {
+            // Get the first field with a value (highest priority)
+            foreach ($taxonomy_fields as $field_name) {
+              if (isset($fields_with_values[$field_name])) {
+                $field_data = $fields_with_values[$field_name];
+                $links[] = \Drupal\Core\Link::createFromRoute(
+                  $truncate_text($field_data['label'], 70), 
+                  'entity.taxonomy_term.canonical', 
+                  ['taxonomy_term' => $field_data['id']]
+                );
+                break; // Only use the highest priority field
+              }
+            }
+          }
+          // If no taxonomy terms, check for feature parent
+          elseif (!$used_navigation_parent && $node->hasField('field_feature_parent') && !$node->get('field_feature_parent')->isEmpty()) {
+            $parent_id = $node->get('field_feature_parent')->first()->target_id;
+            $parent_node = \Drupal\node\Entity\Node::load($parent_id);
+            if ($parent_node) {
+              $links[] = \Drupal\Core\Link::createFromRoute(
+                $parent_node->getTitle(),
+                'entity.node.canonical',
+                ['node' => $parent_node->id()]
+              );
+            }
+          }
+          break;
+          
+        case 'place':
+          // Home > Place Category > Title
+          if ($node->hasField('field_place_category') && !$node->get('field_place_category')->isEmpty()) {
+            $term = $node->get('field_place_category')->entity;
+            if ($term) {
+              $links[] = \Drupal\Core\Link::createFromRoute($truncate_text($term->label(), 70), 'entity.taxonomy_term.canonical', ['taxonomy_term' => $term->id()]);
+            }
+          }
+          // If no taxonomy terms, check for feature parent
+          elseif (!$used_navigation_parent && $node->hasField('field_feature_parent') && !$node->get('field_feature_parent')->isEmpty()) {
+            $parent_id = $node->get('field_feature_parent')->first()->target_id;
+            $parent_node = \Drupal\node\Entity\Node::load($parent_id);
+            if ($parent_node) {
+              $links[] = \Drupal\Core\Link::createFromRoute(
+                $parent_node->getTitle(),
+                'entity.node.canonical',
+                ['node' => $parent_node->id()]
+              );
+            }
+          }
+          break;
+          
+        case 'archive':
+          // Home > Media Library Type > Title
+          if ($node->hasField('field_media_library_type') && !$node->get('field_media_library_type')->isEmpty()) {
+            $term = $node->get('field_media_library_type')->entity;
+            if ($term) {
+              $links[] = \Drupal\Core\Link::createFromRoute($truncate_text($term->label(), 70), 'entity.taxonomy_term.canonical', ['taxonomy_term' => $term->id()]);
+            }
+          }
+          // If no taxonomy terms, check for feature parent
+          elseif (!$used_navigation_parent && $node->hasField('field_feature_parent') && !$node->get('field_feature_parent')->isEmpty()) {
+            $parent_id = $node->get('field_feature_parent')->first()->target_id;
+            $parent_node = \Drupal\node\Entity\Node::load($parent_id);
+            if ($parent_node) {
+              $links[] = \Drupal\Core\Link::createFromRoute(
+                $parent_node->getTitle(),
+                'entity.node.canonical',
+                ['node' => $parent_node->id()]
+              );
+            }
+          }
+          break;
+          
+        case 'biography':
+          // Home > People Category > Biography Art Category (if value) > Title
+          if ($node->hasField('field_people_category') && !$node->get('field_people_category')->isEmpty()) {
+            $term = $node->get('field_people_category')->entity;
+            if ($term) {
+              $links[] = \Drupal\Core\Link::createFromRoute($truncate_text($term->label(), 70), 'entity.taxonomy_term.canonical', ['taxonomy_term' => $term->id()]);
+            }
+          }
+          
+          if ($node->hasField('field_biography_art_category') && !$node->get('field_biography_art_category')->isEmpty()) {
+            $term = $node->get('field_biography_art_category')->entity;
+            if ($term) {
+              $links[] = \Drupal\Core\Link::createFromRoute($term->label(), 'entity.taxonomy_term.canonical', ['taxonomy_term' => $term->id()]);
+            }
+          }
+          
+          // If no taxonomy terms, check for feature parent
+          if (count($links) == 1 && !$used_navigation_parent && $node->hasField('field_feature_parent') && !$node->get('field_feature_parent')->isEmpty()) {
+            $parent_id = $node->get('field_feature_parent')->first()->target_id;
+            $parent_node = \Drupal\node\Entity\Node::load($parent_id);
+            if ($parent_node) {
+              $links[] = \Drupal\Core\Link::createFromRoute(
+                $parent_node->getTitle(),
+                'entity.node.canonical',
+                ['node' => $parent_node->id()]
+              );
+            }
+          }
+          break;
+          
+        default:
+          // For other content types, check for feature parent
+          if (!$used_navigation_parent && $node->hasField('field_feature_parent') && !$node->get('field_feature_parent')->isEmpty()) {
+            $parent_id = $node->get('field_feature_parent')->first()->target_id;
+            $parent_node = \Drupal\node\Entity\Node::load($parent_id);
+            if ($parent_node) {
+              $links[] = \Drupal\Core\Link::createFromRoute(
+                $parent_node->getTitle(),
+                'entity.node.canonical',
+                ['node' => $parent_node->id()]
+              );
+            }
+          }
+          break;
+      }
+    }
+    
+    // Helper function to truncate text with ellipsis
+    $truncate_text = function($text, $length = 70) {
+      if (mb_strlen($text) <= $length) {
+        return $text;
+      }
+      return mb_substr($text, 0, $length - 1) . '…';
+    };
+    
+    // Add the current page as the last breadcrumb item, truncating if necessary.
+    $links[] = \Drupal\Core\Link::createFromRoute($truncate_text($node->getTitle()), '<none>');
+    
+    // Create a breadcrumb render array.
+    $breadcrumb_build = [
+      '#theme' => 'breadcrumb',
+      '#links' => $links,
+    ];
+    
+    // Add the breadcrumb render array to the variables.
+    $variables['breadcrumb'] = $breadcrumb_build;
+    
+    // Store the breadcrumb in the user's session for potential use in other contexts
+    $session = \Drupal::request()->getSession();
+    $session->set('saho_last_breadcrumb_node', $node->id());
+  }
+  else {
+    // For non-node pages, use the default breadcrumb.
+    $breadcrumb = \Drupal::service('breadcrumb')->build($route_match);
+    
+    // Convert the breadcrumb to a render array.
+    $breadcrumb_links = $breadcrumb->getLinks();
+    $breadcrumb_build = [
+      '#theme' => 'breadcrumb',
+      '#links' => $breadcrumb_links,
+    ];
+    
+    // Add the breadcrumb render array to the variables.
+    $variables['breadcrumb'] = $breadcrumb_build;
+  }
+}
+
+/**
  * Implements hook_theme().
  */
 function saho_theme($existing, $type, $theme, $path) {
