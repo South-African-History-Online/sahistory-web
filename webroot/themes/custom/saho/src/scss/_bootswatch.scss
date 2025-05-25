@@ -662,28 +662,6 @@ $saho-faded-brick-red: #B03030;
   color: #555;
 }
 
-/* Custom navbar brand logo styling */
-
-/* Default for mobile: */
-.navbar-brand img {
-  max-width: 400px;
-  height: auto;
-}
-
-/* For medium devices (tablets and up) */
-@media (min-width: 768px) {
-  .navbar-brand img {
-    max-width: 450px;
-  }
-}
-
-/* For large devices (desktops) */
-@media (min-width: 992px) {
-  .navbar-brand img {
-    max-width: 550px;
-  }
-}
-
 /* Classroom landing page view styles */
 
 // Applies to all Grid views if you’re using a global override named 
@@ -1368,16 +1346,34 @@ h1.title.page-title {
 }
 
 // Header Wrapper
+
+.saho-logo-text {
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.saho-logo-subtext {
+  font-size: 1rem;
+  color: $saho-dark-charcoal;
+  line-height: 1.3;
+}
+
+.saho-logo-img {
+  width: 120px !important;
+}
+
 .saho-header {
   background-color: #fff;
   border-bottom: 2px solid $saho-deep-heritage-red;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
   z-index: 1030;
 
-  .saho-logo-img {
-    height: 100px;
-    width: auto;
-    max-height: 100%;
+  .saho-header .saho-logo-img {
+    max-height: 120px !important;
+    width: 120px !important;
+    height: 120px !important;
   }
 
   .nav-link {
@@ -1398,6 +1394,75 @@ h1.title.page-title {
       border-bottom: 2px solid $saho-muted-gold;
     }
   }
+
+  .saho-header-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1rem 0.5rem;
+  
+    @media (max-width: 768px) {
+      flex-direction: column;
+      align-items: stretch;
+    }
+  
+    .saho-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    
+      .saho-logo-text {
+        font-size: 1.5rem; /* Increase font size */
+        font-weight: 700; /* Keep bold */
+        line-height: 1.2; /* Adjust line height for better spacing */
+        white-space: nowrap; /* Prevent text from wrapping */
+      }
+    
+      .saho-logo-subtext {
+        font-size: 1rem; /* Slightly larger subtext */
+        color: $saho-dark-charcoal; /* Ensure good contrast */
+        line-height: 1.3; /* Add spacing between lines */
+      }
+    }
+  
+    nav.navbar-nav {
+      flex-grow: 1;
+      justify-content: center;
+      align-items: center;
+  
+      @media (max-width: 768px) {
+        justify-content: flex-start;
+        flex-wrap: wrap;
+      }
+    }
+  
+    .saho-header-actions {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+      justify-content: flex-end;
+  
+      @media (max-width: 768px) {
+        justify-content: flex-start;
+        flex-wrap: wrap;
+      }
+  
+      form[role="search"] {
+        display: flex;
+        align-items: center;
+  
+        input[type="search"] {
+          max-width: 200px;
+        }
+      }
+  
+      .btn-contribute {
+        white-space: nowrap;
+      }
+    }
+  }  
 
   .dropdown-menu {
     font-size: 0.9rem;
