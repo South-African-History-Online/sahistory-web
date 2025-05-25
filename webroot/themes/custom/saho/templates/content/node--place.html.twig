@@ -34,43 +34,39 @@
         {% endif %}
       </div>
 
-      {# Place quick facts #}
-      <div class="saho-place-facts">
-        {% if content.field_african_country is defined and content.field_african_country|render|trim %}
-          <div class="saho-place-item">
-            <strong>Country:</strong> {{ content.field_african_country }}
-          </div>
-        {% endif %}
-
-        {% if content.field_places_level3 is defined and content.field_places_level3|render|trim %}
-          <div class="saho-place-item">
-            <strong>Province/Region:</strong> {{ content.field_places_level3 }}
-          </div>
-        {% endif %}
-
-        {% if content.field_place_type is defined and content.field_place_type|render|trim %}
-          <div class="saho-place-item">
-            <strong>Place Type:</strong> {{ content.field_place_type }}
-          </div>
-        {% endif %}
-      </div>
-
-      {# Geolocation map if available #}
-      {% if content.field_geolocation is defined and content.field_geolocation|render|trim %}
-        <div class="saho-place-map">
-          <h3>Location</h3>
-          {{ content.field_geolocation }}
-        </div>
-      {% elseif content.field_geofield is defined and content.field_geofield|render|trim %}
-        <div class="saho-place-map">
-          <h3>Location</h3>
-          {{ content.field_geofield }}
+      {# Geolocation information if available #}
+      {% if node.field_geolocation.value %}
+        <div class="saho-place-location">
+          <div id="map-{{ node.id() }}" class="saho-place-map" style="height: 300px; margin-bottom: 2rem;"></div>
+          <script>
+            document.addEventListener('DOMContentLoaded', function() {
+              if (typeof google !== 'undefined' && typeof google.maps !== 'undefined') {
+                var mapElement = document.getElementById('map-{{ node.id() }}');
+                var map = new google.maps.Map(mapElement, {
+                  center: {
+                    lat: {{ node.field_geolocation.lat }}, 
+                    lng: {{ node.field_geolocation.lng }}
+                  },
+                  zoom: 8
+                });
+                var marker = new google.maps.Marker({
+                  position: {
+                    lat: {{ node.field_geolocation.lat }}, 
+                    lng: {{ node.field_geolocation.lng }}
+                  },
+                  map: map,
+                  title: '{{ node.label }}'
+                });
+              }
+            });
+          </script>
         </div>
       {% endif %}
 
       {% if content.body %}
         <div class="saho-article-body">
-          {{ content.body }}
+          {# Remove the label by accessing the content directly #}
+          {{ content.body.0 }}
         </div>
       {% endif %}
 
@@ -88,32 +84,28 @@
         'field_place_image',
         'field_node_image_caption',
         'field_ref_str',
-        'field_old_ref_str',
         'field_african_country',
-        'field_places_level3',
-        'field_place_type',
-        'field_place_category',
-        'field_geolocation',
-        'field_geofield',
-        'field_feature_parent',
-        'field_parent',
-        'field_feature_tag',
         'field_feature_banner',
+        'field_feature_parent',
+        'field_feature_tag',
         'field_home_page_feature',
         'field_home_page_feature_africa_s',
         'field_home_page_feature_place_se',
+        'field_place_category',
+        'field_place_type',
+        'field_places_level3',
+        'field_country',
+        'field_parent_loc',
+        'field_parent',
+        'field_geolocation',
+        'field_geofield',
         'field_people_related_tab',
         'field_organizations_related_tab',
-        'field_timelines_related_tab',
         'field_topics_related_tab',
-        'field_gallery_tag',
+        'field_timelines_related_tab',
         'field_synopsis',
         'field_article_author',
-        'field_article_editors',
-        'field_article_type',
-        'field_featured',
-        'field_parent_loc',
-        'field_taxonomy'
+        'field_article_editors'
       ) }}
 
     </div>
@@ -155,13 +147,52 @@
         </div>
       {% endif %}
 
-      {% if content.field_place_category is defined and content.field_place_category|render|trim %}
-        <div class="saho-taxonomy-group">
-          <h4>Place Category</h4>
-          {{ content.field_place_category }}
-        </div>
-      {% endif %}
+      {# Place metadata #}
+      <div class="saho-place-metadata">
+        {% if content.field_place_category is defined and content.field_place_category|render|trim %}
+          <div class="saho-taxonomy-group">
+            <h4>Place Category</h4>
+            {{ content.field_place_category }}
+          </div>
+        {% endif %}
 
+        {% if content.field_place_type is defined and content.field_place_type|render|trim %}
+          <div class="saho-taxonomy-group">
+            <h4>Place Type</h4>
+            {{ content.field_place_type }}
+          </div>
+        {% endif %}
+
+        {% if content.field_places_level3 is defined and content.field_places_level3|render|trim %}
+          <div class="saho-taxonomy-group">
+            <h4>Place Subcategory</h4>
+            {{ content.field_places_level3 }}
+          </div>
+        {% endif %}
+
+        {% if content.field_african_country is defined and content.field_african_country|render|trim %}
+          <div class="saho-taxonomy-group">
+            <h4>African Country</h4>
+            {{ content.field_african_country }}
+          </div>
+        {% endif %}
+
+        {% if content.field_country is defined and content.field_country|render|trim %}
+          <div class="saho-taxonomy-group">
+            <h4>Country</h4>
+            {{ content.field_country }}
+          </div>
+        {% endif %}
+
+        {% if content.field_parent_loc is defined and content.field_parent_loc|render|trim %}
+          <div class="saho-taxonomy-group">
+            <h4>Parent Location</h4>
+            {{ content.field_parent_loc }}
+          </div>
+        {% endif %}
+      </div>
+
+      {# Related content #}
       {% if content.field_people_related_tab is defined and content.field_people_related_tab|render|trim %}
         <div class="saho-taxonomy-group">
           <h4>Related People</h4>
@@ -176,17 +207,17 @@
         </div>
       {% endif %}
 
-      {% if content.field_timelines_related_tab is defined and content.field_timelines_related_tab|render|trim %}
-        <div class="saho-taxonomy-group">
-          <h4>Related Timelines</h4>
-          {{ content.field_timelines_related_tab }}
-        </div>
-      {% endif %}
-
       {% if content.field_topics_related_tab is defined and content.field_topics_related_tab|render|trim %}
         <div class="saho-taxonomy-group">
           <h4>Related Topics</h4>
           {{ content.field_topics_related_tab }}
+        </div>
+      {% endif %}
+
+      {% if content.field_timelines_related_tab is defined and content.field_timelines_related_tab|render|trim %}
+        <div class="saho-taxonomy-group">
+          <h4>Related Timelines</h4>
+          {{ content.field_timelines_related_tab }}
         </div>
       {% endif %}
 
@@ -214,18 +245,6 @@
       {# References block #}
       {% if node.field_ref_str.value %}
         {% set refs = node.field_ref_str.value|split('|') %}
-        <div class="saho-references">
-          <h3>References</h3>
-          <ul class="saho-reference-list">
-            {% for ref in refs %}
-              {% if ref|trim %}
-                <li>{{ ref|trim|raw }}</li>
-              {% endif %}
-            {% endfor %}
-          </ul>
-        </div>
-      {% elseif node.field_old_ref_str.value %}
-        {% set refs = node.field_old_ref_str.value|split('|') %}
         <div class="saho-references">
           <h3>References</h3>
           <ul class="saho-reference-list">

@@ -34,66 +34,82 @@
         {% endif %}
       </div>
 
-      {# Biographical quick facts #}
-      <div class="saho-bio-facts">
-        {% if node.field_title.value or node.field_firstname.value or node.field_middlename.value or node.field_lastnamebio.value %}
-          <div class="saho-bio-name">
-            {% if node.field_title.value %}{{ node.field_title.value }} {% endif %}
-            {% if node.field_firstname.value %}{{ node.field_firstname.value }} {% endif %}
-            {% if node.field_middlename.value %}{{ node.field_middlename.value }} {% endif %}
-            {% if node.field_lastnamebio.value %}{{ node.field_lastnamebio.value }}{% endif %}
+      {# Modern Personal Information Box with SAHO colors #}
+      {% if node.field_drupal_birth_date.value or node.field_dob.value or node.field_drupal_death_date.value or node.field_dod.value or node.field_position.value or node.field_position_held.value %}
+        <div class="saho-personal-info-box saho-bg-parchment saho-border-gold" style="border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem; box-shadow: 0 4px 12px rgba(184, 138, 46, 0.15);">
+          <h3 class="saho-text-primary" style="font-size: 1.25rem; margin-bottom: 1rem; border-bottom: 2px solid #B88A2E; padding-bottom: 0.5rem;">Personal Information</h3>
+          
+          {% if node.field_title.value or node.field_firstname.value or node.field_middlename.value or node.field_lastnamebio.value %}
+            <div class="saho-bio-name" style="font-size: 1.2rem; font-weight: bold; margin-bottom: 1rem; color: #333333;">
+              {% if node.field_title.value %}{{ node.field_title.value }} {% endif %}
+              {% if node.field_firstname.value %}{{ node.field_firstname.value }} {% endif %}
+              {% if node.field_middlename.value %}{{ node.field_middlename.value }} {% endif %}
+              {% if node.field_lastnamebio.value %}{{ node.field_lastnamebio.value }}{% endif %}
+            </div>
+          {% endif %}
+
+          <div class="saho-bio-details" style="display: grid; gap: 0.75rem;">
+            {% if node.field_drupal_birth_date.value or node.field_dob.value %}
+              <div class="saho-bio-item" style="display: flex; align-items: baseline;">
+                <strong style="min-width: 100px; color: #990000;">Born:</strong> 
+                <span>
+                  {% if node.field_drupal_birth_date.value %}
+                    {{ node.field_drupal_birth_date.value|date("F j, Y") }}
+                  {% elseif node.field_dob.value %}
+                    {{ node.field_dob.value }}
+                  {% endif %}
+                  {% if node.field_birth_location.value %}
+                    in {{ node.field_birth_location.value }}
+                  {% endif %}
+                </span>
+              </div>
+            {% endif %}
+
+            {% if node.field_drupal_death_date.value or node.field_dod.value %}
+              <div class="saho-bio-item" style="display: flex; align-items: baseline;">
+                <strong style="min-width: 100px; color: #990000;">Died:</strong> 
+                <span>
+                  {% if node.field_drupal_death_date.value %}
+                    {{ node.field_drupal_death_date.value|date("F j, Y") }}
+                  {% elseif node.field_dod.value %}
+                    {{ node.field_dod.value }}
+                  {% endif %}
+                  {% if node.field_death_location.value %}
+                    in {{ node.field_death_location.value }}
+                  {% endif %}
+                  {% if node.field_cod.value %}
+                    ({{ node.field_cod.value }})
+                  {% endif %}
+                </span>
+              </div>
+            {% endif %}
+
+            {% if node.field_position_held.value %}
+              <div class="saho-bio-item" style="display: flex; align-items: baseline;">
+                <strong style="min-width: 100px; color: #990000;">Positions held:</strong> 
+                <span>{{ node.field_position_held.value|raw }}</span>
+              </div>
+            {% elseif node.field_position.value %}
+              <div class="saho-bio-item" style="display: flex; align-items: baseline;">
+                <strong style="min-width: 100px; color: #990000;">Position:</strong> 
+                <span>{{ node.field_position.value|raw }}</span>
+              </div>
+            {% endif %}
+
+            {% if node.field_affiliation.value %}
+              <div class="saho-bio-item" style="display: flex; align-items: baseline;">
+                <strong style="min-width: 100px; color: #990000;">Affiliation:</strong> 
+                <span>{{ node.field_affiliation.value }}</span>
+              </div>
+            {% endif %}
           </div>
-        {% endif %}
-
-        <div class="saho-bio-details">
-          {% if node.field_drupal_birth_date.value or node.field_dob.value %}
-            <div class="saho-bio-item">
-              <strong>Born:</strong> 
-              {% if node.field_drupal_birth_date.value %}
-                {{ node.field_drupal_birth_date.value|date("F j, Y") }}
-              {% elseif node.field_dob.value %}
-                {{ node.field_dob.value }}
-              {% endif %}
-              {% if node.field_birth_location.value %}
-                in {{ node.field_birth_location.value }}
-              {% endif %}
-            </div>
-          {% endif %}
-
-          {% if node.field_drupal_death_date.value or node.field_dod.value %}
-            <div class="saho-bio-item">
-              <strong>Died:</strong> 
-              {% if node.field_drupal_death_date.value %}
-                {{ node.field_drupal_death_date.value|date("F j, Y") }}
-              {% elseif node.field_dod.value %}
-                {{ node.field_dod.value }}
-              {% endif %}
-              {% if node.field_death_location.value %}
-                in {{ node.field_death_location.value }}
-              {% endif %}
-              {% if node.field_cod.value %}
-                ({{ node.field_cod.value }})
-              {% endif %}
-            </div>
-          {% endif %}
-
-          {% if node.field_position.value %}
-            <div class="saho-bio-item">
-              <strong>Position:</strong> {{ node.field_position.value }}
-            </div>
-          {% endif %}
-
-          {% if node.field_affiliation.value %}
-            <div class="saho-bio-item">
-              <strong>Affiliation:</strong> {{ node.field_affiliation.value }}
-            </div>
-          {% endif %}
         </div>
-      </div>
+      {% endif %}
 
       {% if content.body %}
         <div class="saho-article-body">
-          {{ content.body }}
+          {# Remove the label by accessing the content directly #}
+          {{ content.body.0 }}
         </div>
       {% endif %}
 
@@ -222,17 +238,11 @@
         </div>
       {% endif %}
 
-      {% if node.field_member_of_organisation.entity %}
-        <div class="saho-taxonomy-group">
-          <h4>Member of Organisation</h4>
-          {{ content.field_member_of_organisation }}
-        </div>
-      {% endif %}
 
-      {% if node.field_position_held.value %}
+      {% if content.field_member_of_organisation is defined and content.field_member_of_organisation|render|trim %}
         <div class="saho-metadata-group">
-          <h4>Positions Held</h4>
-          {{ node.field_position_held.value|raw }}
+          <h4>Member of Organisations</h4>
+          {{ content.field_member_of_organisation }}
         </div>
       {% endif %}
 
