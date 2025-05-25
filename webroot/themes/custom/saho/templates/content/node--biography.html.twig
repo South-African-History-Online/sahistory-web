@@ -1,0 +1,292 @@
+{#
+/**
+ * @file
+ * Custom SAHO node template for Biography content type.
+ *
+ * Title is handled globally and not rendered here.
+ * Layout Builder is disabled — fields are output directly via Twig.
+ */
+#}
+
+<article{{ attributes.addClass('saho-article-wrapper') }}>
+
+  <div class="saho-article-grid">
+
+    {# LEFT: Main content column #}
+    <div class="saho-main-content">
+
+      {% if node.field_feature_banner.entity %}
+        <div class="saho-feature-banner">
+          <img
+            src="{{ file_url(node.field_feature_banner.entity.uri.value) }}"
+            alt="{{ node.field_feature_banner.alt }}"
+            class="saho-feature-banner-image"
+          >
+        </div>
+      {% endif %}
+
+      <div class="saho-article-meta">
+        {% if node.getCreatedTime() %}
+          <span>Published {{ node.getCreatedTime()|date("F j, Y") }}</span>
+        {% endif %}
+        {% if node.getChangedTime() != node.getCreatedTime() %}
+          <span>Updated {{ node.getChangedTime()|date("F j, Y") }}</span>
+        {% endif %}
+      </div>
+
+      {# Biographical quick facts #}
+      <div class="saho-bio-facts">
+        {% if node.field_title.value or node.field_firstname.value or node.field_middlename.value or node.field_lastnamebio.value %}
+          <div class="saho-bio-name">
+            {% if node.field_title.value %}{{ node.field_title.value }} {% endif %}
+            {% if node.field_firstname.value %}{{ node.field_firstname.value }} {% endif %}
+            {% if node.field_middlename.value %}{{ node.field_middlename.value }} {% endif %}
+            {% if node.field_lastnamebio.value %}{{ node.field_lastnamebio.value }}{% endif %}
+          </div>
+        {% endif %}
+
+        <div class="saho-bio-details">
+          {% if node.field_drupal_birth_date.value or node.field_dob.value %}
+            <div class="saho-bio-item">
+              <strong>Born:</strong> 
+              {% if node.field_drupal_birth_date.value %}
+                {{ node.field_drupal_birth_date.value|date("F j, Y") }}
+              {% elseif node.field_dob.value %}
+                {{ node.field_dob.value }}
+              {% endif %}
+              {% if node.field_birth_location.value %}
+                in {{ node.field_birth_location.value }}
+              {% endif %}
+            </div>
+          {% endif %}
+
+          {% if node.field_drupal_death_date.value or node.field_dod.value %}
+            <div class="saho-bio-item">
+              <strong>Died:</strong> 
+              {% if node.field_drupal_death_date.value %}
+                {{ node.field_drupal_death_date.value|date("F j, Y") }}
+              {% elseif node.field_dod.value %}
+                {{ node.field_dod.value }}
+              {% endif %}
+              {% if node.field_death_location.value %}
+                in {{ node.field_death_location.value }}
+              {% endif %}
+              {% if node.field_cod.value %}
+                ({{ node.field_cod.value }})
+              {% endif %}
+            </div>
+          {% endif %}
+
+          {% if node.field_position.value %}
+            <div class="saho-bio-item">
+              <strong>Position:</strong> {{ node.field_position.value }}
+            </div>
+          {% endif %}
+
+          {% if node.field_affiliation.value %}
+            <div class="saho-bio-item">
+              <strong>Affiliation:</strong> {{ node.field_affiliation.value }}
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+      {% if content.body %}
+        <div class="saho-article-body">
+          {{ content.body }}
+        </div>
+      {% endif %}
+
+      {% if content.field_highlight %}
+        <div class="saho-highlight">
+          {{ content.field_highlight }}
+        </div>
+      {% endif %}
+
+      {# Render remaining fields not already shown manually #}
+      {{ content|without(
+        'body',
+        'field_highlight',
+        'field_further_reading',
+        'field_bio_pic',
+        'field_node_image_caption',
+        'field_ref_str',
+        'field_african_country',
+        'field_archive_page_feature',
+        'field_feature_parent',
+        'field_parent',
+        'field_feature_tag',
+        'field_feature_banner',
+        'field_home_page_feature',
+        'field_home_page_feature_africa_s',
+        'field_home_page_feature_biograph',
+        'field_people_category',
+        'field_people_level3_cat',
+        'field_people_related_tab',
+        'field_gallery_tag',
+        'field_synopsis',
+        'field_title',
+        'field_firstname',
+        'field_middlename',
+        'field_lastnamebio',
+        'field_drupal_birth_date',
+        'field_dob',
+        'field_birth_location',
+        'field_drupal_death_date',
+        'field_dod',
+        'field_death_location',
+        'field_cod',
+        'field_position',
+        'field_affiliation',
+        'field_position_held',
+        'field_position_format',
+        'field_member_of_organisation',
+        'field_gender',
+        'field_race',
+        'field_article_author',
+        'field_article_editors',
+        'field_editors'
+      ) }}
+
+    </div>
+
+    {# RIGHT: Sidebar #}
+    <aside class="saho-article-sidebar">
+
+      {% if node.field_bio_pic.entity %}
+        <div class="saho-image-block">
+          <img
+            src="{{ file_url(node.field_bio_pic.entity.uri.value) }}"
+            alt="{{ node.field_bio_pic.alt }}"
+            class="saho-image"
+          >
+          {% if node.field_node_image_caption.value %}
+            <div class="caption">
+              {{ node.field_node_image_caption.value|raw }}
+            </div>
+          {% endif %}
+        </div>
+      {% endif %}
+
+      {% if accordion_views is not empty %}
+        <div class="accordion saho-accordion mb-5" id="sahoFeatureAccordion">
+          {% for item in accordion_views %}
+            <div class="accordion-item">
+              <h2 class="accordion-header" id="heading-{{ item.id }}">
+                <button class="accordion-button {% if not loop.first %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-{{ item.id }}" aria-expanded="{{ loop.first ? 'true' : 'false' }}" aria-controls="collapse-{{ item.id }}">
+                  {{ item.title }}
+                </button>
+              </h2>
+              <div id="collapse-{{ item.id }}" class="accordion-collapse collapse {% if loop.first %}show{% endif %}" aria-labelledby="heading-{{ item.id }}" data-bs-parent="#sahoFeatureAccordion">
+                <div class="accordion-body">
+                  {{ drupal_view(item.view, item.block, node.id()) }}
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      {% if content.field_people_category is defined and content.field_people_category|render|trim %}
+        <div class="saho-taxonomy-group">
+          <h4>People Category</h4>
+          {{ content.field_people_category }}
+        </div>
+      {% endif %}
+
+      {% if content.field_people_level3_cat is defined and content.field_people_level3_cat|render|trim %}
+        <div class="saho-taxonomy-group">
+          <h4>People Subcategory</h4>
+          {{ content.field_people_level3_cat }}
+        </div>
+      {% endif %}
+
+      {% if content.field_african_country is defined and content.field_african_country|render|trim %}
+        <div class="saho-taxonomy-group">
+          <h4>African Country</h4>
+          {{ content.field_african_country }}
+        </div>
+      {% endif %}
+
+      {% if content.field_people_related_tab is defined and content.field_people_related_tab|render|trim %}
+        <div class="saho-taxonomy-group">
+          <h4>Related People</h4>
+          {{ content.field_people_related_tab }}
+        </div>
+      {% endif %}
+
+      {% if content.field_feature_parent is defined and content.field_feature_parent|render|trim %}
+        <div class="saho-taxonomy-group">
+          <h4>Related Content</h4>
+          {{ content.field_feature_parent }}
+        </div>
+      {% endif %}
+
+      {% if node.field_member_of_organisation.entity %}
+        <div class="saho-taxonomy-group">
+          <h4>Member of Organisation</h4>
+          {{ content.field_member_of_organisation }}
+        </div>
+      {% endif %}
+
+      {% if node.field_position_held.value %}
+        <div class="saho-metadata-group">
+          <h4>Positions Held</h4>
+          {{ node.field_position_held.value|raw }}
+        </div>
+      {% endif %}
+
+      {% if node.field_article_author.value or node.field_article_editors.value or node.field_editors.value %}
+        <div class="saho-metadata-group">
+          <h4>Credits</h4>
+          {% if node.field_article_author.value %}
+            <div class="saho-metadata-item">
+              <strong>Author:</strong> {{ node.field_article_author.value }}
+            </div>
+          {% endif %}
+          {% if node.field_article_editors.value %}
+            <div class="saho-metadata-item">
+              <strong>Editors:</strong> {{ node.field_article_editors.value }}
+            </div>
+          {% elseif node.field_editors.value %}
+            <div class="saho-metadata-item">
+              <strong>Editors:</strong> {{ node.field_editors.value }}
+            </div>
+          {% endif %}
+        </div>
+      {% endif %}
+
+      {% if content.field_synopsis is defined and content.field_synopsis|render|trim %}
+        <div class="saho-synopsis">
+          <h4>Synopsis</h4>
+          {{ content.field_synopsis }}
+        </div>
+      {% endif %}
+
+      {% if content.field_further_reading is defined and content.field_further_reading|render|trim %}
+        <div class="saho-further-reading">
+          <h4>Further Reading</h4>
+          {{ content.field_further_reading }}
+        </div>
+      {% endif %}
+
+      {# References block #}
+      {% if node.field_ref_str.value %}
+        {% set refs = node.field_ref_str.value|split('|') %}
+        <div class="saho-references">
+          <h3>References</h3>
+          <ul class="saho-reference-list">
+            {% for ref in refs %}
+              {% if ref|trim %}
+                <li>{{ ref|trim|raw }}</li>
+              {% endif %}
+            {% endfor %}
+          </ul>
+        </div>
+      {% endif %}
+
+    </aside>
+
+  </div>
+
+</article>

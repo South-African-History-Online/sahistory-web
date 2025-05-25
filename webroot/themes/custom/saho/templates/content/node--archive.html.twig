@@ -1,0 +1,252 @@
+{#
+/**
+ * @file
+ * Custom SAHO node template for Archive content type.
+ *
+ * Title is handled globally and not rendered here.
+ * Layout Builder is disabled — fields are output directly via Twig.
+ */
+#}
+
+<article{{ attributes.addClass('saho-article-wrapper') }}>
+
+  <div class="saho-article-grid">
+
+    {# LEFT: Main content column #}
+    <div class="saho-main-content">
+
+      {% if node.field_feature_banner.entity %}
+        <div class="saho-feature-banner">
+          <img
+            src="{{ file_url(node.field_feature_banner.entity.uri.value) }}"
+            alt="{{ node.field_feature_banner.alt }}"
+            class="saho-feature-banner-image"
+          >
+        </div>
+      {% endif %}
+
+      <div class="saho-article-meta">
+        {% if node.getCreatedTime() %}
+          <span>Published {{ node.getCreatedTime()|date("F j, Y") }}</span>
+        {% endif %}
+        {% if node.getChangedTime() != node.getCreatedTime() %}
+          <span>Updated {{ node.getChangedTime()|date("F j, Y") }}</span>
+        {% endif %}
+        {% if node.field_archive_publication_date.value %}
+          <span>Archive Publication Date: {{ node.field_archive_publication_date.value|date("F j, Y") }}</span>
+        {% endif %}
+      </div>
+
+      {% if content.body %}
+        <div class="saho-article-body">
+          {{ content.body }}
+        </div>
+      {% endif %}
+
+      {% if content.field_african_country is defined and content.field_african_country|render|trim %}
+        <div class="saho-taxonomy-inline">
+          <h4>African Country</h4>
+          {{ content.field_african_country }}
+        </div>
+      {% endif %}
+
+      {% if content.field_highlight %}
+        <div class="saho-highlight">
+          {{ content.field_highlight }}
+        </div>
+      {% endif %}
+
+      {# Render remaining fields not already shown manually #}
+      {{ content|without(
+        'body',
+        'field_highlight',
+        'field_further_reading',
+        'field_archive_image',
+        'field_node_image_caption',
+        'field_ref_str',
+        'field_african_country',
+        'field_media_library_type',
+        'field_archive_page_feature',
+        'field_feature_parent',
+        'field_home_page_feature',
+        'field_image',
+        'field_references_saho_source',
+        'field_author',
+        'field_contributor',
+        'field_editors',
+        'field_copyright',
+        'field_description',
+        'field_publication_date_archive',
+        'field_publication_place',
+        'field_publication_title',
+        'field_publishers',
+        'field_subtitle',
+        'field_synopsis'
+      ) }}
+
+    </div>
+
+    {# RIGHT: Sidebar #}
+    <aside class="saho-article-sidebar">
+
+      {% if node.field_archive_image.entity %}
+        <div class="saho-image-block">
+          <img
+            src="{{ file_url(node.field_archive_image.entity.uri.value) }}"
+            alt="{{ node.field_archive_image.alt }}"
+            class="saho-image"
+          >
+          {% if node.field_node_image_caption.value %}
+            <div class="caption">
+              {{ node.field_node_image_caption.value|raw }}
+            </div>
+          {% endif %}
+        </div>
+      {% elseif node.field_image.entity %}
+        <div class="saho-image-block">
+          <img
+            src="{{ file_url(node.field_image.entity.uri.value) }}"
+            alt="{{ node.field_image.alt }}"
+            class="saho-image"
+          >
+          {% if node.field_node_image_caption.value %}
+            <div class="caption">
+              {{ node.field_node_image_caption.value|raw }}
+            </div>
+          {% endif %}
+        </div>
+      {% endif %}
+
+      {% if accordion_views is not empty %}
+        <div class="accordion saho-accordion mb-5" id="sahoFeatureAccordion">
+          {% for item in accordion_views %}
+            <div class="accordion-item">
+              <h2 class="accordion-header" id="heading-{{ item.id }}">
+                <button class="accordion-button {% if not loop.first %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-{{ item.id }}" aria-expanded="{{ loop.first ? 'true' : 'false' }}" aria-controls="collapse-{{ item.id }}">
+                  {{ item.title }}
+                </button>
+              </h2>
+              <div id="collapse-{{ item.id }}" class="accordion-collapse collapse {% if loop.first %}show{% endif %}" aria-labelledby="heading-{{ item.id }}" data-bs-parent="#sahoFeatureAccordion">
+                <div class="accordion-body">
+                  {{ drupal_view(item.view, item.block, node.id()) }}
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      {% if content.field_media_library_type is defined and content.field_media_library_type|render|trim %}
+        <div class="saho-taxonomy-group">
+          <h4>Archive Category</h4>
+          {{ content.field_media_library_type }}
+        </div>
+      {% endif %}
+
+      {% if content.field_archive_page_feature is defined and content.field_archive_page_feature|render|trim %}
+        <div class="saho-taxonomy-group">
+          <h4>Archive Page Feature</h4>
+          {{ content.field_archive_page_feature }}
+        </div>
+      {% endif %}
+
+      {% if content.field_feature_parent is defined and content.field_feature_parent|render|trim %}
+        <div class="saho-taxonomy-group">
+          <h4>Related Content</h4>
+          {{ content.field_feature_parent }}
+        </div>
+      {% endif %}
+
+      {% if node.field_author.value or node.field_contributor.value or node.field_editors.value %}
+        <div class="saho-metadata-group">
+          <h4>Credits</h4>
+          {% if node.field_author.value %}
+            <div class="saho-metadata-item">
+              <strong>Author:</strong> {{ node.field_author.value }}
+            </div>
+          {% endif %}
+          {% if node.field_contributor.value %}
+            <div class="saho-metadata-item">
+              <strong>Contributor:</strong> {{ node.field_contributor.value }}
+            </div>
+          {% endif %}
+          {% if node.field_editors.value %}
+            <div class="saho-metadata-item">
+              <strong>Editors:</strong> {{ node.field_editors.value }}
+            </div>
+          {% endif %}
+        </div>
+      {% endif %}
+
+      {% if node.field_publication_title.value or node.field_publication_place.value or node.field_publishers.value %}
+        <div class="saho-metadata-group">
+          <h4>Publication Details</h4>
+          {% if node.field_publication_title.value %}
+            <div class="saho-metadata-item">
+              <strong>Title:</strong> {{ node.field_publication_title.value }}
+            </div>
+          {% endif %}
+          {% if node.field_subtitle.value %}
+            <div class="saho-metadata-item">
+              <strong>Subtitle:</strong> {{ node.field_subtitle.value }}
+            </div>
+          {% endif %}
+          {% if node.field_publication_place.value %}
+            <div class="saho-metadata-item">
+              <strong>Place:</strong> {{ node.field_publication_place.value }}
+            </div>
+          {% endif %}
+          {% if node.field_publishers.value %}
+            <div class="saho-metadata-item">
+              <strong>Publishers:</strong> {{ node.field_publishers.value }}
+            </div>
+          {% endif %}
+          {% if node.field_isbn.value %}
+            <div class="saho-metadata-item">
+              <strong>ISBN:</strong> {{ node.field_isbn.value }}
+            </div>
+          {% endif %}
+        </div>
+      {% endif %}
+
+      {% if content.field_synopsis is defined and content.field_synopsis|render|trim %}
+        <div class="saho-synopsis">
+          <h4>Synopsis</h4>
+          {{ content.field_synopsis }}
+        </div>
+      {% endif %}
+
+      {% if content.field_further_reading is defined and content.field_further_reading|render|trim %}
+        <div class="saho-further-reading">
+          <h4>Further Reading</h4>
+          {{ content.field_further_reading }}
+        </div>
+      {% endif %}
+
+      {# References block #}
+      {% if node.field_ref_str.value %}
+        {% set refs = node.field_ref_str.value|split('|') %}
+        <div class="saho-references">
+          <h3>References</h3>
+          <ul class="saho-reference-list">
+            {% for ref in refs %}
+              {% if ref|trim %}
+                <li>{{ ref|trim|raw }}</li>
+              {% endif %}
+            {% endfor %}
+          </ul>
+        </div>
+      {% endif %}
+
+      {% if node.field_references_saho_source.value %}
+        <div class="saho-references">
+          <h3>SAHO Sources</h3>
+          {{ node.field_references_saho_source.value|raw }}
+        </div>
+      {% endif %}
+
+    </aside>
+
+  </div>
+
+</article>

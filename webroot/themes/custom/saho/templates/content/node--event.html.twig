@@ -1,0 +1,229 @@
+{#
+/**
+ * @file
+ * Custom SAHO node template for Event (This day in history) content type.
+ *
+ * Title is handled globally and not rendered here.
+ * Layout Builder is disabled — fields are output directly via Twig.
+ */
+#}
+
+<article{{ attributes.addClass('saho-article-wrapper') }}>
+
+  <div class="saho-article-grid">
+
+    {# LEFT: Main content column #}
+    <div class="saho-main-content">
+
+      {% if node.field_feature_banner.entity %}
+        <div class="saho-feature-banner">
+          <img
+            src="{{ file_url(node.field_feature_banner.entity.uri.value) }}"
+            alt="{{ node.field_feature_banner.alt }}"
+            class="saho-feature-banner-image"
+          >
+        </div>
+      {% endif %}
+
+      <div class="saho-article-meta">
+        {% if node.getCreatedTime() %}
+          <span>Published {{ node.getCreatedTime()|date("F j, Y") }}</span>
+        {% endif %}
+        {% if node.getChangedTime() != node.getCreatedTime() %}
+          <span>Updated {{ node.getChangedTime()|date("F j, Y") }}</span>
+        {% endif %}
+      </div>
+
+      {# Event date information #}
+      <div class="saho-event-dates">
+        {% if node.field_this_day_in_history_date_2.value %}
+          <div class="saho-event-date primary">
+            <strong>This Day in History:</strong> {{ node.field_this_day_in_history_date_2.value|date("F j, Y") }}
+          </div>
+        {% endif %}
+        
+        {% if node.field_this_day_in_history_3.value %}
+          <div class="saho-event-date secondary">
+            <strong>Additional Date:</strong> {{ node.field_this_day_in_history_3.value|date("F j, Y") }}
+          </div>
+        {% endif %}
+        
+        {% if node.field_annual.value %}
+          <div class="saho-event-annual">
+            <strong>Annual Event:</strong> Yes
+          </div>
+        {% endif %}
+        
+        {% if content.field_event_type is defined and content.field_event_type|render|trim %}
+          <div class="saho-event-type">
+            <strong>Event Type:</strong> {{ content.field_event_type }}
+          </div>
+        {% endif %}
+      </div>
+
+      {% if content.body %}
+        <div class="saho-article-body">
+          {{ content.body }}
+        </div>
+      {% endif %}
+
+      {% if content.field_highlight %}
+        <div class="saho-highlight">
+          {{ content.field_highlight }}
+        </div>
+      {% endif %}
+
+      {# Render remaining fields not already shown manually #}
+      {{ content|without(
+        'body',
+        'field_highlight',
+        'field_further_reading',
+        'field_event_image',
+        'field_tdih_image',
+        'field_node_image_caption',
+        'field_ref_str',
+        'field_feature_parent',
+        'field_feature_tag',
+        'field_home_page_feature',
+        'field_this_day_in_history_date_2',
+        'field_this_day_in_history_3',
+        'field_annual',
+        'field_event_type',
+        'field_people_related_tab',
+        'field_organizations_related_tab',
+        'field_topics_related_tab',
+        'field_synopsis',
+        'field_article_author',
+        'field_article_editors'
+      ) }}
+
+    </div>
+
+    {# RIGHT: Sidebar #}
+    <aside class="saho-article-sidebar">
+
+      {% if node.field_tdih_image.entity %}
+        <div class="saho-image-block">
+          <img
+            src="{{ file_url(node.field_tdih_image.entity.uri.value) }}"
+            alt="{{ node.field_tdih_image.alt }}"
+            class="saho-image"
+          >
+          {% if node.field_node_image_caption.value %}
+            <div class="caption">
+              {{ node.field_node_image_caption.value|raw }}
+            </div>
+          {% endif %}
+        </div>
+      {% elseif node.field_event_image.entity %}
+        <div class="saho-image-block">
+          <img
+            src="{{ file_url(node.field_event_image.entity.uri.value) }}"
+            alt="{{ node.field_event_image.alt }}"
+            class="saho-image"
+          >
+          {% if node.field_node_image_caption.value %}
+            <div class="caption">
+              {{ node.field_node_image_caption.value|raw }}
+            </div>
+          {% endif %}
+        </div>
+      {% endif %}
+
+      {% if accordion_views is not empty %}
+        <div class="accordion saho-accordion mb-5" id="sahoFeatureAccordion">
+          {% for item in accordion_views %}
+            <div class="accordion-item">
+              <h2 class="accordion-header" id="heading-{{ item.id }}">
+                <button class="accordion-button {% if not loop.first %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-{{ item.id }}" aria-expanded="{{ loop.first ? 'true' : 'false' }}" aria-controls="collapse-{{ item.id }}">
+                  {{ item.title }}
+                </button>
+              </h2>
+              <div id="collapse-{{ item.id }}" class="accordion-collapse collapse {% if loop.first %}show{% endif %}" aria-labelledby="heading-{{ item.id }}" data-bs-parent="#sahoFeatureAccordion">
+                <div class="accordion-body">
+                  {{ drupal_view(item.view, item.block, node.id()) }}
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      {% if content.field_people_related_tab is defined and content.field_people_related_tab|render|trim %}
+        <div class="saho-taxonomy-group">
+          <h4>Related People</h4>
+          {{ content.field_people_related_tab }}
+        </div>
+      {% endif %}
+
+      {% if content.field_organizations_related_tab is defined and content.field_organizations_related_tab|render|trim %}
+        <div class="saho-taxonomy-group">
+          <h4>Related Organizations</h4>
+          {{ content.field_organizations_related_tab }}
+        </div>
+      {% endif %}
+
+      {% if content.field_topics_related_tab is defined and content.field_topics_related_tab|render|trim %}
+        <div class="saho-taxonomy-group">
+          <h4>Related Topics</h4>
+          {{ content.field_topics_related_tab }}
+        </div>
+      {% endif %}
+
+      {% if content.field_feature_parent is defined and content.field_feature_parent|render|trim %}
+        <div class="saho-taxonomy-group">
+          <h4>Related Content</h4>
+          {{ content.field_feature_parent }}
+        </div>
+      {% endif %}
+
+      {% if node.field_article_author.value or node.field_article_editors.value %}
+        <div class="saho-metadata-group">
+          <h4>Credits</h4>
+          {% if node.field_article_author.value %}
+            <div class="saho-metadata-item">
+              <strong>Author:</strong> {{ node.field_article_author.value }}
+            </div>
+          {% endif %}
+          {% if node.field_article_editors.value %}
+            <div class="saho-metadata-item">
+              <strong>Editors:</strong> {{ node.field_article_editors.value }}
+            </div>
+          {% endif %}
+        </div>
+      {% endif %}
+
+      {% if content.field_synopsis is defined and content.field_synopsis|render|trim %}
+        <div class="saho-synopsis">
+          <h4>Synopsis</h4>
+          {{ content.field_synopsis }}
+        </div>
+      {% endif %}
+
+      {% if content.field_further_reading is defined and content.field_further_reading|render|trim %}
+        <div class="saho-further-reading">
+          <h4>Further Reading</h4>
+          {{ content.field_further_reading }}
+        </div>
+      {% endif %}
+
+      {# References block #}
+      {% if node.field_ref_str.value %}
+        {% set refs = node.field_ref_str.value|split('|') %}
+        <div class="saho-references">
+          <h3>References</h3>
+          <ul class="saho-reference-list">
+            {% for ref in refs %}
+              {% if ref|trim %}
+                <li>{{ ref|trim|raw }}</li>
+              {% endif %}
+            {% endfor %}
+          </ul>
+        </div>
+      {% endif %}
+
+    </aside>
+
+  </div>
+
+</article>

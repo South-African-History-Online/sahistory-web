@@ -3,6 +3,7 @@ langcode: en
 status: true
 dependencies:
   config:
+    - core.entity_view_display.comment.comment_node_place.default
     - field.field.node.place.body
     - field.field.node.place.comment_node_place
     - field.field.node.place.field_african_country
@@ -43,90 +44,18 @@ dependencies:
     - field.field.node.place.field_topics_related_tab
     - node.type.place
   module:
+    - comment
+    - file
+    - geofield
     - geolocation
+    - image
     - layout_builder
-    - layout_discovery
     - text
     - user
 third_party_settings:
   layout_builder:
-    enabled: true
+    enabled: false
     allow_custom: false
-    sections:
-      -
-        layout_id: layout_threecol_section
-        layout_settings:
-          label: ''
-          context_mapping: {  }
-          column_widths: 25-50-25
-        components:
-          a32eda37-c435-4ad6-a7f5-1b536f33bb76:
-            uuid: a32eda37-c435-4ad6-a7f5-1b536f33bb76
-            region: second
-            configuration:
-              id: 'field_block:node:place:body'
-              label_display: '0'
-              context_mapping:
-                entity: layout_builder.entity
-              formatter:
-                type: text_default
-                label: hidden
-                settings: {  }
-                third_party_settings: {  }
-            weight: 0
-            additional: {  }
-          fc27cfb7-0532-409e-9eba-3d4a797912cf:
-            uuid: fc27cfb7-0532-409e-9eba-3d4a797912cf
-            region: second
-            configuration:
-              id: 'field_block:node:place:field_ref_str'
-              label_display: '0'
-              context_mapping:
-                entity: layout_builder.entity
-              formatter:
-                type: text_default
-                label: above
-                settings: {  }
-                third_party_settings: {  }
-            weight: 2
-            additional: {  }
-          9abf5428-efd6-400c-b384-3af2680f1c6f:
-            uuid: 9abf5428-efd6-400c-b384-3af2680f1c6f
-            region: second
-            configuration:
-              id: 'field_block:node:place:field_geolocation'
-              label_display: '0'
-              context_mapping:
-                entity: layout_builder.entity
-              formatter:
-                type: geolocation_sexagesimal
-                label: above
-                settings: {  }
-                third_party_settings: {  }
-            weight: 1
-            additional: {  }
-          ea06b998-0ad5-4bcd-9f66-585b5828e2a7:
-            uuid: ea06b998-0ad5-4bcd-9f66-585b5828e2a7
-            region: second
-            configuration:
-              id: 'field_block:node:place:field_further_reading'
-              label_display: '0'
-              context_mapping:
-                entity: layout_builder.entity
-              formatter:
-                type: text_default
-                label: above
-                settings: {  }
-                third_party_settings: {  }
-            weight: 3
-            additional: {  }
-        third_party_settings: {  }
-      -
-        layout_id: layout_onecol
-        layout_settings:
-          label: ''
-        components: {  }
-        third_party_settings: {  }
 id: node.place.default
 targetEntityType: node
 bundle: place
@@ -137,64 +66,332 @@ content:
     label: hidden
     settings: {  }
     third_party_settings: {  }
-    weight: 0
+    weight: 37
+    region: content
+  comment_node_place:
+    type: comment_default
+    label: above
+    settings:
+      view_mode: default
+      pager_id: 0
+    third_party_settings: {  }
+    weight: 1
+    region: content
+  field_african_country:
+    type: entity_reference_label
+    label: above
+    settings:
+      link: true
+    third_party_settings: {  }
+    weight: 2
+    region: content
+  field_article_author:
+    type: basic_string
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 3
+    region: content
+  field_article_editors:
+    type: basic_string
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 4
+    region: content
+  field_article_type:
+    type: entity_reference_label
+    label: above
+    settings:
+      link: true
+    third_party_settings: {  }
+    weight: 5
+    region: content
+  field_country:
+    type: boolean
+    label: above
+    settings:
+      format: default
+      format_custom_false: ''
+      format_custom_true: ''
+    third_party_settings: {  }
+    weight: 6
+    region: content
+  field_feature_banner:
+    type: image
+    label: above
+    settings:
+      image_link: ''
+      image_style: ''
+      image_loading:
+        attribute: lazy
+    third_party_settings: {  }
+    weight: 8
+    region: content
+  field_feature_parent:
+    type: entity_reference_label
+    label: above
+    settings:
+      link: true
+    third_party_settings: {  }
+    weight: 9
+    region: content
+  field_feature_tag:
+    type: entity_reference_label
+    label: above
+    settings:
+      link: true
+    third_party_settings: {  }
+    weight: 10
+    region: content
+  field_featured:
+    type: entity_reference_label
+    label: above
+    settings:
+      link: true
+    third_party_settings: {  }
+    weight: 7
+    region: content
+  field_file_upload:
+    type: file_default
+    label: above
+    settings:
+      use_description_as_link_text: true
+    third_party_settings: {  }
+    weight: 11
     region: content
   field_further_reading:
     type: text_default
     label: above
     settings: {  }
     third_party_settings: {  }
-    weight: 3
+    weight: 40
+    region: content
+  field_gallery_tag:
+    type: entity_reference_label
+    label: above
+    settings:
+      link: true
+    third_party_settings: {  }
+    weight: 12
+    region: content
+  field_geofield:
+    type: geofield_default
+    label: above
+    settings:
+      output_format: wkt
+      output_escape: true
+    third_party_settings: {  }
+    weight: 13
     region: content
   field_geolocation:
     type: geolocation_sexagesimal
     label: above
     settings: {  }
     third_party_settings: {  }
-    weight: 1
+    weight: 38
+    region: content
+  field_highlight:
+    type: text_default
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 14
+    region: content
+  field_home_page_feature:
+    type: boolean
+    label: above
+    settings:
+      format: default
+      format_custom_false: ''
+      format_custom_true: ''
+    third_party_settings: {  }
+    weight: 15
+    region: content
+  field_home_page_feature_africa_s:
+    type: boolean
+    label: above
+    settings:
+      format: default
+      format_custom_false: ''
+      format_custom_true: ''
+    third_party_settings: {  }
+    weight: 16
+    region: content
+  field_home_page_feature_place_se:
+    type: boolean
+    label: above
+    settings:
+      format: default
+      format_custom_false: ''
+      format_custom_true: ''
+    third_party_settings: {  }
+    weight: 17
+    region: content
+  field_most_read:
+    type: boolean
+    label: above
+    settings:
+      format: default
+      format_custom_false: ''
+      format_custom_true: ''
+    third_party_settings: {  }
+    weight: 18
+    region: content
+  field_node_image_caption:
+    type: text_default
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 19
+    region: content
+  field_old_filename:
+    type: string
+    label: above
+    settings:
+      link_to_entity: false
+    third_party_settings: {  }
+    weight: 20
+    region: content
+  field_old_ref_str:
+    type: text_default
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 21
+    region: content
+  field_organizations_related_tab:
+    type: entity_reference_label
+    label: above
+    settings:
+      link: true
+    third_party_settings: {  }
+    weight: 22
+    region: content
+  field_parent:
+    type: entity_reference_label
+    label: above
+    settings:
+      link: true
+    third_party_settings: {  }
+    weight: 23
+    region: content
+  field_parent_loc:
+    type: entity_reference_label
+    label: above
+    settings:
+      link: true
+    third_party_settings: {  }
+    weight: 24
+    region: content
+  field_people_related_tab:
+    type: entity_reference_label
+    label: above
+    settings:
+      link: true
+    third_party_settings: {  }
+    weight: 25
+    region: content
+  field_place_category:
+    type: entity_reference_label
+    label: above
+    settings:
+      link: true
+    third_party_settings: {  }
+    weight: 27
+    region: content
+  field_place_image:
+    type: image
+    label: above
+    settings:
+      image_link: ''
+      image_style: ''
+      image_loading:
+        attribute: lazy
+    third_party_settings: {  }
+    weight: 28
+    region: content
+  field_place_type:
+    type: entity_reference_label
+    label: above
+    settings:
+      link: true
+    third_party_settings: {  }
+    weight: 29
+    region: content
+  field_places_level3:
+    type: entity_reference_label
+    label: above
+    settings:
+      link: true
+    third_party_settings: {  }
+    weight: 26
     region: content
   field_ref_str:
     type: text_default
     label: above
     settings: {  }
     third_party_settings: {  }
-    weight: 2
+    weight: 39
     region: content
-hidden:
-  comment_node_place: true
-  field_african_country: true
-  field_article_author: true
-  field_article_editors: true
-  field_article_type: true
-  field_country: true
-  field_feature_banner: true
-  field_feature_parent: true
-  field_feature_tag: true
-  field_featured: true
-  field_file_upload: true
-  field_gallery_tag: true
-  field_geofield: true
-  field_highlight: true
-  field_home_page_feature: true
-  field_home_page_feature_africa_s: true
-  field_home_page_feature_place_se: true
-  field_most_read: true
-  field_node_image_caption: true
-  field_old_filename: true
-  field_old_ref_str: true
-  field_organizations_related_tab: true
-  field_parent: true
-  field_parent_loc: true
-  field_people_related_tab: true
-  field_place_category: true
-  field_place_image: true
-  field_place_type: true
-  field_places_level3: true
-  field_staff_picks: true
-  field_synopsis: true
-  field_taxonomy: true
-  field_timelines_related_tab: true
-  field_topics_related_tab: true
-  langcode: true
-  links: true
-  search_api_excerpt: true
+  field_staff_picks:
+    type: boolean
+    label: above
+    settings:
+      format: default
+      format_custom_false: ''
+      format_custom_true: ''
+    third_party_settings: {  }
+    weight: 30
+    region: content
+  field_synopsis:
+    type: text_default
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 31
+    region: content
+  field_taxonomy:
+    type: entity_reference_label
+    label: above
+    settings:
+      link: true
+    third_party_settings: {  }
+    weight: 32
+    region: content
+  field_timelines_related_tab:
+    type: entity_reference_label
+    label: above
+    settings:
+      link: true
+    third_party_settings: {  }
+    weight: 33
+    region: content
+  field_topics_related_tab:
+    type: entity_reference_label
+    label: above
+    settings:
+      link: true
+    third_party_settings: {  }
+    weight: 34
+    region: content
+  langcode:
+    type: language
+    label: above
+    settings:
+      link_to_entity: false
+      native_language: false
+    third_party_settings: {  }
+    weight: 0
+    region: content
+  links:
+    settings: {  }
+    third_party_settings: {  }
+    weight: 35
+    region: content
+  search_api_excerpt:
+    settings: {  }
+    third_party_settings: {  }
+    weight: 36
+    region: content
+hidden: {  }
