@@ -45,14 +45,16 @@
         {%
           set nav_item_classes = [
             'nav-item',
-            item.in_active_trail ? 'active' : '',
+            item.in_active_trail ? 'active active-trail' : '',
+            item.is_active ? 'is-active' : '',
             item.is_expanded and item.below ? 'dropdown' : ''
           ]|merge(nav_item_utility_classes ?: [])
         %}
         {%
           set nav_link_classes = [
             'nav-link',
-            item.in_active_trail ? 'active' : ''
+            item.in_active_trail ? 'active' : '',
+            item.is_active ? 'is-active' : ''
           ]|merge(nav_link_utility_classes ?: [])
         %}
         {% if item.url.options.attributes.class is iterable %}
@@ -62,24 +64,30 @@
         {% endif %}
         <li class="{{ nav_item_classes|join(' ') }}">
           {% if item.is_expanded and item.below %}
-            <a href="{{ item.url }}" class="{{ nav_link_classes|merge(['dropdown-toggle'])|join(' ') }}" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">{{ item.title }}</a>
+            <a href="{{ item.url }}" class="{{ nav_link_classes|merge(['dropdown-toggle'])|join(' ') }}" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
+              {{ item.title }}
+              <span class="dropdown-toggle-icon ms-1">▾</span>
+            </a>
             {% if item.below %}
-              <ul class="dropdown-menu">
+              <ul class="dropdown-menu" style="display: block;">
                 {% for subitem in item.below %}
                   {% if subitem.is_expanded and subitem.below %}
-                    <li class="dropdown-item dropdown-submenu">
-                      <a href="{{ subitem.url }}" class="dropdown-item dropdown-toggle" data-bs-toggle="dropdown" data-bs-auto-close="outside">{{ subitem.title }}</a>
-                      <ul class="dropdown-menu dropdown-submenu-menu">
+                    <li class="dropdown-submenu {{ subitem.in_active_trail ? 'active-trail' : '' }} {{ subitem.is_active ? 'is-active' : '' }}">
+                      <a href="{{ subitem.url }}" class="dropdown-item dropdown-toggle {{ subitem.in_active_trail ? 'active' : '' }} {{ subitem.is_active ? 'is-active' : '' }}" data-bs-toggle="dropdown" data-bs-auto-close="outside">
+                        {{ subitem.title }}
+                        <span class="float-end">▸</span>
+                      </a>
+                      <ul class="dropdown-menu dropdown-submenu-menu" style="display: block;">
                         {% for subsubitem in subitem.below %}
-                          <li>
-                            <a class="dropdown-item" href="{{ subsubitem.url }}">{{ subsubitem.title }}</a>
+                          <li class="{{ subsubitem.in_active_trail ? 'active-trail' : '' }} {{ subsubitem.is_active ? 'is-active' : '' }}">
+                            <a class="dropdown-item {{ subsubitem.in_active_trail ? 'active' : '' }} {{ subsubitem.is_active ? 'is-active' : '' }}" href="{{ subsubitem.url }}">{{ subsubitem.title }}</a>
                           </li>
                         {% endfor %}
                       </ul>
                     </li>
                   {% else %}
-                    <li>
-                      <a class="dropdown-item" href="{{ subitem.url }}">{{ subitem.title }}</a>
+                    <li class="{{ subitem.in_active_trail ? 'active-trail' : '' }} {{ subitem.is_active ? 'is-active' : '' }}">
+                      <a class="dropdown-item {{ subitem.in_active_trail ? 'active' : '' }} {{ subitem.is_active ? 'is-active' : '' }}" href="{{ subitem.url }}">{{ subitem.title }}</a>
                     </li>
                   {% endif %}
                 {% endfor %}
