@@ -1,63 +1,218 @@
 {#
   @file
-  Unified SAHO header: logo, main menu, search, contribute
+  Clean SAHO Header - Simple & Banging on All Devices
 #}
+<header class="saho-header" role="banner">
+  {# Accent bar #}
+  <div class="saho-accent-bar"></div>
+  
+  <div class="container-fluid">
+    <div class="saho-header-content d-flex align-items-center justify-content-between py-3">
+      
+      {# Logo Section #}
+      <div class="saho-logo">
+        <a href="{{ path('<front>') }}" class="d-flex align-items-center text-decoration-none" aria-label="SAHO Homepage">
+          <img src="/themes/custom/saho/logo.svg" alt="SAHO" class="saho-logo-img">
+          <div class="saho-logo-text d-none d-sm-block ms-3">
+            <div class="saho-logo-title">South African History Online</div>
+            <div class="saho-logo-tagline">Towards a People's History</div>
+          </div>
+        </a>
+      </div>
 
-<header class="saho-header-bar container-fluid d-flex align-items-center justify-content-between flex-wrap py-3 gap-3">
-  {# Logo and identity #}
-  <a href="{{ path('<front>') }}" class="saho-logo d-flex align-items-center text-decoration-none gap-2" aria-label="Homepage">
-    <img src="/themes/custom/saho/logo.svg" alt="South African History Online Logo" class="saho-logo-img">
-    <div class="d-flex flex-column lh-sm">
-      <span class="saho-logo-text fw-bold text-dark">South African History Online</span>
-      <span class="saho-logo-subtext text-muted small">Towards a People’s History</span>
+      {# Desktop Navigation #}
+      <nav class="saho-desktop-nav d-none d-lg-block" role="navigation">
+        {{ drupal_menu('main') }}
+      </nav>
+
+      {# Right Actions #}
+      <div class="saho-actions d-flex align-items-center gap-3">
+        
+        {# Desktop Search #}
+        <form action="/search" method="get" class="saho-search d-none d-md-flex" role="search">
+          <input type="search" name="search_api_fulltext" placeholder="Search history..." class="saho-search-input" aria-label="Search">
+          <button type="submit" class="saho-search-btn" aria-label="Search">
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+            </svg>
+          </button>
+        </form>
+
+        {# Tools Dropdown #}
+        <div class="dropdown me-2">
+          <button class="btn btn-outline-secondary dropdown-toggle d-flex align-items-center" type="button" id="toolsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-tools me-2" viewBox="0 0 16 16">
+              <path d="M1 0 0 1l2.2 3.081a1 1 0 0 0 .815.419h.07a1 1 0 0 1 .708.293l2.675 2.675-2.617 2.654A3.003 3.003 0 0 0 0 13a3 3 0 1 0 5.878-.851l2.654-2.617.968.968-.305.914a1 1 0 0 0 .242 1.023l3.27 3.27a.997.997 0 0 0 1.414 0l1.586-1.586a.997.997 0 0 0 0-1.414l-3.27-3.27a1 1 0 0 0-1.023-.242L10.5 9.5l-.96-.96 2.68-2.643A3.005 3.005 0 0 0 16 3c0-.269-.035-.53-.102-.777l-2.14 2.141L12 4l-.364-1.757L13.777.102a3 3 0 0 0-3.675 3.68L7.462 6.46 4.793 3.793a1 1 0 0 1-.293-.707v-.071a1 1 0 0 0-.419-.814L1 0Zm9.646 10.646a.5.5 0 0 1 .708 0l2.914 2.915a.5.5 0 0 1-.707.707l-2.915-2.914a.5.5 0 0 1 0-.708ZM3 11l.471.242.529.026.287.445.445.287.026.529L5 13l-.242.471-.026.529-.445.287-.287.445-.529.026L3 15l-.471-.242L2 14.732l-.287-.445L1.268 14l-.026-.529L1 13l.242-.471.026-.529.445-.287.287-.445.529-.026L3 11Z"/>
+            </svg>
+            <span class="d-none d-sm-inline">Tools</span>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="toolsDropdown">
+            <li>
+              <a class="dropdown-item d-flex align-items-center" href="#cite">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-quote me-2" viewBox="0 0 16 16">
+                  <path d="M12 12a1 1 0 0 0 1-1V8.558a1 1 0 0 0-1-1h-1.388c0-.351.021-.703.062-1.054.062-.372.166-.703.31-.992.145-.29.331-.517.559-.683.227-.186.516-.279.868-.279V3c-.579 0-1.085.124-1.52.372a3.322 3.322 0 0 0-1.085.992 4.92 4.92 0 0 0-.62 1.458A7.712 7.712 0 0 0 9 7.558V11a1 1 0 0 0 1 1h2Zm-6 0a1 1 0 0 0 1-1V8.558a1 1 0 0 0-1-1H4.612c0-.351.021-.703.062-1.054.062-.372.166-.703.31-.992.145-.29.331-.517.559-.683.227-.186.516-.279.868-.279V3c-.579 0-1.085.124-1.52.372a3.322 3.322 0 0 0-1.085.992 4.92 4.92 0 0 0-.62 1.458A7.712 7.712 0 0 0 3 7.558V11a1 1 0 0 0 1 1h2Z"/>
+                </svg>
+                Cite This Page
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item d-flex align-items-center" href="#share">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-share me-2" viewBox="0 0 16 16">
+                  <path d="M13.5 1a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM11 2.5a2.5 2.5 0 1 1 .603 1.628l-6.718 3.12a2.499 2.499 0 0 1 0 1.504l6.718 3.12a2.5 2.5 0 1 1-.488.876l-6.718-3.12a2.5 2.5 0 1 1 0-3.256l6.718-3.12A2.5 2.5 0 0 1 11 2.5zm-8.5 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm11 5.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3z"/>
+                </svg>
+                Share
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item d-flex align-items-center" href="javascript:window.print()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-printer me-2" viewBox="0 0 16 16">
+                  <path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z"/>
+                  <path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2H5zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4V3zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2H5zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1z"/>
+                </svg>
+                Print
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item d-flex align-items-center" href="/advanced-search">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search me-2" viewBox="0 0 16 16">
+                  <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+                </svg>
+                Advanced Search
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item d-flex align-items-center" href="/timeline-explorer">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clock-history me-2" viewBox="0 0 16 16">
+                  <path d="M8.515 1.019A7 7 0 0 0 8 1V0a8 8 0 0 1 .589.022l-.074.997zm2.004.45a7.003 7.003 0 0 0-.985-.299l.219-.976c.383.086.76.2 1.126.342l-.36.933zm1.37.71a7.01 7.01 0 0 0-.439-.27l.493-.87a8.025 8.025 0 0 1 .979.654l-.615.789a6.996 6.996 0 0 0-.418-.302zm1.834 1.79a6.99 6.99 0 0 0-.653-.796l.724-.69c.27.285.52.59.747.91l-.818.576zm.744 1.352a7.08 7.08 0 0 0-.214-.468l.893-.45a7.976 7.976 0 0 1 .45 1.088l-.95.313a7.023 7.023 0 0 0-.179-.483zm.53 2.507a6.991 6.991 0 0 0-.1-1.025l.985-.17c.067.386.106.778.116 1.17l-1 .025zm-.131 1.538c.033-.17.06-.339.081-.51l.993.123a7.957 7.957 0 0 1-.23 1.155l-.964-.267c.046-.165.086-.332.12-.501zm-.952 2.379c.184-.29.346-.594.486-.908l.914.405c-.16.36-.345.706-.555 1.038l-.845-.535zm-.964 1.205c.122-.122.239-.248.35-.378l.758.653a8.073 8.073 0 0 1-.401.432l-.707-.707z"/>
+                  <path d="M8 1a7 7 0 1 0 4.95 11.95l.707.707A8.001 8.001 0 1 1 8 0v1z"/>
+                  <path d="M7.5 3a.5.5 0 0 1 .5.5v5.21l3.248 1.856a.5.5 0 0 1-.496.868l-3.5-2A.5.5 0 0 1 7 9V3.5a.5.5 0 0 1 .5-.5z"/>
+                </svg>
+                Timeline Explorer
+              </a>
+            </li>
+          </ul>
+        </div>
+        
+        {# Contribute Button #}
+        <a href="/form/contribute" class="saho-contribute-btn">
+          <span class="saho-contribute-icon">✦</span>
+          <span class="saho-contribute-text">Contribute</span>
+        </a>
+
+        {# Mobile Menu Toggle #}
+        <button class="saho-mobile-toggle d-lg-none" 
+                type="button" 
+                data-bs-toggle="offcanvas" 
+                data-bs-target="#sahoMobileMenu" 
+                aria-label="Open menu">
+          <span class="saho-hamburger">
+            <span></span>
+            <span></span>
+            <span></span>
+          </span>
+        </button>
+      </div>
     </div>
-  </a>
-
-  {# Desktop menu #}
-  <nav class="d-none d-lg-flex align-items-center gap-3 flex-grow-1 justify-content-center" role="navigation" aria-label="Main menu">
-    {{ drupal_menu('main') }}
-  </nav>
-
-  {# Search + Contribute + Mobile toggle #}
-  <div class="d-flex align-items-center gap-3">
-    {# Desktop search form #}
-    <form action="/search" method="get" class="d-none d-lg-flex align-items-center" role="search">
-      <label for="saho-search" class="visually-hidden">Search site</label>
-      <input id="saho-search" type="search" name="search_api_fulltext" class="form-control form-control-sm w-auto" placeholder="Search African history..." aria-label="Search site">
-      <button type="submit" class="btn btn-heritage btn-sm ms-2">Search</button>
-    </form>
-
-    {# Contribute button #}
-    <a href="/form/contribute" class="btn btn-contribute d-flex align-items-center gap-2" aria-label="Contribute content">
-      <span class="flip-icon">🔺</span> Contribute
-    </a>
-
-    {# Mobile menu toggle #}
-    <button class="navbar-toggler d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#sahoMobileNav" aria-controls="sahoMobileNav" aria-label="Open menu">
-      <span class="navbar-toggler-icon"></span>
-    </button>
   </div>
 </header>
 
-{# Offcanvas mobile menu #}
-<div class="offcanvas offcanvas-end" tabindex="-1" id="sahoMobileNav" aria-labelledby="sahoMobileNavLabel">
+{# Mobile Menu Offcanvas #}
+<div class="offcanvas offcanvas-start saho-mobile-menu" 
+     tabindex="-1" 
+     id="sahoMobileMenu" 
+     aria-labelledby="sahoMobileMenuLabel">
+  
   <div class="offcanvas-header">
-    <h5 id="sahoMobileNavLabel">Menu</h5>
-    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close menu"></button>
+    <div class="d-flex align-items-center">
+      <img src="/themes/custom/saho/logo.svg" alt="SAHO" class="saho-mobile-logo me-2">
+      <h5 id="sahoMobileMenuLabel" class="mb-0">Menu</h5>
+    </div>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
   </div>
+  
   <div class="offcanvas-body">
-    {# Mobile search form #}
-    <form action="/search" method="get" class="mb-3" role="search">
-      <label for="saho-mobile-search" class="visually-hidden">Search site</label>
-      <input id="saho-mobile-search" type="search" name="search_api_fulltext" class="form-control" placeholder="Search..." aria-label="Search site">
+    {# Mobile Search #}
+    <form action="/search" method="get" class="saho-mobile-search mb-4" role="search">
+      <div class="input-group">
+        <input type="search" name="search_api_fulltext" placeholder="Search history..." class="form-control" aria-label="Search">
+        <button type="submit" class="btn btn-outline-secondary text-gold">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+            <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+          </svg>
+        </button>
+      </div>
     </form>
 
-    {# Mobile menu #}
-    {{ drupal_menu('main') }}
+    {# Mobile Navigation Menu #}
+    <nav class="saho-mobile-nav" role="navigation">
+      {% if main_menu %}
+        <ul class="nav flex-column">
+          {% for item in main_menu %}
+            <li class="nav-item{% if item.below %} dropdown{% endif %}">
+              {% if item.below %}
+                <a href="#" class="nav-link dropdown-toggle d-flex justify-content-between align-items-center{% if item.in_active_trail %} active{% endif %}" 
+                   data-bs-toggle="collapse" 
+                   data-bs-target="#mobileSubmenu{{ loop.index }}" 
+                   aria-expanded="false" 
+                   aria-controls="mobileSubmenu{{ loop.index }}">
+                  {{ item.title }}
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-down" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/>
+                  </svg>
+                </a>
+                <div class="collapse" id="mobileSubmenu{{ loop.index }}">
+                  <ul class="nav flex-column ms-3 border-start border-2 ps-2 my-2">
+                    {% for subitem in item.below %}
+                      <li class="nav-item{% if subitem.below %} dropdown{% endif %}">
+                        {% if subitem.below %}
+                          <a href="#" class="nav-link dropdown-toggle d-flex justify-content-between align-items-center{% if subitem.in_active_trail %} active{% endif %}" 
+                             data-bs-toggle="collapse" 
+                             data-bs-target="#mobileSubSubmenu{{ loop.parent.loop.index }}_{{ loop.index }}" 
+                             aria-expanded="false" 
+                             aria-controls="mobileSubSubmenu{{ loop.parent.loop.index }}_{{ loop.index }}">
+                            {{ subitem.title }}
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-down" viewBox="0 0 16 16">
+                              <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/>
+                            </svg>
+                          </a>
+                          <div class="collapse" id="mobileSubSubmenu{{ loop.parent.loop.index }}_{{ loop.index }}">
+                            <ul class="nav flex-column ms-3 border-start border-2 ps-2 my-2">
+                              {% for subsubitem in subitem.below %}
+                                <li class="nav-item">
+                                  <a href="{{ subsubitem.url }}" class="nav-link{% if subsubitem.in_active_trail %} active{% endif %}">
+                                    {{ subsubitem.title }}
+                                  </a>
+                                </li>
+                              {% endfor %}
+                            </ul>
+                          </div>
+                        {% else %}
+                          <a href="{{ subitem.url }}" class="nav-link{% if subitem.in_active_trail %} active{% endif %}">
+                            {{ subitem.title }}
+                          </a>
+                        {% endif %}
+                      </li>
+                    {% endfor %}
+                  </ul>
+                </div>
+              {% else %}
+                <a href="{{ item.url }}" class="nav-link{% if item.in_active_trail %} active{% endif %}">
+                  {{ item.title }}
+                </a>
+              {% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        {{ drupal_menu('main') }}
+      {% endif %}
+    </nav>
 
-    {# Contribute button for mobile #}
-    <div class="mt-3">
-      <a href="/form/contribute" class="btn btn-contribute w-100">Contribute</a>
+    {# Mobile Contribute #}
+    <div class="mt-4 pt-4 border-top">
+      <a href="/form/contribute" class="btn btn-primary w-100">
+        <span class="me-2">✦</span> Contribute to SAHO
+      </a>
     </div>
   </div>
 </div>

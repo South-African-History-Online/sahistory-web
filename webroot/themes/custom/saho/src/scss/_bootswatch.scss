@@ -20,28 +20,29 @@ $web-font-path: "https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;700
 // Navbar
 
 .navbar {
-  border-style: solid;
-  border-width: 1px;
+  // Removed border as per user request
+  // border-style: solid;
+  // border-width: 1px;
 
   &-fixed-top {
-    border-width: 0 0 1px;
+    border-width: 0;
   }
 
   &-fixed-bottom {
-    border-style: solid;
-    border-top-width: 1px 0 0 0;
+    border-style: none;
+    border-top-width: 0;
   }
 
   &.bg-primary {
-    border-color: shade-color($primary, 13%) !important;
+    // border-color: shade-color($primary, 13%) !important;
   }
 
   &.bg-dark {
-    border-color: shade-color($dark, 13%) !important;
+    // border-color: shade-color($dark, 13%) !important;
   }
 
   &.bg-light {
-    border-color: shade-color($white, 13%);
+    // border-color: shade-color($white, 13%);
   }
 }
 
@@ -333,30 +334,7 @@ $saho-faded-brick-red: #B03030;
     color: white;
 }
 
-// Ensure text is readable
-.saho-text-primary {
-    color: $saho-deep-heritage-red !important;
-}
-
-.saho-text-dark {
-    color: $saho-dark-charcoal !important;
-}
-
-.saho-text-gold {
-    color: $saho-muted-gold !important;
-}
-
-.saho-text-parchment {
-    color: $saho-aged-parchment !important;
-}
-
-.saho-text-blue {
-    color: $saho-slate-blue !important;
-}
-
-.saho-text-highlight {
-    color: $saho-faded-brick-red !important;
-}
+// Text color utility classes
 
 // SAHO Custom Borders
 
@@ -1345,204 +1323,627 @@ h1.title.page-title {
   margin-left: 0;
 }
 
-// Header Wrapper
+// ==================================================
+// CLEAN SAHO HEADER - SIMPLE & BANGING
+// ==================================================
 
-.saho-logo-text {
-  font-size: 1.5rem;
-  font-weight: 700;
-  line-height: 1.2;
-  white-space: nowrap;
+// Main header
+.saho-header {
+  background: #fff;
+  border-bottom: 4px solid $saho-deep-heritage-red;
+  box-shadow: 0 4px 15px rgba(153, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 1030;
 }
 
-.saho-logo-subtext {
-  font-size: 1rem;
-  color: $saho-dark-charcoal;
-  line-height: 1.3;
+// Accent bar
+.saho-accent-bar {
+  height: 3px;
+  background: linear-gradient(90deg, 
+    $saho-deep-heritage-red 0%, 
+    $saho-muted-gold 50%, 
+    $saho-deep-heritage-red 100%
+  );
+}
+
+// Header content
+.saho-header-content {
+  min-height: 70px;
+  
+  @media (min-width: 768px) {
+    min-height: 80px;
+  }
+}
+
+// ==================================================
+// LOGO SECTION
+// ==================================================
+
+.saho-logo {
+  a:hover {
+    transform: translateY(-2px);
+    transition: transform 0.3s ease;
+  }
 }
 
 .saho-logo-img {
-  width: 120px !important;
+  width: 60px;
+  height: auto;
+  
+  @media (min-width: 768px) {
+    width: 70px;
+  }
 }
 
-.saho-header {
-  background-color: #fff;
-  border-bottom: 2px solid $saho-deep-heritage-red;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
-  z-index: 1030;
-
-  .saho-header .saho-logo-img {
-    max-height: 120px !important;
-    width: 120px !important;
-    height: 120px !important;
+.saho-logo-title {
+  font-family: "Open Sans", sans-serif;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: $saho-deep-heritage-red;
+  line-height: 1.2;
+  
+  @media (min-width: 992px) {
+    font-size: 1.6rem;
   }
+}
 
-  .nav-link {
-    color: $saho-dark-charcoal;
-    font-weight: 600;
-    padding: 0.5rem 0.75rem;
-    position: relative;
-    text-decoration: none;
-    transition: color 0.25s ease;
+.saho-logo-tagline {
+  font-family: "Open Sans", sans-serif;
+  font-size: 0.9rem;
+  color: $saho-slate-blue;
+  font-style: italic;
+  margin-top: -2px;
+}
 
-    &:hover,
-    &:focus {
-      color: $saho-deep-heritage-red;
-    }
+// ==================================================
+// DESKTOP NAVIGATION
+// ==================================================
 
-    &.is-active {
-      color: $saho-faded-brick-red;
-      border-bottom: 2px solid $saho-muted-gold;
-    }
-  }
-
-  .saho-header-bar {
+.saho-desktop-nav {
+  ul.menu {
     display: flex;
-    flex-wrap: wrap;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 1rem;
-    padding: 1rem 1rem 0.5rem;
-  
-    @media (max-width: 768px) {
-      flex-direction: column;
-      align-items: stretch;
-    }
-  
-    .saho-logo {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    gap: 2rem;
     
-      .saho-logo-text {
-        font-size: 1.5rem; /* Increase font size */
-        font-weight: 700; /* Keep bold */
-        line-height: 1.2; /* Adjust line height for better spacing */
-        white-space: nowrap; /* Prevent text from wrapping */
-      }
-    
-      .saho-logo-subtext {
-        font-size: 1rem; /* Slightly larger subtext */
-        color: $saho-dark-charcoal; /* Ensure good contrast */
-        line-height: 1.3; /* Add spacing between lines */
-      }
-    }
-  
-    nav.navbar-nav {
-      flex-grow: 1;
-      justify-content: center;
-      align-items: center;
-  
-      @media (max-width: 768px) {
-        justify-content: flex-start;
-        flex-wrap: wrap;
-      }
-    }
-  
-    .saho-header-actions {
-      display: flex;
-      gap: 0.75rem;
-      align-items: center;
-      justify-content: flex-end;
-  
-      @media (max-width: 768px) {
-        justify-content: flex-start;
-        flex-wrap: wrap;
-      }
-  
-      form[role="search"] {
-        display: flex;
-        align-items: center;
-  
-        input[type="search"] {
-          max-width: 200px;
+    li {
+      position: relative;
+      
+      a {
+        color: $saho-dark-charcoal;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 1rem;
+        padding: 10px 5px;
+        display: block;
+        transition: color 0.3s ease;
+        position: relative;
+        
+        &::after {
+          content: '';
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          width: 0;
+          height: 2px;
+          background: $saho-deep-heritage-red;
+          transition: width 0.3s ease;
+        }
+        
+        &:hover,
+        &.is-active {
+          color: $saho-deep-heritage-red;
+          
+          &::after {
+            width: 100%;
+          }
         }
       }
-  
-      .btn-contribute {
-        white-space: nowrap;
+      
+      // Dropdown support
+      &:has(ul) > a::before {
+        content: '▾';
+        margin-right: 5px;
+        font-size: 0.8em;
       }
-    }
-  }  
-
-  .dropdown-menu {
-    font-size: 0.9rem;
-    border: none;
-    padding: 0.25rem 0;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-
-    .dropdown-item {
-      color: $saho-dark-charcoal;
-      padding: 0.5rem 1rem;
-
-      &:hover {
-        background-color: $saho-aged-parchment;
-        color: $saho-deep-heritage-red;
+      
+      ul {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        background: white;
+        border: 1px solid #eee;
+        border-radius: 6px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        padding: 8px 0;
+        min-width: 200px;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+        z-index: 100;
+        
+        li {
+          a {
+            padding: 8px 15px;
+            font-size: 0.9rem;
+            
+            &:hover {
+              background: $saho-aged-parchment;
+            }
+            
+            &::after {
+              display: none;
+            }
+          }
+          
+          // Multilevel dropdown support
+          &.dropdown-submenu {
+            position: relative;
+            
+            > a::after {
+              content: '▸';
+              position: absolute;
+              right: 10px;
+              top: 50%;
+              transform: translateY(-50%);
+              display: inline-block;
+            }
+            
+            > .dropdown-menu {
+              top: 0;
+              left: 100%;
+              margin-top: -8px;
+              margin-left: 1px;
+            }
+            
+            &:hover > .dropdown-menu {
+              display: block;
+              opacity: 1;
+              visibility: visible;
+            }
+          }
+        }
       }
-    }
-  }
-
-  .btn-heritage {
-    background-color: $saho-deep-heritage-red;
-    color: white;
-    border: none;
-    font-weight: 600;
-
-    &:hover {
-      background-color: darken($saho-deep-heritage-red, 10%);
-    }
-  }
-
-  form[role="search"] {
-    input[type="search"] {
-      max-width: 220px;
-      border: 1px solid #ccc;
-      padding: 0.4rem 0.6rem;
-      font-size: 0.9rem;
-    }
-  }
-
-  .navbar-toggler {
-    border: none;
-
-    &:focus {
-      box-shadow: none;
+      
+      &:hover > ul {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(5px);
+      }
     }
   }
 }
 
-.offcanvas {
-  background-color: #fff;
+// Bootstrap dropdown submenu styles
+.dropdown-submenu {
+  position: relative;
+}
 
-  .nav-link {
-    color: $saho-dark-charcoal;
-    font-weight: 500;
-    padding: 0.5rem 0;
+.dropdown-submenu > .dropdown-toggle::after {
+  display: inline-block;
+  margin-left: 0.5em;
+  vertical-align: 0.255em;
+  content: "";
+  border-top: 0.3em solid transparent;
+  border-right: 0;
+  border-bottom: 0.3em solid transparent;
+  border-left: 0.3em solid;
+}
 
-    &:hover {
+.dropdown-submenu > .dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -0.5rem;
+  margin-left: 0.1rem;
+  border-radius: 0.25rem;
+  display: none;
+}
+
+.dropdown-submenu:hover > .dropdown-menu {
+  display: block;
+}
+
+// ==================================================
+// SEARCH STYLING
+// ==================================================
+
+.saho-search {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border: 2px solid $saho-deep-heritage-red;
+  border-radius: 25px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  max-width: 100%; /* Ensure it doesn't overflow container */
+  
+  &:focus-within {
+    border-color: $saho-muted-gold;
+    box-shadow: 0 0 0 3px rgba(184, 138, 46, 0.2);
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 991px) {
+    width: 100%; /* Full width on smaller screens */
+    max-width: 300px;
+  }
+  
+  @media (max-width: 767px) {
+    max-width: 250px;
+  }
+}
+
+.saho-search-input {
+  border: none;
+  outline: none;
+  padding: 8px 12px; /* Slightly smaller padding */
+  font-size: 0.9rem;
+  background: transparent;
+  width: 180px; /* Smaller default width */
+  flex: 1; /* Allow input to grow */
+  min-width: 0; /* Prevent flex item from overflowing */
+  
+  &::placeholder {
+    color: $saho-slate-blue;
+    opacity: 0.7;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  @media (min-width: 1200px) {
+    width: 220px;
+    padding: 10px 15px;
+  }
+  
+  @media (max-width: 767px) {
+    width: 140px;
+  }
+}
+
+.saho-search-btn {
+  background: transparent;
+  border: none;
+  color: $saho-muted-gold;
+  padding: 8px 10px; /* Slightly smaller padding */
+  min-width: 40px; /* Ensure minimum clickable area */
+  cursor: pointer;
+  transition: color 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0; /* Prevent button from shrinking */
+  
+  &:hover {
+    color: darken($saho-muted-gold, 10%);
+  }
+  
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+  
+  @media (min-width: 1200px) {
+    padding: 10px 12px;
+  }
+}
+
+// ==================================================
+// CONTRIBUTE BUTTON
+// ==================================================
+
+.saho-contribute-btn {
+  background: $saho-deep-heritage-red;
+  color: white;
+  text-decoration: none;
+  padding: 10px 18px;
+  border-radius: 25px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap; /* Prevent text wrapping */
+  
+  &:hover {
+    color: white;
+    text-decoration: none;
+    background: darken($saho-deep-heritage-red, 10%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(153, 0, 0, 0.3);
+    
+    .saho-contribute-icon {
+      animation: bounce 0.6s ease infinite alternate;
+    }
+  }
+  
+  /* Show text on all screen sizes */
+  @media (max-width: 767px) {
+    padding: 8px 16px;
+    font-size: 0.85rem;
+  }
+}
+
+.saho-contribute-icon {
+  font-size: 1.1rem;
+  transition: all 0.3s ease;
+}
+
+/* Bounce animation for the icon */
+@keyframes bounce {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-4px);
+  }
+}
+
+// ==================================================
+// TOOLS DROPDOWN
+// ==================================================
+
+/* Enhance tools dropdown button */
+#toolsDropdown {
+  border-color: $saho-muted-gold;
+  color: $saho-dark-charcoal;
+  background-color: white;
+  font-weight: 600;
+  
+  &:hover, &:focus, &.show {
+    background-color: $saho-aged-parchment;
+    border-color: $saho-deep-heritage-red;
+    color: $saho-deep-heritage-red;
+  }
+  
+  /* Ensure icon is visible */
+  svg {
+    color: $saho-deep-heritage-red;
+  }
+}
+
+/* Style dropdown items */
+.dropdown-menu {
+  border: 1px solid $saho-aged-parchment;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  
+  .dropdown-item {
+    padding: 0.5rem 1rem;
+    
+    &:hover, &:focus {
+      background-color: $saho-aged-parchment;
+      color: $saho-deep-heritage-red;
+    }
+    
+    svg {
       color: $saho-deep-heritage-red;
     }
   }
+}
 
-  form input[type="search"] {
-    border: 1px solid #ccc;
-    padding: 0.5rem;
+// ==================================================
+// MOBILE TOGGLE
+// ==================================================
+
+.saho-mobile-toggle {
+  background: none;
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background-color 0.3s ease;
+  
+  &:hover {
+    background: rgba(153, 0, 0, 0.1);
   }
 }
 
-.btn-contribute {
-  background-color: $saho-deep-heritage-red;
-  color: #fff;
-  border-radius: 0.25rem;
-  font-weight: bold;
-  transition: transform 0.3s ease;
-  &:hover {
-    transform: scale(1.05) rotate(-1deg);
-    background-color: darken($saho-deep-heritage-red, 10%);
+.saho-hamburger {
+  display: flex;
+  flex-direction: column;
+  width: 24px;
+  height: 18px;
+  justify-content: space-between;
+  
+  span {
+    display: block;
+    height: 2px;
+    width: 100%;
+    background: $saho-deep-heritage-red;
+    border-radius: 1px;
+    transition: all 0.3s ease;
   }
-  .flip-icon {
-    transition: transform 0.4s ease;
+}
+
+// ==================================================
+// MOBILE MENU
+// ==================================================
+
+.saho-mobile-menu {
+  width: 80%; /* Slightly narrower to ensure it fits on smaller screens */
+  max-width: 280px; /* Reduced max-width for better mobile fit */
+  z-index: 1050; /* Ensure it's above other elements */
+  position: fixed; /* Ensure fixed positioning */
+  top: 0;
+  bottom: 0;
+  left: 0;
+  transform: translateX(-100%); /* Start off-screen */
+  transition: transform 0.3s ease; /* Smooth transition */
+  
+  &.show {
+    transform: translateX(0); /* Slide in properly */
   }
-  &:hover .flip-icon {
-    transform: rotateY(180deg);
+  
+  .offcanvas-header {
+    background: $saho-aged-parchment;
+    border-bottom: 2px solid rgba(153, 0, 0, 0.1);
+    padding: 0.75rem; /* Slightly smaller padding */
+    
+    h5 {
+      color: $saho-deep-heritage-red;
+      font-weight: 700;
+      font-size: 1.1rem; /* Slightly smaller for mobile */
+    }
+    
+    .btn-close {
+      opacity: 1;
+      padding: 0.5rem;
+      margin: -0.5rem -0.5rem -0.5rem auto;
+      
+      &:focus {
+        box-shadow: 0 0 0 0.25rem rgba(153, 0, 0, 0.25);
+      }
+    }
+  }
+  
+  .saho-mobile-logo {
+    width: 30px; /* Slightly smaller */
+    height: auto;
+  }
+  
+  .offcanvas-body {
+    padding: 1rem; /* Slightly smaller padding */
+    overflow-y: auto;
+    height: calc(100% - 60px); /* Ensure scrolling works properly */
+  }
+  
+  /* Ensure backdrop is visible and has proper opacity */
+  &.show ~ .offcanvas-backdrop {
+    opacity: 0.5;
+    display: block;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 576px) {
+    width: 85%; /* Wider on very small screens */
+    max-width: 260px;
+  }
+}
+
+/* Fix for offcanvas backdrop */
+.offcanvas-backdrop {
+  background-color: #000;
+  opacity: 0.5;
+  z-index: 1040;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* Prevent body scrolling when offcanvas is open */
+body.offcanvas-open {
+  overflow: hidden;
+}
+
+/* Fix for Bootstrap offcanvas on mobile */
+.offcanvas-start {
+  top: 0;
+  left: 0;
+  width: 80%;
+  max-width: 280px;
+  border-right: 1px solid rgba(0, 0, 0, 0.2);
+  transform: translateX(-100%);
+}
+
+.offcanvas-start.show {
+  transform: translateX(0);
+}
+
+// Mobile search
+.saho-mobile-search {
+  .form-control {
+    border: 2px solid $saho-aged-parchment;
+    
+    &:focus {
+      border-color: $saho-muted-gold;
+      box-shadow: 0 0 0 3px rgba(184, 138, 46, 0.2);
+    }
+  }
+  
+  .btn-outline-secondary {
+    border: 2px solid $saho-aged-parchment;
+    border-left: none;
+    background: transparent;
+    
+    &:hover {
+      background: transparent;
+      border-color: $saho-muted-gold;
+      
+      &.text-gold {
+        color: darken($saho-muted-gold, 10%);
+      }
+    }
+    
+    &.text-gold {
+      color: $saho-muted-gold;
+    }
+  }
+}
+
+// Gold text utility class
+.text-gold {
+  color: $saho-muted-gold !important;
+}
+
+// Mobile navigation
+.saho-mobile-nav {
+  .nav-link {
+    color: $saho-dark-charcoal;
+    font-weight: 600;
+    font-size: 1.1rem;
+    padding: 12px 15px;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    border-left: 3px solid transparent;
+    
+    &:hover,
+    &.active {
+      background: $saho-aged-parchment;
+      color: $saho-deep-heritage-red;
+      border-left-color: $saho-deep-heritage-red;
+      transform: translateX(5px);
+    }
+  }
+  
+  // Submenu styling
+  .ms-3 .nav-link {
+    font-size: 1rem;
+    padding: 8px 12px;
+    color: $saho-slate-blue;
+  }
+}
+
+// ==================================================
+// RESPONSIVE BREAKPOINTS
+// ==================================================
+
+@media (max-width: 991px) {
+  .saho-desktop-nav {
+    display: none !important;
+  }
+}
+
+@media (max-width: 767px) {
+  .saho-search {
+    display: none !important;
+  }
+  
+  .saho-header-content {
+    padding: 10px 0;
+  }
+}
+
+@media (max-width: 575px) {
+  .saho-logo-text {
+    display: none !important;
+  }
+  
+  .saho-actions {
+    gap: 10px;
   }
 }
