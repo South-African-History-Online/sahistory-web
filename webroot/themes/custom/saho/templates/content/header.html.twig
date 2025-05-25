@@ -3,32 +3,39 @@
   Unified SAHO header: logo, main menu, search, contribute
 #}
 
-<header class="saho-header navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm py-3">
-  <div class="container-fluid d-flex align-items-center justify-content-between flex-wrap gap-3">
+<header class="saho-header-bar container-fluid d-flex align-items-center justify-content-between flex-wrap py-3 gap-3">
+  {# Logo and identity #}
+  <a href="{{ path('<front>') }}" class="saho-logo d-flex align-items-center text-decoration-none gap-2" aria-label="Homepage">
+    <img src="/themes/custom/saho/logo.svg" alt="South African History Online Logo" class="saho-logo-img">
+    <div class="d-flex flex-column lh-sm">
+      <span class="saho-logo-text fw-bold text-dark">South African History Online</span>
+      <span class="saho-logo-subtext text-muted small">Towards a People’s History</span>
+    </div>
+  </a>
 
-    {# Logo #}
-    <a href="{{ path('<front>') }}" class="navbar-brand d-flex align-items-center gap-2 text-decoration-none">
-      <img src="/themes/custom/saho/logo.svg" alt="South African History Online Logo" class="saho-logo-img">
+  {# Desktop menu #}
+  <nav class="d-none d-lg-flex align-items-center gap-3 flex-grow-1 justify-content-center" role="navigation" aria-label="Main menu">
+    {{ drupal_menu('main') }}
+  </nav>
+
+  {# Search + Contribute + Mobile toggle #}
+  <div class="d-flex align-items-center gap-3">
+    {# Desktop search form #}
+    <form action="/search" method="get" class="d-none d-lg-flex align-items-center" role="search">
+      <label for="saho-search" class="visually-hidden">Search site</label>
+      <input id="saho-search" type="search" name="search_api_fulltext" class="form-control form-control-sm w-auto" placeholder="Search African history..." aria-label="Search site">
+      <button type="submit" class="btn btn-heritage btn-sm ms-2">Search</button>
+    </form>
+
+    {# Contribute button #}
+    <a href="/form/contribute" class="btn btn-contribute d-flex align-items-center gap-2" aria-label="Contribute content">
+      <span class="flip-icon">🔺</span> Contribute
     </a>
 
-    {# Menu #}
-    <nav class="navbar-nav d-none d-lg-flex gap-3">
-      {{ drupal_menu('main') }}
-    </nav>
-
-    {# Search + Contribute + Mobile toggle #}
-    <div class="d-flex align-items-center gap-3 ms-auto">
-      <form action="/search" method="get" role="search" class="d-none d-lg-flex align-items-center">
-        <input type="search" name="search_api_fulltext" placeholder="Search African history..." class="form-control form-control-sm w-auto" aria-label="Search">
-        <button type="submit" class="btn btn-heritage btn-sm ms-2">Search</button>
-      </form>
-      <a href="/form/contribute" class="btn btn-contribute d-flex align-items-center gap-2">
-        <span class="flip-icon">🔺</span> Contribute
-      </a>
-      <button class="navbar-toggler d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#sahoMobileNav" aria-controls="sahoMobileNav">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-    </div>
+    {# Mobile menu toggle #}
+    <button class="navbar-toggler d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#sahoMobileNav" aria-controls="sahoMobileNav" aria-label="Open menu">
+      <span class="navbar-toggler-icon"></span>
+    </button>
   </div>
 </header>
 
@@ -36,13 +43,19 @@
 <div class="offcanvas offcanvas-end" tabindex="-1" id="sahoMobileNav" aria-labelledby="sahoMobileNavLabel">
   <div class="offcanvas-header">
     <h5 id="sahoMobileNavLabel">Menu</h5>
-    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close menu"></button>
   </div>
   <div class="offcanvas-body">
-    <form action="/search" method="get" class="mb-3">
-      <input type="search" name="search_api_fulltext" class="form-control" placeholder="Search..." aria-label="Search">
+    {# Mobile search form #}
+    <form action="/search" method="get" class="mb-3" role="search">
+      <label for="saho-mobile-search" class="visually-hidden">Search site</label>
+      <input id="saho-mobile-search" type="search" name="search_api_fulltext" class="form-control" placeholder="Search..." aria-label="Search site">
     </form>
+
+    {# Mobile menu #}
     {{ drupal_menu('main') }}
+
+    {# Contribute button for mobile #}
     <div class="mt-3">
       <a href="/form/contribute" class="btn btn-contribute w-100">Contribute</a>
     </div>
