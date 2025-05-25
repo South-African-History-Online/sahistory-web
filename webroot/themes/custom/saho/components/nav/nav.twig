@@ -64,11 +64,26 @@
           {% if item.is_expanded and item.below %}
             <a href="{{ item.url }}" class="{{ nav_link_classes|merge(['dropdown-toggle'])|join(' ') }}" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">{{ item.title }}</a>
             {% if item.below %}
-              {%
-                include 'radix:dropdown-menu' with {
-                  items: item.below,
-                }
-              %}
+              <ul class="dropdown-menu">
+                {% for subitem in item.below %}
+                  {% if subitem.is_expanded and subitem.below %}
+                    <li class="dropdown-item dropdown-submenu">
+                      <a href="{{ subitem.url }}" class="dropdown-item dropdown-toggle" data-bs-toggle="dropdown" data-bs-auto-close="outside">{{ subitem.title }}</a>
+                      <ul class="dropdown-menu dropdown-submenu-menu">
+                        {% for subsubitem in subitem.below %}
+                          <li>
+                            <a class="dropdown-item" href="{{ subsubitem.url }}">{{ subsubitem.title }}</a>
+                          </li>
+                        {% endfor %}
+                      </ul>
+                    </li>
+                  {% else %}
+                    <li>
+                      <a class="dropdown-item" href="{{ subitem.url }}">{{ subitem.title }}</a>
+                    </li>
+                  {% endif %}
+                {% endfor %}
+              </ul>
             {% endif %}
           {% else %}
             {% if item.url %}
