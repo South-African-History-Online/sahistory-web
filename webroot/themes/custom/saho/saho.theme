@@ -262,3 +262,78 @@ function saho_preprocess_page(array &$variables) {
   $logo = \Drupal::theme()->getActiveTheme()->getLogo();
   $variables['site_logo'] = $logo;
 }
+
+/**
+ * Implements hook_theme().
+ */
+function saho_theme($existing, $type, $theme, $path) {
+  return [
+    'header' => [
+      'variables' => [
+        'main_menu' => NULL,
+      ],
+      'template' => 'content/header',
+    ],
+  ];
+}
+
+/**
+ * Implements hook_preprocess_HOOK() for header.html.twig.
+ */
+function saho_preprocess_header(array &$variables) {
+  // Get the main menu tree.
+  $menu_tree = \Drupal::menuTree();
+  
+  // Load the main menu tree.
+  $parameters = $menu_tree->getCurrentRouteMenuTreeParameters('main');
+  $parameters->setMaxDepth(3); // Allow up to 3 levels of menu depth
+  $parameters->onlyEnabledLinks();
+  
+  $tree = $menu_tree->load('main', $parameters);
+  $manipulators = [
+    ['callable' => 'menu.default_tree_manipulators:checkAccess'],
+    ['callable' => 'menu.default_tree_manipulators:generateIndexAndSort'],
+    ['callable' => 'menu.default_tree_manipulators:flatten'], // This helps with active trail
+  ];
+  $tree = $menu_tree->transform($tree, $manipulators);
+  
+  // Convert the tree to a nested array structure for the template.
+  $main_menu = [];
+  foreach ($tree as $item) {
+    $menu_item = [
+      'title' => $item->link->getTitle(),
+      'url' => $item->link->getUrlObject()->toString(),
+      'in_active_trail' => $item->inActiveTrail,
+      'below' => [],
+    ];
+    
+    // Process children if they exist.
+    if ($item->hasChildren) {
+      foreach ($item->subtree as $child) {
+        $child_item = [
+          'title' => $child->link->getTitle(),
+          'url' => $child->link->getUrlObject()->toString(),
+          'in_active_trail' => $child->inActiveTrail,
+          'below' => [],
+        ];
+        
+        // Process grandchildren if they exist.
+        if ($child->hasChildren) {
+          foreach ($child->subtree as $grandchild) {
+            $child_item['below'][] = [
+              'title' => $grandchild->link->getTitle(),
+              'url' => $grandchild->link->getUrlObject()->toString(),
+              'in_active_trail' => $grandchild->inActiveTrail,
+            ];
+          }
+        }
+        
+        $menu_item['below'][] = $child_item;
+      }
+    }
+    
+    $main_menu[] = $menu_item;
+  }
+  
+  $variables['main_menu'] = $main_menu;
+}

@@ -1334,7 +1334,7 @@ h1.title.page-title {
   box-shadow: 0 4px 15px rgba(153, 0, 0, 0.1);
   position: sticky;
   top: 0;
-  z-index: 1030;
+  z-index: 500; /* Lowered z-index to appear below Drupal admin toolbar */
 }
 
 // Accent bar
@@ -1433,12 +1433,23 @@ h1.title.page-title {
         }
         
         &:hover,
-        &.is-active {
+        &.is-active,
+        &.active {
           color: $saho-deep-heritage-red;
           
           &::after {
             width: 100%;
           }
+        }
+      }
+      
+      // Active trail styling
+      &.active-trail > a {
+        color: $saho-deep-heritage-red;
+        font-weight: 700;
+        
+        &::after {
+          width: 100%;
         }
       }
       
@@ -1469,13 +1480,23 @@ h1.title.page-title {
             padding: 8px 15px;
             font-size: 0.9rem;
             
-            &:hover {
+            &:hover,
+            &.active,
+            &.is-active {
               background: $saho-aged-parchment;
+              color: $saho-deep-heritage-red;
             }
             
             &::after {
               display: none;
             }
+          }
+          
+          // Active trail styling for dropdown items
+          &.active-trail > a {
+            background: $saho-aged-parchment;
+            color: $saho-deep-heritage-red;
+            font-weight: 700;
           }
           
           // Multilevel dropdown support
@@ -1496,10 +1517,11 @@ h1.title.page-title {
               left: 100%;
               margin-top: -8px;
               margin-left: 1px;
+              display: block !important; /* Force display */
             }
             
             &:hover > .dropdown-menu {
-              display: block;
+              display: block !important;
               opacity: 1;
               visibility: visible;
             }
@@ -1511,6 +1533,7 @@ h1.title.page-title {
         opacity: 1;
         visibility: visible;
         transform: translateY(5px);
+        display: block !important; /* Force display */
       }
     }
   }
@@ -1761,6 +1784,11 @@ h1.title.page-title {
 // ==================================================
 // MOBILE MENU
 // ==================================================
+
+/* Override Bootstrap's default collapse behavior for our mobile menu */
+.collapse.navbar-collapse {
+  display: block !important; /* Force display of the menu */
+}
 
 .saho-mobile-menu {
   width: 80%; /* Slightly narrower to ensure it fits on smaller screens */
