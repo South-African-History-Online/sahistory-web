@@ -222,7 +222,8 @@ function saho_preprocess_node(array &$variables) {
   // set the appropriate classes and accordion views with conditional logic.
   $node = $variables['node'];
 
-  if ($node->bundle() === 'article') {
+  // Add accordion views for article, archive, biography, and place content types
+  if (in_array($node->bundle(), ['article', 'archive', 'biography', 'place'])) {
     $view_ids = [
       'articles' => ['view' => 'feature_children', 'block' => 'block_1'],
       'people' => ['view' => 'feature_children', 'block' => 'block_2'],
@@ -421,7 +422,15 @@ function saho_preprocess_block__page_title_block(array &$variables) {
           break;
           
         case 'archive':
-          // Home > Media Library Type > Title
+          // Home > SAHO Archive > Category Logic > Title
+          
+          // Add "SAHO Archive" as a fixed second level
+          // Note: Using '<none>' as route name creates a non-clickable breadcrumb item
+          // If you want it to be clickable, replace with an actual route and parameters
+          $archive_url = \Drupal\Core\Url::fromUserInput('/archives');
+          $links[] = \Drupal\Core\Link::fromTextAndUrl('SAHO Archive', $archive_url);
+          
+          // Add category (Media Library Type) as third level if available
           if ($node->hasField('field_media_library_type') && !$node->get('field_media_library_type')->isEmpty()) {
             $term = $node->get('field_media_library_type')->entity;
             if ($term) {
