@@ -336,6 +336,14 @@ $saho-faded-brick-red: #B03030;
 
 // Text color utility classes
 
+// Styling for the highlight section in articles
+.saho-highlight {
+  margin: 1.5rem 0;
+  padding: 1rem;
+  border-left: 4px solid $saho-faded-brick-red;
+  background-color: rgba($saho-faded-brick-red, 0.05);
+}
+
 // SAHO Custom Borders
 
 .saho-border-primary {
@@ -1205,6 +1213,36 @@ pre, code {
 iframe, embed, object, video {
   max-width: 100%;
   height: auto;
+}
+
+// Ensure PDF viewers display the entire document
+.saho-article-body iframe[src$=".pdf"],
+.saho-article-body object[type="application/pdf"],
+.saho-article-body embed[type="application/pdf"],
+.saho-article-body iframe[src*="/viewerjs/"],
+.saho-article-body iframe[src*="docs.google.com/viewer"] {
+  height: 1500px; /* Much taller to show entire document */
+  width: 100%;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+/* Fullscreen option for very large documents */
+.saho-article-body .pdf-fullscreen-container {
+  position: relative;
+}
+
+.saho-article-body .pdf-fullscreen-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 5px 10px;
+  cursor: pointer;
+  z-index: 100;
+  font-size: 0.9rem;
 }
 
 .saho-article-body img {
