@@ -1,0 +1,210 @@
+/**
+ * Landing page styles
+ * 
+ * Styles for the main section landing pages, including hover effects
+ * and other visual enhancements.
+ */
+
+// Enhanced Section Title
+.saho-section-title-wrapper {
+  position: relative;
+  margin-bottom: 1.5rem;
+  
+  .saho-section-title {
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    position: relative;
+    display: inline-block;
+  }
+  
+  .saho-section-title-accent {
+    height: 6px;
+    width: 80px;
+    border-radius: 3px;
+    margin-top: 0.5rem;
+  }
+  
+  @media (max-width: 767px) {
+    .saho-section-title {
+      font-size: 2rem;
+    }
+    
+    .saho-section-title-accent {
+      height: 4px;
+      width: 60px;
+    }
+  }
+}
+
+// Modernized Category Display
+.saho-landing-sidebar {
+  background-color: #fff;
+  
+  .saho-sidebar-header {
+    margin: -0.75rem -0.75rem 1rem;
+    border-radius: 4px 4px 0 0;
+  }
+  
+  .saho-category-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 0.75rem;
+    
+    @media (max-width: 991px) {
+      grid-template-columns: repeat(3, 1fr);
+    }
+    
+    @media (max-width: 767px) {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  
+  .saho-category-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 0.75rem 0.5rem;
+    border-radius: 6px;
+    text-decoration: none;
+    color: #333;
+    background-color: #f8f9fa;
+    transition: all 0.3s ease;
+    
+    &:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .saho-category-icon {
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      
+      svg {
+        width: 20px;
+        height: 20px;
+      }
+    }
+    
+    .saho-category-name {
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+  }
+}
+
+// Card hover effects
+.saho-grid-item {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  overflow: hidden;
+  
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
+    
+    .card-img-top-wrapper img,
+    .saho-placeholder {
+      transform: scale(1.05);
+    }
+  }
+  
+  // Image zoom effect
+  .card-img-top-wrapper {
+    overflow: hidden;
+    
+    img,
+    .saho-placeholder {
+      transition: transform 0.5s ease;
+      transform-origin: center;
+    }
+  }
+  
+  // Card content
+  .card-body {
+    transition: background-color 0.3s ease;
+    
+    h3.card-title {
+      transition: color 0.3s ease;
+    }
+  }
+  
+  // Card footer
+  .card-footer {
+    transition: background-color 0.3s ease;
+    
+    .btn {
+      transition: all 0.3s ease;
+      position: relative;
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      z-index: 2; // Higher than stretched-link
+      
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        
+        svg {
+          transform: translateX(3px);
+        }
+      }
+      
+      svg {
+        transition: transform 0.3s ease;
+      }
+    }
+  }
+  
+  // Make the read more button clickable over the stretched link
+  .saho-read-more-btn {
+    position: relative;
+    z-index: 2;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    border: none;
+    
+    &:focus {
+      box-shadow: 0 0 0 0.25rem rgba(0, 0, 0, 0.15);
+    }
+  }
+}
+
+// Section-specific styles
+@each $section, $color in (
+  'politics-society': $saho-deep-heritage-red,
+  'art-culture': $saho-muted-gold,
+  'biographies': $saho-slate-blue,
+  'africa': $saho-faded-brick-red,
+  'classroom': $saho-aged-parchment,
+  'places': $saho-dark-charcoal,
+  'timelines': $saho-deep-heritage-red,
+  'archives': $saho-slate-blue
+) {
+  .saho-section-#{$section} {
+    .saho-grid-item:hover {
+      .card-body {
+        background-color: rgba($color, 0.05);
+      }
+      
+      .card-footer {
+        background-color: rgba($color, 0.1);
+      }
+    }
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 767px) {
+  .saho-landing-grid {
+    .col {
+      margin-bottom: 1.5rem;
+    }
+  }
+  
+  .saho-grid-item {
+    &:hover {
+      transform: translateY(-3px);
+    }
+  }
+}
