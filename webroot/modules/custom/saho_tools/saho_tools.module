@@ -1,0 +1,359 @@
+<?php
+
+/**
+ * @file
+ * Contains hook implementations for the SAHO Tools module.
+ */
+
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
+use Drupal\node\NodeInterface;
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Url;
+
+/**
+ * Implements hook_help().
+ */
+function saho_tools_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    case 'help.page.saho_tools':
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('The SAHO Tools module provides functionality for the Tools dropdown, including citation generation.') . '</p>';
+      return $output;
+  }
+}
+
+/**
+ * Implements hook_page_attachments_alter().
+ */
+function saho_tools_page_attachments_alter(array &$attachments) {
+  // Check if we're on an admin route
+  $is_admin = \Drupal::service('router.admin_context')->isAdminRoute();
+  
+  // Only attach the citation library on non-admin routes
+  if (!$is_admin) {
+    $attachments['#attached']['library'][] = 'saho_tools/citation';
+    
+    // Add debugging information to check if the library is loaded
+    $attachments['#attached']['drupalSettings']['sahoTools']['debug'] = [
+      'libraryLoaded' => TRUE,
+      'timestamp' => time(),
+    ];
+    
+    // If we're on a node page, add node data
+    $node = \Drupal::routeMatch()->getParameter('node');
+    if ($node instanceof NodeInterface) {
+      // Add node data as drupalSettings for JavaScript.
+      $node_data = [
+        'nid' => $node->id(),
+        'title' => $node->getTitle(),
+        'type' => $node->getType(),
+        'created' => $node->getCreatedTime(),
+        'changed' => $node->getChangedTime(),
+        'url' => $node->toUrl()->setAbsolute()->toString(),
+      ];
+      
+      // Add author information if available.
+      if ($node->hasField('field_article_author') && !$node->get('field_article_author')->isEmpty()) {
+        $node_data['author'] = $node->get('field_article_author')->value;
+      }
+      elseif ($node->getOwner()) {
+        $node_data['author'] = $node->getOwner()->getDisplayName();
+      }
+      
+      $attachments['#attached']['drupalSettings']['sahoTools']['nodeData'] = $node_data;
+    }
+    else {
+      // For non-node pages, add basic page data
+      $current_url = \Drupal::request()->getUri();
+      $site_name = \Drupal::config('system.site')->get('name');
+      $page_title = \Drupal::service('title_resolver')->getTitle(
+        \Drupal::request(),
+        \Drupal::routeMatch()->getRouteObject()
+      );
+      
+      $page_data = [
+        'title' => $page_title ?: 'Page',
+        'url' => $current_url,
+        'site_name' => $site_name,
+      ];
+      
+      $attachments['#attached']['drupalSettings']['sahoTools']['pageData'] = $page_data;
+    }
+  }
+}
+
+/**
+ * Implements hook_preprocess_html().
+ */
+function saho_tools_preprocess_html(&$variables) {
+  // Check if we're on an admin route
+  $is_admin = \Drupal::service('router.admin_context')->isAdminRoute();
+  
+  // Only add the citation modal container on non-admin routes
+  if (!$is_admin) {
+    // Add citation modal
+    $variables['page_bottom']['citation_modal'] = [
+      '#type' => 'html_tag',
+      '#tag' => 'div',
+      '#attributes' => [
+        'id' => 'citation-modal',
+        'class' => ['modal', 'fade'],
+        'tabindex' => '-1',
+        'aria-labelledby' => 'citation-modal-label',
+        'aria-hidden' => 'true',
+      ],
+      '#value' => '<div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="citation-modal-label">Cite This Page</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="citation-image-container"></div>
+          <div class="citation-formats">
+            <div class="citation-format mb-4">
+              <h4>APA (7th edition)</h4>
+              <div class="citation-content apa-citation">
+                <button type="button" class="btn btn-sm btn-outline-secondary copy-individual" data-format="apa">Copy this format</button>
+              </div>
+            </div>
+            <div class="citation-format mb-4">
+              <h4>Oxford (Footnote style)</h4>
+              <div class="citation-content chicago-citation">
+                <button type="button" class="btn btn-sm btn-outline-secondary copy-individual" data-format="chicago">Copy this format</button>
+              </div>
+            </div>
+            <div class="citation-format">
+              <h4>Harvard</h4>
+              <div class="citation-content harvard-citation">
+                <button type="button" class="btn btn-sm btn-outline-secondary copy-individual" data-format="harvard">Copy this format</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>',
+    ];
+    
+    // Add sharing modal
+    // Create a render array for the sharing buttons
+    $sharing_buttons = [
+      '#theme' => 'better_social_sharing_buttons',
+      '#services' => \Drupal::config('better_social_sharing_buttons.settings')->get('services'),
+      '#width' => \Drupal::config('better_social_sharing_buttons.settings')->get('width'),
+      '#radius' => \Drupal::config('better_social_sharing_buttons.settings')->get('radius'),
+      '#facebook_app_id' => \Drupal::config('better_social_sharing_buttons.settings')->get('facebook_app_id'),
+      '#iconset' => \Drupal::config('better_social_sharing_buttons.settings')->get('iconset'),
+      '#print_css' => \Drupal::config('better_social_sharing_buttons.settings')->get('print_css'),
+      '#page_url' => \Drupal::request()->getUri(),
+      '#title' => \Drupal::service('title_resolver')->getTitle(\Drupal::request(), \Drupal::routeMatch()->getRouteObject()),
+      '#description' => '',
+      '#base_url' => \Drupal::request()->getSchemeAndHttpHost(),
+    ];
+    
+    // Add the sprite path directly to ensure it's available
+    $module_path = \Drupal::service('extension.list.module')->getPath('better_social_sharing_buttons');
+    $sprite_path = '/' . $module_path . '/assets/dist/sprites/social-icons--no-color.svg';
+    
+    // Render the sharing buttons (storing in a variable to avoid "passed by reference" error)
+    $rendered_sharing_buttons = \Drupal::service('renderer')->render($sharing_buttons);
+    
+    $variables['page_bottom']['sharing_modal'] = [
+      '#type' => 'html_tag',
+      '#tag' => 'div',
+      '#attributes' => [
+        'id' => 'sharing-modal',
+        'class' => ['modal', 'fade'],
+        'tabindex' => '-1',
+        'aria-labelledby' => 'sharing-modal-label',
+        'aria-hidden' => 'true',
+      ],
+      '#value' => '<div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="sharing-modal-label">Share This Page</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <!-- Include SVG sprite directly -->
+          <div style="display: none">
+            <svg aria-hidden="true" style="position: absolute; width: 0; height: 0; overflow: hidden;" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+              <defs>
+                <symbol id="facebook" viewBox="0 0 64 64">
+                  <path d="M27.397 53.72v-19.723h-6.647v-8.052h6.647v-6.762c0-4.918 3.987-8.904 8.904-8.904h6.949v7.24h-4.972c-1.563 0-2.829 1.267-2.829 2.829v5.597h7.677l-1.061 8.052h-6.616v19.723z"></path>
+                </symbol>
+                <symbol id="x" viewBox="0 0 128 128">
+                  <path d="M16.4,16l37.2,52.9L16,112h8.5l32.7-37.6L83.5,112H112L72.9,56.2L107.8,16h-8.5L69.1,50.7 L44.7,16H16.4z M28.4,22.6h13.1l58.2,82.7H86.4L28.4,22.6z"></path>
+                </symbol>
+                <symbol id="whatsapp" viewBox="0 0 64 64">
+                  <path d="M14.080 50.007l2.532-9.248c-1.498-2.553-2.383-5.623-2.383-8.899 0-0.008 0-0.015 0-0.023v0.001c0.004-9.84 8.009-17.845 17.845-17.845 4.774 0.002 9.255 1.861 12.623 5.234 3.37 3.372 5.224 7.856 5.222 12.625-0.004 9.839-8.010 17.845-17.845 17.845 0 0 0.001 0 0 0h-0.008c-3.126-0-6.065-0.805-8.619-2.219l0.091 0.046-9.46 2.482zM23.978 44.294l0.542 0.322c2.158 1.299 4.763 2.068 7.548 2.068 0 0 0.001 0 0.001 0h0.006c8.175 0 14.829-6.654 14.832-14.832 0.002-3.963-1.54-7.689-4.34-10.493s-6.525-4.348-10.486-4.35c-8.181 0-14.835 6.654-14.838 14.831 0 0.007 0 0.015 0 0.023 0 2.918 0.845 5.638 2.303 7.93l-0.036-0.060 0.353 0.562-1.498 5.473 5.613-1.472z"></path>
+                  <path d="M41.065 36.095c-0.111-0.186-0.408-0.297-0.854-0.521-0.447-0.223-2.639-1.301-3.047-1.45s-0.706-0.224-1.004 0.222c-0.297 0.447-1.151 1.452-1.411 1.748s-0.52 0.335-0.967 0.112c-0.446-0.223-1.882-0.694-3.585-2.213-1.326-1.182-2.221-2.642-2.48-3.088s-0.028-0.688 0.195-0.91c0.201-0.2 0.446-0.521 0.669-0.781s0.297-0.447 0.446-0.744c0.148-0.297 0.074-0.558-0.038-0.781s-1.003-2.418-1.375-3.311c-0.361-0.869-0.73-0.752-1.003-0.765-0.229-0.010-0.498-0.016-0.768-0.016-0.031 0-0.061 0-0.092 0h0.005c-0.297 0-0.78 0.112-1.189 0.558s-1.561 1.525-1.561 3.72c0 2.195 1.598 4.315 1.82 4.613s3.144 4.801 7.617 6.733c0.656 0.296 1.498 0.616 2.361 0.89l0.181 0.050c1.068 0.339 2.040 0.291 2.808 0.176 0.857-0.129 2.638-1.078 3.010-2.12s0.371-1.935 0.26-2.121z"></path>
+                </symbol>
+                <symbol id="email" viewBox="0 0 64 64">
+                  <path d="M32 35.077l18.462-16h-36.924zM27.013 33.307l4.987 4.091 4.909-4.093 13.553 11.617h-36.924zM12.307 43.693v-23.386l13.539 11.693zM51.693 43.693v-23.386l-13.539 11.693z"></path>
+                </symbol>
+                <symbol id="pinterest" viewBox="0 0 64 64">
+                  <path d="M45.873 25.872c0 8.078-4.487 14.11-11.108 14.11-2.222 0-4.313-1.203-5.030-2.568 0 0-1.195 4.745-1.448 5.66-0.89 3.233-3.512 6.47-3.715 6.737-0.142 0.182-0.457 0.125-0.49-0.117-0.058-0.413-0.725-4.495 0.063-7.825 0.395-1.67 2.648-11.218 2.648-11.218s-0.657-1.315-0.657-3.258c0-3.052 1.77-5.329 3.97-5.329 1.872 0 2.778 1.405 2.778 3.090 0 1.884-1.198 4.698-1.818 7.306-0.517 2.185 1.095 3.965 3.25 3.965 3.9 0 6.525-5.010 6.525-10.945 0-4.511-3.037-7.89-8.565-7.89-6.242 0-10.135 4.657-10.135 9.86 0 1.793 0.53 3.058 1.358 4.036 0.38 0.45 0.435 0.632 0.297 1.149-0.102 0.38-0.325 1.29-0.422 1.653-0.135 0.52-0.558 0.708-1.030 0.515-2.875-1.175-4.215-4.325-4.215-7.865 0-5.849 4.933-12.86 14.713-12.86 7.862 0 13.032 5.686 13.032 11.793z"></path>
+                </symbol>
+                <symbol id="linkedin" viewBox="0 0 64 64">
+                  <path d="M14.537 25.873h7.435v23.896h-7.434v-23.896zM18.257 13.995c2.375 0 4.305 1.929 4.305 4.306s-1.929 4.307-4.305 4.307c-0.001 0-0.002 0-0.003 0-2.378 0-4.305-1.927-4.305-4.305 0-0.001 0-0.001 0-0.002v0c0-0 0-0.001 0-0.002 0-2.378 1.927-4.305 4.305-4.305 0.001 0 0.002 0 0.004 0h-0zM26.631 25.873h7.119v3.267h0.102c0.99-1.879 3.413-3.86 7.027-3.86 7.52 0 8.909 4.948 8.909 11.384v13.106h-7.425v-11.621c0-2.771-0.048-6.336-3.86-6.336-3.864 0-4.453 3.020-4.453 6.138v11.819h-7.418v-23.896z"></path>
+                </symbol>
+                <symbol id="copy" viewBox="0 0 64 64">
+                  <path d="M44.697 36.069l6.337-6.337c4.623-4.622 4.623-12.143 0-16.765-4.622-4.623-12.143-4.623-16.765 0l-9.145 9.145c-4.622 4.622-4.622 12.143 0 16.765 0.683 0.683 1.43 1.262 2.22 1.743l4.895-4.896c-0.933-0.223-1.817-0.694-2.543-1.419-2.101-2.101-2.101-5.52 0-7.62l9.145-9.145c2.101-2.101 5.52-2.101 7.62 0s2.101 5.52 0 7.62l-2.687 2.687c1.107 2.605 1.413 5.471 0.922 8.223z"></path>
+                  <path d="M19.303 27.931l-6.337 6.337c-4.623 4.622-4.623 12.143 0 16.765 4.622 4.623 12.143 4.623 16.765 0l9.144-9.145c4.623-4.622 4.622-12.143 0-16.765-0.682-0.683-1.429-1.262-2.22-1.743l-4.895 4.896c0.932 0.224 1.816 0.693 2.543 1.419 2.101 2.101 2.101 5.519 0 7.621l-9.145 9.145c-2.101 2.101-5.52 2.101-7.62 0s-2.101-5.52 0-7.62l2.687-2.687c-1.108-2.605-1.413-5.471-0.922-8.223z"></path>
+                </symbol>
+              </defs>
+            </svg>
+          </div>
+          <div id="sharing-buttons-container">
+            ' . $rendered_sharing_buttons . '
+          </div>
+        </div>
+      </div>
+    </div>',
+      '#attached' => [
+        'library' => [
+          'saho_tools/sharing',
+          'better_social_sharing_buttons/styling',
+        ],
+      ],
+    ];
+  }
+}
+
+/**
+ * Implements hook_page_attachments().
+ */
+function saho_tools_page_attachments(array &$attachments) {
+  // Check if we're on an admin route
+  $is_admin = \Drupal::service('router.admin_context')->isAdminRoute();
+  
+  // Only add the script to modify the Cite This Page link on non-admin routes
+  if (!$is_admin) {
+    // Add inline script to modify the Cite This Page link.
+    $attachments['#attached']['html_head'][] = [
+      [
+        '#type' => 'html_tag',
+        '#tag' => 'script',
+        '#value' => "
+          document.addEventListener('DOMContentLoaded', function() {
+            var citeLinks = document.querySelectorAll('a[href=\"#cite\"]');
+            citeLinks.forEach(function(link) {
+              link.setAttribute('data-citation-trigger', 'true');
+              link.setAttribute('href', 'javascript:void(0);');
+            });
+          });
+        ",
+      ],
+      'saho_tools_cite_link_modifier',
+    ];
+  }
+}
+
+/**
+ * Implements hook_preprocess_node().
+ */
+function saho_tools_preprocess_node(&$variables) {
+  // Add citation data to the node template.
+  $node = $variables['node'];
+  
+  // Only proceed if we're viewing a full node.
+  if ($variables['view_mode'] == 'full') {
+    // Add citation data as attributes for potential use in templates.
+    $variables['attributes']['data-citation-title'] = $node->getTitle();
+    $variables['attributes']['data-citation-url'] = $node->toUrl()->setAbsolute()->toString();
+    $variables['attributes']['data-citation-date'] = date('Y-m-d', $node->getChangedTime());
+    
+    // Add author information if available.
+    if ($node->hasField('field_article_author') && !$node->get('field_article_author')->isEmpty()) {
+      $variables['attributes']['data-citation-author'] = $node->get('field_article_author')->value;
+    }
+    elseif ($node->getOwner()) {
+      $variables['attributes']['data-citation-author'] = $node->getOwner()->getDisplayName();
+    }
+    else {
+      $variables['attributes']['data-citation-author'] = 'South African History Online';
+    }
+    
+    // Add the citation button to the node template.
+    $variables['citation_button'] = [
+      '#theme' => 'citation_button',
+      '#attributes' => [
+        'class' => ['citation-button', 'btn', 'btn-sm', 'btn-outline-primary'],
+        'data-citation-trigger' => 'true',
+      ],
+      '#title' => t('Cite This Page'),
+      '#attached' => [
+        'library' => ['saho_tools/citation'],
+      ],
+    ];
+    
+    // Add the sharing button to the node template.
+    $variables['sharing_button'] = [
+      '#theme' => 'sharing_button',
+      '#attributes' => [
+        'class' => ['sharing-button', 'btn', 'btn-sm', 'btn-outline-success'],
+        'data-sharing-trigger' => 'true',
+      ],
+      '#title' => t('Share'),
+      '#attached' => [
+        'library' => ['saho_tools/sharing'],
+      ],
+    ];
+  }
+}
+
+/**
+ * Implements hook_theme_suggestions_HOOK_alter() for node templates.
+ */
+function saho_tools_theme_suggestions_node_alter(array &$suggestions, array $variables) {
+  // Add a theme suggestion for each content type.
+  $node = $variables['elements']['#node'];
+  $sanitized_view_mode = strtr($variables['elements']['#view_mode'], '.', '_');
+  
+  // Add a suggestion for the view mode and content type.
+  $suggestions[] = 'node__' . $sanitized_view_mode . '__' . $node->bundle();
+}
+
+/**
+ * Implements hook_theme().
+ */
+function saho_tools_theme() {
+  return [
+    'citation_button' => [
+      'variables' => [
+        'attributes' => [],
+        'title' => 'Cite This Page',
+      ],
+      'template' => 'citation-button',
+    ],
+    'sharing_button' => [
+      'variables' => [
+        'attributes' => [],
+        'title' => 'Share',
+      ],
+      'template' => 'sharing-button',
+    ],
+    'citation_formatter_all' => [
+      'variables' => [
+        'citations' => NULL,
+      ],
+      'template' => 'citation-formatter-all',
+    ],
+    'citation_formatter_single' => [
+      'variables' => [
+        'citation' => NULL,
+        'format' => NULL,
+      ],
+      'template' => 'citation-formatter-single',
+    ],
+    'node__citation' => [
+      'variables' => [
+        'citation_button' => NULL,
+      ],
+      'template' => 'node--citation',
+    ],
+  ];
+}

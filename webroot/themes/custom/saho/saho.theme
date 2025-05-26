@@ -327,7 +327,76 @@ function saho_preprocess_block__page_title_block(array &$variables) {
       return mb_substr($text, 0, $length - 1) . '…';
     };
     
-    // If we found a parent from navigation, use it in the breadcrumb
+    // Get the node type for landing page mapping
+    $node_type = $node->getType();
+    
+    // Define landing page URLs for each content type
+    $landing_pages = [
+      'article' => [
+        'field_politics_society_categorie' => ['/politics-society', 'Politics & Society'],
+        'field_arts_culture_categories' => ['/art-culture', 'Art & Culture'],
+        'field_africa_category' => ['/africa', 'Africa'],
+        'field_timeline_categories_type' => ['/timelines', 'Timelines'],
+        'field_classroom_categories' => ['/classroom', 'Classroom'],
+        'default' => ['/articles', 'Articles']
+      ],
+      'biography' => ['/biographies', 'Biographies'],
+      'place' => ['/places', 'Places'],
+      'archive' => ['/archives', 'SAHO Archive'],
+      'event' => ['/timelines', 'Timelines'],
+      'default' => ['/content', 'Content']
+    ];
+    
+    // Add the relevant landing page at level 2
+    $landing_page_added = false;
+    
+    // For articles, try to determine the most relevant section based on taxonomy
+    if ($node_type == 'article') {
+      // Check each taxonomy field in priority order
+      $taxonomy_fields = [
+        'field_politics_society_categorie',
+        'field_arts_culture_categories',
+        'field_africa_category',
+        'field_timeline_categories_type',
+        'field_classroom_categories',
+      ];
+      
+      foreach ($taxonomy_fields as $field_name) {
+        if (!$landing_page_added && $node->hasField($field_name) && !$node->get($field_name)->isEmpty()) {
+          // We found a relevant taxonomy, use its corresponding landing page
+          $landing_page = $landing_pages['article'][$field_name];
+          $links[] = \Drupal\Core\Link::fromTextAndUrl(
+            $landing_page[1], 
+            \Drupal\Core\Url::fromUserInput($landing_page[0])
+          );
+          $landing_page_added = true;
+          break;
+        }
+      }
+      
+      // If no specific taxonomy found, use the default for articles
+      if (!$landing_page_added) {
+        $default_landing = $landing_pages['article']['default'];
+        $links[] = \Drupal\Core\Link::fromTextAndUrl(
+          $default_landing[1], 
+          \Drupal\Core\Url::fromUserInput($default_landing[0])
+        );
+        $landing_page_added = true;
+      }
+    }
+    // For other content types, use their dedicated landing page
+    else {
+      $landing_page = isset($landing_pages[$node_type]) ? $landing_pages[$node_type] : $landing_pages['default'];
+      if (is_array($landing_page) && !is_array($landing_page[0])) {
+        $links[] = \Drupal\Core\Link::fromTextAndUrl(
+          $landing_page[1], 
+          \Drupal\Core\Url::fromUserInput($landing_page[0])
+        );
+        $landing_page_added = true;
+      }
+    }
+    
+    // If we found a parent from navigation, add it after the landing page
     if ($parent_from_navigation) {
       $links[] = \Drupal\Core\Link::createFromRoute(
         $truncate_text($parent_from_navigation->getTitle(), 70),
@@ -335,7 +404,7 @@ function saho_preprocess_block__page_title_block(array &$variables) {
         ['node' => $parent_from_navigation->id()]
       );
     }
-    // Otherwise, use the taxonomy-based breadcrumb
+    // Otherwise, continue with the existing taxonomy-based breadcrumb logic
     else {
       // Get the node type.
       $node_type = $node->getType();
@@ -400,7 +469,7 @@ function saho_preprocess_block__page_title_block(array &$variables) {
           break;
           
         case 'place':
-          // Home > Place Category > Title
+          // Home > Places > Place Category > Title
           if ($node->hasField('field_place_category') && !$node->get('field_place_category')->isEmpty()) {
             $term = $node->get('field_place_category')->entity;
             if ($term) {
@@ -423,12 +492,7 @@ function saho_preprocess_block__page_title_block(array &$variables) {
           
         case 'archive':
           // Home > SAHO Archive > Category Logic > Title
-          
-          // Add "SAHO Archive" as a fixed second level
-          // Note: Using '<none>' as route name creates a non-clickable breadcrumb item
-          // If you want it to be clickable, replace with an actual route and parameters
-          $archive_url = \Drupal\Core\Url::fromUserInput('/archives');
-          $links[] = \Drupal\Core\Link::fromTextAndUrl('SAHO Archive', $archive_url);
+          // (Landing page already added above)
           
           // Add category (Media Library Type) as third level if available
           if ($node->hasField('field_media_library_type') && !$node->get('field_media_library_type')->isEmpty()) {
@@ -452,7 +516,7 @@ function saho_preprocess_block__page_title_block(array &$variables) {
           break;
           
         case 'biography':
-          // Home > People Category > Biography Art Category (if value) > Title
+          // Home > Biographies > People Category > Biography Art Category (if value) > Title
           if ($node->hasField('field_people_category') && !$node->get('field_people_category')->isEmpty()) {
             $term = $node->get('field_people_category')->entity;
             if ($term) {
@@ -468,7 +532,7 @@ function saho_preprocess_block__page_title_block(array &$variables) {
           }
           
           // If no taxonomy terms, check for feature parent
-          if (count($links) == 1 && !$used_navigation_parent && $node->hasField('field_feature_parent') && !$node->get('field_feature_parent')->isEmpty()) {
+          if (count($links) == 2 && !$used_navigation_parent && $node->hasField('field_feature_parent') && !$node->get('field_feature_parent')->isEmpty()) {
             $parent_id = $node->get('field_feature_parent')->first()->target_id;
             $parent_node = \Drupal\node\Entity\Node::load($parent_id);
             if ($parent_node) {
@@ -550,6 +614,61 @@ function saho_theme($existing, $type, $theme, $path) {
       'template' => 'content/header',
     ],
   ];
+}
+
+/**
+ * Implements hook_theme_suggestions_HOOK_alter() for views-view.html.twig.
+ */
+function saho_theme_suggestions_views_view_alter(array &$suggestions, array $variables) {
+  $view = $variables['view'];
+  
+  // Check if this is one of our main section landing pages
+  $landing_page_views = [
+    'politics_society',
+    'art_culture',
+    'biographies',
+    'africa',
+    'places',
+    'timelines'
+  ];
+  
+  // Add specific suggestions for specialized sections
+  if ($view->id() == 'archives') {
+    // Add archives-specific template suggestion
+    $suggestions[] = 'views_view__archives';
+  }
+  elseif ($view->id() == 'classroom') {
+    // Add classroom-specific template suggestion
+    $suggestions[] = 'views_view__classroom';
+  }
+  elseif (in_array($view->id(), $landing_page_views)) {
+    // Add our generic landing page template suggestion for other sections
+    $suggestions[] = 'views_view__landing_page';
+  }
+}
+
+/**
+ * Implements hook_theme_suggestions_HOOK_alter() for views-view-grid.html.twig.
+ */
+function saho_theme_suggestions_views_view_grid_alter(array &$suggestions, array $variables) {
+  $view = $variables['view'];
+  
+  // Check if this is one of our main section landing pages
+  $landing_page_views = [
+    'politics_society',
+    'art_culture',
+    'biographies',
+    'africa',
+    'classroom',
+    'places',
+    'timelines',
+    'archives'
+  ];
+  
+  if (in_array($view->id(), $landing_page_views)) {
+    // Add our custom template suggestion
+    $suggestions[] = 'views_view_grid__landing_page';
+  }
 }
 
 /**

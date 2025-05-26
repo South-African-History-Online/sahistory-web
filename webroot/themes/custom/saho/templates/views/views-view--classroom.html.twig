@@ -1,0 +1,132 @@
+{#
+/**
+ * @file
+ * Template for the Classroom landing page.
+ *
+ * Available variables:
+ * - view: The view object.
+ * - rows: A list of the view's row items.
+ * - options: The view plugin style options.
+ * - title: The title of the view.
+ * - header: The view header.
+ * - footer: The view footer.
+ * - empty: The empty text to display if the view is empty.
+ * - pager: The pager output.
+ * - exposed: Exposed widget form/info to display.
+ * - feed_icons: Feed icons to display, if any.
+ * - more: An optional link to the next page of results.
+ * - totals: The total rows and pages.
+ * - rows_total: The total number of rows returned by the view.
+ * - attachment_before: An optional attachment view to be displayed before the view.
+ * - attachment_after: An optional attachment view to be displayed after the view.
+ * - dom_id: Unique id for every view being printed to give unique class for Javascript.
+ *
+ * @see template_preprocess_views_view()
+ */
+#}
+
+{# Define section-specific colors and classes #}
+{% set section_name = 'Classroom' %}
+{% set section_color = 'saho-deep-heritage-red' %}
+{% set section_bg_class = 'saho-bg-deep-heritage-red' %}
+{% set section_border_class = 'saho-border-deep-heritage-red' %}
+{% set section_text_class = 'saho-text-deep-heritage-red' %}
+
+<div{{ attributes.addClass('saho-landing-page', 'saho-classroom-page', 'view-' ~ view.id|clean_class) }}>
+  {# Main Content Section with Sidebar #}
+  <section class="saho-classroom-content mb-5">
+    <div class="container">
+      <div class="row">
+        {# Sidebar with educational resources #}
+        <div class="col-lg-3 mb-4 mb-lg-0">
+          <div class="saho-classroom-sidebar {{ section_border_class }} border-top border-4 p-3 bg-light rounded">
+            <h2 class="h4 {{ section_text_class }} mb-3">Educational Resources</h2>
+            
+            {# Filters in sidebar #}
+            {% if exposed %}
+              <div class="saho-classroom-filters mb-4">
+                {{ exposed }}
+              </div>
+            {% endif %}
+            
+            <div class="saho-classroom-resources">
+              <ul class="list-unstyled">
+                <li class="mb-3">
+                  <a href="/classroom/worksheets" class="d-flex align-items-center text-decoration-none text-dark">
+                    <span class="me-2 {{ section_text_class }}"><i class="fas fa-file-alt"></i></span>
+                    <span>Worksheets</span>
+                  </a>
+                </li>
+                <li class="mb-3">
+                  <a href="/classroom/activities" class="d-flex align-items-center text-decoration-none text-dark">
+                    <span class="me-2 {{ section_text_class }}"><i class="fas fa-tasks"></i></span>
+                    <span>Activities</span>
+                  </a>
+                </li>
+                <li class="mb-3">
+                  <a href="/classroom/presentations" class="d-flex align-items-center text-decoration-none text-dark">
+                    <span class="me-2 {{ section_text_class }}"><i class="fas fa-desktop"></i></span>
+                    <span>Presentations</span>
+                  </a>
+                </li>
+                <li class="mb-3">
+                  <a href="/classroom/videos" class="d-flex align-items-center text-decoration-none text-dark">
+                    <span class="me-2 {{ section_text_class }}"><i class="fas fa-video"></i></span>
+                    <span>Educational Videos</span>
+                  </a>
+                </li>
+                <li class="mb-3">
+                  <a href="/classroom/quizzes" class="d-flex align-items-center text-decoration-none text-dark">
+                    <span class="me-2 {{ section_text_class }}"><i class="fas fa-question-circle"></i></span>
+                    <span>Quizzes & Tests</span>
+                  </a>
+                </li>
+              </ul>
+            </div>
+            
+            <h3 class="h5 {{ section_text_class }} mt-4 mb-3">Key Topics</h3>
+            <div class="saho-classroom-topics">
+              <div class="d-flex flex-wrap">
+                <a href="/classroom/topics/apartheid" class="badge bg-secondary m-1 text-decoration-none">Apartheid</a>
+                <a href="/classroom/topics/colonialism" class="badge bg-secondary m-1 text-decoration-none">Colonialism</a>
+                <a href="/classroom/topics/freedom-struggle" class="badge bg-secondary m-1 text-decoration-none">Freedom Struggle</a>
+                <a href="/classroom/topics/democracy" class="badge bg-secondary m-1 text-decoration-none">Democracy</a>
+                <a href="/classroom/topics/culture" class="badge bg-secondary m-1 text-decoration-none">Culture</a>
+                <a href="/classroom/topics/heritage" class="badge bg-secondary m-1 text-decoration-none">Heritage</a>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        {# Main content grid #}
+        <div class="col-lg-9">
+          {% if title %}
+            <h2 class="h3 mb-4 {{ section_text_class }}">{{ title }}</h2>
+          {% endif %}
+          
+          {% if rows %}
+            <div class="saho-classroom-grid">
+              {{ rows }}
+            </div>
+          {% elseif empty %}
+            <div class="saho-classroom-empty alert alert-info">
+              {{ empty }}
+            </div>
+          {% endif %}
+          
+          {% if pager %}
+            <div class="saho-classroom-pager mt-4">
+              {{ pager }}
+            </div>
+          {% endif %}
+          
+          {% if more %}
+            <div class="saho-classroom-more mt-4 text-center">
+              {{ more }}
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
