@@ -62,7 +62,7 @@ class CitationService {
     return [
       'harvard' => $this->generateHarvardCitation($data),
       'apa' => $this->generateApaCitation($data),
-      'chicago' => $this->generateChicagoCitation($data),
+      'oxford' => $this->generateOxfordCitation($data),
     ];
   }
 
@@ -263,42 +263,31 @@ class CitationService {
    *   The Harvard style citation.
    */
   protected function generateHarvardCitation(array $data) {
-    // Modified Harvard format: Author Title. Available at: URL (Accessed: Date).
+    // Extract the creation date components
+    $created_date = new DrupalDateTime($data['created_formatted']);
+    $created_day = $created_date->format('j');
+    $created_month = $created_date->format('F');
+    $created_year = $created_date->format('Y');
+    
+    // Extract the access date components
+    $access_date = new DrupalDateTime($data['accessed_date']);
+    $access_day = $access_date->format('j');
+    $access_month = $access_date->format('F');
+    $access_year = $access_date->format('Y');
+    
+    // Harvard format for website: Author (Year) 'Article Title', Website Name, Day Month. Available at: URL (Accessed: Day Month Year).
     $citation = sprintf(
-      '%s <em>%s</em>',
-      $data['author'],
-      $data['title']
-    );
-    
-    // Add photographer information if available.
-    if (!empty($data['image_info']['has_image']) && $data['image_info']['has_image'] && !empty($data['image_info']['photographer'])) {
-      $citation .= sprintf(' [Photograph by %s].', $data['image_info']['photographer']);
-    }
-    
-    // Add content type specific information.
-    if (!empty($data['content_type_info']['node_type'])) {
-      switch ($data['content_type_info']['node_type']) {
-        case 'biography':
-          if (!empty($data['content_type_info']['birth_date']) && !empty($data['content_type_info']['death_date'])) {
-            $citation .= sprintf(' Biography of person (%s-%s).', 
-              $data['content_type_info']['birth_date'],
-              $data['content_type_info']['death_date']
-            );
-          }
-          break;
-          
-        case 'event':
-          if (!empty($data['content_type_info']['event_date'])) {
-            $citation .= sprintf(' Historical event (%s).', $data['content_type_info']['event_date']);
-          }
-          break;
-      }
-    }
-    
-    // Add URL and access date.
-    $citation .= sprintf('. Available at: %s (Accessed: %s).',
+      '<em>%s</em> (%s) \'%s\', <em>%s</em>, %s %s. Available at: %s (Accessed: %s %s %s).',
+      $data['site_name'],
+      $created_year,
+      $data['title'],
+      $data['site_name'],
+      $created_day,
+      $created_month,
       $data['url'],
-      $data['accessed_date']
+      $access_day,
+      $access_month,
+      $access_year
     );
 
     return $citation;
@@ -314,48 +303,20 @@ class CitationService {
    *   The APA style citation.
    */
   protected function generateApaCitation(array $data) {
-    // Basic APA format: Author. (Year, Month Day). Title. Site Name. URL
+    // Extract the creation date components
+    $created_date = new DrupalDateTime($data['created_formatted']);
+    $created_day = $created_date->format('j');
+    $created_month = $created_date->format('F');
+    $created_year = $created_date->format('Y');
+    
+    // APA format for website: Author. (Year, Month Day). Title (in italics). Website name. URL.
     $citation = sprintf(
-      '%s. (%s). <em>%s</em>',
-      $data['author'],
-      $data['created_formatted'],
-      $data['title']
-    );
-    
-    // Add image information if available.
-    if (!empty($data['image_info']['has_image']) && $data['image_info']['has_image']) {
-      if (!empty($data['image_info']['image_title'])) {
-        $citation .= sprintf(' [%s]', $data['image_info']['image_title']);
-      }
-      else {
-        $citation .= ' [Image]';
-      }
-      
-      // If we have a photographer, include it.
-      if (!empty($data['image_info']['photographer'])) {
-        $citation .= sprintf(' (Photograph by %s)', $data['image_info']['photographer']);
-      }
-    }
-    
-    // Add content type specific information.
-    if (!empty($data['content_type_info']['node_type'])) {
-      switch ($data['content_type_info']['node_type']) {
-        case 'biography':
-          $citation .= ' [Biography]';
-          break;
-          
-        case 'event':
-          $citation .= ' [Historical event]';
-          break;
-          
-        case 'place':
-          $citation .= ' [Place]';
-          break;
-      }
-    }
-    
-    // Add site name and URL.
-    $citation .= sprintf('. %s. %s',
+      '%s. (%s, %s %s). <em>%s</em>. %s. %s',
+      $data['site_name'],
+      $created_year,
+      $created_month,
+      $created_day,
+      $data['title'],
       $data['site_name'],
       $data['url']
     );
@@ -364,54 +325,32 @@ class CitationService {
   }
 
   /**
-   * Generates a Chicago style citation.
+   * Generates an Oxford style citation.
    *
    * @param array $data
    *   The node data for citation generation.
    *
    * @return string
-   *   The Chicago style citation.
+   *   The Oxford style citation.
    */
-  protected function generateChicagoCitation(array $data) {
-    // Basic Chicago format: Author. "Title." Site Name. Month Day, Year. Accessed Date. URL.
+  protected function generateOxfordCitation(array $data) {
+    // Extract the access date components
+    $access_date = new DrupalDateTime($data['accessed_date']);
+    $access_day = $access_date->format('j');
+    $access_month = $access_date->format('F');
+    $access_year = $access_date->format('Y');
+    
+    // Oxford format for website: Website name, Page Title [website], URL, (accessed Day Month Year).
     $citation = sprintf(
-      '%s. "%s."',
-      $data['author'],
-      $data['title']
-    );
-    
-    // Oxford format should not include image information
-    // Explicitly ensure no [Image] text is added
-    
-    // Add content type specific information.
-    if (!empty($data['content_type_info']['node_type'])) {
-      switch ($data['content_type_info']['node_type']) {
-        case 'biography':
-          if (!empty($data['content_type_info']['first_name']) && !empty($data['content_type_info']['last_name'])) {
-            $citation .= sprintf(' Biography of %s %s', 
-              $data['content_type_info']['first_name'],
-              $data['content_type_info']['last_name']
-            );
-          }
-          break;
-          
-        case 'event':
-          if (!empty($data['content_type_info']['event_date'])) {
-            $citation .= sprintf(' Event of %s', $data['content_type_info']['event_date']);
-          }
-          break;
-      }
-    }
-    
-    // Add site name, date, access date, and URL.
-    $citation .= sprintf(' <em>%s</em>. %s. Accessed %s. %s.',
+      '<em>%s</em>, %s [website], %s, (accessed %s %s %s).',
       $data['site_name'],
-      $data['created_formatted'],
-      $data['accessed_date'],
-      $data['url']
+      $data['title'],
+      $data['url'],
+      $access_day,
+      $access_month,
+      $access_year
     );
 
     return $citation;
   }
-
 }
