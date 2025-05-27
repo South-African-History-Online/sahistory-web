@@ -1,0 +1,182 @@
+{#
+/**
+ * @file
+ * Custom SAHO page template.
+ *
+ * Displays a simple page with image aligned right within the content
+ * in a modern, clean layout.
+ */
+#}
+
+<article{{ attributes.addClass('saho-page-wrapper') }}>
+  <div class="saho-page-container">
+    
+    {# Page metadata and tools #}
+    <div class="saho-page-meta">
+      {% if node.getCreatedTime() %}
+        <span class="saho-page-date">Published {{ node.getCreatedTime()|date("F j, Y") }}</span>
+      {% endif %}
+      {% if node.getChangedTime() != node.getCreatedTime() %}
+        <span class="saho-page-date">Updated {{ node.getChangedTime()|date("F j, Y") }}</span>
+      {% endif %}
+      
+      {# Tools (citation and sharing) #}
+      <div class="saho-tools-wrapper">
+        {% if citation_button %}
+          <div class="saho-citation-wrapper">
+            {{ citation_button }}
+          </div>
+        {% endif %}
+        
+        {% if sharing_button %}
+          <div class="saho-sharing-wrapper">
+            {{ sharing_button }}
+          </div>
+        {% endif %}
+      </div>
+    </div>
+    
+    {# Main content with image aligned right #}
+    <div class="saho-page-body">
+      {% if content.field_image|render|trim %}
+        <div class="saho-page-image-container">
+          {{ content.field_image }}
+        </div>
+      {% endif %}
+      
+      {% if content.body %}
+        {{ content.body }}
+      {% endif %}
+    </div>
+    
+    {# Links if available #}
+    {% if content.links %}
+      <div class="saho-page-links">
+        {{ content.links }}
+      </div>
+    {% endif %}
+    
+    {# Comments if available #}
+    {% if content.comment_node_page %}
+      <div class="saho-page-comments">
+        <h3>Comments</h3>
+        {{ content.comment_node_page }}
+      </div>
+    {% endif %}
+    
+    {# Render any remaining fields not explicitly handled above #}
+    {{ content|without(
+      'field_image',
+      'body',
+      'links',
+      'comment_node_page',
+      'sharing_buttons'
+    ) }}
+  </div>
+</article>
+
+{# Add custom CSS for the page template #}
+<style>
+  .saho-page-wrapper {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1rem;
+  }
+  
+  .saho-page-container {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+  
+  .saho-page-image-container {
+    float: right;
+    width: 40%;
+    max-width: 400px;
+    margin: 0 0 1rem 2rem;
+  }
+  
+  .saho-page-image-container img {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    border-radius: 4px;
+  }
+  
+  .saho-page-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #eee;
+    margin-bottom: 2rem;
+  }
+  
+  .saho-page-date {
+    color: #666;
+    margin-right: 1rem;
+    font-size: 0.9rem;
+  }
+  
+  .saho-tools-wrapper {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+  }
+  
+  .saho-share-btn {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    padding: 0.375rem 0.75rem;
+    font-size: 0.9rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .saho-share-btn:hover {
+    background-color: #e9ecef;
+  }
+  
+  .saho-page-body {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    overflow: hidden; /* Ensures the container wraps around floated elements */
+  }
+  
+  .saho-page-links {
+    margin-top: 2rem;
+    clear: both; /* Ensures this appears below any floated elements */
+  }
+  
+  .saho-page-comments {
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid #eee;
+    clear: both; /* Ensures this appears below any floated elements */
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .saho-page-meta {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+    
+    .saho-tools-wrapper {
+      width: 100%;
+      justify-content: flex-start;
+    }
+    
+    .saho-page-image-container {
+      float: none;
+      width: 100%;
+      max-width: 100%;
+      margin: 0 0 1.5rem 0;
+    }
+  }
+</style>
