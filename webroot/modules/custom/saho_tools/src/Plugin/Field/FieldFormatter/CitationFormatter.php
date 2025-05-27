@@ -96,7 +96,7 @@ class CitationFormatter extends FormatterBase implements ContainerFactoryPluginI
       '#options' => [
         'harvard' => $this->t('Harvard'),
         'apa' => $this->t('APA'),
-        'chicago' => $this->t('Chicago'),
+        'oxford' => $this->t('Oxford (Footnote style)'),
         'all' => $this->t('All Formats'),
       ],
       '#default_value' => $this->getSetting('citation_format'),
@@ -120,7 +120,7 @@ class CitationFormatter extends FormatterBase implements ContainerFactoryPluginI
       $formats = [
         'harvard' => $this->t('Harvard'),
         'apa' => $this->t('APA'),
-        'chicago' => $this->t('Chicago'),
+        'oxford' => $this->t('Oxford (Footnote style)'),
       ];
       $summary[] = $this->t('Display @format citation format', ['@format' => $formats[$citation_format]]);
     }

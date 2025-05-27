@@ -179,15 +179,15 @@
       const apaCitation = author + '. (' + creationDate + '). <em>' + 
         pageTitle + '</em>. ' + pageUrl;
       
-      // Generate Chicago citation
-      const chicagoCitation = author + '. "' + pageTitle + '." ' + 
+      // Generate Oxford citation
+      const oxfordCitation = author + '. "' + pageTitle + '." ' + 
         creationDate + '. Accessed ' + accessDate + '. ' + pageUrl + '.';
       
       // Update citation content
       this.updateCitationContent({
         harvard: harvardCitation,
         apa: apaCitation,
-        chicago: chicagoCitation
+        oxford: oxfordCitation
       });
     },
     
@@ -216,15 +216,15 @@
       const apaCitation = author + '. (' + formattedDate + '). <em>' + 
         pageData.title + '</em>. ' + pageData.url;
       
-      // Generate Chicago citation
-      const chicagoCitation = author + '. "' + pageData.title + '." ' + 
+      // Generate Oxford citation
+      const oxfordCitation = author + '. "' + pageData.title + '." ' + 
         formattedDate + '. Accessed ' + formattedDate + '. ' + pageData.url + '.';
       
       // Update citation content
       this.updateCitationContent({
         harvard: harvardCitation,
         apa: apaCitation,
-        chicago: chicagoCitation
+        oxford: oxfordCitation
       });
     },
 
@@ -306,8 +306,8 @@
       // Update each citation format
       $('.harvard-citation').html(citations.harvard);
       $('.apa-citation').html(citations.apa);
-      $('.chicago-citation').html(citations.chicago);
-      
+      $('.oxford-citation').html(citations.oxford);
+
       // Add copy buttons for each citation
       $('.citation-content').each(function() {
         const $container = $(this);
@@ -391,8 +391,10 @@
      *   The text to copy.
      * @param {jQuery} $element
      *   The element to show feedback on.
+     * @param {boolean} autoClose
+     *   Whether to automatically close the modal after copying.
      */
-    copyTextToClipboard: function (text, $element) {
+    copyTextToClipboard: function (text, $element, autoClose) {
       // Create a temporary textarea element to copy the text
       const textarea = document.createElement('textarea');
       textarea.value = text;
@@ -413,6 +415,18 @@
         $element.addClass('copying');
         setTimeout(function () {
           $element.removeClass('copying');
+          
+          // Auto-close the modal after copying if requested
+          if (autoClose) {
+            const $modal = $('#citation-modal');
+            // Check if we're using Bootstrap's Modal API
+            if (Drupal.sahoCitation.modal) {
+              Drupal.sahoCitation.modal.hide();
+            } else {
+              // Fall back to jQuery
+              Drupal.sahoCitation.hideModalWithjQuery($modal);
+            }
+          }
         }, 1500);
       }
     },
@@ -451,6 +465,15 @@
           'padding': '0.25rem 0.5rem'
         }).html('&times;');
       }
+
+      // Explicitly add a click handler to the close button
+      $closeButton.off('click').on('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('Close button directly clicked');
+        Drupal.sahoCitation.hideModalWithjQuery($modal);
+        return false;
+      });
       
       // Add necessary classes to show the modal
       $modal.addClass('show').css('display', 'block').attr('aria-modal', 'true').removeAttr('aria-hidden');
@@ -465,8 +488,33 @@
       $modal.find('.copy-citation').off('click');
       $modal.find('.btn-copy-citation').off('click');
       
-      // Handle close button clicks
-      $modal.find('[data-bs-dismiss="modal"]').on('click', function(e) {
+      // Enhance the close button visibility with better styling - use text instead of SVG
+      $modal.find('.btn-close').css({
+        'display': 'block',
+        'position': 'absolute',
+        'right': '1rem',
+        'top': '1rem',
+        'font-size': '2rem',
+        'font-weight': 'bold',
+        'line-height': '1',
+        'color': '#fff',
+        'opacity': '1',
+        'background-color': '#dc3545',
+        'border-radius': '50%',
+        'width': '2rem',
+        'height': '2rem',
+        'text-align': 'center',
+        'padding': '0',
+        'border': '2px solid white',
+        'box-shadow': '0 2px 5px rgba(0, 0, 0, 0.3)',
+        'z-index': '1060',
+        'cursor': 'pointer'
+      }).html('×');
+      
+      console.log('Close button styled and set to use text "×" instead of SVG');
+      
+      // Handle close button clicks with a more specific selector
+      $modal.find('button[data-bs-dismiss="modal"], .btn-close').on('click', function(e) {
         e.preventDefault();
         e.stopPropagation();
         console.log('Close button clicked');
@@ -553,6 +601,8 @@
       $('.modal-backdrop').off('click');
       $(document).off('keydown.citationModal');
       $modal.find('[data-bs-toggle="tab"]').off('click');
+      
+      console.log('Modal hidden successfully');
     },
     
     /**
@@ -600,8 +650,8 @@
         const $citationElement = $modal.find('.' + format + '-citation');
         const citationText = $citationElement.clone().children('button').remove().end().text().trim();
         
-        // Copy the text and show feedback
-        self.copyTextToClipboard(citationText, $citationElement);
+        // Copy the text and show feedback, auto-close the modal
+        self.copyTextToClipboard(citationText, $citationElement, true);
         
         // Update the button text temporarily
         const $button = $(this);
@@ -623,10 +673,10 @@
       let allCitationsText = '';
       
       // Get all citation content
-      const formats = ['apa', 'chicago', 'harvard'];
+      const formats = ['apa', 'oxford', 'harvard'];
       const formatLabels = {
         'apa': 'APA (7th edition)',
-        'chicago': 'Oxford (Footnote style)',
+        'oxford': 'Oxford (Footnote style)',
         'harvard': 'Harvard'
       };
       
@@ -642,8 +692,8 @@
       // Trim the extra newlines at the end
       allCitationsText = allCitationsText.trim();
       
-      // Copy the text and show feedback
-      this.copyTextToClipboard(allCitationsText, $('.citation-formats'));
+      // Copy the text and show feedback, auto-close the modal
+      this.copyTextToClipboard(allCitationsText, $('.citation-formats'), true);
       
       // Update the button text temporarily
       const $button = $('.copy-citation');
