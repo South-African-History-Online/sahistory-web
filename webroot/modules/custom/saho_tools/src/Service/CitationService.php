@@ -2,17 +2,22 @@
 
 namespace Drupal\saho_tools\Service;
 
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Datetime\DateFormatterInterface;
-use Drupal\node\NodeInterface;
-use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\Datetime\DrupalDateTime;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
+use Drupal\node\NodeInterface;
 
 /**
  * Service for generating citations.
+ *
+ * @category SAHO
+ * @package Drupal\saho_tools\Service
+ * @author South African History Online
+ * @license GPL-2.0-or-later
+ * @link https://sahistory.org.za
  */
 class CitationService {
-
   use StringTranslationTrait;
 
   /**
@@ -39,7 +44,7 @@ class CitationService {
    */
   public function __construct(
     EntityTypeManagerInterface $entity_type_manager,
-    DateFormatterInterface $date_formatter
+    DateFormatterInterface $date_formatter,
   ) {
     $this->entityTypeManager = $entity_type_manager;
     $this->dateFormatter = $date_formatter;
@@ -94,10 +99,10 @@ class CitationService {
     // Get the current date for "accessed on" part of citations.
     $current_date = new DrupalDateTime();
     $accessed_date = $current_date->format('F j, Y');
-    
+
     // Get image information if available.
     $image_info = $this->extractImageData($node);
-    
+
     // Get content type specific information.
     $content_type_info = $this->getContentTypeSpecificInfo($node);
 
@@ -114,7 +119,7 @@ class CitationService {
       'content_type_info' => $content_type_info,
     ];
   }
-  
+
   /**
    * Extracts image data from a node for citation generation.
    *
@@ -133,7 +138,7 @@ class CitationService {
       'photographer' => '',
       'copyright' => '',
     ];
-    
+
     // Check for common image field names.
     $image_field_names = [
       'field_image',
@@ -144,25 +149,34 @@ class CitationService {
       'field_tdih_image',
       'field_archive_image',
     ];
-    
+
     foreach ($image_field_names as $field_name) {
       if ($node->hasField($field_name) && !$node->get($field_name)->isEmpty()) {
         $image_field = $node->get($field_name);
         $image_info['has_image'] = TRUE;
-        
+
         // Get image entity if it's a reference.
         if ($image_field->entity) {
           $image_entity = $image_field->entity;
-          
+
           // Handle Media entity.
           if ($image_entity->getEntityTypeId() === 'media') {
-            if ($image_entity->hasField('field_media_image') && !$image_entity->get('field_media_image')->isEmpty()) {
+            // Check entity has the hasField method (ContentEntityInterface)
+            if (
+                  method_exists($image_entity, 'hasField')
+                  && $image_entity->hasField('field_media_image')
+                  && method_exists($image_entity, 'get')
+                  && !$image_entity->get('field_media_image')->isEmpty()
+              ) {
               $file_entity = $image_entity->get('field_media_image')->entity;
               if ($file_entity) {
-                $image_info['image_url'] = $file_entity->createFileUrl(FALSE);
-                
+                // Check entity has the createFileUrl method (FileInterface)
+                if (method_exists($file_entity, 'createFileUrl')) {
+                  $image_info['image_url'] = $file_entity->createFileUrl(FALSE);
+                }
+
                 // Get alt and title if available.
-                if ($image_entity->hasField('field_media_image')) {
+                if (method_exists($image_entity, 'hasField') && $image_entity->hasField('field_media_image')) {
                   $image_info['image_alt'] = $image_entity->get('field_media_image')->alt ?? '';
                   $image_info['image_title'] = $image_entity->get('field_media_image')->title ?? '';
                 }
@@ -171,31 +185,38 @@ class CitationService {
           }
           // Handle File entity directly.
           elseif ($image_entity->getEntityTypeId() === 'file') {
-            $image_info['image_url'] = $image_entity->createFileUrl(FALSE);
-            
+            // Check if the entity has the createFileUrl method (FileInterface)
+            if (method_exists($image_entity, 'createFileUrl')) {
+              $image_info['image_url'] = $image_entity->createFileUrl(FALSE);
+            }
+            // Fallback to using file URL if createFileUrl is not available.
+            elseif (method_exists($image_entity, 'getFileUri')) {
+              $image_info['image_url'] = \Drupal::service('file_url_generator')->generateAbsoluteString($image_entity->getFileUri());
+            }
+
             // Get alt and title if available on the field.
             $image_info['image_alt'] = $image_field->alt ?? '';
             $image_info['image_title'] = $image_field->title ?? '';
           }
         }
-        
+
         // Check for photographer or copyright information.
         if ($node->hasField('field_image_originator') && !$node->get('field_image_originator')->isEmpty()) {
           $image_info['photographer'] = $node->get('field_image_originator')->value;
         }
-        
+
         if ($node->hasField('field_copyright') && !$node->get('field_copyright')->isEmpty()) {
           $image_info['copyright'] = $node->get('field_copyright')->value;
         }
-        
+
         // We found an image, no need to check other fields.
         break;
       }
     }
-    
+
     return $image_info;
   }
-  
+
   /**
    * Gets content type specific information for citation generation.
    *
@@ -208,7 +229,7 @@ class CitationService {
   protected function getContentTypeSpecificInfo(NodeInterface $node) {
     $info = [];
     $node_type = $node->getType();
-    
+
     switch ($node_type) {
       case 'biography':
         if ($node->hasField('field_firstname') && !$node->get('field_firstname')->isEmpty()) {
@@ -224,21 +245,26 @@ class CitationService {
           $info['death_date'] = $node->get('field_dod')->value;
         }
         break;
-        
+
       case 'event':
-        if ($node->hasField('field_this_day_in_history_date_2') && !$node->get('field_this_day_in_history_date_2')->isEmpty()) {
+        if ($node->hasField('field_this_day_in_history_date_2')
+            && !$node->get('field_this_day_in_history_date_2')->isEmpty()) {
           $info['event_date'] = $node->get('field_this_day_in_history_date_2')->value;
         }
         break;
-        
+
       case 'place':
         if ($node->hasField('field_geolocation') && !$node->get('field_geolocation')->isEmpty()) {
           $geolocation = $node->get('field_geolocation')->first();
-          $info['latitude'] = $geolocation->lat;
-          $info['longitude'] = $geolocation->lng;
+          // Use getValue() to get the field item values as an array.
+          if (method_exists($geolocation, 'getValue')) {
+            $geo_values = $geolocation->getValue();
+            $info['latitude'] = $geo_values['lat'] ?? NULL;
+            $info['longitude'] = $geo_values['lng'] ?? NULL;
+          }
         }
         break;
-        
+
       case 'article':
         // Additional article-specific fields.
         if ($node->hasField('field_article_type') && !$node->get('field_article_type')->isEmpty()) {
@@ -246,10 +272,10 @@ class CitationService {
         }
         break;
     }
-    
+
     // Add node type to the info array.
     $info['node_type'] = $node_type;
-    
+
     return $info;
   }
 
@@ -263,32 +289,33 @@ class CitationService {
    *   The Harvard style citation.
    */
   protected function generateHarvardCitation(array $data) {
-    // Extract the creation date components
+    // Extract the creation date components.
     $created_date = new DrupalDateTime($data['created_formatted']);
     $created_day = $created_date->format('j');
     $created_month = $created_date->format('F');
     $created_year = $created_date->format('Y');
-    
-    // Extract the access date components
+
+    // Extract the access date components.
     $access_date = new DrupalDateTime($data['accessed_date']);
     $access_day = $access_date->format('j');
     $access_month = $access_date->format('F');
     $access_year = $access_date->format('Y');
-    
-    // Harvard format for website: Author (Year) 'Article Title', Website Name, Day Month. Available at: URL (Accessed: Day Month Year).
+
+    // Harvard format for website: Author (Year) 'Article Title', Website Name,
+    // Day Month. Available at: URL (Accessed: Day Month Year).
     $citation = sprintf(
-      '<em>%s</em> (%s) \'%s\', <em>%s</em>, %s %s. Available at: %s (Accessed: %s %s %s).',
-      $data['site_name'],
-      $created_year,
-      $data['title'],
-      $data['site_name'],
-      $created_day,
-      $created_month,
-      $data['url'],
-      $access_day,
-      $access_month,
-      $access_year
-    );
+          '<em>%s</em> (%s) \'%s\', <em>%s</em>, %s %s. Available at: %s (Accessed: %s %s %s).',
+          $data['site_name'],
+          $created_year,
+          $data['title'],
+          $data['site_name'],
+          $created_day,
+          $created_month,
+          $data['url'],
+          $access_day,
+          $access_month,
+          $access_year
+      );
 
     return $citation;
   }
@@ -303,23 +330,24 @@ class CitationService {
    *   The APA style citation.
    */
   protected function generateApaCitation(array $data) {
-    // Extract the creation date components
+    // Extract the creation date components.
     $created_date = new DrupalDateTime($data['created_formatted']);
     $created_day = $created_date->format('j');
     $created_month = $created_date->format('F');
     $created_year = $created_date->format('Y');
-    
-    // APA format for website: Author. (Year, Month Day). Title (in italics). Website name. URL.
+
+    // APA format for website: Author. (Year, Month Day). Title (in italics).
+    // Website name. URL.
     $citation = sprintf(
-      '%s. (%s, %s %s). <em>%s</em>. %s. %s',
-      $data['site_name'],
-      $created_year,
-      $created_month,
-      $created_day,
-      $data['title'],
-      $data['site_name'],
-      $data['url']
-    );
+          '%s. (%s, %s %s). <em>%s</em>. %s. %s',
+          $data['site_name'],
+          $created_year,
+          $created_month,
+          $created_day,
+          $data['title'],
+          $data['site_name'],
+          $data['url']
+      );
 
     return $citation;
   }
@@ -334,23 +362,25 @@ class CitationService {
    *   The Oxford style citation.
    */
   protected function generateOxfordCitation(array $data) {
-    // Extract the access date components
+    // Extract the access date components.
     $access_date = new DrupalDateTime($data['accessed_date']);
     $access_day = $access_date->format('j');
     $access_month = $access_date->format('F');
     $access_year = $access_date->format('Y');
-    
-    // Oxford format for website: Website name, Page Title [website], URL, (accessed Day Month Year).
+
+    // Oxford format for website: Website name, Page Title [website],
+    // URL, (accessed Day Month Year).
     $citation = sprintf(
-      '<em>%s</em>, %s [website], %s, (accessed %s %s %s).',
-      $data['site_name'],
-      $data['title'],
-      $data['url'],
-      $access_day,
-      $access_month,
-      $access_year
-    );
+          '<em>%s</em>, %s [website], %s, (accessed %s %s %s).',
+          $data['site_name'],
+          $data['title'],
+          $data['url'],
+          $access_day,
+          $access_month,
+          $access_year
+      );
 
     return $citation;
   }
+
 }

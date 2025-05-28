@@ -2,6 +2,7 @@
 
 namespace Drupal\entity_overview\Plugin\Block;
 
+use Drupal\file\FileInterface;
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\node\Entity\Node;
@@ -107,7 +108,7 @@ class EntityOverviewBlock extends BlockBase implements ContainerFactoryPluginInt
     $sort_order = $this->configuration['sort_order'];
     $limit = $this->configuration['limit'];
     // Use the built-in block label as the block title.
-    $block_title = isset($this->configuration['label']) ? $this->configuration['label'] : '';
+    $block_title = $this->configuration['label'] ?? '';
     $intro_text = $this->configuration['intro_text'];
 
     $query = \Drupal::entityQuery('node')
@@ -150,7 +151,13 @@ class EntityOverviewBlock extends BlockBase implements ContainerFactoryPluginInt
     if ($node->hasField('field_article_image') && !$node->get('field_article_image')->isEmpty()) {
       $file = $node->get('field_article_image')->entity;
       if ($file) {
-        $image_url = \Drupal::service('file_url_generator')->generateAbsoluteString($file->getFileUri());
+        // Check if the entity implements FileInterface or has getFileUri
+        // method.
+        if (($file instanceof FileInterface) ||
+            (method_exists($file, 'getFileUri') &&
+             $file->getEntityTypeId() === 'file')) {
+          $image_url = \Drupal::service('file_url_generator')->generateAbsoluteString($file->getFileUri());
+        }
       }
     }
 
