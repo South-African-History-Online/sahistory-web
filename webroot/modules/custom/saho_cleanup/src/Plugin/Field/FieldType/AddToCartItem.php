@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\saho_cleanup\Plugin\Field\FieldType\AddToCartItem.
+ */
+
 namespace Drupal\saho_cleanup\Plugin\Field\FieldType;
 
 use Drupal\Core\Field\FieldItemBase;
@@ -16,12 +21,24 @@ use Drupal\Core\TypedData\DataDefinition;
  *   default_widget = "string_textfield",
  *   default_formatter = "string"
  * )
+ *
+ * @category SAHO
+ * @package Drupal\saho_cleanup\Plugin\Field\FieldType
+ * @author South African History Online
+ * @license GPL-2.0-or-later
+ * @link https://sahistory.org.za
  */
 class AddToCartItem extends FieldItemBase
 {
 
     /**
      * Defines the schema for the field's database columns.
+     *
+     * @param \Drupal\Core\Field\FieldStorageDefinitionInterface $field_storage_definition
+     *   The field storage definition.
+     *
+     * @return array
+     *   The field schema definition.
      *
      * @see \Drupal\Core\Field\FieldStorageDefinitionInterface
      */
@@ -41,6 +58,12 @@ class AddToCartItem extends FieldItemBase
     /**
      * Returns an array of property definitions for each data element in the field item.
      *
+     * @param \Drupal\Core\Field\FieldStorageDefinitionInterface $field_definition
+     *   The field definition.
+     *
+     * @return array
+     *   An array of property definitions.
+     *
      * @see \Drupal\Core\Field\FieldItemInterface::propertyDefinitions()
      */
     public static function propertyDefinitions(FieldStorageDefinitionInterface $field_definition)
@@ -56,6 +79,9 @@ class AddToCartItem extends FieldItemBase
 
     /**
      * The main property name of the field (e.g., "value", "target_id", etc.).
+     *
+     * @return string
+     *   The name of the main property.
      */
     public static function mainPropertyName()
     {
@@ -64,6 +90,9 @@ class AddToCartItem extends FieldItemBase
 
     /**
      * Determines if this field item is empty.
+     *
+     * @return bool
+     *   TRUE if the field item is empty, FALSE otherwise.
      */
     public function isEmpty()
     {
