@@ -4,15 +4,15 @@
 
 // Define section-specific colors
 $placeholder-colors: (
-  'politics-society': $saho-deep-heritage-red,
-  'art-culture': $saho-muted-gold,
-  'biographies': $saho-slate-blue,
-  'africa': $saho-faded-brick-red,
-  'classroom': $saho-aged-parchment,
-  'places': $saho-dark-charcoal,
-  'timelines': $saho-deep-heritage-red,
-  'archives': $saho-slate-blue,
-  'default': $saho-deep-heritage-red
+  "politics-society": $saho-deep-heritage-red,
+  "art-culture": $saho-muted-gold,
+  "biographies": $saho-slate-blue,
+  "africa": $saho-faded-brick-red,
+  "classroom": $saho-aged-parchment,
+  "places": $saho-dark-charcoal,
+  "timelines": $saho-deep-heritage-red,
+  "archives": $saho-slate-blue,
+  "default": $saho-deep-heritage-red
 );
 
 // Placeholder container
@@ -27,25 +27,25 @@ $placeholder-colors: (
   height: 0;
   padding-bottom: 56.25%; // 16:9 aspect ratio
   border-radius: 4px;
-  
+
   // Section icon
-  &::before {
-    content: '';
+  &:before {
+    content: "";
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     width: 40%;
     height: 40%;
-    background-image: url('../../../logo.svg');
+    background-image: url("../../../logo.svg");
     background-repeat: no-repeat;
     background-position: center;
     background-size: contain;
     opacity: 0.2;
   }
-  
+
   // Section label
-  &::after {
+  &:after {
     content: attr(data-section);
     position: absolute;
     bottom: 0;
@@ -65,12 +65,12 @@ $placeholder-colors: (
 @each $section, $color in $placeholder-colors {
   .saho-placeholder--#{$section} {
     background: linear-gradient(135deg, lighten($color, 30%) 0%, $color 100%);
-    
-    &::before {
+
+    &:before {
       opacity: 0.15;
     }
-    
-    &::after {
+
+    &:after {
       background-color: rgba(darken($color, 20%), 0.8);
     }
   }
@@ -88,13 +88,13 @@ $placeholder-colors: (
 @include media-breakpoint-down(md) {
   .saho-placeholder {
     padding-bottom: 75%; // 4:3 aspect ratio on smaller screens
-    
-    &::before {
+
+    &:before {
       width: 50%;
       height: 50%;
     }
-    
-    &::after {
+
+    &:after {
       font-size: 10px;
       padding: 4px;
     }
