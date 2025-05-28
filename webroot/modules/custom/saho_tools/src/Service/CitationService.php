@@ -161,7 +161,7 @@ class CitationService {
 
           // Handle Media entity.
           if ($image_entity->getEntityTypeId() === 'media') {
-            // Check if the entity has the hasField method (ContentEntityInterface)
+            // Check entity has the hasField method (ContentEntityInterface)
             if (
                   method_exists($image_entity, 'hasField')
                   && $image_entity->hasField('field_media_image')
@@ -170,7 +170,7 @@ class CitationService {
               ) {
               $file_entity = $image_entity->get('field_media_image')->entity;
               if ($file_entity) {
-                // Check if the entity has the createFileUrl method (FileInterface)
+                // Check entity has the createFileUrl method (FileInterface)
                 if (method_exists($file_entity, 'createFileUrl')) {
                   $image_info['image_url'] = $file_entity->createFileUrl(FALSE);
                 }
@@ -368,7 +368,8 @@ class CitationService {
     $access_month = $access_date->format('F');
     $access_year = $access_date->format('Y');
 
-    // Oxford format for website: Website name, Page Title [website], URL, (accessed Day Month Year).
+    // Oxford format for website: Website name, Page Title [website],
+    // URL, (accessed Day Month Year).
     $citation = sprintf(
           '<em>%s</em>, %s [website], %s, (accessed %s %s %s).',
           $data['site_name'],

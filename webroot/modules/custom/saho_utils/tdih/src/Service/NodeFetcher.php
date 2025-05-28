@@ -15,7 +15,8 @@ class NodeFetcher {
    * Adjust your field and content type as needed.
    */
   public function loadTodayNodes($month, $day) {
-    // Example query: load published "event" nodes with date field matching mm-dd.
+    // Example query: load published "event" nodes with date field
+    // matching mm-dd.
     $query = \Drupal::entityQuery('node');
     $nids = $query->condition('type', 'event')
       ->condition('status', 1)

@@ -93,7 +93,8 @@ class FeaturedArticleBlock extends BlockBase implements ContainerFactoryPluginIn
       }
     }
 
-    // Otherwise, pick a random article that has BOTH field_home_page_feature=1 AND field_staff_picks=1.
+    // Otherwise, pick a random article that has BOTH field_home_page_feature=1
+    // AND field_staff_picks=1.
     $query = \Drupal::entityQuery('node');
     $nids = $query->condition('type', 'article')
       ->condition('status', 1)
@@ -144,12 +145,14 @@ class FeaturedArticleBlock extends BlockBase implements ContainerFactoryPluginIn
           $file_url_generator = \Drupal::service('file_url_generator');
           $image_url = $file_url_generator->generateAbsoluteString($file->getFileUri());
         }
-        // Fallback: check if the entity has a getFileUri method and is a file entity.
+        // Fallback: check if the entity has a getFileUri method
+        // and is a file entity.
         elseif ($file->getEntityTypeId() === 'file' && method_exists($file, 'getFileUri')) {
           $file_url_generator = \Drupal::service('file_url_generator');
           $image_url = $file_url_generator->generateAbsoluteString($file->getFileUri());
         }
-        // Last resort: try to load it as a media entity and get the source file.
+        // Last resort: try to load it as a media entity and
+        // get the source file.
         elseif ($file->getEntityTypeId() === 'media') {
           // Check if this is a media entity that has a source plugin.
           if (method_exists($file, 'getSource') && $file->getSource()) {

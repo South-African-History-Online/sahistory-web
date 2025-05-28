@@ -151,7 +151,8 @@ class EntityOverviewBlock extends BlockBase implements ContainerFactoryPluginInt
     if ($node->hasField('field_article_image') && !$node->get('field_article_image')->isEmpty()) {
       $file = $node->get('field_article_image')->entity;
       if ($file) {
-        // Check if the entity implements FileInterface or has getFileUri method.
+        // Check if the entity implements FileInterface or has getFileUri
+        // method.
         if (($file instanceof FileInterface) ||
             (method_exists($file, 'getFileUri') &&
              $file->getEntityTypeId() === 'file')) {

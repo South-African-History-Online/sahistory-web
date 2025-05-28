@@ -49,7 +49,7 @@ class AddToCartItem extends FieldItemBase {
   }
 
   /**
-   * Returns an array of property definitions for each data element in the field item.
+   * Returns array of property definitions for each data element in field item.
    *
    * @param \Drupal\Core\Field\FieldStorageDefinitionInterface $field_definition
    *   The field definition.
