@@ -3,17 +3,15 @@
 namespace Drupal\saho_tools\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
-use Drupal\Core\Entity\EntityInterface;
 use Drupal\node\NodeInterface;
+use Drupal\saho_tools\Service\CitationService;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Drupal\saho_tools\Service\CitationService;
 
 /**
  * Controller for citation functionality.
  */
 class CitationController extends ControllerBase {
-
   /**
    * The citation service.
    *
@@ -36,8 +34,8 @@ class CitationController extends ControllerBase {
    */
   public static function create(ContainerInterface $container) {
     return new static(
-      $container->get('saho_tools.citation_service')
-    );
+          $container->get('saho_tools.citation_service')
+      );
   }
 
   /**
@@ -51,13 +49,13 @@ class CitationController extends ControllerBase {
    */
   public function generateCitation(NodeInterface $node) {
     try {
-      // Extract node data using the citation service
+      // Extract node data using the citation service.
       $nodeData = $this->citationService->extractNodeData($node);
-      
-      // Generate citations using the citation service
+
+      // Generate citations using the citation service.
       $citations = $this->citationService->generateCitations($node);
 
-      // Return the citations and node data as a JSON response
+      // Return the citations and node data as a JSON response.
       return new JsonResponse([
         'success' => TRUE,
         'citations' => $citations,
@@ -68,15 +66,17 @@ class CitationController extends ControllerBase {
       ]);
     }
     catch (\Exception $e) {
-      // Log the error
+      // Log the error.
       $this->getLogger('saho_tools')->error('Error generating citation: @message', ['@message' => $e->getMessage()]);
-      
-      // Return an error response
+
+      // Return an error response.
       return new JsonResponse([
         'success' => FALSE,
         'error' => $this->t('An error occurred while generating the citation.'),
         'message' => $e->getMessage(),
-      ], 200); // Use 200 instead of 500 to ensure the response is properly handled by JavaScript
+      // Use 200 instead of 500 to ensure the response is properly
+      // handled by JavaScript.
+      ], 200);
     }
   }
 

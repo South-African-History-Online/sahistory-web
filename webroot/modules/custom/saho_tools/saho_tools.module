@@ -168,8 +168,8 @@ function saho_tools_preprocess_html(&$variables) {
       '#base_url' => \Drupal::request()->getSchemeAndHttpHost(),
     ];
     
-    // Render the sharing buttons using renderPlain to avoid nested render context issues
-    $rendered_sharing_buttons = \Drupal::service('renderer')->renderPlain($sharing_buttons);
+    // Render the sharing buttons using renderInIsolation to avoid nested render context issues
+    $rendered_sharing_buttons = \Drupal::service('renderer')->renderInIsolation($sharing_buttons);
     
     $variables['page_bottom']['sharing_modal'] = [
       '#type' => 'html_tag',

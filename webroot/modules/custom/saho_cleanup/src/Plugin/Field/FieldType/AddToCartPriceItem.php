@@ -16,54 +16,77 @@ use Drupal\Core\TypedData\DataDefinition;
  *   default_widget = "string_textfield",
  *   default_formatter = "string"
  * )
+ *
+ * @category SAHO
+ * @package Drupal\saho_cleanup\Plugin\Field\FieldType
+ * @author South African History Online <info@sahistory.org.za>
+ * @license GPL-2.0-or-later https://www.gnu.org/licenses/gpl-2.0.html
+ * @link https://sahistory.org.za
  */
-class AddToCartPriceItem extends FieldItemBase
-{
+class AddToCartPriceItem extends FieldItemBase {
 
-    /**
-     * Defines the schema for the field's database columns.
-     */
-    public static function schema(FieldStorageDefinitionInterface $field_storage_definition)
-    {
-        return [
-        'columns' => [
+  /**
+   * Defines the schema for the field's database columns.
+   *
+   * @param \Drupal\Core\Field\FieldStorageDefinitionInterface $field_storage_definition
+   *   The field storage definition.
+   *
+   * @return array
+   *   The field schema definition.
+   *
+   * @see \Drupal\Core\Field\FieldStorageDefinitionInterface
+   */
+  public static function schema(FieldStorageDefinitionInterface $field_storage_definition) {
+    return [
+      'columns' => [
         'value' => [
           'type' => 'text',
           'size' => 'normal',
-          'not null' => false,
+          'not null' => FALSE,
         ],
-        ],
-        ];
-    }
+      ],
+    ];
+  }
 
-    /**
-     * Returns an array of property definitions for each data element in the field item.
-     */
-    public static function propertyDefinitions(FieldStorageDefinitionInterface $field_definition)
-    {
-        $properties = [];
-        $properties['value'] = DataDefinition::create('string')
-            ->setLabel(t('Price Value'))
-            ->setRequired(false);
+  /**
+   * Returns array of property definitions for each data element in field item.
+   *
+   * @param \Drupal\Core\Field\FieldStorageDefinitionInterface $field_definition
+   *   The field definition.
+   *
+   * @return array
+   *   An array of property definitions.
+   *
+   * @see \Drupal\Core\Field\FieldItemInterface::propertyDefinitions()
+   */
+  public static function propertyDefinitions(FieldStorageDefinitionInterface $field_definition) {
+    $properties = [];
+    $properties['value'] = DataDefinition::create('string')
+      ->setLabel(t('Price Value'))
+      ->setRequired(FALSE);
 
-        return $properties;
-    }
+    return $properties;
+  }
 
-    /**
-     * The main property name of the field (e.g., "value", "target_id", etc.).
-     */
-    public static function mainPropertyName()
-    {
-        return 'value';
-    }
+  /**
+   * The main property name of the field (e.g., "value", "target_id", etc.).
+   *
+   * @return string
+   *   The name of the main property.
+   */
+  public static function mainPropertyName() {
+    return 'value';
+  }
 
-    /**
-     * Determines if this field item is empty.
-     */
-    public function isEmpty()
-    {
-        $value = $this->get('value')->getValue();
-        return $value === null || $value === '';
-    }
+  /**
+   * Determines if this field item is empty.
+   *
+   * @return bool
+   *   TRUE if the field item is empty, FALSE otherwise.
+   */
+  public function isEmpty() {
+    $value = $this->get('value')->getValue();
+    return $value === NULL || $value === '';
+  }
 
 }

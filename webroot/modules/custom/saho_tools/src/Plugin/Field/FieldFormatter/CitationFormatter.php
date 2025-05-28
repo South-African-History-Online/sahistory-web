@@ -2,12 +2,12 @@
 
 namespace Drupal\saho_tools\Plugin\Field\FieldFormatter;
 
-use Drupal\Core\Field\FormatterBase;
 use Drupal\Core\Field\FieldItemListInterface;
+use Drupal\Core\Field\FormatterBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\saho_tools\Service\CitationService;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Plugin implementation of the 'citation_formatter' formatter.
@@ -26,7 +26,6 @@ use Drupal\saho_tools\Service\CitationService;
  * )
  */
 class CitationFormatter extends FormatterBase implements ContainerFactoryPluginInterface {
-
   /**
    * The citation service.
    *
@@ -64,15 +63,15 @@ class CitationFormatter extends FormatterBase implements ContainerFactoryPluginI
    */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
     return new static(
-      $plugin_id,
-      $plugin_definition,
-      $configuration['field_definition'],
-      $configuration['settings'],
-      $configuration['label'],
-      $configuration['view_mode'],
-      $configuration['third_party_settings'],
-      $container->get('saho_tools.citation_service')
-    );
+          $plugin_id,
+          $plugin_definition,
+          $configuration['field_definition'],
+          $configuration['settings'],
+          $configuration['label'],
+          $configuration['view_mode'],
+          $configuration['third_party_settings'],
+          $container->get('saho_tools.citation_service')
+      );
   }
 
   /**

@@ -129,7 +129,8 @@ class TdihBlock extends BlockBase implements ContainerFactoryPluginInterface {
 
     $tdih_nodes = [];
 
-    // 1) If "use manual override" is enabled and an entity is chosen, load that node.
+    // 1) If "use manual override" is enabled and an entity is chosen,
+    // load that node.
     if ($manual_override && $manual_entity_id) {
       $node = Node::load($manual_entity_id);
       if ($node) {
@@ -160,10 +161,11 @@ class TdihBlock extends BlockBase implements ContainerFactoryPluginInterface {
   }
 
   /**
-   * Helper function to build an array of item data from a node, including image.
+   * Helper function to build an array of item data from node, including image.
    */
   protected function buildNodeItem(Node $node) {
-    // Fetch the value from your event date field, e.g. "field_this_day_in_history_3".
+    // Fetch the value from your event date field, e.g.
+    // "field_this_day_in_history_3".
     $raw_date = $node->get('field_this_day_in_history_3')->value;
     $event_timestamp = 0;
     if (!empty($raw_date)) {
@@ -178,16 +180,19 @@ class TdihBlock extends BlockBase implements ContainerFactoryPluginInterface {
       /** @var \Drupal\file\FileInterface $file */
       $file = $node->get('field_event_image')->entity;
       if ($file) {
-        $image_url = \Drupal::service('file_url_generator')->generateAbsoluteString($file->getFileUri());
+        $file_url_generator = \Drupal::service('file_url_generator');
+        $image_url = $file_url_generator->generateAbsoluteString($file->getFileUri());
       }
     }
 
-    // Return a data array, including the event_date timestamp and image.
+    // Return a data array, including the event_date timestamp
+    // and image.
     return [
       'id' => $node->id(),
       'title' => $node->label(),
       'url' => $node->toUrl()->toString(),
-      'event_date' => $event_timestamp, // <-- Use this in Twig with |date filter
+    // <-- Use this in Twig with |date filter
+      'event_date' => $event_timestamp,
       'image' => $image_url,
       // If you still want the fully rendered 'teaser':
       'rendered' => $this->renderNode($node, 'teaser'),

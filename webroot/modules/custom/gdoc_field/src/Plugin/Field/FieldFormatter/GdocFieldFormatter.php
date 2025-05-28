@@ -2,6 +2,7 @@
 
 namespace Drupal\gdoc_field\Plugin\Field\FieldFormatter;
 
+use Drupal\file\FileInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\file\Plugin\Field\FieldFormatter\FileFormatterBase;
@@ -58,12 +59,21 @@ class GdocFieldFormatter extends FileFormatterBase {
       $bundle = $this->fieldDefinition->getTargetBundle();
       $field_name = $this->fieldDefinition->getName();
       $field_type = $this->fieldDefinition->getType();
+
+      // Ensure we're working with a FileInterface.
+      if (!($file instanceof FileInterface)) {
+        // Skip entities that don't implement FileInterface.
+        continue;
+      }
+
+      // Now $file is guaranteed to be a FileInterface.
+      /** @var \Drupal\file\FileInterface $file */
       $file_uri = $file->getFileUri();
       $filename = $file->getFileName();
       $uri_scheme = StreamWrapperManager::getScheme($file_uri);
 
       if ($uri_scheme == 'public') {
-        $url = \Drupal::service('file_url_generator')->generateAbsoluteString($file->getFileUri());
+        $url = \Drupal::service('file_url_generator')->generateAbsoluteString($file_uri);
         $elements[$delta] = [
           '#theme' => 'gdoc_field',
           '#url' => $url,

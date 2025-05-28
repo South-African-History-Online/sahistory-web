@@ -73,8 +73,13 @@ jobs:
       - name: Install PHPCS
         run: composer require squizlabs/php_codesniffer --dev
 
+      - name: Install Drupal Coder and Slevomat Coding Standard
+        run: |
+          composer require --dev drupal/coder
+          composer require --dev slevomat/coding-standard
+
       - name: PHPCS
-        run: ./vendor/bin/phpcs webroot/modules/custom
+        run: ./vendor/bin/phpcs --standard=Drupal webroot/modules/custom
 
   drupal-check:
     name: Drupal Best Practices

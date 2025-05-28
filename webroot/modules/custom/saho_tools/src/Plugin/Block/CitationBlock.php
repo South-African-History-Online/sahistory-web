@@ -4,8 +4,8 @@ namespace Drupal\saho_tools\Plugin\Block;
 
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Provides a 'Citation' Block.
@@ -17,7 +17,6 @@ use Drupal\Core\Routing\RouteMatchInterface;
  * )
  */
 class CitationBlock extends BlockBase implements ContainerFactoryPluginInterface {
-
   /**
    * The current route match.
    *
@@ -48,11 +47,11 @@ class CitationBlock extends BlockBase implements ContainerFactoryPluginInterface
    */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
     return new static(
-      $configuration,
-      $plugin_id,
-      $plugin_definition,
-      $container->get('current_route_match')
-    );
+          $configuration,
+          $plugin_id,
+          $plugin_definition,
+          $container->get('current_route_match')
+      );
   }
 
   /**
@@ -60,8 +59,8 @@ class CitationBlock extends BlockBase implements ContainerFactoryPluginInterface
    */
   public function build() {
     $build = [];
-    
-    // Add a citation button that will trigger the citation modal
+
+    // Add a citation button that will trigger the citation modal.
     $build['citation_button'] = [
       '#type' => 'html_tag',
       '#tag' => 'button',
@@ -71,10 +70,10 @@ class CitationBlock extends BlockBase implements ContainerFactoryPluginInterface
         'data-citation-trigger' => 'true',
       ],
     ];
-    
-    // Attach the citation library
+
+    // Attach the citation library.
     $build['#attached']['library'][] = 'saho_tools/citation';
-    
+
     return $build;
   }
 
