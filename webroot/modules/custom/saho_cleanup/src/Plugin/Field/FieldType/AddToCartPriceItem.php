@@ -2,7 +2,11 @@
 
 /**
  * @file
+ * Defines the AddToCartPriceItem field type.
+ *
  * Contains \Drupal\saho_cleanup\Plugin\Field\FieldType\AddToCartPriceItem.
+ *
+ * @version PHP 7.4
  */
 
 namespace Drupal\saho_cleanup\Plugin\Field\FieldType;
@@ -21,12 +25,12 @@ use Drupal\Core\TypedData\DataDefinition;
  *   default_widget = "string_textfield",
  *   default_formatter = "string"
  * )
- *
- * @category SAHO
- * @package Drupal\saho_cleanup\Plugin\Field\FieldType
- * @author South African History Online
- * @license GPL-2.0-or-later
- * @link https://sahistory.org.za
+ * 
+ * @category   SAHO
+ * @package    Drupal\saho_cleanup\Plugin\Field\FieldType
+ * @author     South African History Online <info@sahistory.org.za>
+ * @license    GPL-2.0-or-later https://www.gnu.org/licenses/gpl-2.0.html
+ * @link       https://sahistory.org.za
  */
 class AddToCartPriceItem extends FieldItemBase
 {
@@ -45,13 +49,13 @@ class AddToCartPriceItem extends FieldItemBase
     public static function schema(FieldStorageDefinitionInterface $field_storage_definition)
     {
         return [
-        'columns' => [
-        'value' => [
-          'type' => 'text',
-          'size' => 'normal',
-          'not null' => false,
-        ],
-        ],
+            'columns' => [
+                'value' => [
+                    'type' => 'text',
+                    'size' => 'normal',
+                    'not null' => false,
+                ],
+            ],
         ];
     }
 
