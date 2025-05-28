@@ -183,7 +183,14 @@ class CitationService {
           }
           // Handle File entity directly.
           elseif ($image_entity->getEntityTypeId() === 'file') {
-            $image_info['image_url'] = $image_entity->createFileUrl(FALSE);
+            // Check if the entity has the createFileUrl method (FileInterface)
+            if (method_exists($image_entity, 'createFileUrl')) {
+              $image_info['image_url'] = $image_entity->createFileUrl(FALSE);
+            }
+            // Fallback to using file URL if createFileUrl is not available.
+            elseif (method_exists($image_entity, 'getFileUri')) {
+              $image_info['image_url'] = \Drupal::service('file_url_generator')->generateAbsoluteString($image_entity->getFileUri());
+            }
 
             // Get alt and title if available on the field.
             $image_info['image_alt'] = $image_field->alt ?? '';
