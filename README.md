@@ -299,3 +299,8 @@ New features should be submitted as Pull Requests (PRs) and reviewed by other de
 - Use the `--sort-packages` flag with Composer for better dependency management.
 
 Let's keep the repository clean and delete old feature branches when they are no longer needed.
+
+##### Useless Incrementor
+This is a simple counter that can be incremented to trigger the CI/CD pipeline for testing purposes. When you need to trigger a build without making any meaningful changes to the codebase, simply increment this number and commit the change.
+
+Current value: 1
