@@ -97,14 +97,14 @@
     const wrapper = Drupal.theme(
       'messageWrapper',
       options.id || new Date().getTime(),
-      options.type || 'status',
+      options.type || 'status'
     );
 
     if (options.dismissible === undefined || !!options.dismissible) {
       wrapper.classList.add('alert-dismissible', 'fade', 'show');
       wrapper.appendChild(Drupal.theme('messageClose'));
     }
-    wrapper.innerHTML += message && message.text;
+    wrapper.innerHTML += message?.text;
 
     return wrapper;
   };

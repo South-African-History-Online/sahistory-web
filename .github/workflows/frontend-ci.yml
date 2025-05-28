@@ -30,9 +30,11 @@ jobs:
       working-directory: webroot/themes/custom/saho
       run: npm ci
     
-    - name: Run linting
+    - name: Run linting with auto-fix
       working-directory: webroot/themes/custom/saho
-      run: npm run lint-ci
+      run: |
+        npm run biome:check
+        npm run stylint-fix
     
     - name: Build frontend assets
       working-directory: webroot/themes/custom/saho

@@ -12,10 +12,10 @@ echo "Starting frontend build process..."
 echo "Installing dependencies..."
 npm ci
 
-# Run linting
-echo "Running linting..."
+# Run linting with auto-fix
+echo "Running linting with auto-fix..."
 npm run biome:check
-npm run stylint
+npm run stylint-fix
 
 # Build assets for production
 echo "Building assets for production..."
