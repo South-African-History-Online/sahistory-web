@@ -156,13 +156,18 @@ class CitationService {
           
           // Handle Media entity.
           if ($image_entity->getEntityTypeId() === 'media') {
-            if ($image_entity->hasField('field_media_image') && !$image_entity->get('field_media_image')->isEmpty()) {
+            // Check if the entity has the hasField method (ContentEntityInterface)
+            if (method_exists($image_entity, 'hasField') && $image_entity->hasField('field_media_image') && 
+                method_exists($image_entity, 'get') && !$image_entity->get('field_media_image')->isEmpty()) {
               $file_entity = $image_entity->get('field_media_image')->entity;
               if ($file_entity) {
-                $image_info['image_url'] = $file_entity->createFileUrl(FALSE);
+                // Check if the entity has the createFileUrl method (FileInterface)
+                if (method_exists($file_entity, 'createFileUrl')) {
+                  $image_info['image_url'] = $file_entity->createFileUrl(FALSE);
+                }
                 
                 // Get alt and title if available.
-                if ($image_entity->hasField('field_media_image')) {
+                if (method_exists($image_entity, 'hasField') && $image_entity->hasField('field_media_image')) {
                   $image_info['image_alt'] = $image_entity->get('field_media_image')->alt ?? '';
                   $image_info['image_title'] = $image_entity->get('field_media_image')->title ?? '';
                 }
@@ -234,8 +239,12 @@ class CitationService {
       case 'place':
         if ($node->hasField('field_geolocation') && !$node->get('field_geolocation')->isEmpty()) {
           $geolocation = $node->get('field_geolocation')->first();
-          $info['latitude'] = $geolocation->lat;
-          $info['longitude'] = $geolocation->lng;
+          // Use getValue() to get the field item values as an array
+          if (method_exists($geolocation, 'getValue')) {
+            $geo_values = $geolocation->getValue();
+            $info['latitude'] = $geo_values['lat'] ?? NULL;
+            $info['longitude'] = $geo_values['lng'] ?? NULL;
+          }
         }
         break;
         

@@ -148,11 +148,15 @@ class FeaturedArticleBlock extends BlockBase implements ContainerFactoryPluginIn
         }
         // Last resort: try to load it as a media entity and get the source file
         elseif ($file->getEntityTypeId() === 'media') {
-          $source_field = $file->getSource()->getConfiguration()['source_field'];
-          if (!empty($file->get($source_field)->entity)) {
-            $source_file = $file->get($source_field)->entity;
-            if ($source_file instanceof \Drupal\file\FileInterface) {
-              $image_url = \Drupal::service('file_url_generator')->generateAbsoluteString($source_file->getFileUri());
+          // Check if this is a media entity that has a source plugin
+          if (method_exists($file, 'getSource') && $file->getSource()) {
+            $source_field = $file->getSource()->getConfiguration()['source_field'];
+            // Check if the media entity has the source field
+            if (method_exists($file, 'get') && !empty($file->get($source_field)->entity)) {
+              $source_file = $file->get($source_field)->entity;
+              if ($source_file instanceof \Drupal\file\FileInterface) {
+                $image_url = \Drupal::service('file_url_generator')->generateAbsoluteString($source_file->getFileUri());
+              }
             }
           }
         }
