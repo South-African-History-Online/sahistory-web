@@ -12,14 +12,14 @@
     Drupal.behaviors.sahoCitation = {
         attach: function (context, settings) {
             console.log('SAHO Citation behavior attached');
-      
+
             // Check if the library is loaded correctly
             if (drupalSettings.sahoTools && drupalSettings.sahoTools.debug) {
                 console.log('Citation library loaded:', drupalSettings.sahoTools.debug);
             } else {
                 console.warn('Citation library debug information not found in drupalSettings');
             }
-      
+
             // Check if Bootstrap is available
             if (typeof bootstrap !== 'undefined' && typeof bootstrap.Modal !== 'undefined') {
                 console.log('Bootstrap Modal is available');
@@ -27,25 +27,26 @@
                 console.error('Bootstrap Modal is not available! This will prevent the citation modal from working.');
                 console.log('Bootstrap object:', typeof bootstrap !== 'undefined' ? bootstrap : 'undefined');
             }
-      
+
             // Target both links and buttons with data-citation-trigger attribute or href="#cite"
             const citeLinks = document.querySelectorAll('a[data-citation-trigger], a[href="#cite"], button[data-citation-trigger]');
             console.log('Found cite elements:', citeLinks.length);
-      
+
             if (citeLinks.length === 0) {
                 console.warn('No citation triggers found on page. Looking for elements with these selectors:');
                 console.warn('- a[data-citation-trigger]');
                 console.warn('- a[href="#cite"]');
                 console.warn('- button[data-citation-trigger]');
             }
-      
+
             once('sahoCitation', 'a[data-citation-trigger], a[href="#cite"], button[data-citation-trigger]', context).forEach(
                 function (element) {
                     console.log('Attaching click handler to:', element);
-        
+
                     // Update the element to use our citation functionality
                     $(element).on(
-                        'click', function (e) {
+                        'click',
+                        function (e) {
                             console.log('Citation element clicked');
                             e.preventDefault();
                             Drupal.sahoCitation.openCitationModal();
@@ -58,7 +59,8 @@
             once('sahoCitationCopy', '.copy-citation', context).forEach(
                 function (element) {
                     $(element).on(
-                        'click', function (e) {
+                        'click',
+                        function (e) {
                             e.preventDefault();
                             Drupal.sahoCitation.copyCitation();
                         }
@@ -77,18 +79,18 @@
          */
         openCitationModal: function () {
             console.log('Opening citation modal');
-      
+
             // Check if the modal element exists
             const modalElement = document.getElementById('citation-modal');
             if (!modalElement) {
                 console.error('Citation modal element not found! Make sure the HTML is added to the page.');
                 return;
             }
-      
+
             // Check if we can use Bootstrap's JavaScript API
             if (typeof bootstrap !== 'undefined' && typeof bootstrap.Modal !== 'undefined') {
                 console.log('Using Bootstrap JS API for modal');
-        
+
                 // Initialize the modal if it's not already
                 if (!this.modal) {
                     try {
@@ -117,29 +119,27 @@
             // Get the node data from drupalSettings
             const nodeData = drupalSettings.sahoTools && drupalSettings.sahoTools.nodeData;
             const pageData = drupalSettings.sahoTools && drupalSettings.sahoTools.pageData;
-      
+
             console.log('Node data:', nodeData);
             console.log('Page data:', pageData);
-      
+
             if (nodeData) {
                 // If we have node data, try to load citation data from the API
                 // But also generate a basic citation as a fallback
                 this.loadCitationData(nodeData.nid);
-        
+
                 // Generate a basic citation from node data as a fallback
                 this.generateBasicCitationFromNodeData(nodeData);
-            } 
-            else if (pageData) {
+            } else if (pageData) {
                 // For non-node pages, generate basic citation
                 this.generateBasicCitation(pageData);
-            }
-            else {
+            } else {
                 // Fallback for when no data is available
                 console.error('No page data available for citation.');
                 $('.citation-content').html('<div class="alert alert-danger">Unable to generate citation for this page.</div>');
             }
         },
-    
+
         /**
          * Generate basic citation from node data.
          *
@@ -148,28 +148,30 @@
          */
         generateBasicCitationFromNodeData: function (nodeData) {
             console.log('Generating basic citation from node data as fallback');
-      
+
             // Always use South African History Online (SAHO) as the author
             const author = 'South African History Online (SAHO)';
-      
+
             // Format dates
             const currentDate = new Date();
             const accessDate = currentDate.toLocaleDateString(
-                'en-US', {
+                'en-US',
+                {
                     year: 'numeric',
                     month: 'long',
                     day: 'numeric'
                 }
             );
-      
+
             // Try to get creation date from nodeData
             let creationDate = accessDate;
             let creationYear = currentDate.getFullYear();
-      
+
             if (nodeData.created) {
                 const nodeCreated = new Date(nodeData.created * 1000);
                 creationDate = nodeCreated.toLocaleDateString(
-                    'en-US', {
+                    'en-US',
+                    {
                         year: 'numeric',
                         month: 'long',
                         day: 'numeric'
@@ -177,25 +179,25 @@
                 );
                 creationYear = nodeCreated.getFullYear();
             }
-      
+
             // Get page URL
             const pageUrl = window.location.href;
-      
+
             // Get page title
             const pageTitle = nodeData.title || document.title;
-      
+
             // Generate Harvard citation - without year after author
-            const harvardCitation = author + ' <em>' + 
+            const harvardCitation = author + ' <em>' +
             pageTitle + '</em>' + '. Available at: ' + pageUrl + ' (Accessed: ' + accessDate + ').';
-      
+
             // Generate APA citation
-            const apaCitation = author + '. (' + creationDate + '). <em>' + 
+            const apaCitation = author + '. (' + creationDate + '). <em>' +
             pageTitle + '</em>. ' + pageUrl;
-      
+
             // Generate Oxford citation
-            const oxfordCitation = author + '. "' + pageTitle + '." ' + 
+            const oxfordCitation = author + '. "' + pageTitle + '." ' +
             creationDate + '. Accessed ' + accessDate + '. ' + pageUrl + '.';
-      
+
             // Update citation content
             this.updateCitationContent(
                 {
@@ -205,7 +207,7 @@
                 }
             );
         },
-    
+
         /**
          * Generate basic citation for non-node pages.
          *
@@ -215,28 +217,29 @@
         generateBasicCitation: function (pageData) {
             // Always use South African History Online (SAHO) as the author
             const author = 'South African History Online (SAHO)';
-      
+
             const currentDate = new Date();
             const formattedDate = currentDate.toLocaleDateString(
-                'en-US', {
+                'en-US',
+                {
                     year: 'numeric',
                     month: 'long',
                     day: 'numeric'
                 }
             );
-      
+
             // Generate Harvard citation - without year after author
-            const harvardCitation = author + ' <em>' + 
+            const harvardCitation = author + ' <em>' +
             pageData.title + '</em>' + '. Available at: ' + pageData.url + ' (Accessed: ' + formattedDate + ').';
-      
+
             // Generate APA citation
-            const apaCitation = author + '. (' + formattedDate + '). <em>' + 
+            const apaCitation = author + '. (' + formattedDate + '). <em>' +
             pageData.title + '</em>. ' + pageData.url;
-      
+
             // Generate Oxford citation
-            const oxfordCitation = author + '. "' + pageData.title + '." ' + 
+            const oxfordCitation = author + '. "' + pageData.title + '." ' +
             formattedDate + '. Accessed ' + formattedDate + '. ' + pageData.url + '.';
-      
+
             // Update citation content
             this.updateCitationContent(
                 {
@@ -255,14 +258,14 @@
          */
         loadCitationData: function (nid) {
             const self = this;
-      
+
             // Show loading state
             $('.citation-content').html('<div class="text-center"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>');
-      
+
             // Log the URL we're requesting
             const apiUrl = Drupal.url('api/citation/' + nid);
             console.log('Requesting citation data from:', apiUrl);
-      
+
             // Make an AJAX request to get the citation data
             $.ajax(
                 {
@@ -274,13 +277,12 @@
                         if (response && response.citations) {
                             // Update the citation content
                             self.updateCitationContent(response.citations);
-            
+
                             // Check if we have image data and update the modal
                             if (response.image_info && response.image_info.has_image) {
                                 self.addImageToModal(response.image_info);
                             }
-                        }
-                        else {
+                        } else {
                             console.error('Invalid response format:', response);
                             // Show error message
                             $('.citation-content').html('<div class="alert alert-danger">Failed to load citation data. Invalid response format.</div>');
@@ -290,7 +292,7 @@
                         console.error('Error loading citation data:', error);
                         console.error('Status:', status);
                         console.error('Response:', xhr.responseText);
-          
+
                         // Show detailed error message
                         let errorMessage = 'Failed to load citation data.';
                         if (xhr.status) {
@@ -309,14 +311,14 @@
                                 }
                             }
                         }
-          
+
                         // Show error message
                         $('.citation-content').html('<div class="alert alert-danger">' + errorMessage + '</div>');
                     }
                 }
             );
         },
-    
+
         /**
          * Update citation content in the modal.
          *
@@ -338,16 +340,17 @@
                     }
                 }
             );
-      
+
             // Add click handler for individual copy buttons
             once('citationCopyIndividual', '.copy-individual', document).forEach(
                 function (button) {
                     $(button).on(
-                        'click', function (e) {
+                        'click',
+                        function (e) {
                             e.preventDefault();
                             const citationText = $(this).parent().clone().children('button').remove().end().text().trim();
                             Drupal.sahoCitation.copyTextToClipboard(citationText, $(this).parent());
-          
+
                             // Update button text temporarily
                             const $button = $(this);
                             const originalText = $button.text();
@@ -355,14 +358,15 @@
                             setTimeout(
                                 function () {
                                     $button.text(originalText);
-                                }, 1500
+                                },
+                                1500
                             );
                         }
                     );
                 }
             );
         },
-    
+
         /**
          * Add image to the citation modal.
          *
@@ -377,37 +381,38 @@
                 $imageContainer = $('<div class="citation-image-container mb-3"></div>');
                 $('.modal-body').prepend($imageContainer);
             }
-      
+
             // Clear existing content
             $imageContainer.empty();
-      
+
             // Add image
             const $image = $(
-                '<img>', {
+                '<img>',
+                {
                     src: imageInfo.image_url,
                     alt: imageInfo.image_alt || 'Image for citation',
                     class: 'img-fluid rounded mb-2'
                 }
             );
-      
+
             $imageContainer.append($image);
-      
+
             // Add caption if available
             if (imageInfo.image_title || imageInfo.photographer || imageInfo.copyright) {
                 const captionParts = [];
-        
+
                 if (imageInfo.image_title) {
                     captionParts.push('<strong>' + imageInfo.image_title + '</strong>');
                 }
-        
+
                 if (imageInfo.photographer) {
                     captionParts.push('Photo by: ' + imageInfo.photographer);
                 }
-        
+
                 if (imageInfo.copyright) {
                     captionParts.push(imageInfo.copyright);
                 }
-        
+
                 if (captionParts.length) {
                     const $caption = $('<figcaption class="figure-caption text-center">' + captionParts.join(' | ') + '</figcaption>');
                     $imageContainer.append($caption);
@@ -433,21 +438,21 @@
             textarea.style.position = 'absolute';
             textarea.style.left = '-9999px';
             document.body.appendChild(textarea);
-      
+
             // Select and copy the text
             textarea.select();
             document.execCommand('copy');
-      
+
             // Remove the textarea
             document.body.removeChild(textarea);
-      
+
             // Show visual feedback
             if ($element) {
                 $element.addClass('copying');
                 setTimeout(
                     function () {
                         $element.removeClass('copying');
-          
+
                         // Auto-close the modal after copying if requested
                         if (autoClose) {
                             const $modal = $('#citation-modal');
@@ -459,23 +464,24 @@
                                 Drupal.sahoCitation.hideModalWithjQuery($modal);
                             }
                         }
-                    }, 1500
+                    },
+                    1500
                 );
             }
         },
 
         /**
          * Show modal using jQuery instead of Bootstrap JS API.
-         * 
+         *
          * @param {HTMLElement} modalElement
          *   The modal element to show.
          */
         showModalWithjQuery: function (modalElement) {
             console.log('Showing modal with jQuery');
-      
+
             // Get jQuery object for the modal
             const $modal = $(modalElement);
-      
+
             // Ensure the close button (X) is visible in the top right corner
             const $closeButton = $modal.find('.btn-close');
             if ($closeButton.length === 0) {
@@ -503,28 +509,29 @@
 
             // Explicitly add a click handler to the close button
             $closeButton.off('click').on(
-                'click', function (e) {
+                'click',
+                function (e) {
                     e.preventDefault();
                     e.stopPropagation();
                     console.log('Close button directly clicked');
                     Drupal.sahoCitation.hideModalWithjQuery($modal);
-                    return false;
+                    return FALSE;
                 }
             );
-      
+
             // Add necessary classes to show the modal
             $modal.addClass('show').css('display', 'block').attr('aria-modal', 'true').removeAttr('aria-hidden');
-      
+
             // Add backdrop
             $('body').addClass('modal-open').append('<div class="modal-backdrop fade show"></div>');
-      
+
             // Remove any existing event handlers to prevent duplicates
             $modal.find('[data-bs-dismiss="modal"]').off('click');
             $('.modal-backdrop').off('click');
             $(document).off('keydown.citationModal');
             $modal.find('.copy-citation').off('click');
             $modal.find('.btn-copy-citation').off('click');
-      
+
             // Enhance the close button visibility with better styling - use text instead of SVG
             $modal.find('.btn-close').css(
                 {
@@ -549,132 +556,138 @@
                     'cursor': 'pointer'
                 }
             ).html('×');
-      
+
             console.log('Close button styled and set to use text "×" instead of SVG');
-      
+
             // Handle close button clicks with a more specific selector
             $modal.find('button[data-bs-dismiss="modal"], .btn-close').on(
-                'click', function (e) {
+                'click',
+                function (e) {
                     e.preventDefault();
                     e.stopPropagation();
                     console.log('Close button clicked');
                     Drupal.sahoCitation.hideModalWithjQuery($modal);
-                    return false;
+                    return FALSE;
                 }
             );
-      
+
             // Handle ESC key
             $(document).on(
-                'keydown.citationModal', function (e) {
+                'keydown.citationModal',
+                function (e) {
                     if (e.key === 'Escape') {
                         console.log('ESC key pressed');
                         Drupal.sahoCitation.hideModalWithjQuery($modal);
                     }
                 }
             );
-      
+
             // Handle backdrop clicks
             $('.modal-backdrop').on(
-                'click', function () {
+                'click',
+                function () {
                     console.log('Backdrop clicked');
                     Drupal.sahoCitation.hideModalWithjQuery($modal);
                 }
             );
-      
+
             // Handle tab switching without Bootstrap
             $modal.find('[data-bs-toggle="tab"]').off('click').on(
-                'click', function (e) {
+                'click',
+                function (e) {
                     e.preventDefault();
                     e.stopPropagation();
                     const $this = $(this);
                     const target = $this.attr('data-bs-target') || $this.attr('href');
                     console.log('Tab clicked:', target);
-        
+
                     // Remove active class from all tabs and tab panes
                     $modal.find('.nav-link').removeClass('active');
                     $modal.find('.tab-pane').removeClass('show active');
-        
+
                     // Add active class to clicked tab and its target pane
                     $this.addClass('active');
                     $(target).addClass('show active');
-        
-                    return false;
+
+                    return FALSE;
                 }
             );
-      
+
             // Also handle regular tab links that might not have data-bs-toggle
             $modal.find('.nav-tabs a').off('click').on(
-                'click', function (e) {
+                'click',
+                function (e) {
                     if (!$(this).attr('data-bs-toggle')) {
                         e.preventDefault();
                         e.stopPropagation();
                         const $this = $(this);
                         const target = $this.attr('href');
                         console.log('Tab link clicked:', target);
-          
+
                         // Remove active class from all tabs and tab panes
                         $modal.find('.nav-link').removeClass('active');
                         $modal.find('.tab-pane').removeClass('show active');
-          
+
                         // Add active class to clicked tab and its target pane
                         $this.addClass('active');
                         $(target).addClass('show active');
-          
-                        return false;
+
+                        return FALSE;
                     }
                 }
             );
-      
+
             // Initialize copy buttons
             this.initializeCopyButtons($modal);
         },
-    
+
         /**
          * Hide modal using jQuery.
-         * 
+         *
          * @param {jQuery} $modal
          *   The jQuery modal object to hide.
          */
         hideModalWithjQuery: function ($modal) {
             console.log('Hiding modal with jQuery');
-      
+
             // Remove classes to hide the modal
             $modal.removeClass('show').css('display', 'none').attr('aria-hidden', 'true').removeAttr('aria-modal');
-      
+
             // Remove backdrop
             $('.modal-backdrop').remove();
             $('body').removeClass('modal-open');
-      
+
             // Remove event handlers
             $modal.find('[data-bs-dismiss="modal"]').off('click');
             $('.modal-backdrop').off('click');
             $(document).off('keydown.citationModal');
             $modal.find('[data-bs-toggle="tab"]').off('click');
-      
+
             console.log('Modal hidden successfully');
         },
-    
+
         /**
          * Initialize copy buttons in the modal.
-         * 
+         *
          * @param {jQuery} $modal
          *   The jQuery modal object.
          */
         initializeCopyButtons: function ($modal) {
             const self = this;
-      
+
             // Main copy citation button - make it more prominent
             const $copyButton = $modal.find('.copy-citation');
             $copyButton.off('click').on(
-                'click', function (e) {
+                'click',
+                function (e) {
                     e.preventDefault();
                     e.stopPropagation();
                     console.log('Main copy button clicked');
                     self.copyCitation();
-                    return false;
+                    return FALSE;
                 }
             );
-      
+
             // Make the copy button more prominent
             $copyButton.addClass('btn-primary').removeClass('btn-secondary btn-outline-secondary')
             .css(
@@ -688,25 +701,26 @@
                 }
             )
             .html('<i class="fas fa-copy"></i> Copy Citation');
-      
+
             // If Font Awesome isn't available, use a simple text
             if ($copyButton.find('i').length === 0) {
                 $copyButton.text('📋 Copy Citation');
             }
-      
+
             // Individual format copy buttons
             $modal.find('.btn-copy-citation').off('click').on(
-                'click', function (e) {
+                'click',
+                function (e) {
                     e.preventDefault();
                     e.stopPropagation();
                     console.log('Individual copy button clicked');
                     const format = $(this).data('format');
                     const $citationElement = $modal.find('.' + format + '-citation');
                     const citationText = $citationElement.clone().children('button').remove().end().text().trim();
-        
+
                     // Copy the text and show feedback, auto-close the modal
-                    self.copyTextToClipboard(citationText, $citationElement, true);
-        
+                    self.copyTextToClipboard(citationText, $citationElement, TRUE);
+
                     // Update the button text temporarily
                     const $button = $(this);
                     const originalText = $button.text();
@@ -714,10 +728,11 @@
                     setTimeout(
                         function () {
                             $button.text(originalText);
-                        }, 1500
+                        },
+                        1500
                     );
-        
-                    return false;
+
+                    return FALSE;
                 }
             );
         },
@@ -728,7 +743,7 @@
         copyCitation: function () {
             // Since all citations are now visible, we'll copy all of them
             let allCitationsText = '';
-      
+
             // Get all citation content
             const formats = ['apa', 'oxford', 'harvard'];
             const formatLabels = {
@@ -736,24 +751,24 @@
                 'oxford': 'Oxford (Footnote style)',
                 'harvard': 'Harvard'
             };
-      
+
             formats.forEach(
                 function (format) {
                     const $citationElement = $('.' + format + '-citation');
                     const citationText = $citationElement.clone().children('button').remove().end().text().trim();
-        
+
                     if (citationText) {
                         allCitationsText += formatLabels[format] + ':\n' + citationText + '\n\n';
                     }
                 }
             );
-      
+
             // Trim the extra newlines at the end
             allCitationsText = allCitationsText.trim();
-      
+
             // Copy the text and show feedback, auto-close the modal
-            this.copyTextToClipboard(allCitationsText, $('.citation-formats'), true);
-      
+            this.copyTextToClipboard(allCitationsText, $('.citation-formats'), TRUE);
+
             // Update the button text temporarily
             const $button = $('.copy-citation');
             const originalText = $button.text();
@@ -761,9 +776,10 @@
             setTimeout(
                 function () {
                     $button.text(originalText);
-                }, 1500
+                },
+                1500
             );
-      
+
             console.log('All citations copied:', allCitationsText);
         }
     };
