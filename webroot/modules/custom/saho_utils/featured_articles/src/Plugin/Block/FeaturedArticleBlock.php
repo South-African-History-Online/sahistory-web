@@ -128,7 +128,24 @@ class FeaturedArticleBlock extends BlockBase implements ContainerFactoryPluginIn
     if ($node->hasField('field_article_image') && !$node->get('field_article_image')->isEmpty()) {
       $file = $node->get('field_article_image')->entity;
       if ($file) {
-        $image_url = \Drupal::service('file_url_generator')->generateAbsoluteString($file->getFileUri());
+        // Check if the entity implements FileInterface or is a File entity
+        if ($file instanceof \Drupal\file\FileInterface) {
+          $image_url = \Drupal::service('file_url_generator')->generateAbsoluteString($file->getFileUri());
+        }
+        // Fallback: try to get the URI using the entity's URI method if available
+        elseif (method_exists($file, 'getFileUri')) {
+          $image_url = \Drupal::service('file_url_generator')->generateAbsoluteString($file->getFileUri());
+        }
+        // Last resort: try to load it as a media entity and get the source file
+        elseif ($file->getEntityTypeId() === 'media') {
+          $source_field = $file->getSource()->getConfiguration()['source_field'];
+          if (!empty($file->get($source_field)->entity)) {
+            $source_file = $file->get($source_field)->entity;
+            if ($source_file instanceof \Drupal\file\FileInterface) {
+              $image_url = \Drupal::service('file_url_generator')->generateAbsoluteString($source_file->getFileUri());
+            }
+          }
+        }
       }
     }
 
