@@ -1,4 +1,8 @@
-# South African History Online (SAHO)
+# South African History Online (SAHO) 
+
+[![Frontend CI](https://github.com/South-African-History-Online/sahistory-web/actions/workflows/frontend-ci.yml/badge.svg)](https://github.com/South-African-History-Online/sahistory-web/actions/workflows/frontend-ci.yml)
+[![PR Build and Test](https://github.com/South-African-History-Online/sahistory-web/actions/workflows/ci.yml/badge.svg)](https://github.com/South-African-History-Online/sahistory-web/actions/workflows/ci.yml)
+
 The primary Git repository for the South African History Online (SAHO) website - sahistory.org.za
 
 This is a project supported and developed by novicell.dk
@@ -340,26 +344,47 @@ South African History Online welcomes contributions from people with diverse ski
 
 We value all contributions, big and small, and are committed to creating an inclusive and welcoming environment for contributors of all backgrounds and experience levels.
 
-### CI/CD Pipeline
+### CI/CD Pipeline 🚀
 
-This project uses a Continuous Integration and Continuous Deployment (CI/CD) pipeline to ensure code quality and automate the deployment process. The pipeline runs automatically when changes are pushed to the repository.
+[![Frontend CI](https://github.com/South-African-History-Online/sahistory-web/actions/workflows/frontend-ci.yml/badge.svg)](https://github.com/South-African-History-Online/sahistory-web/actions/workflows/frontend-ci.yml)
+[![PR Build and Test](https://github.com/South-African-History-Online/sahistory-web/actions/workflows/ci.yml/badge.svg)](https://github.com/South-African-History-Online/sahistory-web/actions/workflows/ci.yml)
 
-#### What the Pipeline Checks
-- **JavaScript Linting**: Uses Biome to enforce code style and catch potential errors
-- **SCSS Compilation**: Ensures that SCSS files compile correctly
-- **Asset Building**: Builds and optimizes frontend assets
+This project leverages a robust Continuous Integration and Continuous Deployment (CI/CD) pipeline to ensure high code quality and streamline the development process. Our automated workflows help catch issues early and maintain a consistent codebase.
 
-#### How to Ensure the Pipeline Passes
-- Run `npm run biome:check` in the theme directory to check for JavaScript linting issues
-- Run `npm run production` to test SCSS compilation and asset building
-- Fix any issues before pushing your changes
+#### ✨ Benefits of Our CI/CD Pipeline
 
-#### Running CI Checks Locally
+- **Catch Issues Early**: Identify and fix problems before they reach production
+- **Consistent Quality**: Enforce coding standards across all contributions
+- **Faster Development**: Automate repetitive tasks like testing and building
+- **Reliable Deployments**: Ensure only working code gets deployed
+- **Better Collaboration**: Provide immediate feedback on pull requests
+
+#### 🔍 What the Pipeline Checks
+
+- **JavaScript Linting** ⚡: Uses Biome to enforce code style and catch potential errors
+- **SCSS Compilation** 🎨: Ensures that SCSS files compile correctly
+- **Asset Building** 📦: Builds and optimizes frontend assets
+- **PHP Coding Standards** 🐘: Verifies PHP code follows Drupal coding standards
+- **Drupal Best Practices** 💧: Checks for Drupal-specific issues and recommendations
+- **Composer Validation** 🎵: Ensures Composer configuration is valid
+
+#### 🛠️ How to Ensure the Pipeline Passes
+
+Before pushing your changes, run these checks locally:
+
 ```sh
+# For frontend changes
 cd webroot/themes/custom/saho
 npm run biome:check
 npm run production
+
+# For PHP/Drupal changes
+composer validate --strict
+./vendor/bin/phpcs --standard=Drupal webroot/modules/custom
+./vendor/bin/drupal-check webroot/modules/custom
 ```
+
+The pipeline status is displayed at the top of this README and on each pull request. Green means everything is working correctly! 🟢
 
 ##### Useless Incrementor
 This is a simple counter that can be incremented to trigger the CI/CD pipeline for testing purposes. When you need to trigger a build without making any meaningful changes to the codebase, simply increment this number and commit the change.

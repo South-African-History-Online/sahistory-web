@@ -1,0 +1,59 @@
+# Dependabot configuration file
+# See https://docs.github.com/github/administering-a-repository/configuration-options-for-dependency-updates
+
+version: 2
+updates:
+  # Check for updates to npm packages in the theme
+  - package-ecosystem: "npm"
+    directory: "/webroot/themes/custom/saho"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "frontend"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+    reviewers:
+      - "South-African-History-Online/frontend-developers"
+    groups:
+      dev-dependencies:
+        patterns:
+          - "*-loader"
+          - "*-webpack-plugin"
+          - "webpack*"
+          - "eslint*"
+          - "stylelint*"
+          - "postcss*"
+        update-types:
+          - "minor"
+          - "patch"
+
+  # Check for updates to Composer packages
+  - package-ecosystem: "composer"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "wednesday"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "backend"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+    reviewers:
+      - "South-African-History-Online/backend-developers"
+    ignore:
+      # Ignore major updates to Drupal core and modules that might require manual intervention
+      - dependency-name: "drupal/core*"
+        update-types: ["major"]
+    groups:
+      drupal-modules:
+        patterns:
+          - "drupal/*"
+        update-types:
+          - "minor"
+          - "patch"
