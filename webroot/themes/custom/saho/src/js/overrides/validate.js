@@ -27,10 +27,7 @@
 
       // Input group.
       $(element).parent('.input-group').addClass(inputGroupClass);
-      $(element)
-        .parent('.form-floating')
-        .parent('.input-group')
-        .addClass(inputGroupClass);
+      $(element).parent('.form-floating').parent('.input-group').addClass(inputGroupClass);
 
       // Form floating.
       $(element)
@@ -43,10 +40,7 @@
 
       // Input group.
       $(element).parent('.input-group').addClass(inputGroupClass);
-      $(element)
-        .parent('.form-floating')
-        .parent('.input-group')
-        .addClass(inputGroupClass);
+      $(element).parent('.form-floating').parent('.input-group').addClass(inputGroupClass);
 
       // Form floating.
       $(element)

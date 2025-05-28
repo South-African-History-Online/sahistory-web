@@ -16,9 +16,7 @@
   Drupal.theme.ajaxProgressThrobber = (message) => {
     // Build markup without adding extra white space since it affects rendering.
     const messageMarkup =
-      typeof message === 'string'
-        ? Drupal.theme('ajaxProgressMessage', message)
-        : '';
+      typeof message === 'string' ? Drupal.theme('ajaxProgressMessage', message) : '';
 
     if (messageMarkup === '') {
       const defaultMessage = Drupal.t('Loading...');
@@ -43,6 +41,5 @@
    * @return {string}
    *   The HTML markup for the throbber.
    */
-  Drupal.theme.ajaxProgressMessage = (message) =>
-    `<span role="status">${message}</span>`;
+  Drupal.theme.ajaxProgressMessage = (message) => `<span role="status">${message}</span>`;
 })(Drupal);

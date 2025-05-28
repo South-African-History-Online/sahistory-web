@@ -93,18 +93,18 @@
    */
   Drupal.theme.message = (message, options) => {
     // @todo use the pattern alert directly if possible in JS.
-    options = options || {};
+    const optionsWithDefaults = options || {};
     const wrapper = Drupal.theme(
       'messageWrapper',
-      options.id || new Date().getTime(),
-      options.type || 'status',
+      optionsWithDefaults.id || new Date().getTime(),
+      optionsWithDefaults.type || 'status'
     );
 
-    if (options.dismissible === undefined || !!options.dismissible) {
+    if (optionsWithDefaults.dismissible === undefined || !!optionsWithDefaults.dismissible) {
       wrapper.classList.add('alert-dismissible', 'fade', 'show');
       wrapper.appendChild(Drupal.theme('messageClose'));
     }
-    wrapper.innerHTML += message && message.text;
+    wrapper.innerHTML += message?.text;
 
     return wrapper;
   };

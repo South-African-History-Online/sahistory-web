@@ -1,0 +1,41 @@
+name: Frontend CI
+
+on:
+  pull_request:
+    paths:
+      - 'webroot/themes/custom/saho/**'
+  push:
+    branches:
+      - main
+    paths:
+      - 'webroot/themes/custom/saho/**'
+
+jobs:
+  lint-and-build:
+    name: Lint and Build Frontend
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '16'
+        cache: 'npm'
+        cache-dependency-path: webroot/themes/custom/saho/package-lock.json
+    
+    - name: Install dependencies
+      working-directory: webroot/themes/custom/saho
+      run: npm ci
+    
+    - name: Run linting with auto-fix
+      working-directory: webroot/themes/custom/saho
+      run: |
+        npm run biome:check
+        npm run stylint-fix
+    
+    - name: Build frontend assets
+      working-directory: webroot/themes/custom/saho
+      run: npm run production
