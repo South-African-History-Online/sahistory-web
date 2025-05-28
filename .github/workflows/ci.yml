@@ -7,6 +7,36 @@ on:
       - main
 
 jobs:
+  frontend-build:
+    name: Frontend Build and Lint
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [16.x]
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        cache-dependency-path: webroot/themes/custom/saho/package-lock.json
+    
+    - name: Install dependencies
+      working-directory: webroot/themes/custom/saho
+      run: npm ci --production
+    
+    - name: Run linting
+      working-directory: webroot/themes/custom/saho
+      run: npm run lint-ci
+    
+    - name: Build frontend
+      working-directory: webroot/themes/custom/saho
+      run: npm run production
+
   validate-composer:
     name: Validate Composer
     runs-on: ubuntu-latest
