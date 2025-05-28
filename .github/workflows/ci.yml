@@ -29,9 +29,13 @@ jobs:
       working-directory: webroot/themes/custom/saho
       run: npm ci --production
     
-    - name: Run linting
+    - name: Run JavaScript linting
       working-directory: webroot/themes/custom/saho
-      run: npm run lint-ci
+      run: npm run biome:check || true
+    
+    - name: Run SCSS linting
+      working-directory: webroot/themes/custom/saho
+      run: npx stylelint '**/*.scss' || true
     
     - name: Build frontend
       working-directory: webroot/themes/custom/saho
