@@ -300,7 +300,68 @@ New features should be submitted as Pull Requests (PRs) and reviewed by other de
 
 Let's keep the repository clean and delete old feature branches when they are no longer needed.
 
+## Contributing to SAHO
+
+South African History Online welcomes contributions from people with diverse skills and backgrounds. You don't need to be a developer to make a meaningful impact on this project!
+
+### Ways to Contribute
+
+#### Historians, Researchers, and Content Creators
+- **Historical Research**: Help research and verify historical information
+- **Content Creation**: Write or edit articles about South African history
+- **Translation**: Translate content into South African languages
+- **Fact-checking**: Review existing content for accuracy
+- **Multimedia**: Contribute photographs, videos, or audio recordings related to South African history
+
+#### Designers and UX Specialists
+- **User Experience**: Suggest improvements to the website's usability
+- **Accessibility**: Help make the site more accessible to all users
+- **Visual Design**: Create graphics, icons, or other visual elements
+- **User Testing**: Participate in or help organize user testing sessions
+
+#### Educators and Community Members
+- **Educational Resources**: Develop teaching materials based on SAHO content
+- **Community Outreach**: Help connect SAHO with schools, universities, and community organizations
+- **Feedback**: Provide feedback on how SAHO could better serve educational needs
+- **Event Organization**: Help organize events related to South African history
+
+#### Technical Contributors
+- **Development**: Contribute code to improve the website
+- **Documentation**: Improve technical documentation
+- **Testing**: Help test new features before they're released
+- **DevOps**: Assist with deployment, performance, and security improvements
+
+### Getting Started
+
+1. **Explore the site**: Familiarize yourself with [South African History Online](https://www.sahistory.org.za/)
+2. **Check out open issues**: Look for issues labeled "good first issue" or "help wanted"
+3. **Share your ideas**: Use our [Contribution Ideas](https://github.com/South-African-History-Online/sahistory-web/issues/new?template=contribution_guide.yml) template to suggest how you'd like to contribute
+4. **Join the conversation**: Engage with the community through issue discussions
+
+We value all contributions, big and small, and are committed to creating an inclusive and welcoming environment for contributors of all backgrounds and experience levels.
+
+### CI/CD Pipeline
+
+This project uses a Continuous Integration and Continuous Deployment (CI/CD) pipeline to ensure code quality and automate the deployment process. The pipeline runs automatically when changes are pushed to the repository.
+
+#### What the Pipeline Checks
+- **JavaScript Linting**: Uses Biome to enforce code style and catch potential errors
+- **SCSS Compilation**: Ensures that SCSS files compile correctly
+- **Asset Building**: Builds and optimizes frontend assets
+
+#### How to Ensure the Pipeline Passes
+- Run `npm run biome:check` in the theme directory to check for JavaScript linting issues
+- Run `npm run production` to test SCSS compilation and asset building
+- Fix any issues before pushing your changes
+
+#### Running CI Checks Locally
+```sh
+cd webroot/themes/custom/saho
+npm run biome:check
+npm run production
+```
+
 ##### Useless Incrementor
 This is a simple counter that can be incremented to trigger the CI/CD pipeline for testing purposes. When you need to trigger a build without making any meaningful changes to the codebase, simply increment this number and commit the change.
 
-Current value: 1
+Current value: 2
