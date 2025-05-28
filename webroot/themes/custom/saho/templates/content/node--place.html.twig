@@ -46,39 +46,20 @@
         </div>
       </div>
 
-      {# Geolocation information if available #}
-      {% if node.field_geolocation.value %}
-        <div class="saho-place-location">
-          <div id="map-{{ node.id() }}" class="saho-place-map" style="height: 300px; margin-bottom: 2rem;"></div>
-          <script>
-            document.addEventListener('DOMContentLoaded', function() {
-              if (typeof google !== 'undefined' && typeof google.maps !== 'undefined') {
-                var mapElement = document.getElementById('map-{{ node.id() }}');
-                var map = new google.maps.Map(mapElement, {
-                  center: {
-                    lat: {{ node.field_geolocation.lat }}, 
-                    lng: {{ node.field_geolocation.lng }}
-                  },
-                  zoom: 8
-                });
-                var marker = new google.maps.Marker({
-                  position: {
-                    lat: {{ node.field_geolocation.lat }}, 
-                    lng: {{ node.field_geolocation.lng }}
-                  },
-                  map: map,
-                  title: '{{ node.label }}'
-                });
-              }
-            });
-          </script>
-        </div>
-      {% endif %}
-
       {% if content.body %}
         <div class="saho-article-body">
           {# Remove the label by accessing the content directly #}
           {{ content.body.0 }}
+        </div>
+      {% endif %}
+
+      {# Geolocation information if available #}
+      {% if content.field_geolocation|render|trim %}
+        <div class="saho-place-location mb-4">
+          <h3 class="mb-3">Location Map</h3>
+          <div class="saho-map-responsive">
+            {{ content.field_geolocation }}
+          </div>
         </div>
       {% endif %}
 
