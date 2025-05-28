@@ -8,18 +8,25 @@
 		"yarn": ">=1.6"
 	},
 	"license": "MIT",
+	"resolutions": {
+		"axios": "^1.6.0",
+		"send": "^0.19.0",
+		"browser-sync": "^2.29.3"
+	},
 	"scripts": {
 		"postinstall": "find node_modules/ -name '*.info' -type f -delete",
 		"dev": "mix",
 		"watch": "mix watch",
 		"biome:format": "biome format --write src/ components/",
-		"biome:lint": "biome lint --apply src/ components/",
-		"biome:check": "biome check --apply src/ components/",
+		"biome:lint": "biome lint --fix src/ components/",
+		"biome:check": "biome check --fix --unsafe src/ components/",
 		"stylint": "npx stylelint '**/*.scss'",
 		"stylint-fix": "npx stylelint '**/*.scss' --fix",
 		"watch-poll": "mix watch -- --watch-options-poll=1000",
 		"hot": "mix watch --hot",
-		"production": "mix --production"
+		"production": "npx mix --production",
+		"ci": "npm ci && npm run production",
+		"lint-ci": "npm run biome:check && npm run stylint-fix"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^1.4.1",

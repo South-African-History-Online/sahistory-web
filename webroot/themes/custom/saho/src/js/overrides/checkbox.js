@@ -11,6 +11,5 @@
    * @return {string}
    *   The HTML markup for the checkbox.
    */
-  Drupal.theme.checkbox = () =>
-    `<input type="checkbox" class="form-checkbox form-check-input"/>`;
+  Drupal.theme.checkbox = () => `<input type="checkbox" class="form-checkbox form-check-input"/>`;
 })(Drupal);

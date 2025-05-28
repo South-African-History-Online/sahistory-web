@@ -29,9 +29,7 @@
       const querySelector = path.currentQuery
         ? `[data-drupal-link-query='${queryString}']`
         : ':not([data-drupal-link-query])';
-      const originalSelectors = [
-        `[data-drupal-link-system-path="${path.currentPath}"]`,
-      ];
+      const originalSelectors = [`[data-drupal-link-system-path="${path.currentPath}"]`];
       let selectors;
 
       // If this is the front page, we have to check for the <front> path as
@@ -45,9 +43,7 @@
         // Links without any hreflang attributes (most of them).
         originalSelectors.map((selector) => `${selector}:not([hreflang])`),
         // Links with hreflang equals to the current language.
-        originalSelectors.map(
-          (selector) => `${selector}[hreflang="${path.currentLanguage}"]`,
-        ),
+        originalSelectors.map((selector) => `${selector}[hreflang="${path.currentLanguage}"]`)
       );
 
       // Add query string selector for pagers, exposed filters.
@@ -63,7 +59,7 @@
     detach(context, settings, trigger) {
       if (trigger === 'unload') {
         const activeLinks = context.querySelectorAll(
-          `[data-drupal-link-system-path].${activeClass}`,
+          `[data-drupal-link-system-path].${activeClass}`
         );
         const il = activeLinks.length;
         for (let i = 0; i < il; i++) {
