@@ -2,6 +2,7 @@
 
 namespace Drupal\featured_articles\Plugin\Block;
 
+use Drupal\file\FileInterface;
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
@@ -92,7 +93,7 @@ class FeaturedArticleBlock extends BlockBase implements ContainerFactoryPluginIn
       }
     }
 
-    // Otherwise, pick a random article that has BOTH field_home_page_feature=1 AND field_staff_picks=1
+    // Otherwise, pick a random article that has BOTH field_home_page_feature=1 AND field_staff_picks=1.
     $nids = \Drupal::entityQuery('node')
       ->condition('type', 'article')
       ->condition('status', 1)
@@ -138,23 +139,23 @@ class FeaturedArticleBlock extends BlockBase implements ContainerFactoryPluginIn
     if ($node->hasField('field_article_image') && !$node->get('field_article_image')->isEmpty()) {
       $file = $node->get('field_article_image')->entity;
       if ($file) {
-        // Check if the entity implements FileInterface or is a File entity
-        if ($file instanceof \Drupal\file\FileInterface) {
+        // Check if the entity implements FileInterface or is a File entity.
+        if ($file instanceof FileInterface) {
           $image_url = \Drupal::service('file_url_generator')->generateAbsoluteString($file->getFileUri());
         }
-        // Fallback: check if the entity has a getFileUri method and is a file entity
+        // Fallback: check if the entity has a getFileUri method and is a file entity.
         elseif ($file->getEntityTypeId() === 'file' && method_exists($file, 'getFileUri')) {
           $image_url = \Drupal::service('file_url_generator')->generateAbsoluteString($file->getFileUri());
         }
-        // Last resort: try to load it as a media entity and get the source file
+        // Last resort: try to load it as a media entity and get the source file.
         elseif ($file->getEntityTypeId() === 'media') {
-          // Check if this is a media entity that has a source plugin
+          // Check if this is a media entity that has a source plugin.
           if (method_exists($file, 'getSource') && $file->getSource()) {
             $source_field = $file->getSource()->getConfiguration()['source_field'];
-            // Check if the media entity has the source field
+            // Check if the media entity has the source field.
             if (method_exists($file, 'get') && !empty($file->get($source_field)->entity)) {
               $source_file = $file->get($source_field)->entity;
-              if ($source_file instanceof \Drupal\file\FileInterface) {
+              if ($source_file instanceof FileInterface) {
                 $image_url = \Drupal::service('file_url_generator')->generateAbsoluteString($source_file->getFileUri());
               }
             }

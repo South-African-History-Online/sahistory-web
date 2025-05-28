@@ -20,7 +20,7 @@ class NodeFetcher {
       ->condition('type', 'event')
       ->condition('status', 1)
       ->condition('field_this_day_in_history_3', "%-$month-$day", 'LIKE')
-      ->condition('field_home_page_feature', 1) 
+      ->condition('field_home_page_feature', 1)
       ->accessCheck(TRUE)
       ->execute();
 

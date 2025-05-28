@@ -187,7 +187,8 @@ class TdihBlock extends BlockBase implements ContainerFactoryPluginInterface {
       'id' => $node->id(),
       'title' => $node->label(),
       'url' => $node->toUrl()->toString(),
-      'event_date' => $event_timestamp, // <-- Use this in Twig with |date filter
+    // <-- Use this in Twig with |date filter
+      'event_date' => $event_timestamp,
       'image' => $image_url,
       // If you still want the fully rendered 'teaser':
       'rendered' => $this->renderNode($node, 'teaser'),

@@ -7,6 +7,8 @@ use Drupal\Core\Block\BlockPluginInterface;
 use Drupal\Core\Form\FormStateInterface;
 
 /**
+ * Provides an example block for SAHO.
+ *
  * @Block(
  *   id = "saho_example_block",
  *   admin_label = @Translation("SAHO Example Block"),
@@ -24,7 +26,8 @@ class SahoExampleBlock extends BlockBase implements BlockPluginInterface {
     // saho-example-block.html.twig template by default.
     $build = [
       '#theme' => 'saho_example_block',
-      '#my_variable' => 'Hello from build() method!',  // Overridden by preprocess if needed
+    // Overridden by preprocess if needed.
+      '#my_variable' => 'Hello from build() method!',
       '#cache' => [
         'max-age' => 0,
       ],

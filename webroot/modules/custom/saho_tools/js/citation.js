@@ -187,8 +187,7 @@
             const pageTitle = nodeData.title || document.title;
 
             // Generate Harvard citation - without year after author
-            const harvardCitation = author + ' <em>' +
-            pageTitle + '</em>' + '. Available at: ' + pageUrl + ' (Accessed: ' + accessDate + ').';
+            const harvardCitation = `${author} < em > ${pageTitle} < / em > . Available at: ${pageUrl} (Accessed: ${accessDate}).`;
 
             // Generate APA citation
             const apaCitation = author + '. (' + creationDate + '). <em>' +
@@ -229,8 +228,7 @@
             );
 
             // Generate Harvard citation - without year after author
-            const harvardCitation = author + ' <em>' +
-            pageData.title + '</em>' + '. Available at: ' + pageData.url + ' (Accessed: ' + formattedDate + ').';
+            const harvardCitation = `${author} < em > ${pageData.title} < / em > . Available at: ${pageData.url} (Accessed: ${formattedDate}).`;
 
             // Generate APA citation
             const apaCitation = author + '. (' + formattedDate + '). <em>' +
