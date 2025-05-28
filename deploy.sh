@@ -28,6 +28,10 @@ echo "DB is available"
 echo "Creating SAHO Solr core"
 docker exec -it solr /opt/solr/bin/solr create_core -c saho -d /opt/solr/server/solr/saho -n saho
 
+# Build frontend assets
+echo "Building frontend assets"
+docker run -it -v /web:/app --network internet --env-file /web/.env --rm sahistory/jobs:latest bash -c "cd /app/webroot/themes/custom/saho && npm run ci"
+
 # Setup Drupal
 echo "Run database and configuration updates"
 docker run -it -v /web:/app --network internet --env-file /web/.env --rm sahistory/jobs:latest /usr/local/bin/drush status

@@ -25,13 +25,11 @@ jobs:
         cache: 'npm'
         cache-dependency-path: webroot/themes/custom/saho/package-lock.json
     
-    - name: Run linting
+    - name: Install dependencies and build frontend
       working-directory: webroot/themes/custom/saho
-      run: npm run lint-ci || true
-    
-    - name: Build frontend
-      working-directory: webroot/themes/custom/saho
-      run: npm run ci
+      run: |
+        chmod +x ci-build.sh
+        ./ci-build.sh
 
   validate-composer:
     name: Validate Composer
