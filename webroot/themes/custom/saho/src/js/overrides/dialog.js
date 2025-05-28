@@ -124,28 +124,28 @@
     }
 
     function openDialog(settings) {
-      settings = $.extend({}, drupalSettings.dialog, options, settings);
+      const mergedSettings = $.extend({}, drupalSettings.dialog, options, settings);
 
-      dispatchDialogEvent('beforecreate', dialog, $element.get(0), settings);
+      dispatchDialogEvent('beforecreate', dialog, $element.get(0), mergedSettings);
 
-      $(window).trigger('dialog:beforecreate', [dialog, $element, settings]);
+      $(window).trigger('dialog:beforecreate', [dialog, $element, mergedSettings]);
 
-      if (settings.dialogClasses !== undefined) {
+      if (mergedSettings.dialogClasses !== undefined) {
         $('.modal-dialog', $element)
           .removeAttr('class')
           .addClass('modal-dialog')
-          .addClass(settings.dialogClasses);
+          .addClass(mergedSettings.dialogClasses);
       }
 
-      $($element).attr('data-settings', JSON.stringify(settings));
+      $($element).attr('data-settings', JSON.stringify(mergedSettings));
 
       // The modal dialog header.
-      if (settingIsTrue(settings.dialogShowHeader)) {
+      if (settingIsTrue(mergedSettings.dialogShowHeader)) {
         let modalHeader = '<div class="modal-header">';
-        const heading = settings.dialogHeadingLevel;
+        const heading = mergedSettings.dialogHeadingLevel;
 
-        if (settingIsTrue(settings.dialogShowHeaderTitle)) {
-          modalHeader += `<h${heading} class="modal-title">${settings.title}</h${heading}>`;
+        if (settingIsTrue(mergedSettings.dialogShowHeaderTitle)) {
+          modalHeader += `<h${heading} class="modal-title">${mergedSettings.title}</h${heading}>`;
         }
 
         modalHeader += `<button type="button" class="close btn-close" data-bs-dismiss="modal" data-dismiss="modal" aria-label="${Drupal.t(
@@ -155,13 +155,13 @@
         $(modalHeader).prependTo($('.modal-dialog .modal-content', $element));
       }
 
-      if (settingIsTrue(settings.dialogStatic)) {
+      if (settingIsTrue(mergedSettings.dialogStatic)) {
         $($element).attr('data-bs-backdrop', 'static');
         $($element).attr('data-bs-keyboard', 'false');
       }
 
       // Non-modal configuration: Remove backdrop and allow interaction with the page.
-      if (!settings.modal) {
+      if (!mergedSettings.modal) {
         $($element).attr('data-bs-backdrop', 'false');
         $($element).attr('data-bs-keyboard', 'true');
 
@@ -170,19 +170,19 @@
         $element.find('.modal-dialog').css('pointer-events', 'auto'); // Ensure dialog itself is still interactive
       }
 
-      if (settingIsTrue(settings.drupalAutoButtons) && settings.buttons.length > 0) {
-        updateButtons(settings.buttons);
+      if (settingIsTrue(mergedSettings.drupalAutoButtons) && mergedSettings.buttons.length > 0) {
+        updateButtons(mergedSettings.buttons);
       }
 
       if ($element.modal !== undefined) {
-        $element.modal(settings);
+        $element.modal(mergedSettings);
         $element.modal('show');
       }
 
-      const originalResizeSetting = settings.autoResize;
-      settings.autoResize = false;
-      dispatchDialogEvent('aftercreate', dialog, $element.get(0), settings);
-      settings.autoResize = originalResizeSetting;
+      const originalResizeSetting = mergedSettings.autoResize;
+      mergedSettings.autoResize = false;
+      dispatchDialogEvent('aftercreate', dialog, $element.get(0), mergedSettings);
+      mergedSettings.autoResize = originalResizeSetting;
     }
 
     function closeDialog(value) {

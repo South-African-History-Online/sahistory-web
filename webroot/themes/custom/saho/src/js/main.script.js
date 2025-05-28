@@ -74,7 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Enhanced dropdown functionality for multilevel menus
   const dropdownElementList = [].slice.call(document.querySelectorAll('.dropdown-toggle'));
-  dropdownElementList.forEach((dropdownToggleEl) => {
+  for (const dropdownToggleEl of dropdownElementList) {
     const dropdown = new bootstrap.Dropdown(dropdownToggleEl, {
       autoClose: 'outside', // Prevents closing when clicking inside dropdown
     });
@@ -97,7 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
         dropdown.toggle();
       });
     }
-  });
+  }
 
   // Share modal URL copy functionality
   const copyShareUrlBtn = document.getElementById('copyShareUrl');

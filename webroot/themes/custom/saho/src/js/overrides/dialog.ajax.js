@@ -34,19 +34,9 @@
 
       const originalClose = settings.dialog.close;
 
-      settings.dialog.close = (event) => {
-        for (
-          // eslint-disable-next-line
-          let _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1;
-          _key < _len;
-          _key++
-        ) {
-          // eslint-disable-next-line
-          args[_key - 1] = arguments[_key];
-        }
-
+      settings.dialog.close = (event, ...args) => {
         // eslint-disable-next-line
-        originalClose.apply(settings.dialog, [event].concat(args));
+        originalClose.apply(settings.dialog, [event, ...args]);
         $(event.target).remove();
       };
     },

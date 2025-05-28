@@ -47,9 +47,9 @@
         }
         if (message) {
           // Remove the unnecessary whitespace at the end of the message.
-          message = message.replace(/<br\/>&nbsp;|\s*$/, '');
+          const cleanMessage = message.replace(/<br\/>&nbsp;|\s*$/, '');
 
-          $('.progress__description', this.element).html(message);
+          $('.progress__description', this.element).html(cleanMessage);
         }
         if (label) {
           $('.progress__label', this.element).html(label);
