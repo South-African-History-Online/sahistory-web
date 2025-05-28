@@ -163,8 +163,10 @@ class CitationService {
           if ($image_entity->getEntityTypeId() === 'media') {
             // Check if the entity has the hasField method (ContentEntityInterface)
             if (
-                  method_exists($image_entity, 'hasField') && $image_entity->hasField('field_media_image')
-                  && method_exists($image_entity, 'get') && !$image_entity->get('field_media_image')->isEmpty()
+                  method_exists($image_entity, 'hasField')
+                  && $image_entity->hasField('field_media_image')
+                  && method_exists($image_entity, 'get')
+                  && !$image_entity->get('field_media_image')->isEmpty()
               ) {
               $file_entity = $image_entity->get('field_media_image')->entity;
               if ($file_entity) {
@@ -245,7 +247,8 @@ class CitationService {
         break;
 
       case 'event':
-        if ($node->hasField('field_this_day_in_history_date_2') && !$node->get('field_this_day_in_history_date_2')->isEmpty()) {
+        if ($node->hasField('field_this_day_in_history_date_2')
+            && !$node->get('field_this_day_in_history_date_2')->isEmpty()) {
           $info['event_date'] = $node->get('field_this_day_in_history_date_2')->value;
         }
         break;
@@ -298,7 +301,8 @@ class CitationService {
     $access_month = $access_date->format('F');
     $access_year = $access_date->format('Y');
 
-    // Harvard format for website: Author (Year) 'Article Title', Website Name, Day Month. Available at: URL (Accessed: Day Month Year).
+    // Harvard format for website: Author (Year) 'Article Title', Website Name,
+    // Day Month. Available at: URL (Accessed: Day Month Year).
     $citation = sprintf(
           '<em>%s</em> (%s) \'%s\', <em>%s</em>, %s %s. Available at: %s (Accessed: %s %s %s).',
           $data['site_name'],
@@ -332,7 +336,8 @@ class CitationService {
     $created_month = $created_date->format('F');
     $created_year = $created_date->format('Y');
 
-    // APA format for website: Author. (Year, Month Day). Title (in italics). Website name. URL.
+    // APA format for website: Author. (Year, Month Day). Title (in italics).
+    // Website name. URL.
     $citation = sprintf(
           '%s. (%s, %s %s). <em>%s</em>. %s. %s',
           $data['site_name'],

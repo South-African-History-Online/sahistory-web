@@ -74,7 +74,8 @@ class CitationController extends ControllerBase {
         'success' => FALSE,
         'error' => $this->t('An error occurred while generating the citation.'),
         'message' => $e->getMessage(),
-      // Use 200 instead of 500 to ensure the response is properly handled by JavaScript.
+      // Use 200 instead of 500 to ensure the response is properly
+      // handled by JavaScript.
       ], 200);
     }
   }

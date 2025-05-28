@@ -153,7 +153,8 @@ class EntityOverviewBlock extends BlockBase implements ContainerFactoryPluginInt
       if ($file) {
         // Check if the entity implements FileInterface or has getFileUri method.
         if (($file instanceof FileInterface) ||
-            (method_exists($file, 'getFileUri') && $file->getEntityTypeId() === 'file')) {
+            (method_exists($file, 'getFileUri') &&
+             $file->getEntityTypeId() === 'file')) {
           $image_url = \Drupal::service('file_url_generator')->generateAbsoluteString($file->getFileUri());
         }
       }

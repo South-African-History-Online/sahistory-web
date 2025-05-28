@@ -178,11 +178,13 @@ class TdihBlock extends BlockBase implements ContainerFactoryPluginInterface {
       /** @var \Drupal\file\FileInterface $file */
       $file = $node->get('field_event_image')->entity;
       if ($file) {
-        $image_url = \Drupal::service('file_url_generator')->generateAbsoluteString($file->getFileUri());
+        $file_url_generator = \Drupal::service('file_url_generator');
+        $image_url = $file_url_generator->generateAbsoluteString($file->getFileUri());
       }
     }
 
-    // Return a data array, including the event_date timestamp and image.
+    // Return a data array, including the event_date timestamp
+    // and image.
     return [
       'id' => $node->id(),
       'title' => $node->label(),
