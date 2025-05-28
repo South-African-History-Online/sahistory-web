@@ -122,6 +122,16 @@ class FeaturedArticleBlock extends BlockBase implements ContainerFactoryPluginIn
 
   /**
    * Builds a data array from the article node.
+   *
+   * @param \Drupal\node\Entity\Node $node
+   *   The node entity to build the article item from.
+   *
+   * @return array
+   *   An array containing the article data with keys:
+   *   - id: The node ID
+   *   - title: The node title
+   *   - url: The node URL
+   *   - image: The image URL if available
    */
   protected function buildArticleItem(Node $node) {
     $image_url = '';
@@ -132,8 +142,8 @@ class FeaturedArticleBlock extends BlockBase implements ContainerFactoryPluginIn
         if ($file instanceof \Drupal\file\FileInterface) {
           $image_url = \Drupal::service('file_url_generator')->generateAbsoluteString($file->getFileUri());
         }
-        // Fallback: try to get the URI using the entity's URI method if available
-        elseif (method_exists($file, 'getFileUri')) {
+        // Fallback: check if the entity has a getFileUri method and is a file entity
+        elseif ($file->getEntityTypeId() === 'file' && method_exists($file, 'getFileUri')) {
           $image_url = \Drupal::service('file_url_generator')->generateAbsoluteString($file->getFileUri());
         }
         // Last resort: try to load it as a media entity and get the source file
