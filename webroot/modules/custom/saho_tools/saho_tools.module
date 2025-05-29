@@ -93,6 +93,26 @@ function saho_tools_preprocess_html(&$variables) {
   
   // Only add the citation modal container on non-admin routes
   if (!$is_admin) {
+    
+    // For nodes, use the canonical URL
+    $node = \Drupal::routeMatch()->getParameter('node');
+    if ($node instanceof NodeInterface) {
+      $canonical_url = $node->toUrl('canonical')->setAbsolute()->toString();
+      
+      // Add canonical link to head
+      $variables['#attached']['html_head'][] = [
+        [
+          '#type' => 'html_tag',
+          '#tag' => 'link',
+          '#attributes' => [
+            'rel' => 'canonical',
+            'href' => $canonical_url,
+          ],
+        ],
+        'canonical_url',
+      ];
+    }
+    
     // Add citation modal
     $variables['page_bottom']['citation_modal'] = [
       '#type' => 'html_tag',
