@@ -8,6 +8,9 @@
  */
 #}
 
+{# Variable to track if sidebar has content #}
+{% set sidebar_has_content = false %}
+
 <article{{ attributes.addClass('saho-article-wrapper') }}>
 
   <div class="saho-article-grid">
@@ -22,6 +25,20 @@
             alt="{{ node.field_feature_banner.alt }}"
             class="saho-feature-banner-image"
           >
+        </div>
+      {% elseif node.field_article_image.entity %}
+        {# Display article image in main content if no feature banner #}
+        <div class="saho-feature-banner">
+          <img
+            src="{{ file_url(node.field_article_image.entity.uri.value) }}"
+            alt="{{ node.field_article_image.alt }}"
+            class="saho-feature-banner-image"
+          >
+          {% if node.field_node_image_caption.value %}
+            <div class="caption">
+              {{ node.field_node_image_caption.value|raw }}
+            </div>
+          {% endif %}
         </div>
       {% endif %}
 
@@ -105,9 +122,50 @@
     </div>
 
     {# RIGHT: Sidebar #}
+    {% if node.field_article_image.entity and node.field_feature_banner.entity %}
+      {% set sidebar_has_content = true %}
+    {% endif %}
+    
+    {% if accordion_views is not empty %}
+      {% set sidebar_has_content = true %}
+    {% endif %}
+    
+    {% if content.field_archive_page_feature is defined and content.field_archive_page_feature|render|trim %}
+      {% set sidebar_has_content = true %}
+    {% endif %}
+    
+    {% if content.field_africa_category is defined and content.field_africa_category|render|trim %}
+      {% set sidebar_has_content = true %}
+    {% endif %}
+    
+    {% if content.field_topics_related_tab is defined and content.field_topics_related_tab|render|trim %}
+      {% set sidebar_has_content = true %}
+    {% endif %}
+    
+    {% if content.field_people_related_tab is defined and content.field_people_related_tab|render|trim %}
+      {% set sidebar_has_content = true %}
+    {% endif %}
+    
+    {% if content.field_feature_parent is defined and content.field_feature_parent|render|trim %}
+      {% set sidebar_has_content = true %}
+    {% endif %}
+    
+    {% if content.field_timeline_categories_type is defined and content.field_timeline_categories_type|render|trim %}
+      {% set sidebar_has_content = true %}
+    {% endif %}
+    
+    {% if content.field_further_reading is defined and content.field_further_reading|render|trim %}
+      {% set sidebar_has_content = true %}
+    {% endif %}
+    
+    {% if node.field_ref_str.value %}
+      {% set sidebar_has_content = true %}
+    {% endif %}
+    
+    {% if sidebar_has_content %}
     <aside class="saho-article-sidebar">
 
-      {% if node.field_article_image.entity %}
+      {% if node.field_article_image.entity and node.field_feature_banner.entity %}
         <div class="saho-image-block">
           <img
             src="{{ file_url(node.field_article_image.entity.uri.value) }}"
@@ -206,6 +264,7 @@
       {% endif %}
 
     </aside>
+    {% endif %}
 
   </div>
 
