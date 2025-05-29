@@ -173,27 +173,9 @@ function saho_tools_preprocess_html(&$variables) {
       }
     }
     
-    // Create a render array for the sharing buttons with improved configuration
-    $sharing_buttons = [
-      '#theme' => 'better_social_sharing_buttons',
-      '#services' => \Drupal::config('better_social_sharing_buttons.settings')->get('services'),
-      '#width' => '36',  // Larger icons for better visibility
-      '#radius' => '8',  // Rounded corners
-      '#facebook_app_id' => \Drupal::config('better_social_sharing_buttons.settings')->get('facebook_app_id'),
-      '#iconset' => 'social-icons--square',  // Use square icons for better visibility
-      '#print_css' => TRUE,
-      '#page_url' => \Drupal::request()->getUri(),
-      '#title' => \Drupal::service('title_resolver')->getTitle(\Drupal::request(), \Drupal::routeMatch()->getRouteObject()),
-      '#description' => $description,
-      '#base_url' => \Drupal::request()->getSchemeAndHttpHost(),
-    ];
-    
-    // Render the sharing buttons using renderInIsolation to avoid nested render context issues
-    $rendered_sharing_buttons = \Drupal::service('renderer')->renderInIsolation($sharing_buttons);
-    
+    // Create the sharing modal with buttons directly included
     $variables['page_bottom']['sharing_modal'] = [
-      '#type' => 'html_tag',
-      '#tag' => 'div',
+      '#type' => 'container',
       '#attributes' => [
         'id' => 'sharing-modal',
         'class' => ['modal', 'fade'],
@@ -201,20 +183,67 @@ function saho_tools_preprocess_html(&$variables) {
         'aria-labelledby' => 'sharing-modal-label',
         'aria-hidden' => 'true',
       ],
-      '#value' => '<div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="sharing-modal-label">Share This Page</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <p class="text-center mb-4">Share this page with your friends and colleagues:</p>
-          <div id="sharing-buttons-container" class="text-center">
-            ' . $rendered_sharing_buttons . '
-          </div>
-        </div>
-      </div>
-    </div>',
+      'dialog' => [
+        '#type' => 'container',
+        '#attributes' => ['class' => ['modal-dialog', 'modal-dialog-centered']],
+        'content' => [
+          '#type' => 'container',
+          '#attributes' => ['class' => ['modal-content']],
+          'header' => [
+            '#type' => 'container',
+            '#attributes' => ['class' => ['modal-header']],
+            'title' => [
+              '#type' => 'html_tag',
+              '#tag' => 'h5',
+              '#attributes' => [
+                'class' => ['modal-title'],
+                'id' => 'sharing-modal-label',
+              ],
+              '#value' => t('Share This Page'),
+            ],
+            'close' => [
+              '#type' => 'html_tag',
+              '#tag' => 'button',
+              '#attributes' => [
+                'type' => 'button',
+                'class' => ['btn-close'],
+                'data-bs-dismiss' => 'modal',
+                'aria-label' => t('Close'),
+              ],
+            ],
+          ],
+          'body' => [
+            '#type' => 'container',
+            '#attributes' => ['class' => ['modal-body']],
+            'text' => [
+              '#type' => 'html_tag',
+              '#tag' => 'p',
+              '#attributes' => ['class' => ['text-center', 'mb-4']],
+              '#value' => t('Share this page with your friends and colleagues:'),
+            ],
+            'buttons_container' => [
+              '#type' => 'container',
+              '#attributes' => [
+                'id' => 'sharing-buttons-container',
+                'class' => ['text-center'],
+              ],
+              'buttons' => [
+                '#theme' => 'better_social_sharing_buttons',
+                '#services' => \Drupal::config('better_social_sharing_buttons.settings')->get('services'),
+                '#width' => \Drupal::config('better_social_sharing_buttons.settings')->get('width'),
+                '#radius' => \Drupal::config('better_social_sharing_buttons.settings')->get('radius'),
+                '#facebook_app_id' => \Drupal::config('better_social_sharing_buttons.settings')->get('facebook_app_id'),
+                '#iconset' => \Drupal::config('better_social_sharing_buttons.settings')->get('iconset'),
+                '#print_css' => TRUE,
+                '#page_url' => \Drupal::request()->getUri(),
+                '#title' => \Drupal::service('title_resolver')->getTitle(\Drupal::request(), \Drupal::routeMatch()->getRouteObject()),
+                '#description' => $description,
+                '#base_url' => \Drupal::request()->getSchemeAndHttpHost(),
+              ],
+            ],
+          ],
+        ],
+      ],
       '#attached' => [
         'library' => [
           'saho_tools/sharing',
