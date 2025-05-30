@@ -103,12 +103,8 @@ AddType image/webp .webp
   # To redirect all users to access the site WITHOUT the 'www.' prefix,
   # (http://www.example.com/foo will be redirected to http://example.com/foo)
   # uncomment the following:
-  RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
-  RewriteCond %{HTTPS} off
-  RewriteRule ^ http://%1%{REQUEST_URI} [L,R=301]
-  RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
-  RewriteCond %{HTTPS} on
-  RewriteRule ^ https://%1%{REQUEST_URI} [L,R=301]
+  # RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
+  # RewriteRule ^ http%{ENV:protossl}://%1%{REQUEST_URI} [L,R=301]
 
   # Modify the RewriteBase if you are using Drupal in a subdirectory or in a
   # VirtualDocumentRoot and the rewrite rules are not working properly.
@@ -154,12 +150,12 @@ AddType image/webp .webp
     # Serve gzip compressed CSS files if they exist and the client accepts gzip.
     RewriteCond %{HTTP:Accept-encoding} gzip
     RewriteCond %{REQUEST_FILENAME}\.gz -s
-    RewriteRule ^(.*)\.css$ $1\.css\.gz [QSA]
+    RewriteRule ^(.*css_[a-zA-Z0-9-_]+)\.css$ $1\.css\.gz [QSA]
 
     # Serve gzip compressed JS files if they exist and the client accepts gzip.
     RewriteCond %{HTTP:Accept-encoding} gzip
     RewriteCond %{REQUEST_FILENAME}\.gz -s
-    RewriteRule ^(.*)\.js$ $1\.js\.gz [QSA]
+    RewriteRule ^(.*js_[a-zA-Z0-9-_]+)\.js$ $1\.js\.gz [QSA]
 
     # Serve correct content types, and prevent double compression.
     RewriteRule \.css\.gz$ - [T=text/css,E=no-gzip:1,E=no-brotli:1]
