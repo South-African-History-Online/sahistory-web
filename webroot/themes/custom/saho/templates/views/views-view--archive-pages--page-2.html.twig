@@ -1,9 +1,9 @@
 {#
 /**
  * @file
- * Custom override for the "archive_pages" view, display "page_1."
+ * Custom override for the "archive_pages" view, display "page_2."
  *
- * This template provides sophisticated styling for the archives landing page,
+ * This template provides sophisticated styling for the collections page,
  * with a research-oriented approach and extensive filtering options.
  *
  * Available variables:
@@ -19,20 +19,24 @@
 #}
 
 {# Define section-specific colors and classes #}
-{% set section_name = 'Archives' %}
+{% set section_name = 'Collection' %}
 {% set section_color = 'saho-dark-charcoal' %}
 {% set section_bg_class = 'saho-bg-dark-charcoal' %}
 {% set section_border_class = 'saho-border-dark-charcoal' %}
 {% set section_text_class = 'saho-text-dark-charcoal' %}
 
-<div{{ attributes.addClass('saho-landing-page', 'saho-archives-page', 'view-' ~ view.id|clean_class) }}>
+<div{{ attributes.addClass('saho-landing-page', 'saho-archives-page', 'saho-collections-page', 'view-' ~ view.id|clean_class) }}>
   
-  {# Hero Section with Advanced Search #}
+  {# Hero Section with Collection Title #}
   <section class="saho-landing-hero saho-archives-hero mb-5 py-4 bg-light">
     <div class="container">
       <div class="row align-items-center">
         <div class="col-lg-8">
-          <h1 class="display-4 {{ section_text_class }}">{{ section_name }}</h1>
+          {% if title %}
+            <h1 class="display-4 {{ section_text_class }}">{{ title }}</h1>
+          {% else %}
+            <h1 class="display-4 {{ section_text_class }}">{{ section_name }}</h1>
+          {% endif %}
           
           {% if header %}
             <div class="saho-landing-description lead mb-4">
@@ -40,7 +44,7 @@
             </div>
           {% else %}
             <div class="saho-landing-description lead mb-4">
-              Explore the SAHO Archives, featuring historical documents, images, and resources for researchers and history enthusiasts.
+              Browse this collection of historical documents, images, and resources from the SAHO Archives.
             </div>
           {% endif %}
         </div>
@@ -57,13 +61,13 @@
     </div>
   </section>
   
-  {# We've removed the Advanced Search Section and will include it in the sidebar #}
+  {# We've removed the Filter Collection Section and will include it in the sidebar #}
   
-  {# Featured Archives - if available #}
+  {# Featured Items - if available #}
   {% if attachment_before %}
     <section class="saho-archives-featured mb-5">
       <div class="container">
-        <h2 class="h3 {{ section_text_class }} mb-4">Featured Collections</h2>
+        <h2 class="h3 {{ section_text_class }} mb-4">Featured Items</h2>
         <div class="saho-featured-content">
           {{ attachment_before }}
         </div>
@@ -79,7 +83,7 @@
         <div class="col-lg-3 mb-4 mb-lg-0">
           <div class="saho-archives-sidebar {{ section_border_class }} border-top border-4 p-3 bg-light rounded">
             {% if exposed %}
-              <h2 class="h4 {{ section_text_class }} mb-3">Advanced Search</h2>
+              <h2 class="h4 {{ section_text_class }} mb-3">Filter Collection</h2>
               <div class="saho-archives-filters mb-4">
                 {{ exposed }}
                 
@@ -96,9 +100,15 @@
             <div class="saho-archives-tools">
               <ul class="list-unstyled">
                 <li class="mb-3">
+                  <a href="/archives" class="d-flex align-items-center text-decoration-none text-dark">
+                    <span class="me-2 {{ section_text_class }}"><i class="fas fa-archive"></i></span>
+                    <span>Back to Archives</span>
+                  </a>
+                </li>
+                <li class="mb-3">
                   <a href="/archives/collections" class="d-flex align-items-center text-decoration-none text-dark">
                     <span class="me-2 {{ section_text_class }}"><i class="fas fa-folder"></i></span>
-                    <span>Browse Collections</span>
+                    <span>All Collections</span>
                   </a>
                 </li>
                 <li class="mb-3">
@@ -111,18 +121,6 @@
                   <a href="/archives/map" class="d-flex align-items-center text-decoration-none text-dark">
                     <span class="me-2 {{ section_text_class }}"><i class="fas fa-map-marker-alt"></i></span>
                     <span>Map View</span>
-                  </a>
-                </li>
-                <li class="mb-3">
-                  <a href="/archives/subjects" class="d-flex align-items-center text-decoration-none text-dark">
-                    <span class="me-2 {{ section_text_class }}"><i class="fas fa-tags"></i></span>
-                    <span>Subject Index</span>
-                  </a>
-                </li>
-                <li class="mb-3">
-                  <a href="/archives/contributors" class="d-flex align-items-center text-decoration-none text-dark">
-                    <span class="me-2 {{ section_text_class }}"><i class="fas fa-users"></i></span>
-                    <span>Contributors</span>
                   </a>
                 </li>
               </ul>
@@ -145,13 +143,9 @@
         
         {# Main content grid #}
         <div class="col-lg-9">
-          {% if title %}
-            <h2 class="h3 mb-4 {{ section_text_class }}">{{ title }}</h2>
-          {% endif %}
-          
           {% if rows_total %}
             <div class="saho-archives-results-count mb-3">
-              <p class="text-muted">Showing {{ rows_total }} results</p>
+              <p class="text-muted">Showing {{ rows_total }} items in this collection</p>
             </div>
           {% endif %}
           
@@ -185,7 +179,7 @@
   {% if attachment_after %}
     <section class="saho-archives-additional py-4 mb-5 bg-light">
       <div class="container">
-        <h2 class="h3 mb-4 {{ section_text_class }}">Related Resources</h2>
+        <h2 class="h3 mb-4 {{ section_text_class }}">Related Collections</h2>
         <div class="saho-additional-content">
           {{ attachment_after }}
         </div>
