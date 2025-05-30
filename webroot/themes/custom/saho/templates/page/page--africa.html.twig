@@ -1,0 +1,446 @@
+{#
+/**
+ * @file
+ * Theme override to display the Africa page.
+ *
+ * This template creates a modern, engaging layout for the Africa section
+ * that showcases the continent's content in an exemplary way.
+ */
+#}
+{% include "@saho/content/header.html.twig" %}
+
+<div class="page africa-page">
+  {% include 'saho:page-navigation' %}
+
+  <main class="py-4">
+    {# Hero Section with Map #}
+    <section class="africa-hero mb-5">
+      <div class="container">
+        <div class="row align-items-center">
+          <div class="col-lg-6 mb-4 mb-lg-0">
+            <h1 class="display-3 fw-bold mb-3">Explore Africa</h1>
+            <p class="lead mb-4">Discover the rich history, diverse cultures, and vibrant stories of the African continent through our comprehensive collection of articles, biographies, and resources.</p>
+            <div class="d-flex flex-wrap gap-2">
+              <a href="#featured-content" class="btn btn-primary">Featured Content</a>
+              <a href="#regions" class="btn btn-outline-secondary">Explore Regions</a>
+            </div>
+          </div>
+          <div class="col-lg-6">
+            <div class="africa-map-container position-relative">
+              <img src="/themes/custom/saho/images/africa-map.svg" alt="Map of Africa" class="img-fluid africa-map" onerror="this.src='/themes/custom/saho/images/africa-map-fallback.png'">
+              <div class="map-overlay d-flex justify-content-center align-items-center">
+                <a href="#regions" class="btn btn-light btn-sm">Explore Regions</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    {# Featured Content Section #}
+    <section id="featured-content" class="py-5 bg-light">
+      <div class="container">
+        <h2 class="section-title text-center mb-5">Featured Content</h2>
+        
+        <div class="row g-4">
+          {% if featured_articles %}
+            {% for article in featured_articles %}
+              <div class="col-md-6 col-lg-4">
+                <div class="card h-100 border-0 shadow-sm">
+                  {% if article.image %}
+                    <img src="{{ article.image }}" class="card-img-top" alt="{{ article.title }}">
+                  {% endif %}
+                  <div class="card-body">
+                    <h3 class="card-title h5">{{ article.title }}</h3>
+                    <p class="card-text">{{ article.summary }}</p>
+                  </div>
+                  <div class="card-footer bg-transparent border-0">
+                    <a href="{{ article.url }}" class="btn btn-link p-0">Read More</a>
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          {% else %}
+            {# Fallback if no featured articles are provided #}
+            <div class="col-12">
+              <div class="alert alert-info">
+                Explore our collection of articles about African history, politics, culture, and more.
+              </div>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </section>
+
+    {# Regions Section #}
+    <section id="regions" class="py-5">
+      <div class="container">
+        <h2 class="section-title text-center mb-5">Regions of Africa</h2>
+        
+        <div class="row g-4">
+          {# North Africa #}
+          <div class="col-md-6 col-lg-4">
+            <div class="region-card h-100 position-relative overflow-hidden rounded">
+              <img src="/themes/custom/saho/images/regions/north-africa.jpg" alt="North Africa" class="region-image" onerror="this.src='/themes/custom/saho/images/placeholders/region-placeholder.jpg'; this.onerror=null;">
+              <div class="region-overlay d-flex flex-column justify-content-end p-4">
+                <h3 class="region-title h4 text-white mb-2">North Africa</h3>
+                <p class="region-description text-white-75 mb-3">Explore the ancient civilizations and rich cultural heritage of North Africa.</p>
+                <a href="/africa/north-africa" class="btn btn-light btn-sm align-self-start">Discover</a>
+              </div>
+            </div>
+          </div>
+          
+          {# West Africa #}
+          <div class="col-md-6 col-lg-4">
+            <div class="region-card h-100 position-relative overflow-hidden rounded">
+              <img src="/themes/custom/saho/images/regions/west-africa.jpg" alt="West Africa" class="region-image" onerror="this.src='/themes/custom/saho/images/placeholders/region-placeholder.jpg'; this.onerror=null;">
+              <div class="region-overlay d-flex flex-column justify-content-end p-4">
+                <h3 class="region-title h4 text-white mb-2">West Africa</h3>
+                <p class="region-description text-white-75 mb-3">Discover the diverse cultures and historical kingdoms of West Africa.</p>
+                <a href="/africa/west-africa" class="btn btn-light btn-sm align-self-start">Discover</a>
+              </div>
+            </div>
+          </div>
+          
+          {# East Africa #}
+          <div class="col-md-6 col-lg-4">
+            <div class="region-card h-100 position-relative overflow-hidden rounded">
+              <img src="/themes/custom/saho/images/regions/east-africa.jpg" alt="East Africa" class="region-image" onerror="this.src='/themes/custom/saho/images/placeholders/region-placeholder.jpg'; this.onerror=null;">
+              <div class="region-overlay d-flex flex-column justify-content-end p-4">
+                <h3 class="region-title h4 text-white mb-2">East Africa</h3>
+                <p class="region-description text-white-75 mb-3">Learn about the Great Rift Valley and the cradle of humanity.</p>
+                <a href="/africa/east-africa" class="btn btn-light btn-sm align-self-start">Discover</a>
+              </div>
+            </div>
+          </div>
+          
+          {# Central Africa #}
+          <div class="col-md-6 col-lg-4">
+            <div class="region-card h-100 position-relative overflow-hidden rounded">
+              <img src="/themes/custom/saho/images/regions/central-africa.jpg" alt="Central Africa" class="region-image" onerror="this.src='/themes/custom/saho/images/placeholders/region-placeholder.jpg'; this.onerror=null;">
+              <div class="region-overlay d-flex flex-column justify-content-end p-4">
+                <h3 class="region-title h4 text-white mb-2">Central Africa</h3>
+                <p class="region-description text-white-75 mb-3">Explore the rainforests and diverse cultures of Central Africa.</p>
+                <a href="/africa/central-africa" class="btn btn-light btn-sm align-self-start">Discover</a>
+              </div>
+            </div>
+          </div>
+          
+          {# Southern Africa #}
+          <div class="col-md-6 col-lg-4">
+            <div class="region-card h-100 position-relative overflow-hidden rounded">
+              <img src="/themes/custom/saho/images/regions/southern-africa.jpg" alt="Southern Africa" class="region-image" onerror="this.src='/themes/custom/saho/images/placeholders/region-placeholder.jpg'; this.onerror=null;">
+              <div class="region-overlay d-flex flex-column justify-content-end p-4">
+                <h3 class="region-title h4 text-white mb-2">Southern Africa</h3>
+                <p class="region-description text-white-75 mb-3">Discover the history and cultures of the southern tip of the continent.</p>
+                <a href="/africa/southern-africa" class="btn btn-light btn-sm align-self-start">Discover</a>
+              </div>
+            </div>
+          </div>
+          
+          {# African Diaspora #}
+          <div class="col-md-6 col-lg-4">
+            <div class="region-card h-100 position-relative overflow-hidden rounded">
+              <img src="/themes/custom/saho/images/regions/african-diaspora.jpg" alt="African Diaspora" class="region-image" onerror="this.src='/themes/custom/saho/images/placeholders/region-placeholder.jpg'; this.onerror=null;">
+              <div class="region-overlay d-flex flex-column justify-content-end p-4">
+                <h3 class="region-title h4 text-white mb-2">African Diaspora</h3>
+                <p class="region-description text-white-75 mb-3">Explore the global influence and communities of the African diaspora.</p>
+                <a href="/africa/diaspora" class="btn btn-light btn-sm align-self-start">Discover</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    {# Topics Section #}
+    <section class="py-5 bg-light">
+      <div class="container">
+        <h2 class="section-title text-center mb-5">Explore Topics</h2>
+        
+        <div class="row g-4">
+          <div class="col-md-4">
+            <div class="topic-card text-center p-4 h-100 bg-white rounded shadow-sm">
+              <div class="topic-icon mb-3">
+                <i class="bi bi-book fs-1"></i>
+              </div>
+              <h3 class="h5 mb-3">History & Heritage</h3>
+              <p class="mb-3">Explore the rich historical narratives and cultural heritage of African civilizations.</p>
+              <a href="/africa/history" class="btn btn-outline-primary btn-sm">Explore</a>
+            </div>
+          </div>
+          
+          <div class="col-md-4">
+            <div class="topic-card text-center p-4 h-100 bg-white rounded shadow-sm">
+              <div class="topic-icon mb-3">
+                <i class="bi bi-people fs-1"></i>
+              </div>
+              <h3 class="h5 mb-3">People & Biographies</h3>
+              <p class="mb-3">Discover the lives and contributions of influential African figures throughout history.</p>
+              <a href="/africa/people" class="btn btn-outline-primary btn-sm">Explore</a>
+            </div>
+          </div>
+          
+          <div class="col-md-4">
+            <div class="topic-card text-center p-4 h-100 bg-white rounded shadow-sm">
+              <div class="topic-icon mb-3">
+                <i class="bi bi-music-note-beamed fs-1"></i>
+              </div>
+              <h3 class="h5 mb-3">Arts & Culture</h3>
+              <p class="mb-3">Experience the diverse artistic expressions and cultural traditions of Africa.</p>
+              <a href="/africa/arts-culture" class="btn btn-outline-primary btn-sm">Explore</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    {# Timeline Section #}
+    <section class="py-5">
+      <div class="container">
+        <h2 class="section-title text-center mb-5">African Timeline</h2>
+        
+        <div class="timeline-container position-relative">
+          <div class="timeline-line"></div>
+          
+          <div class="row g-4">
+            <div class="col-md-6">
+              <div class="timeline-item position-relative">
+                <div class="timeline-marker"></div>
+                <div class="timeline-content bg-white p-4 rounded shadow-sm">
+                  <h3 class="h5 mb-2">Ancient Civilizations</h3>
+                  <p class="text-muted mb-2">3000 BCE - 500 CE</p>
+                  <p>Explore the ancient kingdoms of Egypt, Nubia, Axum, and other early African civilizations.</p>
+                  <a href="/africa/timeline/ancient" class="btn btn-link p-0">Learn More</a>
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-md-6">
+              <div class="timeline-item position-relative mt-md-5">
+                <div class="timeline-marker"></div>
+                <div class="timeline-content bg-white p-4 rounded shadow-sm">
+                  <h3 class="h5 mb-2">Medieval Kingdoms</h3>
+                  <p class="text-muted mb-2">500 CE - 1500 CE</p>
+                  <p>Discover the great medieval kingdoms of Ghana, Mali, Songhai, Great Zimbabwe, and more.</p>
+                  <a href="/africa/timeline/medieval" class="btn btn-link p-0">Learn More</a>
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-md-6">
+              <div class="timeline-item position-relative">
+                <div class="timeline-marker"></div>
+                <div class="timeline-content bg-white p-4 rounded shadow-sm">
+                  <h3 class="h5 mb-2">Colonial Period</h3>
+                  <p class="text-muted mb-2">1500 CE - 1960 CE</p>
+                  <p>Learn about the impact of European colonization and the resistance movements across Africa.</p>
+                  <a href="/africa/timeline/colonial" class="btn btn-link p-0">Learn More</a>
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-md-6">
+              <div class="timeline-item position-relative mt-md-5">
+                <div class="timeline-marker"></div>
+                <div class="timeline-content bg-white p-4 rounded shadow-sm">
+                  <h3 class="h5 mb-2">Independence & Modern Era</h3>
+                  <p class="text-muted mb-2">1960 CE - Present</p>
+                  <p>Explore the independence movements and contemporary history of African nations.</p>
+                  <a href="/africa/timeline/modern" class="btn btn-link p-0">Learn More</a>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="text-center mt-4">
+            <a href="/africa/timeline" class="btn btn-primary">View Complete Timeline</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    {# Contribute Section #}
+    <section class="py-5 bg-primary text-white">
+      <div class="container">
+        <div class="row align-items-center">
+          <div class="col-lg-8 mb-4 mb-lg-0">
+            <h2 class="h3 mb-3">Contribute to Our Africa Collection</h2>
+            <p class="mb-0">Share your knowledge, research, or personal stories about African history and culture. Help us build a more comprehensive resource for everyone.</p>
+          </div>
+          <div class="col-lg-4 text-lg-end">
+            <a href="/form/contribute" class="btn btn-light">Contribute Now</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    {# Recent Articles Section #}
+    <section class="py-5">
+      <div class="container">
+        <h2 class="section-title text-center mb-5">Recent Articles</h2>
+        
+        <div class="row g-4">
+          {% if recent_articles %}
+            {% for article in recent_articles %}
+              <div class="col-md-6 col-lg-4">
+                <article class="card h-100 border-0 shadow-sm">
+                  {% if article.image %}
+                    <img src="{{ article.image }}" class="card-img-top" alt="{{ article.title }}">
+                  {% endif %}
+                  <div class="card-body">
+                    <h3 class="card-title h5">{{ article.title }}</h3>
+                    <p class="card-text">{{ article.summary }}</p>
+                  </div>
+                  <div class="card-footer bg-transparent border-0">
+                    <a href="{{ article.url }}" class="btn btn-link p-0">Read More</a>
+                  </div>
+                </article>
+              </div>
+            {% endfor %}
+          {% else %}
+            {# Fallback content if no recent articles are provided #}
+            <div class="col-12">
+              <div class="alert alert-info">
+                Check back soon for new articles about Africa.
+              </div>
+            </div>
+          {% endif %}
+        </div>
+        
+        <div class="text-center mt-4">
+          <a href="/africa/articles" class="btn btn-outline-primary">View All Articles</a>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+{% include 'saho:page-footer' %}
+
+<style>
+  /* Africa Page Specific Styles */
+  .africa-hero {
+    padding: 3rem 0;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 0.5rem;
+  }
+  
+  .africa-map-container {
+    max-width: 100%;
+    height: auto;
+  }
+  
+  .africa-map {
+    width: 100%;
+    height: auto;
+    transition: transform 0.3s ease;
+  }
+  
+  .africa-map:hover {
+    transform: scale(1.02);
+  }
+  
+  .map-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.1);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    border-radius: 0.5rem;
+  }
+  
+  .africa-map-container:hover .map-overlay {
+    opacity: 1;
+  }
+  
+  .region-card {
+    height: 250px;
+    transition: transform 0.3s ease;
+  }
+  
+  .region-card:hover {
+    transform: translateY(-5px);
+  }
+  
+  .region-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  .region-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.4) 50%, rgba(0, 0, 0, 0.1) 100%);
+  }
+  
+  .text-white-75 {
+    color: rgba(255, 255, 255, 0.75);
+  }
+  
+  .timeline-container {
+    padding: 2rem 0;
+  }
+  
+  .timeline-line {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 2px;
+    background-color: #dee2e6;
+    transform: translateX(-50%);
+  }
+  
+  .timeline-marker {
+    position: absolute;
+    top: 1.5rem;
+    left: -1rem;
+    width: 1rem;
+    height: 1rem;
+    background-color: #007bff;
+    border-radius: 50%;
+    z-index: 1;
+  }
+  
+  .timeline-item {
+    margin-bottom: 2rem;
+  }
+  
+  @media (max-width: 767.98px) {
+    .timeline-line {
+      left: 1rem;
+    }
+    
+    .timeline-marker {
+      left: 0.5rem;
+    }
+    
+    .timeline-content {
+      margin-left: 2rem;
+    }
+  }
+  
+  .section-title {
+    position: relative;
+    padding-bottom: 1rem;
+  }
+  
+  .section-title::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 50px;
+    height: 3px;
+    background-color: #007bff;
+    transform: translateX(-50%);
+  }
+</style>
