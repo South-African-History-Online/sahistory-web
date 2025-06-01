@@ -16,5 +16,71 @@ function tdih_theme($existing, $type, $theme, $path) {
       ],
       'template' => 'block--inline-block--tdih',
     ],
+    'tdih_interactive_block' => [
+      'variables' => [
+        'tdih_nodes' => NULL,
+        'date_picker_form' => NULL,
+        'display_mode' => 'compact',
+      ],
+      'template' => 'block--tdih-interactive',
+    ],
+    'tdih_events' => [
+      'variables' => [
+        'tdih_nodes' => NULL,
+        'attributes' => [],
+      ],
+      'template' => 'tdih-events',
+    ],
   ];
+}
+
+/**
+ * Implements hook_library_info_build().
+ */
+function tdih_library_info_build() {
+  $libraries = [];
+
+  $libraries['tdih-interactive'] = [
+    'version' => '1.0',
+    'css' => [
+      'theme' => [
+        'css/tdih-interactive.css' => [],
+      ],
+    ],
+    'js' => [
+      'js/tdih-interactive.js' => [],
+    ],
+    'dependencies' => [
+      'core/jquery',
+      'core/drupal',
+      'core/drupalSettings',
+      'core/drupal.ajax',
+    ],
+  ];
+
+  $libraries['tdih-page'] = [
+    'version' => '1.0',
+    'css' => [
+      'theme' => [
+        'css/tdih-page.css' => [],
+      ],
+    ],
+    'dependencies' => [
+      'core/drupal',
+    ],
+  ];
+
+  return $libraries;
+}
+
+/**
+ * Implements hook_page_attachments().
+ *
+ * Attaches the tdih-page library to the this-day-in-history page.
+ */
+function tdih_page_attachments(array &$attachments) {
+  $current_path = \Drupal::service('path.current')->getPath();
+  if ($current_path == '/this-day-in-history') {
+    $attachments['#attached']['library'][] = 'tdih/tdih-page';
+  }
 }

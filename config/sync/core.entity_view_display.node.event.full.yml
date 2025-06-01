@@ -3,6 +3,7 @@ langcode: en
 status: true
 dependencies:
   config:
+    - core.entity_view_display.comment.comment_node_event.default
     - core.entity_view_mode.node.full
     - field.field.node.event.body
     - field.field.node.event.comment_node_event
@@ -27,7 +28,9 @@ dependencies:
     - field.field.node.event.field_topics_related_tab
     - node.type.event
   module:
+    - comment
     - datetime
+    - image
     - layout_builder
     - text
     - user
@@ -47,9 +50,68 @@ content:
     third_party_settings: {  }
     weight: 1
     region: content
+  comment_node_event:
+    type: comment_default
+    label: hidden
+    settings:
+      view_mode: default
+      pager_id: 0
+    third_party_settings: {  }
+    weight: 6
+    region: content
+  field_event_image:
+    type: image
+    label: hidden
+    settings:
+      image_link: ''
+      image_style: ''
+      image_loading:
+        attribute: lazy
+    third_party_settings: {  }
+    weight: 7
+    region: content
+  field_event_type:
+    type: entity_reference_label
+    label: hidden
+    settings:
+      link: true
+    third_party_settings: {  }
+    weight: 8
+    region: content
+  field_feature_parent:
+    type: entity_reference_label
+    label: hidden
+    settings:
+      link: true
+    third_party_settings: {  }
+    weight: 9
+    region: content
+  field_node_image_caption:
+    type: text_default
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 5
+    region: content
+  field_organizations_related_tab:
+    type: entity_reference_label
+    label: hidden
+    settings:
+      link: true
+    third_party_settings: {  }
+    weight: 11
+    region: content
+  field_people_related_tab:
+    type: entity_reference_label
+    label: hidden
+    settings:
+      link: true
+    third_party_settings: {  }
+    weight: 10
+    region: content
   field_ref_str:
     type: text_default
-    label: above
+    label: hidden
     settings: {  }
     third_party_settings: {  }
     weight: 3
@@ -61,6 +123,17 @@ content:
     third_party_settings: {  }
     weight: 2
     region: content
+  field_tdih_image:
+    type: image
+    label: hidden
+    settings:
+      image_link: ''
+      image_style: ''
+      image_loading:
+        attribute: lazy
+    third_party_settings: {  }
+    weight: 12
+    region: content
   field_this_day_in_history_3:
     type: datetime_custom
     label: hidden
@@ -70,24 +143,40 @@ content:
     third_party_settings: {  }
     weight: 0
     region: content
+  field_this_day_in_history_date_2:
+    type: datetime_default
+    label: hidden
+    settings:
+      timezone_override: ''
+      format_type: medium
+    third_party_settings: {  }
+    weight: 13
+    region: content
+  field_topics_related_tab:
+    type: entity_reference_label
+    label: hidden
+    settings:
+      link: true
+    third_party_settings: {  }
+    weight: 14
+    region: content
+  links:
+    settings: {  }
+    third_party_settings: {  }
+    weight: 15
+    region: content
+  sharing_buttons:
+    settings: {  }
+    third_party_settings: {  }
+    weight: 4
+    region: content
 hidden:
-  comment_node_event: true
   field_annual: true
   field_article_author: true
   field_article_editors: true
-  field_event_image: true
-  field_event_type: true
-  field_feature_parent: true
   field_feature_tag: true
   field_file_upload: true
   field_home_page_feature: true
-  field_node_image_caption: true
   field_old_filename: true
-  field_organizations_related_tab: true
-  field_people_related_tab: true
-  field_tdih_image: true
-  field_this_day_in_history_date_2: true
-  field_topics_related_tab: true
   langcode: true
-  links: true
   search_api_excerpt: true
