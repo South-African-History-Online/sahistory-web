@@ -1,0 +1,46 @@
+{#
+/**
+ * @file
+ * Template for the TDIH Events display.
+ *
+ * Available variables:
+ * - tdih_nodes: An array of node data for the events.
+ * - attributes: An array of HTML attributes for the container.
+ */
+#}
+
+<div{{ attributes.addClass('tdih-events-wrapper') }}>
+  {% if tdih_nodes %}
+    <div class="tdih-events-list">
+      {% for item in tdih_nodes %}
+        <div class="tdih-event-item">
+          {% if item.image %}
+            <div class="tdih-event-image">
+              <img src="{{ item.image }}" alt="{{ item.title|striptags }}" />
+            </div>
+          {% endif %}
+          
+          <div class="tdih-event-content">
+            <div class="tdih-event-date">
+              {{ item.event_date|date('j F Y') }}
+            </div>
+            
+            <h4 class="tdih-event-title">
+              <a href="{{ item.url }}">{{ item.title }}</a>
+            </h4>
+            
+            {% if item.body %}
+              <div class="tdih-event-body">
+                {{ item.body|raw|striptags('<p><a><em><strong><ul><ol><li>')|truncate(200, true, '...') }}
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="tdih-no-events">
+      <p>{{ 'No events found for this date.'|t }}</p>
+    </div>
+  {% endif %}
+</div>
