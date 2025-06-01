@@ -10,6 +10,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Drupal\Core\Block\BlockManagerInterface;
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\file\FileInterface;
 use Drupal\node\NodeInterface;
 
 /**
@@ -247,7 +248,12 @@ class EntityOverviewController extends ControllerBase {
       if ($entity->hasField('field_article_image') && !$entity->get('field_article_image')->isEmpty()) {
         $file = $entity->get('field_article_image')->entity;
         if ($file) {
-          $item['image'] = \Drupal::service('file_url_generator')->generateAbsoluteString($file->getFileUri());
+          // Check if the entity implements FileInterface or has getFileUri method.
+          if (($file instanceof FileInterface) ||
+              (method_exists($file, 'getFileUri') &&
+               $file->getEntityTypeId() === 'file')) {
+            $item['image'] = \Drupal::service('file_url_generator')->generateAbsoluteString($file->getFileUri());
+          }
         }
       }
     }
