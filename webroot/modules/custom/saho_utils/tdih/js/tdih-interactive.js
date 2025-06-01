@@ -23,6 +23,73 @@
           $(this).val(todayFormatted);
         }
       });
+      
+      // Add toggle button for Today in history section
+      $('.tdih-interactive-block', context).once('tdih-toggle').each(function() {
+        var $block = $(this);
+        var $wrapper = $block.find('.tdih-today-history-wrapper');
+        
+        // Only add toggle if the wrapper exists
+        if ($wrapper.length) {
+          // Create toggle button with initial text based on visibility
+          var isVisible = $wrapper.is(':visible');
+          var $toggleButton = $('<button>', {
+            'class': 'tdih-toggle-button' + (isVisible ? '' : ' active'),
+            'text': isVisible ? Drupal.t('Hide Today in History') : Drupal.t('Show Today in History')
+          });
+          
+          // Insert after header
+          $toggleButton.insertAfter($block.find('.tdih-interactive-header'));
+          
+          // Function to update button text based on state
+          function updateButtonText(isVisible) {
+            $toggleButton.text(isVisible ? 
+              Drupal.t('Hide Today in History') : 
+              Drupal.t('Show Today in History')
+            );
+          }
+          
+          // Function to set visibility state
+          function setVisibility(isVisible) {
+            // Set visibility of the wrapper
+            if (isVisible) {
+              $wrapper.slideDown();
+            } else {
+              $wrapper.slideUp();
+            }
+            
+            // Update button state
+            $toggleButton.toggleClass('active', !isVisible);
+            updateButtonText(isVisible);
+            
+            // Store preference in localStorage
+            try {
+              localStorage.setItem('tdihTodayHistoryVisibility', isVisible ? 'visible' : 'hidden');
+            } catch (e) {
+              // Local storage not available
+            }
+          }
+          
+          // Add click handler
+          $toggleButton.on('click', function() {
+            // Toggle visibility (invert current state)
+            var isCurrentlyVisible = $wrapper.is(':visible');
+            setVisibility(!isCurrentlyVisible);
+          });
+          
+          // Always show the Today in History section by default
+          // Clear any stored preference to reset to default state
+          try {
+            localStorage.removeItem('tdihTodayHistoryVisibility');
+            // Ensure the section is visible
+            if (!$wrapper.is(':visible')) {
+              setVisibility(true);
+            }
+          } catch (e) {
+            // Local storage not available
+          }
+        }
+      });
 
       // Add hover effects to event items.
       $('.tdih-event-item', context).once('tdih-hover').hover(

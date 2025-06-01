@@ -67,6 +67,7 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
       'max_items' => 5,
       'display_mode' => 'compact',
       'show_date_picker' => TRUE,
+      'show_today_history' => TRUE,
     ] + parent::defaultConfiguration();
   }
 
@@ -103,6 +104,13 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
       '#default_value' => $this->configuration['show_date_picker'],
     ];
 
+    $form['show_today_history'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Show Today in history section'),
+      '#description' => $this->t('Enable to show the "Today in history" section with events from the current date.'),
+      '#default_value' => $this->configuration['show_today_history'],
+    ];
+
     return $form;
   }
 
@@ -114,6 +122,7 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
     $this->configuration['max_items'] = $form_state->getValue('max_items');
     $this->configuration['display_mode'] = $form_state->getValue('display_mode');
     $this->configuration['show_date_picker'] = $form_state->getValue('show_date_picker');
+    $this->configuration['show_today_history'] = $form_state->getValue('show_today_history');
   }
 
   /**
@@ -207,14 +216,16 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
     $month = $today->format('m');
     $day = $today->format('d');
 
-    // Load nodes for today's date.
-    $nodes = $this->nodeFetcher->loadTodayNodes($month, $day);
+    // Load nodes for today's date if the Today in history section is enabled.
     $tdih_nodes = [];
+    if ($this->configuration['show_today_history']) {
+      $nodes = $this->nodeFetcher->loadTodayNodes($month, $day);
 
-    if (!empty($nodes)) {
-      // Build the node items for rendering.
-      foreach ($nodes as $node) {
-        $tdih_nodes[] = $this->buildNodeItem($node);
+      if (!empty($nodes)) {
+        // Build the node items for rendering.
+        foreach ($nodes as $node) {
+          $tdih_nodes[] = $this->buildNodeItem($node);
+        }
       }
     }
 
@@ -230,6 +241,7 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
       '#tdih_nodes' => $tdih_nodes,
       '#date_picker_form' => $form,
       '#display_mode' => $this->configuration['display_mode'],
+      '#show_today_history' => $this->configuration['show_today_history'],
       '#attached' => [
         'library' => [
           'tdih/tdih-interactive',

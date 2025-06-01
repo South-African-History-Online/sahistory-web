@@ -22,42 +22,44 @@
     </div>
   {% endif %}
 
-  {% if tdih_nodes %}
-    <div class="tdih-today-events">
-      <h3>{{ 'Today in history'|t }}</h3>
-      <div class="tdih-events-list {% if display_mode == 'compact' %}compact-mode{% else %}full-mode{% endif %}">
-        {% for item in tdih_nodes %}
-          <div class="tdih-event-item">
-            {% if display_mode == 'full' and item.image %}
-              <div class="tdih-event-image">
-                <img src="{{ item.image }}" alt="{{ item.title|striptags }}" />
-              </div>
-            {% endif %}
-            
-            <div class="tdih-event-content">
-              <div class="tdih-event-date">
-                {{ item.event_date|date('j F Y') }}
-              </div>
-              
-              <h4 class="tdih-event-title">
-                <a href="{{ item.url }}">{{ item.title }}</a>
-              </h4>
-              
-              {% if display_mode == 'full' and item.body %}
-                <div class="tdih-event-body">
-                  {{ item.body|raw|striptags('<p><a><em><strong><ul><ol><li>')|truncate(200, true, '...') }}
+  <div class="tdih-today-history-wrapper" {% if not show_today_history %}style="display: none;"{% endif %}>
+    {% if tdih_nodes %}
+      <div class="tdih-today-events">
+        <h3>{{ 'Today in history'|t }}</h3>
+        <div class="tdih-events-list {% if display_mode == 'compact' %}compact-mode{% else %}full-mode{% endif %}">
+          {% for item in tdih_nodes %}
+            <div class="tdih-event-item">
+              {% if display_mode == 'full' and item.image %}
+                <div class="tdih-event-image">
+                  <img src="{{ item.image }}" alt="{{ item.title|striptags }}" />
                 </div>
               {% endif %}
+              
+              <div class="tdih-event-content">
+                <div class="tdih-event-date">
+                  {{ item.event_date|date('j F Y') }}
+                </div>
+                
+                <h4 class="tdih-event-title">
+                  <a href="{{ item.url }}">{{ item.title }}</a>
+                </h4>
+                
+                {% if display_mode == 'full' and item.body %}
+                  <div class="tdih-event-body">
+                    {{ item.body|raw|striptags('<p><a><em><strong><ul><ol><li>')|truncate(200, true, '...') }}
+                  </div>
+                {% endif %}
+              </div>
             </div>
-          </div>
-        {% endfor %}
+          {% endfor %}
+        </div>
       </div>
-    </div>
-  {% else %}
-    <div class="tdih-no-events">
-      <p>{{ 'No events found for today.'|t }}</p>
-    </div>
-  {% endif %}
+    {% else %}
+      <div class="tdih-no-events">
+        <p>{{ 'No events found for today.'|t }}</p>
+      </div>
+    {% endif %}
+  </div>
 
   <div class="tdih-footer">
     <a href="/this-day-in-history" class="tdih-more-link">{{ 'More events'|t }}</a>

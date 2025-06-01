@@ -1,0 +1,35 @@
+{#
+/**
+ * @file
+ * Default theme implementation to display an entity overview item.
+ *
+ * Available variables:
+ * - item: The entity item.
+ *   - id: The entity ID.
+ *   - title: The entity title.
+ *   - url: The entity URL.
+ *   - image: The entity image URL.
+ *   - created: The entity creation timestamp.
+ *
+ * @ingroup themeable
+ */
+#}
+<div class="entity-overview-item">
+  {% if item.image %}
+    <div class="entity-overview-item-image">
+      <a href="{{ item.url }}">
+        <img src="{{ item.image }}" alt="{{ item.title }}" />
+      </a>
+    </div>
+  {% endif %}
+  <div class="entity-overview-item-content">
+    <h3 class="entity-overview-item-title">
+      <a href="{{ item.url }}">{{ item.title }}</a>
+    </h3>
+    {% if item.created %}
+      <div class="entity-overview-item-date">
+        {{ item.created|date('F j, Y') }}
+      </div>
+    {% endif %}
+  </div>
+</div>
