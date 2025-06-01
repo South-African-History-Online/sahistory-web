@@ -252,7 +252,8 @@ class EntityOverviewController extends ControllerBase {
           if (($file instanceof FileInterface) ||
               (method_exists($file, 'getFileUri') &&
                $file->getEntityTypeId() === 'file')) {
-            $item['image'] = \Drupal::service('file_url_generator')->generateAbsoluteString($file->getFileUri());
+            $item['image'] = \Drupal::service('file_url_generator')
+              ->generateAbsoluteString($file->getFileUri());
           }
         }
       }
