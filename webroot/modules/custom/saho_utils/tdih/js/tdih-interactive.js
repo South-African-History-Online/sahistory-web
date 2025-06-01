@@ -13,22 +13,22 @@
     attach: function (context, settings) {
       // Initialize the date picker with today's date if not already set.
       var today = new Date();
-      var todayFormatted = today.getFullYear() + '-' + 
-                          ('0' + (today.getMonth() + 1)).slice(-2) + '-' + 
+      var todayFormatted = today.getFullYear() + '-' +
+                          ('0' + (today.getMonth() + 1)).slice(-2) + '-' +
                           ('0' + today.getDate()).slice(-2);
-      
+
       // Set the date picker to today's date if it's empty.
       $('.tdih-birthday-date-picker', context).once('tdih-init').each(function () {
         if (!$(this).val()) {
           $(this).val(todayFormatted);
         }
       });
-      
+
       // Add toggle button for Today in history section
-      $('.tdih-interactive-block', context).once('tdih-toggle').each(function() {
+      $('.tdih-interactive-block', context).once('tdih-toggle').each(function () {
         var $block = $(this);
         var $wrapper = $block.find('.tdih-today-history-wrapper');
-        
+
         // Only add toggle if the wrapper exists
         if ($wrapper.length) {
           // Create toggle button with initial text based on visibility
@@ -37,18 +37,18 @@
             'class': 'tdih-toggle-button' + (isVisible ? '' : ' active'),
             'text': isVisible ? Drupal.t('Hide Today in History') : Drupal.t('Show Today in History')
           });
-          
+
           // Insert after header
           $toggleButton.insertAfter($block.find('.tdih-interactive-header'));
-          
+
           // Function to update button text based on state
           function updateButtonText(isVisible) {
-            $toggleButton.text(isVisible ? 
-              Drupal.t('Hide Today in History') : 
+            $toggleButton.text(isVisible ?
+              Drupal.t('Hide Today in History') :
               Drupal.t('Show Today in History')
             );
           }
-          
+
           // Function to set visibility state
           function setVisibility(isVisible) {
             // Set visibility of the wrapper
@@ -57,11 +57,11 @@
             } else {
               $wrapper.slideUp();
             }
-            
+
             // Update button state
             $toggleButton.toggleClass('active', !isVisible);
             updateButtonText(isVisible);
-            
+
             // Store preference in localStorage
             try {
               localStorage.setItem('tdihTodayHistoryVisibility', isVisible ? 'visible' : 'hidden');
@@ -69,21 +69,21 @@
               // Local storage not available
             }
           }
-          
+
           // Add click handler
-          $toggleButton.on('click', function() {
+          $toggleButton.on('click', function () {
             // Toggle visibility (invert current state)
             var isCurrentlyVisible = $wrapper.is(':visible');
             setVisibility(!isCurrentlyVisible);
           });
-          
+
           // Always show the Today in History section by default
           // Clear any stored preference to reset to default state
           try {
             localStorage.removeItem('tdihTodayHistoryVisibility');
             // Ensure the section is visible
             if (!$wrapper.is(':visible')) {
-              setVisibility(true);
+              setVisibility(TRUE);
             }
           } catch (e) {
             // Local storage not available
@@ -106,12 +106,12 @@
         // Only if there's a body to toggle.
         var $item = $(this).closest('.tdih-event-item');
         var $body = $item.find('.tdih-event-body');
-        
+
         if ($body.length) {
           e.preventDefault();
           $body.slideToggle();
           $item.toggleClass('expanded');
-          return false;
+          return FALSE;
         }
       });
 
@@ -119,16 +119,16 @@
       $('.tdih-events-container', context).once('tdih-animate').each(function () {
         $(this).hide().fadeIn(500);
       });
-      
+
       // Enhance the AJAX progress indicator with African drum animation.
-      $(document).once('tdih-ajax-setup').ajaxSend(function(event, xhr, settings) {
+      $(document).once('tdih-ajax-setup').ajaxSend(function (event, xhr, settings) {
         if (settings.url && settings.url.indexOf('tdih') !== -1) {
           // Add a class to the body during loading for potential page-wide effects.
           $('body').addClass('tdih-loading');
-          
+
           // Add a custom message to the throbber if not already present.
-          setTimeout(function() {
-            if ($('.tdih-interactive-block .ajax-progress .message').length && 
+          setTimeout(function () {
+            if ($('.tdih-interactive-block .ajax-progress .message').length &&
                 !$('.tdih-interactive-block .ajax-progress .message .drum-text').length) {
               $('.tdih-interactive-block .ajax-progress .message').append(
                 '<span class="drum-text"> Beating the drums of history...</span>'
@@ -143,47 +143,47 @@
         if (settings.url && settings.url.indexOf('tdih') !== -1) {
           // Remove loading class.
           $('body').removeClass('tdih-loading');
-          
+
           // Add a subtle highlight effect to new items.
           $('.tdih-event-item').addClass('highlight');
-          setTimeout(function() {
+          setTimeout(function () {
             $('.tdih-event-item').removeClass('highlight');
           }, 1000);
-          
+
           // Add birthday events class when the birthday form is submitted
           if (settings.url.indexOf('birthday-date-form') !== -1) {
             // Find the events container that was just updated
             var $eventsContainer = $('.tdih-events-container').last();
-            
+
             // Add the birthday events class to highlight these events
             $eventsContainer.addClass('tdih-birthday-events');
-            
+
             // Update the heading to indicate these are birthday events
             var date = $('.tdih-birthday-date-picker').val();
             if (date) {
               var dateObj = new Date(date);
-              var formattedDate = dateObj.toLocaleDateString('en-US', { 
-                month: 'long', 
-                day: 'numeric' 
+              var formattedDate = dateObj.toLocaleDateString('en-US', {
+                month: 'long',
+                day: 'numeric'
               });
-              
+
               $eventsContainer.find('h3').text('Events on ' + formattedDate);
-              
+
               // Check for exact date matches (day, month, AND year)
               var selectedYear = dateObj.getFullYear();
-              
+
               // Process each event item to find exact matches
-              $eventsContainer.find('.tdih-event-item').each(function() {
+              $eventsContainer.find('.tdih-event-item').each(function () {
                 var $eventItem = $(this);
                 var eventDateText = $eventItem.find('.tdih-event-date').text();
-                
+
                 // Extract the year from the event date text (format: "DD Month YYYY")
                 var eventYear = parseInt(eventDateText.match(/\d{4}/)[0], 10);
-                
+
                 // If the years match, this is an exact date match
                 if (eventYear === selectedYear) {
                   $eventItem.addClass('tdih-exact-match');
-                  
+
                   // Move the exact match to the top of the list
                   $eventItem.parent().prepend($eventItem);
                 }
@@ -195,7 +195,7 @@
           }
         }
       });
-      
+
       // Add CSS for the highlight effect.
       $('head').once('tdih-highlight-css').append(
         '<style>' +

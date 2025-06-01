@@ -6,7 +6,6 @@ use Drupal\file\FileInterface;
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\node\Entity\Node;
-use Drupal\taxonomy\Entity\Term;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 
@@ -193,7 +192,6 @@ class EntityOverviewBlock extends BlockBase implements ContainerFactoryPluginInt
     ];
 
     // No longer using taxonomy term filter in configuration form.
-
     // Add options to enable/disable filtering, sorting, and display toggle.
     $form['enable_filtering'] = [
       '#type' => 'checkbox',
@@ -275,7 +273,6 @@ class EntityOverviewBlock extends BlockBase implements ContainerFactoryPluginInt
       ->accessCheck(TRUE);
 
     // Removed filter_term_id condition from query.
-
     if ($sort_order == 'latest') {
       $query->sort('created', 'DESC');
     }
@@ -406,11 +403,29 @@ class EntityOverviewBlock extends BlockBase implements ContainerFactoryPluginInt
    */
   protected function buildEntityItem(Node $node) {
     $image_url = '';
-    if ($node->hasField('field_article_image') && !$node->get('field_article_image')->isEmpty()) {
-      $file = $node->get('field_article_image')->entity;
+
+    // Define image field names for different content types.
+    $image_field_map = [
+      'article' => 'field_article_image',
+      'biography' => 'field_bio_pic',
+      'place' => 'field_place_image',
+      'event' => 'field_event_image',
+      'upcomingevent' => 'field_upcomingevent_image',
+      'archive' => 'field_archive_image',
+      // Add more content types and their image field names as needed.
+    ];
+
+    // Get the content type of the node.
+    $content_type = $node->bundle();
+
+    // Get the appropriate image field name for this content type.
+    $image_field = $image_field_map[$content_type] ?? 'field_article_image';
+
+    // Check if the node has the image field and it's not empty.
+    if ($node->hasField($image_field) && !$node->get($image_field)->isEmpty()) {
+      $file = $node->get($image_field)->entity;
       if ($file) {
-        // Check if the entity implements FileInterface or has getFileUri
-        // method.
+        // Check if the entity implements FileInterface or has getFileUri method.
         if (($file instanceof FileInterface) ||
             (method_exists($file, 'getFileUri') &&
              $file->getEntityTypeId() === 'file')) {
