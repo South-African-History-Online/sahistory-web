@@ -170,7 +170,7 @@ class BirthdayDateForm extends FormBase {
         '#tag' => 'style',
         '#value' => '.tdih-birthday-form .spam-master-message { ' .
           'display: none !important; ' .
-        '}',
+          '}',
       ],
       'tdih_hide_spam_master',
     ];
