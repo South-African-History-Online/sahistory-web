@@ -425,10 +425,11 @@ class EntityOverviewBlock extends BlockBase implements ContainerFactoryPluginInt
     if ($node->hasField($image_field) && !$node->get($image_field)->isEmpty()) {
       $file = $node->get($image_field)->entity;
       if ($file) {
-        // Check if the entity implements FileInterface or has getFileUri method.
+        // Check if entity implements FileInterface or has getFileUri method.
         if (($file instanceof FileInterface) ||
             (method_exists($file, 'getFileUri') &&
-             $file->getEntityTypeId() === 'file')) {
+             $file->getEntityTypeId() === 'file')
+        ) {
           $image_url = \Drupal::service('file_url_generator')->generateAbsoluteString($file->getFileUri());
         }
       }

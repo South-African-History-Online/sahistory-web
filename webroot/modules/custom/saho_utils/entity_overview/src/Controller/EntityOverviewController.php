@@ -248,10 +248,11 @@ class EntityOverviewController extends ControllerBase {
       if ($entity->hasField('field_article_image') && !$entity->get('field_article_image')->isEmpty()) {
         $file = $entity->get('field_article_image')->entity;
         if ($file) {
-          // Check if the entity implements FileInterface or has getFileUri method.
+          // Check if entity implements FileInterface or has getFileUri method.
           if (($file instanceof FileInterface) ||
               (method_exists($file, 'getFileUri') &&
-               $file->getEntityTypeId() === 'file')) {
+               $file->getEntityTypeId() === 'file')
+          ) {
             $item['image'] = \Drupal::service('file_url_generator')
               ->generateAbsoluteString($file->getFileUri());
           }
