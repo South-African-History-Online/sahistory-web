@@ -15,8 +15,43 @@ function entity_overview_theme($existing, $type, $theme, $path) {
         'items' => NULL,
         'block_title' => NULL,
         'intro_text' => NULL,
+        'block_id' => NULL,
+        'filter_options' => NULL,
+        'sort_options' => NULL,
+        'has_more' => NULL,
+        'show_display_toggle' => NULL,
+        'display_mode' => 'default',
       ],
       'template' => 'entity-overview-block',
     ],
+    'entity_overview_item' => [
+      'variables' => [
+        'item' => NULL,
+      ],
+      'template' => 'entity-overview-item',
+    ],
+  ];
+}
+
+/**
+ * Implements hook_preprocess_HOOK() for entity_overview_block.
+ */
+function entity_overview_preprocess_entity_overview_block(&$variables) {
+  // Attach the entity overview library.
+  $variables['#attached']['library'][] = 'entity_overview/entity_overview';
+
+  // Add a unique ID for the block if not provided.
+  if (empty($variables['block_id'])) {
+    $variables['block_id'] = 'entity-overview-' . uniqid();
+  }
+
+  // Add the block settings to drupalSettings.
+  $variables['#attached']['drupalSettings']['entityOverview'][$variables['block_id']] = [
+    'blockId' => $variables['block_id'],
+    'filterOptions' => $variables['filter_options'] ?? [],
+    'sortOptions' => $variables['sort_options'] ?? [],
+    'hasMore' => $variables['has_more'] ?? FALSE,
+    'showDisplayToggle' => $variables['show_display_toggle'] ?? FALSE,
+    'displayMode' => $variables['display_mode'] ?? 'default',
   ];
 }

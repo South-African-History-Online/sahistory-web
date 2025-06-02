@@ -4,9 +4,6 @@ namespace Drupal\tdih\Form;
 
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Ajax\AjaxResponse;
-use Drupal\Core\Ajax\HtmlCommand;
-use Drupal\Core\Ajax\ReplaceCommand;
 use Drupal\Core\Datetime\DrupalDateTime;
 use Drupal\tdih\Plugin\Block\TdihInteractiveBlock;
 
@@ -151,7 +148,7 @@ class BirthdayDateForm extends FormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    // This form is primarily handled via AJAX, so we don't need to do anything here.
+    // This form is primarily handled via AJAX, so we don't need to do anything.
   }
 
   /**
@@ -171,7 +168,9 @@ class BirthdayDateForm extends FormBase {
       [
         '#type' => 'html_tag',
         '#tag' => 'style',
-        '#value' => '.tdih-birthday-form .spam-master-message { display: none !important; }',
+        '#value' => '.tdih-birthday-form .spam-master-message { ' .
+        'display: none !important; ' .
+        '}',
       ],
       'tdih_hide_spam_master',
     ];

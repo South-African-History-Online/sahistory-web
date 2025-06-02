@@ -163,6 +163,36 @@ The configuration will be written to `.yml` files in `/config/sync`, from where 
 
 **Note:** When exporting config, check for language switches or overwriting customized configuration (such as standard Drupal emails changed through core updates).
 
+### Code Quality Tools
+
+This project uses several tools to maintain code quality and ensure adherence to Drupal coding standards:
+
+#### PHP Code Sniffer (PHPCS)
+
+PHPCS is used to check PHP code against the Drupal coding standards. To check your code:
+
+```sh
+./vendor/bin/phpcs --standard=Drupal webroot/modules/custom
+```
+
+#### PHP Code Beautifier and Fixer (PHPCBF)
+
+PHPCBF can automatically fix many coding standard violations detected by PHPCS. To auto-fix your code:
+
+```sh
+./vendor/bin/phpcbf --standard=Drupal webroot/modules/custom
+```
+
+#### Drupal Check
+
+Drupal Check is used to identify deprecated code usage and other potential issues:
+
+```sh
+./vendor/bin/drupal-check webroot/modules/custom
+```
+
+Running these tools regularly helps maintain code quality and prevents issues from accumulating over time.
+
 ### Radix and "saho" Subtheme
 The SAHO website uses the Radix theme as the base, with a custom subtheme named "saho." The Radix theme allows for the use of components, which makes it easy to maintain consistency across the website.
 

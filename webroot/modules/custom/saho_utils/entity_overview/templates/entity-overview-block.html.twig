@@ -1,0 +1,104 @@
+{#
+/**
+ * @file
+ * Default theme implementation to display an entity overview block.
+ *
+ * Available variables:
+ * - items: An array of entity items.
+ *   - id: The entity ID.
+ *   - title: The entity title.
+ *   - url: The entity URL.
+ *   - image: The entity image URL.
+ *   - created: The entity creation timestamp.
+ * - block_title: The title of the block.
+ * - intro_text: Introductory text for the block.
+ * - display_mode: The default display mode ('default', 'compact', or 'full-width').
+ * - show_display_toggle: Whether to show the display mode toggle.
+ * - attributes: HTML attributes for the containing element.
+ *
+ * @ingroup themeable
+ */
+#}
+<div{{ attributes }} data-block-id="{{ block_id }}">
+  {% if block_title %}
+    <h2 class="entity-overview-title">{{ block_title }}</h2>
+  {% endif %}
+  
+  {% if show_display_toggle %}
+    {# Display mode toggle #}
+    <div class="entity-overview-display-toggle">
+      <button data-mode="default" class="{{ display_mode == 'default' ? 'active' : '' }}">{{ 'Default'|t }}</button>
+      <button data-mode="compact" class="{{ display_mode == 'compact' ? 'active' : '' }}">{{ 'Compact'|t }}</button>
+      <button data-mode="full-width" class="{{ display_mode == 'full-width' ? 'active' : '' }}">{{ 'Full Width'|t }}</button>
+    </div>
+  {% endif %}
+  
+  {% if intro_text %}
+    <div class="entity-overview-intro">
+      {{ intro_text|replace({'%title': block_title}) }}
+    </div>
+  {% endif %}
+  
+  {% if filter_options or sort_options %}
+    <div class="entity-overview-controls">
+      {% if filter_options %}
+        <div class="entity-overview-filter">
+          <label for="{{ block_id }}-filter">{{ 'Filter by:'|t }}</label>
+          <select id="{{ block_id }}-filter" class="entity-overview-filter-select">
+            <option value="">{{ 'All'|t }}</option>
+            {% for option in filter_options %}
+              <option value="{{ option.id }}">{{ option.label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      {% endif %}
+      
+      {% if sort_options %}
+        <div class="entity-overview-sort">
+          <label for="{{ block_id }}-sort">{{ 'Sort by:'|t }}</label>
+          <select id="{{ block_id }}-sort" class="entity-overview-sort-select">
+            {% for option in sort_options %}
+              <option value="{{ option.id }}">{{ option.label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      {% endif %}
+    </div>
+  {% endif %}
+  
+  {% if items %}
+    <div class="entity-overview-items">
+      {% for item in items %}
+        <div class="entity-overview-item">
+          {% if item.image %}
+            <div class="entity-overview-item-image">
+              <a href="{{ item.url }}">
+                <img src="{{ item.image }}" alt="{{ item.title }}" />
+              </a>
+            </div>
+          {% endif %}
+          <div class="entity-overview-item-content">
+            <h3 class="entity-overview-item-title">
+              <a href="{{ item.url }}">{{ item.title }}</a>
+            </h3>
+            {% if item.created %}
+              <div class="entity-overview-item-date">
+                {{ item.created|date('F j, Y') }}
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+    
+    {% if has_more %}
+      <div class="entity-overview-load-more">
+        <button type="button" class="entity-overview-load-more-button">{{ 'Load more'|t }}</button>
+      </div>
+    {% endif %}
+  {% else %}
+    <div class="entity-overview-empty">
+      {{ 'No items found.'|t }}
+    </div>
+  {% endif %}
+</div>
