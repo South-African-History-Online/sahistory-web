@@ -32,6 +32,7 @@ dependencies:
     - field.field.node.article.field_home_page_feature_timeline
     - field.field.node.article.field_home_page_politics_and_soc
     - field.field.node.article.field_image
+    - field.field.node.article.field_main_image
     - field.field.node.article.field_media_library_related_tab
     - field.field.node.article.field_media_library_type
     - field.field.node.article.field_most_read
@@ -61,6 +62,7 @@ dependencies:
     - field_group
     - file
     - image
+    - media_library
     - path
     - text
 third_party_settings:
@@ -86,6 +88,7 @@ third_party_settings:
         required_fields: false
     group_article_image:
       children:
+        - field_main_image
         - field_article_image
         - field_node_image_caption
       label: 'Article Image'
@@ -172,7 +175,7 @@ third_party_settings:
       label: 'Editorial and Admin'
       region: content
       parent_name: ''
-      weight: 10
+      weight: 11
       format_type: details
       format_settings:
         classes: ''
@@ -247,14 +250,12 @@ content:
     third_party_settings: {  }
   field_article_image:
     type: image_image
-    weight: 7
+    weight: 16
     region: content
     settings:
       progress_indicator: throbber
       preview_image_style: thumbnail
-    third_party_settings:
-      imce:
-        enabled: true
+    third_party_settings: {  }
   field_article_type:
     type: options_select
     weight: 12
@@ -352,11 +353,18 @@ content:
     third_party_settings: {  }
   field_image:
     type: image_image
-    weight: 15
+    weight: 16
     region: content
     settings:
       progress_indicator: throbber
       preview_image_style: thumbnail
+    third_party_settings: {  }
+  field_main_image:
+    type: media_library_widget
+    weight: 15
+    region: content
+    settings:
+      media_types: {  }
     third_party_settings: {  }
   field_most_read:
     type: boolean_checkbox
@@ -378,7 +386,7 @@ content:
         hide_guidelines: '0'
   field_node_image_caption:
     type: text_textfield
-    weight: 8
+    weight: 17
     region: content
     settings:
       size: 1000
@@ -429,6 +437,11 @@ content:
   path:
     type: path
     weight: 13
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+  simple_sitemap:
+    weight: 10
     region: content
     settings: {  }
     third_party_settings: {  }
