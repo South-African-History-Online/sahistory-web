@@ -5,6 +5,7 @@ namespace Drupal\saho_media_migration\Form;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\File\FileSystemInterface;
+use Drupal\Core\File\FileExists;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -122,7 +123,7 @@ class MediaMigrationForm extends FormBase {
     $file_uri = $this->fileSystem->saveData(
       file_get_contents($file_upload->getRealPath()),
       $temp_file,
-      FileSystemInterface::EXISTS_REPLACE
+      FileExists::Replace
     );
 
     if (!$file_uri) {
