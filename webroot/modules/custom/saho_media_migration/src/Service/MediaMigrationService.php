@@ -29,11 +29,11 @@ class MediaMigrationService {
   protected $fileSystem;
 
   /**
-   * The logger factory.
+   * The logger channel.
    *
-   * @var \Drupal\Core\Logger\LoggerChannelFactoryInterface
+   * @var \Drupal\Core\Logger\LoggerChannelInterface
    */
-  protected $loggerFactory;
+  protected $logger;
 
   /**
    * The messenger service.
@@ -72,7 +72,7 @@ class MediaMigrationService {
   ) {
     $this->entityTypeManager = $entity_type_manager;
     $this->fileSystem = $file_system;
-    $this->loggerFactory = $logger_factory->get('saho_media_migration');
+    $this->logger = $logger_factory->get('saho_media_migration');
     $this->messenger = $messenger;
     $this->database = $database;
   }
@@ -186,14 +186,14 @@ class MediaMigrationService {
 
       if (!$file instanceof FileInterface) {
         // Using the logger's error method to log the error.
-        $this->loggerFactory->error('File with ID @fid not found.', ['@fid' => $file_data['fid']]);
+        $this->logger->error('File with ID @fid not found.', ['@fid' => $file_data['fid']]);
         return NULL;
       }
       // Determine the media bundle based on the MIME type.
       $bundle = $this->getMediaBundleFromMimeType($file_data['filemime']);
       if (!$bundle) {
         // Using the logger's error method to log the error.
-        $this->loggerFactory->error('No media bundle found for MIME type @mime.', ['@mime' => $file_data['filemime']]);
+        $this->logger->error('No media bundle found for MIME type @mime.', ['@mime' => $file_data['filemime']]);
         return NULL;
       }
 
@@ -206,15 +206,16 @@ class MediaMigrationService {
         'name' => $file_data['filename'],
         'status' => 1,
       ]);
-      // Set the file field based on the bundle using the entity's set method.
+      // Set the file field based on the bundle.
       $field_name = $this->getSourceFieldName($bundle);
       if ($field_name) {
-        $media->set($field_name, $file);
+        // Use array access notation instead of the set method.
+        $media->{$field_name} = $file;
       }
       $media->save();
 
       // Using the logger's notice method to log the success message.
-      $this->loggerFactory->notice('Created media entity @mid for file @fid.', [
+      $this->logger->notice('Created media entity @mid for file @fid.', [
         '@mid' => $media->id(),
         '@fid' => $file_data['fid'],
       ]);
@@ -223,7 +224,7 @@ class MediaMigrationService {
     }
     catch (\Exception $e) {
       // Using the logger's error method to log the exception.
-      $this->loggerFactory->error('Error creating media entity for file @fid: @error', [
+      $this->logger->error('Error creating media entity for file @fid: @error', [
         '@fid' => $file_data['fid'],
         '@error' => $e->getMessage(),
       ]);
@@ -307,7 +308,6 @@ class MediaMigrationService {
     // 1. Find all entity references to the file
     // 2. Update them to point to the media entity
     // 3. Save the entities.
-
     // For now, we'll just return 0.
     return 0;
   }
