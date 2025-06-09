@@ -8,34 +8,34 @@ document.addEventListener('DOMContentLoaded', () => {
   blockquotes.forEach((blockquote, index) => {
     // Get the quote text
     const quoteText = blockquote.textContent.trim();
-    
+
     // Create a unique ID for this blockquote
     const blockquoteId = `blockquote-${index}`;
     blockquote.id = blockquoteId;
-    
+
     // Create the sharing container
     const sharingContainer = document.createElement('div');
     sharingContainer.className = 'blockquote-sharing';
-    
+
     // Add the sharing text
     const sharingText = document.createElement('div');
     sharingText.className = 'blockquote-sharing-text';
     sharingText.textContent = 'Share this quote:';
     sharingContainer.appendChild(sharingText);
-    
+
     // Create the buttons container
     const buttonsContainer = document.createElement('div');
     buttonsContainer.className = 'blockquote-sharing-buttons better-social-sharing-buttons';
-    
+
     // Get the current page URL and quote text
     const pageUrl = window.location.href;
     const shortQuote = quoteText.substring(0, 280);
-    
+
     // Add data attributes for Better Social Sharing Buttons
     buttonsContainer.setAttribute('data-share-url', pageUrl);
     buttonsContainer.setAttribute('data-share-title', shortQuote);
     buttonsContainer.setAttribute('data-share-description', shortQuote);
-    
+
     // Add modern, responsive sharing buttons
     buttonsContainer.innerHTML = `
       <div class="social-sharing-buttons blockquote-buttons">
@@ -87,12 +87,12 @@ document.addEventListener('DOMContentLoaded', () => {
         </a>
       </div>
     `;
-    
+
     // Append the sharing container to the blockquote
     sharingContainer.appendChild(buttonsContainer);
     blockquote.appendChild(sharingContainer);
   });
-  
+
   // Add click handler for copy buttons
   document.addEventListener('click', (e) => {
     if (e.target.closest('.btn-copy')) {
@@ -100,21 +100,21 @@ document.addEventListener('DOMContentLoaded', () => {
       const button = e.target.closest('.btn-copy');
       const blockquoteId = button.getAttribute('data-quote');
       const blockquote = document.getElementById(blockquoteId);
-      
+
       if (blockquote) {
         // Get the quote text (excluding the sharing buttons we added)
         const quoteText = blockquote.childNodes[0].textContent.trim();
-        
+
         // Create a temporary textarea to copy from
         const textarea = document.createElement('textarea');
         textarea.value = quoteText;
         document.body.appendChild(textarea);
         textarea.select();
-        
+
         try {
           // Copy the text to clipboard
           document.execCommand('copy');
-          
+
           // Visual feedback
           button.classList.add('copied');
           setTimeout(() => {
@@ -123,7 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (err) {
           console.error('Failed to copy quote: ', err);
         }
-        
+
         document.body.removeChild(textarea);
       }
     }
