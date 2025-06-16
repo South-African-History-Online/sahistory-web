@@ -1,0 +1,168 @@
+{#
+/**
+ * @file
+ * Default theme implementation to display a featured biography block.
+ *
+ * Available variables:
+ * - biography_data: An array of biography data.
+ *   - items: An array of biography items (when multiple items are displayed).
+ *   - category: Category information (when highlighting is enabled).
+ *     - id: The category ID.
+ *     - name: The category name.
+ *     - url: The URL to the category.
+ *     - custom_label: Custom label for the category.
+ *   OR (for backward compatibility with single item):
+ *   - nid: The node ID.
+ *   - title: The biography title.
+ *   - url: The URL to the biography.
+ *   - image: The URL to the biography image.
+ *   - birth_date: The birth date.
+ *   - death_date: The death date.
+ *   - categories: An array of categories.
+ *     - id: The category ID.
+ *     - name: The category name.
+ *     - url: The URL to the category.
+ *   - body: The biography body.
+ *   - body_summary: The biography body summary.
+ *   - position: The position held by the person.
+ * - display_mode: The display mode (full or compact).
+ * - highlight_category: Whether to highlight the category.
+ * - entity_count: Number of biographies to display.
+ *
+ * @ingroup themeable
+ */
+#}
+<div class="featured-biography-block {% if display_mode == 'compact' %}compact-mode{% else %}full-mode{% endif %} {% if entity_count > 1 %}multiple-items{% endif %}">
+  {# Handle both old (biography_item) and new (biography_data) structures #}
+  {% if biography_item is defined or biography_data is defined %}
+    <div class="featured-biography-header">
+      {% if highlight_category is defined and highlight_category and biography_data.category is defined %}
+        <h2>
+          {% if biography_data.category.custom_label %}
+            {{ biography_data.category.custom_label }}
+          {% else %}
+            {{ biography_data.category.name }} {{ 'Biographies'|t }}
+          {% endif %}
+        </h2>
+      {% else %}
+        <h2>{{ 'Featured Biography'|t }}</h2>
+      {% endif %}
+    </div>
+    
+    <div class="featured-biography-content">
+      {# Handle multiple biographies #}
+      {% if biography_data is defined and biography_data.items is defined %}
+        <div class="featured-biography-grid">
+          {% for item in biography_data.items %}
+            <div class="featured-biography-item">
+              {% if item.image %}
+                <div class="featured-biography-image">
+                  <a href="{{ item.url }}" aria-label="View full biography of {{ item.title|striptags }}">
+                    <img src="{{ item.image }}" alt="{{ item.title|striptags }}" loading="lazy" />
+                  </a>
+                </div>
+              {% endif %}
+              
+              <div class="featured-biography-details">
+                {% if item.categories %}
+                  <div class="featured-biography-categories">
+                    {% for category in item.categories %}
+                      <a href="{{ category.url }}" class="featured-biography-category">{{ category.name }}</a>
+                      {% if not loop.last %} › {% endif %}
+                    {% endfor %}
+                  </div>
+                {% endif %}
+                
+                <h3 class="featured-biography-title">
+                  <a href="{{ item.url }}">{{ item.title }}</a>
+                </h3>
+                
+                <div class="featured-biography-dates">
+                  {% if item.birth_date %}
+                    <span class="featured-biography-birth">{{ item.birth_date }}</span>
+                  {% endif %}
+                  {% if item.birth_date and item.death_date %} - {% endif %}
+                  {% if item.death_date %}
+                    <span class="featured-biography-death">{{ item.death_date }}</span>
+                  {% endif %}
+                </div>
+                
+                {% if item.position %}
+                  <div class="featured-biography-position">
+                    {{ item.position }}
+                  </div>
+                {% endif %}
+                
+                {% if item.body_summary %}
+                  <div class="featured-biography-summary">
+                    {{ item.body_summary|raw|striptags('<p><a><em><strong><ul><ol><li>')|truncate(200, true, '...') }}
+                  </div>
+                {% endif %}
+                
+                <div class="featured-biography-read-more">
+                  <a href="{{ item.url }}" class="featured-biography-link">{{ 'Read more'|t }} <span class="visually-hidden">about {{ item.title|striptags }}</span></a>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {# Handle single biography - either from old structure or new structure #}
+      {% elseif biography_item is defined %}
+        <div class="featured-biography-item">
+          {% if biography_item.image %}
+            <div class="featured-biography-image">
+              <a href="{{ biography_item.url }}" aria-label="View full biography of {{ biography_item.title|striptags }}">
+                <img src="{{ biography_item.image }}" alt="{{ biography_item.title|striptags }}" loading="lazy" />
+              </a>
+            </div>
+          {% endif %}
+          
+          <div class="featured-biography-details">
+            {% if biography_item.categories %}
+              <div class="featured-biography-categories">
+                {% for category in biography_item.categories %}
+                  <a href="{{ category.url }}" class="featured-biography-category">{{ category.name }}</a>
+                  {% if not loop.last %} › {% endif %}
+                {% endfor %}
+              </div>
+            {% endif %}
+            
+            <h3 class="featured-biography-title">
+              <a href="{{ biography_item.url }}">{{ biography_item.title }}</a>
+            </h3>
+            
+            <div class="featured-biography-dates">
+              {% if biography_item.birth_date %}
+                <span class="featured-biography-birth">{{ biography_item.birth_date }}</span>
+              {% endif %}
+              {% if biography_item.birth_date and biography_item.death_date %} - {% endif %}
+              {% if biography_item.death_date %}
+                <span class="featured-biography-death">{{ biography_item.death_date }}</span>
+              {% endif %}
+            </div>
+            
+            {% if biography_item.position %}
+              <div class="featured-biography-position">
+                {{ biography_item.position }}
+              </div>
+            {% endif %}
+            
+            {% if biography_item.body_summary %}
+              <div class="featured-biography-summary">
+                {{ biography_item.body_summary|raw|striptags('<p><a><em><strong><ul><ol><li>')|truncate(200, true, '...') }}
+              </div>
+            {% endif %}
+            
+            <div class="featured-biography-read-more">
+              <a href="{{ biography_item.url }}" class="featured-biography-link">{{ 'Read more'|t }} <span class="visually-hidden">about {{ biography_item.title|striptags }}</span></a>
+            </div>
+          </div>
+        </div>
+      {% endif %}
+    </div>
+  {% else %}
+    <div class="featured-biography-empty">
+      <p>{{ 'No featured biography available.'|t }}</p>
+    </div>
+  {% endif %}
+</div>
