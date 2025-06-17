@@ -15,7 +15,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * @Block(
  *   id = "featured_biography_block",
  *   admin_label = @Translation("Featured Biography Block"),
- *   category = @Translation("SAHO"),
+ *   category = @Translation("All custom"),
  * )
  */
 class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPluginInterface {
@@ -305,13 +305,11 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
 
       // Debug output.
       \Drupal::messenger()->addMessage(
-        'Query executed. Found @count biographies.',
-        ['@count' => count($nids)]
+        $this->t('Query executed. Found @count biographies.', ['@count' => count($nids)])
       );
       if (!empty($nids)) {
         \Drupal::messenger()->addMessage(
-          'Node IDs: @nids',
-          ['@nids' => implode(', ', $nids)]
+          $this->t('Node IDs: @nids', ['@nids' => implode(', ', $nids)])
         );
       }
 
