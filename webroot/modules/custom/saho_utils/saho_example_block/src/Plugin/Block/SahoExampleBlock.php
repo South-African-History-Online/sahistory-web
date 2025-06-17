@@ -12,7 +12,7 @@ use Drupal\Core\Form\FormStateInterface;
  * @Block(
  *   id = "saho_example_block",
  *   admin_label = @Translation("SAHO Example Block"),
- *   category = @Translation("SAHO")
+ *   category = @Translation("All custom")
  * )
  */
 class SahoExampleBlock extends BlockBase implements BlockPluginInterface {
