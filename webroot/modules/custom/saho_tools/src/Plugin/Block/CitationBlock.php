@@ -13,7 +13,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * @Block(
  *   id = "citation_block",
  *   admin_label = @Translation("Citation Block"),
- *   category = @Translation("SAHO Tools"),
+ *   category = @Translation("All custom"),
  * )
  */
 class CitationBlock extends BlockBase implements ContainerFactoryPluginInterface {

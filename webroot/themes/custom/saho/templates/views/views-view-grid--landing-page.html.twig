@@ -227,37 +227,48 @@
               {% set image_content = null %}
               {% set image_url = null %}
               
-              {# Method 1: Check for all possible image fields as rendered content #}
-              {% set image_fields = [
-                'field_article_image',
-                'field_image',
-                'field_bio_pic',
-                'field_place_image',
-                'field_event_image',
-                'field_archive_image',
-                'field_tdih_image',
-                'field_upcomingevent_image',
-                'field_product_image',
-                'field_gallery_image',
-                'field_button_image',
-                'field_land_page_banners'
-              ] %}
+              {# Method 1: Use the image_field directly from the node if available #}
+              {% if node and image_field %}
+                {% set file_entity = node.get(image_field).entity %}
+                {% if file_entity %}
+                  {% set image_url = file_url(file_entity.uri.value) %}
+                  {% set has_image = true %}
+                {% endif %}
+              {% endif %}
               
-              {# Check each possible image field #}
-              {% for field_name in image_fields %}
-                {% if not has_image and column.content[field_name] is defined %}
-                  {% set field_content = column.content[field_name]|render %}
-                  {% if field_content|trim is not empty %}
-                    {% if '<img' in field_content %}
-                      {% set image_content = column.content[field_name] %}
-                      {% set has_image = true %}
-                    {% elseif 'http' in field_content and ('.jpg' in field_content or '.png' in field_content or '.gif' in field_content or '.jpeg' in field_content) %}
-                      {% set image_url = field_content|striptags|trim %}
-                      {% set has_image = true %}
+              {# Method 2: Check for all possible image fields as rendered content #}
+              {% if not has_image %}
+                {% set image_fields = [
+                  'field_article_image',
+                  'field_image',
+                  'field_bio_pic',
+                  'field_place_image',
+                  'field_event_image',
+                  'field_archive_image',
+                  'field_tdih_image',
+                  'field_upcomingevent_image',
+                  'field_product_image',
+                  'field_gallery_image',
+                  'field_button_image',
+                  'field_land_page_banners'
+                ] %}
+                
+                {# Check each possible image field #}
+                {% for field_name in image_fields %}
+                  {% if not has_image and column.content[field_name] is defined %}
+                    {% set field_content = column.content[field_name]|render %}
+                    {% if field_content|trim is not empty %}
+                      {% if '<img' in field_content %}
+                        {% set image_content = column.content[field_name] %}
+                        {% set has_image = true %}
+                      {% elseif 'http' in field_content and ('.jpg' in field_content or '.png' in field_content or '.gif' in field_content or '.jpeg' in field_content) %}
+                        {% set image_url = field_content|striptags|trim %}
+                        {% set has_image = true %}
+                      {% endif %}
                     {% endif %}
                   {% endif %}
-                {% endif %}
-              {% endfor %}
+                {% endfor %}
+              {% endif %}
               
               {# Method 2: Check for image URLs in the rendered content #}
               {% if not has_image and content_html|trim %}
@@ -270,11 +281,10 @@
                     {% if not found_url and 'src="' in img_part %}
                       {% set src = img_part|split('src="')|last|split('"')|first %}
                       {% if src|trim is not empty and ('http' in src or '/' in src) %}
-                        {% if '.jpg' in src or '.png' in src or '.gif' in src or '.jpeg' in src or '.svg' in src %}
-                          {% set image_url = src %}
-                          {% set has_image = true %}
-                          {% set found_url = true %}
-                        {% endif %}
+                        {# Don't check for specific extensions to ensure all image types work, including PNG #}
+                        {% set image_url = src %}
+                        {% set has_image = true %}
+                        {% set found_url = true %}
                       {% endif %}
                     {% endif %}
                   {% endfor %}
@@ -286,7 +296,8 @@
                   {% for url_part in url_matches %}
                     {% if not found_url %}
                       {% set url = 'http' ~ url_part|split('"')|first|split("'")|first|split(' ')|first|split('<')|first %}
-                      {% if '.jpg' in url or '.png' in url or '.gif' in url or '.jpeg' in url or '.svg' in url %}
+                      {# Include all possible image types, ensuring PNG is handled #}
+                      {% if '.jpg' in url or '.png' in url or '.gif' in url or '.jpeg' in url or '.svg' in url or 'image' in url %}
                         {% set image_url = url %}
                         {% set has_image = true %}
                         {% set found_url = true %}
@@ -301,7 +312,8 @@
                   {% for url_part in url_matches %}
                     {% if not found_url %}
                       {% set url = '/' ~ url_part|split('"')|first %}
-                      {% if '.jpg' in url or '.png' in url or '.gif' in url or '.jpeg' in url or '.svg' in url %}
+                      {# Include all possible image types, ensuring PNG is handled #}
+                      {% if '.jpg' in url or '.png' in url or '.gif' in url or '.jpeg' in url or '.svg' in url or 'image' in url %}
                         {% set image_url = url %}
                         {% set has_image = true %}
                         {% set found_url = true %}
