@@ -160,7 +160,8 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
     $form['entity_count'] = [
       '#type' => 'number',
       '#title' => $this->t('Number of Biographies'),
-      '#description' => $this->t('Number of biographies to display (max 5). Only applicable for Random or Category selection.'),
+      '#description' => $this->t('Number of biographies to display (max 5). Only applicable for @type1 or @type2 selection.',
+        ['@type1' => 'Random', '@type2' => 'Category']),
       '#default_value' => $config['entity_count'],
       '#min' => 1,
       '#max' => 5,
@@ -224,7 +225,8 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
       ];
     }
 
-    // For backward compatibility, if we have a single item, pass it as biography_item.
+    // For backward compatibility, if we have a single item,
+    // pass it as biography_item.
     if (isset($biography_data['nid'])) {
       // Cache for 1 hour.
       return [
@@ -302,9 +304,15 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
       $nids = $query->execute();
 
       // Debug output.
-      \Drupal::messenger()->addMessage('Query executed. Found ' . count($nids) . ' biographies.');
+      \Drupal::messenger()->addMessage(
+        'Query executed. Found @count biographies.',
+        ['@count' => count($nids)]
+      );
       if (!empty($nids)) {
-        \Drupal::messenger()->addMessage('Node IDs: ' . implode(', ', $nids));
+        \Drupal::messenger()->addMessage(
+          'Node IDs: @nids',
+          ['@nids' => implode(', ', $nids)]
+        );
       }
 
       if (!empty($nids)) {
@@ -335,7 +343,8 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
       return NULL;
     }
 
-    // If only one biography is requested or found, return a single item for backward compatibility.
+    // If only one biography is requested or found, return a single item
+    // for backward compatibility.
     if ($entity_count == 1 || count($nodes) == 1) {
       $node = reset($nodes);
       if ($node) {
@@ -398,7 +407,8 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
     // Get the biography image.
     if ($node->hasField('field_bio_pic') && !$node->get('field_bio_pic')->isEmpty()) {
       $image_field = $node->get('field_bio_pic');
-      $image_entity = $this->entityTypeManager->getStorage('file')->load($image_field->target_id);
+      $image_entity = $this->entityTypeManager->getStorage('file')
+        ->load($image_field->getValue()[0]['target_id']);
       if ($image_entity) {
         // Extract the string value from the URI field.
         $image_uri = $image_entity->uri->value;
@@ -418,7 +428,8 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
     if ($node->hasField('field_people_category') && !$node->get('field_people_category')->isEmpty()) {
       $categories = [];
       foreach ($node->get('field_people_category') as $category) {
-        $term = $this->entityTypeManager->getStorage('taxonomy_term')->load($category->target_id);
+        $term = $this->entityTypeManager->getStorage('taxonomy_term')
+          ->load($category->getValue()['target_id']);
         if ($term) {
           $categories[] = [
             'id' => $term->id(),
