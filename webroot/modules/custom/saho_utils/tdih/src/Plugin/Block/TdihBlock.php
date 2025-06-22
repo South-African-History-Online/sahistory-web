@@ -111,7 +111,7 @@ class TdihBlock extends BlockBase implements ContainerFactoryPluginInterface {
    *
    * Handles form submissions for this block's configuration.
    */
-  public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
+  public function submitConfigurationForm(array &$form, FormStateInterface $form_state): void {
     parent::submitConfigurationForm($form, $form_state);
 
     $this->configuration['use_manual_override'] = $form_state->getValue('use_manual_override');
