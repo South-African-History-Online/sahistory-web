@@ -238,7 +238,7 @@ class EntityOverviewBlock extends BlockBase implements ContainerFactoryPluginInt
   /**
    * {@inheritdoc}
    */
-  public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
+  public function submitConfigurationForm(array &$form, FormStateInterface $form_state): void {
     parent::submitConfigurationForm($form, $form_state);
     $this->configuration['intro_text'] = $form_state->getValue('intro_text');
     $this->configuration['content_type'] = $form_state->getValue('content_type');
