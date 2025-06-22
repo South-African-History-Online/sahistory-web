@@ -303,16 +303,6 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
       // Execute the query.
       $nids = $query->execute();
 
-      // Debug output.
-      \Drupal::messenger()->addMessage(
-        $this->t('Query executed. Found @count biographies.', ['@count' => count($nids)])
-      );
-      if (!empty($nids)) {
-        \Drupal::messenger()->addMessage(
-          $this->t('Node IDs: @nids', ['@nids' => implode(', ', $nids)])
-        );
-      }
-
       if (!empty($nids)) {
         if ($this->configuration['selection_method'] == 'random' && count($nids) > $entity_count) {
           // Randomly select the specified number of biographies.
