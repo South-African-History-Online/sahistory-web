@@ -367,96 +367,32 @@ function saho_tools_metatag_tags_alter(array &$metatags, $context) {
     $node_type = $node->getType();
     $image_url = '';
     
+    // Define a mapping of content types to their image fields in priority order
+    $type_field_map = [
+      'article' => ['field_main_image', 'field_article_image', 'field_image'],
+      'biography' => ['field_bio_pic'],
+      'place' => ['field_place_image'],
+      'archive' => ['field_archive_image', 'field_image'],
+      'event' => ['field_event_image', 'field_tdih_image'],
+      'image' => ['field_image'],
+      'gallery_image' => ['field_gallery_image'],
+      'button' => ['field_button_image'],
+      'product' => ['field_product_image'],
+      'upcomingevent' => ['field_upcomingevent_image'],
+      'page' => ['field_image'],
+    ];
+    
     // Get the appropriate image field based on content type
-    switch ($node_type) {
-      case 'article':
-        // Try main_image first, then article_image, then image
-        if ($node->hasField('field_main_image') && !$node->get('field_main_image')->isEmpty()) {
-          $image_url = _saho_tools_get_image_url($node, 'field_main_image');
+    if (isset($type_field_map[$node_type])) {
+      // Try each field in priority order
+      foreach ($type_field_map[$node_type] as $field_name) {
+        if ($node->hasField($field_name) && !$node->get($field_name)->isEmpty()) {
+          $image_url = _saho_tools_get_image_url($node, $field_name);
+          if (!empty($image_url)) {
+            break; // Stop once we find a valid image
+          }
         }
-        elseif ($node->hasField('field_article_image') && !$node->get('field_article_image')->isEmpty()) {
-          $image_url = _saho_tools_get_image_url($node, 'field_article_image');
-        }
-        elseif ($node->hasField('field_image') && !$node->get('field_image')->isEmpty()) {
-          $image_url = _saho_tools_get_image_url($node, 'field_image');
-        }
-        break;
-        
-      case 'biography':
-        // Try bio_pic field
-        if ($node->hasField('field_bio_pic') && !$node->get('field_bio_pic')->isEmpty()) {
-          $image_url = _saho_tools_get_image_url($node, 'field_bio_pic');
-        }
-        break;
-        
-      case 'place':
-        // Use place_image field
-        if ($node->hasField('field_place_image') && !$node->get('field_place_image')->isEmpty()) {
-          $image_url = _saho_tools_get_image_url($node, 'field_place_image');
-        }
-        break;
-        
-      case 'archive':
-        // Try archive_image first, then image
-        if ($node->hasField('field_archive_image') && !$node->get('field_archive_image')->isEmpty()) {
-          $image_url = _saho_tools_get_image_url($node, 'field_archive_image');
-        }
-        elseif ($node->hasField('field_image') && !$node->get('field_image')->isEmpty()) {
-          $image_url = _saho_tools_get_image_url($node, 'field_image');
-        }
-        break;
-        
-      case 'event':
-        // Try event_image first, then tdih_image
-        if ($node->hasField('field_event_image') && !$node->get('field_event_image')->isEmpty()) {
-          $image_url = _saho_tools_get_image_url($node, 'field_event_image');
-        }
-        elseif ($node->hasField('field_tdih_image') && !$node->get('field_tdih_image')->isEmpty()) {
-          $image_url = _saho_tools_get_image_url($node, 'field_tdih_image');
-        }
-        break;
-        
-      case 'image':
-        // Use image field
-        if ($node->hasField('field_image') && !$node->get('field_image')->isEmpty()) {
-          $image_url = _saho_tools_get_image_url($node, 'field_image');
-        }
-        break;
-        
-      case 'gallery_image':
-        // Use gallery_image field
-        if ($node->hasField('field_gallery_image') && !$node->get('field_gallery_image')->isEmpty()) {
-          $image_url = _saho_tools_get_image_url($node, 'field_gallery_image');
-        }
-        break;
-        
-      case 'button':
-        // Use button_image field
-        if ($node->hasField('field_button_image') && !$node->get('field_button_image')->isEmpty()) {
-          $image_url = _saho_tools_get_image_url($node, 'field_button_image');
-        }
-        break;
-        
-      case 'product':
-        // Use product_image field
-        if ($node->hasField('field_product_image') && !$node->get('field_product_image')->isEmpty()) {
-          $image_url = _saho_tools_get_image_url($node, 'field_product_image');
-        }
-        break;
-        
-      case 'upcomingevent':
-        // Use upcomingevent_image field
-        if ($node->hasField('field_upcomingevent_image') && !$node->get('field_upcomingevent_image')->isEmpty()) {
-          $image_url = _saho_tools_get_image_url($node, 'field_upcomingevent_image');
-        }
-        break;
-        
-      case 'page':
-        // Use image field
-        if ($node->hasField('field_image') && !$node->get('field_image')->isEmpty()) {
-          $image_url = _saho_tools_get_image_url($node, 'field_image');
-        }
-        break;
+      }
     }
     
     // If we found an image URL, set it for all Open Graph image tags
