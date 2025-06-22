@@ -6,6 +6,7 @@
  */
 
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\file\Entity\File;
 use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
 use Drupal\node\NodeInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
@@ -348,6 +349,166 @@ function saho_tools_theme_suggestions_node_alter(array &$suggestions, array $var
   
   // Add a suggestion for the view mode and content type.
   $suggestions[] = 'node__' . $sanitized_view_mode . '__' . $node->bundle();
+}
+
+/**
+ * Implements hook_metatag_tags_alter().
+ */
+function saho_tools_metatag_tags_alter(array &$metatags, $context) {
+  // Check if context is an array and contains an entity
+  if (!is_array($context) || empty($context['entity'])) {
+    return;
+  }
+  
+  // Only proceed if we have a node entity
+  if ($context['entity'] instanceof \Drupal\node\NodeInterface) {
+    $node = $context['entity'];
+    $node_type = $node->getType();
+    $image_url = '';
+    
+    // Get the appropriate image field based on content type
+    switch ($node_type) {
+      case 'article':
+        // Try main_image first, then article_image, then image
+        if ($node->hasField('field_main_image') && !$node->get('field_main_image')->isEmpty()) {
+          $image_url = _saho_tools_get_image_url($node, 'field_main_image');
+        }
+        elseif ($node->hasField('field_article_image') && !$node->get('field_article_image')->isEmpty()) {
+          $image_url = _saho_tools_get_image_url($node, 'field_article_image');
+        }
+        elseif ($node->hasField('field_image') && !$node->get('field_image')->isEmpty()) {
+          $image_url = _saho_tools_get_image_url($node, 'field_image');
+        }
+        break;
+        
+      case 'biography':
+        // Try bio_pic field
+        if ($node->hasField('field_bio_pic') && !$node->get('field_bio_pic')->isEmpty()) {
+          $image_url = _saho_tools_get_image_url($node, 'field_bio_pic');
+        }
+        break;
+        
+      case 'place':
+        // Use place_image field
+        if ($node->hasField('field_place_image') && !$node->get('field_place_image')->isEmpty()) {
+          $image_url = _saho_tools_get_image_url($node, 'field_place_image');
+        }
+        break;
+        
+      case 'archive':
+        // Try archive_image first, then image
+        if ($node->hasField('field_archive_image') && !$node->get('field_archive_image')->isEmpty()) {
+          $image_url = _saho_tools_get_image_url($node, 'field_archive_image');
+        }
+        elseif ($node->hasField('field_image') && !$node->get('field_image')->isEmpty()) {
+          $image_url = _saho_tools_get_image_url($node, 'field_image');
+        }
+        break;
+        
+      case 'event':
+        // Try event_image first, then tdih_image
+        if ($node->hasField('field_event_image') && !$node->get('field_event_image')->isEmpty()) {
+          $image_url = _saho_tools_get_image_url($node, 'field_event_image');
+        }
+        elseif ($node->hasField('field_tdih_image') && !$node->get('field_tdih_image')->isEmpty()) {
+          $image_url = _saho_tools_get_image_url($node, 'field_tdih_image');
+        }
+        break;
+        
+      case 'image':
+        // Use image field
+        if ($node->hasField('field_image') && !$node->get('field_image')->isEmpty()) {
+          $image_url = _saho_tools_get_image_url($node, 'field_image');
+        }
+        break;
+        
+      case 'gallery_image':
+        // Use gallery_image field
+        if ($node->hasField('field_gallery_image') && !$node->get('field_gallery_image')->isEmpty()) {
+          $image_url = _saho_tools_get_image_url($node, 'field_gallery_image');
+        }
+        break;
+        
+      case 'button':
+        // Use button_image field
+        if ($node->hasField('field_button_image') && !$node->get('field_button_image')->isEmpty()) {
+          $image_url = _saho_tools_get_image_url($node, 'field_button_image');
+        }
+        break;
+        
+      case 'product':
+        // Use product_image field
+        if ($node->hasField('field_product_image') && !$node->get('field_product_image')->isEmpty()) {
+          $image_url = _saho_tools_get_image_url($node, 'field_product_image');
+        }
+        break;
+        
+      case 'upcomingevent':
+        // Use upcomingevent_image field
+        if ($node->hasField('field_upcomingevent_image') && !$node->get('field_upcomingevent_image')->isEmpty()) {
+          $image_url = _saho_tools_get_image_url($node, 'field_upcomingevent_image');
+        }
+        break;
+        
+      case 'page':
+        // Use image field
+        if ($node->hasField('field_image') && !$node->get('field_image')->isEmpty()) {
+          $image_url = _saho_tools_get_image_url($node, 'field_image');
+        }
+        break;
+    }
+    
+    // If we found an image URL, set it for all Open Graph image tags
+    if (!empty($image_url)) {
+      // Set the main og:image tag
+      $metatags['og_image'] = $image_url;
+      
+      // Also set the alternative og:image:url tag
+      $metatags['og_image_url'] = $image_url;
+      
+      // If the URL is https, also set the secure URL tag
+      if (strpos($image_url, 'https://') === 0) {
+        $metatags['og_image_secure_url'] = $image_url;
+      }
+    }
+  }
+}
+
+/**
+ * Helper function to get the absolute URL of an image from a node field.
+ *
+ * @param \Drupal\node\NodeInterface $node
+ *   The node entity.
+ * @param string $field_name
+ *   The name of the image field.
+ *
+ * @return string
+ *   The absolute URL of the image, or an empty string if not found.
+ */
+function _saho_tools_get_image_url($node, $field_name) {
+  $image_url = '';
+  
+  // Get the file entity from the field
+  $file_entity = NULL;
+  
+  // Handle both entity reference fields and file fields
+  if ($node->get($field_name)->entity instanceof File) {
+    $file_entity = $node->get($field_name)->entity;
+  }
+  elseif ($node->get($field_name)->entity && $node->get($field_name)->entity->hasField('field_media_image')) {
+    // For media entity reference fields, get the file from the media entity
+    $media_entity = $node->get($field_name)->entity;
+    if (!$media_entity->get('field_media_image')->isEmpty()) {
+      $file_entity = $media_entity->get('field_media_image')->entity;
+    }
+  }
+  
+  // Generate the absolute URL if we have a file entity
+  if ($file_entity) {
+    $image_url = \Drupal::service('file_url_generator')->generateAbsoluteString($file_entity->getFileUri());
+  }
+  
+  return $image_url;
 }
 
 /**
