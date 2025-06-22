@@ -485,19 +485,22 @@ function saho_tools_metatag_tags_alter(array &$metatags, $context) {
  * @return string
  *   The absolute URL of the image, or an empty string if not found.
  */
-function _saho_tools_get_image_url($node, $field_name) {
+function _saho_tools_get_image_url(\Drupal\node\NodeInterface $node, $field_name) {
   $image_url = '';
   
   // Get the file entity from the field
   $file_entity = NULL;
   
+  // Cache the field value to avoid repeated method calls
+  $field_value = $node->get($field_name);
+  
   // Handle both entity reference fields and file fields
-  if ($node->get($field_name)->entity instanceof File) {
-    $file_entity = $node->get($field_name)->entity;
+  if ($field_value->entity instanceof File) {
+    $file_entity = $field_value->entity;
   }
-  elseif ($node->get($field_name)->entity && $node->get($field_name)->entity->hasField('field_media_image')) {
+  elseif ($field_value->entity && $field_value->entity->hasField('field_media_image')) {
     // For media entity reference fields, get the file from the media entity
-    $media_entity = $node->get($field_name)->entity;
+    $media_entity = $field_value->entity;
     if (!$media_entity->get('field_media_image')->isEmpty()) {
       $file_entity = $media_entity->get('field_media_image')->entity;
     }
