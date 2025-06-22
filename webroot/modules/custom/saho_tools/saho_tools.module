@@ -11,6 +11,7 @@ use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
 use Drupal\node\NodeInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Url;
+use Drupal\Core\Entity\FieldableEntityInterface;
 
 /**
  * Implements hook_help().
@@ -361,7 +362,7 @@ function saho_tools_metatag_tags_alter(array &$metatags, $context) {
   }
   
   // Only proceed if we have a node entity
-  if ($context['entity'] instanceof \Drupal\node\NodeInterface) {
+  if ($context['entity'] instanceof NodeInterface) {
     $node = $context['entity'];
     $node_type = $node->getType();
     $image_url = '';
@@ -477,7 +478,7 @@ function saho_tools_metatag_tags_alter(array &$metatags, $context) {
 /**
  * Helper function to get the absolute URL of an image from a node field.
  *
- * @param \Drupal\node\NodeInterface $node
+ * @param NodeInterface $node
  *   The node entity.
  * @param string $field_name
  *   The name of the image field.
@@ -485,7 +486,7 @@ function saho_tools_metatag_tags_alter(array &$metatags, $context) {
  * @return string
  *   The absolute URL of the image, or an empty string if not found.
  */
-function _saho_tools_get_image_url(\Drupal\node\NodeInterface $node, $field_name) {
+function _saho_tools_get_image_url(NodeInterface $node, $field_name) {
   $image_url = '';
   
   // Get the file entity from the field
@@ -498,7 +499,7 @@ function _saho_tools_get_image_url(\Drupal\node\NodeInterface $node, $field_name
   if ($field_value->entity instanceof File) {
     $file_entity = $field_value->entity;
   }
-  elseif ($field_value->entity && $field_value->entity->hasField('field_media_image')) {
+  elseif ($field_value->entity instanceof FieldableEntityInterface && $field_value->entity->hasField('field_media_image')) {
     // For media entity reference fields, get the file from the media entity
     $media_entity = $field_value->entity;
     if (!$media_entity->get('field_media_image')->isEmpty()) {
@@ -507,7 +508,7 @@ function _saho_tools_get_image_url(\Drupal\node\NodeInterface $node, $field_name
   }
   
   // Generate the absolute URL if we have a file entity
-  if ($file_entity) {
+  if ($file_entity instanceof File) {
     $image_url = \Drupal::service('file_url_generator')->generateAbsoluteString($file_entity->getFileUri());
   }
   
