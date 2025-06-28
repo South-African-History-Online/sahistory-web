@@ -2,9 +2,12 @@
 
 namespace Drupal\tdih\Plugin\Block;
 
+use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Block\BlockBase;
+use Drupal\Core\Form\FormBuilderInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\Core\File\FileUrlGeneratorInterface;
 use Drupal\tdih\Service\NodeFetcher;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Ajax\AjaxResponse;
@@ -30,6 +33,27 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
   protected $nodeFetcher;
 
   /**
+   * The file URL generator.
+   *
+   * @var \Drupal\Core\File\FileUrlGeneratorInterface
+   */
+  protected $fileUrlGenerator;
+
+  /**
+   * The form builder.
+   *
+   * @var \Drupal\Core\Form\FormBuilderInterface
+   */
+  protected $formBuilder;
+
+  /**
+   * The time service.
+   *
+   * @var \Drupal\Component\Datetime\TimeInterface
+   */
+  protected $time;
+
+  /**
    * Constructs a new TdihInteractiveBlock instance.
    *
    * @param array $configuration
@@ -40,10 +64,27 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
    *   The plugin implementation definition.
    * @param \Drupal\tdih\Service\NodeFetcher $nodeFetcher
    *   Our custom NodeFetcher service.
+   * @param \Drupal\Core\File\FileUrlGeneratorInterface $file_url_generator
+   *   The file URL generator service.
+   * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
+   *   The form builder service.
+   * @param \Drupal\Component\Datetime\TimeInterface $time
+   *   The time service.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, NodeFetcher $nodeFetcher) {
+  public function __construct(
+    array $configuration,
+    $plugin_id,
+    $plugin_definition,
+    NodeFetcher $nodeFetcher,
+    FileUrlGeneratorInterface $file_url_generator,
+    FormBuilderInterface $form_builder,
+    TimeInterface $time,
+  ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->nodeFetcher = $nodeFetcher;
+    $this->fileUrlGenerator = $file_url_generator;
+    $this->formBuilder = $form_builder;
+    $this->time = $time;
   }
 
   /**
@@ -54,7 +95,10 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
       $configuration,
       $plugin_id,
       $plugin_definition,
-      $container->get('tdih.node_fetcher')
+      $container->get('tdih.node_fetcher'),
+      $container->get('file_url_generator'),
+      $container->get('form_builder'),
+      $container->get('datetime.time')
     );
   }
 
@@ -63,7 +107,6 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
    */
   public function defaultConfiguration() {
     return [
-      'max_items' => 5,
       'display_mode' => 'compact',
       'show_date_picker' => TRUE,
       'show_today_history' => TRUE,
@@ -75,15 +118,6 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
    */
   public function blockForm($form, FormStateInterface $form_state) {
     $form = parent::blockForm($form, $form_state);
-
-    $form['max_items'] = [
-      '#type' => 'number',
-      '#title' => $this->t('Maximum number of items'),
-      '#description' => $this->t('The maximum number of events to display.'),
-      '#default_value' => $this->configuration['max_items'],
-      '#min' => 1,
-      '#max' => 20,
-    ];
 
     $form['display_mode'] = [
       '#type' => 'select',
@@ -118,10 +152,45 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
    */
   public function blockSubmit($form, FormStateInterface $form_state) {
     parent::blockSubmit($form, $form_state);
-    $this->configuration['max_items'] = $form_state->getValue('max_items');
     $this->configuration['display_mode'] = $form_state->getValue('display_mode');
     $this->configuration['show_date_picker'] = $form_state->getValue('show_date_picker');
     $this->configuration['show_today_history'] = $form_state->getValue('show_today_history');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getCacheMaxAge() {
+    // Use the site's configured timezone instead of hardcoding UTC.
+    $config = \Drupal::config('system.date');
+    $timezone = $config->get('timezone.default') ?: 'UTC';
+
+    // Calculate seconds until midnight in the site's timezone.
+    $now = $this->time->getCurrentTime();
+    // Calculate the timestamp for midnight tonight in the site's timezone.
+    $midnight = new \DateTime('now', new \DateTimeZone($timezone));
+    $midnight->setTime(0, 0, 0);
+    $midnight->modify('+1 day');
+    $seconds_until_midnight = $midnight->getTimestamp() - $now;
+
+    // Return seconds until midnight, or minimum 60 seconds to prevent
+    // excessive cache rebuilds if we're very close to midnight.
+    return max($seconds_until_midnight, 60);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getCacheTags() {
+    $tags = parent::getCacheTags();
+
+    // Add cache tags for the block itself.
+    $tags[] = 'tdih_interactive_block';
+
+    // Add node_list:event tag to invalidate when event nodes are updated.
+    $tags[] = 'node_list:event';
+
+    return $tags;
   }
 
   /**
@@ -133,6 +202,7 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
     // Get the selected date from the form state.
     $date_value = $form_state->getValue('birthday_date');
     if (!empty($date_value)) {
+      // DrupalDateTime automatically uses the site's timezone configuration..
       $date = new DrupalDateTime($date_value);
       $month = $date->format('m');
       $day = $date->format('d');
@@ -176,8 +246,10 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
       $raw_date = $node->get('field_this_day_in_history_3')->value;
       $event_timestamp = 0;
       if (!empty($raw_date)) {
-        // Convert to a timestamp (assuming UTC storage).
-        $dt = new \DateTime($raw_date, new \DateTimeZone('UTC'));
+        // Use the site's configured timezone instead of hardcoding UTC.
+        $config = \Drupal::config('system.date');
+        $timezone = $config->get('timezone.default') ?: 'UTC';
+        $dt = new \DateTime($raw_date, new \DateTimeZone($timezone));
         $event_timestamp = $dt->getTimestamp();
       }
 
@@ -192,6 +264,14 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
         }
       }
 
+      // Get the body text, strip HTML tags, and decode HTML entities.
+      $body_text = '';
+      if ($node->hasField('body') && !$node->get('body')->isEmpty()) {
+        // Strip all HTML tags and decode HTML entities to prevent them from
+        // being displayed as plain text.
+        $body_text = html_entity_decode(strip_tags($node->get('body')->processed));
+      }
+
       // Build the item array.
       $items[] = [
         'id' => $node->id(),
@@ -199,7 +279,12 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
         'url' => $node->toUrl()->toString(),
         'event_date' => $event_timestamp,
         'image' => $image_url,
-        'body' => $node->hasField('body') ? $node->get('body')->value : '',
+        // Add alt text for accessibility.
+        'image_alt' => $node->label(),
+        'body' => $body_text,
+        // Mark body as safe HTML to ensure proper rendering of images
+        // and formatting.
+        'body_format' => 'full_html',
       ];
     }
 
@@ -210,10 +295,14 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
    * {@inheritdoc}
    */
   public function build() {
-    // Get today's date.
-    $today = new \DateTime('now', new \DateTimeZone('UTC'));
-    $month = $today->format('m');
-    $day = $today->format('d');
+    // Get today's date using the time service.
+    $timestamp = $this->time->getCurrentTime();
+    // Use the site's configured timezone instead of hardcoding UTC.
+    $config = \Drupal::config('system.date');
+    $timezone = $config->get('timezone.default') ?: 'UTC';
+    $date = new \DateTime('now', new \DateTimeZone($timezone));
+    $month = $date->format('m');
+    $day = $date->format('d');
 
     // Load nodes for today's date if the Today in history section is enabled.
     $tdih_nodes = [];
@@ -231,7 +320,7 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
     // Build the date picker form if enabled.
     $form = [];
     if ($this->configuration['show_date_picker']) {
-      $form = \Drupal::formBuilder()->getForm('Drupal\tdih\Form\BirthdayDateForm');
+      $form = $this->formBuilder->getForm('Drupal\tdih\Form\BirthdayDateForm');
     }
 
     // Return a render array referencing our theme hook.
@@ -257,8 +346,10 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
     $raw_date = $node->get('field_this_day_in_history_3')->value;
     $event_timestamp = 0;
     if (!empty($raw_date)) {
-      // Convert to a timestamp (assuming UTC storage).
-      $dt = new \DateTime($raw_date, new \DateTimeZone('UTC'));
+      // Use the site's configured timezone instead of hardcoding UTC.
+      $config = \Drupal::config('system.date');
+      $timezone = $config->get('timezone.default') ?: 'UTC';
+      $dt = new \DateTime($raw_date, new \DateTimeZone($timezone));
       $event_timestamp = $dt->getTimestamp();
     }
 
@@ -268,9 +359,16 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
       /** @var \Drupal\file\FileInterface $file */
       $file = $node->get('field_event_image')->entity;
       if ($file) {
-        $file_url_generator = \Drupal::service('file_url_generator');
-        $image_url = $file_url_generator->generateAbsoluteString($file->getFileUri());
+        $image_url = $this->fileUrlGenerator->generateAbsoluteString($file->getFileUri());
       }
+    }
+
+    // Get the body text, strip HTML tags, and decode HTML entities.
+    $body_text = '';
+    if ($node->hasField('body') && !$node->get('body')->isEmpty()) {
+      // Strip all HTML tags and decode HTML entities to prevent them from being
+      // displayed as plain text.
+      $body_text = html_entity_decode(strip_tags($node->get('body')->processed));
     }
 
     // Return a data array.
@@ -280,7 +378,12 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
       'url' => $node->toUrl()->toString(),
       'event_date' => $event_timestamp,
       'image' => $image_url,
-      'body' => $node->hasField('body') ? $node->get('body')->value : '',
+      // Add alt text for accessibility.
+      'image_alt' => $node->label(),
+      'body' => $body_text,
+      // Mark body as safe HTML to ensure proper rendering of images
+      // and formatting.
+      'body_format' => 'full_html',
     ];
   }
 
