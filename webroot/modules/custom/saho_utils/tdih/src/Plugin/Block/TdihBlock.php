@@ -408,7 +408,8 @@ class TdihBlock extends BlockBase implements ContainerFactoryPluginInterface {
     // Get the body text, strip HTML tags, and decode HTML entities.
     $body_text = '';
     if ($node->hasField('body') && !$node->get('body')->isEmpty()) {
-      // Strip all HTML tags and decode HTML entities to prevent them from being displayed as plain text.
+      // Strip all HTML tags and decode HTML entities to prevent them from being
+      // displayed as plain text.
       $body_text = html_entity_decode(strip_tags($node->get('body')->value));
     }
 
