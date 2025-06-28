@@ -194,7 +194,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const offcanvasElementList = [].slice.call(
     document.querySelectorAll('.offcanvas:not(#sahoMobileMenu)')
   );
-  const offcanvasList = offcanvasElementList.map(
+  const _offcanvasList = offcanvasElementList.map(
     (offcanvasEl) => new bootstrap.Offcanvas(offcanvasEl)
   );
 
@@ -259,13 +259,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Initialize tooltips if needed
   const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-  const tooltipList = tooltipTriggerList.map(
+  const _tooltipList = tooltipTriggerList.map(
     (tooltipTriggerEl) => new bootstrap.Tooltip(tooltipTriggerEl)
   );
 
   // Initialize popovers if needed
   const popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
-  const popoverList = popoverTriggerList.map(
+  const _popoverList = popoverTriggerList.map(
     (popoverTriggerEl) => new bootstrap.Popover(popoverTriggerEl)
   );
 });
