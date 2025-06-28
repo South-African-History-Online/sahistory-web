@@ -96,7 +96,7 @@
     const optionsWithDefaults = options || {};
     const wrapper = Drupal.theme(
       'messageWrapper',
-      optionsWithDefaults.id || new Date().getTime(),
+      optionsWithDefaults.id || Date.now(),
       optionsWithDefaults.type || 'status'
     );
 

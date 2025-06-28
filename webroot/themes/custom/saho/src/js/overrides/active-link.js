@@ -56,7 +56,7 @@
         activeLinks[i].classList.add(activeClass);
       }
     },
-    detach(context, settings, trigger) {
+    detach(context, _settings, trigger) {
       if (trigger === 'unload') {
         const activeLinks = context.querySelectorAll(
           `[data-drupal-link-system-path].${activeClass}`
