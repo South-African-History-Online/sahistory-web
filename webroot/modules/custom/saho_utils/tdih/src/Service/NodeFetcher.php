@@ -2,7 +2,9 @@
 
 namespace Drupal\tdih\Service;
 
-use Drupal\node\Entity\Node;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Logger\LoggerChannelFactoryInterface;
+use Drupal\node\NodeInterface;
 
 /**
  * Service to fetch nodes for "Today in History" logic.
@@ -10,38 +12,84 @@ use Drupal\node\Entity\Node;
 class NodeFetcher {
 
   /**
+   * The entity type manager.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  protected $entityTypeManager;
+
+  /**
+   * The logger channel.
+   *
+   * @var \Drupal\Core\Logger\LoggerChannelInterface
+   */
+  protected $logger;
+
+  /**
+   * Constructs a new NodeFetcher object.
+   *
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager.
+   * @param \Drupal\Core\Logger\LoggerChannelFactoryInterface $logger_factory
+   *   The logger factory service.
+   */
+  public function __construct(
+    EntityTypeManagerInterface $entity_type_manager,
+    LoggerChannelFactoryInterface $logger_factory,
+  ) {
+    $this->entityTypeManager = $entity_type_manager;
+    $this->logger = $logger_factory->get('tdih');
+  }
+
+  /**
    * Load nodes matching today's month/day.
    *
    * Adjust your field and content type as needed.
+   *
+   * @param string $month
+   *   The month (01-12).
+   * @param string $day
+   *   The day (01-31).
+   *
+   * @return array
+   *   Array of Node objects.
    */
   public function loadTodayNodes($month, $day) {
-    // Ensure month and day are properly formatted with leading zeros.
-    $month = str_pad($month, 2, '0', STR_PAD_LEFT);
-    $day = str_pad($day, 2, '0', STR_PAD_LEFT);
+    try {
+      // Ensure month and day are properly formatted with leading zeros.
+      $month = str_pad($month, 2, '0', STR_PAD_LEFT);
+      $day = str_pad($day, 2, '0', STR_PAD_LEFT);
 
-    // First try to get featured events for today.
-    $query = \Drupal::entityQuery('node');
-    $nids = $query->condition('type', 'event')
-      ->condition('status', 1)
-      ->condition('field_this_day_in_history_3', "%-$month-$day", 'LIKE')
-      ->condition('field_home_page_feature', 1)
-      ->accessCheck(TRUE)
-      ->execute();
-
-    // If no featured events found, get at least one event for today.
-    if (empty($nids)) {
-      $query = \Drupal::entityQuery('node');
+      // First try to get featured events for today.
+      $query = $this->entityTypeManager->getStorage('node')->getQuery();
       $nids = $query->condition('type', 'event')
         ->condition('status', 1)
         ->condition('field_this_day_in_history_3', "%-$month-$day", 'LIKE')
+        ->condition('field_home_page_feature', 1)
         ->accessCheck(TRUE)
-        ->sort('field_this_day_in_history_3', 'DESC')
-        ->range(0, 1)
         ->execute();
-    }
 
-    if ($nids) {
-      return Node::loadMultiple($nids);
+      // If no featured events found, get at least one event for today.
+      if (empty($nids)) {
+        $query = $this->entityTypeManager->getStorage('node')->getQuery();
+        $nids = $query->condition('type', 'event')
+          ->condition('status', 1)
+          ->condition('field_this_day_in_history_3', "%-$month-$day", 'LIKE')
+          ->accessCheck(TRUE)
+          ->sort('field_this_day_in_history_3', 'DESC')
+          ->range(0, 1)
+          ->execute();
+      }
+
+      if ($nids) {
+        return $this->entityTypeManager->getStorage('node')->loadMultiple($nids);
+      }
+    }
+    catch (\Exception $e) {
+      $this->logger->error('Error loading TDIH nodes for @date: @message', [
+        '@date' => "$month-$day",
+        '@message' => $e->getMessage(),
+      ]);
     }
     return [];
   }
@@ -63,27 +111,35 @@ class NodeFetcher {
    *   Array of Node objects.
    */
   public function loadDateNodes($month, $day, $limit = 0) {
-    // Ensure month and day are properly formatted with leading zeros.
-    $month = str_pad($month, 2, '0', STR_PAD_LEFT);
-    $day = str_pad($day, 2, '0', STR_PAD_LEFT);
+    try {
+      // Ensure month and day are properly formatted with leading zeros.
+      $month = str_pad($month, 2, '0', STR_PAD_LEFT);
+      $day = str_pad($day, 2, '0', STR_PAD_LEFT);
 
-    // Query for published "event" nodes with date field matching mm-dd.
-    $query = \Drupal::entityQuery('node');
-    $query->condition('type', 'event')
-      ->condition('status', 1)
-      ->condition('field_this_day_in_history_3', "%-$month-$day", 'LIKE')
-      ->accessCheck(TRUE)
-      ->sort('field_this_day_in_history_3', 'DESC');
+      // Query for published "event" nodes with date field matching mm-dd.
+      $query = $this->entityTypeManager->getStorage('node')->getQuery();
+      $query->condition('type', 'event')
+        ->condition('status', 1)
+        ->condition('field_this_day_in_history_3', "%-$month-$day", 'LIKE')
+        ->accessCheck(TRUE)
+        ->sort('field_this_day_in_history_3', 'DESC');
 
-    // Apply limit if specified.
-    if ($limit > 0) {
-      $query->range(0, $limit);
+      // Apply limit if specified.
+      if ($limit > 0) {
+        $query->range(0, $limit);
+      }
+
+      $nids = $query->execute();
+
+      if ($nids) {
+        return $this->entityTypeManager->getStorage('node')->loadMultiple($nids);
+      }
     }
-
-    $nids = $query->execute();
-
-    if ($nids) {
-      return Node::loadMultiple($nids);
+    catch (\Exception $e) {
+      $this->logger->error('Error loading date nodes for @date: @message', [
+        '@date' => "$month-$day",
+        '@message' => $e->getMessage(),
+      ]);
     }
     return [];
   }
@@ -99,30 +155,42 @@ class NodeFetcher {
   public function getAvailableDates() {
     $dates = [];
 
-    // Query for all published "event" nodes with a date field.
-    $query = \Drupal::entityQuery('node');
-    $nids = $query->condition('type', 'event')
-      ->condition('status', 1)
-      ->exists('field_this_day_in_history_3')
-      ->accessCheck(TRUE)
-      ->execute();
+    try {
+      // Query for all published "event" nodes with a date field.
+      $query = $this->entityTypeManager->getStorage('node')->getQuery();
+      $nids = $query->condition('type', 'event')
+        ->condition('status', 1)
+        ->exists('field_this_day_in_history_3')
+        ->accessCheck(TRUE)
+        ->execute();
 
-    if ($nids) {
-      $nodes = Node::loadMultiple($nids);
-      foreach ($nodes as $node) {
-        if ($node->hasField('field_this_day_in_history_3') && !$node->get('field_this_day_in_history_3')->isEmpty()) {
-          $date_value = $node->get('field_this_day_in_history_3')->value;
-          // Extract month and day from the date value (format: YYYY-MM-DD)
-          if (preg_match('/\d{4}-(\d{2})-(\d{2})/', $date_value, $matches)) {
-            $month = $matches[1];
-            $day = $matches[2];
-            $month_day = "$month-$day";
-            if (!in_array($month_day, $dates)) {
-              $dates[] = $month_day;
+      if ($nids) {
+        /** @var \Drupal\node\NodeInterface[] $nodes */
+        $nodes = $this->entityTypeManager->getStorage('node')->loadMultiple($nids);
+        foreach ($nodes as $node) {
+          // Check if the field exists and has a value.
+          if ($node instanceof NodeInterface && $node->hasField('field_this_day_in_history_3')) {
+            $field = $node->get('field_this_day_in_history_3');
+            if (!$field->isEmpty()) {
+              $date_value = $field->value;
+              // Extract month and day from the date value (format: YYYY-MM-DD).
+              if (preg_match('/\d{4}-(\d{2})-(\d{2})/', $date_value, $matches)) {
+                $month = $matches[1];
+                $day = $matches[2];
+                $month_day = "$month-$day";
+                if (!in_array($month_day, $dates)) {
+                  $dates[] = $month_day;
+                }
+              }
             }
           }
         }
       }
+    }
+    catch (\Exception $e) {
+      $this->logger->error('Error getting available dates: @message', [
+        '@message' => $e->getMessage(),
+      ]);
     }
 
     return $dates;
