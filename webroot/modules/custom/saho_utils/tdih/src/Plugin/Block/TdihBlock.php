@@ -52,7 +52,7 @@ class TdihBlock extends BlockBase implements ContainerFactoryPluginInterface {
   /**
    * The time service.
    *
-   * @var \Drupal\Core\Datetime\TimeInterface
+   * @var \Drupal\Component\Datetime\TimeInterface
    */
   protected $time;
 
@@ -78,7 +78,7 @@ class TdihBlock extends BlockBase implements ContainerFactoryPluginInterface {
    *   The logger factory service.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager service.
-   * @param \Drupal\Core\Datetime\TimeInterface $time
+   * @param \Drupal\Component\Datetime\TimeInterface $time
    *   The time service.
    * @param \Drupal\Core\File\FileUrlGeneratorInterface $file_url_generator
    *   The file URL generator service.
@@ -391,8 +391,9 @@ class TdihBlock extends BlockBase implements ContainerFactoryPluginInterface {
 
           // Try to get alt text from the image field if available.
           $image_item = $node->get('field_event_image')->first();
-          if ($image_item && $image_item->alt) {
-            $image_alt = $image_item->alt;
+          // Access the alt text property safely.
+          if ($image_item && !empty($image_item->getValue()['alt'])) {
+            $image_alt = $image_item->getValue()['alt'];
           }
         }
       }
@@ -408,7 +409,7 @@ class TdihBlock extends BlockBase implements ContainerFactoryPluginInterface {
     $body_text = '';
     if ($node->hasField('body') && !$node->get('body')->isEmpty()) {
       // Strip all HTML tags and decode HTML entities to prevent them from being displayed as plain text.
-      $body_text = html_entity_decode(strip_tags($node->get('body')->processed));
+      $body_text = html_entity_decode(strip_tags($node->get('body')->value));
     }
 
     // Return a data array, including the event_date timestamp
@@ -418,7 +419,7 @@ class TdihBlock extends BlockBase implements ContainerFactoryPluginInterface {
       'title' => strip_tags($node->label()),
       'url' => $node->toUrl()->toString(),
       // Use this in Twig with |date filter.
-      'event_date' => $event_timestamp ?? 0,
+      'event_date' => $event_timestamp,
       'image' => $image_url ?? '',
       'image_alt' => $image_alt ?? strip_tags($node->label()),
       'body' => $body_text,

@@ -267,7 +267,8 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
       // Get the body text, strip HTML tags, and decode HTML entities.
       $body_text = '';
       if ($node->hasField('body') && !$node->get('body')->isEmpty()) {
-        // Strip all HTML tags and decode HTML entities to prevent them from being displayed as plain text.
+        // Strip all HTML tags and decode HTML entities to prevent them from
+        // being displayed as plain text.
         $body_text = html_entity_decode(strip_tags($node->get('body')->processed));
       }
 
@@ -281,7 +282,8 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
         // Add alt text for accessibility.
         'image_alt' => $node->label(),
         'body' => $body_text,
-        // Mark body as safe HTML to ensure proper rendering of images and formatting.
+        // Mark body as safe HTML to ensure proper rendering of images
+        // and formatting.
         'body_format' => 'full_html',
       ];
     }
@@ -364,7 +366,8 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
     // Get the body text, strip HTML tags, and decode HTML entities.
     $body_text = '';
     if ($node->hasField('body') && !$node->get('body')->isEmpty()) {
-      // Strip all HTML tags and decode HTML entities to prevent them from being displayed as plain text.
+      // Strip all HTML tags and decode HTML entities to prevent them from being
+      // displayed as plain text.
       $body_text = html_entity_decode(strip_tags($node->get('body')->processed));
     }
 
@@ -378,7 +381,8 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
       // Add alt text for accessibility.
       'image_alt' => $node->label(),
       'body' => $body_text,
-      // Mark body as safe HTML to ensure proper rendering of images and formatting.
+      // Mark body as safe HTML to ensure proper rendering of images
+      // and formatting.
       'body_format' => 'full_html',
     ];
   }
