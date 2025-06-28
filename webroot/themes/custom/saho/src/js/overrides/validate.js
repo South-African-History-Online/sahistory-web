@@ -71,7 +71,7 @@
   };
 
   // Extend Clientside Validation options if the module is enabled.
-  $(document).on('cv-jquery-validate-options-update', (event, options) => {
+  $(document).on('cv-jquery-validate-options-update', (_event, options) => {
     Object.assign(options, validateOptions);
   });
 })(jQuery);

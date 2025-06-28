@@ -67,7 +67,7 @@
   };
 
   // eslint-disable-next-line
-  Drupal.AjaxCommands.prototype.openDialogByUrl = (ajax, response, status) => {
+  Drupal.AjaxCommands.prototype.openDialogByUrl = (_ajax, response, _status) => {
     const settings = $.extend(response.settings, {});
 
     const elementSettings = {
@@ -156,7 +156,7 @@
   };
 
   // eslint-disable-next-line
-  Drupal.AjaxCommands.prototype.closeDialog = (ajax, response, status) => {
+  Drupal.AjaxCommands.prototype.closeDialog = (_ajax, response, _status) => {
     const $dialog = $(response.selector);
     if ($dialog.length) {
       Drupal.dialog($dialog.get(0)).close();
@@ -166,7 +166,7 @@
   };
 
   // eslint-disable-next-line
-  Drupal.AjaxCommands.prototype.setDialogOption = (ajax, response, status) => {
+  Drupal.AjaxCommands.prototype.setDialogOption = (_ajax, response, _status) => {
     const $dialog = $(response.selector);
     if ($dialog.length) {
       $dialog.dialog('option', response.optionName, response.optionValue);
@@ -174,7 +174,7 @@
   };
 
   // eslint-disable-next-line
-  $(window).on('dialog:aftercreate', (e, dialog, $element, settings) => {
+  $(window).on('dialog:aftercreate', (_e, dialog, $element, _settings) => {
     // eslint-disable-next-line
     $element.on('click.dialog', '.dialog-cancel', (e) => {
       dialog.close('cancel');
@@ -183,7 +183,7 @@
     });
   });
 
-  $(window).on('dialog:beforeclose', (e, dialog, $element) => {
+  $(window).on('dialog:beforeclose', (_e, _dialog, $element) => {
     $element.off('.dialog');
 
     // Do some extra things here, set Drupal.autocomplete options to render
