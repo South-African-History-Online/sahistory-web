@@ -1,21 +1,22 @@
-// Simplex 5.3.3
-// Bootswatch
+// SAHO Theme
+// Modern and Professional
 
-// Variables
-
-// System font stack instead of Google Fonts
-$font-family-sans-serif: -apple-system, blinkmacsystemfont, "Segoe UI", roboto, "Helvetica Neue", arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol" !default;
-
-// Define the variable but don't import it
-// This allows for future local font implementation
-$web-font-path: "" !default;
+// Variables are now defined in _variables.scss
+// Font imports are handled in _typography.scss
 
 // Mixins
 
 @mixin btn-shadow($color) {
-  @include gradient-y-three-colors(tint-color($color, 6%), $color, 6%, shade-color($color, 6%));
-  filter: none;
-  border: 1px solid shade-color($color, 13%);
+  background-color: $color;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border: 1px solid shade-color($color, 10%);
+  transition: all 0.2s ease;
+  
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    background-color: shade-color($color, 5%);
+  }
 }
 
 // Navbar
@@ -119,89 +120,115 @@ $web-font-path: "" !default;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  font-family: "Open Sans", sans-serif;
+  font-family: $font-family-base;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+  padding: 1.5rem;
+  border-radius: 8px;
+  background-color: #fff;
 }
 
 .tdih-block .block-title {
   font-size: 1.5rem;
   margin-bottom: 0.2rem;
-  color: #8b2b2b;
+  color: $saho-deep-heritage-red;
+  font-family: $headings-font-family;
+  font-weight: $headings-font-weight;
 }
 
 .tdih-block .intro-text {
   font-size: 0.95rem;
   max-width: 400px;
-  color: #444;
+  color: $gray-700;
   margin-bottom: 1.5rem;
   line-height: 1.4;
 }
 
 .tdih-separator {
   width: 60px;
-  height: 1px;
-  background-color: #8b2b2b;
+  height: 2px;
+  background-color: $saho-deep-heritage-red;
   margin: 0 auto 1.5rem;
+  opacity: 0.7;
 }
 
 .tdih-list {
   display: flex;
   flex-direction: column;
   align-items: center;
+  width: 100%;
 }
 
 .tdih-item {
   max-width: 300px;
-  margin-bottom: 0.5rem;
+  margin-bottom: 1.5rem;
+  transition: transform 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-3px);
+  }
 }
 
 .tdih-item h3 a {
   text-decoration: none;
-  color: #900;
+  color: $saho-deep-heritage-red;
+  font-family: $headings-font-family;
+  transition: color 0.2s ease;
 }
 
 .tdih-item h3 a:hover {
-  text-decoration: none;
+  color: darken($saho-deep-heritage-red, 10%);
 }
 
 .tdih-item .tdih-image {
   width: 100%;
   height: auto;
-  border-radius: 6px;
+  border-radius: 8px;
   margin-bottom: 0.75rem;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
 }
 
 .tdih-item .date {
   font-size: 0.9rem;
-  color: #555;
+  color: $gray-600;
   margin-bottom: 0.5rem;
+  font-style: italic;
 }
 
 .tdih-item h3 {
   margin: 0 0 1.25rem;
   font-size: 1.1rem;
-  color: #8b2b2b;
+  color: $saho-deep-heritage-red;
   line-height: 1.4;
+  font-family: $headings-font-family;
+  font-weight: $headings-font-weight;
 }
 
 .tdih-button-wrapper {
-  margin-top: 0.5rem;
+  margin-top: 1rem;
+  width: 100%;
+  text-align: center;
 }
 
 .tdih-button-wrapper a.btn-view-more {
   display: inline-block;
-  padding: 0.5rem 1rem;
-  border: 1px solid #8b2b2b;
-  color: #8b2b2b;
+  padding: 0.6rem 1.2rem;
+  border: 1px solid $saho-deep-heritage-red;
+  color: $saho-deep-heritage-red;
+  background-color: transparent;
   text-decoration: none;
   font-size: 0.9rem;
-  border-radius: 4px;
+  font-weight: 600;
+  border-radius: 25px;
   margin-top: 0.5rem;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
 .tdih-button-wrapper a.btn-view-more:hover {
-  background-color: #8b2b2b;
-  color: #fff;
+  background-color: $saho-deep-heritage-red;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 // Typography
@@ -296,14 +323,14 @@ label {
   z-index: 1000; /* Ensure it is above other elements */
 }
 
-// SAHO Custom History Project Color Palette
+// SAHO Custom History Project Color Palette - Refined for modern professional appearance
 
-$saho-deep-heritage-red: #900;
-$saho-dark-charcoal: #333;
-$saho-muted-gold: #b88a2e;
-$saho-aged-parchment: #e5d5b0;
-$saho-slate-blue: #4a5a74;
-$saho-faded-brick-red: #b03030;
+$saho-deep-heritage-red: $primary; // Using our primary color variable from _variables.scss
+$saho-dark-charcoal: $gray-800; // Darker gray for text
+$saho-muted-gold: #b88a2e; // Preserved gold accent
+$saho-aged-parchment: #f5f0e5; // Lightened for better contrast
+$saho-slate-blue: #3a4a64; // Deepened for more professional look
+$saho-faded-brick-red: #8b2331; // Aligned with our primary color
 
 .saho-bg-primary {
   background-color: $saho-deep-heritage-red !important;
