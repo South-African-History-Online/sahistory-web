@@ -1,0 +1,194 @@
+{#
+/**
+ * @file
+ * Default view template to display fields in a card format for archive items.
+ *
+ * Available variables:
+ * - view: The view.
+ * - fields: A list of fields, each one contains:
+ *   - content: The output of the field.
+ *   - raw: The raw data for the field, if it exists.
+ *   - class: The class the field should be displayed in.
+ *   - handler: The Views field handler object controlling this field.
+ *   - label: The label for this field.
+ *   - label_html: The label for this field, formatted as HTML.
+ * - row: The raw result from the query, with all data it fetched.
+ *
+ * @see template_preprocess_views_view_fields()
+ */
+#}
+
+{# Define variables for the card #}
+{% set title = '' %}
+{% set body = '' %}
+{% set image_url = '' %}
+{% set date = '' %}
+{% set author = '' %}
+{% set url = '#' %}
+{% set resource_type = 'Document' %}
+
+{# Extract field values from the fields object #}
+{% for field_name, field in fields %}
+  {% if field_name == 'title' or field_name == 'name' %}
+    {% set title = field.content %}
+  {% endif %}
+
+  {% if 'body' in field_name or 'synopsis' in field_name or 'description' in field_name or 'field_description' in field_name %}
+    {% set body = field.content %}
+  {% endif %}
+
+  {% if 'image' in field_name or 'field_image' in field_name or 'field_archive_image' in field_name or 'field_main_image' in field_name or 'field_place_image' in field_name or 'field_bio_pic' in field_name or 'field_event_image' in field_name or 'field_tdih_image' in field_name or 'field_upcomingevent_image' in field_name or 'field_article_image' in field_name %}
+    {% set image_url = field.content %}
+  {% endif %}
+
+  {% if 'created' in field_name or 'date' in field_name or 'field_date' in field_name or 'field_publication_date' in field_name %}
+    {% set date = field.content %}
+  {% endif %}
+
+  {% if 'author' in field_name or 'field_author' in field_name or 'field_contributor' in field_name %}
+    {% set author = field.content %}
+  {% endif %}
+
+  {% if 'path' in field_name or 'view_node' in field_name or 'nid' in field_name %}
+    {% set url_found = false %}
+    {% if not url_found and field.content|render|trim starts with '<a href="' %}
+      {% set url_parts = field.content|render|split('href="') %}
+      {% if url_parts|length > 1 %}
+        {% set url_part = url_parts[1]|split('"') %}
+        {% if url_part|length > 0 %}
+          {% set url = url_part[0] %}
+          {% set url_found = true %}
+        {% endif %}
+      {% endif %}
+    {% endif %}
+  {% endif %}
+
+  {% if 'type' in field_name or 'field_resource_type' in field_name or 'field_media_type' in field_name %}
+    {% set type_text = field.content|render|striptags|trim|lower %}
+    {% if 'document' in type_text %}
+      {% set resource_type = 'Document' %}
+    {% elseif 'photo' in type_text or 'image' in type_text %}
+      {% set resource_type = 'Photo' %}
+    {% elseif 'audio' in type_text or 'sound' in type_text %}
+      {% set resource_type = 'Audio' %}
+    {% elseif 'video' in type_text or 'film' in type_text %}
+      {% set resource_type = 'Video' %}
+    {% elseif 'pdf' in type_text %}
+      {% set resource_type = 'PDF' %}
+    {% endif %}
+  {% endif %}
+{% endfor %}
+
+{# Set badge class based on resource type #}
+{% set badge_class = 'bg-secondary' %}
+{% if resource_type == 'Document' %}
+  {% set badge_class = 'bg-primary' %}
+{% elseif resource_type == 'Photo' %}
+  {% set badge_class = 'bg-success' %}
+{% elseif resource_type == 'Audio' %}
+  {% set badge_class = 'bg-info text-dark' %}
+{% elseif resource_type == 'Video' %}
+  {% set badge_class = 'bg-danger' %}
+{% elseif resource_type == 'PDF' %}
+  {% set badge_class = 'bg-warning text-dark' %}
+{% endif %}
+
+{# Render the card #}
+<div class="col">
+  <div class="card h-100 shadow-sm saho-card">
+    {# Resource type badge #}
+    <span class="resource-type">
+      <span class="badge {{ badge_class }} resource-badge">{{ resource_type }}</span>
+    </span>
+
+    {# Card image or placeholder - full width #}
+    {% if image_url|render is not empty and '<img' in image_url|render %}
+      <div class="card-img-top-wrapper">
+        <style>
+          .card-img-top-wrapper img {
+            width: 100% !important;
+            height: 180px !important;
+            object-fit: cover !important;
+            object-position: center !important;
+          }
+        </style>
+        {{ image_url|raw }}
+      </div>
+    {% else %}
+      <div class="saho-placeholder saho-placeholder--{{ resource_type|lower }}"></div>
+    {% endif %}
+
+    <div class="card-body">
+      {# Card title #}
+      <h5 class="card-title">{{ title|raw }}</h5>
+
+      {# Enhanced metadata with icons #}
+      <div class="saho-metadata mb-3">
+        {% if resource_type %}
+          <div class="mb-1">
+            <i class="fas fa-file-alt me-2"></i> <strong>Type:</strong> {{ resource_type }}
+          </div>
+        {% endif %}
+        
+        {% if date|render|striptags|trim is not empty %}
+          <div class="mb-1">
+            <i class="fas fa-calendar-alt me-2"></i> <strong>Date:</strong> {{ date|raw }}
+          </div>
+        {% endif %}
+
+        {% if author|render|striptags|trim is not empty %}
+          <div class="mb-1">
+            <i class="fas fa-user me-2"></i> <strong>Author:</strong> {{ author|raw }}
+          </div>
+        {% endif %}
+        
+        {# Extract additional metadata from fields #}
+        {% set source = '' %}
+        {% set location = '' %}
+        {% set reference = '' %}
+        
+        {% for field_name, field in fields %}
+          {% if 'source' in field_name or 'publisher' in field_name or 'field_publishers' in field_name %}
+            {% set source = field.content %}
+          {% endif %}
+          
+          {% if 'location' in field_name or 'place' in field_name or 'venue' in field_name %}
+            {% set location = field.content %}
+          {% endif %}
+          
+          {% if 'reference' in field_name or 'ref_str' in field_name %}
+            {% set reference = field.content %}
+          {% endif %}
+        {% endfor %}
+        
+        {% if source|render|striptags|trim is not empty %}
+          <div class="mb-1">
+            <i class="fas fa-book me-2"></i> <strong>Source:</strong> {{ source|raw }}
+          </div>
+        {% endif %}
+        
+        {% if location|render|striptags|trim is not empty %}
+          <div class="mb-1">
+            <i class="fas fa-map-marker-alt me-2"></i> <strong>Location:</strong> {{ location|raw }}
+          </div>
+        {% endif %}
+        
+        {% if reference|render|striptags|trim is not empty %}
+          <div class="mb-1">
+            <i class="fas fa-hashtag me-2"></i> <strong>Reference:</strong> {{ reference|raw }}
+          </div>
+        {% endif %}
+      </div>
+
+      {# View resource button #}
+      <div class="text-end">
+        <a href="{{ url }}" class="btn btn-sm btn-outline-secondary saho-read-more-btn">
+          View Resource <i class="fas fa-arrow-right ms-1"></i>
+        </a>
+      </div>
+    </div>
+
+    {# Full card link for easy clicking #}
+    <a href="{{ url }}" class="stretched-link"></a>
+  </div>
+</div>
