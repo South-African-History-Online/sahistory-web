@@ -107,7 +107,7 @@ class MediaMigrationCommands extends DrushCommands {
    * @usage saho:migrate --limit=1000
    *   Migrate with limit of 1000 files
    */
-  public function migrate($options = ['limit' => 10000]) {
+  public function migrate($options = ['limit' => 1000]) {
     $limit = (int) $options['limit'];
 
     $this->output()->writeln('');
@@ -302,6 +302,7 @@ class MediaMigrationCommands extends DrushCommands {
       $units = ['KB', 'MB', 'GB', 'TB'];
       $exp = floor(log($size, 1024));
       $exp = min($exp, count($units) - 1);
+      // $exp starts at 1 for KB, so $exp-1 is the correct array index
       return number_format($size / pow(1024, $exp), 2) . ' ' . $units[$exp - 1];
     }
   }

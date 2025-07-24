@@ -57,6 +57,7 @@ drush sms  # Short alias
 ```bash
 # Migrate up to 1000 files
 drush saho:migrate --limit=1000
+drush smig --limit=1000  # Short alias
 
 # Migrate all files needing migration
 drush saho:migrate --limit=0
@@ -66,6 +67,9 @@ drush saho:migrate --limit=0
 ```bash
 drush saho:generate-csv
 drush sgc  # Short alias
+# Alternative command
+drush saho:csv
+drush scsv  # Short alias for alternative
 ```
 
 #### Validate Migration
@@ -79,6 +83,16 @@ drush sval  # Short alias
 drush saho:import-csv /path/to/file.csv
 drush simp /path/to/file.csv  # Short alias
 ```
+
+#### Test Commands
+```bash
+drush saho:test
+drush st  # Short alias
+```
+
+> **Note:** This module contains two command classes that implement similar functionality. 
+> For full-featured commands, use the ones documented above. If you encounter any issues, 
+> try using the alternative commands where available.
 
 ## Migration Process
 

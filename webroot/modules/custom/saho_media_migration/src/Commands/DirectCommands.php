@@ -140,19 +140,33 @@ class DirectCommands extends DrushCommands {
   /**
    * Generate CSV mapping.
    *
-   * @command saho:csv
-   * @aliases scsv
-   * @usage saho:csv
+   * @command saho:generate-csv
+   * @aliases sgc,saho:csv,scsv
+   * @usage saho:generate-csv
    *   Generate CSV mapping file
    */
   public function generateCsv() {
+    $this->output()->writeln('');
+    $this->output()->writeln('=== GENERATING CSV MAPPING FILE ===');
+    $this->output()->writeln('');
+
     try {
       $service = \Drupal::service('saho_media_migration.migrator');
       $filename = $service->generateCsvMapping();
-      $this->output()->writeln("✅ CSV generated: {$filename}");
+      $this->output()->writeln("✅ CSV file generated: {$filename}");
+
+      $stats = $service->getMigrationStats();
+      $this->output()->writeln('');
+      $this->output()->writeln('Summary:');
+      $this->output()->writeln('--------');
+      $this->output()->writeln('Total files mapped: ' . number_format($stats['total_files']));
+      $this->output()->writeln('Files already with media: ' . number_format($stats['files_with_media']));
+      $this->output()->writeln('Files needing migration: ' . number_format($stats['files_without_media']));
+      $this->output()->writeln('');
     }
     catch (\Exception $e) {
       $this->output()->writeln('❌ CSV generation failed: ' . $e->getMessage());
+      return self::EXIT_FAILURE;
     }
   }
 
