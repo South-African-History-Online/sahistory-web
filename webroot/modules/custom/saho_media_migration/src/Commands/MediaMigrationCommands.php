@@ -166,12 +166,29 @@ class MediaMigrationCommands extends DrushCommands {
         throw new UserAbortException();
       }
 
-      $batch = $this->migrationService->createMigrationBatch($files_to_migrate);
-      batch_set($batch);
-      // Use Drupal's batch processor instead of deprecated Drush function.
-      \Drupal::service('batch.processor')->process();
+      // Process the files directly instead of using batch API which can have
+      // compatibility issues in CLI context.
+      $this->output()->writeln("Starting migration of {$count} files...");
+      $this->output()->writeln('');
 
-      $this->output()->writeln('✅ Migration batch completed! Check results above.');
+      // Get the operations from the batch and process them directly.
+      $processed = 0;
+
+      foreach ($files_to_migrate as $file) {
+        try {
+          $media = $this->migrationService->createMediaEntity($file);
+          if ($media) {
+            $this->output()->writeln("✅ Migrated file {$file['filename']} to media entity #{$media->id()}");
+            $processed++;
+          }
+        }
+        catch (\Exception $inner_exception) {
+          $this->output()->writeln("❌ Failed to migrate file {$file['filename']}: {$inner_exception->getMessage()}");
+        }
+      }
+
+      $this->output()->writeln('');
+      $this->output()->writeln("Migration completed: {$processed} of {$count} files processed successfully.");
 
     }
     catch (UserAbortException $e) {
@@ -267,12 +284,29 @@ class MediaMigrationCommands extends DrushCommands {
         throw new UserAbortException();
       }
 
-      $batch = $this->migrationService->createMigrationBatch($file_data);
-      batch_set($batch);
-      // Use Drupal's batch processor instead of deprecated Drush function.
-      \Drupal::service('batch.processor')->process();
+      // Process the files directly instead of using batch API which can have
+      // compatibility issues in CLI context.
+      $this->output()->writeln("Starting import of {$count} files from CSV...");
+      $this->output()->writeln('');
 
-      $this->output()->writeln('✅ CSV import batch completed!');
+      // Get the operations from the batch and process them directly.
+      $processed = 0;
+
+      foreach ($file_data as $file) {
+        try {
+          $media = $this->migrationService->createMediaEntity($file);
+          if ($media) {
+            $this->output()->writeln("✅ Migrated file {$file['filename']} to media entity #{$media->id()}");
+            $processed++;
+          }
+        }
+        catch (\Exception $inner_exception) {
+          $this->output()->writeln("❌ Failed to migrate file {$file['filename']}: {$inner_exception->getMessage()}");
+        }
+      }
+
+      $this->output()->writeln('');
+      $this->output()->writeln("CSV import completed: {$processed} of {$count} files processed successfully.");
 
     }
     catch (UserAbortException $e) {

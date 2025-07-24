@@ -102,11 +102,29 @@ class DirectCommands extends DrushCommands {
         return;
       }
 
-      $batch = $service->createMigrationBatch($files);
-      batch_set($batch);
-      // Use Drupal's batch processor instead of deprecated Drush function.
-      \Drupal::service('batch.processor')->process();
+      // Process the files directly instead of using batch API which can have
+      // compatibility issues in CLI context.
+      $this->output()->writeln("Starting migration of {$count} files...");
+      $this->output()->writeln('');
 
+      // Get the operations from the batch and process them directly.
+      $processed = 0;
+
+      foreach ($files as $file) {
+        try {
+          $media = $service->createMediaEntity($file);
+          if ($media) {
+            $this->output()->writeln("✅ Migrated file {$file['filename']} to media entity #{$media->id()}");
+            $processed++;
+          }
+        }
+        catch (\Exception $inner_exception) {
+          $this->output()->writeln("❌ Failed to migrate file {$file['filename']}: {$inner_exception->getMessage()}");
+        }
+      }
+
+      $this->output()->writeln('');
+      $this->output()->writeln("Migration completed: {$processed} of {$count} files processed successfully.");
     }
     catch (\Exception $e) {
       $this->output()->writeln('❌ Migration failed: ' . $e->getMessage());
