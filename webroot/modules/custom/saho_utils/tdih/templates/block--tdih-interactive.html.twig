@@ -10,14 +10,14 @@
  */
 #}
 
-<div class="tdih-interactive-block">
+<div class="tdih-interactive-block" role="region" aria-labelledby="tdih-heading">
   <div class="tdih-interactive-header">
-    <h2>{{ 'This day in history'|t }}</h2>
+    <h2 id="tdih-heading">{{ 'This day in history'|t }}</h2>
     <p class="tdih-intro-text">{{ 'Find out who was born, who died and other significant events from this day in history'|t }}</p>
   </div>
 
   {% if date_picker_form %}
-    <div class="tdih-birthday-picker">
+    <div class="tdih-birthday-picker" role="search" aria-label="{{ 'Search historical events by date'|t }}">
       {{ date_picker_form }}
     </div>
   {% endif %}
@@ -25,13 +25,20 @@
   <div class="tdih-today-history-wrapper" {% if not show_today_history %}style="display: none;"{% endif %}>
     {% if tdih_nodes %}
       <div class="tdih-today-events">
-        <h3>{{ 'Today in history'|t }}</h3>
-        <div class="tdih-events-list {% if display_mode == 'compact' %}compact-mode{% else %}full-mode{% endif %}">
+        <h3 id="tdih-today-heading">{{ 'Today in history'|t }}</h3>
+        <div class="tdih-events-list {% if display_mode == 'compact' %}compact-mode{% else %}full-mode{% endif %}" aria-labelledby="tdih-today-heading">
           {% for item in tdih_nodes %}
             <div class="tdih-event-item">
               {% if display_mode == 'full' and item.image %}
                 <div class="tdih-event-image">
-                  <img src="{{ item.image }}" alt="{{ item.title|striptags }}" />
+                  <img 
+                    src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'%3E%3C/svg%3E" 
+                    data-src="{{ item.image }}" 
+                    alt="{{ item.title|striptags }}" 
+                    class="lazy"
+                    loading="lazy"
+                    width="100%"
+                    height="auto" />
                 </div>
               {% endif %}
               

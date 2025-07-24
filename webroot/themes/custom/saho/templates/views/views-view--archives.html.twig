@@ -30,19 +30,33 @@
 
 {# Define section-specific colors and classes #}
 {% set section_name = 'Archives' %}
-{% set section_color = 'saho-dark-charcoal' %}
-{% set section_bg_class = 'saho-bg-dark-charcoal' %}
-{% set section_border_class = 'saho-border-dark-charcoal' %}
-{% set section_text_class = 'saho-text-dark-charcoal' %}
+{% set section_colors = {
+  'Politics & Society': 'saho-deep-heritage-red',
+  'Art & Culture': 'saho-muted-gold',
+  'Biographies': 'saho-slate-blue',
+  'Africa': 'saho-faded-brick-red',
+  'Classroom': 'saho-deep-heritage-red',
+  'Places': 'saho-slate-blue',
+  'Timelines': 'saho-muted-gold',
+  'Archives': 'saho-dark-charcoal'
+} %}
 
-<div{{ attributes.addClass('saho-landing-page', 'saho-archives-page', 'view-' ~ view.id|clean_class) }}>
+{% set section_color = section_colors[section_name] ?? 'saho-dark-charcoal' %}
+{% set section_bg_class = 'saho-bg-' ~ (section_color|replace({'saho-': ''})) %}
+{% set section_border_class = 'saho-border-' ~ (section_color|replace({'saho-': ''})) %}
+{% set section_text_class = 'saho-text-' ~ (section_color|replace({'saho-': ''})) %}
+
+<div{{ attributes.addClass('saho-landing-page', 'view-' ~ view.id|clean_class) }}>
   
-  {# Hero Section with Advanced Search #}
-  <section class="saho-landing-hero saho-archives-hero mb-5 py-4 bg-light">
+  {# Hero Section with enhanced title styling #}
+  <section class="saho-landing-hero mb-5">
     <div class="container">
-      <div class="row align-items-center">
-        <div class="col-lg-8">
-          <h1 class="display-4 {{ section_text_class }}">{{ section_name }}</h1>
+      <div class="row">
+        <div class="col-lg-12">
+          <div class="saho-section-title-wrapper mb-3">
+            <h1 class="display-4 saho-section-title {{ section_text_class }}">{{ section_name }}</h1>
+            <div class="saho-section-title-accent {{ section_bg_class }}"></div>
+          </div>
           
           {% if header %}
             <div class="saho-landing-description lead mb-4">
@@ -54,44 +68,31 @@
             </div>
           {% endif %}
         </div>
-        <div class="col-lg-4 d-none d-lg-block">
-          <div class="saho-landing-icon text-center">
-            <img src="/themes/custom/saho/images/icons/archives.svg" 
-                 alt="Archives Icon" 
-                 class="img-fluid" 
-                 onerror="this.src='/themes/custom/saho/logo.svg'; this.style.maxWidth='150px';">
-          </div>
-        </div>
       </div>
     </div>
   </section>
   
   {# Advanced Search Section - Prominent for Archives #}
-  <section class="saho-archives-search mb-5 py-4 {{ section_bg_class }}">
+  <section class="saho-landing-featured py-4 mb-5 {{ section_bg_class }}">
     <div class="container">
-      <div class="row">
-        <div class="col-12">
-          <h2 class="h3 text-white mb-4">Advanced Search</h2>
+      
+      {% if exposed %}
+        <div class="saho-landing-filters p-4 bg-white rounded shadow-sm">
+          {{ exposed }}
           
-          {% if exposed %}
-            <div class="saho-archives-filters p-4 bg-white rounded shadow-sm">
-              {{ exposed }}
-              
-              {% if feed_icons %}
-                <div class="saho-archives-feeds mt-4 text-end">
-                  {{ feed_icons }}
-                </div>
-              {% endif %}
+          {% if feed_icons %}
+            <div class="saho-landing-feeds mt-3 text-end">
+              {{ feed_icons }}
             </div>
           {% endif %}
         </div>
-      </div>
+      {% endif %}
     </div>
   </section>
   
   {# Featured Archives - if available #}
   {% if attachment_before %}
-    <section class="saho-archives-featured mb-5">
+    <section class="saho-landing-featured mb-5">
       <div class="container">
         <h2 class="h3 {{ section_text_class }} mb-4">Featured Collections</h2>
         <div class="saho-featured-content">
@@ -102,15 +103,18 @@
   {% endif %}
   
   {# Main Content Section #}
-  <section class="saho-archives-content mb-5">
+  <section class="saho-landing-content mb-5">
     <div class="container">
       <div class="row">
-        {# Sidebar with research tools #}
+        
+        {# Sidebar with modernized filters #}
         <div class="col-lg-3 mb-4 mb-lg-0">
-          <div class="saho-archives-sidebar {{ section_border_class }} border-top border-4 p-3 bg-light rounded">
-            <h2 class="h4 {{ section_text_class }} mb-3">Research Tools</h2>
+          <div class="saho-landing-sidebar p-3 rounded shadow-sm">
+            <div class="saho-sidebar-header {{ section_bg_class }} text-white p-3 rounded-top mb-3">
+              <h2 class="h5 m-0">Research Tools</h2>
+            </div>
             
-            <div class="saho-archives-tools">
+            <div class="saho-landing-categories">
               <ul class="list-unstyled">
                 <li class="mb-3">
                   <a href="/archives/collections" class="d-flex align-items-center text-decoration-none text-dark">
@@ -145,8 +149,10 @@
               </ul>
             </div>
             
-            <h3 class="h5 {{ section_text_class }} mt-4 mb-3">Resource Types</h3>
-            <div class="saho-archives-types">
+            <div class="saho-sidebar-header {{ section_bg_class }} text-white p-3 rounded-top mb-3 mt-4">
+              <h2 class="h5 m-0">Resource Types</h2>
+            </div>
+            <div class="saho-landing-categories">
               <div class="d-flex flex-wrap">
                 <a href="/archives/documents" class="badge bg-secondary m-1 text-decoration-none">Documents</a>
                 <a href="/archives/photographs" class="badge bg-secondary m-1 text-decoration-none">Photographs</a>
@@ -166,30 +172,28 @@
             <h2 class="h3 mb-4 {{ section_text_class }}">{{ title }}</h2>
           {% endif %}
           
-          {% if rows_total %}
-            <div class="saho-archives-results-count mb-3">
-              <p class="text-muted">Showing {{ rows_total }} results</p>
-            </div>
+          {% if rows_total is defined and rows_total > 0 %}
+            <p class="text-muted mb-4">Showing {{ rows_total }} results</p>
           {% endif %}
           
           {% if rows %}
-            <div class="saho-archives-grid">
+            <div class="saho-landing-grid">
               {{ rows }}
             </div>
           {% elseif empty %}
-            <div class="saho-archives-empty alert alert-info">
+            <div class="saho-landing-empty alert alert-info">
               {{ empty }}
             </div>
           {% endif %}
           
           {% if pager %}
-            <div class="saho-archives-pager mt-4">
+            <div class="saho-landing-pager mt-4">
               {{ pager }}
             </div>
           {% endif %}
           
           {% if more %}
-            <div class="saho-archives-more mt-4 text-center">
+            <div class="saho-landing-more mt-4 text-center">
               {{ more }}
             </div>
           {% endif %}
@@ -200,7 +204,7 @@
   
   {# Additional Content Section - if available #}
   {% if attachment_after %}
-    <section class="saho-archives-additional py-4 mb-5 bg-light">
+    <section class="saho-landing-additional py-4 mb-5 bg-light">
       <div class="container">
         <h2 class="h3 mb-4 {{ section_text_class }}">Related Resources</h2>
         <div class="saho-additional-content">
@@ -211,19 +215,13 @@
   {% endif %}
   
   {# Call to Action Section #}
-  <section class="saho-archives-cta py-5 {{ section_bg_class }}">
-    <div class="container">
-      <div class="row align-items-center">
-        <div class="col-lg-8 text-white">
-          <h2 class="h3 mb-3">Contribute to the Archives</h2>
-          <p class="mb-4">Help us preserve South African history by contributing your documents, photographs, or oral histories to our archives.</p>
-        </div>
-        <div class="col-lg-4 text-center text-lg-end">
-          <a href="/form/contribute" class="btn btn-light {{ section_text_class }} px-4 py-2">
-            <span class="me-2">✦</span> Contribute Now
-          </a>
-        </div>
-      </div>
+  <section class="saho-landing-cta py-5 {{ section_bg_class }}">
+    <div class="container text-center">
+      <h2 class="h3 text-white mb-3">Contribute to the Archives</h2>
+      <p class="text-white mb-4">Help us preserve South African history by contributing your documents, photographs, or oral histories to our archives.</p>
+      <a href="/form/contribute" class="btn btn-light {{ section_text_class }} px-4 py-2">
+        <span class="me-2">✦</span> Contribute Now
+      </a>
     </div>
   </section>
 </div>

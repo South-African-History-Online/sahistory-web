@@ -1,0 +1,126 @@
+{#
+/**
+ * @file
+ * Default theme implementation for views to display rows in a grid.
+ *
+ * Available variables:
+ * - attributes: HTML attributes for the wrapping element.
+ * - title: The title of this group of rows.
+ * - view: The view object.
+ * - rows: The rows contained in this view.
+ * - options: The view plugin style options.
+ * - cols: The number of columns in the grid.
+ * - title: The title of the grouping.
+ * - header: The table header contents.
+ *
+ * @see template_preprocess_views_view_grid()
+ *
+ * @ingroup themeable
+ */
+#}
+
+{# Determine section information based on view title #}
+{% set section_colors = {
+  'Politics & Society': 'saho-deep-heritage-red',
+  'Art & Culture': 'saho-muted-gold',
+  'Biographies': 'saho-slate-blue',
+  'Africa': 'saho-faded-brick-red',
+  'Classroom': 'saho-deep-heritage-red',
+  'Places': 'saho-slate-blue',
+  'Timelines': 'saho-deep-heritage-red',
+  'Archives': 'saho-slate-blue'
+} %}
+
+{% set section_name = view.title|striptags|trim %}
+{% set section_color = section_colors[section_name] ?? 'saho-slate-blue' %}
+{% set section_bg_class = 'bg-' ~ (section_color|replace({'saho-': ''})) %}
+{% set section_border_class = 'border-' ~ (section_color|replace({'saho-': ''})) %}
+{% set section_text_class = 'text-' ~ (section_color|replace({'saho-': ''})) %}
+{% set placeholder_class = 'archives' %}
+
+{% set grid_classes = [
+  'saho-archives-grid',
+  'row',
+  'row-cols-1',
+  'row-cols-md-2',
+  'row-cols-lg-3',
+  'g-4',
+] %}
+
+{# Add modern card styling #}
+<style>
+  .saho-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border-radius: 8px;
+    overflow: hidden;
+    height: 100%;
+  }
+  .saho-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.15) !important;
+  }
+  .saho-card .card-img-top {
+    transition: transform 0.5s ease;
+    height: 180px;
+    object-fit: cover;
+  }
+  .saho-card:hover .card-img-top {
+    transform: scale(1.05);
+  }
+  .saho-card .card-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+  .saho-card .card-text {
+    font-size: 0.9rem;
+    color: #6c757d;
+  }
+  .saho-metadata {
+    font-size: 0.85rem;
+    color: #6c757d;
+  }
+  .saho-read-more {
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+  }
+  .saho-read-more:hover {
+    transform: translateX(3px);
+  }
+  .saho-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f8f9fa;
+    height: 180px;
+    color: #6c757d;
+    font-size: 2rem;
+  }
+  .resource-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 10;
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+  }
+</style>
+
+{# Display the grid #}
+<div{{ attributes.addClass(grid_classes) }}>
+  {% for row in rows %}
+    {% for column in row.content %}
+      <div class="col mb-4">
+        <div class="card shadow-sm h-100 saho-card">
+          {% if column.content|render|striptags|trim is not empty %}
+            {{ column.content }}
+          {% else %}
+            <div class="saho-placeholder">
+              <i class="fas fa-file-alt"></i>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    {% endfor %}
+  {% endfor %}
+</div>

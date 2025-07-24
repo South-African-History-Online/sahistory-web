@@ -16,61 +16,85 @@
  */
 
 // SAHO Theme
-// Modern and Professional
+// Modern Design System Implementation
 
 //
 // Color system
 //
 
+// Base grayscale
 $white: #fff !default;
-$gray-100: #f8f9fa !default;
-$gray-200: #f0f0f0 !default;
-$gray-300: #e4e4e4 !default;
-$gray-400: #d1d1d1 !default;
-$gray-500: #adb5bd !default;
-$gray-600: #6c757d !default;
-$gray-700: #495057 !default;
-$gray-800: #343a40 !default;
-$gray-900: #212529 !default;
+$gray-100: #f8fafc !default;
+$gray-200: #e2e8f0 !default;
+$gray-300: #cbd5e1 !default;
+$gray-400: #94a3b8 !default;
+$gray-500: #64748b !default;
+$gray-600: #475569 !default;
+$gray-700: #334155 !default;
+$gray-800: #1e293b !default;
+$gray-900: #0f172a !default;
 $black: #000 !default;
 
-// SAHO brand colors - refined professional palette
-$blue: #1a5a96 !default;       // Deep blue - professional, trustworthy
-$indigo: #4b4ba3 !default;     // Rich indigo
-$purple: #6f42c1 !default;     // Refined purple
-$pink: #d63384 !default;       // Muted pink
-$red: #8b2331 !default;        // Deep burgundy red - more sophisticated than bright red
-$orange: #c26d2c !default;     // Muted orange
-$yellow: #e9b949 !default;     // Muted gold
-$green: #2e7d32 !default;      // Forest green - professional
-$teal: #20c997 !default;       // Teal
-$cyan: #0e7490 !default;       // Deeper cyan - more professional
+// Primary Colors - Original SAHO heritage palette
+// These colors represent South African historical heritage while maintaining
+// professional academic standards and ensuring accessibility for educational content
+$deep-heritage-red: #990000 !default;    // Primary brand color - represents heritage and authority
+$muted-gold: #b88a2e !default;          // Secondary accent - represents historical significance
+$slate-blue: #3a4a64 !default;          // Used for academic/research sections
+$faded-brick-red: #8b2331 !default;     // Complementary to primary - used for highlighting important content
+$dark-charcoal: $gray-800 !default;     // Main text color for optimal readability
 
-// Primary semantic colors
-$primary: $red !default;       // Keeping red as primary but using a more sophisticated shade
-$secondary: $gray-600 !default; // More subtle secondary color
-$success: $green !default;
-$info: $blue !default;         // Using blue for info - more professional
-$warning: $yellow !default;
-$danger: #dc3545 !default;     // Standard red for danger
-$light: $gray-100 !default;
-$dark: $gray-800 !default;
+// Neutral Palette - Heritage palette with warm undertones
+// Designed for extended reading and research sessions while maintaining visual comfort
+$aged-parchment: #ffffff !default;      // Warmer, slightly darker base for comfortable reading
+$surface: $aged-parchment !default;      // Primary surface color
+$surface-alt: darken($aged-parchment, 3%) !default;  // Deeper secondary surface for better hierarchy
+$muted: mix($aged-parchment, $white, 90%) !default;  // Subtle variation for layered content
+$border: darken($aged-parchment, 12%) !default;      // Enhanced borders for better structure
+$text-primary: $dark-charcoal !default;              // Optimal contrast for main content
+$text-secondary: lighten($dark-charcoal, 20%) !default;  // Supporting text
+$text-muted: lighten($dark-charcoal, 40%) !default;      // De-emphasized text
 
-$min-contrast-ratio: 3 !default;
+// Dark Mode Colors
+$dark-bg-primary: #0f172a !default;
+$dark-bg-secondary: #1e293b !default;
+$dark-bg-tertiary: #334155 !default;
+$dark-surface: #1e293b !default;
+$dark-surface-hover: #334155 !default;
+$dark-border: #475569 !default;
+$dark-text-primary: #f8fafc !default;
+$dark-text-secondary: #cbd5e1 !default;
+
+// Semantic Colors
+$success: #22c55e !default;
+$warning: #eab308 !default;
+$danger: #ef4444 !default;
+$info: #3b82f6 !default;
+
+// Primary semantic colors - Optimized for educational and research context
+$primary: $deep-heritage-red !default;    // Main brand color - used for primary actions and key elements
+$secondary: $slate-blue !default;         // Academic/research section indicators
+$accent: $muted-gold !default;           // Highlights for important academic content
+$highlight: $faded-brick-red !default;    // Used for emphasizing critical historical content
+$light: $surface !default;               // Main content areas
+$dark: $slate-blue !default;             // Deep contrast areas for serious content
+
+$min-contrast-ratio: 4.5 !default;
 
 // Body
+// Optimized for long-form reading and research
+$body-bg: $surface !default;
+$body-color: $text-primary !default;
+$content-bg: lighten($aged-parchment, 2%) !default;  // Slightly lighter for content areas
 
-$body-bg: #f9f9f9 !default;
-$body-color: $gray-900 !default;
+// Typography System
 
-// Fonts
+// Modern Font Stack
+$font-family-sans-serif: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol" !default;
+$headings-font-family: $font-family-sans-serif !default;
+$headings-font-weight: 700 !default;
 
-// stylelint-disable-next-line value-keyword-case
-$font-family-sans-serif: "Source Sans Pro", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol" !default;
-$headings-font-family: "Montserrat", $font-family-sans-serif !default;
-$headings-font-weight: 600 !default;
-
-// Font sizes
+// Typography Scale - Base sizes for calculations
 $font-size-base: 1rem !default;
 $h1-font-size: $font-size-base * 2.25 !default;
 $h2-font-size: $font-size-base * 1.75 !default;
@@ -78,57 +102,78 @@ $h3-font-size: $font-size-base * 1.5 !default;
 $h4-font-size: $font-size-base * 1.25 !default;
 $h5-font-size: $font-size-base * 1.1 !default;
 $h6-font-size: $font-size-base !default;
+$body-lg-size: 1.125rem !default;
+$body-size: 1rem !default;
+$body-sm-size: 0.875rem !default;
+$caption-size: 0.75rem !default;
+
+// Fluid Typography CSS Variables
+// These will be applied in the typography.scss file
+$fluid-display-xl: "clamp(3rem, 5vw + 1rem, 5rem)" !default;
+$fluid-display: "clamp(2.5rem, 4vw + 1rem, 4rem)" !default;
+$fluid-h1: "clamp(2rem, 3vw + 1rem, 3rem)" !default;
+$fluid-h2: "clamp(1.5rem, 2vw + 1rem, 2.25rem)" !default;
+$fluid-h3: "clamp(1.25rem, 1.5vw + 0.5rem, 1.875rem)" !default;
+$fluid-h4: "clamp(1.125rem, 1vw + 0.5rem, 1.5rem)" !default;
+
+// Font Weights
+$font-weight-light: 300 !default;
+$font-weight-regular: 400 !default;
+$font-weight-medium: 500 !default;
+$font-weight-semibold: 600 !default;
+$font-weight-bold: 700 !default;
+$font-weight-black: 900 !default;
 
 // Dropdowns
 
 $dropdown-link-hover-color: $white !default;
 $dropdown-link-hover-bg: $primary !default;
-$dropdown-border-radius: 0.25rem !default;
-$dropdown-box-shadow: 0 0.5rem 1rem rgba($black, 0.15) !default;
+$dropdown-border-radius: 0.5rem !default;
+$dropdown-box-shadow: 0 0.5rem 1.5rem rgba($black, 0.1) !default;
 
 // Navs
 
 $nav-link-padding-y: 0.75rem !default;
-$nav-link-disabled-color: $gray-500 !default;
-$nav-tabs-border-color: $gray-300 !default;
+$nav-link-disabled-color: $text-muted !default;
+$nav-tabs-border-color: $border !default;
 $nav-tabs-link-active-color: $primary !default;
-$nav-tabs-link-active-bg: $white !default;
+$nav-tabs-link-active-bg: $surface !default;
 
 // Navbar
 
-$navbar-padding-y: 0.75rem !default;
+$navbar-padding-y: 1rem !default;
 $navbar-dark-color: rgba($white, 0.85) !default;
 $navbar-dark-hover-color: $white !default;
-$navbar-light-color: $gray-700 !default;
+$navbar-light-color: $text-primary !default;
 $navbar-light-hover-color: $primary !default;
 
 // Pagination
 
-$pagination-border-color: $gray-300 !default;
+$pagination-border-color: $border !default;
 $pagination-hover-color: $white !default;
 $pagination-hover-bg: $primary !default;
 $pagination-hover-border-color: $primary !default;
-$pagination-disabled-color: $gray-500 !default;
+$pagination-disabled-color: $text-muted !default;
 $pagination-disabled-border-color: $pagination-border-color !default;
 
 // Cards
 
-$card-border-color: $gray-300 !default;
-$card-cap-bg: $gray-100 !default;
-$card-border-radius: 0.375rem !default;
-$card-box-shadow: 0 0.125rem 0.25rem rgba($black, 0.075) !default;
+$card-border-color: $border !default;
+$card-cap-bg: $surface-alt !default;
+$card-border-radius: 1rem !default;
+$card-box-shadow: 0 0.25rem 0.75rem rgba($black, 0.05) !default;
 
 // Popovers
 
-$popover-border-color: $gray-300 !default;
-$popover-box-shadow: 0 0.25rem 0.5rem rgba($black, 0.1) !default;
+$popover-border-color: $border !default;
+$popover-box-shadow: 0 0.5rem 1rem rgba($black, 0.1) !default;
 
 // Modals
 
-$modal-content-border-color: $gray-300 !default;
-$modal-header-border-color: $gray-300 !default;
-$modal-content-box-shadow-xs: 0 0.25rem 0.5rem rgba($black, 0.1) !default;
-$modal-content-box-shadow-sm-up: 0 0.5rem 1rem rgba($black, 0.1) !default;
+$modal-content-border-color: $border !default;
+$modal-header-border-color: $border !default;
+$modal-content-box-shadow-xs: 0 0.5rem 1rem rgba($black, 0.1) !default;
+$modal-content-box-shadow-sm-up: 0 1rem 2rem rgba($black, 0.1) !default;
 
 // Progress bars
 
@@ -138,45 +183,48 @@ $progress-box-shadow: none !default;
 
 // List group
 
-$list-group-border-color: $gray-300 !default;
-$list-group-disabled-bg: $gray-200 !default;
-$list-group-hover-bg: $gray-100 !default;
+$list-group-border-color: $border !default;
+$list-group-disabled-bg: $surface-alt !default;
+$list-group-hover-bg: $surface-alt !default;
 $list-group-action-hover-color: $primary !default;
 
 // Breadcrumbs
 
-$breadcrumb-padding-y: 0.5rem !default;
-$breadcrumb-padding-x: 1rem !default;
-$breadcrumb-border-radius: 0.25rem !default;
-$breadcrumb-bg: $gray-100 !default;
-$breadcrumb-divider-color: $gray-600 !default;
-$breadcrumb-active-color: $gray-700 !default;
+$breadcrumb-padding-y: 0.75rem !default;
+$breadcrumb-padding-x: 1.25rem !default;
+$breadcrumb-border-radius: 0.5rem !default;
+$breadcrumb-bg: $surface-alt !default;
+$breadcrumb-divider-color: $text-secondary !default;
+$breadcrumb-active-color: $text-primary !default;
 
 // Buttons
 
-$btn-font-weight: 500 !default;
-$btn-box-shadow: 0 0.125rem 0.25rem rgba($black, 0.075) !default;
+$btn-font-weight: $font-weight-medium !default;
+$btn-box-shadow: 0 0.25rem 0.5rem rgba($black, 0.05) !default;
 $btn-focus-box-shadow: 0 0 0 0.25rem rgba($primary, 0.25) !default;
-$btn-active-box-shadow: inset 0 3px 5px rgba($black, 0.125) !default;
+$btn-active-box-shadow: inset 0 3px 5px rgba($black, 0.1) !default;
 
 // Shadows
 
-$box-shadow-sm: 0 0.125rem 0.25rem rgba($black, 0.075) !default;
-$box-shadow: 0 0.5rem 1rem rgba($black, 0.1) !default;
-$box-shadow-lg: 0 1rem 3rem rgba($black, 0.125) !default;
+$box-shadow-sm: 0 0.125rem 0.375rem rgba($black, 0.05) !default;
+$box-shadow: 0 0.5rem 1.5rem rgba($black, 0.08) !default;
+$box-shadow-lg: 0 1rem 3rem rgba($black, 0.1) !default;
 
 // Links
 
 $link-color: $primary !default;
-$link-hover-color: darken($link-color, 15%) !default;
+$link-hover-color: darken($link-color, 10%) !default;
 $link-decoration: none !default;
 $link-hover-decoration: underline !default;
 
-// SAHO Custom Color Palette
-// These variables need to be defined here so they're available to all component files
-$saho-deep-heritage-red: $primary !default;
-$saho-dark-charcoal: $gray-800 !default;
-$saho-muted-gold: #b88a2e !default;
-$saho-aged-parchment: #f5f0e5 !default;
-$saho-slate-blue: #3a4a64 !default;
-$saho-faded-brick-red: #8b2331 !default;
+// SAHO Heritage Color Palette
+// These variables are available to all component files
+$saho-deep-heritage-red: $deep-heritage-red !default;
+$saho-dark-charcoal: $dark-charcoal !default;
+$saho-muted-gold: $muted-gold !default;
+$saho-aged-parchment: $aged-parchment !default;
+$saho-slate-blue: $slate-blue !default;
+$saho-faded-brick-red: $faded-brick-red !default;
+$saho-surface: $surface !default;
+$saho-text-primary: $text-primary !default;
+$saho-text-secondary: $text-secondary !default;

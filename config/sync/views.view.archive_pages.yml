@@ -24,6 +24,7 @@ dependencies:
     - taxonomy.vocabulary.african_country
     - taxonomy.vocabulary.field_media_library_type
   module:
+    - better_exposed_filters
     - image
     - node
     - taxonomy
@@ -178,7 +179,7 @@ display:
             offset: false
             offset_label: Offset
       exposed_form:
-        type: basic
+        type: bef
         options:
           submit_button: Apply
           reset_button: false
@@ -187,6 +188,31 @@ display:
           expose_sort_order: true
           sort_asc_label: Asc
           sort_desc_label: Desc
+          text_input_required: 'Select any filter and click on Apply to see results'
+          text_input_required_format: null
+          bef:
+            general:
+              autosubmit: false
+              autosubmit_exclude_textfield: false
+              autosubmit_textfield_delay: 500
+              autosubmit_textfield_minimum_length: 3
+              autosubmit_hide: false
+              input_required: false
+              allow_secondary: false
+              secondary_label: 'Advanced options'
+              secondary_open: false
+              reset_button_always_show: false
+            sort:
+              plugin_id: default
+            pager:
+              plugin_id: default
+            filter:
+              combine:
+                plugin_id: default
+              tid:
+                plugin_id: default
+              field_african_country_target_id:
+                plugin_id: default
       access:
         type: perm
         options:
@@ -265,6 +291,7 @@ display:
           field: reverse__node__field_feature_parent
           entity_type: node
           plugin_id: entity_reverse
+      use_ajax: true
       header: {  }
       footer: {  }
       display_extenders: {  }
@@ -1665,6 +1692,75 @@ display:
             offset: false
             offset_label: Offset
           quantity: 9
+      exposed_form:
+        type: bef
+        options:
+          submit_button: Apply
+          reset_button: false
+          reset_button_label: Reset
+          exposed_sorts_label: 'Sort by'
+          expose_sort_order: true
+          sort_asc_label: Asc
+          sort_desc_label: Desc
+          text_input_required: 'Select any filter and click on Apply to see results'
+          text_input_required_format: full_html
+          bef:
+            general:
+              autosubmit: false
+              autosubmit_exclude_textfield: false
+              autosubmit_textfield_delay: 500
+              autosubmit_textfield_minimum_length: 3
+              autosubmit_hide: false
+              input_required: false
+              allow_secondary: false
+              secondary_label: 'Advanced options'
+              secondary_open: false
+              reset_button_always_show: false
+            sort:
+              plugin_id: bef
+              advanced:
+                combine: false
+                combine_rewrite: ''
+                reset: false
+                reset_label: ''
+                collapsible: false
+                collapsible_label: 'Sort options'
+                is_secondary: false
+            pager:
+              plugin_id: default
+              advanced:
+                is_secondary: false
+            filter:
+              combine:
+                plugin_id: default
+                advanced:
+                  placeholder_text: ''
+                  collapsible: false
+                  collapsible_disable_automatic_open: false
+                  is_secondary: false
+                  hide_label: false
+              tid:
+                plugin_id: default
+                advanced:
+                  sort_options: false
+                  rewrite:
+                    filter_rewrite_values: ''
+                    filter_rewrite_values_key: false
+                  collapsible: false
+                  collapsible_disable_automatic_open: false
+                  is_secondary: false
+                  hide_label: false
+              field_african_country_target_id:
+                plugin_id: default
+                advanced:
+                  sort_options: false
+                  rewrite:
+                    filter_rewrite_values: ''
+                    filter_rewrite_values_key: false
+                  collapsible: false
+                  collapsible_disable_automatic_open: false
+                  is_secondary: false
+                  hide_label: false
       filters:
         combine:
           id: combine
@@ -1867,40 +1963,35 @@ display:
         groups:
           1: AND
       style:
-        type: grid
+        type: default
         options:
           grouping: {  }
-          columns: 5
-          automatic_width: true
-          alignment: horizontal
-          row_class_custom: ''
-          row_class_default: true
-          col_class_custom: ''
-          col_class_default: true
+          row_class: ''
+          default_row_class: true
       row:
         type: fields
-        options: {  }
+        options:
+          default_field_elements: true
+          inline:
+            field_archive_image: field_archive_image
+            field_media_library_type: field_media_library_type
+            title: title
+            body: body
+            field_description: field_description
+            field_isbn: field_isbn
+          separator: ''
+          hide_empty: true
       defaults:
         title: false
         pager: false
+        exposed_form: false
         style: false
         row: false
         fields: false
         filters: false
         filter_groups: false
         header: false
-      header:
-        area_text_custom:
-          id: area_text_custom
-          table: views
-          field: area_text_custom
-          relationship: none
-          group_type: group
-          admin_label: ''
-          plugin_id: text_custom
-          empty: false
-          content: '<h3 style="text-align:center">Latest in the archive</h3>'
-          tokenize: false
+      header: {  }
       display_extenders: {  }
       path: archives
     cache_metadata:

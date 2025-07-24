@@ -30,4 +30,177 @@
  * @see template_preprocess_views_view()
  */
 #}
-{% include "radix:views-view" %}
+
+{# Determine which view we're displaying to apply specific styling #}
+{% set view_id = view.id|clean_class %}
+{% set is_search_view = view_id == 'saho_search' %}
+
+{# Default styling classes #}
+{% set default_color = 'saho-deep-heritage-red' %}
+{% set default_bg_class = 'saho-bg-deep-heritage-red' %}
+{% set default_border_class = 'saho-border-deep-heritage-red' %}
+{% set default_text_class = 'saho-text-deep-heritage-red' %}
+
+{# Search view specific styling classes #}
+{% if is_search_view %}
+  {% set section_name = 'Search' %}
+  {% set section_color = default_color %}
+  {% set section_bg_class = default_bg_class %}
+  {% set section_border_class = default_border_class %}
+  {% set section_text_class = default_text_class %}
+{% endif %}
+
+<div{{ attributes.addClass('saho-view', 'view-' ~ view_id) }}>
+  <div class="container py-4">
+    {# Display view title if provided #}
+    {% if title %}
+      {{ title_prefix }}
+      <h2 class="h2 mb-4 {% if is_search_view %}{{ section_text_class }}{% endif %}">{{ title }}</h2>
+      {{ title_suffix }}
+    {% endif %}
+
+    {# Header section #}
+    {% if header %}
+      <div class="saho-view-header mb-4">
+        {{ header }}
+      </div>
+    {% endif %}
+
+    {# Content before main view #}
+    {% if attachment_before %}
+      <div class="saho-view-attachment-before mb-4">
+        {{ attachment_before }}
+      </div>
+    {% endif %}
+    
+    {# Main view content section with mobile-first approach #}
+    <div class="row">
+      {# Sidebar with filters - always present for search view, with mobile-first design #}
+      {% if is_search_view %}
+        {# On mobile, display sidebar below content (order-2) #}
+        {# On tablet and desktop, display sidebar on left (order-md-1) #}
+        <div class="col-12 col-md-4 col-lg-3 order-2 order-md-1 mb-4">
+          <div class="saho-sidebar-filters p-3 bg-light rounded">
+            <h3 class="h5 {{ section_text_class }} mb-3 border-bottom pb-2">Filter Results</h3>
+            
+            {# Fulltext search box at the top of filters #}
+            {% if exposed %}
+              <div class="saho-view-exposed mb-4">
+                {{ exposed }}
+              </div>
+            {% endif %}
+            
+            {# Facet region - Drupal will place facet blocks here #}
+            <div class="saho-view-facets">
+              {# Facet blocks are placed in region by Drupal #}
+              {# These facet blocks come from the Search API Facets module #}
+              {# and are configured in Block Layout #}
+              
+              {# The following structure shows the expected facet blocks: #}
+              {% if false %} {# This is just for template guidance, not rendered #}
+                <div class="facet-block mb-4">
+                  <h4 class="h6 mb-2">Changed</h4>
+                  <div class="facet-items">
+                    <div class="item">1560832531</div>
+                    <div class="item">1560821728</div>
+                    <div class="item">1560251182</div>
+                    <div class="item">1560261983</div>
+                  </div>
+                </div>
+                
+                <div class="facet-block mb-4">
+                  <h4 class="h6 mb-2">Content type</h4>
+                  <div class="facet-items">
+                    <div class="item">archive</div>
+                    <div class="item">article</div>
+                    <div class="item">biography</div>
+                    <div class="item">event</div>
+                  </div>
+                </div>
+                
+                <div class="facet-block mb-4">
+                  <h4 class="h6 mb-2">Title</h4>
+                  <div class="facet-items">
+                    <div class="item">south</div>
+                    <div class="item">omar</div>
+                    <div class="item">african</div>
+                    <div class="item">africa</div>
+                  </div>
+                </div>
+              {% endif %}
+            </div>
+            
+            {# Apply/Reset buttons at bottom of sidebar #}
+            <div class="saho-filter-actions mt-3">
+              <div class="d-flex justify-content-between">
+                <button type="submit" class="btn btn-sm {{ section_bg_class }} text-white">Apply</button>
+                <button type="reset" class="btn btn-sm btn-outline-secondary">Reset</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        {# Main content area - On mobile, display content first (order-1) #}
+        {# On tablet and desktop, display content on right (order-md-2) #}
+        <div class="col-12 col-md-8 col-lg-9 order-1 order-md-2">
+      {% elseif exposed %}
+        <div class="col-12">
+          <div class="saho-view-filters mb-4">
+            {{ exposed }}
+          </div>
+        </div>
+      {% else %}
+        <div class="col-12">
+      {% endif %}
+      
+        {# Main results area #}
+        {% if rows %}
+          <div class="saho-view-content">
+            {{ rows }}
+          </div>
+        {% elseif empty %}
+          <div class="saho-view-empty alert alert-info">
+            {{ empty }}
+          </div>
+        {% endif %}
+
+        {# Pager #}
+        {% if pager %}
+          <div class="saho-view-pager mt-4">
+            {{ pager }}
+          </div>
+        {% endif %}
+
+        {# More link #}
+        {% if more %}
+          <div class="saho-view-more mt-4 text-center">
+            {{ more }}
+          </div>
+        {% endif %}
+
+        {# Feed icons #}
+        {% if feed_icons %}
+          <div class="saho-view-feed-icons mt-4">
+            {{ feed_icons }}
+          </div>
+        {% endif %}
+
+        {# Close the column div #}
+        </div>
+    </div>
+
+    {# Content after main view #}
+    {% if attachment_after %}
+      <div class="saho-view-attachment-after mt-4">
+        {{ attachment_after }}
+      </div>
+    {% endif %}
+
+    {# Footer section #}
+    {% if footer %}
+      <div class="saho-view-footer mt-4">
+        {{ footer }}
+      </div>
+    {% endif %}
+  </div>
+</div>
