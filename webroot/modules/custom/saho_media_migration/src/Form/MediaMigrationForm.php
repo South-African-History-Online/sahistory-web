@@ -33,7 +33,7 @@ class MediaMigrationForm extends FormBase {
    */
   public function __construct(
     FileSystemInterface $file_system,
-    MediaMigrationService $migration_service
+    MediaMigrationService $migration_service,
   ) {
     $this->fileSystem = $file_system;
     $this->migrationService = $migration_service;
@@ -61,7 +61,7 @@ class MediaMigrationForm extends FormBase {
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
     $stats = $this->migrationService->getMigrationStats();
-    
+
     $form['#tree'] = TRUE;
 
     $form['status'] = [
@@ -90,7 +90,7 @@ class MediaMigrationForm extends FormBase {
     ];
 
     $form['actions_section'] = [
-      '#type' => 'details',  
+      '#type' => 'details',
       '#title' => $this->t('Quick Actions'),
       '#open' => TRUE,
     ];
@@ -169,7 +169,7 @@ class MediaMigrationForm extends FormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    // Default submit handler
+    // Default submit handler.
   }
 
   /**
@@ -179,7 +179,8 @@ class MediaMigrationForm extends FormBase {
     try {
       $filename = $this->migrationService->generateCsvMapping();
       $this->messenger()->addStatus($this->t('CSV mapping file generated: @file', ['@file' => $filename]));
-    } catch (\Exception $e) {
+    }
+    catch (\Exception $e) {
       $this->messenger()->addError($this->t('CSV generation failed: @error', ['@error' => $e->getMessage()]));
     }
   }
@@ -189,7 +190,7 @@ class MediaMigrationForm extends FormBase {
    */
   public function migrateUsedFiles(array &$form, FormStateInterface $form_state) {
     $files_to_migrate = $this->migrationService->getFilesNeedingMigration(1000);
-    
+
     if (empty($files_to_migrate)) {
       $this->messenger()->addWarning($this->t('No files found to migrate.'));
       return;
@@ -197,7 +198,7 @@ class MediaMigrationForm extends FormBase {
 
     $count = count($files_to_migrate);
     $batch = $this->migrationService->createMigrationBatch($files_to_migrate);
-    
+
     batch_set($batch);
     $this->messenger()->addStatus($this->t('Started migration of @count files.', ['@count' => $count]));
   }
@@ -208,9 +209,9 @@ class MediaMigrationForm extends FormBase {
   public function migrateAdvanced(array &$form, FormStateInterface $form_state) {
     $values = $form_state->getValue(['advanced', 'migration_options']);
     $limit = (int) $values['limit'] ?: 10000;
-    
+
     $files_to_migrate = $this->migrationService->getFilesNeedingMigration($limit);
-    
+
     if (empty($files_to_migrate)) {
       $this->messenger()->addWarning($this->t('No files found to migrate with the selected criteria.'));
       return;
@@ -218,7 +219,7 @@ class MediaMigrationForm extends FormBase {
 
     $count = count($files_to_migrate);
     $batch = $this->migrationService->createMigrationBatch($files_to_migrate);
-    
+
     batch_set($batch);
     $this->messenger()->addStatus($this->t('Started advanced migration of @count files.', ['@count' => $count]));
   }
@@ -228,17 +229,19 @@ class MediaMigrationForm extends FormBase {
    */
   public function validateMigration(array &$form, FormStateInterface $form_state) {
     $results = $this->migrationService->validateMigration();
-    
-    $issues_found = false;
+
+    $issues_found = FALSE;
     foreach ($results as $check => $result) {
       if ($result['status'] === 'pass') {
         $this->messenger()->addStatus($result['message']);
-      } elseif ($result['status'] === 'warning') {
+      }
+      elseif ($result['status'] === 'warning') {
         $this->messenger()->addWarning($result['message']);
-        $issues_found = true;
-      } else {
+        $issues_found = TRUE;
+      }
+      else {
         $this->messenger()->addError($result['message']);
-        $issues_found = true;
+        $issues_found = TRUE;
       }
     }
 
@@ -252,7 +255,7 @@ class MediaMigrationForm extends FormBase {
    */
   public function importCsv(array &$form, FormStateInterface $form_state) {
     $all_files = $this->getRequest()->files->get('files', []);
-    
+
     if (empty($all_files['advanced']['csv_import']['file_upload'])) {
       $this->messenger()->addError($this->t('No file was uploaded.'));
       return;
@@ -261,7 +264,7 @@ class MediaMigrationForm extends FormBase {
     $file_upload = $all_files['advanced']['csv_import']['file_upload'];
     $filename = $file_upload->getClientOriginalName();
     $extension = pathinfo($filename, PATHINFO_EXTENSION);
-    
+
     if (strtolower($extension) !== 'csv') {
       $this->messenger()->addError($this->t('Only CSV files are allowed.'));
       return;
@@ -290,16 +293,16 @@ class MediaMigrationForm extends FormBase {
 
       $count = count($file_data);
       $batch = $this->migrationService->createMigrationBatch($file_data);
-      
+
       batch_set($batch);
       $this->messenger()->addStatus($this->t('Started migration of @count files from CSV.', ['@count' => $count]));
 
-    } catch (\Exception $e) {
+    }
+    catch (\Exception $e) {
       $this->messenger()->addError($this->t('CSV processing failed: @error', ['@error' => $e->getMessage()]));
     } finally {
-      if (isset($file_uri)) {
-        $this->fileSystem->delete($file_uri);
-      }
+      // $file_uri is always defined at this point, no need for isset()
+      $this->fileSystem->delete($file_uri);
     }
   }
 

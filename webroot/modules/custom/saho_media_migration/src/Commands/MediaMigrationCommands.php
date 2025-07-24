@@ -3,6 +3,7 @@
 namespace Drupal\saho_media_migration\Commands;
 
 use Drupal\saho_media_migration\Service\MediaMigrationService;
+use Drupal\Component\Utility\Bytes;
 use Drush\Commands\DrushCommands;
 use Drush\Exceptions\UserAbortException;
 
@@ -37,7 +38,7 @@ class MediaMigrationCommands extends DrushCommands {
   public function migrationStatus() {
     try {
       $stats = $this->migrationService->getMigrationStats();
-      
+
       $rows = [
         ['Total Files', number_format($stats['total_files'])],
         ['Files with Media', number_format($stats['files_with_media'])],
@@ -47,15 +48,17 @@ class MediaMigrationCommands extends DrushCommands {
       ];
 
       $this->io()->table(['Metric', 'Count'], $rows);
-      
+
       $progress = $stats['migration_progress'];
       if ($progress < 100) {
         $this->io()->warning("Migration incomplete. Run 'drush saho:migrate' to continue.");
-      } else {
+      }
+      else {
         $this->io()->success("Migration complete! All files have media entities.");
       }
-      
-    } catch (\Exception $e) {
+
+    }
+    catch (\Exception $e) {
       $this->io()->error('Could not get migration status: ' . $e->getMessage());
     }
   }
@@ -74,15 +77,16 @@ class MediaMigrationCommands extends DrushCommands {
     try {
       $filename = $this->migrationService->generateCsvMapping();
       $this->io()->success("CSV file generated: {$filename}");
-      
+
       $stats = $this->migrationService->getMigrationStats();
       $this->io()->definitionList([
         'Total files mapped' => number_format($stats['total_files']),
         'Files already with media' => number_format($stats['files_with_media']),
         'Files needing migration' => number_format($stats['files_without_media']),
       ]);
-      
-    } catch (\Exception $e) {
+
+    }
+    catch (\Exception $e) {
       $this->io()->error('CSV generation failed: ' . $e->getMessage());
       return self::EXIT_FAILURE;
     }
@@ -106,7 +110,7 @@ class MediaMigrationCommands extends DrushCommands {
 
     try {
       $stats = $this->migrationService->getMigrationStats();
-      
+
       $this->io()->definitionList([
         'Total files' => number_format($stats['total_files']),
         'Files with media' => number_format($stats['files_with_media']),
@@ -137,30 +141,33 @@ class MediaMigrationCommands extends DrushCommands {
             $file['fid'],
             substr($file['filename'], 0, 40) . (strlen($file['filename']) > 40 ? '...' : ''),
             $this->getFileTypeFromMime($file['filemime']),
-            format_size((int) $file['filesize']),
+            $this->formatFileSize((int) $file['filesize']),
           ];
         }
         $this->io()->table(['FID', 'Filename', 'Type', 'Size'], $sample_rows);
-        
+
         if ($count > 3) {
           $this->io()->note("... and " . ($count - 3) . " more files");
         }
       }
 
-      if (!$this->io()->confirm("Proceed with migrating {$count} files?", false)) {
+      if (!$this->io()->confirm("Proceed with migrating {$count} files?", FALSE)) {
         throw new UserAbortException();
       }
 
       $batch = $this->migrationService->createMigrationBatch($files_to_migrate);
       batch_set($batch);
-      drush_backend_batch_process();
+      // Use Drupal's batch processor instead of deprecated Drush function.
+      \Drupal::service('batch.processor')->process();
 
       $this->io()->success('Migration batch completed! Check results above.');
-      
-    } catch (UserAbortException $e) {
+
+    }
+    catch (UserAbortException $e) {
       $this->io()->note('Migration cancelled by user.');
       throw $e;
-    } catch (\Exception $e) {
+    }
+    catch (\Exception $e) {
       $this->io()->error('Migration failed: ' . $e->getMessage());
       return self::EXIT_FAILURE;
     }
@@ -179,27 +186,29 @@ class MediaMigrationCommands extends DrushCommands {
 
     try {
       $results = $this->migrationService->validateMigration();
-      
-      $all_passed = true;
+
+      $all_passed = TRUE;
       foreach ($results as $check => $result) {
         $status_icon = $result['status'] === 'pass' ? '✅' : ($result['status'] === 'warning' ? '⚠️' : '❌');
         $this->output()->writeln("{$status_icon} {$result['message']}");
-        
+
         if ($result['status'] !== 'pass') {
-          $all_passed = false;
+          $all_passed = FALSE;
         }
       }
 
       if ($all_passed) {
         $this->io()->success('All validation checks passed!');
-      } else {
+      }
+      else {
         $this->io()->warning('Some validation issues found. Check results above.');
       }
 
       $this->io()->section('Migration Statistics');
       $this->migrationStatus();
-      
-    } catch (\Exception $e) {
+
+    }
+    catch (\Exception $e) {
       $this->io()->error('Validation failed: ' . $e->getMessage());
       return self::EXIT_FAILURE;
     }
@@ -224,7 +233,7 @@ class MediaMigrationCommands extends DrushCommands {
 
     try {
       $file_data = $this->migrationService->processCsvFile($file);
-      
+
       if (empty($file_data)) {
         $this->io()->error('No valid file data found in CSV.');
         return self::EXIT_FAILURE;
@@ -233,22 +242,46 @@ class MediaMigrationCommands extends DrushCommands {
       $count = count($file_data);
       $this->io()->note("Found {$count} files in CSV.");
 
-      if (!$this->io()->confirm("Proceed with migrating {$count} files from CSV?", false)) {
+      if (!$this->io()->confirm("Proceed with migrating {$count} files from CSV?", FALSE)) {
         throw new UserAbortException();
       }
 
       $batch = $this->migrationService->createMigrationBatch($file_data);
       batch_set($batch);
-      drush_backend_batch_process();
+      // Use Drupal's batch processor instead of deprecated Drush function.
+      \Drupal::service('batch.processor')->process();
 
       $this->io()->success('CSV import batch completed!');
 
-    } catch (UserAbortException $e) {
+    }
+    catch (UserAbortException $e) {
       $this->io()->note('CSV import cancelled by user.');
       throw $e;
-    } catch (\Exception $e) {
+    }
+    catch (\Exception $e) {
       $this->io()->error('CSV import failed: ' . $e->getMessage());
       return self::EXIT_FAILURE;
+    }
+  }
+
+  /**
+   * Format a file size in bytes to a human-readable string.
+   *
+   * @param int $size
+   *   The file size in bytes.
+   *
+   * @return string
+   *   A formatted string representing the file size.
+   */
+  protected function formatFileSize($size) {
+    if ($size < 1024) {
+      return $size . ' bytes';
+    }
+    else {
+      $units = ['KB', 'MB', 'GB', 'TB'];
+      $exp = floor(log($size, 1024));
+      $exp = min($exp, count($units) - 1);
+      return number_format($size / pow(1024, $exp), 2) . ' ' . $units[$exp - 1];
     }
   }
 

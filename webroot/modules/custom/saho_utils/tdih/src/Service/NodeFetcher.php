@@ -4,7 +4,6 @@ namespace Drupal\tdih\Service;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
-use Drupal\node\NodeInterface;
 
 /**
  * Service to fetch nodes for "Today in History" logic.
@@ -159,7 +158,7 @@ class NodeFetcher {
     try {
       // Use database connection directly for better performance.
       $database = \Drupal::database();
-      
+
       // Query to extract month and day from the date field.
       $query = $database->select('node_field_data', 'n');
       $query->join('node__field_this_day_in_history_3', 'f', 'n.nid = f.entity_id');
@@ -167,9 +166,9 @@ class NodeFetcher {
       $query->condition('n.type', 'event')
         ->condition('n.status', 1)
         ->distinct();
-      
+
       $results = $query->execute()->fetchCol();
-      
+
       // Process the results to extract month-day combinations.
       foreach ($results as $date_value) {
         // Extract month and day from the date value (format: YYYY-MM-DD).
@@ -182,7 +181,7 @@ class NodeFetcher {
           }
         }
       }
-      
+
       // Log the number of unique dates found.
       $this->logger->info('Found @count unique dates for TDIH date picker.', [
         '@count' => count($dates),

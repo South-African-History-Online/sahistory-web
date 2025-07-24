@@ -37,11 +37,13 @@ class MediaMigrationBatch {
 
         if ($media) {
           $context['results']['succeeded']++;
-        } else {
+        }
+        else {
           $context['results']['failed']++;
         }
 
-      } catch (\Exception $e) {
+      }
+      catch (\Exception $e) {
         $context['results']['failed']++;
       }
 
@@ -87,9 +89,9 @@ class MediaMigrationBatch {
 
     if ($success) {
       $messenger->addStatus(t('Media migration completed successfully in @time!', [
-        '@time' => $time_desc
+        '@time' => $time_desc,
       ]));
-      
+
       $messenger->addStatus(t('Results: @processed files processed, @succeeded succeeded, @failed failed, @skipped skipped', [
         '@processed' => number_format($results['processed'] ?? 0),
         '@succeeded' => number_format($results['succeeded'] ?? 0),
@@ -102,12 +104,13 @@ class MediaMigrationBatch {
         $messenger->addStatus(t('Performance: @rate files per second', ['@rate' => $rate]));
       }
 
-    } else {
+    }
+    else {
       $messenger->addError(t('Migration batch failed and could not complete.'));
-      
+
       if (!empty($results['processed'])) {
         $messenger->addWarning(t('Partial results: @processed files were processed before the error occurred.', [
-          '@processed' => number_format($results['processed'])
+          '@processed' => number_format($results['processed']),
         ]));
       }
     }
@@ -125,15 +128,15 @@ class MediaMigrationBatch {
       $remaining_seconds = $seconds % 60;
       return t('@minutes min @seconds sec', [
         '@minutes' => $minutes,
-        '@seconds' => $remaining_seconds
+        '@seconds' => $remaining_seconds,
       ]);
     }
-    
+
     $hours = floor($seconds / 3600);
     $remaining_minutes = floor(($seconds % 3600) / 60);
     return t('@hours hr @minutes min', [
       '@hours' => $hours,
-      '@minutes' => $remaining_minutes
+      '@minutes' => $remaining_minutes,
     ]);
   }
 

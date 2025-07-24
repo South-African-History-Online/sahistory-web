@@ -8,7 +8,6 @@ use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\file\FileInterface;
-use Drupal\media\MediaInterface;
 
 /**
  * Core service for migrating file entities to media entities.
@@ -58,7 +57,7 @@ class MediaMigrationService {
     Connection $database,
     FileSystemInterface $file_system,
     LoggerChannelFactoryInterface $logger_factory,
-    MessengerInterface $messenger
+    MessengerInterface $messenger,
   ) {
     $this->entityTypeManager = $entity_type_manager;
     $this->database = $database;
@@ -89,8 +88,8 @@ class MediaMigrationService {
       ->execute()
       ->fetchField();
 
-    $stats['migration_progress'] = $stats['total_files'] > 0 
-      ? round(($stats['files_with_media'] / $stats['total_files']) * 100, 2) 
+    $stats['migration_progress'] = $stats['total_files'] > 0
+      ? round(($stats['files_with_media'] / $stats['total_files']) * 100, 2)
       : 0;
 
     return $stats;
@@ -102,7 +101,7 @@ class MediaMigrationService {
   public function getFilesNeedingMigration($limit = 1000, $offset = 0) {
     $query = $this->database->select('file_managed', 'f');
     $query->fields('f', [
-      'fid', 'uuid', 'uid', 'filename', 'uri', 'filemime', 'filesize', 'status', 'created', 'changed'
+      'fid', 'uuid', 'uid', 'filename', 'uri', 'filemime', 'filesize', 'status', 'created', 'changed',
     ]);
 
     $files_with_media = $this->getFilesWithMediaEntities();
@@ -112,7 +111,7 @@ class MediaMigrationService {
 
     $query->leftJoin('file_usage', 'fu', 'f.fid = fu.fid');
     $query->addField('fu', 'count', 'usage_count');
-    
+
     $query->orderBy('fu.count', 'DESC');
     $query->orderBy('f.filesize', 'ASC');
     $query->range($offset, $limit);
@@ -129,21 +128,21 @@ class MediaMigrationService {
 
     $filename = $csv_dir . '/media_migration_' . date('Y-m-d_H-i-s') . '.csv';
     $file_path = $this->fileSystem->realpath($filename);
-    
+
     $handle = fopen($file_path, 'w');
     if (!$handle) {
       throw new \Exception('Cannot create CSV file: ' . $filename);
     }
 
     fputcsv($handle, [
-      'file_id', 
-      'filename', 
-      'uri', 
-      'filemime', 
+      'file_id',
+      'filename',
+      'uri',
+      'filemime',
       'filesize',
       'usage_count',
       'existing_media_id',
-      'suggested_bundle'
+      'suggested_bundle',
     ]);
 
     $query = $this->database->select('file_managed', 'f');
@@ -167,16 +166,16 @@ class MediaMigrationService {
         $result->filesize,
         $result->usage_count ?? 0,
         $existing_media_id ?: '',
-        $suggested_bundle
+        $suggested_bundle,
       ]);
       $processed++;
     }
 
     fclose($handle);
-    
+
     $this->logger->notice('Generated CSV mapping with @count files: @file', [
       '@count' => $processed,
-      '@file' => $filename
+      '@file' => $filename,
     ]);
 
     return $filename;
@@ -188,21 +187,21 @@ class MediaMigrationService {
   public function createMediaEntity(array $file_data) {
     try {
       if ($this->hasMediaEntity($file_data['fid'])) {
-        return null;
+        return NULL;
       }
 
       $file = $this->entityTypeManager->getStorage('file')->load($file_data['fid']);
       if (!$file instanceof FileInterface) {
-        return null;
+        return NULL;
       }
 
       if (!file_exists($file->getFileUri())) {
-        return null;
+        return NULL;
       }
 
       $bundle = $this->getMediaBundle($file_data['filemime']);
       if (!$bundle) {
-        return null;
+        return NULL;
       }
 
       $media_name = $this->generateMediaName($file_data['filename']);
@@ -222,10 +221,11 @@ class MediaMigrationService {
         return $media;
       }
 
-      return null;
+      return NULL;
 
-    } catch (\Exception $e) {
-      return null;
+    }
+    catch (\Exception $e) {
+      return NULL;
     }
   }
 
@@ -240,7 +240,7 @@ class MediaMigrationService {
     foreach ($chunks as $chunk) {
       $operations[] = [
         ['\Drupal\saho_media_migration\Batch\MediaMigrationBatch', 'processBatch'],
-        [$chunk, count($file_data)]
+        [$chunk, count($file_data)],
       ];
     }
 
@@ -248,7 +248,7 @@ class MediaMigrationService {
       'title' => t('Migrating @count files to media entities', ['@count' => count($file_data)]),
       'operations' => $operations,
       'finished' => ['\Drupal\saho_media_migration\Batch\MediaMigrationBatch', 'finishBatch'],
-      'progressive' => true,
+      'progressive' => TRUE,
       'init_message' => t('Starting media migration...'),
       'progress_message' => t('Processing @current of @total batches.'),
       'error_message' => t('Migration encountered an error.'),
@@ -265,9 +265,9 @@ class MediaMigrationService {
     $results['orphaned_media'] = [
       'status' => empty($orphaned_media) ? 'pass' : 'warning',
       'count' => count($orphaned_media),
-      'message' => empty($orphaned_media) 
+      'message' => empty($orphaned_media)
         ? 'No orphaned media entities found'
-        : count($orphaned_media) . ' orphaned media entities found'
+        : count($orphaned_media) . ' orphaned media entities found',
     ];
 
     $broken_refs = $this->findBrokenFileReferences();
@@ -276,7 +276,7 @@ class MediaMigrationService {
       'count' => count($broken_refs),
       'message' => empty($broken_refs)
         ? 'No broken file references found'
-        : count($broken_refs) . ' broken file references found'
+        : count($broken_refs) . ' broken file references found',
     ];
 
     $missing_files = $this->findMissingFiles();
@@ -285,7 +285,7 @@ class MediaMigrationService {
       'count' => count($missing_files),
       'message' => empty($missing_files)
         ? 'All files exist on disk'
-        : count($missing_files) . ' file records point to missing files'
+        : count($missing_files) . ' file records point to missing files',
     ];
 
     return $results;
@@ -312,7 +312,7 @@ class MediaMigrationService {
       $query = $this->database->select($table, 't')
         ->fields('t', [$field])
         ->isNotNull($field);
-      
+
       $results = $query->execute()->fetchCol();
       $files_with_media = array_merge($files_with_media, $results);
     }
@@ -347,14 +347,14 @@ class MediaMigrationService {
         ->fields('t', ['entity_id'])
         ->condition($field, $fid)
         ->range(0, 1);
-      
+
       $result = $query->execute()->fetchField();
       if ($result) {
         return (int) $result;
       }
     }
 
-    return null;
+    return NULL;
   }
 
   /**
@@ -387,7 +387,7 @@ class MediaMigrationService {
       'file' => 'field_media_file',
     ];
 
-    return $field_map[$bundle] ?? null;
+    return $field_map[$bundle] ?? NULL;
   }
 
   /**
@@ -398,11 +398,11 @@ class MediaMigrationService {
     $name = str_replace(['_', '-', '.'], ' ', $name);
     $name = preg_replace('/\s+/', ' ', trim($name));
     $name = ucwords(strtolower($name));
-    
+
     if (strlen($name) > 255) {
       $name = substr($name, 0, 252) . '...';
     }
-    
+
     return $name ?: 'Untitled Media';
   }
 
@@ -460,7 +460,7 @@ class MediaMigrationService {
    */
   protected function findMissingFiles() {
     $missing = [];
-    
+
     $query = $this->database->select('file_managed', 'f');
     $query->fields('f', ['fid', 'uri']);
     $query->range(0, 1000);
@@ -518,11 +518,11 @@ class MediaMigrationService {
           $row_data[$column] = $row[$index];
         }
       }
-      
+
       if (isset($row_data['file_id'])) {
         $row_data['fid'] = $row_data['file_id'];
       }
-      
+
       if (!empty($row_data['fid'])) {
         $file_data[] = $row_data;
       }

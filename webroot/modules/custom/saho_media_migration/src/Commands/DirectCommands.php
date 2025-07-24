@@ -3,12 +3,14 @@
 namespace Drupal\saho_media_migration\Commands;
 
 use Drush\Commands\DrushCommands;
-use Drush\Exceptions\UserAbortException;
+use Drush\Style\DrushStyle;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * Simple SAHO commands that work.
  */
-class SahoCommands extends DrushCommands {
+class DirectCommands extends DrushCommands {
 
   /**
    * Test SAHO migration commands.
@@ -20,12 +22,13 @@ class SahoCommands extends DrushCommands {
    */
   public function test() {
     $this->output()->writeln('✅ SAHO commands are working!');
-    
+
     try {
       $service = \Drupal::service('saho_media_migration.migrator');
       $stats = $service->getMigrationStats();
       $this->output()->writeln("📊 Found {$stats['total_files']} files, {$stats['migration_progress']}% migrated");
-    } catch (\Exception $e) {
+    }
+    catch (\Exception $e) {
       $this->output()->writeln('❌ Service error: ' . $e->getMessage());
     }
   }
@@ -42,21 +45,23 @@ class SahoCommands extends DrushCommands {
     try {
       $service = \Drupal::service('saho_media_migration.migrator');
       $stats = $service->getMigrationStats();
-      
+
       $this->io()->table(['Metric', 'Count'], [
         ['Total Files', number_format($stats['total_files'])],
         ['Files with Media', number_format($stats['files_with_media'])],
         ['Files Needing Migration', number_format($stats['files_without_media'])],
         ['Migration Progress', $stats['migration_progress'] . '%'],
       ]);
-      
+
       if ($stats['migration_progress'] < 100) {
         $this->io()->warning("Migration incomplete. Run 'drush saho:migrate' to continue.");
-      } else {
+      }
+      else {
         $this->io()->success("Migration complete!");
       }
-      
-    } catch (\Exception $e) {
+
+    }
+    catch (\Exception $e) {
       $this->io()->error('Error: ' . $e->getMessage());
     }
   }
@@ -72,14 +77,14 @@ class SahoCommands extends DrushCommands {
    */
   public function migrate($options = ['limit' => 1000]) {
     $limit = (int) $options['limit'];
-    
+
     try {
       $service = \Drupal::service('saho_media_migration.migrator');
       $stats = $service->getMigrationStats();
-      
+
       $this->io()->title('SAHO Media Migration');
       $this->io()->note("Files needing migration: {$stats['files_without_media']}");
-      
+
       if ($stats['files_without_media'] === 0) {
         $this->io()->success('All files already have media entities!');
         return;
@@ -87,16 +92,18 @@ class SahoCommands extends DrushCommands {
 
       $files = $service->getFilesNeedingMigration($limit);
       $count = count($files);
-      
+
       if (!$this->io()->confirm("Migrate {$count} files?")) {
         return;
       }
 
       $batch = $service->createMigrationBatch($files);
       batch_set($batch);
-      drush_backend_batch_process();
-      
-    } catch (\Exception $e) {
+      // Use Drupal's batch processor instead of deprecated Drush function.
+      \Drupal::service('batch.processor')->process();
+
+    }
+    catch (\Exception $e) {
       $this->io()->error('Migration failed: ' . $e->getMessage());
     }
   }
@@ -113,13 +120,14 @@ class SahoCommands extends DrushCommands {
     try {
       $service = \Drupal::service('saho_media_migration.migrator');
       $results = $service->validateMigration();
-      
+
       foreach ($results as $result) {
         $icon = $result['status'] === 'pass' ? '✅' : ($result['status'] === 'warning' ? '⚠️' : '❌');
         $this->output()->writeln("{$icon} {$result['message']}");
       }
-      
-    } catch (\Exception $e) {
+
+    }
+    catch (\Exception $e) {
       $this->io()->error('Validation failed: ' . $e->getMessage());
     }
   }
@@ -137,7 +145,8 @@ class SahoCommands extends DrushCommands {
       $service = \Drupal::service('saho_media_migration.migrator');
       $filename = $service->generateCsvMapping();
       $this->io()->success("CSV generated: {$filename}");
-    } catch (\Exception $e) {
+    }
+    catch (\Exception $e) {
       $this->io()->error('CSV generation failed: ' . $e->getMessage());
     }
   }

@@ -133,7 +133,7 @@ class TermTracker {
    * Clears the popular terms cache.
    */
   public function clearCache() {
-    $this->cacheBackend->invalidateAll();
+    $this->cacheBackend->deleteAll();
   }
 
   /**
