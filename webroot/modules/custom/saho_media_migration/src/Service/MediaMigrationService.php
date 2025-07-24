@@ -8,9 +8,10 @@ use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\file\FileInterface;
+use Drupal\media\MediaInterface;
 
 /**
- * Service for migrating file entity references to media entities.
+ * Core service for migrating file entities to media entities.
  */
 class MediaMigrationService {
 
@@ -20,6 +21,13 @@ class MediaMigrationService {
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
   protected $entityTypeManager;
+
+  /**
+   * The database connection.
+   *
+   * @var \Drupal\Core\Database\Connection
+   */
+  protected $database;
 
   /**
    * The file system service.
@@ -43,112 +51,186 @@ class MediaMigrationService {
   protected $messenger;
 
   /**
-   * The database connection.
-   *
-   * @var \Drupal\Core\Database\Connection
-   */
-  protected $database;
-
-  /**
    * Constructs a new MediaMigrationService object.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
-   *   The entity type manager.
-   * @param \Drupal\Core\File\FileSystemInterface $file_system
-   *   The file system service.
-   * @param \Drupal\Core\Logger\LoggerChannelFactoryInterface $logger_factory
-   *   The logger factory.
-   * @param \Drupal\Core\Messenger\MessengerInterface $messenger
-   *   The messenger service.
-   * @param \Drupal\Core\Database\Connection $database
-   *   The database connection.
    */
   public function __construct(
     EntityTypeManagerInterface $entity_type_manager,
+    Connection $database,
     FileSystemInterface $file_system,
     LoggerChannelFactoryInterface $logger_factory,
-    MessengerInterface $messenger,
-    Connection $database,
+    MessengerInterface $messenger
   ) {
     $this->entityTypeManager = $entity_type_manager;
+    $this->database = $database;
     $this->fileSystem = $file_system;
     $this->logger = $logger_factory->get('saho_media_migration');
     $this->messenger = $messenger;
-    $this->database = $database;
   }
 
   /**
-   * Process a CSV file containing file usage data.
-   *
-   * @param string $file_path
-   *   The path to the CSV file.
-   *
-   * @return array
-   *   An array of file data from the CSV.
+   * Get migration statistics.
    */
-  public function processCsvFile($file_path) {
-    $file_data = [];
+  public function getMigrationStats() {
+    $stats = [];
 
-    if (!file_exists($file_path)) {
-      $this->messenger->addError(t('CSV file not found at @path.', ['@path' => $file_path]));
-      return $file_data;
+    $stats['total_files'] = $this->database->select('file_managed', 'f')
+      ->countQuery()
+      ->execute()
+      ->fetchField();
+
+    $files_with_media = $this->getFilesWithMediaEntities();
+    $stats['files_with_media'] = count($files_with_media);
+    $stats['files_without_media'] = $stats['total_files'] - $stats['files_with_media'];
+
+    $stats['used_files'] = $this->database->select('file_usage', 'fu')
+      ->distinct()
+      ->fields('fu', ['fid'])
+      ->countQuery()
+      ->execute()
+      ->fetchField();
+
+    $stats['migration_progress'] = $stats['total_files'] > 0 
+      ? round(($stats['files_with_media'] / $stats['total_files']) * 100, 2) 
+      : 0;
+
+    return $stats;
+  }
+
+  /**
+   * Get files that need migration.
+   */
+  public function getFilesNeedingMigration($limit = 1000, $offset = 0) {
+    $query = $this->database->select('file_managed', 'f');
+    $query->fields('f', [
+      'fid', 'uuid', 'uid', 'filename', 'uri', 'filemime', 'filesize', 'status', 'created', 'changed'
+    ]);
+
+    $files_with_media = $this->getFilesWithMediaEntities();
+    if (!empty($files_with_media)) {
+      $query->condition('f.fid', $files_with_media, 'NOT IN');
     }
 
-    $handle = fopen($file_path, 'r');
+    $query->leftJoin('file_usage', 'fu', 'f.fid = fu.fid');
+    $query->addField('fu', 'count', 'usage_count');
+    
+    $query->orderBy('fu.count', 'DESC');
+    $query->orderBy('f.filesize', 'ASC');
+    $query->range($offset, $limit);
+
+    return $query->execute()->fetchAll(\PDO::FETCH_ASSOC);
+  }
+
+  /**
+   * Generate CSV mapping file.
+   */
+  public function generateCsvMapping() {
+    $csv_dir = 'private://migration_csv';
+    $this->fileSystem->prepareDirectory($csv_dir, FileSystemInterface::CREATE_DIRECTORY);
+
+    $filename = $csv_dir . '/media_migration_' . date('Y-m-d_H-i-s') . '.csv';
+    $file_path = $this->fileSystem->realpath($filename);
+    
+    $handle = fopen($file_path, 'w');
     if (!$handle) {
-      $this->messenger->addError(t('Could not open CSV file at @path.', ['@path' => $file_path]));
-      return $file_data;
+      throw new \Exception('Cannot create CSV file: ' . $filename);
     }
 
-    // Read the header row.
-    $header = fgetcsv($handle);
-    if (!$header) {
-      $this->messenger->addError(t('CSV file is empty or has an invalid format.'));
-      fclose($handle);
-      return $file_data;
-    }
+    fputcsv($handle, [
+      'file_id', 
+      'filename', 
+      'uri', 
+      'filemime', 
+      'filesize',
+      'usage_count',
+      'existing_media_id',
+      'suggested_bundle'
+    ]);
 
-    // Map the header columns to their indices.
-    $header_map = array_flip($header);
+    $query = $this->database->select('file_managed', 'f');
+    $query->fields('f', ['fid', 'filename', 'uri', 'filemime', 'filesize']);
+    $query->leftJoin('file_usage', 'fu', 'f.fid = fu.fid');
+    $query->addField('fu', 'count', 'usage_count');
+    $query->orderBy('fu.count', 'DESC');
 
-    // Define required and optional columns.
-    $required_columns = ['fid', 'filename', 'uri', 'filemime', 'usage_count'];
-    $optional_columns = ['uuid', 'uid'];
+    $results = $query->execute();
+    $processed = 0;
 
-    // Check for required columns.
-    foreach ($required_columns as $column) {
-      if (!isset($header_map[$column])) {
-        $this->messenger->addError(t('CSV file is missing required column: @column.', ['@column' => $column]));
-        fclose($handle);
-        return $file_data;
-      }
-    }
+    foreach ($results as $result) {
+      $existing_media_id = $this->getMediaIdForFile($result->fid);
+      $suggested_bundle = $this->getMediaBundle($result->filemime);
 
-    // Read the data rows.
-    while (($row = fgetcsv($handle)) !== FALSE) {
-      $row_data = [];
-      foreach ($header_map as $column => $index) {
-        if (isset($row[$index])) {
-          $row_data[$column] = $row[$index];
-        }
-      }
-      if (!empty($row_data['fid'])) {
-        $file_data[] = $row_data;
-      }
+      fputcsv($handle, [
+        $result->fid,
+        $result->filename,
+        $result->uri,
+        $result->filemime,
+        $result->filesize,
+        $result->usage_count ?? 0,
+        $existing_media_id ?: '',
+        $suggested_bundle
+      ]);
+      $processed++;
     }
 
     fclose($handle);
-    return $file_data;
+    
+    $this->logger->notice('Generated CSV mapping with @count files: @file', [
+      '@count' => $processed,
+      '@file' => $filename
+    ]);
+
+    return $filename;
   }
 
   /**
-   * Create a batch process for migrating files to media entities.
-   *
-   * @param array $file_data
-   *   An array of file data from the CSV.
-   *
-   * @return array
-   *   A batch array.
+   * Create media entity for a file.
+   */
+  public function createMediaEntity(array $file_data) {
+    try {
+      if ($this->hasMediaEntity($file_data['fid'])) {
+        return null;
+      }
+
+      $file = $this->entityTypeManager->getStorage('file')->load($file_data['fid']);
+      if (!$file instanceof FileInterface) {
+        return null;
+      }
+
+      if (!file_exists($file->getFileUri())) {
+        return null;
+      }
+
+      $bundle = $this->getMediaBundle($file_data['filemime']);
+      if (!$bundle) {
+        return null;
+      }
+
+      $media_name = $this->generateMediaName($file_data['filename']);
+      $media = $this->entityTypeManager->getStorage('media')->create([
+        'bundle' => $bundle,
+        'uid' => $file_data['uid'] ?? 1,
+        'name' => $media_name,
+        'status' => 1,
+        'created' => $file_data['created'] ?? time(),
+        'changed' => $file_data['changed'] ?? time(),
+      ]);
+
+      $source_field = $this->getSourceField($bundle);
+      if ($source_field && $media->hasField($source_field)) {
+        $media->set($source_field, $file);
+        $media->save();
+        return $media;
+      }
+
+      return null;
+
+    } catch (\Exception $e) {
+      return null;
+    }
+  }
+
+  /**
+   * Create migration batch.
    */
   public function createMigrationBatch(array $file_data) {
     $operations = [];
@@ -158,116 +240,146 @@ class MediaMigrationService {
     foreach ($chunks as $chunk) {
       $operations[] = [
         ['\Drupal\saho_media_migration\Batch\MediaMigrationBatch', 'processBatch'],
-        [$chunk],
+        [$chunk, count($file_data)]
       ];
     }
 
     return [
-      'title' => t('Migrating files to media entities'),
+      'title' => t('Migrating @count files to media entities', ['@count' => count($file_data)]),
       'operations' => $operations,
       'finished' => ['\Drupal\saho_media_migration\Batch\MediaMigrationBatch', 'finishBatch'],
-      'file' => \Drupal::service('extension.list.module')->getPath('saho_media_migration') . '/src/Batch/MediaMigrationBatch.php',
+      'progressive' => true,
+      'init_message' => t('Starting media migration...'),
+      'progress_message' => t('Processing @current of @total batches.'),
+      'error_message' => t('Migration encountered an error.'),
     ];
   }
 
   /**
-   * Create a media entity for a file.
-   *
-   * @param array $file_data
-   *   The file data.
-   *
-   * @return \Drupal\media\MediaInterface|null
-   *   The created media entity, or NULL if creation failed.
+   * Validate migration integrity.
    */
-  public function createMediaEntity(array $file_data) {
-    try {
-      // Load the file entity.
-      $file = $this->entityTypeManager->getStorage('file')->load($file_data['fid']);
+  public function validateMigration() {
+    $results = [];
 
-      if (!$file instanceof FileInterface) {
-        // Using the logger's error method to log the error.
-        $this->logger->error('File with ID @fid not found.', ['@fid' => $file_data['fid']]);
-        return NULL;
-      }
-      // Determine the media bundle based on the MIME type.
-      $bundle = $this->getMediaBundleFromMimeType($file_data['filemime']);
-      if (!$bundle) {
-        // Using the logger's error method to log the error.
-        $this->logger->error('No media bundle found for MIME type @mime.', ['@mime' => $file_data['filemime']]);
-        return NULL;
-      }
+    $orphaned_media = $this->findOrphanedMedia();
+    $results['orphaned_media'] = [
+      'status' => empty($orphaned_media) ? 'pass' : 'warning',
+      'count' => count($orphaned_media),
+      'message' => empty($orphaned_media) 
+        ? 'No orphaned media entities found'
+        : count($orphaned_media) . ' orphaned media entities found'
+    ];
 
-      // Create the media entity.
-      $media_storage = $this->entityTypeManager->getStorage('media');
-      // Default to user 1 (admin) if uid is not provided.
-      $media = $media_storage->create([
-        'bundle' => $bundle,
-        'uid' => $file_data['uid'] ?? 1,
-        'name' => $file_data['filename'],
-        'status' => 1,
-      ]);
-      // Set the file field based on the bundle.
-      $field_name = $this->getSourceFieldName($bundle);
-      if ($field_name) {
-        // Use array access notation instead of the set method.
-        $media->{$field_name} = $file;
-      }
-      $media->save();
+    $broken_refs = $this->findBrokenFileReferences();
+    $results['broken_references'] = [
+      'status' => empty($broken_refs) ? 'pass' : 'error',
+      'count' => count($broken_refs),
+      'message' => empty($broken_refs)
+        ? 'No broken file references found'
+        : count($broken_refs) . ' broken file references found'
+    ];
 
-      // Using the logger's notice method to log the success message.
-      $this->logger->notice('Created media entity @mid for file @fid.', [
-        '@mid' => $media->id(),
-        '@fid' => $file_data['fid'],
-      ]);
+    $missing_files = $this->findMissingFiles();
+    $results['missing_files'] = [
+      'status' => empty($missing_files) ? 'pass' : 'error',
+      'count' => count($missing_files),
+      'message' => empty($missing_files)
+        ? 'All files exist on disk'
+        : count($missing_files) . ' file records point to missing files'
+    ];
 
-      return $media;
-    }
-    catch (\Exception $e) {
-      // Using the logger's error method to log the exception.
-      $this->logger->error('Error creating media entity for file @fid: @error', [
-        '@fid' => $file_data['fid'],
-        '@error' => $e->getMessage(),
-      ]);
-      return NULL;
-    }
+    return $results;
   }
 
   /**
-   * Get the media bundle for a given MIME type.
-   *
-   * @param string $mime_type
-   *   The MIME type.
-   *
-   * @return string|null
-   *   The media bundle, or NULL if no bundle is found.
+   * Get files that already have media entities.
    */
-  protected function getMediaBundleFromMimeType($mime_type) {
+  protected function getFilesWithMediaEntities() {
+    $files_with_media = [];
+
+    $media_tables = [
+      'media__field_media_image' => 'field_media_image_target_id',
+      'media__field_media_file' => 'field_media_file_target_id',
+      'media__field_media_audio_file' => 'field_media_audio_file_target_id',
+      'media__field_media_video_file' => 'field_media_video_file_target_id',
+    ];
+
+    foreach ($media_tables as $table => $field) {
+      if (!$this->database->schema()->tableExists($table)) {
+        continue;
+      }
+
+      $query = $this->database->select($table, 't')
+        ->fields('t', [$field])
+        ->isNotNull($field);
+      
+      $results = $query->execute()->fetchCol();
+      $files_with_media = array_merge($files_with_media, $results);
+    }
+
+    return array_unique($files_with_media);
+  }
+
+  /**
+   * Check if file has media entity.
+   */
+  public function hasMediaEntity($fid) {
+    return in_array($fid, $this->getFilesWithMediaEntities());
+  }
+
+  /**
+   * Get media entity ID for a file.
+   */
+  protected function getMediaIdForFile($fid) {
+    $media_tables = [
+      'media__field_media_image' => 'field_media_image_target_id',
+      'media__field_media_file' => 'field_media_file_target_id',
+      'media__field_media_audio_file' => 'field_media_audio_file_target_id',
+      'media__field_media_video_file' => 'field_media_video_file_target_id',
+    ];
+
+    foreach ($media_tables as $table => $field) {
+      if (!$this->database->schema()->tableExists($table)) {
+        continue;
+      }
+
+      $query = $this->database->select($table, 't')
+        ->fields('t', ['entity_id'])
+        ->condition($field, $fid)
+        ->range(0, 1);
+      
+      $result = $query->execute()->fetchField();
+      if ($result) {
+        return (int) $result;
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Get media bundle from MIME type.
+   */
+  protected function getMediaBundle($mime_type) {
     if (strpos($mime_type, 'image/') === 0) {
       return 'image';
     }
-    elseif (strpos($mime_type, 'audio/') === 0) {
+    if (strpos($mime_type, 'audio/') === 0) {
       return 'audio';
     }
-    elseif (strpos($mime_type, 'video/') === 0) {
+    if (strpos($mime_type, 'video/') === 0) {
       return 'video';
     }
-    elseif (strpos($mime_type, 'application/') === 0 || strpos($mime_type, 'text/') === 0) {
+    if (strpos($mime_type, 'application/') === 0 || strpos($mime_type, 'text/') === 0) {
       return 'file';
     }
-
-    return NULL;
+    return 'file';
   }
 
   /**
-   * Get the source field name for a given media bundle.
-   *
-   * @param string $bundle
-   *   The media bundle.
-   *
-   * @return string|null
-   *   The source field name, or NULL if no field is found.
+   * Get source field name for bundle.
    */
-  protected function getSourceFieldName($bundle) {
+  protected function getSourceField($bundle) {
     $field_map = [
       'image' => 'field_media_image',
       'audio' => 'field_media_audio_file',
@@ -275,41 +387,149 @@ class MediaMigrationService {
       'file' => 'field_media_file',
     ];
 
-    return $field_map[$bundle] ?? NULL;
+    return $field_map[$bundle] ?? null;
   }
 
   /**
-   * Handle entity presave operations for nodes.
-   *
-   * This method is called from the entity_presave hook to handle
-   * any special cases during entity saving after migration.
-   *
-   * @param \Drupal\Core\Entity\EntityInterface $entity
-   *   The entity being saved.
+   * Generate clean media name from filename.
    */
-  public function handleEntityPresave($entity) {
-    // Implementation will be added as needed.
+  protected function generateMediaName($filename) {
+    $name = pathinfo($filename, PATHINFO_FILENAME);
+    $name = str_replace(['_', '-', '.'], ' ', $name);
+    $name = preg_replace('/\s+/', ' ', trim($name));
+    $name = ucwords(strtolower($name));
+    
+    if (strlen($name) > 255) {
+      $name = substr($name, 0, 252) . '...';
+    }
+    
+    return $name ?: 'Untitled Media';
   }
 
   /**
-   * Update entity references to point to media entities instead of files.
-   *
-   * @param int $fid
-   *   The file ID.
-   * @param int $mid
-   *   The media entity ID.
-   *
-   * @return int
-   *   The number of references updated.
+   * Find orphaned media entities.
    */
-  public function updateEntityReferences($fid, $mid) {
-    // This is a placeholder for the actual implementation.
-    // The actual implementation would need to:
-    // 1. Find all entity references to the file
-    // 2. Update them to point to the media entity
-    // 3. Save the entities.
-    // For now, we'll just return 0.
-    return 0;
+  protected function findOrphanedMedia() {
+    $query = $this->database->select('media', 'm');
+    $query->fields('m', ['mid']);
+    $query->leftJoin('media__field_media_file', 'mf', 'm.mid = mf.entity_id');
+    $query->leftJoin('media__field_media_image', 'mi', 'm.mid = mi.entity_id');
+    $query->leftJoin('media__field_media_audio_file', 'ma', 'm.mid = ma.entity_id');
+    $query->leftJoin('media__field_media_video_file', 'mv', 'm.mid = mv.entity_id');
+    $query->isNull('mf.field_media_file_target_id');
+    $query->isNull('mi.field_media_image_target_id');
+    $query->isNull('ma.field_media_audio_file_target_id');
+    $query->isNull('mv.field_media_video_file_target_id');
+
+    return $query->execute()->fetchCol();
+  }
+
+  /**
+   * Find broken file references.
+   */
+  protected function findBrokenFileReferences() {
+    $broken = [];
+
+    $media_tables = [
+      'media__field_media_image' => 'field_media_image_target_id',
+      'media__field_media_file' => 'field_media_file_target_id',
+      'media__field_media_audio_file' => 'field_media_audio_file_target_id',
+      'media__field_media_video_file' => 'field_media_video_file_target_id',
+    ];
+
+    foreach ($media_tables as $table => $field) {
+      if (!$this->database->schema()->tableExists($table)) {
+        continue;
+      }
+
+      $query = $this->database->select($table, 't');
+      $query->fields('t', ['entity_id', $field]);
+      $query->leftJoin('file_managed', 'f', "t.$field = f.fid");
+      $query->isNull('f.fid');
+      $query->isNotNull("t.$field");
+
+      $results = $query->execute()->fetchAll();
+      $broken = array_merge($broken, $results);
+    }
+
+    return $broken;
+  }
+
+  /**
+   * Find missing physical files.
+   */
+  protected function findMissingFiles() {
+    $missing = [];
+    
+    $query = $this->database->select('file_managed', 'f');
+    $query->fields('f', ['fid', 'uri']);
+    $query->range(0, 1000);
+
+    $files = $query->execute()->fetchAll();
+
+    foreach ($files as $file) {
+      if (!file_exists($file->uri)) {
+        $missing[] = $file->fid;
+      }
+    }
+
+    return $missing;
+  }
+
+  /**
+   * Process CSV file.
+   */
+  public function processCsvFile($file_path) {
+    $file_data = [];
+
+    if (!file_exists($file_path)) {
+      $this->messenger->addError(t('CSV file not found: @path', ['@path' => $file_path]));
+      return $file_data;
+    }
+
+    $handle = fopen($file_path, 'r');
+    if (!$handle) {
+      $this->messenger->addError(t('Cannot open CSV file: @path', ['@path' => $file_path]));
+      return $file_data;
+    }
+
+    $header = fgetcsv($handle);
+    if (!$header) {
+      $this->messenger->addError(t('CSV file is empty or invalid.'));
+      fclose($handle);
+      return $file_data;
+    }
+
+    $header_map = array_flip($header);
+    $required_columns = ['file_id', 'filename', 'filemime'];
+
+    foreach ($required_columns as $column) {
+      if (!isset($header_map[$column])) {
+        $this->messenger->addError(t('CSV missing required column: @column', ['@column' => $column]));
+        fclose($handle);
+        return $file_data;
+      }
+    }
+
+    while (($row = fgetcsv($handle)) !== FALSE) {
+      $row_data = [];
+      foreach ($header_map as $column => $index) {
+        if (isset($row[$index])) {
+          $row_data[$column] = $row[$index];
+        }
+      }
+      
+      if (isset($row_data['file_id'])) {
+        $row_data['fid'] = $row_data['file_id'];
+      }
+      
+      if (!empty($row_data['fid'])) {
+        $file_data[] = $row_data;
+      }
+    }
+
+    fclose($handle);
+    return $file_data;
   }
 
 }

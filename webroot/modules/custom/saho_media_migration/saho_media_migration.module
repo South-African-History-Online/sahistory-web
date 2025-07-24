@@ -5,15 +5,36 @@
  * Contains hook implementations for SAHO Media Migration module.
  */
 
+use Drupal\Core\Routing\RouteMatchInterface;
+
 /**
  * Implements hook_help().
  */
-function saho_media_migration_help($route_name, $route_parameters) {
+function saho_media_migration_help($route_name, RouteMatchInterface $route_match) {
   switch ($route_name) {
     case 'help.page.saho_media_migration':
-      $output = '';
-      $output .= '<h3>' . t('About') . '</h3>';
-      $output .= '<p>' . t('The SAHO Media Migration module provides tools for migrating file entities to media entities.') . '</p>';
+      $output = '<h2>' . t('About SAHO Media Migration') . '</h2>';
+      $output .= '<p>' . t('This module provides tools for migrating file entities to media entities in the SAHO website.') . '</p>';
+      $output .= '<h3>' . t('Usage') . '</h3>';
+      $output .= '<p>' . t('Use the <a href="@admin">admin interface</a> for a guided experience, or use Drush commands:', ['@admin' => '/admin/config/media/saho-media-migration']) . '</p>';
+      $output .= '<ul>';
+      $output .= '<li><code>drush saho-status</code> - ' . t('Show migration status') . '</li>';
+      $output .= '<li><code>drush saho-migrate</code> - ' . t('Start migration') . '</li>';
+      $output .= '<li><code>drush saho-validate</code> - ' . t('Validate migration integrity') . '</li>';
+      $output .= '</ul>';
       return $output;
+
+    case 'saho_media_migration.admin_form':
+      return '<p>' . t('Use this form to manage the migration of file entities to media entities.') . '</p>';
   }
+}
+
+/**
+ * Implements hook_drush_command().
+ * 
+ * Fallback command registration in case services.yml doesn't work.
+ */
+function saho_media_migration_drush_command() {
+  // This is a fallback for older Drush versions or registration issues
+  return [];
 }
