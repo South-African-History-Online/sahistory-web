@@ -208,6 +208,51 @@
         '}' +
         '</style>'
       );
+
+      // Initialize lazy loading for images.
+      $('.lazy', context).once('tdih-lazy-load').each(function () {
+        // Check if IntersectionObserver is supported
+        if ('IntersectionObserver' in window) {
+          var lazyImageObserver = new IntersectionObserver(function (entries, observer) {
+            entries.forEach(function (entry) {
+              if (entry.isIntersecting) {
+                var lazyImage = entry.target;
+                
+                // Set the src to the data-src value
+                if (lazyImage.dataset.src) {
+                  lazyImage.src = lazyImage.dataset.src;
+                  
+                  // When the image is loaded, remove the lazy class
+                  lazyImage.onload = function () {
+                    lazyImage.classList.remove('lazy');
+                    lazyImage.removeAttribute('data-src');
+                  };
+                  
+                  // Stop observing the image
+                  observer.unobserve(lazyImage);
+                }
+              }
+            });
+          }, {
+            rootMargin: '100px 0px', // Load images when they're 100px from entering the viewport
+            threshold: 0.01 // Trigger when at least 1% of the image is visible
+          });
+          
+          // Start observing the image
+          lazyImageObserver.observe(this);
+        } else {
+          // Fallback for browsers that don't support IntersectionObserver
+          // Load all images immediately
+          var lazyImages = document.querySelectorAll('.lazy');
+          lazyImages.forEach(function (lazyImage) {
+            if (lazyImage.dataset.src) {
+              lazyImage.src = lazyImage.dataset.src;
+              lazyImage.classList.remove('lazy');
+              lazyImage.removeAttribute('data-src');
+            }
+          });
+        }
+      });
     }
   };
 
