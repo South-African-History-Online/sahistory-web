@@ -3,9 +3,6 @@
 namespace Drupal\saho_media_migration\Commands;
 
 use Drush\Commands\DrushCommands;
-use Drush\Style\DrushStyle;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * Simple SAHO commands that work.
@@ -46,23 +43,26 @@ class DirectCommands extends DrushCommands {
       $service = \Drupal::service('saho_media_migration.migrator');
       $stats = $service->getMigrationStats();
 
-      $this->io()->table(['Metric', 'Count'], [
-        ['Total Files', number_format($stats['total_files'])],
-        ['Files with Media', number_format($stats['files_with_media'])],
-        ['Files Needing Migration', number_format($stats['files_without_media'])],
-        ['Migration Progress', $stats['migration_progress'] . '%'],
-      ]);
+      // Output table in plain text format.
+      $this->output()->writeln('');
+      $this->output()->writeln('Migration Status:');
+      $this->output()->writeln('----------------');
+      $this->output()->writeln('Total Files: ' . number_format($stats['total_files']));
+      $this->output()->writeln('Files with Media: ' . number_format($stats['files_with_media']));
+      $this->output()->writeln('Files Needing Migration: ' . number_format($stats['files_without_media']));
+      $this->output()->writeln('Migration Progress: ' . $stats['migration_progress'] . '%');
+      $this->output()->writeln('');
 
       if ($stats['migration_progress'] < 100) {
-        $this->io()->warning("Migration incomplete. Run 'drush saho:migrate' to continue.");
+        $this->output()->writeln('⚠️  Migration incomplete. Run \'drush saho:migrate\' to continue.');
       }
       else {
-        $this->io()->success("Migration complete!");
+        $this->output()->writeln('✅ Migration complete!');
       }
 
     }
     catch (\Exception $e) {
-      $this->io()->error('Error: ' . $e->getMessage());
+      $this->output()->writeln('❌ Error: ' . $e->getMessage());
     }
   }
 
@@ -82,18 +82,23 @@ class DirectCommands extends DrushCommands {
       $service = \Drupal::service('saho_media_migration.migrator');
       $stats = $service->getMigrationStats();
 
-      $this->io()->title('SAHO Media Migration');
-      $this->io()->note("Files needing migration: {$stats['files_without_media']}");
+      $this->output()->writeln('');
+      $this->output()->writeln('=== SAHO Media Migration ===');
+      $this->output()->writeln("ℹ️  Files needing migration: {$stats['files_without_media']}");
+      $this->output()->writeln('');
 
       if ($stats['files_without_media'] === 0) {
-        $this->io()->success('All files already have media entities!');
+        $this->output()->writeln('✅ All files already have media entities!');
         return;
       }
 
       $files = $service->getFilesNeedingMigration($limit);
       $count = count($files);
 
-      if (!$this->io()->confirm("Migrate {$count} files?")) {
+      // Simple confirmation with y/n prompt.
+      $this->output()->writeln("Migrate {$count} files? [y/n]");
+      $answer = trim(fgets(STDIN));
+      if (strtolower($answer) !== 'y') {
         return;
       }
 
@@ -104,7 +109,7 @@ class DirectCommands extends DrushCommands {
 
     }
     catch (\Exception $e) {
-      $this->io()->error('Migration failed: ' . $e->getMessage());
+      $this->output()->writeln('❌ Migration failed: ' . $e->getMessage());
     }
   }
 
@@ -128,7 +133,7 @@ class DirectCommands extends DrushCommands {
 
     }
     catch (\Exception $e) {
-      $this->io()->error('Validation failed: ' . $e->getMessage());
+      $this->output()->writeln('❌ Validation failed: ' . $e->getMessage());
     }
   }
 
@@ -144,10 +149,10 @@ class DirectCommands extends DrushCommands {
     try {
       $service = \Drupal::service('saho_media_migration.migrator');
       $filename = $service->generateCsvMapping();
-      $this->io()->success("CSV generated: {$filename}");
+      $this->output()->writeln("✅ CSV generated: {$filename}");
     }
     catch (\Exception $e) {
-      $this->io()->error('CSV generation failed: ' . $e->getMessage());
+      $this->output()->writeln('❌ CSV generation failed: ' . $e->getMessage());
     }
   }
 
