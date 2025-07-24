@@ -1,4 +1,15 @@
 services:
+  saho_media_migration.commands:
+    class: Drupal\saho_media_migration\Commands\SahoMediaMigrationCommands
+    arguments: ['@entity_type.manager', '@database', '@logger.factory', '@file_system']
+    tags:
+      - { name: drush.command }
+      
   saho_media_migration.migrator:
     class: Drupal\saho_media_migration\Service\MediaMigrationService
-    arguments: ['@entity_type.manager', '@file_system', '@logger.factory', '@messenger', '@database']
+    arguments: 
+      - '@entity_type.manager'
+      - '@file_system'
+      - '@logger.factory'
+      - '@messenger'
+      - '@database'

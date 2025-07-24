@@ -2,93 +2,18 @@
 
 /**
  * @file
- * Contains hook implementations for the SAHO Media Migration module.
+ * Contains hook implementations for SAHO Media Migration module.
  */
-
-use Drupal\Core\Entity\EntityInterface;
-use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Link;
-use Drupal\Core\Routing\RouteMatchInterface;
-use Drupal\Core\Url;
 
 /**
  * Implements hook_help().
  */
-function saho_media_migration_help($route_name, RouteMatchInterface $route_match) {
+function saho_media_migration_help($route_name, $route_parameters) {
   switch ($route_name) {
     case 'help.page.saho_media_migration':
       $output = '';
       $output .= '<h3>' . t('About') . '</h3>';
-      $output .= '<p>' . t('The SAHO Media Migration module provides tools for migrating file entity references to media entities.') . '</p>';
-      $output .= '<p>' . t('This module helps address issues with media entities that were not correctly migrated from Drupal 7 to Drupal 8.') . '</p>';
-      $output .= '<h3>' . t('Usage') . '</h3>';
-      $output .= '<p>' . t('After enabling the module, run the database updates to perform the migration.') . '</p>';
-      $output .= '<p>' . t('The migration process will:') . '</p>';
-      $output .= '<ul>';
-      $output .= '<li>' . t('Identify all file entity references across content types') . '</li>';
-      $output .= '<li>' . t('Create corresponding media entities for each file') . '</li>';
-      $output .= '<li>' . t('Update the entity references to point to the new media entities') . '</li>';
-      $output .= '<li>' . t('Preserve metadata like alt text, captions, etc.') . '</li>';
-      $output .= '</ul>';
+      $output .= '<p>' . t('The SAHO Media Migration module provides tools for migrating file entities to media entities.') . '</p>';
       return $output;
   }
-}
-
-/**
- * Implements hook_entity_presave().
- *
- * This hook is used to handle any special cases during entity saving
- * after the migration has been performed.
- */
-function saho_media_migration_entity_presave(EntityInterface $entity) {
-  // Only process nodes.
-  if ($entity->getEntityTypeId() !== 'node') {
-    return;
-  }
-
-  // Get the migration service.
-  $migration_service = \Drupal::service('saho_media_migration.migrator');
-
-  // Let the service handle any special cases for this entity.
-  $migration_service->handleEntityPresave($entity);
-}
-
-/**
- * Implements hook_toolbar().
- */
-function saho_media_migration_toolbar() {
-  $items = [];
-
-  $items['saho_media_migration'] = [
-    '#type' => 'toolbar_item',
-    '#weight' => 999,
-    'tab' => [
-      '#type' => 'link',
-      '#title' => t('Media Migration'),
-      '#url' => Url::fromRoute('saho_media_migration.form'),
-      '#attributes' => [
-        'title' => t('Migrate files to media entities'),
-        'class' => ['toolbar-icon', 'toolbar-icon-media-migration'],
-      ],
-    ],
-    'tray' => [
-      '#heading' => t('Media Migration'),
-      'content' => [
-        '#theme' => 'item_list',
-        '#items' => [
-          Link::createFromRoute(t('Upload CSV'), 'saho_media_migration.form'),
-        ],
-        '#attributes' => [
-          'class' => ['toolbar-menu'],
-        ],
-      ],
-    ],
-    '#attached' => [
-      'library' => [
-        'saho_media_migration/toolbar',
-      ],
-    ],
-  ];
-
-  return $items;
 }
