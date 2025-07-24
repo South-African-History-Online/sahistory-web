@@ -26,6 +26,18 @@
 {% set author = '' %}
 {% set url = '#' %}
 {% set resource_type = 'Document' %}
+{% set african_country = '' %}
+{% set archive_category = '' %}
+{% set publication_date = '' %}
+{% set isbn = '' %}
+{% set language = '' %}
+{% set publishers = '' %}
+{% set publication_title = '' %}
+{% set publication_place = '' %}
+{% set subtitle = '' %}
+{% set synopsis = '' %}
+{% set copyright = '' %}
+{% set venue = '' %}
 
 {# Extract field values from the fields object #}
 {% for field_name, field in fields %}
@@ -41,26 +53,96 @@
     {% set image_url = field.content %}
   {% endif %}
 
-  {% if 'created' in field_name or 'date' in field_name or 'field_date' in field_name or 'field_publication_date' in field_name %}
+  {% if 'created' in field_name or 'date' in field_name or 'field_date' in field_name %}
     {% set date = field.content %}
+  {% endif %}
+  
+  {% if 'field_publication_date_archive' in field_name %}
+    {% set publication_date = field.content %}
   {% endif %}
 
   {% if 'author' in field_name or 'field_author' in field_name or 'field_contributor' in field_name %}
     {% set author = field.content %}
   {% endif %}
+  
+  {% if 'field_african_country' in field_name %}
+    {% set african_country = field.content %}
+  {% endif %}
+  
+  {% if 'field_media_library_type' in field_name %}
+    {% set archive_category = field.content %}
+  {% endif %}
+  
+  {% if 'field_isbn' in field_name %}
+    {% set isbn = field.content %}
+  {% endif %}
+  
+  {% if 'field_language' in field_name %}
+    {% set language = field.content %}
+  {% endif %}
+  
+  {% if 'field_publishers' in field_name %}
+    {% set publishers = field.content %}
+  {% endif %}
+  
+  {% if 'field_publication_title' in field_name %}
+    {% set publication_title = field.content %}
+  {% endif %}
+  
+  {% if 'field_publication_place' in field_name %}
+    {% set publication_place = field.content %}
+  {% endif %}
+  
+  {% if 'field_subtitle' in field_name %}
+    {% set subtitle = field.content %}
+  {% endif %}
+  
+  {% if 'field_synopsis' in field_name %}
+    {% set synopsis = field.content %}
+  {% endif %}
+  
+  {% if 'field_copyright' in field_name %}
+    {% set copyright = field.content %}
+  {% endif %}
+  
+  {% if 'field_venue' in field_name %}
+    {% set venue = field.content %}
+  {% endif %}
 
-  {% if 'path' in field_name or 'view_node' in field_name or 'nid' in field_name %}
+  {# Extract URL directly from title if it contains a link - this is usually the most reliable source #}
+  {% if field_name == 'title' and '<a href=' in field.content|render|trim %}
     {% set url_found = false %}
-    {% if not url_found and field.content|render|trim starts with '<a href="' %}
-      {% set url_parts = field.content|render|split('href="') %}
-      {% if url_parts|length > 1 %}
-        {% set url_part = url_parts[1]|split('"') %}
+    {% set content_str = field.content|render|trim %}
+    {% set href_pos = content_str|split('<a href="') %}
+    {% if href_pos|length > 1 %}
+      {% set url_part = href_pos[1]|split('"') %}
+      {% if url_part|length > 0 %}
+        {% set url = url_part[0] %}
+        {% set url_found = true %}
+      {% endif %}
+    {% endif %}
+  {% endif %}
+  
+  {# Also look for path, view_node, or nid fields as fallback #}
+  {% if not url_found and ('path' in field_name or 'view_node' in field_name or 'nid' in field_name) %}
+    {% if '<a href=' in field.content|render|trim %}
+      {% set content_str = field.content|render|trim %}
+      {% set href_pos = content_str|split('<a href="') %}
+      {% if href_pos|length > 1 %}
+        {% set url_part = href_pos[1]|split('"') %}
         {% if url_part|length > 0 %}
           {% set url = url_part[0] %}
           {% set url_found = true %}
         {% endif %}
       {% endif %}
     {% endif %}
+  {% endif %}
+  
+  {# Try to extract a node ID if we still don't have a URL and the field contains a number #}
+  {% if not url_found and 'nid' in field_name and field.content|render|striptags|trim matches '/^\\d+$/' %}
+    {% set nid = field.content|render|striptags|trim %}
+    {% set url = '/node/' ~ nid %}
+    {% set url_found = true %}
   {% endif %}
 
   {% if 'type' in field_name or 'field_resource_type' in field_name or 'field_media_type' in field_name %}
@@ -130,7 +212,17 @@
           </div>
         {% endif %}
         
-        {% if date|render|striptags|trim is not empty %}
+        {% if archive_category|render|striptags|trim is not empty %}
+          <div class="mb-1">
+            <i class="fas fa-folder me-2"></i> <strong>Category:</strong> {{ archive_category|raw }}
+          </div>
+        {% endif %}
+        
+        {% if publication_date|render|striptags|trim is not empty %}
+          <div class="mb-1">
+            <i class="fas fa-calendar-alt me-2"></i> <strong>Publication Date:</strong> {{ publication_date|raw }}
+          </div>
+        {% elseif date|render|striptags|trim is not empty %}
           <div class="mb-1">
             <i class="fas fa-calendar-alt me-2"></i> <strong>Date:</strong> {{ date|raw }}
           </div>
@@ -142,17 +234,53 @@
           </div>
         {% endif %}
         
+        {% if african_country|render|striptags|trim is not empty %}
+          <div class="mb-1">
+            <i class="fas fa-globe-africa me-2"></i> <strong>Country:</strong> {{ african_country|raw }}
+          </div>
+        {% endif %}
+        
+        {% if isbn|render|striptags|trim is not empty %}
+          <div class="mb-1">
+            <i class="fas fa-barcode me-2"></i> <strong>ISBN:</strong> {{ isbn|raw }}
+          </div>
+        {% endif %}
+        
+        {% if publishers|render|striptags|trim is not empty %}
+          <div class="mb-1">
+            <i class="fas fa-building me-2"></i> <strong>Publisher:</strong> {{ publishers|raw }}
+          </div>
+        {% endif %}
+        
+        {% if publication_title|render|striptags|trim is not empty %}
+          <div class="mb-1">
+            <i class="fas fa-book me-2"></i> <strong>Publication:</strong> {{ publication_title|raw }}
+          </div>
+        {% endif %}
+        
+        {% if publication_place|render|striptags|trim is not empty %}
+          <div class="mb-1">
+            <i class="fas fa-map-pin me-2"></i> <strong>Published In:</strong> {{ publication_place|raw }}
+          </div>
+        {% endif %}
+        
+        {% if language|render|striptags|trim is not empty %}
+          <div class="mb-1">
+            <i class="fas fa-language me-2"></i> <strong>Language:</strong> {{ language|raw }}
+          </div>
+        {% endif %}
+        
         {# Extract additional metadata from fields #}
         {% set source = '' %}
         {% set location = '' %}
         {% set reference = '' %}
         
         {% for field_name, field in fields %}
-          {% if 'source' in field_name or 'publisher' in field_name or 'field_publishers' in field_name %}
+          {% if 'source' in field_name and 'field_' in field_name %}
             {% set source = field.content %}
           {% endif %}
           
-          {% if 'location' in field_name or 'place' in field_name or 'venue' in field_name %}
+          {% if 'location' in field_name or 'place' in field_name or ('venue' in field_name and field_name != 'field_venue') %}
             {% set location = field.content %}
           {% endif %}
           
@@ -163,7 +291,7 @@
         
         {% if source|render|striptags|trim is not empty %}
           <div class="mb-1">
-            <i class="fas fa-book me-2"></i> <strong>Source:</strong> {{ source|raw }}
+            <i class="fas fa-quote-left me-2"></i> <strong>Source:</strong> {{ source|raw }}
           </div>
         {% endif %}
         
@@ -173,22 +301,34 @@
           </div>
         {% endif %}
         
+        {% if venue|render|striptags|trim is not empty %}
+          <div class="mb-1">
+            <i class="fas fa-landmark me-2"></i> <strong>Venue:</strong> {{ venue|raw }}
+          </div>
+        {% endif %}
+        
         {% if reference|render|striptags|trim is not empty %}
           <div class="mb-1">
             <i class="fas fa-hashtag me-2"></i> <strong>Reference:</strong> {{ reference|raw }}
           </div>
         {% endif %}
+        
+        {% if copyright|render|striptags|trim is not empty %}
+          <div class="mb-1">
+            <i class="fas fa-copyright me-2"></i> <strong>Copyright:</strong> {{ copyright|raw }}
+          </div>
+        {% endif %}
       </div>
 
-      {# View resource button #}
+      {# View resource button - only show if we have a valid URL #}
       <div class="text-end">
-        <a href="{{ url }}" class="btn btn-sm btn-outline-secondary saho-read-more-btn">
+        <a href="{{ url != '#' ? url : '/archives' }}" class="btn btn-sm btn-outline-secondary saho-read-more-btn">
           View Resource <i class="fas fa-arrow-right ms-1"></i>
         </a>
       </div>
     </div>
 
-    {# Full card link for easy clicking #}
-    <a href="{{ url }}" class="stretched-link"></a>
+    {# Full card link for easy clicking - only add if we have a valid URL #}
+    <a href="{{ url != '#' ? url : '/archives' }}" class="stretched-link"></a>
   </div>
 </div>
