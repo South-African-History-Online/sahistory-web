@@ -13,138 +13,131 @@ class MediaMigrationBatch {
 
   /**
    * Process a batch of files to create media entities.
-   *
-   * @param array $files
-   *   An array of file data.
-   * @param array $context
-   *   The batch context.
    */
-  public static function processBatch(array $files, array &$context) {
-    // Initialize results array if it doesn't exist.
+  public static function processBatch(array $files, $total_files, array &$context) {
     if (!isset($context['results']['processed'])) {
       $context['results']['processed'] = 0;
       $context['results']['succeeded'] = 0;
       $context['results']['failed'] = 0;
       $context['results']['skipped'] = 0;
+      $context['results']['total'] = $total_files;
+      $context['results']['start_time'] = time();
     }
 
-    // Get the migration service.
     $migration_service = \Drupal::service('saho_media_migration.migrator');
 
-    // Process each file in the batch.
     foreach ($files as $file_data) {
-      // Skip files that already have media entities.
-      if (static::fileHasMediaEntity($file_data['fid'])) {
-        $context['results']['skipped']++;
-        continue;
-      }
+      try {
+        if ($migration_service->hasMediaEntity($file_data['fid'])) {
+          $context['results']['skipped']++;
+          continue;
+        }
 
-      // Create a media entity for the file.
-      $media = $migration_service->createMediaEntity($file_data);
+        $media = $migration_service->createMediaEntity($file_data);
 
-      if ($media) {
-        // Update entity references to point to the new media entity.
-        $updated = $migration_service->updateEntityReferences($file_data['fid'], $media->id());
-        $context['results']['succeeded']++;
-        $context['results']['references_updated'] = ($context['results']['references_updated'] ?? 0) + $updated;
+        if ($media) {
+          $context['results']['succeeded']++;
+        }
+        else {
+          $context['results']['failed']++;
+        }
+
       }
-      else {
+      catch (\Exception $e) {
         $context['results']['failed']++;
       }
 
       $context['results']['processed']++;
     }
 
-    // Determine the MIME types in this batch.
-    $mime_types = [];
-    foreach ($files as $file_data) {
-      if (isset($file_data['filemime']) && !in_array($file_data['filemime'], $mime_types)) {
-        $mime_types[] = $file_data['filemime'];
-      }
-    }
+    $processed = $context['results']['processed'];
+    $total = $context['results']['total'];
+    $percent = $total > 0 ? round(($processed / $total) * 100, 1) : 0;
 
-    // Create a description of the MIME types.
-    $mime_type_desc = count($mime_types) > 0
-      ? implode(', ', array_slice($mime_types, 0, 3)) . (count($mime_types) > 3 ? '...' : '')
-      : 'various types';
+    $elapsed = time() - $context['results']['start_time'];
+    $rate = $elapsed > 0 ? $processed / $elapsed : 0;
+    $remaining = $total - $processed;
+    $eta_seconds = $rate > 0 ? round($remaining / $rate) : 0;
+    $eta = static::formatDuration($eta_seconds);
 
-    // Update progress message.
-    $context['message'] = t('Processed @processed of @total files (@mime_type)', [
-      '@processed' => $context['results']['processed'],
-      '@total' => $context['results']['total'] ?? count($files),
-      '@mime_type' => $mime_type_desc,
+    $context['message'] = t('Processing (@percent%): @processed of @total files. Success: @succeeded, Failed: @failed, Skipped: @skipped. ETA: @eta', [
+      '@percent' => $percent,
+      '@processed' => number_format($processed),
+      '@total' => number_format($total),
+      '@succeeded' => number_format($context['results']['succeeded']),
+      '@failed' => number_format($context['results']['failed']),
+      '@skipped' => number_format($context['results']['skipped']),
+      '@eta' => $eta,
     ]);
+
+    if (!isset($context['sandbox']['progress'])) {
+      $context['sandbox']['progress'] = 0;
+      $context['sandbox']['max'] = $total;
+    }
+    $context['sandbox']['progress'] = $processed;
+    $context['finished'] = $total > 0 ? $processed / $total : 1;
   }
 
   /**
    * Finish batch processing.
-   *
-   * @param bool $success
-   *   Whether the batch completed successfully.
-   * @param array $results
-   *   The batch results.
-   * @param array $operations
-   *   The batch operations.
    */
   public static function finishBatch($success, array $results, array $operations) {
     $messenger = \Drupal::messenger();
 
+    $total_time = time() - ($results['start_time'] ?? time());
+    $time_desc = static::formatDuration($total_time);
+
     if ($success) {
-      $messenger->addStatus(t('Media migration completed.'));
-      $messenger->addStatus(t('Processed: @processed', ['@processed' => $results['processed']]));
-      $messenger->addStatus(t('Succeeded: @succeeded', ['@succeeded' => $results['succeeded']]));
-      $messenger->addStatus(t('Failed: @failed', ['@failed' => $results['failed']]));
-      $messenger->addStatus(t('Skipped: @skipped', ['@skipped' => $results['skipped']]));
-      $messenger->addStatus(t('References updated: @updated', ['@updated' => $results['references_updated'] ?? 0]));
+      $messenger->addStatus(t('Media migration completed successfully in @time!', [
+        '@time' => $time_desc,
+      ]));
+
+      $messenger->addStatus(t('Results: @processed files processed, @succeeded succeeded, @failed failed, @skipped skipped', [
+        '@processed' => number_format($results['processed'] ?? 0),
+        '@succeeded' => number_format($results['succeeded'] ?? 0),
+        '@failed' => number_format($results['failed'] ?? 0),
+        '@skipped' => number_format($results['skipped'] ?? 0),
+      ]));
+
+      if ($total_time > 0 && !empty($results['processed'])) {
+        $rate = round($results['processed'] / $total_time, 2);
+        $messenger->addStatus(t('Performance: @rate files per second', ['@rate' => $rate]));
+      }
+
     }
     else {
-      $messenger->addError(t('Media migration encountered an error.'));
+      $messenger->addError(t('Migration batch failed and could not complete.'));
+
+      if (!empty($results['processed'])) {
+        $messenger->addWarning(t('Partial results: @processed files were processed before the error occurred.', [
+          '@processed' => number_format($results['processed']),
+        ]));
+      }
     }
   }
 
   /**
-   * Check if a file already has a media entity.
-   *
-   * @param int $fid
-   *   The file ID.
-   *
-   * @return bool
-   *   TRUE if the file has a media entity, FALSE otherwise.
+   * Format duration in seconds to human-readable format.
    */
-  protected static function fileHasMediaEntity($fid) {
-    $database = \Drupal::database();
-
-    // Check if the file is referenced by a media entity.
-    $query = $database->select('media__field_media_image', 'mfmi')
-      ->fields('mfmi', ['entity_id'])
-      ->condition('mfmi.field_media_image_target_id', $fid)
-      ->range(0, 1);
-    $result = $query->execute()->fetchField();
-
-    if ($result) {
-      return TRUE;
+  protected static function formatDuration($seconds) {
+    if ($seconds < 60) {
+      return t('@seconds sec', ['@seconds' => $seconds]);
+    }
+    if ($seconds < 3600) {
+      $minutes = floor($seconds / 60);
+      $remaining_seconds = $seconds % 60;
+      return t('@minutes min @seconds sec', [
+        '@minutes' => $minutes,
+        '@seconds' => $remaining_seconds,
+      ]);
     }
 
-    // Check other media entity fields.
-    $fields = [
-      'media__field_media_audio_file' => 'field_media_audio_file_target_id',
-      'media__field_media_video_file' => 'field_media_video_file_target_id',
-      'media__field_media_file' => 'field_media_file_target_id',
-    ];
-
-    foreach ($fields as $table => $field) {
-      $query = $database->select($table, 'mf')
-        ->fields('mf', ['entity_id'])
-        ->condition('mf.' . $field, $fid)
-        ->range(0, 1);
-      $result = $query->execute()->fetchField();
-
-      if ($result) {
-        return TRUE;
-      }
-    }
-
-    return FALSE;
+    $hours = floor($seconds / 3600);
+    $remaining_minutes = floor(($seconds % 3600) / 60);
+    return t('@hours hr @minutes min', [
+      '@hours' => $hours,
+      '@minutes' => $remaining_minutes,
+    ]);
   }
 
 }

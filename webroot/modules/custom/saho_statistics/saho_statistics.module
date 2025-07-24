@@ -1,0 +1,82 @@
+<?php
+
+/**
+ * @file
+ * Contains hooks and functions for the SAHO Statistics module.
+ */
+
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\node\NodeInterface;
+use Drupal\taxonomy\TermInterface;
+
+/**
+ * Implements hook_help().
+ */
+function saho_statistics_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    case 'help.page.saho_statistics':
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('Provides statistics tracking and most popular content functionality.') . '</p>';
+      return $output;
+  }
+}
+
+/**
+ * Implements hook_theme_suggestions_HOOK_alter() for views-view.
+ */
+function saho_statistics_theme_suggestions_views_view_alter(array &$suggestions, array $variables) {
+  // We want to ensure our preprocess function runs for the classroom view template.
+  $view = $variables['view'];
+  if (isset($view) && $view->id() == 'classroom') {
+    $suggestions[] = 'views_view__classroom';
+  }
+}
+
+/**
+ * Implements hook_preprocess_views_view().
+ */
+function saho_statistics_preprocess_views_view(&$variables) {
+  $view = $variables['view'];
+
+  // Only act on the classroom view.
+  if (isset($view) && $view->id() == 'classroom') {
+    // Get popular terms from our service - getting terms from all vocabularies.
+    $popular_terms = \Drupal::service('saho_statistics.term_tracker')->getPopularTerms(10);
+
+    // Add them to template variables.
+    $variables['popular_terms'] = $popular_terms;
+  }
+}
+
+/**
+ * Implements hook_entity_view().
+ */
+function saho_statistics_entity_view(array &$build, EntityInterface $entity, $display, $view_mode) {
+  // Track page views for content entities.
+  if ($entity->getEntityTypeId() == 'node' && $view_mode == 'full') {
+    // Track the pageview using Drupal's core statistics module functionality.
+    if (\Drupal::moduleHandler()->moduleExists('statistics')) {
+      // We could track page views here, but we'll rely on Drupal's built-in
+      // statistics tracking instead of calling a specific function.
+      // @see statistics.module
+    }
+
+    // Track entity references for this node if applicable.
+    if ($entity instanceof NodeInterface && $entity->hasField('field_tags') && !$entity->get('field_tags')->isEmpty()) {
+      // We could add custom tracking logic here if needed.
+    }
+  }
+}
+
+/**
+ * Implements hook_entity_update().
+ */
+function saho_statistics_entity_update(EntityInterface $entity) {
+  // If a taxonomy term is updated, we may want to rebuild caches for related entities.
+  if ($entity instanceof TermInterface) {
+    // Clear cached statistics for this term.
+    \Drupal::service('saho_statistics.term_tracker')->clearCache();
+  }
+}

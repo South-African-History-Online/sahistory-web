@@ -4,7 +4,6 @@ namespace Drupal\tdih\Service;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
-use Drupal\node\NodeInterface;
 
 /**
  * Service to fetch nodes for "Today in History" logic.
@@ -148,6 +147,7 @@ class NodeFetcher {
    * Get all available months and days that have events.
    *
    * This method is used to populate the date picker with valid dates.
+   * Uses a direct database query for better performance with large datasets.
    *
    * @return array
    *   Array of month-day combinations that have events.
@@ -156,36 +156,36 @@ class NodeFetcher {
     $dates = [];
 
     try {
-      // Query for all published "event" nodes with a date field.
-      $query = $this->entityTypeManager->getStorage('node')->getQuery();
-      $nids = $query->condition('type', 'event')
-        ->condition('status', 1)
-        ->exists('field_this_day_in_history_3')
-        ->accessCheck(TRUE)
-        ->execute();
+      // Use database connection directly for better performance.
+      $database = \Drupal::database();
 
-      if ($nids) {
-        /** @var \Drupal\node\NodeInterface[] $nodes */
-        $nodes = $this->entityTypeManager->getStorage('node')->loadMultiple($nids);
-        foreach ($nodes as $node) {
-          // Check if the field exists and has a value.
-          if ($node instanceof NodeInterface && $node->hasField('field_this_day_in_history_3')) {
-            $field = $node->get('field_this_day_in_history_3');
-            if (!$field->isEmpty()) {
-              $date_value = $field->value;
-              // Extract month and day from the date value (format: YYYY-MM-DD).
-              if (preg_match('/\d{4}-(\d{2})-(\d{2})/', $date_value, $matches)) {
-                $month = $matches[1];
-                $day = $matches[2];
-                $month_day = "$month-$day";
-                if (!in_array($month_day, $dates)) {
-                  $dates[] = $month_day;
-                }
-              }
-            }
+      // Query to extract month and day from the date field.
+      $query = $database->select('node_field_data', 'n');
+      $query->join('node__field_this_day_in_history_3', 'f', 'n.nid = f.entity_id');
+      $query->fields('f', ['field_this_day_in_history_3_value']);
+      $query->condition('n.type', 'event')
+        ->condition('n.status', 1)
+        ->distinct();
+
+      $results = $query->execute()->fetchCol();
+
+      // Process the results to extract month-day combinations.
+      foreach ($results as $date_value) {
+        // Extract month and day from the date value (format: YYYY-MM-DD).
+        if (preg_match('/\d{4}-(\d{2})-(\d{2})/', $date_value, $matches)) {
+          $month = $matches[1];
+          $day = $matches[2];
+          $month_day = "$month-$day";
+          if (!in_array($month_day, $dates)) {
+            $dates[] = $month_day;
           }
         }
       }
+
+      // Log the number of unique dates found.
+      $this->logger->info('Found @count unique dates for TDIH date picker.', [
+        '@count' => count($dates),
+      ]);
     }
     catch (\Exception $e) {
       $this->logger->error('Error getting available dates: @message', [

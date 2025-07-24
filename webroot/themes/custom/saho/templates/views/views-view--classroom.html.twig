@@ -87,12 +87,20 @@
             <h3 class="h5 {{ section_text_class }} mt-4 mb-3">Key Topics</h3>
             <div class="saho-classroom-topics">
               <div class="d-flex flex-wrap">
-                <a href="/classroom/topics/apartheid" class="badge bg-secondary m-1 text-decoration-none">Apartheid</a>
-                <a href="/classroom/topics/colonialism" class="badge bg-secondary m-1 text-decoration-none">Colonialism</a>
-                <a href="/classroom/topics/freedom-struggle" class="badge bg-secondary m-1 text-decoration-none">Freedom Struggle</a>
-                <a href="/classroom/topics/democracy" class="badge bg-secondary m-1 text-decoration-none">Democracy</a>
-                <a href="/classroom/topics/culture" class="badge bg-secondary m-1 text-decoration-none">Culture</a>
-                <a href="/classroom/topics/heritage" class="badge bg-secondary m-1 text-decoration-none">Heritage</a>
+                {% if popular_terms is defined and popular_terms is not empty %}
+                  {# Display dynamically generated popular terms based on entity usage statistics #}
+                  {% for term in popular_terms %}
+                    <a href="{{ path('entity.taxonomy_term.canonical', {'taxonomy_term': term.id}) }}" class="badge bg-light border {{ section_border_class }} {{ section_text_class }} m-1 text-decoration-none">{{ term.label }}</a>
+                  {% endfor %}
+                {% else %}
+                  {# Fallback to hardcoded links if no popular terms are available #}
+                  <a href="/classroom/topics/apartheid" class="badge bg-light border {{ section_border_class }} {{ section_text_class }} m-1 text-decoration-none">Apartheid</a>
+                  <a href="/classroom/topics/colonialism" class="badge bg-light border {{ section_border_class }} {{ section_text_class }} m-1 text-decoration-none">Colonialism</a>
+                  <a href="/classroom/topics/freedom-struggle" class="badge bg-light border {{ section_border_class }} {{ section_text_class }} m-1 text-decoration-none">Freedom Struggle</a>
+                  <a href="/classroom/topics/democracy" class="badge bg-light border {{ section_border_class }} {{ section_text_class }} m-1 text-decoration-none">Democracy</a>
+                  <a href="/classroom/topics/culture" class="badge bg-light border {{ section_border_class }} {{ section_text_class }} m-1 text-decoration-none">Culture</a>
+                  <a href="/classroom/topics/heritage" class="badge bg-light border {{ section_border_class }} {{ section_text_class }} m-1 text-decoration-none">Heritage</a>
+                {% endif %}
               </div>
             </div>
           </div>

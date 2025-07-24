@@ -18,44 +18,9 @@
     {# LEFT: Main content column #}
     <div class="saho-main-content">
 
-      {% if node.field_feature_banner.entity %}
-        <div class="saho-feature-banner">
-          <img
-            src="{{ file_url(node.field_feature_banner.entity.uri.value) }}"
-            alt="{{ node.field_feature_banner.alt }}"
-            class="saho-feature-banner-image"
-          >
-        </div>
-      {% elseif node.field_tdih_image.entity %}
-        {# Display TDIH image in main content if no feature banner #}
-        <div class="saho-feature-banner">
-          <img
-            src="{{ file_url(node.field_tdih_image.entity.uri.value) }}"
-            alt="{{ node.field_tdih_image.alt }}"
-            class="saho-feature-banner-image"
-          >
-          {% if node.field_node_image_caption.value %}
-            <div class="caption">
-              {{ node.field_node_image_caption.value|raw }}
-            </div>
-          {% endif %}
-        </div>
-      {% elseif node.field_event_image.entity %}
-        {# Display event image in main content if no feature banner or TDIH image #}
-        <div class="saho-feature-banner">
-          <img
-            src="{{ file_url(node.field_event_image.entity.uri.value) }}"
-            alt="{{ node.field_event_image.alt }}"
-            class="saho-feature-banner-image"
-          >
-          {% if node.field_node_image_caption.value %}
-            <div class="caption">
-              {{ node.field_node_image_caption.value|raw }}
-            </div>
-          {% endif %}
-        </div>
-      {% endif %}
+      {# No feature banner or images in main content for TDIH events - images go to sidebar #}
 
+      {# Article metadata (Published/Updated dates) #}
       <div class="saho-article-meta">
         {% if node.getCreatedTime() %}
           <span>Published {{ node.getCreatedTime()|date("F j, Y") }}</span>
@@ -77,42 +42,24 @@
         </div>
       </div>
 
-      {# Event date information #}
-      <div class="saho-event-dates">
-        {% if node.field_this_day_in_history_date_2.value %}
-          <div class="saho-event-date primary">
-            <strong>This Day in History:</strong> {{ node.field_this_day_in_history_date_2.value|date("F j, Y") }}
-          </div>
-        {% endif %}
-        
-        {% if node.field_this_day_in_history_3.value %}
-          <div class="saho-event-date secondary">
-            <strong>Additional Date:</strong> {{ node.field_this_day_in_history_3.value|date("F j, Y") }}
-          </div>
-        {% endif %}
-        
-        {% if node.field_annual.value %}
-          <div class="saho-event-annual">
-            <strong>Annual Event:</strong> Yes
-          </div>
-        {% endif %}
-        
-        {% if content.field_event_type is defined and content.field_event_type|render|trim %}
-          <div class="saho-event-type">
-            <strong>Event Type:</strong> {{ content.field_event_type }}
-          </div>
-        {% endif %}
-      </div>
-
-      {% if content.body %}
-        <div class="saho-article-body">
-          {# Remove the label by accessing the content directly #}
-          {{ content.body.0 }}
+      {# Display styled "This Day in History" date #}
+      {% if node.field_this_day_in_history_date_2.value %}
+        <div class="saho-event-date" style="background-color: #f0f0f0; padding: 8px 12px; margin-bottom: 20px; display: inline-block;">
+          <strong>This Day in History:</strong> {{ node.field_this_day_in_history_date_2.value|date("F j, Y") }}
         </div>
       {% endif %}
 
+      {# Main content with ID for TOC linking #}
+      <div id="event-details" class="saho-article-body">
+        {% if content.body %}
+          {# Remove the label by accessing the content directly #}
+          {{ content.body.0 }}
+        {% endif %}
+      </div>
+
       {% if content.field_highlight %}
-        <div class="saho-highlight">
+        <div id="highlights" class="saho-highlight">
+          <h3>Highlights</h3>
           {{ content.field_highlight }}
         </div>
       {% endif %}
@@ -144,8 +91,8 @@
 
     </div>
 
-    {# RIGHT: Sidebar #}
-    {% if (node.field_tdih_image.entity or node.field_event_image.entity) and node.field_feature_banner.entity %}
+    {# RIGHT: Sidebar - always has content if there's an image #}
+    {% if node.field_tdih_image.entity or node.field_event_image.entity or node.field_feature_banner.entity %}
       {% set sidebar_has_content = true %}
     {% endif %}
     
@@ -184,7 +131,21 @@
     {% if sidebar_has_content %}
     <aside class="saho-article-sidebar">
 
-      {% if node.field_tdih_image.entity and node.field_feature_banner.entity %}
+      {# Always display images in sidebar - prioritize in order: feature banner, tdih image, event image #}
+      {% if node.field_feature_banner.entity %}
+        <div class="saho-image-block">
+          <img
+            src="{{ file_url(node.field_feature_banner.entity.uri.value) }}"
+            alt="{{ node.field_feature_banner.alt }}"
+            class="saho-image"
+          >
+          {% if node.field_node_image_caption.value %}
+            <div class="caption">
+              {{ node.field_node_image_caption.value|raw }}
+            </div>
+          {% endif %}
+        </div>
+      {% elseif node.field_tdih_image.entity %}
         <div class="saho-image-block">
           <img
             src="{{ file_url(node.field_tdih_image.entity.uri.value) }}"
@@ -197,7 +158,7 @@
             </div>
           {% endif %}
         </div>
-      {% elseif node.field_event_image.entity and node.field_feature_banner.entity %}
+      {% elseif node.field_event_image.entity %}
         <div class="saho-image-block">
           <img
             src="{{ file_url(node.field_event_image.entity.uri.value) }}"
@@ -212,71 +173,10 @@
         </div>
       {% endif %}
 
-      {% if accordion_views is not empty %}
-        <div class="accordion saho-accordion mb-5" id="sahoFeatureAccordion">
-          {% for item in accordion_views %}
-            <div class="accordion-item">
-              <h2 class="accordion-header" id="heading-{{ item.id }}">
-                <button class="accordion-button {% if not loop.first %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-{{ item.id }}" aria-expanded="{{ loop.first ? 'true' : 'false' }}" aria-controls="collapse-{{ item.id }}">
-                  {{ item.title }}
-                </button>
-              </h2>
-              <div id="collapse-{{ item.id }}" class="accordion-collapse collapse {% if loop.first %}show{% endif %}" aria-labelledby="heading-{{ item.id }}" data-bs-parent="#sahoFeatureAccordion">
-                <div class="accordion-body">
-                  {{ drupal_view(item.view, item.block, node.id()) }}
-                </div>
-              </div>
-            </div>
-          {% endfor %}
-        </div>
-      {% endif %}
-
-      {% if content.field_people_related_tab is defined and content.field_people_related_tab|render|trim %}
-        <div class="saho-taxonomy-group">
-          <h4>Related People</h4>
-          {{ content.field_people_related_tab }}
-        </div>
-      {% endif %}
-
-      {% if content.field_organizations_related_tab is defined and content.field_organizations_related_tab|render|trim %}
-        <div class="saho-taxonomy-group">
-          <h4>Related Organizations</h4>
-          {{ content.field_organizations_related_tab }}
-        </div>
-      {% endif %}
-
-      {% if content.field_topics_related_tab is defined and content.field_topics_related_tab|render|trim %}
-        <div class="saho-taxonomy-group">
-          <h4>Related Topics</h4>
-          {{ content.field_topics_related_tab }}
-        </div>
-      {% endif %}
-
-      {% if content.field_feature_parent is defined and content.field_feature_parent|render|trim %}
-        <div class="saho-taxonomy-group">
-          <h4>Related Content</h4>
-          {{ content.field_feature_parent }}
-        </div>
-      {% endif %}
-
-      {% if content.field_synopsis is defined and content.field_synopsis|render|trim %}
-        <div class="saho-synopsis">
-          <h4>Synopsis</h4>
-          {{ content.field_synopsis }}
-        </div>
-      {% endif %}
-
-      {% if content.field_further_reading is defined and content.field_further_reading|render|trim %}
-        <div class="saho-further-reading">
-          <h4>Further Reading</h4>
-          {{ content.field_further_reading }}
-        </div>
-      {% endif %}
-
       {# References block #}
       {% if node.field_ref_str.value %}
         {% set refs = node.field_ref_str.value|split('|') %}
-        <div class="saho-references">
+        <div id="references" class="saho-references">
           <h3>References</h3>
           <ul class="saho-reference-list">
             {% for ref in refs %}

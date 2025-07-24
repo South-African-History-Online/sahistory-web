@@ -1,0 +1,245 @@
+// Modern Header with Blur Effect
+// A sticky header with backdrop blur for a modern, translucent appearance
+
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  transition: all 0.3s ease;
+
+  &__wrapper {
+    background: rgba($aged-parchment, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid $border;
+    transition: all 0.3s ease;
+  }
+
+  &--scrolled {
+    .header__wrapper {
+      background: rgba($aged-parchment, 0.95);
+      box-shadow: 0 4px 30px rgba($dark-charcoal, 0.08);
+    }
+  }
+
+  &--dark {
+    .header__wrapper {
+      background: rgba($dark-bg-primary, 0.8);
+      border-bottom-color: rgba(255, 255, 255, 0.1);
+    }
+
+    &.header--scrolled {
+      .header__wrapper {
+        background: rgba($dark-bg-primary, 0.95);
+      }
+    }
+  }
+
+  &__container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.5rem;
+    
+    @media (min-width: 768px) {
+      padding: 1rem 2rem;
+    }
+    
+    @media (min-width: 1280px) {
+      padding: 1rem 3rem;
+    }
+  }
+
+  &__logo {
+    display: flex;
+    align-items: center;
+    
+    img {
+      height: 2.5rem;
+      width: auto;
+      
+      @media (min-width: 768px) {
+        height: 3rem;
+      }
+    }
+  }
+
+  &__nav {
+    display: none;
+    
+    @media (min-width: 1024px) {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    
+    @media (min-width: 768px) {
+      gap: 1rem;
+    }
+  }
+
+  &__search-toggle,
+  &__theme-toggle,
+  &__menu-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 0.5rem;
+    background: transparent;
+    color: $deep-heritage-red;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      background: rgba($deep-heritage-red, 0.1);
+      color: darken($deep-heritage-red, 10%);
+    }
+    
+    .header--dark & {
+      color: $dark-text-primary;
+      
+      &:hover {
+        background: rgba(255, 255, 255, 0.1);
+      }
+    }
+  }
+
+  &__menu-toggle {
+    @media (min-width: 1024px) {
+      display: none;
+    }
+  }
+}
+
+// Mobile Navigation
+.mobile-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  z-index: 100;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  
+  &--open {
+    opacity: 1;
+    visibility: visible;
+  }
+  
+  &__container {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 80%;
+    max-width: 400px;
+    height: 100%;
+    background: $aged-parchment;
+    box-shadow: -5px 0 30px rgba($dark-charcoal, 0.12);
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+    overflow-y: auto;
+    
+    .header--dark & {
+      background: $dark-bg-secondary;
+    }
+    
+    .mobile-nav--open & {
+      transform: translateX(0);
+    }
+  }
+  
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.5rem;
+    border-bottom: 1px solid $border;
+    
+    .header--dark & {
+      border-bottom-color: $dark-border;
+    }
+  }
+  
+  &__close {
+    width: 2.5rem;
+    height: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: transparent;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    color: $text-primary;
+    
+    &:hover {
+      background: rgba($deep-heritage-red, 0.1);
+      color: darken($deep-heritage-red, 10%);
+    }
+    
+    .header--dark & {
+      color: $dark-text-primary;
+      
+      &:hover {
+        background: rgba(255, 255, 255, 0.1);
+      }
+    }
+  }
+  
+  &__content {
+    padding: 1.5rem;
+  }
+  
+  &__nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  &__link {
+    display: block;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    color: $text-primary;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      background: rgba(0, 0, 0, 0.05);
+    }
+    
+    &--active {
+      background: rgba($primary, 0.1);
+      color: $primary;
+      font-weight: $font-weight-medium;
+    }
+    
+    .header--dark & {
+      color: $dark-text-primary;
+      
+      &:hover {
+        background: rgba(255, 255, 255, 0.1);
+      }
+      
+      &--active {
+        background: rgba($primary, 0.2);
+      }
+    }
+  }
+}
