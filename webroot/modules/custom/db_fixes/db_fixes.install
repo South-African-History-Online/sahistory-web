@@ -1,0 +1,73 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the db_fixes module.
+ */
+
+use Drupal\Core\Database\Database;
+
+/**
+ * Implements hook_install().
+ *
+ * Sets the initial schema version to prevent running update hooks
+ * that are included in the initial installation.
+ */
+function db_fixes_install() {
+  // Set the schema version to our latest update hook
+  // to indicate all previous updates are already "processed".
+  \Drupal::service('update.update_hook_registry')
+    ->setInstalledVersion('db_fixes', 11002);
+
+  // Fix the watchdog location column on installation.
+  $schema = Database::getConnection()->schema();
+  $spec = [
+    'type' => 'text',
+    'not null' => TRUE,
+    'description' => 'URL of the origin of the event.',
+  ];
+
+  try {
+    $schema->changeField('watchdog', 'location', 'location', $spec);
+  }
+  catch (\Exception $e) {
+    // Table might not exist yet or field might already be text.
+    \Drupal::logger('db_fixes')->notice('Could not update watchdog location field on install: @error', ['@error' => $e->getMessage()]);
+  }
+}
+
+/**
+ * Increase size of watchdog.location column to handle long URLs.
+ */
+function db_fixes_update_8002() {
+  $schema = Database::getConnection()->schema();
+
+  // Change the location column from its current type to text type.
+  $spec = [
+    'type' => 'text',
+    'not null' => TRUE,
+    'description' => 'URL of the origin of the event.',
+  ];
+
+  $schema->changeField('watchdog', 'location', 'location', $spec);
+
+  return t('Watchdog location column has been updated to text type to handle longer URLs.');
+}
+
+/**
+ * Increase size of watchdog.location column to handle long URLs for Drupal 11.
+ */
+function db_fixes_update_11002() {
+  $schema = Database::getConnection()->schema();
+
+  // Change the location column from its current type to text type.
+  $spec = [
+    'type' => 'text',
+    'not null' => TRUE,
+    'description' => 'URL of the origin of the event.',
+  ];
+
+  $schema->changeField('watchdog', 'location', 'location', $spec);
+
+  return t('Watchdog location column has been updated to text type to handle longer URLs in Drupal 11.');
+}
