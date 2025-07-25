@@ -11,6 +11,7 @@ dependencies:
     - image.style.default_bio_width_210_
     - image.style.lp_new
     - image.style.square_fit
+    - node.type.article
     - node.type.place
     - taxonomy.vocabulary.african_country
     - taxonomy.vocabulary.field_place_type
@@ -475,47 +476,7 @@ display:
         type: tag
         options: {  }
       empty: {  }
-      sorts:
-        sticky:
-          id: sticky
-          table: taxonomy_index
-          field: sticky
-          relationship: none
-          group_type: group
-          admin_label: ''
-          plugin_id: standard
-          order: DESC
-          expose:
-            label: ''
-            field_identifier: sticky
-          exposed: false
-        created:
-          id: created
-          table: taxonomy_index
-          field: created
-          relationship: none
-          group_type: group
-          admin_label: ''
-          plugin_id: date
-          order: DESC
-          expose:
-            label: ''
-            field_identifier: created
-          exposed: false
-          granularity: second
-        field_home_page_feature_value:
-          id: field_home_page_feature_value
-          table: node__field_home_page_feature
-          field: field_home_page_feature_value
-          relationship: none
-          group_type: group
-          admin_label: ''
-          plugin_id: standard
-          order: DESC
-          expose:
-            label: ''
-            field_identifier: field_home_page_feature_value
-          exposed: false
+      sorts: {  }
       arguments:
         term_node_tid_depth:
           id: term_node_tid_depth
@@ -1175,13 +1136,10 @@ display:
             title: All
           title_enable: true
           title: '{{ arguments.term_node_tid_depth }} '
-          default_argument_type: taxonomy_tid
+          default_argument_type: raw
           default_argument_options:
-            term_page: '1'
-            node: false
-            limit: false
-            vids: {  }
-            anyall: ','
+            index: 2
+            use_alias: false
           summary_options:
             base_path: ''
             count: true
@@ -1201,7 +1159,7 @@ display:
             operation: view
             multiple: 0
           break_phrase: true
-          depth: 2
+          depth: 3
           use_taxonomy_term_path: false
       filters:
         status:
@@ -1295,16 +1253,18 @@ display:
     display_options:
       title: 'Latest Articles '
       pager:
-        type: mini
+        type: full
         options:
           offset: 0
           pagination_heading_level: h4
-          items_per_page: 3
+          items_per_page: 30
           total_pages: null
           id: 0
           tags:
             next: ››
             previous: ‹‹
+            first: '« First'
+            last: 'Last »'
           expose:
             items_per_page: false
             items_per_page_label: 'Items per page'
@@ -1313,94 +1273,26 @@ display:
             items_per_page_options_all_label: '- All -'
             offset: false
             offset_label: Offset
-      arguments:
-        term_node_tid_depth:
-          id: term_node_tid_depth
+          quantity: 9
+      sorts:
+        created:
+          id: created
           table: node_field_data
-          field: term_node_tid_depth
+          field: created
           relationship: none
           group_type: group
           admin_label: ''
           entity_type: node
-          plugin_id: taxonomy_index_tid_depth
-          default_action: default
-          exception:
-            value: all
-            title_enable: false
-            title: All
-          title_enable: true
-          title: '{{ arguments.term_node_tid_depth }} '
-          default_argument_type: taxonomy_tid
-          default_argument_options:
-            term_page: '1'
-            node: false
-            limit: false
-            vids: {  }
-            anyall: ','
-          summary_options:
-            base_path: ''
-            count: true
-            override: false
-            items_per_page: 25
-          summary:
-            sort_order: asc
-            number_of_records: 0
-            format: default_summary
-          specify_validation: true
-          validate:
-            type: 'entity:taxonomy_term'
-            fail: 'not found'
-          validate_options:
-            bundles: {  }
-            access: false
-            operation: view
-            multiple: 0
-          break_phrase: true
-          depth: 2
-          use_taxonomy_term_path: false
-      filters:
-        langcode:
-          id: langcode
-          table: node_field_data
-          field: langcode
-          relationship: none
-          group_type: group
-          admin_label: ''
-          entity_type: node
-          entity_field: langcode
-          plugin_id: language
-          operator: in
-          value:
-            '***LANGUAGE_language_content***': '***LANGUAGE_language_content***'
-          group: 1
-          exposed: false
+          entity_field: created
+          plugin_id: date
+          order: DESC
           expose:
-            operator_id: ''
             label: ''
-            description: ''
-            use_operator: false
-            operator: ''
-            operator_limit_selection: false
-            operator_list: {  }
-            identifier: ''
-            required: false
-            remember: false
-            multiple: false
-            remember_roles:
-              authenticated: authenticated
-            reduce: false
-          is_grouped: false
-          group_info:
-            label: ''
-            description: ''
-            identifier: ''
-            optional: true
-            widget: select
-            multiple: false
-            remember: false
-            default_group: All
-            default_group_multiple: {  }
-            group_items: {  }
+            field_identifier: ''
+          exposed: false
+          granularity: second
+      arguments: {  }
+      filters:
         status:
           id: status
           table: taxonomy_index
@@ -1449,8 +1341,9 @@ display:
           entity_type: node
           entity_field: type
           plugin_id: bundle
-          operator: 'not in'
+          operator: in
           value:
+            article: article
             place: place
           group: 1
           exposed: false
@@ -1489,7 +1382,7 @@ display:
           group_type: group
           admin_label: ''
           plugin_id: taxonomy_index_tid
-          operator: not
+          operator: or
           value:
             32512: 32512
           group: 1
@@ -1537,10 +1430,13 @@ display:
       defaults:
         title: false
         pager: false
+        group_by: false
+        sorts: false
         arguments: false
         filters: false
         filter_groups: false
         header: false
+      group_by: false
       display_description: ''
       header:
         entity_taxonomy_term:
@@ -1566,7 +1462,7 @@ display:
           plugin_id: text
           empty: true
           content:
-            value: '<h2>Latest Content</h2>'
+            value: '<h2>[current-page:title]</h2>'
             format: full_html
           tokenize: false
       display_extenders: {  }
@@ -1576,7 +1472,6 @@ display:
       contexts:
         - 'languages:language_content'
         - 'languages:language_interface'
-        - url
         - url.query_args
         - 'user.node_grants:view'
         - user.permissions
