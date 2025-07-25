@@ -1135,6 +1135,23 @@ display:
     position: 1
     display_options:
       title: 'Latest Articles'
+      sorts:
+        changed:
+          id: changed
+          table: node_field_data
+          field: changed
+          relationship: none
+          group_type: group
+          admin_label: ''
+          entity_type: node
+          entity_field: changed
+          plugin_id: date
+          order: DESC
+          expose:
+            label: Date
+            field_identifier: changed
+          exposed: true
+          granularity: second
       arguments:
         term_node_tid_depth:
           id: term_node_tid_depth
@@ -1225,6 +1242,7 @@ display:
         options: {  }
       defaults:
         title: false
+        sorts: false
         arguments: false
         filters: false
         filter_groups: false
@@ -1253,6 +1271,8 @@ display:
         - 'languages:language_interface'
         - url
         - url.query_args
+        - 'url.query_args:sort_by'
+        - 'url.query_args:sort_order'
         - 'user.node_grants:view'
         - user.permissions
       tags:
@@ -1291,21 +1311,21 @@ display:
             offset_label: Offset
           quantity: 9
       sorts:
-        created:
-          id: created
+        changed:
+          id: changed
           table: node_field_data
-          field: created
+          field: changed
           relationship: none
           group_type: group
           admin_label: ''
           entity_type: node
-          entity_field: created
+          entity_field: changed
           plugin_id: date
           order: DESC
           expose:
-            label: ''
-            field_identifier: ''
-          exposed: false
+            label: Changed
+            field_identifier: changed
+          exposed: true
           granularity: second
       arguments: {  }
       filters:
@@ -1489,6 +1509,8 @@ display:
         - 'languages:language_content'
         - 'languages:language_interface'
         - url.query_args
+        - 'url.query_args:sort_by'
+        - 'url.query_args:sort_order'
         - 'user.node_grants:view'
         - user.permissions
       tags:
