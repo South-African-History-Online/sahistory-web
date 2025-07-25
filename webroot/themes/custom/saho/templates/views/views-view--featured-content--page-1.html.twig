@@ -1,0 +1,208 @@
+{#
+/**
+ * @file
+ * Template for the Featured Content page display.
+ *
+ * This template implements a modern card-based layout specifically for the Featured Content section,
+ * displaying articles, biographies, and places in an engaging grid layout.
+ *
+ * Available variables:
+ * - view: The view object.
+ * - rows: A list of the view's row items.
+ * - options: The view plugin style options.
+ * - title: The title of the view.
+ * - header: The view header.
+ * - footer: The view footer.
+ * - empty: The empty text to display if the view is empty.
+ * - pager: The pager output.
+ * - exposed: Exposed widget form/info to display.
+ * - feed_icons: Feed icons to display, if any.
+ * - more: An optional link to the next page of results.
+ * - totals: The total rows and pages.
+ * - rows_total: The total number of rows returned by the view.
+ * - attachment_before: An optional attachment view to be displayed before the view.
+ * - attachment_after: An optional attachment view to be displayed after the view.
+ * - dom_id: Unique id for every view being printed to give unique class for Javascript.
+ *
+ * @see template_preprocess_views_view()
+ */
+#}
+
+{# Define section-specific colors and classes #}
+{% set section_name = 'Featured' %}
+{% set section_colors = {
+  'Politics & Society': 'saho-deep-heritage-red',
+  'Art & Culture': 'saho-muted-gold',
+  'Biographies': 'saho-slate-blue',
+  'Africa': 'saho-faded-brick-red',
+  'Classroom': 'saho-deep-heritage-red',
+  'Places': 'saho-slate-blue',
+  'Timelines': 'saho-muted-gold',
+  'Archives': 'saho-dark-charcoal',
+  'Featured': 'saho-deep-heritage-red'
+} %}
+
+{% set section_color = section_colors[section_name] ?? 'saho-deep-heritage-red' %}
+{% set section_bg_class = 'bg-' ~ (section_color|replace({'saho-': ''})) %}
+{% set section_border_class = 'border-' ~ (section_color|replace({'saho-': ''})) %}
+{% set section_text_class = 'text-' ~ (section_color|replace({'saho-': ''})) %}
+
+{# Add modern card styling #}
+<style>
+  /* Featured Content Card Styling */
+  .featured-content-item {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border-radius: 8px;
+    overflow: hidden;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #e9ecef;
+  }
+  
+  .featured-content-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+  }
+  
+  .featured-content-item .featured-image {
+    transition: transform 0.5s ease;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    overflow: hidden;
+    height: 220px;
+    object-fit: cover;
+    width: 100%;
+  }
+  
+  .featured-content-item:hover .featured-image {
+    transform: scale(1.05);
+  }
+  
+  .featured-title {
+    font-size: 1.25rem;
+    margin-top: 0.5rem;
+    line-height: 1.4;
+  }
+  
+  .featured-subtitle {
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.05em;
+    color: #6c757d;
+    margin-bottom: 0.25rem;
+  }
+  
+  .featured-text-container {
+    padding: 1.25rem;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .saho-featured-content-view .row {
+    margin-left: -15px;
+    margin-right: -15px;
+  }
+  
+  .saho-featured-content-view .col {
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+  
+  .featured-page-header {
+    position: relative;
+    margin-bottom: 2rem;
+  }
+  
+  .featured-page-header::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background-color: #c00;
+    border-radius: 2px;
+  }
+</style>
+
+<div{{ attributes.addClass('saho-landing-page', 'view-' ~ view.id|clean_class) }}>
+  
+  {# Hero Section with enhanced title styling #}
+  <section class="saho-landing-hero mb-5">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-12">
+          <div class="featured-page-header">
+            <p class="lead">Explore featured content from South African History Online, showcasing important articles, biographies, and places.</p>
+          </div>
+          
+          {% if header %}
+            <div class="saho-landing-description mb-4">
+              {{ header }}
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  {# Main Content Section #}
+  <section class="saho-landing-content mb-5">
+    <div class="container">
+      <div class="row">
+        
+        {# Main content grid #}
+        <div class="col-12">
+          {% if rows_total is defined and rows_total > 0 %}
+            <p class="text-muted mb-4">Showing {{ rows_total }} results</p>
+          {% endif %}
+          
+          {% if rows %}
+            {{ rows }}
+          {% elseif empty %}
+            <div class="saho-landing-empty alert alert-info">
+              {{ empty }}
+            </div>
+          {% endif %}
+          
+          {% if pager %}
+            <div class="saho-landing-pager mt-4">
+              {{ pager }}
+            </div>
+          {% endif %}
+          
+          {% if more %}
+            <div class="saho-landing-more mt-4 text-center">
+              {{ more }}
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  {# Additional Content Section - Attachments #}
+  {% if attachment_after %}
+    <section class="saho-landing-additional py-4 mb-5 bg-light">
+      <div class="container">
+        <h2 class="h3 mb-4 {{ section_text_class }}">More to Explore</h2>
+        <div class="saho-additional-content">
+          {{ attachment_after }}
+        </div>
+      </div>
+    </section>
+  {% endif %}
+  
+  {# Call to Action Section #}
+  <section class="saho-landing-cta py-5 {{ section_bg_class }}">
+    <div class="container text-center">
+      <h2 class="h3 text-white mb-3">Explore Our Collections</h2>
+      <p class="text-white mb-4">Discover more content in our extensive collection of articles, biographies, and historical places.</p>
+      <a href="/featured/all" class="btn btn-light {{ section_text_class }} px-4 py-2">
+        <span class="me-2">✦</span> View All Featured Content
+      </a>
+    </div>
+  </section>
+</div>
