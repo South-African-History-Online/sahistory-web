@@ -1,9 +1,30 @@
+# Keep your existing services:
 services:
   saho_media_migration.migrator:
     class: Drupal\saho_media_migration\Service\MediaMigrationService
     arguments: ['@entity_type.manager', '@database', '@file_system', '@logger.factory', '@messenger']
     
+  saho_media_migration.file_path_resolver:
+    class: Drupal\saho_media_migration\Service\FilePathResolver
+    arguments: ['@file_system', '@logger.factory']
+    
   saho_media_migration.direct_commands:
     class: Drupal\saho_media_migration\Commands\DirectCommands
+    tags:
+      - { name: drush.command }
+      
+  saho_media_migration.file_path_commands:
+    class: Drupal\saho_media_migration\Commands\FilePathCommands
+    arguments: ['@database', '@entity_type.manager', '@file_system', '@saho_media_migration.file_path_resolver']
+    tags:
+      - { name: drush.command }
+
+  saho_media_migration.file_mapping:
+    class: Drupal\saho_media_migration\Service\FileMappingService
+    arguments: ['@database', '@file_system', '@logger.factory']
+    
+  saho_media_migration.mapping_commands:
+    class: Drupal\saho_media_migration\Commands\FileMappingCommands
+    arguments: ['@saho_media_migration.file_mapping', '@database']
     tags:
       - { name: drush.command }
