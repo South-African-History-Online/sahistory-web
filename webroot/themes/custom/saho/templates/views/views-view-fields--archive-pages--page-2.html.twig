@@ -1,0 +1,196 @@
+{#
+/**
+ * @file
+ * Modern card template for collection items display.
+ * 
+ * Available variables:
+ * - fields: Field objects for the current row
+ * - attributes: HTML attributes for the field container
+ */
+#}
+
+{# Add styles for archive item cards #}
+<style>
+  /* Archive item card styling */
+  .archive-item-card-link {
+    display: block;
+    height: 100%;
+    color: inherit;
+    transition: all 0.3s ease;
+  }
+  
+  .archive-item-card-link:hover,
+  .archive-item-card-link:focus {
+    text-decoration: none;
+    color: inherit;
+    transform: translateY(-5px);
+  }
+  
+  .archive-item-card-link:hover .archive-item-card,
+  .archive-item-card-link:focus .archive-item-card {
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+  }
+  
+  .archive-item-card {
+    height: 100%;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    overflow: hidden;
+    transition: box-shadow 0.3s ease;
+    margin-bottom: 20px;
+  }
+  
+  .card-image-wrapper {
+    position: relative;
+    padding-top: 66%; /* 2:3 aspect ratio */
+    overflow: hidden;
+    background: #f5f7fa;
+  }
+  
+  .card-image-wrapper img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+  }
+  
+  .card-label {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: #B22222;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: none;
+    letter-spacing: 0.5px;
+  }
+  
+  .card-content {
+    padding: 20px;
+  }
+  
+  .card-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 10px;
+    line-height: 1.4;
+  }
+  
+  .card-category {
+    display: block;
+    font-size: 0.85rem;
+    color: #6c757d;
+    margin-bottom: 16px;
+    font-weight: normal;
+  }
+  
+  .view-resource-btn {
+    display: inline-block;
+    padding: 5px 15px;
+    border: 1px solid #B22222;
+    border-radius: 20px;
+    color: #B22222;
+    font-size: 0.9rem;
+    text-decoration: none;
+    transition: all 0.3s ease;
+  }
+  
+  .archive-item-card-link:hover .view-resource-btn,
+  .archive-item-card-link:focus .view-resource-btn {
+    background-color: #B22222;
+    color: white;
+  }
+  
+  .card-placeholder-image {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    font-size: 3rem;
+    color: rgba(255,255,255,0.7);
+  }
+</style>
+
+{# Get URL from the title field which has link_to_entity: true #}
+{% set entity_url = '#' %}
+{% if fields.title is defined %}
+  {% set content = fields.title.content %}
+  {% if content matches '/<a href="([^"]+)"/' %}
+    {% set matches = content|split('href="')|last|split('"') %}
+    {% if matches|length > 0 %}
+      {% set entity_url = matches[0] %}
+    {% endif %}
+  {% endif %}
+{% endif %}
+
+{# Get title from title field #}
+{% set title_text = '' %}
+{% if fields.title is defined %}
+  {% set title_text = fields.title.content|striptags|trim %}
+{% endif %}
+
+{# Get media type from field_media_library_type field #}
+{% set media_type = '' %}
+{% if fields.field_media_library_type is defined %}
+  {% set media_type = fields.field_media_library_type.content|striptags|trim %}
+{% endif %}
+
+{# Get category if available #}
+{% set category = '' %}
+{% if fields.field_category is defined %}
+  {% set category = fields.field_category.content|striptags|trim %}
+{% endif %}
+
+<div class="archive-item-container mb-4">
+  {# Make the entire card a link #}
+  <a href="{{ entity_url }}" class="archive-item-card-link" aria-label="View resource details">
+    <div class="archive-item-card">
+      {# Card Image Area #}
+      <div class="card-image-wrapper">
+        {# Check for all possible image fields in order of priority #}
+        {% if fields.field_archive_image is defined and fields.field_archive_image.content %}
+          {{ fields.field_archive_image.content }}
+        {% elseif fields.field_article_image is defined and fields.field_article_image.content %}
+          {{ fields.field_article_image.content }}
+        {% elseif fields.field_bio_pic is defined and fields.field_bio_pic.content %}
+          {{ fields.field_bio_pic.content }}
+        {% elseif fields.field_image is defined and fields.field_image.content %}
+          {{ fields.field_image.content }}
+        {% elseif fields.field_thumbnail is defined and fields.field_thumbnail.content %}
+          {{ fields.field_thumbnail.content }}
+        {% else %}
+          <div class="card-placeholder-image">
+            <i class="fas fa-file-alt"></i>
+          </div>
+        {% endif %}
+        
+        {# Card Label/Badge - match archives styling #}
+        <div class="card-label">Document</div>
+      </div>
+      
+      {# Card Content - match archives styling #}
+      <div class="card-content">
+        {# Title #}
+        <div class="card-title">{{ title_text }}</div>
+        
+        {# Category/Type #}
+        {% if category %}
+          <span class="card-category">Category: {{ category }}</span>
+        {% elseif media_type %}
+          <span class="card-category">Type: {{ media_type }}</span>
+        {% endif %}
+        
+        {# View Resource Button - match archives styling #}
+        <span class="view-resource-btn">View Resource</span>
+      </div>
+    </div>
+  </a>
+</div>
