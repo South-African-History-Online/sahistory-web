@@ -1,0 +1,189 @@
+{#
+/**
+ * @file
+ * Modern card template for collections view - simplified layout per feedback.
+ * 
+ * Available variables:
+ * - fields: Field objects for the current row
+ * - attributes: HTML attributes for the field container
+ */
+#}
+
+{# Add styles for collection cards #}
+<style>
+  /* Collection card styling */
+  .collection-card-link {
+    display: block;
+    height: 100%;
+    color: inherit;
+    transition: all 0.3s ease;
+  }
+  
+  .collection-card-link:hover,
+  .collection-card-link:focus {
+    text-decoration: none;
+    color: inherit;
+    transform: translateY(-5px);
+  }
+  
+  .collection-card-link:hover .collection-card,
+  .collection-card-link:focus .collection-card {
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+  }
+  
+  .collection-card {
+    height: 100%;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    overflow: hidden;
+    transition: box-shadow 0.3s ease;
+  }
+  
+  .card-image-wrapper {
+    position: relative;
+    height: 180px;
+    overflow: hidden;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  }
+  
+  .card-image-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
+  }
+  
+  .card-label {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: rgba(178, 34, 34, 0.9);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  
+  .card-content {
+    padding: 20px;
+  }
+  
+  .card-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 8px;
+  }
+  
+  .archive-count {
+    display: block;
+    font-size: 0.9rem;
+    color: #6c757d;
+    margin-bottom: 16px;
+  }
+  
+  .view-collection-btn {
+    display: inline-block;
+    padding: 5px 15px;
+    border: 1px solid #B22222;
+    border-radius: 20px;
+    color: #B22222;
+    font-size: 0.9rem;
+    text-decoration: none;
+    transition: all 0.3s ease;
+  }
+  
+  .collection-card-link:hover .view-collection-btn,
+  .collection-card-link:focus .view-collection-btn {
+    background-color: #B22222;
+    color: white;
+  }
+  
+  .card-placeholder-image {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    font-size: 3rem;
+    color: rgba(255,255,255,0.7);
+  }
+</style>
+
+{# CRITICAL: Get URL from the title_2 field which has link_to_entity: true #}
+{% set entity_url = '#' %}
+{% if fields.title_2 is defined %}
+  {% set content = fields.title_2.content %}
+  {% if content matches '/<a href="([^"]+)"/' %}
+    {% set matches = content|split('href="')|last|split('"') %}
+    {% if matches|length > 0 %}
+      {% set entity_url = matches[0] %}
+    {% endif %}
+  {% endif %}
+{% endif %}
+
+{# Fallbacks for URL if not found in title_2 #}
+{% if entity_url == '#' and fields.path is defined %}
+  {% set entity_url = fields.path.content|striptags|trim %}
+{% elseif entity_url == '#' and fields.title.content is defined %}
+  {% set content = fields.title.content %}
+  {% if content matches '/<a href="([^"]+)"/' %}
+    {% set matches = content|split('href="')|last|split('"') %}
+    {% if matches|length > 0 %}
+      {% set entity_url = matches[0] %}
+    {% endif %}
+  {% endif %}
+{% endif %}
+
+{# Get title from title_2 field as per view config #}
+{% set title_text = '' %}
+{% if fields.title_2 is defined %}
+  {% set title_text = fields.title_2.content|striptags|trim %}
+{% endif %}
+
+{# Get count from title_1 field which has group_type: count #}
+{% set count = '' %}
+{% if fields.title_1 is defined %}
+  {% set count = fields.title_1.content|striptags|trim %}
+{% endif %}
+
+{# Make the entire card a link #}
+<a href="{{ entity_url }}" class="collection-card-link" aria-label="View collection details">
+  <div class="collection-card">
+    {# Card Image Area #}
+    <div class="card-image-wrapper">
+      {# Image (if available) #}
+      {% if fields.field_archive_image is defined and fields.field_archive_image.content %}
+        {{ fields.field_archive_image.content }}
+      {% elseif fields.field_article_image is defined and fields.field_article_image.content %}
+        {{ fields.field_article_image.content }}
+      {% elseif fields.field_bio_pic is defined and fields.field_bio_pic.content %}
+        {{ fields.field_bio_pic.content }}
+      {% elseif fields.field_image is defined and fields.field_image.content %}
+        {{ fields.field_image.content }}
+      {% else %}
+        <div class="card-placeholder-image">
+          <i class="fas fa-archive"></i>
+        </div>
+      {% endif %}
+      
+      {# Card Label/Badge #}
+      <div class="card-label">Collection</div>
+    </div>
+    
+    {# Card Content - Simplified as requested #}
+    <div class="card-content">
+      {# Title from title_2 field #}
+      <div class="card-title">{{ title_text }}</div>
+      
+      {# Count from title_1 field #}
+      <span class="archive-count">{{ count }} archive items</span>
+      
+      {# View Collection Button #}
+      <span class="view-collection-btn">View collection</span>
+    </div>
+  </div>
+</a>
