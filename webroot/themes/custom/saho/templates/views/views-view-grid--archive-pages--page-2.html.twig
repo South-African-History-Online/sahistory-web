@@ -3,9 +3,8 @@
  * @file
  * Grid template for archive collections page.
  *
- * This template extends the default grid template to add support for image
- * placeholders and improve the presentation of archive items to match the style
- * used across other entity overview pages.
+ * This template provides a responsive grid layout for archive items
+ * while preserving the distinctive archive card styling.
  *
  * Available variables:
  * - options: The grid plugin options (e.g. columns, alignment, row_class_default, col_class_default).
@@ -25,7 +24,6 @@
 {% set section_text_class = 'saho-text-dark-charcoal' %}
 {% set section_border_class = 'saho-border-dark-charcoal' %}
 {% set section_bg_class = 'bg-dark-charcoal' %}
-{% set placeholder_class = 'archives' %}
 
 {# Set up grid classes #}
 {% set grid_classes = [
@@ -37,31 +35,41 @@
   'g-4'
 ] %}
 
-{# Add custom styles for hover effects and placeholder backgrounds #}
+{# Add custom styles for archive cards #}
 <style>
-  .saho-grid-item {
+  .archive-card {
     transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    border: none;
+    overflow: hidden;
+    height: 100%;
   }
-  .saho-grid-item:hover {
+  .archive-card:hover {
     transform: translateY(-5px);
     box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
   }
-  .saho-grid-item .card-img-top-wrapper img,
-  .saho-grid-item .saho-placeholder {
-    transition: transform 0.5s ease;
-    transform-origin: center;
+  .archive-card-header {
+    height: 40px;
+    background-color: #dc3545; /* Bootstrap danger color */
   }
-  .saho-grid-item:hover .card-img-top-wrapper img,
-  .saho-grid-item:hover .saho-placeholder {
-    transform: scale(1.05);
+  .bg-dark-red {
+    background-color: #8B0000;
   }
-  .card-img-top-wrapper {
-    overflow: hidden;
+  .archive-banner {
+    font-size: 0.9rem;
+    letter-spacing: 1px;
   }
-  
-  /* Placeholder background for archives */
-  .saho-placeholder--archives {
-    background-color: var(--saho-dark-charcoal, #3C3C3C);
+  .document-preview {
+    min-height: 150px;
+  }
+  .read-more {
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #dc3545;
+  }
+  .read-more:hover {
+    text-decoration: underline;
   }
 </style>
 
@@ -71,17 +79,11 @@
       {% if column.content %}
         {# Try different ways to access the node entity #}
         {% set node = false %}
-        {% set fields = false %}
-        {% set title = false %}
-        {% set body = false %}
-        {% set image = false %}
         {% set url = false %}
-        {% set date = false %}
-        {% set content_type = 'Archive' %}
+        {% set title = false %}
         
         {# Debug available variables #}
         {% if column.content['#row'] is defined %}
-          {% set fields = column.content['#row']._entity.fields %}
           {% set node = column.content['#row']._entity %}
         {% elseif column.content['#node'] is defined %}
           {% set node = column.content['#node'] %}
@@ -92,10 +94,6 @@
           {% set title = column.content['#view'].field.title.getValue(column.content['#row']) %}
         {% endif %}
         
-        {% if column.content['#view'].field.body is defined %}
-          {% set body = column.content['#view'].field.body.getValue(column.content['#row']) %}
-        {% endif %}
-        
         {# Render content for fallback #}
         {% set content_html = column.content|render %}
         
@@ -104,25 +102,14 @@
           {% if not title %}
             {% set title = node.label() %}
           {% endif %}
-          {% set content_type = node.bundle()|capitalize %}
           {% set url = path('entity.node.canonical', {'node': node.id()}) %}
-          {% set date = node.getCreatedTime()|date('M d, Y') %}
-          
-          {# Try to get body/synopsis from node #}
-          {% if node.hasField('field_synopsis') and not node.get('field_synopsis').isEmpty() %}
-            {% set body = node.get('field_synopsis').value %}
-          {% elseif node.hasField('body') and not node.get('body').isEmpty() %}
-            {% set body = node.get('body').value %}
-          {% endif %}
-          
-          {# Try to get image from node and store the field name #}
-          {% set image_field = false %}
-          {% if node.hasField('field_image') and not node.get('field_image').isEmpty() %}
-            {% set image_field = 'field_image' %}
-          {% elseif node.hasField('field_article_image') and not node.get('field_article_image').isEmpty() %}
-            {% set image_field = 'field_article_image' %}
-          {% elseif node.hasField('field_archive_image') and not node.get('field_archive_image').isEmpty() %}
-            {% set image_field = 'field_archive_image' %}
+        {% endif %}
+        
+        {# Extract URL from rendered content as fallback #}
+        {% if not url and '<a' in content_html and 'href="' in content_html %}
+          {% set url_match = content_html|split('href="')|last|split('"')|first %}
+          {% if url_match %}
+            {% set url = url_match %}
           {% endif %}
         {% endif %}
         
@@ -141,185 +128,28 @@
           {% endif %}
         {% endif %}
         
-        {# Extract URL from rendered content as fallback #}
-        {% if not url and '<a' in content_html and 'href="' in content_html %}
-          {% set url_match = content_html|split('href="')|last|split('"')|first %}
-          {% if url_match %}
-            {% set url = url_match %}
-          {% endif %}
-        {% endif %}
-        
-        {# Extract body from rendered content as fallback #}
-        {% if not body and ('field--name-body' in content_html or '<p>' in content_html) %}
-          {% set body_match = content_html|split('<p')|last|split('</p>')|first|split('>') %}
-          {% if body_match|length > 1 %}
-            {% set body = body_match[1]|striptags|trim %}
-          {% endif %}
-        {% endif %}
-        
-        {# Check for image in rendered content #}
-        {% if not image and '<img' in content_html %}
-          {% set image = true %}
-        {% endif %}
-        
-        {# Extract date from rendered content as fallback #}
-        {% if not date and '<time' in content_html %}
-          {% set date_match = content_html|split('<time')|last|split('</time>')|first|split('>') %}
-          {% if date_match|length > 1 %}
-            {% set date = date_match[1]|striptags|trim %}
-          {% endif %}
-        {% endif %}
-        
-        <div class="col">
-          <div class="saho-grid-item card h-100 shadow-sm position-relative">
-            
-            {# Card image or placeholder #}
-            <div class="card-img-top-wrapper position-relative">
-              {% set has_image = false %}
-              {% set image_content = null %}
-              {% set image_url = null %}
-              
-              {# Method 1: Use the image_field directly from the node if available #}
-              {% if node and image_field %}
-                {% set file_entity = node.get(image_field).entity %}
-                {% if file_entity %}
-                  {% set image_url = file_url(file_entity.uri.value) %}
-                  {% set has_image = true %}
-                {% endif %}
-              {% endif %}
-              
-              {# Method 2: Check for all possible image fields as rendered content #}
-              {% if not has_image %}
-                {% set image_fields = [
-                  'field_archive_image',
-                  'field_image',
-                  'field_article_image'
-                ] %}
-                
-                {# Check each possible image field #}
-                {% for field_name in image_fields %}
-                  {% if not has_image and column.content[field_name] is defined %}
-                    {% set field_content = column.content[field_name]|render %}
-                    {% if field_content|trim is not empty %}
-                      {% if '<img' in field_content %}
-                        {% set image_content = column.content[field_name] %}
-                        {% set has_image = true %}
-                      {% elseif 'http' in field_content and ('.jpg' in field_content or '.png' in field_content or '.gif' in field_content or '.jpeg' in field_content) %}
-                        {% set image_url = field_content|striptags|trim %}
-                        {% set has_image = true %}
-                      {% endif %}
-                    {% endif %}
-                  {% endif %}
-                {% endfor %}
-              {% endif %}
-              
-              {# Method 3: Check for image URLs in the rendered content #}
-              {% if not has_image and content_html|trim %}
-                {% set found_url = false %}
-                
-                {# First try to find image URLs in src attributes #}
-                {% if '<img' in content_html and 'src="' in content_html %}
-                  {% set img_parts = content_html|split('<img') %}
-                  {% for img_part in img_parts %}
-                    {% if not found_url and 'src="' in img_part %}
-                      {% set src = img_part|split('src="')|last|split('"')|first %}
-                      {% if src|trim is not empty and ('http' in src or '/' in src) %}
-                        {% set image_url = src %}
-                        {% set has_image = true %}
-                        {% set found_url = true %}
-                      {% endif %}
-                    {% endif %}
-                  {% endfor %}
-                {% endif %}
-                
-                {# Then try to find any URLs that look like images #}
-                {% if not found_url %}
-                  {% set url_matches = content_html|split('http')|slice(1) %}
-                  {% for url_part in url_matches %}
-                    {% if not found_url %}
-                      {% set url = 'http' ~ url_part|split('"')|first|split("'")|first|split(' ')|first|split('<')|first %}
-                      {% if '.jpg' in url or '.png' in url or '.gif' in url or '.jpeg' in url or '.svg' in url or 'image' in url %}
-                        {% set image_url = url %}
-                        {% set has_image = true %}
-                        {% set found_url = true %}
-                      {% endif %}
-                    {% endif %}
-                  {% endfor %}
-                {% endif %}
-                
-                {# Finally check for relative URLs #}
-                {% if not found_url %}
-                  {% set url_matches = content_html|split('src="/')|slice(1) %}
-                  {% for url_part in url_matches %}
-                    {% if not found_url %}
-                      {% set url = '/' ~ url_part|split('"')|first %}
-                      {% if '.jpg' in url or '.png' in url or '.gif' in url or '.jpeg' in url or '.svg' in url or 'image' in url %}
-                        {% set image_url = url %}
-                        {% set has_image = true %}
-                        {% set found_url = true %}
-                      {% endif %}
-                    {% endif %}
-                  {% endfor %}
-                {% endif %}
-              {% endif %}
-              
-              {# Display image, URL as image, or placeholder #}
-              {% if has_image %}
-                <div class="card-img-top" style="height: 180px; overflow: hidden;">
-                  {% if image_content %}
-                    {{ image_content }}
-                  {% elseif image_url %}
-                    <img src="{{ image_url }}" alt="{{ title ?? 'Archive item' }}" class="img-fluid w-100 h-100" style="object-fit: cover;">
-                  {% endif %}
-                </div>
-              {% else %}
-                <div class="saho-placeholder saho-placeholder--{{ placeholder_class }} card-img-top"
-                     data-section="{{ section_name }}"
-                     style="height: 180px;">
-                </div>
-              {% endif %}
-              
-              <span class="badge {{ section_bg_class }} position-absolute top-0 end-0 m-2">
-                {{ content_type }}
-              </span>
+        <div class="col mb-4">
+          {# Archive card with the distinctive archive styling #}
+          <div class="archive-card card">
+            {# Red header with archive badge #}
+            <div class="archive-card-header p-0 position-relative">
+              <span class="badge bg-danger position-absolute top-0 end-0 m-2">Archive</span>
             </div>
             
-            <div class="card-body">
-              {# Date - moved above title as per site standard #}
-              {% if date %}
-                <div class="mb-2">
-                  <small class="text-muted">{{ date }}</small>
-                </div>
-              {% endif %}
-              
-              {# Title #}
-              <h3 class="card-title h5 {{ section_text_class }}">
-                {% if title %}
-                  {{ title }}
-                {% else %}
-                  Archive Item
-                {% endif %}
-              </h3>
-              
-              {# Summary #}
-              <p class="card-text">
-                {% if body %}
-                  {{ body|striptags|trim|slice(0, 120) ~ (body|striptags|trim|length > 120 ? '...' : '') }}
-                {% else %}
-                  <span class="text-muted">Explore this archive item to discover historical documents and resources.</span>
-                {% endif %}
-              </p>
-              {# Stretched link covers the card for easy clicking #}
-              <a href="{{ node ? path('entity.node.canonical', {'node': node.id()}) : (url ? url : '#') }}" class="stretched-link"></a>
+            {# Dark red ARCHIVE banner #}
+            <div class="archive-banner bg-dark-red text-white text-center py-2">
+              <strong>ARCHIVE</strong>
             </div>
             
-            <div class="card-footer bg-white border-top-0 d-flex justify-content-end align-items-center">
-              <a href="{{ node ? path('entity.node.canonical', {'node': node.id()}) : (url ? url : '#') }}" 
-                 class="btn btn-sm bg-dark-charcoal text-white px-3 py-2 saho-read-more-btn">
-                <span class="me-1">Read more</span>
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-arrow-right" viewBox="0 0 16 16">
-                  <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/>
-                </svg>
+            {# Document preview area #}
+            <div class="document-preview p-3">
+              {{ column.content }}
+            </div>
+            
+            {# Read more link at the bottom right #}
+            <div class="read-more-wrapper text-end p-2">
+              <a href="{{ node ? path('entity.node.canonical', {'node': node.id()}) : (url ? url : '#') }}" class="read-more">
+                Read more →
               </a>
             </div>
           </div>
