@@ -188,4 +188,164 @@ class DirectCommands extends DrushCommands {
     }
   }
 
+  /**
+   * Build comprehensive file mapping database.
+   *
+   * @command saho:build-mapping
+   * @aliases sbm
+   * @usage saho:build-mapping
+   *   Scan all archive directories and build file mapping database
+   */
+  public function buildMapping() {
+    $this->output()->writeln('🔍 Building comprehensive file mapping database...');
+    $this->output()->writeln('');
+    
+    try {
+      $service = \Drupal::service('saho_media_migration.file_mapping');
+      $mapping = $service->buildFileMapping();
+      $total_files = array_sum(array_map('count', $mapping));
+      
+      $this->output()->writeln('✅ File mapping built successfully!');
+      $this->output()->writeln("📁 Total files mapped: " . number_format($total_files));
+      $this->output()->writeln("🗂️  Unique filenames: " . number_format(count($mapping)));
+      $this->output()->writeln('');
+      $this->output()->writeln('💡 You can now use other commands to fix file references.');
+    } catch (\Exception $e) {
+      $this->output()->writeln('❌ Error: ' . $e->getMessage());
+    }
+  }
+
+  /**
+   * Fix article images with "file uploads" pattern.
+   *
+   * @command saho:fix-article-images
+   * @aliases sfai
+   * @option dry-run Show what would be changed without making changes
+   * @option limit Maximum number of nodes to process
+   * @usage saho:fix-article-images --dry-run
+   *   Preview changes without applying them
+   */
+  public function fixArticleImages($options = ['dry-run' => FALSE, 'limit' => 100]) {
+    $dry_run = $options['dry-run'];
+    $limit = (int) $options['limit'];
+    
+    $this->output()->writeln('🖼️  ' . ($dry_run ? 'PREVIEWING' : 'FIXING') . ' article image references...');
+    $this->output()->writeln('');
+    
+    try {
+      $service = \Drupal::service('saho_media_migration.file_mapping');
+      $results = $service->fixArticleImagePaths($dry_run, $limit);
+      
+      $this->output()->writeln('📊 Results:');
+      $this->output()->writeln("   Processed: {$results['processed']} nodes");
+      $this->output()->writeln("   Fixed: {$results['fixed']} nodes");
+      
+      if ($dry_run && $results['fixed'] > 0) {
+        $this->output()->writeln('');
+        $this->output()->writeln('💡 Run without --dry-run to apply these changes.');
+      } elseif ($results['fixed'] > 0) {
+        $this->output()->writeln('');
+        $this->output()->writeln('✅ Article image references updated!');
+        $this->output()->writeln('💡 Clear caches: drush cache:rebuild');
+      }
+    } catch (\Exception $e) {
+      $this->output()->writeln('❌ Error: ' . $e->getMessage());
+    }
+  }
+
+  /**
+   * Fix DISA PDF references with symlinks.
+   *
+   * @command saho:fix-disa-pdfs
+   * @aliases sfdp
+   * @option create-symlinks Create symbolic links instead of updating content
+   * @usage saho:fix-disa-pdfs --create-symlinks
+   *   Create symbolic links to maintain original URL structure
+   */
+  public function fixDisaPdfs($options = ['create-symlinks' => TRUE]) {
+    $create_symlinks = $options['create-symlinks'];
+    
+    $this->output()->writeln('🔗 Creating symbolic links for DISA PDFs...');
+    $this->output()->writeln('');
+    
+    try {
+      $service = \Drupal::service('saho_media_migration.file_mapping');
+      $results = $service->fixDisaPdfPaths($create_symlinks, FALSE, 100);
+      
+      $this->output()->writeln('📊 Results:');
+      $this->output()->writeln("   Symlinks created: {$results['symlinks_created']}");
+      
+      if ($results['symlinks_created'] > 0) {
+        $this->output()->writeln('✅ DISA symlinks created successfully!');
+        $this->output()->writeln('💡 Original URLs will now work without content changes.');
+      } else {
+        $this->output()->writeln('ℹ️  No new symlinks needed (may already exist).');
+      }
+    } catch (\Exception $e) {
+      $this->output()->writeln('❌ Error: ' . $e->getMessage());
+    }
+  }
+
+  /**
+   * Generate comprehensive audit report.
+   *
+   * @command saho:audit-files
+   * @aliases saf
+   * @usage saho:audit-files
+   *   Generate comprehensive file audit report
+   */
+  public function auditFiles() {
+    $this->output()->writeln('🔍 Generating comprehensive file audit report...');
+    $this->output()->writeln('');
+    
+    try {
+      $service = \Drupal::service('saho_media_migration.file_mapping');
+      $report = $service->generateAuditReport();
+      
+      // Display broken references
+      if (!empty($report['broken_references'])) {
+        $this->output()->writeln('❌ BROKEN REFERENCES: ' . count($report['broken_references']));
+        $this->output()->writeln('');
+      }
+      
+      // Display fixable patterns
+      if (!empty($report['fixable_patterns'])) {
+        $this->output()->writeln('✅ AUTOMATICALLY FIXABLE:');
+        $this->output()->writeln('-------------------------');
+        
+        foreach ($report['fixable_patterns'] as $pattern => $info) {
+          $confidence_icon = $info['confidence'] === 'high' ? '🎯' : '⚠️';
+          $this->output()->writeln("   {$confidence_icon} {$info['description']}: {$info['count']} occurrences");
+          
+          // Suggest specific commands
+          if ($pattern === 'file_uploads') {
+            $this->output()->writeln('      💡 Fix with: drush saho:fix-article-images');
+          } elseif ($pattern === 'disa_pdfs') {
+            $this->output()->writeln('      💡 Fix with: drush saho:fix-disa-pdfs');
+          }
+        }
+        $this->output()->writeln('');
+      }
+      
+      // Summary
+      $total_issues = count($report['broken_references']) + count($report['missing_files'] ?? []);
+      $fixable_issues = array_sum(array_column($report['fixable_patterns'], 'count'));
+      
+      $this->output()->writeln('📋 SUMMARY:');
+      $this->output()->writeln('-----------');
+      $this->output()->writeln("Total issues found: {$total_issues}");
+      $this->output()->writeln("Automatically fixable: {$fixable_issues}");
+      
+      if ($fixable_issues > 0) {
+        $this->output()->writeln('');
+        $this->output()->writeln('🚀 RECOMMENDED ACTIONS:');
+        $this->output()->writeln('1. drush saho:build-mapping');
+        $this->output()->writeln('2. drush saho:fix-article-images --dry-run');
+        $this->output()->writeln('3. drush saho:fix-disa-pdfs');
+      }
+    } catch (\Exception $e) {
+      $this->output()->writeln('❌ Error: ' . $e->getMessage());
+    }
+  }
+
 }
