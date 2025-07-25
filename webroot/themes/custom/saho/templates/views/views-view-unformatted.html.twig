@@ -15,4 +15,73 @@
  * @see template_preprocess_views_view_unformatted()
  */
 #}
-{% include "radix:views-view--unformatted" %}
+
+{# Optional title for the grouping #}
+{% if title %}
+  <h3 class="h4 mb-4">{{ title }}</h3>
+{% endif %}
+
+{# Create a responsive grid layout matching the archive cards #}
+<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+  {% for row in rows %}
+    <div class="col mb-4">
+      {# Archive card structure matching the screenshot #}
+      <div class="card">
+        {# Red header with archive badge #}
+        <div class="card-header p-0 position-relative bg-danger">
+          <span class="badge bg-danger position-absolute top-0 end-0 m-2">Archive</span>
+        </div>
+        
+        {# Dark red ARCHIVE banner #}
+        <div class="archive-banner bg-dark-red text-white text-center py-2">
+          <strong>ARCHIVE</strong>
+        </div>
+        
+        {# Document preview area #}
+        <div class="document-preview p-3">
+          {{ row.content }}
+        </div>
+        
+        {# Read more link at the bottom right #}
+        <div class="read-more-wrapper text-end p-2">
+          <a href="#" class="read-more text-danger">Read more →</a>
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+</div>
+
+{# Add styles for archive cards #}
+<style>
+  .card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    border: none;
+    overflow: hidden;
+  }
+  .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+  }
+  .card-header {
+    height: 40px;
+  }
+  .bg-dark-red {
+    background-color: #8B0000;
+  }
+  .archive-banner {
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+  }
+  .document-preview {
+    min-height: 200px;
+  }
+  .read-more {
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+  }
+  .read-more:hover {
+    text-decoration: underline;
+  }
+</style>
