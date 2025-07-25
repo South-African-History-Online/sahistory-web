@@ -29,9 +29,9 @@ The module implements the following:
 ### Installation Hook
 
 - `db_fixes_install()`: When the module is first installed, this hook:
-  - Sets the schema version to 11001 to prevent schema tracking warnings
   - Directly applies the watchdog location column fix during installation
   - Includes error handling in case the table doesn't exist yet
+  - Allows update hooks to be properly detected and run on existing installations
 
 ### Update Hooks
 

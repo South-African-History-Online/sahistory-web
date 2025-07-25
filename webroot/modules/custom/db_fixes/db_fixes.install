@@ -10,14 +10,13 @@ use Drupal\Core\Database\Database;
 /**
  * Implements hook_install().
  *
- * Sets the initial schema version to prevent running update hooks
- * that are included in the initial installation.
+ * Applies database fixes directly during installation while allowing
+ * update hooks to be detected and run on existing installations.
  */
 function db_fixes_install() {
-  // Set the schema version to our latest update hook
-  // to indicate all previous updates are already "processed".
-  \Drupal::service('update.update_hook_registry')
-    ->setInstalledVersion('db_fixes', 11001);
+  // Note: We no longer set the schema version on installation
+  // to ensure update hooks can be properly detected and applied
+  // on existing installations.
 
   // Fix the watchdog location column on installation.
   $schema = Database::getConnection()->schema();
