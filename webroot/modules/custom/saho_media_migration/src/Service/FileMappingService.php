@@ -76,18 +76,20 @@ class FileMappingService {
   }
 
   /**
-   * Process article images with "file uploads" pattern.
+   * Process article images with "file uploads" pattern - all variations.
    */
   public function fixArticleImagePaths($dry_run = FALSE, $limit = 100): array {
     $results = ['processed' => 0, 'fixed' => 0, 'errors' => []];
     
-    // Find content with "file uploads" or "file%20uploads" patterns
+    // Find content with ANY file uploads pattern variations
     $query = $this->database->select('node__body', 'nb');
     $query->fields('nb', ['entity_id', 'body_value']);
-    $query->condition($this->database->orConditionGroup()
-      ->condition('body_value', '%file%20uploads%', 'LIKE')
-      ->condition('body_value', '%file uploads%', 'LIKE')
-    );
+    $or = $query->orConditionGroup();
+    $or->condition('body_value', '%file%20uploads%', 'LIKE');
+    $or->condition('body_value', '%file uploads%', 'LIKE');
+    $or->condition('body_value', '%file_uploads%', 'LIKE');
+    $or->condition('body_value', '%file%20uploads%20/%', 'LIKE'); // The failing case with extra space
+    $query->condition($or);
     $query->range(0, $limit);
     
     $nodes = $query->execute();
@@ -95,6 +97,52 @@ class FileMappingService {
     foreach ($nodes as $node) {
       $original_body = $node->body_value;
       $updated_body = $this->processFileUploadsInContent($original_body);
+      
+      if ($original_body !== $updated_body) {
+        if (!$dry_run) {
+          $this->database->update('node__body')
+            ->fields(['body_value' => $updated_body])
+            ->condition('entity_id', $node->entity_id)
+            ->execute();
+        }
+        $results['fixed']++;
+      }
+      
+      $results['processed']++;
+    }
+    
+    return $results;
+  }
+
+  /**
+   * Fix all broken file references comprehensively.
+   */
+  public function fixAllBrokenReferences($dry_run = FALSE, $limit = 100, $offset = 0): array {
+    $results = ['processed' => 0, 'fixed' => 0, 'errors' => [], 'samples' => []];
+    
+    // Find ALL content with sites/default/files references
+    $query = $this->database->select('node__body', 'nb');
+    $query->fields('nb', ['entity_id', 'body_value']);
+    $query->condition('body_value', '%sites/default/files/%', 'LIKE');
+    $query->range($offset, $limit);
+    $query->orderBy('entity_id', 'ASC'); // Consistent ordering
+    
+    $nodes = $query->execute();
+    
+    foreach ($nodes as $node) {
+      $original_body = $node->body_value;
+      $updated_body = $this->fixAllFileReferencesInContent($original_body);
+      
+      // Collect samples of what we're trying to fix
+      if (count($results['samples']) < 5) {
+        preg_match_all('#sites/default/files/([^"\s)>]+)#i', $original_body, $matches);
+        if (!empty($matches[0])) {
+          $results['samples'][] = [
+            'node_id' => $node->entity_id,
+            'found_refs' => array_slice($matches[0], 0, 3), // First 3 references
+          ];
+        }
+      }
       
       if ($original_body !== $updated_body) {
         if (!$dry_run) {
@@ -167,17 +215,33 @@ class FileMappingService {
   }
 
   /**
-   * Process file uploads patterns in content.
+   * Process file uploads patterns in content - handles ALL variations.
    */
   private function processFileUploadsInContent(string $content): string {
-    return preg_replace_callback(
-      '#sites/default/files/file(?:%20|\s)uploads(?:%20|\s)/([^"\s)]+)#i',
-      function ($matches) {
-        $filename = urldecode($matches[1]);
-        return $this->findReplacementPath($filename, 'file_uploads') ?? $matches[0];
-      },
-      $content
-    );
+    // Handle multiple file uploads patterns
+    $patterns = [
+      // Pattern 1: file%20uploads%20/ (extra space - the failing case)
+      '#sites/default/files/file%20uploads%20/([^"\s)]+)#i',
+      // Pattern 2: file%20uploads/ (standard)
+      '#sites/default/files/file%20uploads/([^"\s)]+)#i',
+      // Pattern 3: file uploads / (unencoded with space)
+      '#sites/default/files/file\s+uploads\s*/([^"\s)]+)#i',
+      // Pattern 4: file_uploads/ (underscore)
+      '#sites/default/files/file_uploads/([^"\s)]+)#i',
+    ];
+    
+    foreach ($patterns as $pattern) {
+      $content = preg_replace_callback(
+        $pattern,
+        function ($matches) {
+          $filename = urldecode($matches[1]);
+          return $this->findReplacementPath($filename, 'file_uploads') ?? $matches[0];
+        },
+        $content
+      );
+    }
+    
+    return $content;
   }
 
   /**
@@ -195,6 +259,59 @@ class FileMappingService {
   }
 
   /**
+   * Fix all file references in content using comprehensive pattern matching.
+   */
+  private function fixAllFileReferencesInContent(string $content): string {
+    // Pattern to match any sites/default/files reference
+    return preg_replace_callback(
+      '#sites/default/files/([^"\s)>]+)#i',
+      function ($matches) {
+        $full_path = $matches[0]; // Full match: sites/default/files/path/file.ext
+        $file_path = $matches[1];  // Just the path/file.ext part
+        
+        // Skip if this is already an archive-files reference
+        if (strpos($file_path, 'archive-files') !== FALSE) {
+          return $full_path;
+        }
+        
+        // Skip if this is already a DC reference (handled by symlinks)
+        if (strpos($file_path, '/DC/') !== FALSE) {
+          return $full_path;
+        }
+        
+        // Handle specific patterns that we know need fixing
+        
+        // 1. File uploads patterns (including the %20 space issue)
+        if (preg_match('#file(?:%20|\s|_)*uploads(?:%20|\s)*/?(.+)#i', $file_path, $upload_matches)) {
+          $filename = urldecode($upload_matches[1]);
+          $replacement = $this->findReplacementPath($filename, 'file_uploads');
+          return $replacement ?? $full_path;
+        }
+        
+        // 2. Files in subdirectories that might be in archive
+        if (strpos($file_path, '/') !== FALSE) {
+          $filename = basename(urldecode($file_path));
+          $replacement = $this->findReplacementPath($filename, 'comprehensive');
+          // Only replace if we found it in archive AND it's not in a special subdirectory
+          if ($replacement && !preg_match('#^(images|css|js|styles)/#', $file_path)) {
+            return $replacement;
+          }
+        }
+        
+        // 3. Root level files that might be in archive
+        else {
+          $filename = urldecode($file_path);
+          $replacement = $this->findReplacementPath($filename, 'comprehensive');
+          return $replacement ?? $full_path;
+        }
+        
+        return $full_path;
+      },
+      $content
+    );
+  }
+
+  /**
    * Find replacement path for a file.
    */
   private function findReplacementPath(string $filename, string $context = 'general'): ?string {
@@ -204,6 +321,7 @@ class FileMappingService {
     $search_order = match ($context) {
       'file_uploads' => ['archive-files', 'archive-files3', 'archive-files2'],
       'disa_pdf' => ['archive-files', 'archive-files2', 'archive-files3'],
+      'comprehensive' => ['archive-files', 'archive-files2', 'archive-files3', 'archive-files4', 'archive-files5', 'archive_files'],
       default => $this->archiveDirectories,
     };
     
@@ -230,7 +348,7 @@ class FileMappingService {
       mkdir($dc_base_path, 0755, TRUE);
     }
     
-    // Search for DISA PDFs in archive directories
+    // Search for DISA files in archive directories
     foreach (['archive-files', 'archive-files2'] as $archive_dir) {
       $archive_path = $sites_path . '/' . $archive_dir;
       
@@ -241,9 +359,18 @@ class FileMappingService {
       $iterator = new \DirectoryIterator($archive_path);
       
       foreach ($iterator as $file) {
-        if ($file->isFile() && str_ends_with($file->getFilename(), '.pdf')) {
+        if ($file->isFile()) {
           $filename = $file->getFilename();
-          $base_name = str_replace('.pdf', '', $filename);
+          $base_name = '';
+          
+          // Handle both PDFs and thumbnails
+          if (str_ends_with($filename, '.pdf')) {
+            $base_name = str_replace('.pdf', '', $filename);
+          } elseif (str_ends_with($filename, '.thumb.gif')) {
+            $base_name = str_replace('.thumb.gif', '', $filename);
+          } else {
+            continue; // Skip files that aren't PDFs or thumbnails
+          }
           
           // Create nested directory structure: DC/basename/
           $nested_dir = $dc_base_path . '/' . $base_name;
