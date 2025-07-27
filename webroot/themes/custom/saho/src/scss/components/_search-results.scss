@@ -4,20 +4,144 @@
  * Styles for the SAHO search results view
  */
 
-// Search page container
+// Modern search page container
 .path-search {
   margin-bottom: 3rem;
 }
 
-// Search page title
-.saho-search-page-title {
-  font-size: 2rem;
-  margin-bottom: 1.5rem;
-  color: $deep-heritage-red;
-  font-weight: 600;
+// Modern search view
+.modern-search {
+  // Add smooth transitions for interactive elements
+  button, a, .card, .filter-group, .search-result {
+    transition: all 0.25s ease-in-out;
+  }
 }
 
-// Search form on results page
+// Search page title and header
+.saho-search-header {
+  margin-bottom: 1.5rem;
+  border-bottom: 3px solid rgba($deep-heritage-red, 0.15);
+  padding-bottom: 1rem;
+  position: relative;
+}
+
+.saho-search-page-title {
+  font-size: 2.25rem;
+  margin-bottom: 0.5rem;
+  color: $deep-heritage-red;
+  font-weight: 700;
+}
+
+.search-term-highlight {
+  margin-bottom: 1rem;
+  
+  .search-query-text {
+    font-size: 1.1rem;
+    background-color: rgba($deep-heritage-red, 0.1);
+    color: $deep-heritage-red;
+    padding: 0.3rem 0.8rem;
+    border-radius: 30px;
+    display: inline-block;
+    font-weight: 500;
+  }
+}
+
+// Main search box - larger and more prominent 
+.saho-main-search-box {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  margin-bottom: 2rem;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  
+  .saho-search-form-wrapper {
+    max-width: 90%;
+    margin: 0 auto;
+    
+    form {
+      display: flex;
+      flex-direction: column;
+      
+      @media (min-width: 768px) {
+        flex-direction: row;
+      }
+      
+      .form-item {
+        flex-grow: 1;
+        margin-bottom: 1rem;
+        
+        @media (min-width: 768px) {
+          margin-bottom: 0;
+          margin-right: 1rem;
+        }
+      }
+      
+      input[name="search_api_fulltext"] {
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 1.25rem 1.5rem;
+        width: 100%;
+        font-size: 1.2rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease-in-out;
+        background-color: #fff;
+        color: #333;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' fill='%23777' class='bi bi-search' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: calc(100% - 16px) center;
+        padding-right: 3rem;
+        
+        &:focus {
+          border-color: $deep-heritage-red;
+          box-shadow: 0 0 0 4px rgba($deep-heritage-red, 0.15);
+          outline: none;
+          transform: translateY(-2px);
+        }
+        
+        &::placeholder {
+          color: #999;
+          font-style: italic;
+        }
+      }
+      
+      .form-actions {
+        display: flex;
+        
+        .button {
+          background-color: $deep-heritage-red;
+          color: white;
+          border: none;
+          border-radius: 8px;
+          padding: 1rem 2rem;
+          font-weight: 600;
+          font-size: 1.1rem;
+          transition: all 0.25s ease;
+          cursor: pointer;
+          box-shadow: 0 4px 10px rgba($deep-heritage-red, 0.2);
+          width: 100%;
+          
+          @media (min-width: 768px) {
+            width: auto;
+          }
+          
+          &:hover {
+            background-color: darken($deep-heritage-red, 10%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba($deep-heritage-red, 0.25);
+          }
+          
+          &:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 5px rgba($deep-heritage-red, 0.2);
+          }
+        }
+      }
+    }
+  }
+}
+
+// Search form on sidebar
 .search-form {
   background: rgba(255, 255, 255, 0.95);
   padding: 1.75rem;
@@ -26,110 +150,55 @@
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   border: 1px solid rgba(0, 0, 0, 0.1);
   
-  // Enhanced search form wrapper
-  .search-form-wrapper {
-    display: flex;
-    flex-direction: column;
-  }
-  
-  .search-input-group {
+  // Form elements
+  .form-item {
     margin-bottom: 1rem;
   }
   
-  // Search label styling
-  .search-label {
-    font-weight: 600;
-    margin-bottom: 0.75rem;
-    display: block;
-    color: $deep-heritage-red;
-    font-size: 1.1rem;
-  }
-  
-  // Search input field - enhanced
   .form-search,
   input[type="text"],
   input[name="search_api_fulltext"] {
-    border: 2px solid #c0c0c0;
+    border: 2px solid #e0e0e0;
     border-radius: 8px;
-    padding: 1rem 1.25rem;
+    padding: 0.75rem 1rem;
     width: 100%;
-    font-size: 1.2rem;
-    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05), 0 0 0 3px rgba(245, 245, 245, 0.5);
-    transition: all 0.25s ease-in-out;
-    background-color: #fff;
-    color: #333;
+    font-size: 1rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease-in-out;
     
     &:focus {
       border-color: $deep-heritage-red;
       box-shadow: 0 0 0 4px rgba($deep-heritage-red, 0.15);
       outline: none;
-      transform: translateY(-1px);
-    }
-    
-    &::placeholder {
-      color: #999;
-      font-style: italic;
     }
   }
   
-  // Form actions (buttons)
-  .search-actions,
+  // Form actions
   .form-actions {
-    margin-top: 1.25rem;
-    display: flex;
+    margin-top: 1rem;
     
     .button {
       background-color: $deep-heritage-red;
       color: white;
       border: none;
       border-radius: 6px;
-      padding: 0.75rem 1.5rem;
+      padding: 0.75rem 1.25rem;
       font-weight: 600;
-      font-size: 1.05rem;
-      transition: all 0.2s ease;
-      cursor: pointer;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      
-      &:hover {
-        background-color: darken($deep-heritage-red, 10%);
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-      }
-      
-      &:active {
-        transform: translateY(0);
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-      }
-    }
-  }
-  
-  // Drupal-specific form elements
-  .form-item {
-    margin-bottom: 1rem;
-  }
-  
-  // Input-specific styling to ensure it's always clear
-  .js-form-item-search-api-fulltext {
-    input {
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23777' class='bi bi-search' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: calc(100% - 10px) center;
-      padding-right: 2.5rem;
+      font-size: 1rem;
+      width: 100%;
     }
   }
 }
 
-// Search results wrapper
+// Search results wrapper and toolbar
 .saho-search-results-wrapper {
-  padding: 0.5rem;
+  padding: 0.25rem;
   
-  // Results counter
-  .saho-search-counter {
-    font-size: 1.1rem;
+  // Modern toolbar with count and controls
+  .saho-search-toolbar {
+    font-size: 0.95rem;
     color: #555;
-    padding: 0.75rem 1rem;
-    background-color: rgba(245, 245, 245, 0.7);
-    border-radius: 6px;
+    border-radius: 8px;
     margin-bottom: 1.5rem;
     border-left: 4px solid $deep-heritage-red;
     
@@ -138,84 +207,185 @@
       
       strong {
         font-weight: 700;
-        color: $deep-heritage-red;
+      }
+    }
+    
+    // Sort dropdown styling
+    .sort-dropdown {
+      .dropdown-toggle {
+        display: inline-flex;
+        align-items: center;
+        
+        &:hover {
+          background-color: #f0f0f0;
+        }
+      }
+      
+      .dropdown-menu {
+        padding: 0.5rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        
+        .dropdown-item {
+          border-radius: 4px;
+          padding: 0.5rem 0.75rem;
+          
+          &.active {
+            background-color: rgba($deep-heritage-red, 0.1);
+            color: $deep-heritage-red;
+            font-weight: 500;
+          }
+          
+          &:hover {
+            background-color: #f8f8f8;
+          }
+        }
+      }
+    }
+    
+    // View toggle buttons
+    .view-toggle {
+      .btn-group {
+        .btn {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          
+          &.active {
+            background-color: rgba($deep-heritage-red, 0.1);
+            color: $deep-heritage-red;
+            border-color: rgba($deep-heritage-red, 0.2);
+          }
+        }
       }
     }
   }
 }
 
-// Filter sidebar
+// Related searches section
+.related-searches {
+  background-color: #f9f9f9;
+  
+  h4 {
+    color: #555;
+    font-weight: 600;
+  }
+  
+  .badge {
+    font-weight: 500;
+    font-size: 0.85rem;
+    padding: 0.5rem 0.8rem;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      background-color: rgba($deep-heritage-red, 0.1);
+      color: $deep-heritage-red;
+      border-color: rgba($deep-heritage-red, 0.3);
+    }
+  }
+}
+
+// Modern filter sidebar
 .saho-sidebar-filters {
   background: white;
   border-radius: 8px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-  border: 1px solid rgba(0, 0, 0, 0.09);
-  padding: 1.5rem !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
   
-  h3 {
-    color: $deep-heritage-red;
-    font-size: 1.2rem;
-    font-weight: 600;
-    margin-bottom: 1.25rem;
-    padding-bottom: 0.75rem;
-    border-bottom: 2px solid rgba($deep-heritage-red, 0.2);
+  // Filter header
+  .filter-header {
+    background-color: #f9f9f9;
+    
+    h3 {
+      color: $deep-heritage-red;
+      font-size: 1.1rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+    }
+    
+    .filter-toggle {
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      
+      &:hover {
+        background-color: #f0f0f0;
+      }
+    }
   }
   
-  // Facet styling
-  .saho-view-facets {
-    .facet-block {
-      margin-bottom: 1.5rem;
+  // Active filters section
+  .active-filters {
+    margin-bottom: 1.5rem;
+    
+    .badge {
+      padding: 0.5rem 0.75rem;
+      font-weight: normal;
+      display: inline-flex;
+      align-items: center;
       
-      h4 {
-        font-size: 1rem;
-        margin-bottom: 0.75rem;
-        font-weight: 600;
-        color: #444;
+      a {
+        color: #666;
+        font-weight: bold;
+        
+        &:hover {
+          color: $deep-heritage-red;
+        }
+      }
+    }
+  }
+  
+  // Filter groups
+  .filter-group {
+    border: 1px solid #eee;
+    border-radius: 6px;
+    overflow: hidden;
+    
+    .filter-group-header {
+      padding: 0.75rem 1rem;
+      background-color: #f9f9f9;
+      cursor: pointer;
+      
+      &:hover {
+        background-color: #f0f0f0;
       }
       
-      .facet-items {
-        .item {
-          margin: 0.5rem 0;
-          padding: 0.35rem 0;
-          font-size: 0.95rem;
-          
-          a {
-            text-decoration: none;
-            color: #555;
-            display: flex;
-            align-items: center;
-            
-            &:hover {
-              color: $deep-heritage-red;
-            }
-            
-            .facet-item__count {
-              margin-left: auto;
-              background: #f0f0f0;
-              border-radius: 20px;
-              padding: 0.1rem 0.5rem;
-              font-size: 0.8rem;
-              color: #666;
-            }
-          }
-          
-          &.is-active a {
-            color: $deep-heritage-red;
-            font-weight: 600;
-          }
+      .filter-title {
+        font-size: 0.95rem;
+        margin-bottom: 0;
+        font-weight: 600;
+        color: #444;
+        display: flex;
+        align-items: center;
+      }
+    }
+    
+    .filter-options {
+      padding: 0.75rem 1rem;
+      
+      .form-check {
+        margin-bottom: 0.5rem;
+        
+        &:last-child {
+          margin-bottom: 0;
         }
       }
     }
   }
   
   // Filter actions
-  .saho-filter-actions {
+  .filter-actions {
     margin-top: 1.5rem;
-    padding-top: 1rem;
-    border-top: 1px solid #eee;
     
     .btn {
-      transition: all 0.2s ease;
+      padding: 0.6rem 1rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      
+      svg {
+        margin-top: -2px;
+      }
       
       &:hover {
         transform: translateY(-2px);
@@ -225,45 +395,113 @@
   }
 }
 
-// Search results container
+// Modern search results container
 .search-results {
   background-color: white;
-  border-radius: 8px;
-  padding: 1.5rem;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
-  border: 1px solid rgba(0, 0, 0, 0.07);
+  border-radius: 10px;
+  overflow: hidden;
   
   .item-list {
     padding: 0;
   }
+  
+  // List view (default)
+  &.list-view {
+    .item-list {
+      display: block;
+    }
+  }
+  
+  // Grid view
+  &.grid-view {
+    .item-list {
+      display: grid;
+      grid-template-columns: repeat(1, 1fr);
+      gap: 1rem;
+      padding: 1rem;
+      
+      @media (min-width: 576px) {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      
+      @media (min-width: 992px) {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+  }
 }
 
-// Individual search result
+// Individual search result - card style
 .search-result {
-  margin-bottom: 2rem;
-  padding-bottom: 1.5rem;
+  padding: 1.75rem;
   border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-  transition: all 0.25s ease;
+  transition: all 0.3s ease;
+  position: relative;
   
   &:hover {
-    transform: translateX(5px);
-    background-color: rgba(249, 249, 252, 0.6);
-    padding-left: 10px;
-    margin-left: -10px;
-    border-radius: 5px;
+    background-color: #f9f9f9;
+    
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 4px;
+      background-color: $deep-heritage-red;
+    }
+    
+    h3 a {
+      color: darken($deep-heritage-red, 10%);
+    }
   }
   
   &:last-child {
     border-bottom: none;
+  }
+  
+  // Grid view styles for search result items
+  .grid-view & {
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 8px;
+    height: 100%;
     margin-bottom: 0;
-    padding-bottom: 0;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    
+    &:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+      
+      &::before {
+        left: 0;
+        top: 0;
+        bottom: auto;
+        width: 100%;
+        height: 4px;
+        border-radius: 8px 8px 0 0;
+      }
+    }
+    
+    h3 {
+      font-size: 1.25rem;
+    }
+    
+    .search-result-meta {
+      margin-top: auto;
+    }
+    
+    .search-snippet-info {
+      flex: 1;
+    }
   }
   
   h3 {
     margin-top: 0;
     margin-bottom: 0.75rem;
     font-size: 1.5rem;
-    font-weight: 600;
+    font-weight: 700;
     line-height: 1.3;
     
     a {
@@ -291,8 +529,20 @@
       background-color: rgba($deep-heritage-red, 0.1);
       color: $deep-heritage-red;
       padding: 0.2rem 0.6rem;
-      border-radius: 4px;
+      border-radius: 20px;
       font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      
+      &::before {
+        content: '';
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        background-color: rgba($deep-heritage-red, 0.5);
+        border-radius: 50%;
+        margin-right: 6px;
+      }
     }
     
     .search-result-date {
@@ -313,87 +563,285 @@
   }
 }
 
-// Search result excerpt
+// Search result excerpt with improvements
 .search-snippet-info {
-  margin-top: 0.5rem;
+  margin-top: 0.75rem;
   
   .search-snippet {
     font-size: 1rem;
-    line-height: 1.6;
+    line-height: 1.7;
     color: #4a4a4a;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.75rem;
+    position: relative;
+    padding-left: 1rem;
+    
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0.5rem;
+      bottom: 0.5rem;
+      width: 3px;
+      background-color: #eee;
+      border-radius: 3px;
+    }
   }
-}
-
-// Highlighted search terms
-.search-results em {
-  background-color: rgba($muted-gold, 0.2);
-  font-style: normal;
-  font-weight: bold;
-  padding: 0 2px;
-}
-
-// Reset button
-.search-form .button[type="reset"] {
-  background-color: #6c757d;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  padding: 0.5rem 1.25rem;
-  font-weight: 500;
-  margin-left: 0.5rem;
-  transition: background-color 0.2s ease;
   
-  &:hover {
-    background-color: darken(#6c757d, 10%);
-  }
-}
-
-// Pager for search results
-.pager {
-  margin: 2rem 0 0;
-  display: flex;
-  justify-content: center;
-  
-  li {
-    margin: 0 0.25rem;
+  // Read more link
+  .more-link {
+    margin-top: 0.5rem;
+    display: inline-block;
     
     a {
-      display: flex;
+      display: inline-flex;
       align-items: center;
-      justify-content: center;
-      width: 40px;
-      height: 40px;
-      border-radius: 4px;
+      color: $deep-heritage-red;
+      font-weight: 500;
       text-decoration: none;
-      background-color: #f5f5f5;
-      color: #333;
-      transition: all 0.2s ease;
       
-      &:hover, &:focus {
-        background-color: $deep-heritage-red;
-        color: white;
+      &::after {
+        content: '›';
+        display: inline-block;
+        margin-left: 0.3rem;
+        font-size: 1.2rem;
+        line-height: 1;
+        transition: transform 0.2s ease;
+      }
+      
+      &:hover {
+        text-decoration: underline;
+        
+        &::after {
+          transform: translateX(3px);
+        }
       }
     }
+  }
+}
+
+// Highlighted search terms - more noticeable
+.search-results em {
+  background-color: rgba($muted-gold, 0.3);
+  font-style: normal;
+  font-weight: bold;
+  padding: 0 3px;
+  border-radius: 3px;
+}
+
+// Empty state styling
+.saho-view-empty {
+  padding: 3rem !important;
+  text-align: center;
+  border-radius: 10px;
+  background-color: white;
+  
+  .empty-search-icon {
+    opacity: 0.8;
+  }
+  
+  .suggestion-list {
+    list-style-type: none;
+    padding-left: 0;
+    text-align: left;
+    max-width: 450px;
+    margin: 0 auto;
     
-    &.is-active a {
-      background-color: $deep-heritage-red;
-      color: white;
+    li {
+      position: relative;
+      padding-left: 1.5rem;
+      
+      &::before {
+        content: '•';
+        position: absolute;
+        left: 0.5rem;
+        color: $deep-heritage-red;
+      }
+    }
+  }
+  
+  .popular-searches {
+    .badge {
+      font-weight: 500;
+      padding: 0.5rem 0.8rem;
+      transition: all 0.2s ease;
+      
+      &:hover {
+        background-color: rgba($deep-heritage-red, 0.1);
+        color: $deep-heritage-red;
+        border-color: rgba($deep-heritage-red, 0.3);
+      }
+    }
+  }
+}
+
+// Enhanced pager for search results
+.saho-search-pager {
+  .pager {
+    margin: 2rem 0 0;
+    display: flex;
+    justify-content: center;
+    
+    li {
+      margin: 0 0.25rem;
+      
+      a {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        text-decoration: none;
+        background-color: #f5f5f5;
+        color: #333;
+        transition: all 0.25s ease;
+        font-weight: 500;
+        
+        &:hover, &:focus {
+          background-color: #eee;
+          color: $deep-heritage-red;
+          transform: translateY(-2px);
+          box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+        }
+      }
+      
+      &.is-active a {
+        background-color: $deep-heritage-red;
+        color: white;
+        box-shadow: 0 3px 8px rgba($deep-heritage-red, 0.2);
+      }
     }
   }
 }
 
 // Responsive adjustments
 @media (max-width: 767px) {
-  .search-form {
-    padding: 1rem;
+  .saho-search-page-title {
+    font-size: 1.75rem;
   }
   
-  .search-result h3 {
-    font-size: 1.25rem;
+  .saho-main-search-box {
+    padding: 1.25rem;
+    
+    .saho-search-form-wrapper {
+      max-width: 100%;
+      
+      form {
+        .form-actions {
+          .button {
+            // Ensure search button has adequate tap target size on mobile
+            min-height: 48px;
+            
+            // Improve visibility and feedback on touch
+            &:active {
+              background-color: darken($deep-heritage-red, 15%);
+              transform: scale(0.98);
+            }
+          }
+        }
+        
+        input[name="search_api_fulltext"] {
+          // Improve tap target size on mobile inputs
+          min-height: 48px;
+          
+          // Make sure iOS styling is consistent
+          -webkit-appearance: none;
+          -moz-appearance: none;
+          appearance: none;
+        }
+      }
+    }
+  }
+  
+  // Make the Tools dropdown more reliable on mobile
+  .tools-dropdown button,
+  [data-bs-toggle="dropdown"] {
+    // Increase tap target size
+    min-height: 44px;
+    min-width: 44px;
+    
+    // Make active state more noticeable for touch feedback
+    &:active {
+      background-color: rgba($deep-heritage-red, 0.15);
+    }
+  }
+  
+  // Fix z-index issues with dropdowns on mobile
+  .dropdown-menu {
+    z-index: 1030;
+    
+    // Make dropdown items more tappable
+    .dropdown-item {
+      padding: 0.75rem 1rem;
+      min-height: 44px;
+    }
+  }
+  
+  .saho-sidebar-filters {
+    margin-bottom: 2rem;
+    
+    // Improve filter toggle button for better mobile touch
+    .filter-toggle {
+      padding: 0.5rem 0.75rem;
+      min-height: 44px;
+      min-width: 44px;
+    }
+  }
+  
+  .search-result {
+    padding: 1.25rem;
+    
+    h3 {
+      font-size: 1.25rem;
+    }
+    
+    // Ensure links are easily tappable on mobile
+    a {
+      // Standard minimum touch target size
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+    }
   }
   
   .search-snippet {
     font-size: 0.9rem;
+  }
+  
+  .saho-search-toolbar {
+    flex-direction: column;
+    
+    .results-count {
+      margin-bottom: 0.75rem;
+    }
+    
+    // Ensure toolbar buttons are easily tappable
+    .btn {
+      min-height: 44px;
+      min-width: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  }
+  
+  // Enhance search form inputs and buttons globally for mobile
+  .search-form,
+  form[role="search"],
+  .saho-search,
+  .saho-mobile-search {
+    input[type="search"],
+    input[type="text"] {
+      min-height: 48px;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    
+    button[type="submit"],
+    input[type="submit"] {
+      min-height: 48px;
+      min-width: 48px;
+      touch-action: manipulation;
+    }
   }
 }

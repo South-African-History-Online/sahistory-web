@@ -33,7 +33,7 @@
 
 {# Determine which view we're displaying to apply specific styling #}
 {% set view_id = view.id|clean_class %}
-{% set is_search_view = view_id == 'saho_search' %}
+{% set is_search_view = view_id == 'saho_global_search' %}
 
 {# Default styling classes #}
 {% set default_color = 'saho-deep-heritage-red' %}
@@ -50,7 +50,16 @@
   {% set section_text_class = default_text_class %}
 {% endif %}
 
-<div{{ attributes.addClass('saho-view', 'view-' ~ view_id) }}>
+{% if attributes is defined %}
+  {% if attributes.addClass is defined %}
+    <div{{ attributes.addClass('saho-view', 'view-' ~ view_id) }}>
+  {% else %}
+    {# Handle case where attributes is an object without addClass method #}
+    <div class="saho-view view-{{ view_id }}"{% if dom_id %} id="{{ dom_id }}"{% endif %}>
+  {% endif %}
+{% else %}
+  <div class="saho-view view-{{ view_id }}"{% if dom_id %} id="{{ dom_id }}"{% endif %}>
+{% endif %}
   <div class="container py-4">
     {# Display view title if provided #}
     {% if title %}
