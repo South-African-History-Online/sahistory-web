@@ -1,8 +1,9 @@
 /**
  * @file
- * Mobile-specific enhancements for SAHO site.
+ * Cross-device enhancements for SAHO site.
  * 
- * Provides fixes for mobile search functionality and Tools dropdown.
+ * Provides fixes for search functionality and Tools dropdown
+ * that work across both mobile and desktop devices.
  */
 
 (function () {
@@ -10,30 +11,33 @@
 
   // Execute as soon as DOM is ready
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initMobileEnhancements);
+    document.addEventListener('DOMContentLoaded', initEnhancements);
   } else {
-    initMobileEnhancements();
+    initEnhancements();
   }
 
+  // Detect if we're on a touch device
+  const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
   /**
-   * Initialize all mobile enhancements.
+   * Initialize all enhancements for both mobile and desktop.
    */
-  function initMobileEnhancements() {
-    // Fix for mobile search form Enter key submission
-    fixMobileSearchForms();
+  function initEnhancements() {
+    // Fix for search form functionality
+    fixSearchForms();
     
-    // Fix for Tools dropdown on mobile
-    fixMobileToolsDropdown();
+    // Fix for Tools dropdown on all devices
+    fixToolsDropdown();
 
     // Add mutation observer to handle dynamically loaded content
     setupMutationObserver();
   }
 
   /**
-   * Fixes mobile search form submission via Enter key and button click.
+   * Fixes search form submission across all devices.
    * Enhanced to handle all search forms across the site.
    */
-  function fixMobileSearchForms() {
+  function fixSearchForms() {
     // Target all possible search forms across the site
     const searchFormSelectors = [
       'form[role="search"]',
@@ -48,7 +52,7 @@
     
     searchForms.forEach(form => {
       // Skip forms we've already processed
-      if (form.hasAttribute('data-mobile-enhanced')) {
+      if (form.hasAttribute('data-enhanced')) {
         return;
       }
       
@@ -56,117 +60,162 @@
       const searchButton = form.querySelector('button[type="submit"], input[type="submit"]');
       
       if (searchInput) {
-        // Handle both keydown and keypress events for maximum compatibility
-        ['keydown', 'keypress'].forEach(eventType => {
-          searchInput.addEventListener(eventType, function(e) {
-            if (e.key === 'Enter') {
+        // For all devices: Ensure empty searches don't submit
+        searchInput.addEventListener('keydown', function(e) {
+          if (e.key === 'Enter') {
+            if (searchInput.value.trim() === '') {
               e.preventDefault();
               e.stopPropagation();
-              
+              return false;
+            }
+          }
+        });
+
+        // For touch devices: Add extra handling for iOS keyboard issues
+        if (isTouchDevice) {
+          searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
               // For iOS, blur the input to hide keyboard before submission
               searchInput.blur();
               
-              // Small delay to ensure blur happens before submission on iOS
-              setTimeout(() => {
-                if (searchInput.value.trim() !== '') {
-                  form.submit();
-                }
-              }, 10);
+              // Let the form submit naturally on desktop
+              // On mobile, sometimes we need to force it
+              if (searchInput.value.trim() !== '') {
+                // Small delay for iOS
+                setTimeout(() => {
+                  // Only manually submit if the form hasn't already submitted
+                  if (!form.classList.contains('submitted')) {
+                    form.classList.add('submitted');
+                    form.submit();
+                  }
+                }, 10);
+              }
             }
           });
-        });
-        
-        // Make sure search input has proper attributes for mobile
-        searchInput.setAttribute('enterkeyhint', 'search');
-        searchInput.setAttribute('autocapitalize', 'off');
+          
+          // Make sure search input has proper attributes for mobile
+          searchInput.setAttribute('enterkeyhint', 'search');
+          searchInput.setAttribute('autocapitalize', 'off');
+        }
       }
       
       if (searchButton) {
-        // Add multiple event listeners for different mobile scenarios
-        ['click', 'touchend'].forEach(eventType => {
-          searchButton.addEventListener(eventType, function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            
+        // For desktop: Let the button work normally
+        // For touch: Add extra handling
+        if (isTouchDevice) {
+          // Add touchend event listener for mobile devices
+          searchButton.addEventListener('touchend', function(e) {
             const input = this.closest('form').querySelector('input[type="search"], input[type="text"][name="search_api_fulltext"]');
+            
+            // Allow empty searches to focus the input
+            if (input && input.value.trim() === '') {
+              e.preventDefault();
+              input.focus();
+              return false;
+            }
             
             // For iOS, blur the input to hide keyboard
             if (input) {
               input.blur();
             }
             
-            // Small delay for iOS
-            setTimeout(() => {
-              if (!input || input.value.trim() !== '') {
-                this.closest('form').submit();
-              } else if (input) {
-                input.focus();
-              }
-            }, 10);
+            // Don't prevent default on desktop - let the normal form submission happen
+            // On mobile we need special handling
+            if (isTouchDevice && input && input.value.trim() !== '') {
+              e.preventDefault();
+              
+              // Small delay for iOS
+              setTimeout(() => {
+                // Only manually submit if the form hasn't already submitted
+                if (!form.classList.contains('submitted')) {
+                  form.classList.add('submitted');
+                  form.submit();
+                }
+              }, 10);
+            }
           }, { passive: false });
+        }
+        
+        // For all devices: Ensure button clicks submit the form correctly
+        searchButton.addEventListener('click', function(e) {
+          const input = this.closest('form').querySelector('input[type="search"], input[type="text"][name="search_api_fulltext"]');
+          
+          // Allow empty searches to focus the input
+          if (input && input.value.trim() === '') {
+            e.preventDefault();
+            input.focus();
+            return false;
+          }
+          
+          // On desktop, let the form submit naturally
+          // No need to prevent default
         });
       }
       
+      // Add a reset handler to clear the submitted flag
+      form.addEventListener('reset', function() {
+        form.classList.remove('submitted');
+      });
+      
       // Mark form as processed
-      form.setAttribute('data-mobile-enhanced', 'true');
+      form.setAttribute('data-enhanced', 'true');
     });
   }
 
   /**
-   * Fixes Tools dropdown functionality on mobile devices.
+   * Fixes Tools dropdown functionality on all devices.
    * Enhanced to handle any dropdown with data-bs-toggle="dropdown".
    */
-  function fixMobileToolsDropdown() {
+  function fixToolsDropdown() {
     // Target both specific Tools dropdown and any dropdown toggles
     const dropdownToggles = document.querySelectorAll('.tools-dropdown, [data-bs-toggle="dropdown"]');
     
     dropdownToggles.forEach(toggle => {
       // Skip toggles we've already processed
-      if (toggle.hasAttribute('data-mobile-enhanced')) {
+      if (toggle.hasAttribute('data-enhanced')) {
         return;
       }
       
-      // Check if we're on a touch device
-      const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+      // Find the dropdown menu
+      let dropdownMenu;
       
-      if (isTouch) {
-        // Find the dropdown menu
-        let dropdownMenu;
+      // Check if the toggle itself is the dropdown button
+      if (toggle.hasAttribute('data-bs-toggle') && toggle.getAttribute('data-bs-toggle') === 'dropdown') {
+        // Find menu by aria-labelledby if available
+        if (toggle.id) {
+          dropdownMenu = document.querySelector(`[aria-labelledby="${toggle.id}"]`);
+        }
         
-        // Check if the toggle itself is the dropdown button
-        if (toggle.hasAttribute('data-bs-toggle') && toggle.getAttribute('data-bs-toggle') === 'dropdown') {
-          // Find menu by aria-labelledby if available
-          if (toggle.id) {
-            dropdownMenu = document.querySelector(`[aria-labelledby="${toggle.id}"]`);
-          }
-          
-          // If not found, try to find the next sibling that's a dropdown menu
-          if (!dropdownMenu) {
-            let sibling = toggle.nextElementSibling;
-            while (sibling) {
-              if (sibling.classList.contains('dropdown-menu')) {
-                dropdownMenu = sibling;
-                break;
-              }
-              sibling = sibling.nextElementSibling;
+        // If not found, try to find the next sibling that's a dropdown menu
+        if (!dropdownMenu) {
+          let sibling = toggle.nextElementSibling;
+          while (sibling) {
+            if (sibling.classList.contains('dropdown-menu')) {
+              dropdownMenu = sibling;
+              break;
             }
-          }
-          
-          // If still not found, look for parent's dropdown menu
-          if (!dropdownMenu && toggle.parentElement) {
-            dropdownMenu = toggle.parentElement.querySelector('.dropdown-menu');
-          }
-        } else {
-          // The toggle might be a container with the button inside
-          const nestedToggle = toggle.querySelector('[data-bs-toggle="dropdown"]');
-          if (nestedToggle) {
-            dropdownMenu = toggle.querySelector('.dropdown-menu');
+            sibling = sibling.nextElementSibling;
           }
         }
         
-        if (dropdownMenu) {
+        // If still not found, look for parent's dropdown menu
+        if (!dropdownMenu && toggle.parentElement) {
+          dropdownMenu = toggle.parentElement.querySelector('.dropdown-menu');
+        }
+      } else {
+        // The toggle might be a container with the button inside
+        const nestedToggle = toggle.querySelector('[data-bs-toggle="dropdown"]');
+        if (nestedToggle) {
+          dropdownMenu = toggle.querySelector('.dropdown-menu');
+        }
+      }
+      
+      if (dropdownMenu) {
+        // On touch devices, we need a custom implementation
+        if (isTouchDevice) {
           // Create a manual toggle system for reliable mobile operation
           const toggleDropdown = function(e) {
+            // On mobile, prevent default to avoid double-triggering
             e.preventDefault();
             e.stopPropagation();
             
@@ -208,25 +257,62 @@
             }
           };
           
-          // Add multiple event handlers for better mobile compatibility
-          ['click', 'touchend'].forEach(eventType => {
-            toggle.addEventListener(eventType, toggleDropdown, { passive: false });
+          // Add touch event for mobile
+          toggle.addEventListener('touchend', toggleDropdown, { passive: false });
+          
+          // Also handle click for hybrid devices
+          toggle.addEventListener('click', function(e) {
+            // Only apply our custom handling on touch devices
+            if (isTouchDevice) {
+              toggleDropdown(e);
+            }
+            // On desktop, let Bootstrap handle it
           });
           
-          // Prevent dropdown items from closing the dropdown unexpectedly
+          // Prevent dropdown items from closing the dropdown unexpectedly on touch
           dropdownMenu.querySelectorAll('.dropdown-item').forEach(item => {
-            item.addEventListener('click', function(e) {
+            item.addEventListener('touchend', function(e) {
               e.stopPropagation();
             });
+          });
+        } else {
+          // For desktop, ensure Bootstrap dropdown is initialized if available
+          if (typeof bootstrap !== 'undefined' && bootstrap.Dropdown) {
+            try {
+              new bootstrap.Dropdown(toggle);
+            } catch (e) {
+              // Bootstrap might already have initialized this dropdown
+              console.warn('Bootstrap dropdown may already be initialized');
+            }
+          }
+          
+          // Add backup click handler for desktop if bootstrap isn't available
+          toggle.addEventListener('click', function(e) {
+            // Only apply if Bootstrap isn't handling it
+            if (typeof bootstrap === 'undefined') {
+              e.preventDefault();
+              
+              const isExpanded = toggle.getAttribute('aria-expanded') === 'true';
+              
+              if (isExpanded) {
+                // Close dropdown
+                toggle.setAttribute('aria-expanded', 'false');
+                dropdownMenu.classList.remove('show');
+              } else {
+                // Open dropdown
+                toggle.setAttribute('aria-expanded', 'true');
+                dropdownMenu.classList.add('show');
+              }
+            }
           });
         }
       }
       
       // Mark toggle as processed
-      toggle.setAttribute('data-mobile-enhanced', 'true');
+      toggle.setAttribute('data-enhanced', 'true');
     });
     
-    // Document-level handler to close dropdowns when clicking outside
+    // Document-level handler to close dropdowns when clicking outside (all devices)
     document.addEventListener('click', function(e) {
       const openDropdowns = document.querySelectorAll('.dropdown-menu.show');
       openDropdowns.forEach(menu => {
@@ -276,11 +362,11 @@
       
       // Apply fixes if needed
       if (needsSearchFormFix) {
-        fixMobileSearchForms();
+        fixSearchForms();
       }
       
       if (needsDropdownFix) {
-        fixMobileToolsDropdown();
+        fixToolsDropdown();
       }
     });
     

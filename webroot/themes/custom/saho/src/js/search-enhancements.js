@@ -112,17 +112,34 @@
       return;
     }
     
+    // Find dropdown menu
+    const dropdownMenu = document.querySelector('[aria-labelledby="toolsDropdown"]');
+    if (!dropdownMenu) {
+      return;
+    }
+    
     // Check if we're on a touch device
     const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    const isMobile = window.matchMedia('(max-width: 991.98px)').matches;
     
-    if (isTouchDevice) {
-      // Ensure Bootstrap is available
-      if (typeof bootstrap !== 'undefined') {
-        // Initialize dropdown with touch-friendly options
-        const dropdownInstance = new bootstrap.Dropdown(toolsDropdown, {
+    // Remove existing click handlers to prevent conflicts
+    const oldClickHandler = toolsDropdown.onclick;
+    toolsDropdown.onclick = null;
+    
+    // First, try to initialize with Bootstrap if available
+    if (typeof bootstrap !== 'undefined') {
+      // Get existing instance if any
+      let dropdownInstance = bootstrap.Dropdown.getInstance(toolsDropdown);
+      
+      // If no instance exists, create a new one
+      if (!dropdownInstance) {
+        dropdownInstance = new bootstrap.Dropdown(toolsDropdown, {
           autoClose: 'outside'
         });
-        
+      }
+      
+      // For mobile/touch devices, add special touch handling
+      if (isMobile || isTouchDevice) {
         // Add custom touch event handler
         toolsDropdown.addEventListener('touchstart', function(e) {
           // Don't let the event bubble up to document
@@ -137,43 +154,53 @@
             dropdownInstance.show();
           }
         }, { passive: true });
-      } else {
-        // Fallback for when Bootstrap is not available
-        const dropdownMenu = document.querySelector('[aria-labelledby="toolsDropdown"]');
-        
-        if (dropdownMenu) {
-          // Create a simple toggle mechanism
-          toolsDropdown.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            const isExpanded = this.getAttribute('aria-expanded') === 'true';
-            
-            if (isExpanded) {
-              this.setAttribute('aria-expanded', 'false');
-              dropdownMenu.classList.remove('show');
-            } else {
-              this.setAttribute('aria-expanded', 'true');
-              dropdownMenu.classList.add('show');
-              
-              // Position the dropdown properly
-              const btnRect = this.getBoundingClientRect();
-              dropdownMenu.style.top = btnRect.bottom + 'px';
-              dropdownMenu.style.right = (window.innerWidth - btnRect.right) + 'px';
-            }
-          });
-          
-          // Close dropdown when clicking outside
-          document.addEventListener('click', function(e) {
-            if (toolsDropdown.getAttribute('aria-expanded') === 'true' && 
-                !dropdownMenu.contains(e.target) && 
-                e.target !== toolsDropdown) {
-              toolsDropdown.setAttribute('aria-expanded', 'false');
-              dropdownMenu.classList.remove('show');
-            }
-          });
-        }
       }
+      
+      // Ensure click works properly on desktop too
+      toolsDropdown.addEventListener('click', function(e) {
+        // Allow default Bootstrap behavior to continue
+      });
+    } else {
+      // Fallback for when Bootstrap is not available
+      // This handles both mobile and desktop
+      toolsDropdown.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const isExpanded = this.getAttribute('aria-expanded') === 'true';
+        
+        if (isExpanded) {
+          this.setAttribute('aria-expanded', 'false');
+          dropdownMenu.classList.remove('show');
+        } else {
+          this.setAttribute('aria-expanded', 'true');
+          dropdownMenu.classList.add('show');
+          
+          // Position the dropdown properly
+          const btnRect = this.getBoundingClientRect();
+          dropdownMenu.style.top = btnRect.bottom + 'px';
+          
+          // Check if right-aligned or left-aligned
+          if (dropdownMenu.classList.contains('dropdown-menu-end') || 
+              dropdownMenu.classList.contains('dropdown-menu-right')) {
+            dropdownMenu.style.right = (window.innerWidth - btnRect.right) + 'px';
+            dropdownMenu.style.left = 'auto';
+          } else {
+            dropdownMenu.style.left = btnRect.left + 'px';
+            dropdownMenu.style.right = 'auto';
+          }
+        }
+      });
+      
+      // Close dropdown when clicking outside
+      document.addEventListener('click', function(e) {
+        if (toolsDropdown.getAttribute('aria-expanded') === 'true' && 
+            !dropdownMenu.contains(e.target) && 
+            e.target !== toolsDropdown) {
+          toolsDropdown.setAttribute('aria-expanded', 'false');
+          dropdownMenu.classList.remove('show');
+        }
+      });
     }
     
     // Add handlers for all dropdown items 

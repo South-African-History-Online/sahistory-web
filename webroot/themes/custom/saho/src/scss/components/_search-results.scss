@@ -714,6 +714,75 @@
   }
 }
 
+// Cross-device styling for tools dropdown - outside media query for all devices
+.tools-dropdown button,
+[data-bs-toggle="dropdown"] {
+  // Ensure consistent appearance and adequate tap target size across devices
+  min-height: 44px;
+  min-width: 44px;
+  
+  // Provide visual feedback for both hover (desktop) and active (touch) states
+  &:hover {
+    background-color: rgba($deep-heritage-red, 0.1);
+  }
+  
+  &:active {
+    background-color: rgba($deep-heritage-red, 0.15);
+  }
+}
+
+// Fix z-index issues with dropdowns on all devices
+.dropdown-menu {
+  z-index: 1030;
+  
+  // Ensure dropdown items are tappable on mobile and comfortable on desktop
+  .dropdown-item {
+    padding: 0.75rem 1rem;
+    min-height: 44px;
+    
+    &:hover {
+      background-color: rgba($deep-heritage-red, 0.08);
+    }
+    
+    &:active {
+      background-color: rgba($deep-heritage-red, 0.15);
+    }
+  }
+}
+
+// Cross-device search form enhancements
+.search-form,
+form[role="search"],
+.saho-search,
+.saho-mobile-search {
+  input[type="search"],
+  input[type="text"] {
+    // Ensure proper appearance on all devices
+    min-height: 44px;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  
+  button[type="submit"],
+  input[type="submit"] {
+    // Ensure adequate tap targets
+    min-height: 44px;
+    min-width: 44px;
+    touch-action: manipulation;
+    
+    // Hover state for desktop
+    &:hover {
+      background-color: darken($deep-heritage-red, 7%);
+    }
+    
+    // Active state for all devices
+    &:active {
+      background-color: darken($deep-heritage-red, 15%);
+      transform: scale(0.98);
+    }
+  }
+}
+
 // Responsive adjustments
 @media (max-width: 767px) {
   .saho-search-page-title {
@@ -731,49 +800,14 @@
           .button {
             // Ensure search button has adequate tap target size on mobile
             min-height: 48px;
-            
-            // Improve visibility and feedback on touch
-            &:active {
-              background-color: darken($deep-heritage-red, 15%);
-              transform: scale(0.98);
-            }
           }
         }
         
         input[name="search_api_fulltext"] {
           // Improve tap target size on mobile inputs
           min-height: 48px;
-          
-          // Make sure iOS styling is consistent
-          -webkit-appearance: none;
-          -moz-appearance: none;
-          appearance: none;
         }
       }
-    }
-  }
-  
-  // Make the Tools dropdown more reliable on mobile
-  .tools-dropdown button,
-  [data-bs-toggle="dropdown"] {
-    // Increase tap target size
-    min-height: 44px;
-    min-width: 44px;
-    
-    // Make active state more noticeable for touch feedback
-    &:active {
-      background-color: rgba($deep-heritage-red, 0.15);
-    }
-  }
-  
-  // Fix z-index issues with dropdowns on mobile
-  .dropdown-menu {
-    z-index: 1030;
-    
-    // Make dropdown items more tappable
-    .dropdown-item {
-      padding: 0.75rem 1rem;
-      min-height: 44px;
     }
   }
   
