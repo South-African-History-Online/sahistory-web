@@ -22,9 +22,22 @@
   {% endif %}
   <div class="item-list">
     {% for row in rows %}
-      <article{{ row.attributes.addClass('search-result', 'clearfix') }}>
-        {{ row.content }}
-      </article>
+      {% if row.attributes is defined %}
+        {% if row.attributes.addClass is defined %}
+          <article{{ row.attributes.addClass('search-result', 'clearfix') }}>
+            {{ row.content }}
+          </article>
+        {% else %}
+          {# Handle case where attributes is an object without addClass method #}
+          <article class="search-result clearfix">
+            {{ row.content }}
+          </article>
+        {% endif %}
+      {% else %}
+        <article class="search-result clearfix">
+          {{ row.content }}
+        </article>
+      {% endif %}
     {% endfor %}
   </div>
 </div>

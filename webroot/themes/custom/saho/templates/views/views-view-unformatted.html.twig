@@ -45,8 +45,21 @@
         default_row_class ? 'views-row',
       ]
     %}
-    <div{{ row.attributes.addClass(row_classes) }}>
-      {{- row.content -}}
-    </div>
+    {% if row.attributes is defined %}
+      {% if row.attributes.addClass is defined %}
+        <div{{ row.attributes.addClass(row_classes) }}>
+          {{- row.content -}}
+        </div>
+      {% else %}
+        {# Handle case where attributes is an object without addClass method #}
+        <div class="{{ row_classes|join(' ') }}">
+          {{- row.content -}}
+        </div>
+      {% endif %}
+    {% else %}
+      <div class="{{ row_classes|join(' ') }}">
+        {{- row.content -}}
+      </div>
+    {% endif %}
   {% endfor %}
 {% endif %}
