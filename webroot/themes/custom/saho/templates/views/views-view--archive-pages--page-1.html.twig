@@ -48,35 +48,75 @@
 
 {# Add modern card styling #}
 <style>
+  /* Grid layout for unformatted list view */
+  .saho-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+  
+  /* Ensure cards have consistent height */
+  .saho-cards-grid > * {
+    height: 100%;
+    margin-bottom: 0 !important;
+  }
+  
+  /* Fix image display */
+  .saho-card-image img {
+    display: block;
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+  }
+  
+  /* Entity rendering fixes */
+  .views-field img {
+    max-width: 100%;
+    height: auto;
+  }
+  
+  /* Card styling */
   .saho-card {
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     border-radius: 8px;
     overflow: hidden;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background-color: #fff;
+    border: 1px solid rgba(0,0,0,.125);
   }
+  
   .saho-card:hover {
     transform: translateY(-5px);
     box-shadow: 0 10px 20px rgba(0,0,0,0.15) !important;
   }
+  
   .saho-card .card-img-top-wrapper img,
   .saho-card .saho-placeholder {
     transition: transform 0.5s ease;
     transform-origin: center;
   }
+  
   .saho-card:hover .card-img-top-wrapper img,
   .saho-card:hover .saho-placeholder {
     transform: scale(1.05);
   }
+  
   .card-img-top-wrapper {
     overflow: hidden;
     border-top-left-radius: 8px;
     border-top-right-radius: 8px;
   }
+  
   .resource-badge {
     border-radius: 4px;
     font-size: 0.75rem;
     font-weight: 600;
     letter-spacing: 0.5px;
   }
+  
   .resource-type {
     position: absolute;
     top: 0;
@@ -84,24 +124,29 @@
     margin: 0.75rem;
     z-index: 10;
   }
+  
   .saho-metadata {
     font-size: 0.85rem;
     color: #6c757d;
   }
+  
   .saho-metadata i {
     width: 16px;
     text-align: center;
     margin-right: 5px;
   }
+  
   .saho-read-more-btn {
     border-radius: 20px;
     font-size: 0.85rem;
     font-weight: 600;
     transition: all 0.2s ease;
   }
+  
   .saho-read-more-btn:hover {
     transform: translateX(3px);
   }
+  
   .saho-placeholder {
     background-color: #f8f9fa;
     display: flex;
@@ -110,31 +155,143 @@
     color: #6c757d;
     height: 180px;
   }
+  
   .saho-placeholder::before {
     content: '📄';
     font-size: 2rem;
     opacity: 0.5;
   }
+  
   .saho-placeholder.saho-placeholder--document::before {
     content: '📄';
   }
+  
   .saho-placeholder.saho-placeholder--photo::before,
   .saho-placeholder.saho-placeholder--image::before {
     content: '📷';
   }
+  
   .saho-placeholder.saho-placeholder--audio::before {
     content: '🔊';
   }
+  
   .saho-placeholder.saho-placeholder--video::before {
     content: '🎬';
   }
+  
   .saho-placeholder.saho-placeholder--pdf::before {
     content: '📑';
   }
+  
+  /* Additional styles for saho-card elements */
+  .saho-card-link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    height: 100%;
+  }
+  
+  .saho-card-link:hover {
+    text-decoration: none;
+    color: inherit;
+  }
+  
+  .saho-card-image {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .saho-card-image--placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f8f9fa;
+    height: 180px;
+    color: #6c757d;
+    font-size: 2rem;
+  }
+  
+  .saho-card-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    padding: 0.25rem 0.5rem;
+    background-color: #dc3545;
+    color: white;
+    font-size: 0.75rem;
+    border-radius: 4px;
+    font-weight: 600;
+  }
+  
+  .saho-card-content {
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+  }
+  
+  .saho-card-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: #212529;
+  }
+  
+  .saho-card-subtitle {
+    font-size: 0.875rem;
+    color: #6c757d;
+    margin-bottom: 0.75rem;
+  }
+  
+  .saho-card-description {
+    font-size: 0.9rem;
+    color: #495057;
+    margin-bottom: 1rem;
+  }
+  
+  .saho-card-footer {
+    margin-top: auto;
+    display: flex;
+    justify-content: flex-end;
+  }
+  
+  .saho-card-button {
+    display: inline-flex;
+    align-items: center;
+    color: #dc3545;
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+  
+  .saho-card-button svg {
+    margin-left: 0.25rem;
+    transition: transform 0.2s ease;
+  }
+  
+  .saho-card-link:hover .saho-card-button svg {
+    transform: translateX(3px);
+  }
+  
+  /* Fix for entity rendering issues */
+  .field-content img {
+    max-width: 100%;
+    height: auto;
+  }
+  
+  /* Fix layout for unformatted list view */
+  .view-content > div {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+  
+  /* Archives header styling */
   .archives-page-header {
     position: relative;
     margin-bottom: 2rem;
   }
+  
   .archives-page-header::after {
     content: '';
     position: absolute;
