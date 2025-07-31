@@ -6,120 +6,10 @@
  * Available variables:
  * - fields: Field objects for the current row
  * - attributes: HTML attributes for the field container
+ * - row: Row data including _entity
  */
 #}
 
-{# Add styles for featured item cards #}
-<style>
-  /* Featured content card styling */
-  .featured-item-link {
-    display: block;
-    height: 100%;
-    color: inherit;
-    transition: all 0.3s ease;
-  }
-  
-  .featured-item-link:hover,
-  .featured-item-link:focus {
-    text-decoration: none;
-    color: inherit;
-    transform: translateY(-5px);
-  }
-  
-  .featured-item-link:hover .featured-item-card,
-  .featured-item-link:focus .featured-item-card {
-    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-  }
-  
-  .featured-item-card {
-    height: 100%;
-    background: #fff;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    overflow: hidden;
-    transition: box-shadow 0.3s ease;
-    margin-bottom: 20px;
-  }
-  
-  .card-image-wrapper {
-    position: relative;
-    padding-top: 66%; /* 2:3 aspect ratio */
-    overflow: hidden;
-    background: #f5f7fa;
-  }
-  
-  .card-image-wrapper img {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: center;
-  }
-  
-  .card-type-label {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    background: #B22222;
-    color: white;
-    padding: 4px 12px;
-    border-radius: 4px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: none;
-    letter-spacing: 0.5px;
-  }
-  
-  .card-content {
-    padding: 20px;
-  }
-  
-  .card-title {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: #2c3e50;
-    margin-bottom: 10px;
-    line-height: 1.4;
-  }
-  
-  .card-subtitle {
-    display: block;
-    font-size: 0.85rem;
-    color: #6c757d;
-    margin-bottom: 16px;
-    font-weight: normal;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-  
-  .view-featured-btn {
-    display: inline-block;
-    padding: 5px 15px;
-    border: 1px solid #B22222;
-    border-radius: 20px;
-    color: #B22222;
-    font-size: 0.9rem;
-    text-decoration: none;
-    transition: all 0.3s ease;
-  }
-  
-  .featured-item-link:hover .view-featured-btn,
-  .featured-item-link:focus .view-featured-btn {
-    background-color: #B22222;
-    color: white;
-  }
-  
-  .card-placeholder-image {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    font-size: 3rem;
-    color: rgba(255,255,255,0.7);
-  }
-</style>
 
 {# Get URL from the title field which has link_to_entity: true #}
 {% set entity_url = '#' %}
@@ -145,49 +35,72 @@
   {% set type_text = fields.type.content|striptags|trim %}
 {% endif %}
 
-<div class="featured-content-item mb-4">
-  {# Make the entire card a link #}
-  <a href="{{ entity_url }}" class="featured-item-link" aria-label="View featured content">
-    <div class="featured-item-card">
+{# Get content type for styling #}
+{% set content_type = 'featured' %}
+{% if row and row._entity %}
+  {% set content_type = row._entity.bundle() %}
+{% endif %}
+
+<div class="mb-4">
+  <a href="{{ entity_url }}" class="saho-card-link content-type-{{ content_type }}" aria-label="View featured content">
+    <div class="saho-card saho-card--{{ content_type }}">
       {# Card Image Area #}
-      <div class="card-image-wrapper">
+      <div class="saho-card-image">
+        {% set has_image = false %}
         {# Check for all possible image fields in order of priority #}
         {% if fields.field_article_image is defined and fields.field_article_image.content %}
           {{ fields.field_article_image.content }}
+          {% set has_image = true %}
         {% elseif fields.field_bio_pic is defined and fields.field_bio_pic.content %}
           {{ fields.field_bio_pic.content }}
+          {% set has_image = true %}
         {% elseif fields.field_place_image is defined and fields.field_place_image.content %}
           {{ fields.field_place_image.content }}
+          {% set has_image = true %}
         {% elseif fields.field_event_image is defined and fields.field_event_image.content %}
           {{ fields.field_event_image.content }}
+          {% set has_image = true %}
         {% elseif fields.field_image is defined and fields.field_image.content %}
           {{ fields.field_image.content }}
+          {% set has_image = true %}
         {% elseif fields.field_archive_image is defined and fields.field_archive_image.content %}
           {{ fields.field_archive_image.content }}
-        {% else %}
-          <div class="card-placeholder-image">
+          {% set has_image = true %}
+        {% endif %}
+        
+        {% if not has_image %}
+          <div class="saho-card-image--placeholder">
             <i class="fas fa-file-alt"></i>
           </div>
         {% endif %}
         
-        {# Card Type Label #}
+        {# Card Badge #}
         {% if type_text %}
-          <div class="card-type-label">{{ type_text }}</div>
+          <div class="saho-card-badge content-type-badge">{{ type_text }}</div>
+        {% else %}
+          <div class="saho-card-badge content-type-badge">Featured</div>
         {% endif %}
       </div>
       
       {# Card Content #}
-      <div class="card-content">
+      <div class="saho-card-content">
+        {# Title #}
+        <div class="saho-card-title">{{ title_text }}</div>
+        
         {# Type as subtitle #}
         {% if type_text %}
-          <div class="card-subtitle">{{ type_text }}</div>
+          <div class="saho-card-subtitle">{{ type_text }}</div>
         {% endif %}
         
-        {# Title #}
-        <div class="card-title">{{ title_text }}</div>
-        
-        {# View Button #}
-        <span class="view-featured-btn">Read More</span>
+        {# Button in footer for proper alignment #}
+        <div class="saho-card-footer">
+          <span class="saho-card-button">
+            Read More
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+              <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/>
+            </svg>
+          </span>
+        </div>
       </div>
     </div>
   </a>

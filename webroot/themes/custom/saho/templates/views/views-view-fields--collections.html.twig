@@ -6,112 +6,10 @@
  * Available variables:
  * - fields: Field objects for the current row
  * - attributes: HTML attributes for the field container
+ * - row: Row data including _entity
  */
 #}
 
-{# Add styles for collection cards #}
-<style>
-  /* Collection card styling */
-  .collection-card-link {
-    display: block;
-    height: 100%;
-    color: inherit;
-    transition: all 0.3s ease;
-  }
-  
-  .collection-card-link:hover,
-  .collection-card-link:focus {
-    text-decoration: none;
-    color: inherit;
-    transform: translateY(-5px);
-  }
-  
-  .collection-card-link:hover .collection-card,
-  .collection-card-link:focus .collection-card {
-    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-  }
-  
-  .collection-card {
-    height: 100%;
-    background: #fff;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    overflow: hidden;
-    transition: box-shadow 0.3s ease;
-  }
-  
-  .card-image-wrapper {
-    position: relative;
-    height: 180px;
-    overflow: hidden;
-    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-  }
-  
-  .card-image-wrapper img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: center top;
-  }
-  
-  .card-label {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    background: rgba(178, 34, 34, 0.9);
-    color: white;
-    padding: 4px 12px;
-    border-radius: 4px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-  
-  .card-content {
-    padding: 20px;
-  }
-  
-  .card-title {
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: #2c3e50;
-    margin-bottom: 8px;
-  }
-  
-  .archive-count {
-    display: block;
-    font-size: 0.9rem;
-    color: #6c757d;
-    margin-bottom: 16px;
-  }
-  
-  .view-collection-btn {
-    display: inline-block;
-    padding: 5px 15px;
-    border: 1px solid #B22222;
-    border-radius: 20px;
-    color: #B22222;
-    font-size: 0.9rem;
-    text-decoration: none;
-    transition: all 0.3s ease;
-  }
-  
-  .collection-card-link:hover .view-collection-btn,
-  .collection-card-link:focus .view-collection-btn {
-    background-color: #B22222;
-    color: white;
-  }
-  
-  .card-placeholder-image {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    font-size: 3rem;
-    color: rgba(255,255,255,0.7);
-  }
-</style>
 
 {# CRITICAL: Get URL from the title_2 field which has link_to_entity: true #}
 {% set entity_url = '#' %}
@@ -150,40 +48,59 @@
   {% set count = fields.title_1.content|striptags|trim %}
 {% endif %}
 
-{# Make the entire card a link #}
-<a href="{{ entity_url }}" class="collection-card-link" aria-label="View collection details">
-  <div class="collection-card">
+{# Get content type for styling #}
+{% set content_type = 'collection' %}
+{% if row and row._entity %}
+  {% set content_type = row._entity.bundle() %}
+{% endif %}
+
+<a href="{{ entity_url }}" class="saho-card-link content-type-{{ content_type }}" aria-label="View collection details">
+  <div class="saho-card saho-card--{{ content_type }}">
     {# Card Image Area #}
-    <div class="card-image-wrapper">
+    <div class="saho-card-image">
+      {% set has_image = false %}
       {# Image (if available) #}
       {% if fields.field_archive_image is defined and fields.field_archive_image.content %}
         {{ fields.field_archive_image.content }}
+        {% set has_image = true %}
       {% elseif fields.field_article_image is defined and fields.field_article_image.content %}
         {{ fields.field_article_image.content }}
+        {% set has_image = true %}
       {% elseif fields.field_bio_pic is defined and fields.field_bio_pic.content %}
         {{ fields.field_bio_pic.content }}
+        {% set has_image = true %}
       {% elseif fields.field_image is defined and fields.field_image.content %}
         {{ fields.field_image.content }}
-      {% else %}
-        <div class="card-placeholder-image">
+        {% set has_image = true %}
+      {% endif %}
+      
+      {% if not has_image %}
+        <div class="saho-card-image--placeholder">
           <i class="fas fa-archive"></i>
         </div>
       {% endif %}
       
-      {# Card Label/Badge #}
-      <div class="card-label">Collection</div>
+      {# Card Badge #}
+      <div class="saho-card-badge content-type-badge">Collection</div>
     </div>
     
-    {# Card Content - Simplified as requested #}
-    <div class="card-content">
+    {# Card Content #}
+    <div class="saho-card-content">
       {# Title from title_2 field #}
-      <div class="card-title">{{ title_text }}</div>
+      <div class="saho-card-title">{{ title_text }}</div>
       
       {# Count from title_1 field #}
-      <span class="archive-count">{{ count }} archive items</span>
+      <div class="saho-card-subtitle">{{ count }} archive items</div>
       
-      {# View Collection Button #}
-      <span class="view-collection-btn">View collection</span>
+      {# Button in footer for proper alignment #}
+      <div class="saho-card-footer">
+        <span class="saho-card-button">
+          View collection
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/>
+          </svg>
+        </span>
+      </div>
     </div>
   </div>
 </a>

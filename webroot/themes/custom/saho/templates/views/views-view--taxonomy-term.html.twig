@@ -1,0 +1,146 @@
+{#
+/**
+ * @file
+ * Template for taxonomy term content listing pages.
+ *
+ * This template implements a modern card-based layout for taxonomy term pages,
+ * providing a consistent experience with other content listings.
+ *
+ * Available variables:
+ * - view: The view object.
+ * - rows: A list of the view's row items.
+ * - options: The view plugin style options.
+ * - title: The title of the view.
+ * - header: The view header.
+ * - footer: The view footer.
+ * - empty: The empty text to display if the view is empty.
+ * - pager: The pager output.
+ * - exposed: Exposed widget form/info to display.
+ * - feed_icons: Feed icons to display, if any.
+ * - more: An optional link to the next page of results.
+ * - totals: The total rows and pages.
+ * - rows_total: The total number of rows returned by the view.
+ * - attachment_before: An optional attachment view to be displayed before the view.
+ * - attachment_after: An optional attachment view to be displayed after the view.
+ * - dom_id: Unique id for every view being printed to give unique class for Javascript.
+ *
+ * @see template_preprocess_views_view()
+ */
+#}
+
+{# Define section-specific colors and classes #}
+{% set section_name = 'Browse' %}
+{% set section_color = 'saho-dark-charcoal' %}
+{% set section_bg_class = 'bg-' ~ (section_color|replace({'saho-': ''})) %}
+{% set section_border_class = 'border-' ~ (section_color|replace({'saho-': ''})) %}
+{% set section_text_class = 'text-' ~ (section_color|replace({'saho-': ''})) %}
+
+<div{{ attributes.addClass('saho-landing-page', 'saho-taxonomy-page', 'view-' ~ view.id|clean_class) }}>
+  
+  {# Hero Section #}
+  <section class="saho-landing-hero mb-5">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-12">
+          {% if header %}
+            <div class="saho-landing-description mb-4">
+              {{ header }}
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  {# Main Content Section #}
+  <section class="saho-landing-content mb-5">
+    <div class="container">
+      <div class="row">
+        
+        {# Sidebar with filters #}
+        <div class="col-lg-3 mb-4 mb-lg-0">
+          <div class="saho-landing-sidebar p-3 rounded shadow-sm">
+            
+            {% if exposed %}
+              <div class="saho-landing-filters mb-4">
+                {{ exposed }}
+                
+                {% if feed_icons %}
+                  <div class="saho-landing-feeds mt-3 text-end">
+                    {{ feed_icons }}
+                  </div>
+                {% endif %}
+              </div>
+            {% endif %}
+            
+            <div class="sidebar-header {{ section_bg_class }} text-white p-3 rounded-top mb-3">
+              <h2 class="h5 m-0">Browse Content</h2>
+            </div>
+            
+            <div class="saho-landing-categories">
+              <ul class="list-unstyled">
+                <li class="mb-3">
+                  <a href="/archives" class="d-flex align-items-center text-decoration-none text-dark">
+                    <span class="me-2 {{ section_text_class }}"><i class="fas fa-archive"></i></span>
+                    <span>Archives</span>
+                  </a>
+                </li>
+                <li class="mb-3">
+                  <a href="/archive/collections" class="d-flex align-items-center text-decoration-none text-dark">
+                    <span class="me-2 {{ section_text_class }}"><i class="fas fa-folder"></i></span>
+                    <span>Collections</span>
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        
+        {# Main content area #}
+        <div class="col-lg-9">
+          {% if title %}
+            <h2 class="h3 mb-4 {{ section_text_class }}">{{ title }}</h2>
+          {% endif %}
+          
+          {% if rows_total is defined and rows_total > 0 %}
+            <p class="text-muted mb-4">Showing {{ rows_total }} results</p>
+          {% endif %}
+          
+          {% if rows %}
+            <div class="saho-cards-grid">
+              {{ rows }}
+            </div>
+          {% elseif empty %}
+            <div class="saho-landing-empty alert alert-info">
+              {{ empty }}
+            </div>
+          {% endif %}
+          
+          {% if pager %}
+            <div class="saho-landing-pager mt-4">
+              {{ pager }}
+            </div>
+          {% endif %}
+          
+          {% if more %}
+            <div class="saho-landing-more mt-4 text-center">
+              {{ more }}
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  {# Additional Content Section - if available #}
+  {% if attachment_after %}
+    <section class="saho-landing-additional py-4 mb-5 bg-light">
+      <div class="container">
+        <h2 class="h3 mb-4 {{ section_text_class }}">Related Content</h2>
+        <div class="saho-additional-content">
+          {{ attachment_after }}
+        </div>
+      </div>
+    </div>
+  {% endif %}
+</div>

@@ -331,6 +331,7 @@ $saho-muted-gold: #b88a2e; // Preserved gold accent
 $saho-aged-parchment: #f5f0e5; // Lightened for better contrast
 $saho-slate-blue: #3a4a64; // Deepened for more professional look
 $saho-faded-brick-red: #8b2331; // Aligned with our primary color
+$saho-forest-green: #2d5016; // South African forest green for biography
 
 .saho-bg-primary {
   background-color: $saho-deep-heritage-red !important;
@@ -2390,13 +2391,29 @@ body.offcanvas-open {
   transform: translateY(-1px);
 }
 
-/* Grid Layout */
+/* Grid Layout - Updated to use unified cards grid */
 .saho-landing-grid {
-  margin: 0 -15px;
-}
-
-.saho-landing-grid .col {
-  padding: 0 15px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+  align-items: start;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1rem;
+  }
+  
+  // Handle potential Drupal Views wrapper divs
+  > div {
+    display: contents;
+  }
+  
+  // Ensure cards are properly sized within the grid
+  .saho-card-link,
+  .saho-card {
+    display: block;
+    height: 100%;
+  }
 }
 
 /* Responsive adjustments */
@@ -2407,5 +2424,172 @@ body.offcanvas-open {
   
   .collection-card .card-content {
     padding: 16px;
+  }
+}
+
+// ==================================================
+// CONTENT TYPE COLOR CODING
+// ==================================================
+
+// Target the actual classes used by the landing page and other templates
+// Landing page uses: saho-card--archive, saho-card--place, etc.
+
+.saho-card--archive {
+  .saho-card-badge {
+    background-color: $saho-muted-gold !important;
+    color: white !important;
+  }
+  
+  .saho-card-title a:hover {
+    color: $saho-muted-gold !important;
+  }
+  
+  // Debug: Make entire card have a visible border
+  border: 3px solid $saho-muted-gold !important;
+}
+
+.saho-card--place {
+  .saho-card-badge {
+    background-color: $saho-slate-blue !important;
+    color: white !important;
+  }
+  
+  .saho-card-title a:hover {
+    color: $saho-slate-blue !important;
+  }
+  
+  // Debug: Make entire card have a visible border
+  border: 3px solid $saho-slate-blue !important;
+}
+
+.saho-card--article {
+  .saho-card-badge {
+    background-color: $saho-deep-heritage-red !important;
+    color: white !important;
+  }
+  
+  .saho-card-title a:hover {
+    color: $saho-deep-heritage-red !important;
+  }
+  
+  // Debug: Make entire card have a visible border
+  border: 3px solid $saho-deep-heritage-red !important;
+}
+
+.saho-card--biography {
+  .saho-card-badge {
+    background-color: $saho-forest-green !important;
+    color: white !important;
+  }
+  
+  .saho-card-title a:hover {
+    color: $saho-forest-green !important;
+  }
+  
+  // Debug: Make entire card have a visible border
+  border: 3px solid $saho-forest-green !important;
+}
+
+.saho-card--event {
+  .saho-card-badge {
+    background-color: $saho-dark-charcoal !important;
+    color: white !important;
+  }
+  
+  .saho-card-title a:hover {
+    color: $saho-dark-charcoal !important;
+  }
+  
+  // Debug: Make entire card have a visible border
+  border: 3px solid $saho-dark-charcoal !important;
+}
+
+// For field templates that use content-type-{type} classes
+.content-type-archive {
+  .saho-card-badge,
+  .content-type-badge {
+    background-color: $saho-slate-blue !important;
+    color: white;
+  }
+  
+  .saho-card-title a:hover {
+    color: $saho-slate-blue !important;
+  }
+}
+
+.content-type-place {
+  .saho-card-badge,
+  .content-type-badge {
+    background-color: $saho-deep-heritage-red !important;
+    color: white;
+  }
+  
+  .saho-card-title a:hover {
+    color: $saho-deep-heritage-red !important;
+  }
+}
+
+.content-type-article {
+  .saho-card-badge,
+  .content-type-badge {
+    background-color: $saho-muted-gold !important;
+    color: black;
+  }
+  
+  .saho-card-title a:hover {
+    color: $saho-muted-gold !important;
+  }
+}
+
+.content-type-biography {
+  .saho-card-badge,
+  .content-type-badge {
+    background-color: $saho-faded-brick-red !important;
+    color: white;
+  }
+  
+  .saho-card-title a:hover {
+    color: $saho-faded-brick-red !important;
+  }
+}
+
+.content-type-event {
+  .saho-card-badge,
+  .content-type-badge {
+    background-color: $saho-dark-charcoal !important;
+    color: white;
+  }
+  
+  .saho-card-title a:hover {
+    color: $saho-dark-charcoal !important;
+  }
+}
+
+// Apply to existing card labels from collection cards
+.collection-card .card-label {
+  // Archive content type
+  &.archive-label {
+    background: rgba($saho-slate-blue, 0.9);
+  }
+  
+  // Place content type  
+  &.place-label {
+    background: rgba($saho-deep-heritage-red, 0.9);
+  }
+  
+  // Article content type
+  &.article-label {
+    background: rgba($saho-muted-gold, 0.9);
+    color: black;
+  }
+  
+  // Biography content type
+  &.biography-label {
+    background: rgba($saho-faded-brick-red, 0.9);
+  }
+  
+  // Event content type
+  &.event-label {
+    background: rgba($saho-dark-charcoal, 0.9);
   }
 }
