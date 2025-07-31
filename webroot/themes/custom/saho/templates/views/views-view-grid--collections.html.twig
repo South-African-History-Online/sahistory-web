@@ -1,34 +1,25 @@
 {#
 /**
  * @file
- * Modern grid template for collections.
+ * Modern unified grid template for collections page.
+ *
+ * Available variables:
+ * - attributes: HTML attributes for the wrapping element.
+ * - title: The title of this group of rows.
+ * - view: The view object.
+ * - items: The items contained in this view.
+ * - options: The view plugin style options.
+ *
+ * @see template_preprocess_views_view_grid()
  */
 #}
 
-{# Define section-specific colors and classes for Collections #}
-{% set section_name = 'Collections' %}
-{% set section_color = 'saho-dark-charcoal' %}
-{% set section_text_class = 'saho-text-dark-charcoal' %}
-{% set section_border_class = 'saho-border-dark-charcoal' %}
-{% set section_bg_class = 'bg-dark-charcoal' %}
-
-{# Modern responsive grid layout #}
-{% set grid_classes = [
-  'saho-landing-grid',
-  'row',
-  'row-cols-1',
-  'row-cols-md-2', 
-  'row-cols-lg-3',
-  'g-4'
-] %}
-
-<div{{ attributes.addClass(grid_classes) }}>
+{# Use unified cards grid system #}
+<div{{ attributes.addClass('saho-cards-grid') }}>
   {% for row in items %}
     {% for column in row.content %}
       {% if column.content %}
-        <div class="col mb-4">
-          {{ column.content }}
-        </div>
+        {{ column.content }}
       {% endif %}
     {% endfor %}
   {% endfor %}

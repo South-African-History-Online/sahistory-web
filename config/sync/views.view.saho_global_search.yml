@@ -147,6 +147,133 @@ display:
           multi_type: separator
           multi_separator: ', '
           filter_type: xss
+        type:
+          id: type
+          table: search_api_datasource_saho_content_entity_node
+          field: type
+          relationship: none
+          group_type: group
+          admin_label: ''
+          entity_type: node
+          plugin_id: search_api_field
+          label: ''
+          exclude: false
+          alter:
+            alter_text: false
+            text: ''
+            make_link: false
+            path: ''
+            absolute: false
+            external: false
+            replace_spaces: false
+            path_case: none
+            trim_whitespace: false
+            alt: ''
+            rel: ''
+            link_class: ''
+            prefix: ''
+            suffix: ''
+            target: ''
+            nl2br: false
+            max_length: 0
+            word_boundary: true
+            ellipsis: true
+            more_link: false
+            more_link_text: ''
+            more_link_path: ''
+            strip_tags: false
+            trim: false
+            preserve_tags: ''
+            html: false
+          element_type: ''
+          element_class: ''
+          element_label_type: ''
+          element_label_class: ''
+          element_label_colon: false
+          element_wrapper_type: ''
+          element_wrapper_class: ''
+          element_default_classes: true
+          empty: ''
+          hide_empty: false
+          empty_zero: false
+          hide_alter_empty: true
+          click_sort_column: target_id
+          type: entity_reference_label
+          settings:
+            link: true
+          group_column: target_id
+          group_columns: {  }
+          group_rows: true
+          delta_limit: 0
+          delta_offset: 0
+          delta_reversed: false
+          delta_first_last: false
+          multi_type: separator
+          separator: ', '
+          field_api_classes: false
+          field_rendering: true
+          fallback_handler: search_api_entity
+          fallback_options:
+            link_to_item: false
+            use_highlighting: false
+            multi_type: separator
+            multi_separator: ', '
+            display_methods:
+              node_type:
+                display_method: label
+        search_api_solr_score_debugging:
+          id: search_api_solr_score_debugging
+          table: search_api_index_saho_content
+          field: search_api_solr_score_debugging
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: search_api
+          label: ''
+          exclude: false
+          alter:
+            alter_text: false
+            text: ''
+            make_link: false
+            path: ''
+            absolute: false
+            external: false
+            replace_spaces: false
+            path_case: none
+            trim_whitespace: false
+            alt: ''
+            rel: ''
+            link_class: ''
+            prefix: ''
+            suffix: ''
+            target: ''
+            nl2br: false
+            max_length: 0
+            word_boundary: true
+            ellipsis: true
+            more_link: false
+            more_link_text: ''
+            more_link_path: ''
+            strip_tags: false
+            trim: false
+            preserve_tags: ''
+            html: false
+          element_type: ''
+          element_class: ''
+          element_label_type: ''
+          element_label_class: ''
+          element_label_colon: false
+          element_wrapper_type: ''
+          element_wrapper_class: ''
+          element_default_classes: true
+          empty: ''
+          hide_empty: false
+          empty_zero: false
+          hide_alter_empty: true
+          link_to_item: false
+          use_highlighting: true
+          multi_type: separator
+          multi_separator: ', '
       pager:
         type: full
         options:
@@ -176,19 +303,19 @@ display:
           reset_button: false
           reset_button_label: Reset
           exposed_sorts_label: 'Sort by'
-          expose_sort_order: true
+          expose_sort_order: false
           sort_asc_label: Asc
           sort_desc_label: Desc
           text_input_required: 'Select any filter and click on Apply to see results'
           text_input_required_format: full_html
           bef:
             general:
-              autosubmit: false
-              autosubmit_exclude_textfield: false
+              autosubmit: true
+              autosubmit_exclude_textfield: true
               autosubmit_textfield_delay: 500
               autosubmit_textfield_minimum_length: 3
               autosubmit_hide: false
-              input_required: true
+              input_required: false
               allow_secondary: false
               secondary_label: 'Advanced options'
               secondary_open: false
@@ -215,6 +342,17 @@ display:
                   collapsible_disable_automatic_open: false
                   is_secondary: false
                   hide_label: false
+              type:
+                plugin_id: default
+                advanced:
+                  sort_options: false
+                  rewrite:
+                    filter_rewrite_values: ''
+                    filter_rewrite_values_key: false
+                  collapsible: false
+                  collapsible_disable_automatic_open: false
+                  is_secondary: false
+                  hide_label: false
       access:
         type: none
         options: {  }
@@ -223,6 +361,19 @@ display:
         options: {  }
       empty: {  }
       sorts:
+        search_api_relevance:
+          id: search_api_relevance
+          table: search_api_index_saho_content
+          field: search_api_relevance
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: search_api
+          order: DESC
+          expose:
+            label: Relevance
+            field_identifier: search_api_relevance
+          exposed: true
         random:
           id: random
           table: views
@@ -235,19 +386,6 @@ display:
           expose:
             label: Random
             field_identifier: random
-          exposed: true
-        search_api_relevance:
-          id: search_api_relevance
-          table: search_api_index_saho_content
-          field: search_api_relevance
-          relationship: none
-          group_type: group
-          admin_label: ''
-          plugin_id: search_api
-          order: ASC
-          expose:
-            label: Relevance
-            field_identifier: search_api_relevance
           exposed: true
       arguments: {  }
       filters:
@@ -277,7 +415,7 @@ display:
             multiple: false
             remember_roles:
               authenticated: authenticated
-            expose_fields: false
+            expose_fields: true
             placeholder: ''
             searched_fields_id: search_api_fulltext_searched_fields
             value_maxlength: 128
@@ -293,12 +431,57 @@ display:
             default_group: All
             default_group_multiple: {  }
             group_items: {  }
-          parse_mode: terms
-          min_length: null
+          parse_mode: fuzzy_terms
+          min_length: 3
           fields:
             - body
-            - rendered_item
             - title
+        type:
+          id: type
+          table: search_api_index_saho_content
+          field: type
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: search_api_options
+          operator: or
+          value:
+            archive: archive
+            article: article
+            biography: biography
+            event: event
+            place: place
+            upcomingevent: upcomingevent
+          group: 1
+          exposed: true
+          expose:
+            operator_id: type_op
+            label: 'Content type'
+            description: ''
+            use_operator: false
+            operator: type_op
+            operator_limit_selection: false
+            operator_list: {  }
+            identifier: type
+            required: false
+            remember: false
+            multiple: false
+            remember_roles:
+              authenticated: authenticated
+            reduce: true
+          is_grouped: false
+          group_info:
+            label: ''
+            description: ''
+            identifier: ''
+            optional: true
+            widget: select
+            multiple: false
+            remember: false
+            default_group: All
+            default_group_multiple: {  }
+            group_items: {  }
+          reduce_duplicates: false
       style:
         type: grid
         options:
@@ -331,7 +514,6 @@ display:
         - url
         - url.query_args
         - 'url.query_args:sort_by'
-        - 'url.query_args:sort_order'
         - 'user.node_grants:view'
       tags:
         - 'config:search_api.index.saho_content'
@@ -352,7 +534,6 @@ display:
         - url
         - url.query_args
         - 'url.query_args:sort_by'
-        - 'url.query_args:sort_order'
         - 'user.node_grants:view'
       tags:
         - 'config:search_api.index.saho_content'

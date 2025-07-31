@@ -404,12 +404,12 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
       }
     }
 
-    // Get the biography dates.
+    // Get the biography dates and format them consistently.
     if ($node->hasField('field_dob') && !$node->get('field_dob')->isEmpty()) {
-      $item['birth_date'] = $node->get('field_dob')->value;
+      $item['birth_date'] = $this->formatDateString($node->get('field_dob')->value);
     }
     if ($node->hasField('field_dod') && !$node->get('field_dod')->isEmpty()) {
-      $item['death_date'] = $node->get('field_dod')->value;
+      $item['death_date'] = $this->formatDateString($node->get('field_dod')->value);
     }
 
     // Get the biography categories.
@@ -451,6 +451,43 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
     }
 
     return $item;
+  }
+
+  /**
+   * Format date string to SAHO standard format (j F Y).
+   *
+   * @param string $date_string
+   *   The original date string in various formats.
+   *
+   * @return string
+   *   The formatted date string or original if conversion fails.
+   */
+  private function formatDateString($date_string) {
+    if (empty($date_string)) {
+      return $date_string;
+    }
+
+    // Try to parse various date formats and convert to "j F Y"
+    $formats = [
+      'd-F-Y',         // 18-July-1918
+      'd F Y',         // 18 July 1918
+      'd-M-Y',         // 18-Jul-1918
+      'd M Y',         // 18 Jul 1918
+      'j-F-Y',         // 5-December-2013
+      'j F Y',         // 5 December 2013
+      'j-M-Y',         // 5-Dec-2013
+      'j M Y',         // 5 Dec 2013
+    ];
+
+    foreach ($formats as $format) {
+      $date = \DateTime::createFromFormat($format, $date_string);
+      if ($date !== false) {
+        return $date->format('j F Y');
+      }
+    }
+
+    // If no format matches, return original string
+    return $date_string;
   }
 
 }

@@ -61,3 +61,15 @@ if (extension_loaded('redis') && !empty(getenv('REDIS_HOST'))) {
   $settings['cache']['default'] = 'cache.backend.redis';
   $settings['cache_prefix'] = 'd10_redis_';
 }
+
+$config['search_api.index.saho_global_ddev']['status'] = TRUE;
+$config['search_api.server.local_solr']['status'] = TRUE;
+$config['search_api.server.local_solr']['backend_config'] = [
+  'scheme' => 'http',
+  'host' => 'localhost',
+  'port' => 8983,
+  'path' => '/solr',
+  'core' => 'sahistory_content',
+  'username' => 'solr',
+  'password' => 'SolrRocks',
+];

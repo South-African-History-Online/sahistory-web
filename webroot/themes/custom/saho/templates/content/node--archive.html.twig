@@ -191,17 +191,17 @@
         <div class="saho-metadata-group mb-4">
           {% if node.getCreatedTime() %}
             <div class="saho-metadata-item mb-1">
-              <strong>Published:</strong> {{ node.getCreatedTime()|date("F j, Y") }}
+              <strong>Published:</strong> {{ node.getCreatedTime()|date("j F Y") }}
             </div>
           {% endif %}
           {% if node.getChangedTime() != node.getCreatedTime() %}
             <div class="saho-metadata-item mb-1">
-              <strong>Updated:</strong> {{ node.getChangedTime()|date("F j, Y") }}
+              <strong>Updated:</strong> {{ node.getChangedTime()|date("j F Y") }}
             </div>
           {% endif %}
           {% if node.field_archive_publication_date.value %}
             <div class="saho-metadata-item mb-1">
-              <strong>Archive Publication Date:</strong> {{ node.field_archive_publication_date.value|date("F j, Y") }}
+              <strong>Archive Publication Date:</strong> {{ node.field_archive_publication_date.value|date("j F Y") }}
             </div>
           {% endif %}
           {% if node.field_source.value %}
@@ -335,7 +335,9 @@
               </h2>
               <div id="collapse-{{ item.id }}" class="accordion-collapse collapse {% if loop.first %}show{% endif %}" aria-labelledby="heading-{{ item.id }}" data-bs-parent="#sahoFeatureAccordion">
                 <div class="accordion-body">
-                  {{ drupal_view(item.view, item.block, node.id()) }}
+                  <div class="saho-landing-grid">
+                    {{ drupal_view(item.view, item.block, node.id()) }}
+                  </div>
                 </div>
               </div>
             </div>

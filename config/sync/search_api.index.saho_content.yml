@@ -4,6 +4,10 @@ status: true
 dependencies:
   config:
     - field.storage.node.body
+    - field.storage.node.field_isbn
+    - field.storage.node.field_place_type
+    - field.storage.node.field_places_level3
+    - field.storage.node.field_ref_str
     - search_api.server.saho_prod
   module:
     - node
@@ -41,7 +45,7 @@ third_party_settings:
       boost: false
       interestingTerms: none
     term_modifiers:
-      slop: 3
+      slop: 1
       fuzzy: 1
       fuzzy_analyzer: true
     advanced:
@@ -65,13 +69,47 @@ field_settings:
     datasource_id: 'entity:node'
     property_path: body
     type: text
+    boost: 13.0
     dependencies:
       config:
         - field.storage.node.body
+  field_isbn:
+    label: ISBN
+    datasource_id: 'entity:node'
+    property_path: field_isbn
+    type: text
+    dependencies:
+      config:
+        - field.storage.node.field_isbn
+  field_place_type:
+    label: 'Place type '
+    datasource_id: 'entity:node'
+    property_path: field_place_type
+    type: text
+    dependencies:
+      config:
+        - field.storage.node.field_place_type
+  field_places_level3:
+    label: 'Places level 3'
+    datasource_id: 'entity:node'
+    property_path: field_places_level3
+    type: text
+    dependencies:
+      config:
+        - field.storage.node.field_places_level3
+  field_ref_str:
+    label: References
+    datasource_id: 'entity:node'
+    property_path: field_ref_str
+    type: text
+    dependencies:
+      config:
+        - field.storage.node.field_ref_str
   rendered_item:
     label: 'Rendered HTML output'
     property_path: rendered_item
     type: text
+    boost: 2.0
     configuration:
       roles:
         - anonymous
@@ -93,7 +131,15 @@ field_settings:
     label: Title
     datasource_id: 'entity:node'
     property_path: title
-    type: 'solr_text_custom:ngram'
+    type: text
+    dependencies:
+      module:
+        - node
+  type:
+    label: 'Content type'
+    datasource_id: 'entity:node'
+    property_path: type
+    type: text
     dependencies:
       module:
         - node
@@ -131,16 +177,44 @@ processor_settings:
     exclude_fields: {  }
     highlight: always
     highlight_partial: false
+  html_filter:
+    weights:
+      preprocess_index: -15
+      preprocess_query: -15
+    all_fields: false
+    fields:
+      - body
+      - rendered_item
+      - title
+      - type
+    title: true
+    alt: true
+    tags:
+      b: 2
+      h1: 5
+      h2: 3
+      h3: 2
+      strong: 2
   language_with_fallback: {  }
   rendered_item: {  }
   solr_date_range:
     weights:
       preprocess_index: 0
+  type_boost:
+    weights:
+      preprocess_index: 0
+    boosts:
+      'entity:node':
+        datasource_boost: 1.0
+        bundle_boosts:
+          article: 2.0
+          biography: 2.0
+          place: 5.0
 tracker_settings:
   default:
     indexing_order: lifo
 options:
-  cron_limit: 500
+  cron_limit: 50
   delete_on_fail: true
   index_directly: true
   track_changes_in_references: true

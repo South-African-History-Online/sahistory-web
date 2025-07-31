@@ -1,0 +1,245 @@
+/**
+ * Unified Card System
+ * 
+ * A streamlined card design system that provides consistent styling
+ * across all card types (landing pages, archives, collections, featured content)
+ */
+
+// Base card styles
+.saho-card {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  overflow: hidden;
+  transition: all 0.3s ease;
+  height: 100%;
+  position: relative;
+  
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+  }
+}
+
+// Card link wrapper
+.saho-card-link {
+  display: block;
+  height: 100%;
+  color: inherit;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  
+  &:hover,
+  &:focus {
+    text-decoration: none;
+    color: inherit;
+  }
+}
+
+// Card image wrapper - standardized dimensions and behavior
+.saho-card-image {
+  position: relative;
+  width: 100%;
+  height: 200px; // Standardized height for all cards
+  overflow: hidden;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  
+  img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    transition: transform 0.5s ease;
+  }
+  
+  .saho-card:hover & img {
+    transform: scale(1.05);
+  }
+  
+  // Placeholder styling
+  &--placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    color: rgba(255,255,255,0.7);
+  }
+}
+
+// Card badges/labels
+.saho-card-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: #B22222;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  z-index: 2;
+}
+
+// Card content area
+.saho-card-content {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+// Card title
+.saho-card-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 10px;
+  line-height: 1.4;
+}
+
+// Card subtitle/metadata
+.saho-card-subtitle {
+  display: block;
+  font-size: 0.85rem;
+  color: #6c757d;
+  margin-bottom: 12px;
+  font-weight: normal;
+}
+
+// Card description/body text
+.saho-card-description {
+  font-size: 0.9rem;
+  color: #666;
+  line-height: 1.5;
+  margin-bottom: 16px;
+  flex-grow: 1;
+}
+
+// Card footer - for button alignment
+.saho-card-footer {
+  margin-top: auto;
+  padding-top: 12px;
+}
+
+// Unified button styling
+.saho-card-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border: 1px solid #B22222;
+  border-radius: 20px;
+  color: #B22222;
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  background: transparent;
+  position: relative;
+  z-index: 2; // Ensure it's above stretched links
+  white-space: nowrap; // Prevent text wrapping
+  min-width: fit-content; // Ensure button is wide enough for content
+  
+  &:hover,
+  &:focus {
+    background-color: #B22222;
+    color: white;
+    text-decoration: none;
+    transform: translateY(-1px);
+  }
+  
+  svg {
+    transition: transform 0.3s ease;
+  }
+  
+  &:hover svg {
+    transform: translateX(2px);
+  }
+}
+
+// Card type variations
+.saho-card {
+  &--featured {
+    .saho-card-badge {
+      background: #28a745;
+    }
+  }
+  
+  &--archive {
+    .saho-card-badge {
+      background: #007bff;
+    }
+  }
+  
+  &--collection {
+    .saho-card-badge {
+      background: #6f42c1;
+    }
+  }
+  
+  &--landing {
+    .saho-card-badge {
+      background: #dc3545;
+    }
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .saho-card-image {
+    height: 160px;
+  }
+  
+  .saho-card-content {
+    padding: 16px;
+  }
+  
+  .saho-card-title {
+    font-size: 1rem;
+  }
+  
+  .saho-card:hover {
+    transform: translateY(-3px);
+  }
+}
+
+// Grid system compatibility
+.saho-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+  align-items: start; // Prevent cards from stretching to match tallest
+  
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1rem;
+  }
+  
+  // Handle potential Drupal Views wrapper divs
+  > div {
+    display: contents; // Make wrapper divs transparent to CSS Grid
+  }
+  
+  // Ensure cards are properly sized within the grid
+  .saho-card-link,
+  .saho-card {
+    display: block;
+    height: 100%;
+  }
+}
+
+// Bootstrap grid compatibility
+.row.saho-cards-row {
+  .col {
+    margin-bottom: 1.5rem;
+    
+    @media (max-width: 768px) {
+      margin-bottom: 1rem;
+    }
+  }
+}
