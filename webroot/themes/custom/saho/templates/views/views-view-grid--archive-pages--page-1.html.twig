@@ -1,7 +1,7 @@
 {#
 /**
  * @file
- * Modern unified grid template for Collections display.
+ * Modern unified grid template for Archives display.
  *
  * Available variables:
  * - attributes: HTML attributes for the wrapping element.
@@ -25,7 +25,7 @@
         {% set body = false %}
         {% set url = false %}
         {% set date = false %}
-        {% set content_type = 'Collection' %}
+        {% set content_type = 'Archive' %}
         
         {# Get node entity from various possible sources #}
         {% if column.content['#row'] is defined %}
@@ -70,6 +70,19 @@
             {% if url_match %}
               {% set url = url_match %}
             {% endif %}
+          {% endif %}
+          
+          {# Extract content type from rendered content #}
+          {% if 'biography' in content_html %}
+            {% set content_type = 'Biography' %}
+          {% elseif 'article' in content_html %}
+            {% set content_type = 'Article' %}
+          {% elseif 'event' in content_html %}
+            {% set content_type = 'Event' %}
+          {% elseif 'place' in content_html %}
+            {% set content_type = 'Place' %}
+          {% elseif 'archive' in content_html %}
+            {% set content_type = 'Archive' %}
           {% endif %}
         {% endif %}
 
@@ -131,8 +144,8 @@
                       <i class="fas fa-user"></i>
                     {% elseif content_type == 'Article' %}
                       <i class="fas fa-newspaper"></i>
-                    {% elseif content_type == 'Collection' %}
-                      <i class="fas fa-folder-open"></i>
+                    {% elseif content_type == 'Event' %}
+                      <i class="fas fa-calendar"></i>
                     {% elseif content_type == 'Place' %}
                       <i class="fas fa-map-marker-alt"></i>
                     {% elseif content_type == 'Archive' %}
@@ -173,7 +186,7 @@
                 {# Button in footer for proper alignment #}
                 <div class="saho-card-footer">
                   <span class="saho-card-button">
-                    View Collection
+                    Read more
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
                       <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/>
                     </svg>
