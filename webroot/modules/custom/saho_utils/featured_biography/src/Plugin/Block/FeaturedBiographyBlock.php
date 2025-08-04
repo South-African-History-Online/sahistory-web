@@ -72,13 +72,15 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
    */
   public function defaultConfiguration() {
     return [
-      'selection_method' => 'random',
+      'selection_method' => 'specific',
       'specific_nid' => '',
+      'specific_nids' => '',
       'category' => '',
       'display_mode' => 'full',
       'highlight_category' => FALSE,
       'entity_count' => 1,
       'category_label' => '',
+      'enable_carousel' => FALSE,
     ];
   }
 
@@ -92,26 +94,47 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
     $form['selection_method'] = [
       '#type' => 'radios',
       '#title' => $this->t('Selection Method'),
+      '#description' => $this->t('Choose how to select biographies to display.'),
       '#options' => [
-        'random' => $this->t('Random Biography'),
-        'specific' => $this->t('Specific Biography'),
-        'category' => $this->t('By Category'),
+        'specific' => $this->t('Specific Biography (manual selection)'),
+        'category' => $this->t('By Category (all biographies in selected category)'),
       ],
       '#default_value' => $config['selection_method'],
+      '#required' => TRUE,
+    ];
+
+    $form['entity_count'] = [
+      '#type' => 'select',
+      '#title' => $this->t('Number of Biographies'),
+      '#description' => $this->t('How many biographies to display (1-9).'),
+      '#options' => [
+        1 => '1 Biography',
+        2 => '2 Biographies',
+        3 => '3 Biographies',
+        4 => '4 Biographies',
+        5 => '5 Biographies',
+        6 => '6 Biographies',
+        7 => '7 Biographies',
+        8 => '8 Biographies',
+        9 => '9 Biographies',
+      ],
+      '#default_value' => $config['entity_count'],
       '#required' => TRUE,
     ];
 
     $form['specific_nid'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Biography Node ID'),
-      '#description' => $this->t('Enter the node ID of the specific biography to feature.'),
+      '#description' => $this->t('Enter the node ID of the specific biography to feature (for single selection).'),
       '#default_value' => $config['specific_nid'],
       '#states' => [
         'visible' => [
           ':input[name="settings[selection_method]"]' => ['value' => 'specific'],
+          ':input[name="settings[entity_count]"]' => ['value' => '1'],
         ],
         'required' => [
           ':input[name="settings[selection_method]"]' => ['value' => 'specific'],
+          ':input[name="settings[entity_count]"]' => ['value' => '1'],
         ],
       ],
     ];
@@ -119,14 +142,17 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
     // Get all taxonomy terms for people categories.
     $terms = [];
     try {
+      // Use the standard people category vocabulary.
+      $vocab_name = 'field_people_category';
       $terms_entities = $this->entityTypeManager->getStorage('taxonomy_term')
-        ->loadByProperties(['vid' => 'field_people_category']);
+        ->loadByProperties(['vid' => $vocab_name]);
+      
       foreach ($terms_entities as $term) {
         $terms[$term->id()] = $term->label();
       }
     }
     catch (\Exception $e) {
-      // Log the error or handle it appropriately.
+      \Drupal::logger('featured_biography')->error('Error loading taxonomy terms: @message', ['@message' => $e->getMessage()]);
     }
 
     $form['category'] = [
@@ -146,6 +172,39 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
       ],
     ];
 
+    // Add multiple node IDs field for specific selection.
+    $form['specific_nids'] = [
+      '#type' => 'textarea',
+      '#title' => $this->t('Biography Node IDs'),
+      '#description' => $this->t('Enter node IDs separated by commas (e.g., 123, 456, 789) for multiple specific biographies.'),
+      '#default_value' => $config['specific_nids'] ?? '',
+      '#states' => [
+        'visible' => [
+          ':input[name="settings[selection_method]"]' => ['value' => 'specific'],
+          ':input[name="settings[entity_count]"]' => ['!value' => '1'],
+        ],
+        'required' => [
+          ':input[name="settings[selection_method]"]' => ['value' => 'specific'],
+          ':input[name="settings[entity_count]"]' => ['!value' => '1'],
+        ],
+      ],
+      '#rows' => 3,
+    ];
+
+    // Add helpful message if no categories are found.
+    if (empty($terms)) {
+      $form['category_help'] = [
+        '#type' => 'item',
+        '#title' => $this->t('No Categories Found'),
+        '#description' => $this->t('No biography categories were found. Please create a "People Category" vocabulary and add some terms, or check that biography nodes have the field_people_category field.'),
+        '#states' => [
+          'visible' => [
+            ':input[name="settings[selection_method]"]' => ['value' => 'category'],
+          ],
+        ],
+      ];
+    }
+
     $form['display_mode'] = [
       '#type' => 'radios',
       '#title' => $this->t('Display Mode'),
@@ -157,26 +216,7 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
       '#required' => TRUE,
     ];
 
-    $form['entity_count'] = [
-      '#type' => 'number',
-      '#title' => $this->t('Number of Biographies'),
-      '#description' => $this->t('Number of biographies to display (max 5). Only applicable for @type1 or @type2 selection.',
-        ['@type1' => 'Random', '@type2' => 'Category']),
-      '#default_value' => $config['entity_count'],
-      '#min' => 1,
-      '#max' => 5,
-      '#required' => TRUE,
-      '#states' => [
-        'visible' => [
-          [':input[name="settings[selection_method]"]' => ['value' => 'random']],
-          'or',
-          [':input[name="settings[selection_method]"]' => ['value' => 'category']],
-        ],
-        'disabled' => [
-          ':input[name="settings[selection_method]"]' => ['value' => 'specific'],
-        ],
-      ],
-    ];
+    // Remove duplicate entity_count field - using the select version above
 
     $form['highlight_category'] = [
       '#type' => 'checkbox',
@@ -197,6 +237,18 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
       ],
     ];
 
+    $form['enable_carousel'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Enable Carousel/Scroller'),
+      '#description' => $this->t('Enable carousel functionality for multiple biographies (great for mobile and desktop engagement).'),
+      '#default_value' => $config['enable_carousel'],
+      '#states' => [
+        'visible' => [
+          [':input[name="settings[entity_count]"]' => ['!value' => '1']],
+        ],
+      ],
+    ];
+
     return $form;
   }
 
@@ -206,11 +258,13 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
   public function blockSubmit($form, FormStateInterface $form_state) {
     $this->configuration['selection_method'] = $form_state->getValue('selection_method');
     $this->configuration['specific_nid'] = $form_state->getValue('specific_nid');
+    $this->configuration['specific_nids'] = $form_state->getValue('specific_nids');
     $this->configuration['category'] = $form_state->getValue('category');
     $this->configuration['display_mode'] = $form_state->getValue('display_mode');
     $this->configuration['highlight_category'] = $form_state->getValue('highlight_category');
     $this->configuration['entity_count'] = $form_state->getValue('entity_count');
     $this->configuration['category_label'] = $form_state->getValue('category_label');
+    $this->configuration['enable_carousel'] = $form_state->getValue('enable_carousel');
   }
 
   /**
@@ -220,8 +274,36 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
     $biography_data = $this->getBiographyItem();
 
     if (!$biography_data) {
+      // Create a sample/demo biography to show the layout
+      $demo_biography = [
+        'nid' => 0,
+        'title' => $this->t('Sample Biography'),
+        'url' => '#',
+        'birth_date' => '1 January 1900',
+        'death_date' => '31 December 1990',
+        'categories' => [
+          ['name' => $this->t('Freedom Fighter'), 'url' => '#'],
+        ],
+        'position' => $this->t('Political Activist'),
+        'body_summary' => $this->t('This is a sample biography to demonstrate the layout. Configure this block to show real biographies from your content.'),
+        'is_demo' => TRUE,
+      ];
+      
+      // Provide helpful error message for admins
+      $current_user = \Drupal::currentUser();
+      $show_admin_info = $current_user->hasPermission('administer blocks');
+      
       return [
-        '#markup' => $this->t('No biography available.'),
+        '#theme' => 'featured_biography_block',
+        '#biography_item' => $demo_biography,
+        '#display_mode' => $this->configuration['display_mode'],
+        '#is_demo' => TRUE,
+        '#show_admin_info' => $show_admin_info,
+        '#selection_method' => $this->configuration['selection_method'],
+        '#cache' => [
+          'max-age' => 300,
+          'contexts' => ['user.permissions'],
+        ],
       ];
     }
 
@@ -248,6 +330,7 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
       '#display_mode' => $this->configuration['display_mode'],
       '#highlight_category' => $this->configuration['highlight_category'],
       '#entity_count' => $this->configuration['entity_count'],
+      '#enable_carousel' => $this->configuration['enable_carousel'],
       '#cache' => [
         'max-age' => 3600,
         'contexts' => ['url'],
@@ -266,22 +349,42 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
     $nodes = [];
 
     try {
-      // For specific biography, always use entity_count = 1.
-      $entity_count = $this->configuration['selection_method'] === 'specific'
-        ? 1
-        : min((int) $this->configuration['entity_count'], 5);
-      $entity_count = max($entity_count, 1);
+      // Get the configured entity count (1-9).
+      $entity_count = max(1, min((int) $this->configuration['entity_count'], 9));
+
+      // Use the standard biography content type.
+      $content_type = 'biography';
+      
+      // Verify the content type exists.
+      $type_exists = $this->entityTypeManager->getStorage('node_type')->load($content_type);
+      if (!$type_exists) {
+        \Drupal::logger('featured_biography')->warning('Biography content type not found. Please ensure "biography" content type exists.');
+        return NULL;
+      }
 
       $query = $this->entityTypeManager->getStorage('node')->getQuery()
         ->condition('status', 1)
-        ->condition('type', 'biography')
+        ->condition('type', $content_type)
         ->accessCheck(TRUE);
 
       // Apply selection criteria.
       switch ($this->configuration['selection_method']) {
         case 'specific':
-          if (!empty($this->configuration['specific_nid'])) {
-            $query->condition('nid', $this->configuration['specific_nid']);
+          $nids_to_load = [];
+          
+          // Handle single specific node ID.
+          if ($entity_count == 1 && !empty($this->configuration['specific_nid'])) {
+            $nids_to_load[] = $this->configuration['specific_nid'];
+          }
+          // Handle multiple specific node IDs.
+          elseif ($entity_count > 1 && !empty($this->configuration['specific_nids'])) {
+            $nids_string = str_replace([' ', "\n", "\r"], '', $this->configuration['specific_nids']);
+            $nids_array = array_filter(explode(',', $nids_string));
+            $nids_to_load = array_slice($nids_array, 0, $entity_count);
+          }
+          
+          if (!empty($nids_to_load)) {
+            $query->condition('nid', $nids_to_load, 'IN');
           }
           break;
 
@@ -289,11 +392,6 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
           if (!empty($this->configuration['category'])) {
             $query->condition('field_people_category', $this->configuration['category']);
           }
-          break;
-
-        case 'random':
-        default:
-          // Random selection will be handled after query execution.
           break;
       }
 
@@ -304,22 +402,8 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
       $nids = $query->execute();
 
       if (!empty($nids)) {
-        if ($this->configuration['selection_method'] == 'random' && count($nids) > $entity_count) {
-          // Randomly select the specified number of biographies.
-          $selected_nids = [];
-          $keys = array_rand($nids, $entity_count);
-          if (!is_array($keys)) {
-            $keys = [$keys];
-          }
-          foreach ($keys as $key) {
-            $selected_nids[] = $nids[$key];
-          }
-          $nodes = $this->entityTypeManager->getStorage('node')->loadMultiple($selected_nids);
-        }
-        else {
-          // Load all biographies up to the specified limit.
-          $nodes = $this->entityTypeManager->getStorage('node')->loadMultiple($nids);
-        }
+        // Load all selected biographies.
+        $nodes = $this->entityTypeManager->getStorage('node')->loadMultiple($nids);
       }
     }
     catch (\Exception $e) {
@@ -331,9 +415,9 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
       return NULL;
     }
 
-    // If only one biography is requested or found, return a single item
-    // for backward compatibility.
-    if ($entity_count == 1 || count($nodes) == 1) {
+    // If only one biography is requested, return a single item for
+    // backward compatibility.
+    if ($entity_count == 1) {
       $node = reset($nodes);
       if ($node) {
         return $this->buildBiographyItem($node);

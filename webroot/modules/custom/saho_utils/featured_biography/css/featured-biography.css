@@ -14,6 +14,31 @@
   transition: box-shadow 0.3s ease;
 }
 
+/* Demo card styling */
+.saho-card--demo {
+  position: relative;
+  opacity: 0.85;
+}
+
+.saho-card--demo::before {
+  content: 'DEMO';
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: #ffc107;
+  color: #000;
+  padding: 4px 8px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  border-radius: 4px;
+  z-index: 1;
+}
+
+.saho-card--demo .saho-card-link {
+  pointer-events: none;
+  cursor: default;
+}
+
 .featured-biography-block:hover {
   box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
 }
@@ -255,7 +280,18 @@
   padding: 1.25rem;
 }
 
-/* Responsive styles */
+/* Enhanced responsive design for optimal screen utilization */
+@media (max-width: 1024px) {
+  .featured-biography-block {
+    margin: 0 0.5rem 1.5rem 0.5rem;
+  }
+  
+  .featured-biography-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.25rem;
+  }
+}
+
 @media (max-width: 991px) {
   .featured-biography-image {
     flex: 0 0 35%;
@@ -273,6 +309,15 @@
 }
 
 @media (max-width: 768px) {
+  /* Enhanced mobile width utilization */
+  .featured-biography-block {
+    margin: 0 0.5rem 1.25rem 0.5rem;
+  }
+  
+  .featured-biography-content {
+    padding: 1rem;
+  }
+  
   .featured-biography-item {
     flex-direction: column;
   }
@@ -295,15 +340,30 @@
   .compact-mode .featured-biography-title {
     font-size: 1.2rem;
   }
+  
+  .featured-biography-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    padding: 0 0.5rem;
+  }
 }
 
-@media (max-width: 576px) {
+@media (max-width: 480px) {
+  /* Maximum width utilization on small screens */
+  .featured-biography-block {
+    margin: 0 0.25rem 1rem 0.25rem;
+  }
+  
+  .featured-biography-header {
+    padding: 0.875rem 1rem;
+  }
+  
   .featured-biography-header h2 {
     font-size: 1.3rem;
   }
 
   .featured-biography-content {
-    padding: 1rem;
+    padding: 0.875rem;
   }
 
   .featured-biography-title {
@@ -312,5 +372,7 @@
 
   .featured-biography-grid {
     grid-template-columns: 1fr;
+    gap: 0.875rem;
+    padding: 0 0.25rem;
   }
 }
