@@ -42,6 +42,7 @@ class NodeFetcher {
 
   /**
    * Load events that potentially match a date pattern.
+   *
    * Only loads events that are featured on the front page.
    *
    * @param string $month_day
@@ -50,7 +51,7 @@ class NodeFetcher {
    * @return array
    *   Array of Node objects.
    */
-  public function loadPotentialEvents($month_day = null) {
+  public function loadPotentialEvents($month_day = NULL) {
     try {
       $query = $this->entityTypeManager->getStorage('node')->getQuery();
       $query->condition('type', 'event')
@@ -59,17 +60,17 @@ class NodeFetcher {
         ->accessCheck(TRUE)
         ->sort('field_this_day_in_history_3', 'DESC');
 
-      // If a specific month-day is provided, use LIKE to get potential matches
+      // If a specific month-day is provided, use LIKE to get potential matches.
       if ($month_day) {
         $query->condition('field_this_day_in_history_3', "%-$month_day", 'LIKE');
         $this->logger->info('NodeFetcher searching for events with date ending in: %-@month_day', [
           '@month_day' => $month_day,
         ]);
       }
-      
-      // Limit to reasonable number for performance
+
+      // Limit to reasonable number for performance.
       $query->range(0, 500);
-      
+
       $nids = $query->execute();
 
       if ($nids) {
@@ -89,6 +90,55 @@ class NodeFetcher {
     return [];
   }
 
+  /**
+   * Load ALL events that match a date pattern for birthday feature.
+   *
+   * Unlike loadPotentialEvents(), this method returns ALL events that match
+   * the specified date pattern, not just those featured on the front page.
+   *
+   * @param string $month_day
+   *   The month-day pattern to search for (e.g., "08-02").
+   *
+   * @return array
+   *   Array of Node objects.
+   */
+  public function loadAllBirthdayEvents($month_day) {
+    try {
+      $query = $this->entityTypeManager->getStorage('node')->getQuery();
+      $query->condition('type', 'event')
+        ->condition('status', 1)
+        ->accessCheck(TRUE)
+        ->sort('field_this_day_in_history_3', 'DESC');
+
+      // If a specific month-day is provided, use LIKE to get potential matches.
+      if ($month_day) {
+        $query->condition('field_this_day_in_history_3', "%-$month_day", 'LIKE');
+        $this->logger->info('NodeFetcher searching for ALL birthday events with date ending in: %-@month_day', [
+          '@month_day' => $month_day,
+        ]);
+      }
+
+      // Limit to reasonable number for performance.
+      $query->range(0, 500);
+
+      $nids = $query->execute();
+
+      if ($nids) {
+        $nodes = $this->entityTypeManager->getStorage('node')->loadMultiple($nids);
+        $this->logger->info('NodeFetcher found @count potential birthday event nodes: @nids', [
+          '@count' => count($nodes),
+          '@nids' => implode(', ', array_slice(array_keys($nids), 0, 10)) . (count($nids) > 10 ? '...' : ''),
+        ]);
+        return $nodes;
+      }
+    }
+    catch (\Exception $e) {
+      $this->logger->error('Error loading birthday event nodes: @message', [
+        '@message' => $e->getMessage(),
+      ]);
+    }
+    return [];
+  }
 
   /**
    * Get all available months and days that have events.
@@ -149,6 +199,5 @@ class NodeFetcher {
 
     return $dates;
   }
-
 
 }
