@@ -1,200 +1,228 @@
 {#
 /**
  * @file
- * Default theme implementation to display a featured biography block.
- *
- * Available variables:
- * - biography_data: An array of biography data.
- *   - items: An array of biography items (when multiple items are displayed).
- *   - category: Category information (when highlighting is enabled).
- *     - id: The category ID.
- *     - name: The category name.
- *     - url: The URL to the category.
- *     - custom_label: Custom label for the category.
- *   OR (for backward compatibility with single item):
- *   - nid: The node ID.
- *   - title: The biography title.
- *   - url: The URL to the biography.
- *   - image: The URL to the biography image.
- *   - birth_date: The birth date.
- *   - death_date: The death date.
- *   - categories: An array of categories.
- *     - id: The category ID.
- *     - name: The category name.
- *     - url: The URL to the category.
- *   - body: The biography body.
- *   - body_summary: The biography body summary.
- *   - position: The position held by the person.
- * - display_mode: The display mode (full or compact).
- * - highlight_category: Whether to highlight the category.
- * - entity_count: Number of biographies to display.
- *
- * @ingroup themeable
+ * Featured biography block template.
  */
 #}
-<div class="featured-biography-block">
-  {# Handle both old (biography_item) and new (biography_data) structures #}
-  {% if biography_item is defined or biography_data is defined %}
-    {% if highlight_category is defined and highlight_category and biography_data.category is defined %}
-      <div class="mb-4">
-        <h2 class="block-title">
-          {% if biography_data.category.custom_label %}
-            {{ biography_data.category.custom_label }}
-          {% else %}
-            {{ biography_data.category.name }} {{ 'Biographies'|t }}
-          {% endif %}
-        </h2>
-        <a href="{{ biography_data.category.url }}" class="btn btn-sm btn-outline-primary mt-2">
-          <i class="fas fa-users me-1"></i>{{ 'View all'|t }}
-        </a>
-      </div>
-    {% else %}
-      <h2 class="block-title mb-4">{{ 'Featured Biography'|t }}</h2>
-    {% endif %}
-    
-    <div class="featured-biography-content">
-      {# Show admin info for demo content #}
-      {% if is_demo and show_admin_info %}
-        <div class="alert alert-warning mb-3">
-          <h5><i class="fas fa-tools me-2"></i>{{ 'Configuration Needed'|t }}</h5>
-          <p class="mb-2">{{ 'This is demo content. To show real biographies:'|t }}</p>
-          <ul class="mb-0 small">
-            <li>{{ 'Create biography content type with fields: field_bio_pic, field_dob, field_dod, field_people_category'|t }}</li>
-            <li>{{ 'Publish some biography nodes'|t }}</li>
-            <li>{{ 'Current selection method:'|t }} <strong>{{ selection_method }}</strong></li>
-          </ul>
-        </div>
-      {% endif %}
-      
-      {# Handle multiple biographies #}
-      {% if biography_data is defined and biography_data.items is defined %}
-        <div class="saho-cards-grid">
-          {% for item in biography_data.items %}
-            <div class="saho-card saho-card--featured">
-              <a href="{{ item.url }}" class="saho-card-link">
-                {% if item.image %}
-                  <div class="saho-card-image">
-                    <img src="{{ item.image }}" alt="{{ item.title|striptags }}" loading="lazy" />
-                  </div>
-                {% else %}
-                  <div class="saho-card-image saho-card-image--placeholder">
-                    <i class="fas fa-user"></i>
-                  </div>
-                {% endif %}
-                
-                <div class="saho-card-content">
-                  {% if item.categories %}
-                    <div class="saho-card-badge">
-                      {{ item.categories[0].name }}
-                    </div>
-                  {% endif %}
-                  
-                  <h3 class="saho-card-title">{{ item.title }}</h3>
-                  
-                  {% if item.birth_date or item.death_date %}
-                    <div class="saho-card-subtitle">
-                      <i class="far fa-calendar-alt me-1"></i>
-                      {% if item.birth_date %}{{ item.birth_date }}{% endif %}
-                      {% if item.birth_date and item.death_date %} - {% endif %}
-                      {% if item.death_date %}{{ item.death_date }}{% endif %}
-                    </div>
-                  {% endif %}
-                  
-                  {% if item.position %}
-                    <div class="saho-card-subtitle">
-                      <i class="fas fa-briefcase me-1"></i>
-                      {{ item.position|striptags }}
-                    </div>
-                  {% endif %}
-                  
-                  {% if item.body_summary %}
-                    <div class="saho-card-description">
-                      {{ item.body_summary|striptags|truncate(120, true, '...') }}
-                    </div>
-                  {% endif %}
-                  
-                  <div class="saho-card-footer">
-                    <span class="saho-card-button">
-                      {{ 'Read biography'|t }}
-                      <i class="fas fa-arrow-right"></i>
-                    </span>
-                  </div>
+<div class="featured-biography-block{% if enable_carousel %} enable-carousel{% endif %}">
+  {# Add block title #}
+  <h2 class="block-title">{{ display_title }}</h2>
+  
+  {% if block_description is not empty %}
+    <p class="block-description">{{ block_description }}</p>
+  {% endif %}
+
+  {% if biography_data is defined and biography_data is not empty and biography_data.items is defined and biography_data.items is not empty %}
+    {# Multiple biographies display #}
+    <div class="saho-cards-grid">
+      {% for item in biography_data.items %}
+        <div class="saho-card{% if item.is_demo %} saho-card--demo{% endif %}">
+          <a href="{{ item.url }}" class="saho-card-link">
+            <div class="saho-card-image">
+              {% if item.image %}
+                <img src="{{ item.image }}" alt="{{ item.title|striptags }}" />
+              {% else %}
+                <div class="saho-card-image--placeholder">
+                  <i class="fas fa-user-circle fa-3x"></i>
                 </div>
-              </a>
+              {% endif %}
             </div>
-          {% endfor %}
-        </div>
-      {# Handle single biography - either from old structure or new structure #}
-      {% elseif biography_item is defined %}
-        {% if biography_item.is_demo %}
-          <div class="saho-card saho-card--featured saho-card--demo">
-        {% else %}
-          <div class="saho-card saho-card--featured">
-        {% endif %}
-          <a href="{{ biography_item.url }}" class="saho-card-link">
-            {% if biography_item.image %}
-              <div class="saho-card-image">
-                <img src="{{ biography_item.image }}" alt="{{ biography_item.title|striptags }}" loading="lazy" />
-              </div>
-            {% else %}
-              <div class="saho-card-image saho-card-image--placeholder">
-                <i class="fas fa-user"></i>
-              </div>
-            {% endif %}
-            
             <div class="saho-card-content">
-              {% if biography_item.categories %}
-                <div class="saho-card-badge">
-                  {{ biography_item.categories[0].name }}
-                </div>
+              {% if item.categories is defined and item.categories is not empty %}
+                {% for category in item.categories|slice(0, 1) %}
+                  <div class="saho-card-badge">{{ category.name }}</div>
+                {% endfor %}
               {% endif %}
-              
-              <h3 class="saho-card-title">{{ biography_item.title }}</h3>
-              
-              {% if biography_item.birth_date or biography_item.death_date %}
-                <div class="saho-card-subtitle">
-                  <i class="far fa-calendar-alt me-1"></i>
-                  {% if biography_item.birth_date %}{{ biography_item.birth_date }}{% endif %}
-                  {% if biography_item.birth_date and biography_item.death_date %} - {% endif %}
-                  {% if biography_item.death_date %}{{ biography_item.death_date }}{% endif %}
-                </div>
+              <h3 class="saho-card-title">{{ item.title|raw }}</h3>
+              {% if item.dates %}
+                <div class="saho-card-subtitle">{{ item.dates }}</div>
               {% endif %}
-              
-              {% if biography_item.position %}
-                <div class="saho-card-subtitle">
-                  <i class="fas fa-briefcase me-1"></i>
-                  {{ biography_item.position|striptags }}
-                </div>
-              {% endif %}
-              
-              {% if biography_item.body_summary %}
+              {% if item.body %}
                 <div class="saho-card-description">
-                  {{ biography_item.body_summary|striptags|truncate(120, true, '...') }}
+                  {{ item.body|raw|striptags|truncate(150, true, '...') }}
                 </div>
               {% endif %}
-              
               <div class="saho-card-footer">
                 <span class="saho-card-button">
                   {{ 'Read biography'|t }}
-                  <i class="fas fa-arrow-right"></i>
+                  <i class="fas fa-arrow-right ml-2"></i>
                 </span>
               </div>
             </div>
           </a>
         </div>
-      {% endif %}
+      {% endfor %}
+    </div>
+    
+    {% if enable_carousel and biography_data.items|length > 1 %}
+      <div class="featured-biography-carousel-controls">
+        <button class="featured-bio-prev-btn carousel-button" type="button" 
+          onclick="var grid = this.closest('.featured-biography-block').querySelector('.saho-cards-grid'); 
+                  var style = window.getComputedStyle(grid);
+                  var matrix = new DOMMatrix(style.transform);
+                  var currentX = matrix.m41;
+                  var cardWidth = grid.querySelector('.saho-card').offsetWidth + 24;
+                  var cardsPerView = 3;
+                  var cardIndex = Math.floor(Math.abs(currentX) / cardWidth);
+                  // Move one full view (3 cards) backward
+                  var newCardIndex = Math.max(0, cardIndex - cardsPerView);
+                  var newX = -newCardIndex * cardWidth;
+                  
+                  // Add smooth animation
+                  grid.style.transition = 'transform 0.5s ease';
+                  grid.style.transform = 'translateX(' + newX + 'px)';
+                  
+                  // Update active indicator
+                  var indicators = this.closest('.featured-biography-carousel-controls').querySelectorAll('.featured-bio-indicator');
+                  var activeIndex = Math.floor(newCardIndex / cardsPerView);
+                  for (var j = 0; j < indicators.length; j++) {
+                    indicators[j].classList.remove('active');
+                    if (j === activeIndex) {
+                      indicators[j].classList.add('active');
+                    }
+                  }
+                  
+                  this.classList.add('button-clicked');
+                  setTimeout(function() { 
+                    var btn = document.querySelector('.button-clicked'); 
+                    if (btn) btn.classList.remove('button-clicked'); 
+                  }, 300);
+                  
+                  console.log('Previous button clicked, showing cards starting at index: ' + newCardIndex);
+                  return false;"
+          aria-label="{{ 'Previous biography'|t }}">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+        <div class="featured-bio-indicators">
+          {% for i in 0..((biography_data.items|length / 3)|round(0, 'ceil') - 1) %}
+            <button 
+              class="featured-bio-indicator{% if loop.first %} active{% endif %}" 
+              type="button"
+              onclick="var grid = this.closest('.featured-biography-block').querySelector('.saho-cards-grid');
+                      var cardWidth = grid.querySelector('.saho-card').offsetWidth + 24;
+                      var cardsPerView = 3;
+                      var newCardIndex = {{ i }} * cardsPerView;
+                      var newX = -newCardIndex * cardWidth;
+                      
+                      // Add smooth animation
+                      grid.style.transition = 'transform 0.5s ease';
+                      grid.style.transform = 'translateX(' + newX + 'px)';
+                      
+                      var indicators = this.closest('.featured-bio-indicators').querySelectorAll('.featured-bio-indicator');
+                      for (var j = 0; j < indicators.length; j++) {
+                        indicators[j].classList.remove('active');
+                      }
+                      this.classList.add('active');
+                      console.log('Indicator ' + {{ i }} + ' clicked, showing cards starting at index: ' + newCardIndex);
+                      return false;"
+              data-slide-to="{{ i }}" 
+              aria-label="{{ 'Biography'|t }} {{ i + 1 }}"
+            ></button>
+          {% endfor %}
+        </div>
+        <button class="featured-bio-next-btn carousel-button" type="button" 
+          onclick="var grid = this.closest('.featured-biography-block').querySelector('.saho-cards-grid'); 
+                  var style = window.getComputedStyle(grid);
+                  var matrix = new DOMMatrix(style.transform);
+                  var currentX = matrix.m41;
+                  var cardWidth = grid.querySelector('.saho-card').offsetWidth + 24;
+                  var cardsPerView = 3;
+                  var cardIndex = Math.floor(Math.abs(currentX) / cardWidth);
+                  // Move one full view (3 cards) forward
+                  var newCardIndex = Math.min(grid.querySelectorAll('.saho-card').length - cardsPerView, cardIndex + cardsPerView);
+                  var newX = -newCardIndex * cardWidth;
+                  
+                  // Add smooth animation
+                  grid.style.transition = 'transform 0.5s ease';
+                  grid.style.transform = 'translateX(' + newX + 'px)';
+                  
+                  // Update active indicator
+                  var indicators = this.closest('.featured-biography-carousel-controls').querySelectorAll('.featured-bio-indicator');
+                  var activeIndex = Math.floor(newCardIndex / cardsPerView);
+                  for (var j = 0; j < indicators.length; j++) {
+                    indicators[j].classList.remove('active');
+                    if (j === activeIndex) {
+                      indicators[j].classList.add('active');
+                    }
+                  }
+                  
+                  this.classList.add('button-clicked');
+                  setTimeout(function() { 
+                    var btn = document.querySelector('.button-clicked'); 
+                    if (btn) btn.classList.remove('button-clicked'); 
+                  }, 300);
+                  
+                  console.log('Next button clicked, showing cards starting at index: ' + newCardIndex);
+                  return false;" 
+          aria-label="{{ 'Next biography'|t }}">
+          <i class="fas fa-chevron-right"></i>
+        </button>
+      </div>
+    {% endif %}
+    
+  {% elseif biography_item is defined and biography_item is not empty %}
+    {# Single biography display #}
+    <div class="featured-biography-content">
+      <div class="featured-biography-item">
+        {% if biography_item.image %}
+          <div class="featured-biography-image">
+            <a href="{{ biography_item.url }}">
+              <img src="{{ biography_item.image }}" alt="{{ biography_item.title|striptags }}" />
+            </a>
+          </div>
+        {% endif %}
+        <div class="featured-biography-details">
+          {% if biography_item.category %}
+            <div class="featured-biography-categories">
+              <a href="{{ biography_item.category_url }}" class="featured-biography-category">{{ biography_item.category }}</a>
+            </div>
+          {% endif %}
+          <h3 class="featured-biography-title">
+            <a href="{{ biography_item.url }}">{{ biography_item.title|raw }}</a>
+          </h3>
+          {% if biography_item.dates %}
+            <div class="featured-biography-dates">{{ biography_item.dates }}</div>
+          {% endif %}
+          {% if biography_item.position %}
+            <div class="featured-biography-position">{{ biography_item.position }}</div>
+          {% endif %}
+          {% if biography_item.body %}
+            <div class="featured-biography-summary">
+              {{ biography_item.body|raw }}
+            </div>
+          {% endif %}
+          <div class="featured-biography-read-more">
+            <a href="{{ biography_item.url }}" class="featured-biography-link">{{ 'Read biography'|t }}</a>
+          </div>
+        </div>
+      </div>
     </div>
   {% else %}
-    <div class="featured-biography-content">
-      <h2 class="block-title mb-4">{{ 'Featured Biography'|t }}</h2>
-      <div class="alert alert-info text-center">
-        <i class="fas fa-info-circle me-2"></i>
-        {% if error_message %}
-          {{ error_message|raw }}
-        {% else %}
-          {{ 'No featured biography available.'|t }}
+    {# Empty state #}
+    <div class="featured-biography-empty">
+      <p>{{ 'No featured biography available at this time.'|t }}</p>
+    </div>
+  {% endif %}
+  
+  {% if show_admin_info %}
+    <div class="featured-biography-admin-info">
+      <h4>{{ 'Admin Information'|t }}</h4>
+      <dl>
+        <dt>{{ 'Selection Method'|t }}</dt>
+        <dd>{{ selection_method }}</dd>
+        {% if entity_count %}
+          <dt>{{ 'Entity Count'|t }}</dt>
+          <dd>{{ entity_count }}</dd>
         {% endif %}
-      </div>
+        {% if highlight_category %}
+          <dt>{{ 'Highlight Category'|t }}</dt>
+          <dd>{{ highlight_category }}</dd>
+        {% endif %}
+        <dt>{{ 'Display Mode'|t }}</dt>
+        <dd>{{ display_mode }}</dd>
+        <dt>{{ 'Carousel Enabled'|t }}</dt>
+        <dd>{{ enable_carousel ? 'Yes'|t : 'No'|t }}</dd>
+      </dl>
     </div>
   {% endif %}
 </div>
