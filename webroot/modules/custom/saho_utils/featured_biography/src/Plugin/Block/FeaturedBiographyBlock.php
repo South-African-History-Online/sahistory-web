@@ -72,6 +72,8 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
    */
   public function defaultConfiguration() {
     return [
+      'display_title' => 'Featured Biography',
+      'block_description' => '',
       'selection_method' => 'specific',
       'specific_nid' => '',
       'specific_nids' => '',
@@ -91,12 +93,30 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
     $form = parent::blockForm($form, $form_state);
     $config = $this->getConfiguration();
 
+    // Add display title field at the top of the form.
+    $form['display_title'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Display Title'),
+      '#description' => $this->t('Enter a title to display for this featured biography block. Default is "Featured Biography".'),
+      '#default_value' => $config['display_title'],
+      '#maxlength' => 255,
+    ];
+
+    // Add block description field.
+    $form['block_description'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Block Description'),
+      '#description' => $this->t('Enter a description for this featured biography block. This will appear along with the block title.'),
+      '#default_value' => $config['block_description'],
+      '#maxlength' => 255,
+    ];
+
     $form['selection_method'] = [
       '#type' => 'radios',
       '#title' => $this->t('Selection Method'),
       '#description' => $this->t('Choose how to select biographies to display.'),
       '#options' => [
-        'specific' => $this->t('Specific Biography (manual selection)'),
+        'specific' => $this->t('Specific Biographies (manual selection)'),
         'category' => $this->t('By Category (all biographies in selected category)'),
       ],
       '#default_value' => $config['selection_method'],
@@ -122,33 +142,41 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
       '#required' => TRUE,
     ];
 
+    // We'll hide this field and consolidate to use specific_nids for all cases.
     $form['specific_nid'] = [
-      '#type' => 'textfield',
-      '#title' => $this->t('Biography Node ID'),
-      '#description' => $this->t('Enter the node ID of the specific biography to feature (for single selection).'),
+      '#type' => 'hidden',
       '#default_value' => $config['specific_nid'],
-      '#states' => [
-        'visible' => [
-          ':input[name="settings[selection_method]"]' => ['value' => 'specific'],
-          ':input[name="settings[entity_count]"]' => ['value' => '1'],
-        ],
-        'required' => [
-          ':input[name="settings[selection_method]"]' => ['value' => 'specific'],
-          ':input[name="settings[entity_count]"]' => ['value' => '1'],
-        ],
-      ],
     ];
 
     // Get all taxonomy terms for people categories.
     $terms = [];
     try {
-      // Use the standard people category vocabulary.
-      $vocab_name = 'field_people_category';
-      $terms_entities = $this->entityTypeManager->getStorage('taxonomy_term')
-        ->loadByProperties(['vid' => $vocab_name]);
-      
-      foreach ($terms_entities as $term) {
-        $terms[$term->id()] = $term->label();
+      // Try standard vocabulary names for people categories.
+      $possible_vocab_names = ['people_category', 'person_category', 'field_people_category'];
+      $found_vocab = FALSE;
+
+      foreach ($possible_vocab_names as $vocab_name) {
+        try {
+          $terms_entities = $this->entityTypeManager->getStorage('taxonomy_term')
+            ->loadByProperties(['vid' => $vocab_name]);
+
+          if (!empty($terms_entities)) {
+            $found_vocab = TRUE;
+            foreach ($terms_entities as $term) {
+              $terms[$term->id()] = $term->label();
+            }
+            break;
+          }
+        }
+        catch (\Exception $e) {
+          // Continue trying other vocabulary names.
+        }
+      }
+
+      if (!$found_vocab) {
+        // Log that no vocabulary was found.
+        \Drupal::logger('featured_biography')->warning('No valid people category vocabulary found. Tried: @vocabs',
+          ['@vocabs' => implode(', ', $possible_vocab_names)]);
       }
     }
     catch (\Exception $e) {
@@ -172,20 +200,18 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
       ],
     ];
 
-    // Add multiple node IDs field for specific selection.
+    // Use this field for both single and multiple biography selection.
     $form['specific_nids'] = [
       '#type' => 'textarea',
       '#title' => $this->t('Biography Node IDs'),
-      '#description' => $this->t('Enter node IDs separated by commas (e.g., 123, 456, 789) for multiple specific biographies.'),
-      '#default_value' => $config['specific_nids'] ?? '',
+      '#description' => $this->t('Enter node IDs separated by commas (e.g., 123, 456, 789). For single biography display, enter just one ID. For multiple biographies, enter up to @count IDs.', ['@count' => 9]),
+      '#default_value' => !empty($config['specific_nids']) ? $config['specific_nids'] : $config['specific_nid'],
       '#states' => [
         'visible' => [
           ':input[name="settings[selection_method]"]' => ['value' => 'specific'],
-          ':input[name="settings[entity_count]"]' => ['!value' => '1'],
         ],
         'required' => [
           ':input[name="settings[selection_method]"]' => ['value' => 'specific'],
-          ':input[name="settings[entity_count]"]' => ['!value' => '1'],
         ],
       ],
       '#rows' => 3,
@@ -216,7 +242,7 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
       '#required' => TRUE,
     ];
 
-    // Remove duplicate entity_count field - using the select version above
+    // Remove duplicate entity_count field - using the select version above.
 
     $form['highlight_category'] = [
       '#type' => 'checkbox',
@@ -256,6 +282,8 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
    * {@inheritdoc}
    */
   public function blockSubmit($form, FormStateInterface $form_state) {
+    $this->configuration['display_title'] = $form_state->getValue('display_title');
+    $this->configuration['block_description'] = $form_state->getValue('block_description');
     $this->configuration['selection_method'] = $form_state->getValue('selection_method');
     $this->configuration['specific_nid'] = $form_state->getValue('specific_nid');
     $this->configuration['specific_nids'] = $form_state->getValue('specific_nids');
@@ -274,7 +302,7 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
     $biography_data = $this->getBiographyItem();
 
     if (!$biography_data) {
-      // Create a sample/demo biography to show the layout
+      // Create a sample/demo biography to show the layout.
       $demo_biography = [
         'nid' => 0,
         'title' => $this->t('Sample Biography'),
@@ -288,11 +316,11 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
         'body_summary' => $this->t('This is a sample biography to demonstrate the layout. Configure this block to show real biographies from your content.'),
         'is_demo' => TRUE,
       ];
-      
-      // Provide helpful error message for admins
+
+      // Provide helpful error message for admins.
       $current_user = \Drupal::currentUser();
       $show_admin_info = $current_user->hasPermission('administer blocks');
-      
+
       return [
         '#theme' => 'featured_biography_block',
         '#biography_item' => $demo_biography,
@@ -300,13 +328,14 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
         '#is_demo' => TRUE,
         '#show_admin_info' => $show_admin_info,
         '#selection_method' => $this->configuration['selection_method'],
+        '#display_title' => $this->configuration['display_title'],
+        '#block_description' => $this->configuration['block_description'],
         '#cache' => [
           'max-age' => 300,
           'contexts' => ['user.permissions'],
         ],
       ];
     }
-
     // For backward compatibility, if we have a single item,
     // pass it as biography_item.
     if (isset($biography_data['nid'])) {
@@ -315,6 +344,8 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
         '#theme' => 'featured_biography_block',
         '#biography_item' => $biography_data,
         '#display_mode' => $this->configuration['display_mode'],
+        '#display_title' => $this->configuration['display_title'],
+        '#block_description' => $this->configuration['block_description'],
         '#cache' => [
           'max-age' => 3600,
           'contexts' => ['url'],
@@ -322,7 +353,6 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
         ],
       ];
     }
-
     // For multiple items or category highlighting.
     return [
       '#theme' => 'featured_biography_block',
@@ -331,6 +361,14 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
       '#highlight_category' => $this->configuration['highlight_category'],
       '#entity_count' => $this->configuration['entity_count'],
       '#enable_carousel' => $this->configuration['enable_carousel'],
+      '#display_title' => $this->configuration['display_title'],
+      '#block_description' => $this->configuration['block_description'],
+      '#attributes' => [
+        'class' => [
+          'featured-biography-wrapper',
+          $this->configuration['enable_carousel'] ? 'enable-carousel' : '',
+        ],
+      ],
       '#cache' => [
         'max-age' => 3600,
         'contexts' => ['url'],
@@ -347,14 +385,13 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
    */
   protected function getBiographyItem() {
     $nodes = [];
-
     try {
       // Get the configured entity count (1-9).
       $entity_count = max(1, min((int) $this->configuration['entity_count'], 9));
 
       // Use the standard biography content type.
       $content_type = 'biography';
-      
+
       // Verify the content type exists.
       $type_exists = $this->entityTypeManager->getStorage('node_type')->load($content_type);
       if (!$type_exists) {
@@ -371,18 +408,18 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
       switch ($this->configuration['selection_method']) {
         case 'specific':
           $nids_to_load = [];
-          
-          // Handle single specific node ID.
-          if ($entity_count == 1 && !empty($this->configuration['specific_nid'])) {
-            $nids_to_load[] = $this->configuration['specific_nid'];
-          }
-          // Handle multiple specific node IDs.
-          elseif ($entity_count > 1 && !empty($this->configuration['specific_nids'])) {
+
+          // Handle specific node IDs for all entity counts (1-9).
+          if (!empty($this->configuration['specific_nids'])) {
             $nids_string = str_replace([' ', "\n", "\r"], '', $this->configuration['specific_nids']);
             $nids_array = array_filter(explode(',', $nids_string));
             $nids_to_load = array_slice($nids_array, 0, $entity_count);
           }
-          
+          // Fallback to specific_nid for backward compatibility.
+          elseif (!empty($this->configuration['specific_nid'])) {
+            $nids_to_load[] = $this->configuration['specific_nid'];
+          }
+
           if (!empty($nids_to_load)) {
             $query->condition('nid', $nids_to_load, 'IN');
           }
@@ -390,7 +427,34 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
 
         case 'category':
           if (!empty($this->configuration['category'])) {
-            $query->condition('field_people_category', $this->configuration['category']);
+            // Try to determine the correct field name for people category.
+            $possible_field_names = ['field_people_category', 'field_person_category', 'field_category'];
+            $field_exists = FALSE;
+
+            // Get the entity field definitions.
+            $node_type_storage = $this->entityTypeManager->getStorage('node_type');
+            $node_type = $node_type_storage->load($content_type);
+
+            if ($node_type) {
+              $entity_field_manager = \Drupal::service('entity_field.manager');
+              $field_definitions = $entity_field_manager->getFieldDefinitions('node', $content_type);
+
+              // Check which field actually exists.
+              foreach ($possible_field_names as $field_name) {
+                if (isset($field_definitions[$field_name])) {
+                  $query->condition($field_name, $this->configuration['category']);
+                  $field_exists = TRUE;
+                  \Drupal::logger('featured_biography')->notice('Using field @field for category filtering.',
+                    ['@field' => $field_name]);
+                  break;
+                }
+              }
+
+              if (!$field_exists) {
+                \Drupal::logger('featured_biography')->warning('No valid category field found for biography content type. Tried: @fields',
+                  ['@fields' => implode(', ', $possible_field_names)]);
+              }
+            }
           }
           break;
       }
@@ -496,20 +560,36 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
       $item['death_date'] = $this->formatDateString($node->get('field_dod')->value);
     }
 
-    // Get the biography categories.
-    if ($node->hasField('field_people_category') && !$node->get('field_people_category')->isEmpty()) {
-      $categories = [];
-      foreach ($node->get('field_people_category') as $category) {
-        $term = $this->entityTypeManager->getStorage('taxonomy_term')
-          ->load($category->getValue()['target_id']);
-        if ($term) {
-          $categories[] = [
-            'id' => $term->id(),
-            'name' => $term->label(),
-            'url' => $term->toUrl()->toString(),
-          ];
+    // Get the biography categories - try different possible field names.
+    $categories = [];
+    $possible_category_fields = ['field_people_category', 'field_person_category', 'field_category'];
+
+    foreach ($possible_category_fields as $field_name) {
+      if ($node->hasField($field_name) && !$node->get($field_name)->isEmpty()) {
+        foreach ($node->get($field_name) as $category) {
+          try {
+            $term = $this->entityTypeManager->getStorage('taxonomy_term')
+              ->load($category->getValue()['target_id']);
+            if ($term) {
+              $categories[] = [
+                'id' => $term->id(),
+                'name' => $term->label(),
+                'url' => $term->toUrl()->toString(),
+              ];
+            }
+          }
+          catch (\Exception $e) {
+            \Drupal::logger('featured_biography')->warning('Error loading category term: @message', ['@message' => $e->getMessage()]);
+          }
+        }
+        // If we found categories with this field, no need to check other fields.
+        if (!empty($categories)) {
+          break;
         }
       }
+    }
+
+    if (!empty($categories)) {
       $item['categories'] = $categories;
     }
 
@@ -551,26 +631,34 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
       return $date_string;
     }
 
-    // Try to parse various date formats and convert to "j F Y"
+    // Try to parse various date formats and convert to "j F Y".
     $formats = [
-      'd-F-Y',         // 18-July-1918
-      'd F Y',         // 18 July 1918
-      'd-M-Y',         // 18-Jul-1918
-      'd M Y',         // 18 Jul 1918
-      'j-F-Y',         // 5-December-2013
-      'j F Y',         // 5 December 2013
-      'j-M-Y',         // 5-Dec-2013
-      'j M Y',         // 5 Dec 2013
+      // 18-July-1918
+      'd-F-Y',
+      // 18 July 1918
+      'd F Y',
+      // 18-Jul-1918
+      'd-M-Y',
+      // 18 Jul 1918
+      'd M Y',
+      // 5-December-2013
+      'j-F-Y',
+      // 5 December 2013
+      'j F Y',
+      // 5-Dec-2013
+      'j-M-Y',
+      // 5 Dec 2013
+      'j M Y',
     ];
 
     foreach ($formats as $format) {
       $date = \DateTime::createFromFormat($format, $date_string);
-      if ($date !== false) {
+      if ($date !== FALSE) {
         return $date->format('j F Y');
       }
     }
 
-    // If no format matches, return original string
+    // If no format matches, return original string.
     return $date_string;
   }
 
