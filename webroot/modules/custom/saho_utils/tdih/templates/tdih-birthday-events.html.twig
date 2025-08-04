@@ -1,0 +1,119 @@
+{#
+/**
+ * @file
+ * Template for the TDIH Birthday Events display.
+ *
+ * Available variables:
+ * - exact_match_events: Array of events that happened on the exact birth date.
+ * - same_day_events: Array of events that happened on the same month/day in other years.
+ * - birth_date: The full birth date (YYYY-MM-DD format).
+ * - month_day_pattern: The month-day pattern (MM-DD format).
+ * - selected_year: The selected birth year.
+ * - attributes: An array of HTML attributes for the container.
+ */
+#}
+
+<div{{ attributes.addClass('tdih-birthday-events-wrapper') }}>
+  {% if exact_match_events or same_day_events %}
+    
+    {# Show exact matches first if any exist #}
+    {% if exact_match_events %}
+      <div class="tdih-exact-match-section">
+        <div class="alert alert-success">
+          <i class="fas fa-star me-2"></i>
+          <strong>{{ 'Amazing!'|t }}</strong> 
+          {{ 'This event happened on the exact same date you were born:'|t }}
+          <strong>{{ birth_date|date('F j, Y') }}</strong>
+        </div>
+        
+        <div class="tdih-events-list">
+          {% for item in exact_match_events %}
+            <div class="tdih-event-item exact-match">
+              {% if item.image %}
+                <div class="tdih-event-image">
+                  <img src="{{ item.image }}" alt="{{ item.title|striptags }}" />
+                </div>
+              {% endif %}
+              
+              <div class="tdih-event-content">
+                <div class="tdih-event-date">
+                  <i class="fas fa-birthday-cake me-1"></i>
+                  {{ item.event_date|date('F j, Y') }}
+                  <span class="exact-match-badge">{{ 'Exact Date Match!'|t }}</span>
+                </div>
+                
+                <h4 class="tdih-event-title">
+                  <a href="{{ item.url }}">{{ item.title|striptags }}</a>
+                </h4>
+                
+                {% if item.body %}
+                  <div class="tdih-event-body">
+                    {{ item.body|raw|striptags('<p><a><em><strong><ul><ol><li><img><div><span><br><h1><h2><h3><h4><h5><h6>')|truncate(300, true, '...') }}
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+
+    {# Show same day/month events from other years #}
+    {% if same_day_events %}
+      <div class="tdih-same-day-section">
+        {% if exact_match_events %}
+          <h5 class="mt-4">{{ 'Other events that happened on'|t }} {{ birth_date|date('F j') }}:</h5>
+        {% else %}
+          <div class="alert alert-info">
+            <i class="fas fa-calendar-day me-2"></i>
+            {{ 'These events happened on the same day you were born:'|t }}
+            <strong>{{ birth_date|date('F j') }}</strong>
+          </div>
+        {% endif %}
+        
+        <div class="tdih-events-list">
+          {% for item in same_day_events|slice(0, 5) %}
+            <div class="tdih-event-item same-day">
+              {% if item.image %}
+                <div class="tdih-event-image">
+                  <img src="{{ item.image }}" alt="{{ item.title|striptags }}" />
+                </div>
+              {% endif %}
+              
+              <div class="tdih-event-content">
+                <div class="tdih-event-date">
+                  <i class="fas fa-calendar me-1"></i>
+                  {{ item.event_date|date('F j, Y') }}
+                  {% set years_difference = selected_year - item.event_date|date('Y') %}
+                  {% if years_difference > 0 %}
+                    <span class="years-before">({{ years_difference }} {{ 'years before you were born'|t }})</span>
+                  {% elseif years_difference < 0 %}
+                    <span class="years-after">({{ (years_difference * -1) }} {{ 'years after you were born'|t }})</span>
+                  {% endif %}
+                </div>
+                
+                <h4 class="tdih-event-title">
+                  <a href="{{ item.url }}">{{ item.title|striptags }}</a>
+                </h4>
+                
+                {% if item.body %}
+                  <div class="tdih-event-body">
+                    {{ item.body|raw|striptags('<p><a><em><strong><ul><ol><li><img><div><span><br><h1><h2><h3><h4><h5><h6>')|truncate(200, true, '...') }}
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+    
+  {% else %}
+    <div class="tdih-no-events">
+      <div class="alert alert-info text-center">
+        <i class="fas fa-info-circle me-2"></i>
+        {{ 'No historical events found for'|t }} {{ birth_date|date('F j, Y') }} {{ 'or'|t }} {{ birth_date|date('F j') }} {{ 'in other years.'|t }}
+      </div>
+    </div>
+  {% endif %}
+</div>

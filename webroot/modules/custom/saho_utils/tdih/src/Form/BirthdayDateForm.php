@@ -4,7 +4,6 @@ namespace Drupal\tdih\Form;
 
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Datetime\DrupalDateTime;
 use Drupal\tdih\Plugin\Block\TdihInteractiveBlock;
 
 /**
@@ -50,35 +49,109 @@ class BirthdayDateForm extends FormBase {
       ],
     ];
 
-    // Add a date field for selecting a birthday.
-    $form['birthday_date'] = [
-      '#type' => 'date',
-      '#title' => $this->t('Select a date'),
-      '#title_display' => 'invisible',
-      '#date_format' => 'Y-m-d',
+    // Create day, month, and year dropdowns for full date selection.
+    $form['date_container'] = [
+      '#type' => 'container',
       '#attributes' => [
-        'class' => ['tdih-birthday-date-picker'],
+        'class' => ['row', 'g-2', 'align-items-end'],
       ],
-      '#ajax' => [
-        'callback' => [TdihInteractiveBlock::class, 'updateEvents'],
-        'wrapper' => 'tdih-events-wrapper',
-        'event' => 'change',
-        'progress' => [
-          'type' => 'throbber',
-          'message' => $this->t('Loading events...'),
+    ];
+
+    $form['date_container']['birthday_day'] = [
+      '#type' => 'select',
+      '#title' => $this->t('Day'),
+      '#options' => ['' => $this->t('- Select Day -')] + array_combine(
+        range(1, 31),
+        array_map(
+          function ($day) {
+            return sprintf('%02d', $day);
+          },
+          range(1, 31)
+        )
+      ),
+      '#attributes' => [
+        'class' => ['form-select', 'tdih-day-picker'],
+      ],
+      '#wrapper_attributes' => [
+        'class' => ['col-md-4'],
+      ],
+    ];
+
+    $form['date_container']['birthday_month'] = [
+      '#type' => 'select',
+      '#title' => $this->t('Month'),
+      '#options' => [
+        '' => $this->t('- Select Month -'),
+        '01' => $this->t('January'),
+        '02' => $this->t('February'),
+        '03' => $this->t('March'),
+        '04' => $this->t('April'),
+        '05' => $this->t('May'),
+        '06' => $this->t('June'),
+        '07' => $this->t('July'),
+        '08' => $this->t('August'),
+        '09' => $this->t('September'),
+        '10' => $this->t('October'),
+        '11' => $this->t('November'),
+        '12' => $this->t('December'),
+      ],
+      '#attributes' => [
+        'class' => ['form-select', 'tdih-month-picker'],
+      ],
+      '#wrapper_attributes' => [
+        'class' => ['col-md-4'],
+      ],
+      '#states' => [
+        'enabled' => [
+          ':input[name="birthday_day"]' => ['!value' => ''],
         ],
       ],
     ];
 
+    // Add year selection - reasonable range for birthdays
+    $current_year = date('Y');
+    $year_options = ['' => $this->t('- Select Year -')];
+    for ($year = $current_year; $year >= 1900; $year--) {
+      $year_options[$year] = $year;
+    }
+
+    $form['date_container']['birthday_year'] = [
+      '#type' => 'select',
+      '#title' => $this->t('Year'),
+      '#options' => $year_options,
+      '#attributes' => [
+        'class' => ['form-select', 'tdih-year-picker'],
+      ],
+      '#wrapper_attributes' => [
+        'class' => ['col-md-4'],
+      ],
+      '#states' => [
+        'enabled' => [
+          ':input[name="birthday_month"]' => ['!value' => ''],
+        ],
+      ],
+    ];
+
+    // Hidden field to combine month and day for processing.
+    $form['birthday_date'] = [
+      '#type' => 'hidden',
+      '#attributes' => [
+        'class' => ['tdih-combined-date'],
+      ],
+    ];
+
     // Add a submit button.
-    $form['submit'] = [
+    $form['date_container']['submit'] = [
       '#type' => 'submit',
       '#value' => $this->t('Show Events'),
       '#attributes' => [
-        'class' => ['tdih-birthday-submit'],
+        'class' => ['btn', 'btn-primary', 'tdih-birthday-submit'],
+      ],
+      '#wrapper_attributes' => [
+        'class' => ['col-12', 'mt-3'],
       ],
       '#ajax' => [
-        'callback' => [TdihInteractiveBlock::class, 'updateEvents'],
+        'callback' => 'Drupal\tdih\Plugin\Block\TdihInteractiveBlock::updateEvents',
         'wrapper' => 'tdih-events-wrapper',
         'event' => 'click',
         'progress' => [
@@ -86,6 +159,19 @@ class BirthdayDateForm extends FormBase {
           'message' => $this->t('Loading events...'),
         ],
       ],
+      '#states' => [
+        'enabled' => [
+          ':input[name="birthday_day"]' => ['!value' => ''],
+          ':input[name="birthday_month"]' => ['!value' => ''],
+          ':input[name="birthday_year"]' => ['!value' => ''],
+        ],
+      ],
+    ];
+    
+    // Add JavaScript to handle form interactions.
+    $form['#attached']['library'][] = 'tdih/tdih-interactive';
+    $form['#attached']['drupalSettings']['tdihBirthdayForm'] = [
+      'formId' => 'tdih-birthday-date-form',
     ];
 
     // Add a container for the events display.
@@ -97,34 +183,112 @@ class BirthdayDateForm extends FormBase {
       ],
     ];
 
-    // If a date is already selected, load and display events.
-    $selected_date = $form_state->getValue('birthday_date');
-    if (!empty($selected_date)) {
-      $date = new DrupalDateTime($selected_date);
-      $month = $date->format('m');
-      $day = $date->format('d');
-
+    // If day, month, and year are selected, load and display events.
+    $selected_day = $form_state->getValue('birthday_day');
+    $selected_month = $form_state->getValue('birthday_month');
+    $selected_year = $form_state->getValue('birthday_year');
+    
+    // Ensure proper formatting for date comparison.
+    if (!empty($selected_day)) {
+      $selected_day = sprintf('%02d', (int) $selected_day);
+    }
+    if (!empty($selected_month)) {
+      $selected_month = sprintf('%02d', (int) $selected_month);
+    }
+    
+    if (!empty($selected_month) && !empty($selected_day) && !empty($selected_year)) {
       // Get the NodeFetcher service.
       $node_fetcher = \Drupal::service('tdih.node_fetcher');
 
-      // Load nodes for the selected date.
-      $nodes = $node_fetcher->loadDateNodes($month, $day, 10);
+      // Create the full birth date and month-day pattern.
+      $birth_date = sprintf('%04d-%02d-%02d', $selected_year, $selected_month, $selected_day);
+      $month_day_pattern = sprintf('%02d-%02d', $selected_month, $selected_day);
+      
+      // Load all events for this month-day combination.
+      $nodes = $node_fetcher->loadPotentialEvents($month_day_pattern);
+      $exact_match_items = [];
+      $same_day_items = [];
+      
+      // Debug logging.
+      \Drupal::logger('tdih')->info('BirthdayDateForm: Searching for birth_date=@birth_date, pattern=@pattern, found @count nodes. Selected: day=@day, month=@month, year=@year', [
+        '@birth_date' => $birth_date,
+        '@pattern' => $month_day_pattern,
+        '@count' => count($nodes),
+        '@day' => $selected_day,
+        '@month' => $selected_month,
+        '@year' => $selected_year,
+      ]);
 
-      // If nodes were found, display them.
-      if (!empty($nodes)) {
+      // Separate exact date matches from same month-day matches.
+      foreach ($nodes as $node) {
+        $item = TdihInteractiveBlock::buildNodeItems([$node])[0] ?? NULL;
+        if ($item && !empty($item['raw_date'])) {
+          \Drupal::logger('tdih')->info('BirthdayDateForm: Processing node @nid with raw_date=@raw_date, title=@title', [
+            '@nid' => $node->id(),
+            '@raw_date' => $item['raw_date'],
+            '@title' => $item['title'],
+          ]);
+          
+          // Check if this is an exact date match (same year, month, day).
+          if ($item['raw_date'] === $birth_date) {
+            $exact_match_items[] = $item;
+            \Drupal::logger('tdih')->info('BirthdayDateForm: Found exact match - @date for @title', [
+              '@date' => $item['raw_date'],
+              '@title' => $item['title'],
+            ]);
+          }
+          // Check if this is same month-day but different year.
+          elseif (preg_match('/\d{4}-(\d{2})-(\d{2})/', $item['raw_date'], $matches)) {
+            $item_month_day = $matches[1] . '-' . $matches[2];
+            \Drupal::logger('tdih')->info('BirthdayDateForm: Extracted month_day=@item_month_day from @raw_date, comparing to @target', [
+              '@item_month_day' => $item_month_day,
+              '@raw_date' => $item['raw_date'],
+              '@target' => $month_day_pattern,
+            ]);
+            
+            if ($item_month_day === $month_day_pattern) {
+              $same_day_items[] = $item;
+              \Drupal::logger('tdih')->info('BirthdayDateForm: Found same day match - @date for @title', [
+                '@date' => $item['raw_date'],
+                '@title' => $item['title'],
+              ]);
+            }
+          }
+        }
+      }
+      
+      // Combine results with exact matches first, then same day events.
+      $all_birthday_events = array_merge($exact_match_items, $same_day_items);
+      
+      // Debug logging for final results.
+      \Drupal::logger('tdih')->info('BirthdayDateForm: Final results - @exact_count exact matches, @same_count same day, @total total', [
+        '@exact_count' => count($exact_match_items),
+        '@same_count' => count($same_day_items),
+        '@total' => count($all_birthday_events),
+      ]);
+      
+      // If we have events, display them with appropriate messaging.
+      if (!empty($all_birthday_events)) {
         $form['events_container']['events'] = [
-          '#theme' => 'tdih_events',
-          '#tdih_nodes' => TdihInteractiveBlock::buildNodeItems($nodes),
+          '#theme' => 'tdih_birthday_events',
+          '#exact_match_events' => $exact_match_items,
+          '#same_day_events' => $same_day_items,
+          '#birth_date' => $birth_date,
+          '#month_day_pattern' => $month_day_pattern,
+          '#selected_year' => $selected_year,
         ];
       }
       else {
         // Display a message if no events were found.
         $form['events_container']['no_events'] = [
           '#type' => 'html_tag',
-          '#tag' => 'p',
-          '#value' => $this->t('No historical events found for this date.'),
+          '#tag' => 'div',
+          '#value' => '<i class="fas fa-info-circle me-2"></i>' . $this->t('No historical events found for @date or @month_day in other years.', [
+            '@date' => date('F j, Y', strtotime($birth_date)),
+            '@month_day' => date('F j', strtotime($birth_date)),
+          ]),
           '#attributes' => [
-            'class' => ['tdih-no-events'],
+            'class' => ['alert', 'alert-info', 'text-center'],
           ],
         ];
       }
@@ -133,10 +297,10 @@ class BirthdayDateForm extends FormBase {
       // Display a prompt to select a date.
       $form['events_container']['prompt'] = [
         '#type' => 'html_tag',
-        '#tag' => 'p',
-        '#value' => $this->t('Select a date to see historical events.'),
+        '#tag' => 'div',
+        '#value' => '<i class="fas fa-birthday-cake me-2"></i>' . $this->t('Select your birth day, month, and year to discover historical events that happened on your birthday!'),
         '#attributes' => [
-          'class' => ['tdih-prompt'],
+          'class' => ['alert', 'alert-light', 'text-center', 'text-muted'],
         ],
       ];
     }
@@ -145,10 +309,19 @@ class BirthdayDateForm extends FormBase {
   }
 
   /**
+   * AJAX callback to update events display.
+   */
+  public function updateEventsCallback(array &$form, FormStateInterface $form_state) {
+    return $form['events_container'];
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     // This form is primarily handled via AJAX, so we don't need to do anything.
+    // The form state is rebuilt to show the selected events.
+    $form_state->setRebuild(TRUE);
   }
 
   /**

@@ -12,7 +12,6 @@ use Drupal\tdih\Service\NodeFetcher;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\ReplaceCommand;
-use Drupal\Core\Datetime\DrupalDateTime;
 
 /**
  * Provides an interactive TDIH Block with date picker.
@@ -110,6 +109,7 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
       'display_mode' => 'compact',
       'show_date_picker' => TRUE,
       'show_today_history' => TRUE,
+      'show_explore_button' => TRUE,
     ] + parent::defaultConfiguration();
   }
 
@@ -144,6 +144,13 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
       '#default_value' => $this->configuration['show_today_history'],
     ];
 
+    $form['show_explore_button'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Show "Explore more historical events" button'),
+      '#description' => $this->t('Enable to show the button that links to the full This Day in History page.'),
+      '#default_value' => $this->configuration['show_explore_button'],
+    ];
+
     return $form;
   }
 
@@ -155,20 +162,20 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
     $this->configuration['display_mode'] = $form_state->getValue('display_mode');
     $this->configuration['show_date_picker'] = $form_state->getValue('show_date_picker');
     $this->configuration['show_today_history'] = $form_state->getValue('show_today_history');
+    $this->configuration['show_explore_button'] = $form_state->getValue('show_explore_button');
   }
 
   /**
    * {@inheritdoc}
    */
   public function getCacheMaxAge() {
-    // Use the site's configured timezone instead of hardcoding UTC.
-    $config = \Drupal::config('system.date');
-    $timezone = $config->get('timezone.default') ?: 'UTC';
+    // Force South African timezone for consistent TDIH functionality.
+    $sa_timezone = new \DateTimeZone('Africa/Johannesburg');
 
-    // Calculate seconds until midnight in the site's timezone.
+    // Calculate seconds until midnight in South African timezone.
     $now = $this->time->getCurrentTime();
-    // Calculate the timestamp for midnight tonight in the site's timezone.
-    $midnight = new \DateTime('now', new \DateTimeZone($timezone));
+    // Calculate the timestamp for midnight tonight in SA timezone.
+    $midnight = new \DateTime('now', $sa_timezone);
     $midnight->setTime(0, 0, 0);
     $midnight->modify('+1 day');
     $seconds_until_midnight = $midnight->getTimestamp() - $now;
@@ -194,29 +201,60 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
   }
 
   /**
-   * AJAX callback to update the events display.
+   * AJAX callback to update the events display for birthday selection.
    */
   public static function updateEvents(array &$form, FormStateInterface $form_state) {
     $response = new AjaxResponse();
 
-    // Get the selected date from the form state.
-    $date_value = $form_state->getValue('birthday_date');
-    if (!empty($date_value)) {
-      // DrupalDateTime automatically uses the site's timezone configuration..
-      $date = new DrupalDateTime($date_value);
-      $month = $date->format('m');
-      $day = $date->format('d');
+    // Get the selected date components from the form state.
+    $selected_day = $form_state->getValue('birthday_day');
+    $selected_month = $form_state->getValue('birthday_month');
+    $selected_year = $form_state->getValue('birthday_year');
+
+    if (!empty($selected_day) && !empty($selected_month) && !empty($selected_year)) {
+      // Format the date components.
+      $day = sprintf('%02d', (int) $selected_day);
+      $month = sprintf('%02d', (int) $selected_month);
+      $year = (int) $selected_year;
 
       // Get the NodeFetcher service.
       $node_fetcher = \Drupal::service('tdih.node_fetcher');
 
-      // Load nodes for the selected date.
-      $nodes = $node_fetcher->loadDateNodes($month, $day, 10);
+      // Create the full birth date and month-day pattern.
+      $birth_date = sprintf('%04d-%02d-%02d', $year, $month, $day);
+      $month_day_pattern = sprintf('%02d-%02d', $month, $day);
+      
+      // Load all events for this month-day combination.
+      $nodes = $node_fetcher->loadPotentialEvents($month_day_pattern);
+      $exact_match_items = [];
+      $same_day_items = [];
 
-      // Build the render array for the events.
+      // Separate exact date matches from same month-day matches.
+      foreach ($nodes as $node) {
+        $item = self::buildNodeItems([$node])[0] ?? null;
+        if ($item && !empty($item['raw_date'])) {
+          // Check if this is an exact date match (same year, month, day).
+          if ($item['raw_date'] === $birth_date) {
+            $exact_match_items[] = $item;
+          }
+          // Check if this is same month-day but different year.
+          elseif (preg_match('/\d{4}-(\d{2})-(\d{2})/', $item['raw_date'], $matches)) {
+            $item_month_day = $matches[1] . '-' . $matches[2];
+            if ($item_month_day === $month_day_pattern) {
+              $same_day_items[] = $item;
+            }
+          }
+        }
+      }
+
+      // Build the render array for the birthday events.
       $events_html = [
-        '#theme' => 'tdih_events',
-        '#tdih_nodes' => self::buildNodeItems($nodes),
+        '#theme' => 'tdih_birthday_events',
+        '#exact_match_events' => $exact_match_items,
+        '#same_day_events' => $same_day_items,
+        '#birth_date' => $birth_date,
+        '#month_day_pattern' => $month_day_pattern,
+        '#selected_year' => $year,
         '#attributes' => [
           'class' => ['tdih-events-container'],
         ],
@@ -246,10 +284,9 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
       $raw_date = $node->get('field_this_day_in_history_3')->value;
       $event_timestamp = 0;
       if (!empty($raw_date)) {
-        // Use the site's configured timezone instead of hardcoding UTC.
-        $config = \Drupal::config('system.date');
-        $timezone = $config->get('timezone.default') ?: 'UTC';
-        $dt = new \DateTime($raw_date, new \DateTimeZone($timezone));
+        // Parse the date as-is without timezone conversion to avoid date shifting.
+        // The raw_date should be in YYYY-MM-DD format.
+        $dt = new \DateTime($raw_date);
         $event_timestamp = $dt->getTimestamp();
       }
 
@@ -278,6 +315,7 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
         'title' => $node->label(),
         'url' => $node->toUrl()->toString(),
         'event_date' => $event_timestamp,
+        'raw_date' => $raw_date,
         'image' => $image_url,
         // Add alt text for accessibility.
         'image_alt' => $node->label(),
@@ -295,24 +333,39 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
    * {@inheritdoc}
    */
   public function build() {
-    // Get today's date using the time service.
-    $timestamp = $this->time->getCurrentTime();
-    // Use the site's configured timezone instead of hardcoding UTC.
-    $config = \Drupal::config('system.date');
-    $timezone = $config->get('timezone.default') ?: 'UTC';
-    $date = new \DateTime('now', new \DateTimeZone($timezone));
+    // Force South African timezone for accurate "Today in history".
+    $sa_timezone = new \DateTimeZone('Africa/Johannesburg');
+    $date = new \DateTime('now', $sa_timezone);
     $month = $date->format('m');
     $day = $date->format('d');
 
-    // Load nodes for today's date if the Today in history section is enabled.
-    $tdih_nodes = [];
+    // Load potential events and let Twig filter by exact date.
+    $all_events = [];
+    $target_date = $month . '-' . $day;
     if ($this->configuration['show_today_history']) {
-      $nodes = $this->nodeFetcher->loadTodayNodes($month, $day);
+      $nodes = $this->nodeFetcher->loadPotentialEvents($target_date);
 
       if (!empty($nodes)) {
-        // Build the node items for rendering.
+        // Build the node items for rendering and filter by exact date (front page filtering already done in NodeFetcher).
         foreach ($nodes as $node) {
-          $tdih_nodes[] = $this->buildNodeItem($node);
+          $item = $this->buildNodeItem($node);
+          
+          // Check if this item matches the target date using simple string operations.
+          if (!empty($item['raw_date'])) {
+            // Extract MM-DD from YYYY-MM-DD format.
+            if (preg_match('/\d{4}-(\d{2})-(\d{2})/', $item['raw_date'], $matches)) {
+              $item_date = $matches[1] . '-' . $matches[2];
+              if ($item_date === $target_date) {
+                $all_events[] = $item;
+              }
+            }
+          }
+        }
+        
+        // Limit to only one random event for display.
+        if (count($all_events) > 1) {
+          $random_event = $all_events[array_rand($all_events)];
+          $all_events = [$random_event];
         }
       }
     }
@@ -323,13 +376,22 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
       $form = $this->formBuilder->getForm('Drupal\tdih\Form\BirthdayDateForm');
     }
 
+    // Debug logging to see what data we have.
+    \Drupal::logger('tdih')->info('TDIH Interactive Block: Built @count events for target date @target, show_today_history: @show', [
+      '@count' => count($all_events),
+      '@target' => $target_date,
+      '@show' => $this->configuration['show_today_history'] ? 'TRUE' : 'FALSE',
+    ]);
+
     // Return a render array referencing our theme hook.
     return [
       '#theme' => 'tdih_interactive_block',
-      '#tdih_nodes' => $tdih_nodes,
+      '#all_events' => $all_events,
+      '#target_date' => $target_date,
       '#date_picker_form' => $form,
       '#display_mode' => $this->configuration['display_mode'],
       '#show_today_history' => $this->configuration['show_today_history'],
+      '#show_explore_button' => $this->configuration['show_explore_button'],
       '#attached' => [
         'library' => [
           'tdih/tdih-interactive',
@@ -346,10 +408,9 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
     $raw_date = $node->get('field_this_day_in_history_3')->value;
     $event_timestamp = 0;
     if (!empty($raw_date)) {
-      // Use the site's configured timezone instead of hardcoding UTC.
-      $config = \Drupal::config('system.date');
-      $timezone = $config->get('timezone.default') ?: 'UTC';
-      $dt = new \DateTime($raw_date, new \DateTimeZone($timezone));
+      // Parse the date as-is without timezone conversion to avoid date shifting.
+      // The raw_date should be in YYYY-MM-DD format.
+      $dt = new \DateTime($raw_date);
       $event_timestamp = $dt->getTimestamp();
     }
 
@@ -377,6 +438,7 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
       'title' => $node->label(),
       'url' => $node->toUrl()->toString(),
       'event_date' => $event_timestamp,
+      'raw_date' => $raw_date,
       'image' => $image_url,
       // Add alt text for accessibility.
       'image_alt' => $node->label(),

@@ -1,289 +1,129 @@
 {#
 /**
  * @file
- * Theme implementation for SAHO search view.
+ * Template for the SAHO Global Search view.
+ *
+ * This template removes the smaller Sort button and grid/list view toggle
+ * while preserving the main sorting functionality.
  *
  * Available variables:
- * - attributes: Remaining HTML attributes for the element.
- * - css_name: A CSS-safe version of the view name.
- * - css_class: The user-specified classes names, if any.
- * - header: The optional header.
- * - footer: The optional footer.
- * - rows: The results of the view query, if any.
- * - empty: The content to display if there are no rows.
- * - pager: The optional pager next/prev links to display.
+ * - view: The view object.
+ * - rows: A list of the view's row items.
+ * - options: The view plugin style options.
+ * - title: The title of the view.
+ * - header: The view header.
+ * - footer: The view footer.
+ * - empty: The empty text to display if the view is empty.
+ * - pager: The pager output.
  * - exposed: Exposed widget form/info to display.
- * - feed_icons: Optional feed icons to display.
+ * - feed_icons: Feed icons to display, if any.
  * - more: An optional link to the next page of results.
- * - title: Title of the view, only used when displaying in the admin preview.
- * - title_prefix: Additional output populated by modules, intended to be
- *   displayed in front of the view title.
- * - title_suffix: Additional output populated by modules, intended to be
- *   displayed after the view title.
- * - attachment_before: An optional attachment view to be displayed before the
- *   view content.
- * - attachment_after: An optional attachment view to be displayed after the
- *   view content.
- * - dom_id: Unique id for every view being printed to give unique class for
- *   JavaScript.
+ * - totals: The total rows and pages.
+ * - rows_total: The total number of rows returned by the view.
+ * - attachment_before: An optional attachment view to be displayed before the view.
+ * - attachment_after: An optional attachment view to be displayed after the view.
+ * - dom_id: Unique id for every view being printed to give unique class for Javascript.
  *
  * @see template_preprocess_views_view()
  */
 #}
 
-{# Search view specific styling classes #}
-{% set section_color = 'saho-deep-heritage-red' %}
-{% set section_bg_class = 'saho-bg-deep-heritage-red' %}
-{% set section_border_class = 'saho-border-deep-heritage-red' %}
-{% set section_text_class = 'saho-text-deep-heritage-red' %}
-
-{% if attributes is defined %}
-  {% if attributes.addClass is defined %}
-    <div{{ attributes.addClass('saho-view', 'saho-search-view', 'modern-search') }}>
-  {% else %}
-    {# Handle case where attributes is an object without addClass method #}
-    <div class="saho-view saho-search-view modern-search"{% if dom_id %} id="{{ dom_id }}"{% endif %}>
-  {% endif %}
-{% else %}
-  <div class="saho-view saho-search-view modern-search"{% if dom_id %} id="{{ dom_id }}"{% endif %}>
-{% endif %}
-  <div class="container py-4">
-    {# Display view title if provided #}
-    {% if title %}
-      {{ title_prefix }}
-      <div class="saho-search-header">
-        <h1 class="saho-search-page-title {{ section_text_class }}">{{ title }}</h1>
-        {% if view.exposed_raw_input.search_api_fulltext %}
-          <div class="search-term-highlight">
-            <span class="search-query-text">{{ view.exposed_raw_input.search_api_fulltext }}</span>
-          </div>
-        {% endif %}
-      </div>
-      {{ title_suffix }}
-    {% endif %}
-
-    {# Enhanced search box #}
-    <div class="saho-main-search-box mb-4">
-      <div class="saho-search-form-wrapper">
-        {% if exposed %}
-          {{ exposed }}
-        {% endif %}
-      </div>
-    </div>
-
-    {# Header section #}
-    {% if header %}
-      <div class="saho-view-header mb-4">
-        {{ header }}
-      </div>
-    {% endif %}
-
-    {# Content before main view #}
-    {% if attachment_before %}
-      <div class="saho-view-attachment-before mb-4">
-        {{ attachment_before }}
-      </div>
-    {% endif %}
-    
-    {# Main view content section with mobile-first approach #}
-    <div class="row">
-      {# Sidebar with filters - with mobile-first design #}
-      {# On mobile, display sidebar below content (order-2) #}
-      {# On tablet and desktop, display sidebar on left (order-md-1) #}
-      <div class="col-12 col-md-4 col-lg-3 order-2 order-md-1 mb-4">
-        <div class="saho-sidebar-filters p-3 bg-light rounded shadow-sm">
-          <div class="filter-header d-flex justify-content-between align-items-center mb-3">
-            <h3 class="h5 {{ section_text_class }} mb-0">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-funnel me-2" viewBox="0 0 16 16">
-                <path d="M1.5 1.5A.5.5 0 0 1 2 1h12a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.128.334L10 8.692V13.5a.5.5 0 0 1-.342.474l-3 1A.5.5 0 0 1 6 14.5V8.692L1.628 3.834A.5.5 0 0 1 1.5 3.5v-2zm1 .5v1.308l4.372 4.858A.5.5 0 0 1 7 8.5v5.306l2-.666V8.5a.5.5 0 0 1 .128-.334L13.5 3.308V2h-11z"/>
-              </svg>
-              Filter Results
-            </h3>
-            <button type="button" class="filter-toggle btn btn-sm btn-outline-secondary d-md-none" data-bs-toggle="collapse" data-bs-target="#saho-filters-collapse" aria-expanded="true" aria-controls="saho-filters-collapse">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-down" viewBox="0 0 16 16">
-                <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/>
-              </svg>
-            </button>
-          </div>
-          
-          <div id="saho-filters-collapse" class="collapse show">
-            {# Active filters section #}
-            <div class="active-filters" id="active-search-filters">
-              {# Active filters will be populated by JavaScript #}
-            </div>
-            
-            {# Facet region #}
-            <div class="saho-view-facets">
-              {# Facet blocks will be placed here by Drupal block layout #}
-            </div>
-            
-            {# Reset filters button #}
-            <div class="filter-actions">
-              <button type="button" id="reset-search-filters" class="btn btn-sm btn-outline-secondary w-100">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-counterclockwise me-1" viewBox="0 0 16 16">
-                  <path fill-rule="evenodd" d="M8 3a5 5 0 1 1-4.546 2.914.5.5 0 0 0-.908-.417A6 6 0 1 0 8 2v1z"/>
-                  <path d="M8 4.466V.534a.25.25 0 0 0-.41-.192L5.23 2.308a.25.25 0 0 0 0 .384l2.36 1.966A.25.25 0 0 0 8 4.466z"/>
-                </svg>
-                Reset Filters
-              </button>
-            </div>
-          </div>
-        </div>
-        
-        {# Search history section #}
-        <div class="saho-search-history bg-white p-3 rounded shadow-sm mb-4 d-none">
-          <div class="d-flex justify-content-between align-items-center mb-2">
-            <h4 class="h6 mb-0">Recent Searches</h4>
-            <button type="button" class="btn btn-sm text-muted" id="clear-search-history">
-              <small>Clear All</small>
-            </button>
-          </div>
-          <div id="recent-searches-list">
-            {# Will be populated by JavaScript #}
-          </div>
-        </div>
-      </div>
-      
-      {# Main content area - On mobile, display content first (order-1) #}
-      {# On tablet and desktop, display content on right (order-md-2) #}
-      <div class="col-12 col-md-8 col-lg-9 order-1 order-md-2">
-        <div class="saho-search-results-wrapper">
-          {# Enhanced search toolbar with result count and display options #}
-          <div class="saho-search-toolbar d-flex flex-wrap justify-content-between align-items-center p-3 bg-light mb-4">
-            {% if rows %}
-              <div class="results-count">
-                <strong>{{ view.total_rows }}</strong> result{% if view.total_rows != 1 %}s{% endif %} found
-              </div>
-              
-              {# Display options and sorting #}
-              <div class="search-display-options d-flex">
-                {# Sort dropdown #}
-                <div class="sort-dropdown dropdown me-2">
-                  <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="sortDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-sort-down me-1" viewBox="0 0 16 16">
-                      <path d="M3.5 2.5a.5.5 0 0 0-1 0v8.793l-1.146-1.147a.5.5 0 0 0-.708.708l2 1.999.007.007a.497.497 0 0 0 .7-.006l2-2a.5.5 0 0 0-.707-.708L3.5 11.293V2.5zm3.5 1a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zM7.5 6a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1h-5zm0 3a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1h-3zm0 3a.5.5 0 0 0 0 1h1a.5.5 0 0 0 0-1h-1z"/>
-                    </svg>
-                    Sort
-                  </button>
-                  <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="sortDropdown">
-                    <li><a class="dropdown-item active sort-option" data-sort="relevance" href="#">Relevance</a></li>
-                    <li><a class="dropdown-item sort-option" data-sort="date-desc" href="#">Newest First</a></li>
-                    <li><a class="dropdown-item sort-option" data-sort="date-asc" href="#">Oldest First</a></li>
-                    <li><a class="dropdown-item sort-option" data-sort="title-asc" href="#">Title A-Z</a></li>
-                  </ul>
-                </div>
-                
-                {# View toggle #}
-                <div class="view-toggle">
-                  <div class="btn-group" role="group" aria-label="View toggle">
-                    <button type="button" class="btn btn-sm btn-outline-secondary active" id="list-view-btn">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-list-ul" viewBox="0 0 16 16">
-                        <path fill-rule="evenodd" d="M5 11.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zm-3 1a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm0 4a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm0 4a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/>
-                      </svg>
-                    </button>
-                    <button type="button" class="btn btn-sm btn-outline-secondary" id="grid-view-btn">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-grid" viewBox="0 0 16 16">
-                        <path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5v-3zM2.5 2a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zm6.5.5A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zM1 10.5A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zm6.5.5A1.5 1.5 0 0 1 10.5 9h3a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 13.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3z"/>
-                      </svg>
-                    </button>
-                  </div>
-                </div>
+<div{{ attributes.addClass('view-' ~ view.id|clean_class) }}>
+  
+  {# Header Section #}
+  <section class="saho-landing-hero mb-5">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-12">
+          <div class="saho-search-header">
+            <h1 class="saho-search-page-title">Search Results</h1>
+            {% if header %}
+              <div class="saho-landing-description mb-4">
+                {{ header }}
               </div>
             {% endif %}
           </div>
-          
-          {# Did you mean suggestion #}
-          <div class="search-spelling-suggestion mb-3 d-none" id="search-spelling-suggestion">
-            <p class="mb-0">Did you mean: <a href="#" id="search-spelling-link" class="{{ section_text_class }}"></a>?</p>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  {# Main Content Section #}
+  <section class="saho-landing-content mb-5">
+    <div class="container">
+      <div class="row">
+        
+        {# Sidebar with filters #}
+        <div class="col-lg-3 mb-4 mb-lg-0">
+          <div class="saho-landing-sidebar p-3 rounded shadow-sm">
+            
+            {% if exposed %}
+              <div class="saho-landing-filters mb-4">
+                {{ exposed }}
+                
+                {% if feed_icons %}
+                  <div class="saho-landing-feeds mt-3 text-end">
+                    {{ feed_icons }}
+                  </div>
+                {% endif %}
+              </div>
+            {% endif %}
           </div>
+        </div>
+        
+        {# Main content #}
+        <div class="col-lg-9">
+          {% if title %}
+            <h2 class="h3 mb-4">{{ title }}</h2>
+          {% endif %}
           
-          {# Main results area #}
+          {# Results count - preserved but without sort and view toggles #}
+          {% if rows_total is defined and rows_total > 0 %}
+            <div class="saho-search-toolbar d-flex align-items-center p-3 mb-4">
+              <div class="results-count">
+                Showing <strong>{{ rows_total }}</strong> results
+              </div>
+              {# Sort and grid/list selector removed here #}
+            </div>
+          {% endif %}
+          
           {% if rows %}
-            <div class="saho-search-results" id="search-results-container">
-              {{ rows }}
+            <div class="saho-search-results-wrapper">
+              <div class="search-results list-view">
+                {{ rows }}
+              </div>
             </div>
           {% elseif empty %}
-            <div class="saho-view-empty p-4 shadow-sm rounded">
-              <div class="empty-search-icon mb-3 text-center">
-                <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="{{ section_color }}" class="bi bi-search" viewBox="0 0 16 16">
-                  <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
-                </svg>
-              </div>
-              <h3 class="h4 mb-3 text-center {{ section_text_class }}">No results found</h3>
-              <p class="text-center mb-4">Your search for "<strong>{{ view.exposed_raw_input.search_api_fulltext }}</strong>" did not match any documents.</p>
-              
-              <div class="empty-search-suggestions p-3 bg-light rounded border">
-                <h4 class="h6 mb-2 {{ section_text_class }}">Suggestions:</h4>
-                <ul class="mb-0">
-                  <li>Check your spelling</li>
-                  <li>Try different or more general keywords</li>
-                  <li>Remove filters that might be limiting results</li>
-                  <li>Try browsing categories instead of searching</li>
-                </ul>
-              </div>
-              
+            <div class="saho-view-empty alert alert-info">
               {{ empty }}
             </div>
           {% endif %}
-
-          {# Popular searches - Only show when no results #}
-          {% if empty %}
-            <div class="popular-searches mt-4">
-              <h4 class="h6 mb-3 text-center">Popular Searches</h4>
-              <div class="d-flex flex-wrap justify-content-center gap-2">
-                <a href="?search_api_fulltext=apartheid" class="badge rounded-pill bg-light text-dark border">apartheid</a>
-                <a href="?search_api_fulltext=mandela" class="badge rounded-pill bg-light text-dark border">mandela</a>
-                <a href="?search_api_fulltext=freedom+charter" class="badge rounded-pill bg-light text-dark border">freedom charter</a>
-                <a href="?search_api_fulltext=anc" class="badge rounded-pill bg-light text-dark border">anc</a>
-                <a href="?search_api_fulltext=soweto" class="badge rounded-pill bg-light text-dark border">soweto</a>
-              </div>
-            </div>
-          {% endif %}
-
-          {# Pager #}
+          
           {% if pager %}
             <div class="saho-search-pager mt-4">
               {{ pager }}
             </div>
           {% endif %}
-
-          {# Related searches section - only show when there are results #}
-          {% if rows and view.total_rows > 0 %}
-            <div class="related-searches mt-4 p-3 rounded">
-              <h4 class="h6 mb-3">Related Searches</h4>
-              <div class="d-flex flex-wrap gap-2" id="related-searches-container">
-                {# Will be populated by JavaScript with related search terms #}
-              </div>
-            </div>
-          {% endif %}
-          {# More link #}
+          
           {% if more %}
-            <div class="saho-view-more mt-4 text-center">
-              <a href="{{ more.url }}" class="btn {{ section_bg_class }} text-white">{{ more.text }}</a>
-            </div>
-          {% endif %}
-          {# Feed icons #}
-          {% if feed_icons %}
-            <div class="saho-view-feed-icons mt-4">
-              {{ feed_icons }}
+            <div class="saho-landing-more mt-4 text-center">
+              {{ more }}
             </div>
           {% endif %}
         </div>
       </div>
     </div>
-
-    {# Content after main view #}
-    {% if attachment_after %}
-      <div class="saho-view-attachment-after mt-4">
-        {{ attachment_after }}
+  </section>
+  
+  {# Additional Content Section - if available #}
+  {% if attachment_after %}
+    <section class="saho-landing-additional py-4 mb-5 bg-light">
+      <div class="container">
+        <h2 class="h3 mb-4">Related Results</h2>
+        <div class="saho-additional-content">
+          {{ attachment_after }}
+        </div>
       </div>
-    {% endif %}
-
-    {# Footer section #}
-    {% if footer %}
-      <div class="saho-view-footer mt-4">
-        {{ footer }}
-      </div>
-    {% endif %}
-  </div>
+    </section>
+  {% endif %}
 </div>

@@ -23,7 +23,7 @@
         initEntityOverviewBlock(element, blockSettings);
 
         // Only initialize display mode toggle if explicitly enabled
-        if (blockSettings.showDisplayToggle === TRUE) {
+        if (blockSettings.showDisplayToggle === true) {
           initDisplayModeToggle(element, blockSettings.displayMode || 'default');
         } else {
           // If toggle is disabled, just apply the configured display mode
@@ -42,83 +42,50 @@
    *   The initial display mode from configuration.
    */
   function initDisplayModeToggle(element, initialMode) {
-    // Check if display toggle exists (might be added by template)
-    const displayToggle = element.querySelector('.entity-overview-display-toggle');
-
-    // If no toggle exists and toggle is enabled, create one
-    if (!displayToggle) {
-      const toggleContainer = document.createElement('div');
-      toggleContainer.className = 'entity-overview-display-toggle';
-
-      // Create toggle buttons
-      const defaultButton = document.createElement('button');
-      defaultButton.textContent = Drupal.t('Default');
-      defaultButton.setAttribute('data-mode', 'default');
-      defaultButton.className = initialMode === 'default' ? 'active' : '';
-
-      const compactButton = document.createElement('button');
-      compactButton.textContent = Drupal.t('Compact');
-      compactButton.setAttribute('data-mode', 'compact');
-      compactButton.className = initialMode === 'compact' ? 'active' : '';
-
-      const fullWidthButton = document.createElement('button');
-      fullWidthButton.textContent = Drupal.t('Full Width');
-      fullWidthButton.setAttribute('data-mode', 'full-width');
-      fullWidthButton.className = initialMode === 'full-width' ? 'active' : '';
-
-      // Add buttons to container
-      toggleContainer.appendChild(defaultButton);
-      toggleContainer.appendChild(compactButton);
-      toggleContainer.appendChild(fullWidthButton);
-
-      // Add container after the title
-      const title = element.querySelector('.entity-overview-title');
-      if (title) {
-        title.parentNode.insertBefore(toggleContainer, title.nextSibling);
-      } else {
-        element.insertBefore(toggleContainer, element.firstChild);
-      }
-
-      // Add event listeners to buttons
-      toggleContainer.querySelectorAll('button').forEach(function (button) {
-        button.addEventListener('click', function () {
+    // Look for Bootstrap button group toggle in the new template structure
+    const displayToggleButtons = element.querySelectorAll('.entity-display-toggle');
+    
+    if (displayToggleButtons.length > 0) {
+      // Handle existing Bootstrap toggle buttons
+      displayToggleButtons.forEach(function(button) {
+        button.addEventListener('click', function() {
           const mode = this.getAttribute('data-mode');
           setDisplayMode(element, mode);
-
-          // Update active button
-          toggleContainer.querySelectorAll('button').forEach(function (btn) {
+          
+          // Update active state using Bootstrap classes
+          const buttonGroup = this.parentElement;
+          buttonGroup.querySelectorAll('.btn').forEach(function(btn) {
             btn.classList.remove('active');
           });
           this.classList.add('active');
-
-          // Store preference in localStorage if available
+          
+          // Store preference in localStorage
           try {
             if (window.localStorage) {
               localStorage.setItem('entityOverviewDisplayMode', mode);
             }
           } catch (e) {
-            // Local storage not available or permission denied
+            // Local storage not available
           }
         });
       });
-
-      // Set initial display mode from configuration
+      
+      // Set initial display mode
       setDisplayMode(element, initialMode);
-
-      // Check for stored preference only if not using the configured mode
+      
+      // Check for stored preference
       try {
         if (window.localStorage) {
           const storedMode = localStorage.getItem('entityOverviewDisplayMode');
           if (storedMode && storedMode !== initialMode) {
-            // Find and click the corresponding button
-            const storedButton = toggleContainer.querySelector(`button[data - mode = "${storedMode}"]`);
+            const storedButton = element.querySelector(`.entity-display-toggle[data-mode="${storedMode}"]`);
             if (storedButton) {
               storedButton.click();
             }
           }
         }
       } catch (e) {
-        // Local storage not available or permission denied
+        // Local storage not available
       }
     }
   }
@@ -132,12 +99,22 @@
    *   The display mode: 'default', 'compact', or 'full-width'.
    */
   function setDisplayMode(element, mode) {
-    // Remove existing mode classes
-    element.classList.remove('compact', 'full-width');
-
-    // Add new mode class if not default
-    if (mode !== 'default') {
-      element.classList.add(mode);
+    const itemsContainer = element.querySelector('.entity-overview-items');
+    if (!itemsContainer) return;
+    
+    // Remove existing display mode classes
+    itemsContainer.classList.remove('display-mode-default', 'display-mode-compact', 'display-mode-full-width');
+    
+    // Add the new display mode class
+    itemsContainer.classList.add('display-mode-' + mode);
+    
+    // Update the grid layout based on mode
+    if (mode === 'compact') {
+      itemsContainer.style.gridTemplateColumns = 'repeat(auto-fill, minmax(250px, 1fr))';
+    } else if (mode === 'full-width') {
+      itemsContainer.style.gridTemplateColumns = '1fr';
+    } else {
+      itemsContainer.style.gridTemplateColumns = 'repeat(auto-fill, minmax(300px, 1fr))';
     }
   }
 
@@ -172,8 +149,8 @@
       page: 0,
       filter: '',
       sort: '',
-      loading: FALSE,
-      hasMore: TRUE
+      loading: false,
+      hasMore: true
     };
 
     // Handle filter changes.
@@ -182,8 +159,8 @@
       filterSelect.addEventListener('change', function () {
         state.filter = this.value;
         state.page = 0;
-        state.hasMore = TRUE;
-        loadEntities(TRUE);
+        state.hasMore = true;
+        loadEntities(true);
       });
     }
 
@@ -193,8 +170,8 @@
       sortSelect.addEventListener('change', function () {
         state.sort = this.value;
         state.page = 0;
-        state.hasMore = TRUE;
-        loadEntities(TRUE);
+        state.hasMore = true;
+        loadEntities(true);
       });
     }
 
@@ -203,7 +180,7 @@
       loadMoreButton.addEventListener('click', function () {
         if (!state.loading && state.hasMore) {
           state.page++;
-          loadEntities(FALSE);
+          loadEntities(false);
         }
       });
     }
@@ -216,12 +193,12 @@
      */
     function loadEntities(replace) {
       // Set loading state.
-      state.loading = TRUE;
+      state.loading = true;
 
       // Show loading indicator.
       if (loadMoreButton) {
         loadMoreButton.classList.add('is-loading');
-        loadMoreButton.disabled = TRUE;
+        loadMoreButton.disabled = true;
       }
 
       // Prepare the request data.
@@ -258,12 +235,12 @@
           }
 
           // Reset loading state.
-          state.loading = FALSE;
+          state.loading = false;
 
           // Update load more button.
           if (loadMoreButton) {
             loadMoreButton.classList.remove('is-loading');
-            loadMoreButton.disabled = FALSE;
+            loadMoreButton.disabled = false;
 
             // Hide the button if there are no more items.
             if (!state.hasMore) {
@@ -275,12 +252,12 @@
         },
         error: function () {
           // Reset loading state.
-          state.loading = FALSE;
+          state.loading = false;
 
           // Update load more button.
           if (loadMoreButton) {
             loadMoreButton.classList.remove('is-loading');
-            loadMoreButton.disabled = FALSE;
+            loadMoreButton.disabled = false;
           }
 
           // Show an error message.

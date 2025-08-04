@@ -1,7 +1,7 @@
 {#
 /**
  * @file
- * Default theme implementation to display an entity overview block.
+ * Default theme implementation to display an entity overview block using unified card system.
  *
  * Available variables:
  * - items: An array of entity items.
@@ -19,85 +19,109 @@
  * @ingroup themeable
  */
 #}
-<div{{ attributes }} data-block-id="{{ block_id }}">
+<div{{ attributes.addClass('entity-overview-block') }} data-block-id="{{ block_id }}">
   {% if block_title %}
-    <h2 class="entity-overview-title">{{ block_title }}</h2>
-  {% endif %}
-  
-  {% if show_display_toggle %}
-    {# Display mode toggle #}
-    <div class="entity-overview-display-toggle">
-      <button data-mode="default" class="{{ display_mode == 'default' ? 'active' : '' }}">{{ 'Default'|t }}</button>
-      <button data-mode="compact" class="{{ display_mode == 'compact' ? 'active' : '' }}">{{ 'Compact'|t }}</button>
-      <button data-mode="full-width" class="{{ display_mode == 'full-width' ? 'active' : '' }}">{{ 'Full Width'|t }}</button>
-    </div>
+    <h2 class="block-title mb-3">{{ block_title }}</h2>
   {% endif %}
   
   {% if intro_text %}
-    <div class="entity-overview-intro">
+    <div class="block-intro mb-4 text-muted">
       {{ intro_text|replace({'%title': block_title}) }}
     </div>
   {% endif %}
   
   {% if filter_options or sort_options %}
-    <div class="entity-overview-controls">
-      {% if filter_options %}
-        <div class="entity-overview-filter">
-          <label for="{{ block_id }}-filter">{{ 'Filter by:'|t }}</label>
-          <select id="{{ block_id }}-filter" class="entity-overview-filter-select">
-            <option value="">{{ 'All'|t }}</option>
-            {% for option in filter_options %}
-              <option value="{{ option.id }}">{{ option.label }}</option>
-            {% endfor %}
-          </select>
-        </div>
-      {% endif %}
-      
-      {% if sort_options %}
-        <div class="entity-overview-sort">
-          <label for="{{ block_id }}-sort">{{ 'Sort by:'|t }}</label>
-          <select id="{{ block_id }}-sort" class="entity-overview-sort-select">
-            {% for option in sort_options %}
-              <option value="{{ option.id }}">{{ option.label }}</option>
-            {% endfor %}
-          </select>
-        </div>
-      {% endif %}
+    <div class="entity-overview-controls mb-4 p-3 bg-light rounded">
+      <div class="row g-3 align-items-center">
+        {% if filter_options %}
+          <div class="col-auto">
+            <label for="{{ block_id }}-filter" class="form-label mb-0 me-2">{{ 'Filter by:'|t }}</label>
+            <select id="{{ block_id }}-filter" class="form-select form-select-sm entity-overview-filter-select">
+              <option value="">{{ 'All'|t }}</option>
+              {% for option in filter_options %}
+                <option value="{{ option.id }}">{{ option.label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        {% endif %}
+        
+        {% if sort_options %}
+          <div class="col-auto">
+            <label for="{{ block_id }}-sort" class="form-label mb-0 me-2">{{ 'Sort by:'|t }}</label>
+            <select id="{{ block_id }}-sort" class="form-select form-select-sm entity-overview-sort-select">
+              {% for option in sort_options %}
+                <option value="{{ option.id }}">{{ option.label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        {% endif %}
+        
+        {% if show_display_toggle %}
+          <div class="col-auto ms-auto">
+            <div class="btn-group btn-group-sm" role="group" aria-label="Display mode">
+              <button type="button" class="btn btn-outline-secondary entity-display-toggle {{ display_mode == 'default' ? 'active' : '' }}" data-mode="default">
+                <i class="fas fa-th"></i> {{ 'Grid'|t }}
+              </button>
+              <button type="button" class="btn btn-outline-secondary entity-display-toggle {{ display_mode == 'compact' ? 'active' : '' }}" data-mode="compact">
+                <i class="fas fa-th-large"></i> {{ 'Compact'|t }}
+              </button>
+              <button type="button" class="btn btn-outline-secondary entity-display-toggle {{ display_mode == 'full-width' ? 'active' : '' }}" data-mode="full-width">
+                <i class="fas fa-list"></i> {{ 'List'|t }}
+              </button>
+            </div>
+          </div>
+        {% endif %}
+      </div>
     </div>
   {% endif %}
   
   {% if items %}
-    <div class="entity-overview-items">
+    <div class="saho-cards-grid entity-overview-items {{ display_mode ? 'display-mode-' ~ display_mode : '' }}">
       {% for item in items %}
-        <div class="entity-overview-item">
-          {% if item.image %}
-            <div class="entity-overview-item-image">
-              <a href="{{ item.url }}">
-                <img src="{{ item.image }}" alt="{{ item.title }}" />
-              </a>
-            </div>
-          {% endif %}
-          <div class="entity-overview-item-content">
-            <h3 class="entity-overview-item-title">
-              <a href="{{ item.url }}">{{ item.title }}</a>
-            </h3>
-            {% if item.created %}
-              <div class="entity-overview-item-date">
-                {{ item.created|date('j F Y') }}
+        <div class="saho-card">
+          <a href="{{ item.url }}" class="saho-card-link">
+            {% if item.image %}
+              <div class="saho-card-image">
+                <img src="{{ item.image }}" alt="{{ item.title }}" loading="lazy" />
+              </div>
+            {% else %}
+              <div class="saho-card-image saho-card-image--placeholder">
+                <i class="fas fa-file-alt"></i>
               </div>
             {% endif %}
-          </div>
+            
+            <div class="saho-card-content">
+              <h3 class="saho-card-title">{{ item.title }}</h3>
+              
+              {% if item.created %}
+                <div class="saho-card-subtitle">
+                  <i class="far fa-calendar-alt me-1"></i>
+                  {{ item.created|date('j F Y') }}
+                </div>
+              {% endif %}
+              
+              <div class="saho-card-footer">
+                <span class="saho-card-button">
+                  {{ 'Read more'|t }}
+                  <i class="fas fa-arrow-right"></i>
+                </span>
+              </div>
+            </div>
+          </a>
         </div>
       {% endfor %}
     </div>
     
     {% if has_more %}
-      <div class="entity-overview-load-more">
-        <button type="button" class="entity-overview-load-more-button">{{ 'Load more'|t }}</button>
+      <div class="text-center mt-4">
+        <button type="button" class="btn btn-outline-primary entity-overview-load-more-button">
+          <i class="fas fa-plus me-2"></i>{{ 'Load more'|t }}
+        </button>
       </div>
     {% endif %}
   {% else %}
-    <div class="entity-overview-empty">
+    <div class="alert alert-info text-center">
+      <i class="fas fa-info-circle me-2"></i>
       {{ 'No items found.'|t }}
     </div>
   {% endif %}

@@ -222,26 +222,43 @@ class TdihBlock extends BlockBase implements ContainerFactoryPluginInterface {
       }
       // 2) Otherwise, do automatic selection based on today's date.
       else {
-        // Use Drupal's time service to get the current timestamp.
-        $timestamp = $this->time->getCurrentTime();
-        // Use the site's configured timezone instead of hardcoding UTC.
-        $config = \Drupal::config('system.date');
-        $timezone = $config->get('timezone.default') ?: 'UTC';
-        $today = new \DateTime('now', new \DateTimeZone($timezone));
+        // Force South African timezone for consistent TDIH functionality.
+        $sa_timezone = new \DateTimeZone('Africa/Johannesburg');
+        $today = new \DateTime('now', $sa_timezone);
         $month = $today->format('m');
         $day = $today->format('d');
 
-        $this->logger->info('TDIH block loading events for date @date in timezone @timezone', [
+        $this->logger->info('TDIH block loading events for date @date in South African timezone', [
           '@date' => $today->format('Y-m-d'),
-          '@timezone' => $timezone,
         ]);
 
         // Use our NodeFetcher to load a set of matching nodes for today's date.
-        $nodes = $this->nodeFetcher->loadTodayNodes($month, $day);
-        if (!empty($nodes)) {
-          $nodes_array = array_values($nodes);
-          // Randomly pick one node.
-          $selected_node = $nodes_array[array_rand($nodes_array)];
+        $target_date = $month . '-' . $day;
+        $nodes = $this->nodeFetcher->loadPotentialEvents($target_date);
+
+        // Filter nodes by exact date match and front page feature using simple string operations.
+        $filtered_nodes = [];
+        foreach ($nodes as $node) {
+          // Only process nodes that are featured on front page.
+          if ($node->hasField('field_home_page_feature') && $node->get('field_home_page_feature')->value) {
+            if ($node->hasField('field_this_day_in_history_3') && !$node->get('field_this_day_in_history_3')->isEmpty()) {
+              $raw_date = $node->get('field_this_day_in_history_3')->value;
+              if (!empty($raw_date)) {
+                // Extract MM-DD from YYYY-MM-DD format.
+                if (preg_match('/\d{4}-(\d{2})-(\d{2})/', $raw_date, $matches)) {
+                  $item_date = $matches[1] . '-' . $matches[2];
+                  if ($item_date === $target_date) {
+                    $filtered_nodes[] = $node;
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        if (!empty($filtered_nodes)) {
+          // Randomly pick one node from the filtered results.
+          $selected_node = $filtered_nodes[array_rand($filtered_nodes)];
           $tdih_nodes[] = $this->buildNodeItem($selected_node);
         }
         else {
@@ -299,21 +316,19 @@ class TdihBlock extends BlockBase implements ContainerFactoryPluginInterface {
       return Cache::PERMANENT;
     }
 
-    // Use the site's configured timezone instead of hardcoding UTC.
-    $config = \Drupal::config('system.date');
-    $timezone = $config->get('timezone.default') ?: 'UTC';
+    // Force South African timezone for consistent TDIH functionality.
+    $sa_timezone = new \DateTimeZone('Africa/Johannesburg');
 
-    // Calculate seconds until midnight in the site's timezone.
+    // Calculate seconds until midnight in South African timezone.
     $now = $this->time->getCurrentTime();
-    // Calculate the timestamp for midnight tonight in the site's timezone.
-    $midnight = new \DateTime('now', new \DateTimeZone($timezone));
+    // Calculate the timestamp for midnight tonight in SA timezone.
+    $midnight = new \DateTime('now', $sa_timezone);
     $midnight->setTime(0, 0, 0);
     $midnight->modify('+1 day');
     $seconds_until_midnight = $midnight->getTimestamp() - $now;
 
-    $this->logger->info('TDIH block cache will expire in @seconds seconds (midnight in @timezone)', [
+    $this->logger->info('TDIH block cache will expire in @seconds seconds (midnight in South African timezone)', [
       '@seconds' => $seconds_until_midnight,
-      '@timezone' => $timezone,
     ]);
 
     // Return seconds until midnight, or minimum 60 seconds to prevent
@@ -373,8 +388,8 @@ class TdihBlock extends BlockBase implements ContainerFactoryPluginInterface {
       if ($node->hasField('field_this_day_in_history_3') && !$node->get('field_this_day_in_history_3')->isEmpty()) {
         $raw_date = $node->get('field_this_day_in_history_3')->value;
         if (!empty($raw_date)) {
-          // Convert to a timestamp (assuming UTC storage).
-          $dt = new \DateTime($raw_date, new \DateTimeZone('UTC'));
+          // Force South African timezone for consistent TDIH functionality.
+          $dt = new \DateTime($raw_date, new \DateTimeZone('Africa/Johannesburg'));
           $event_timestamp = $dt->getTimestamp();
         }
       }

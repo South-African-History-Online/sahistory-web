@@ -41,113 +41,61 @@ class NodeFetcher {
   }
 
   /**
-   * Load nodes matching today's month/day.
+   * Load events that potentially match a date pattern.
+   * Only loads events that are featured on the front page.
    *
-   * Adjust your field and content type as needed.
-   *
-   * @param string $month
-   *   The month (01-12).
-   * @param string $day
-   *   The day (01-31).
+   * @param string $month_day
+   *   The month-day pattern to search for (e.g., "08-02").
    *
    * @return array
    *   Array of Node objects.
    */
-  public function loadTodayNodes($month, $day) {
+  public function loadPotentialEvents($month_day = null) {
     try {
-      // Ensure month and day are properly formatted with leading zeros.
-      $month = str_pad($month, 2, '0', STR_PAD_LEFT);
-      $day = str_pad($day, 2, '0', STR_PAD_LEFT);
-
-      // First try to get featured events for today.
-      $query = $this->entityTypeManager->getStorage('node')->getQuery();
-      $nids = $query->condition('type', 'event')
-        ->condition('status', 1)
-        ->condition('field_this_day_in_history_3', "%-$month-$day", 'LIKE')
-        ->condition('field_home_page_feature', 1)
-        ->accessCheck(TRUE)
-        ->execute();
-
-      // If no featured events found, get at least one event for today.
-      if (empty($nids)) {
-        $query = $this->entityTypeManager->getStorage('node')->getQuery();
-        $nids = $query->condition('type', 'event')
-          ->condition('status', 1)
-          ->condition('field_this_day_in_history_3', "%-$month-$day", 'LIKE')
-          ->accessCheck(TRUE)
-          ->sort('field_this_day_in_history_3', 'DESC')
-          ->range(0, 1)
-          ->execute();
-      }
-
-      if ($nids) {
-        return $this->entityTypeManager->getStorage('node')->loadMultiple($nids);
-      }
-    }
-    catch (\Exception $e) {
-      $this->logger->error('Error loading TDIH nodes for @date: @message', [
-        '@date' => "$month-$day",
-        '@message' => $e->getMessage(),
-      ]);
-    }
-    return [];
-  }
-
-  /**
-   * Load nodes matching a specific month/day.
-   *
-   * This method is similar to loadTodayNodes but doesn't require the
-   * field_home_page_feature flag, allowing it to return all events for a date.
-   *
-   * @param string $month
-   *   The month (01-12).
-   * @param string $day
-   *   The day (01-31).
-   * @param int $limit
-   *   Maximum number of nodes to return (0 for no limit).
-   *
-   * @return array
-   *   Array of Node objects.
-   */
-  public function loadDateNodes($month, $day, $limit = 0) {
-    try {
-      // Ensure month and day are properly formatted with leading zeros.
-      $month = str_pad($month, 2, '0', STR_PAD_LEFT);
-      $day = str_pad($day, 2, '0', STR_PAD_LEFT);
-
-      // Query for published "event" nodes with date field matching mm-dd.
       $query = $this->entityTypeManager->getStorage('node')->getQuery();
       $query->condition('type', 'event')
         ->condition('status', 1)
-        ->condition('field_this_day_in_history_3', "%-$month-$day", 'LIKE')
+        ->condition('field_home_page_feature', 1)
         ->accessCheck(TRUE)
         ->sort('field_this_day_in_history_3', 'DESC');
 
-      // Apply limit if specified.
-      if ($limit > 0) {
-        $query->range(0, $limit);
+      // If a specific month-day is provided, use LIKE to get potential matches
+      if ($month_day) {
+        $query->condition('field_this_day_in_history_3', "%-$month_day", 'LIKE');
+        $this->logger->info('NodeFetcher searching for events with date ending in: %-@month_day', [
+          '@month_day' => $month_day,
+        ]);
       }
-
+      
+      // Limit to reasonable number for performance
+      $query->range(0, 500);
+      
       $nids = $query->execute();
 
       if ($nids) {
-        return $this->entityTypeManager->getStorage('node')->loadMultiple($nids);
+        $nodes = $this->entityTypeManager->getStorage('node')->loadMultiple($nids);
+        $this->logger->info('NodeFetcher found @count potential event nodes: @nids', [
+          '@count' => count($nodes),
+          '@nids' => implode(', ', array_slice(array_keys($nids), 0, 10)) . (count($nids) > 10 ? '...' : ''),
+        ]);
+        return $nodes;
       }
     }
     catch (\Exception $e) {
-      $this->logger->error('Error loading date nodes for @date: @message', [
-        '@date' => "$month-$day",
+      $this->logger->error('Error loading potential event nodes: @message', [
         '@message' => $e->getMessage(),
       ]);
     }
     return [];
   }
+
 
   /**
    * Get all available months and days that have events.
    *
    * This method is used to populate the date picker with valid dates.
    * Uses a direct database query for better performance with large datasets.
+   * Only includes dates for events that are featured on the front page.
    *
    * @return array
    *   Array of month-day combinations that have events.
@@ -162,9 +110,11 @@ class NodeFetcher {
       // Query to extract month and day from the date field.
       $query = $database->select('node_field_data', 'n');
       $query->join('node__field_this_day_in_history_3', 'f', 'n.nid = f.entity_id');
+      $query->join('node__field_home_page_feature', 'h', 'n.nid = h.entity_id');
       $query->fields('f', ['field_this_day_in_history_3_value']);
       $query->condition('n.type', 'event')
         ->condition('n.status', 1)
+        ->condition('h.field_home_page_feature_value', 1)
         ->distinct();
 
       $results = $query->execute()->fetchCol();
@@ -182,9 +132,13 @@ class NodeFetcher {
         }
       }
 
-      // Log the number of unique dates found.
-      $this->logger->info('Found @count unique dates for TDIH date picker.', [
+      // Sort the dates for better user experience.
+      sort($dates);
+
+      // Debug logging with actual dates found.
+      $this->logger->info('NodeFetcher found @count unique dates for TDIH date picker: @dates', [
         '@count' => count($dates),
+        '@dates' => implode(', ', array_slice($dates, 0, 10)) . (count($dates) > 10 ? '...' : ''),
       ]);
     }
     catch (\Exception $e) {
@@ -195,5 +149,6 @@ class NodeFetcher {
 
     return $dates;
   }
+
 
 }

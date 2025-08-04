@@ -159,9 +159,10 @@
             $eventsContainer.addClass('tdih-birthday-events');
 
             // Update the heading to indicate these are birthday events
-            var date = $('.tdih-birthday-date-picker').val();
-            if (date) {
-              var dateObj = new Date(date);
+            var day = $('.tdih-day-picker').val();
+            var month = $('.tdih-month-picker').val();
+            if (day && month) {
+              var dateObj = new Date(new Date().getFullYear(), parseInt(month) - 1, parseInt(day));
               var formattedDate = dateObj.toLocaleDateString('en-US', {
                 month: 'long',
                 day: 'numeric'

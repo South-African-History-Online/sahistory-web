@@ -11,64 +11,109 @@
 #}
 
 <div class="tdih-interactive-block" role="region" aria-labelledby="tdih-heading">
-  <div class="tdih-interactive-header">
-    <h2 id="tdih-heading">{{ 'This day in history'|t }}</h2>
-    <p class="tdih-intro-text">{{ 'Find out who was born, who died and other significant events from this day in history'|t }}</p>
+  <div class="tdih-interactive-header mb-4">
+    <h2 id="tdih-heading" class="block-title">
+      <i class="fas fa-history me-2 text-primary"></i>
+      {{ 'This day in history'|t }}
+    </h2>
+    <p class="text-muted mb-0">{{ 'Find out who was born, who died and other significant events from this day in history'|t }}</p>
   </div>
 
   {% if date_picker_form %}
-    <div class="tdih-birthday-picker" role="search" aria-label="{{ 'Search historical events by date'|t }}">
+    <div class="tdih-birthday-picker mb-4 p-3 bg-light rounded" role="search" aria-label="{{ 'Search historical events by date'|t }}">
       {{ date_picker_form }}
     </div>
   {% endif %}
 
+  <!-- DEBUG: all_events count: {{ all_events|length }}, target_date: {{ target_date }}, show_today_history: {{ show_today_history }} -->
   <div class="tdih-today-history-wrapper" {% if not show_today_history %}style="display: none;"{% endif %}>
-    {% if tdih_nodes %}
+    {% if show_today_history and all_events|length > 0 %}
       <div class="tdih-today-events">
-        <h3 id="tdih-today-heading">{{ 'Today in history'|t }}</h3>
-        <div class="tdih-events-list {% if display_mode == 'compact' %}compact-mode{% else %}full-mode{% endif %}" aria-labelledby="tdih-today-heading">
-          {% for item in tdih_nodes %}
-            <div class="tdih-event-item">
-              {% if display_mode == 'full' and item.image %}
-                <div class="tdih-event-image">
-                  <img 
-                    src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'%3E%3C/svg%3E" 
-                    data-src="{{ item.image }}" 
-                    alt="{{ item.title|striptags }}" 
-                    class="lazy"
-                    loading="lazy"
-                    width="100%"
-                    height="auto" />
-                </div>
-              {% endif %}
-              
-              <div class="tdih-event-content">
-                <div class="tdih-event-date">
-                  {{ item.event_date|date('j F Y') }}
-                </div>
-                
-                <h4 class="tdih-event-title">
-                  <a href="{{ item.url }}">{{ item.title|striptags }}</a>
-                </h4>
-                
-                {% if display_mode == 'full' and item.body %}
-                  <div class="tdih-event-body">
-                    {{ item.body|raw|striptags('<p><a><em><strong><ul><ol><li><img><div><span><br><h1><h2><h3><h4><h5><h6>')|truncate(200, true, '...') }}
-                  </div>
-                {% endif %}
-              </div>
-            </div>
-          {% endfor %}
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h3 id="tdih-today-heading" class="h4 mb-0">
+            <i class="fas fa-calendar-day me-2 text-success"></i>
+            {{ 'Today in history'|t }}
+          </h3>
+          <small class="text-muted">{{ "now"|date('j F') }}</small>
         </div>
+        
+        {% if display_mode == 'compact' %}
+          <div class="list-group">
+            {% for item in all_events|slice(0, 10) %}
+              <a href="{{ item.url }}" class="list-group-item list-group-item-action">
+                <div class="d-flex w-100 justify-content-between align-items-start">
+                  <div>
+                    <h5 class="mb-1">{{ item.title|striptags }}</h5>
+                    <small class="text-muted">
+                      <i class="far fa-calendar-alt me-1"></i>
+                      {{ item.event_date|date('j F Y') }}
+                    </small>
+                  </div>
+                  <i class="fas fa-chevron-right text-muted"></i>
+                </div>
+              </a>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="saho-cards-grid">
+            {% for item in all_events|slice(0, 10) %}
+              <div class="saho-card">
+                <a href="{{ item.url }}" class="saho-card-link">
+                  {% if item.image %}
+                    <div class="saho-card-image">
+                      <img src="{{ item.image }}" alt="{{ item.title|striptags }}" loading="lazy" />
+                    </div>
+                  {% else %}
+                    <div class="saho-card-image saho-card-image--placeholder">
+                      <i class="fas fa-scroll"></i>
+                    </div>
+                  {% endif %}
+                  
+                  <div class="saho-card-content">
+                    <div class="saho-card-badge">
+                      {{ item.event_date|date('Y') }}
+                    </div>
+                    
+                    <h4 class="saho-card-title">{{ item.title|striptags }}</h4>
+                    
+                    <div class="saho-card-subtitle">
+                      <i class="far fa-calendar-alt me-1"></i>
+                      {{ item.event_date|date('j F Y') }}
+                    </div>
+                    
+                    {% if item.body %}
+                      <div class="saho-card-description">
+                        {{ item.body|striptags|truncate(120, true, '...') }}
+                      </div>
+                    {% endif %}
+                    
+                    <div class="saho-card-footer">
+                      <span class="saho-card-button">
+                        {{ 'Read more'|t }}
+                        <i class="fas fa-arrow-right"></i>
+                      </span>
+                    </div>
+                  </div>
+                </a>
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
       </div>
-    {% else %}
-      <div class="tdih-no-events">
-        <p>{{ 'No events found for today.'|t }}</p>
+    {% elseif show_today_history %}
+      <div class="alert alert-info text-center">
+        <i class="fas fa-info-circle me-2"></i>
+        {{ 'No events found for today.'|t }}
       </div>
     {% endif %}
   </div>
 
-  <div class="tdih-footer">
-    <a href="/this-day-in-history" class="tdih-more-link">{{ 'More events'|t }}</a>
-  </div>
+  {% if show_explore_button %}
+    <div class="tdih-footer text-center mt-4">
+      <a href="/this-day-in-history" class="btn btn-outline-primary">
+        <i class="fas fa-clock me-2"></i>
+        {{ 'Explore more historical events'|t }}
+      </a>
+    </div>
+  {% endif %}
 </div>

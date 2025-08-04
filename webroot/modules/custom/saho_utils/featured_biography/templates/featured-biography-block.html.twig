@@ -32,137 +32,169 @@
  * @ingroup themeable
  */
 #}
-<div class="featured-biography-block {% if display_mode == 'compact' %}compact-mode{% else %}full-mode{% endif %} {% if entity_count > 1 %}multiple-items{% endif %}">
+<div class="featured-biography-block">
   {# Handle both old (biography_item) and new (biography_data) structures #}
   {% if biography_item is defined or biography_data is defined %}
-    <div class="featured-biography-header">
-      {% if highlight_category is defined and highlight_category and biography_data.category is defined %}
-        <h2>
+    {% if highlight_category is defined and highlight_category and biography_data.category is defined %}
+      <div class="mb-4">
+        <h2 class="block-title">
           {% if biography_data.category.custom_label %}
             {{ biography_data.category.custom_label }}
           {% else %}
             {{ biography_data.category.name }} {{ 'Biographies'|t }}
           {% endif %}
         </h2>
-      {% else %}
-        <h2>{{ 'Featured Biography'|t }}</h2>
-      {% endif %}
-    </div>
+        <a href="{{ biography_data.category.url }}" class="btn btn-sm btn-outline-primary mt-2">
+          <i class="fas fa-users me-1"></i>{{ 'View all'|t }}
+        </a>
+      </div>
+    {% else %}
+      <h2 class="block-title mb-4">{{ 'Featured Biography'|t }}</h2>
+    {% endif %}
     
     <div class="featured-biography-content">
+      {# Show admin info for demo content #}
+      {% if is_demo and show_admin_info %}
+        <div class="alert alert-warning mb-3">
+          <h5><i class="fas fa-tools me-2"></i>{{ 'Configuration Needed'|t }}</h5>
+          <p class="mb-2">{{ 'This is demo content. To show real biographies:'|t }}</p>
+          <ul class="mb-0 small">
+            <li>{{ 'Create biography content type with fields: field_bio_pic, field_dob, field_dod, field_people_category'|t }}</li>
+            <li>{{ 'Publish some biography nodes'|t }}</li>
+            <li>{{ 'Current selection method:'|t }} <strong>{{ selection_method }}</strong></li>
+          </ul>
+        </div>
+      {% endif %}
+      
       {# Handle multiple biographies #}
       {% if biography_data is defined and biography_data.items is defined %}
-        <div class="featured-biography-grid">
+        <div class="saho-cards-grid">
           {% for item in biography_data.items %}
-            <div class="featured-biography-item">
-              {% if item.image %}
-                <div class="featured-biography-image">
-                  <a href="{{ item.url }}" aria-label="View full biography of {{ item.title|striptags }}">
+            <div class="saho-card saho-card--featured">
+              <a href="{{ item.url }}" class="saho-card-link">
+                {% if item.image %}
+                  <div class="saho-card-image">
                     <img src="{{ item.image }}" alt="{{ item.title|striptags }}" loading="lazy" />
-                  </a>
-                </div>
-              {% endif %}
-              
-              <div class="featured-biography-details">
-                {% if item.categories %}
-                  <div class="featured-biography-categories">
-                    {% for category in item.categories %}
-                      <a href="{{ category.url }}" class="featured-biography-category">{{ category.name }}</a>
-                      {% if not loop.last %} › {% endif %}
-                    {% endfor %}
+                  </div>
+                {% else %}
+                  <div class="saho-card-image saho-card-image--placeholder">
+                    <i class="fas fa-user"></i>
                   </div>
                 {% endif %}
                 
-                <h3 class="featured-biography-title">
-                  <a href="{{ item.url }}">{{ item.title }}</a>
-                </h3>
-                
-                <div class="featured-biography-dates">
-                  {% if item.birth_date %}
-                    <span class="featured-biography-birth">{{ item.birth_date }}</span>
+                <div class="saho-card-content">
+                  {% if item.categories %}
+                    <div class="saho-card-badge">
+                      {{ item.categories[0].name }}
+                    </div>
                   {% endif %}
-                  {% if item.birth_date and item.death_date %} - {% endif %}
-                  {% if item.death_date %}
-                    <span class="featured-biography-death">{{ item.death_date }}</span>
+                  
+                  <h3 class="saho-card-title">{{ item.title }}</h3>
+                  
+                  {% if item.birth_date or item.death_date %}
+                    <div class="saho-card-subtitle">
+                      <i class="far fa-calendar-alt me-1"></i>
+                      {% if item.birth_date %}{{ item.birth_date }}{% endif %}
+                      {% if item.birth_date and item.death_date %} - {% endif %}
+                      {% if item.death_date %}{{ item.death_date }}{% endif %}
+                    </div>
                   {% endif %}
-                </div>
-                
-                {% if item.position %}
-                  <div class="featured-biography-position">
-                    {{ item.position|raw }}
+                  
+                  {% if item.position %}
+                    <div class="saho-card-subtitle">
+                      <i class="fas fa-briefcase me-1"></i>
+                      {{ item.position|striptags }}
+                    </div>
+                  {% endif %}
+                  
+                  {% if item.body_summary %}
+                    <div class="saho-card-description">
+                      {{ item.body_summary|striptags|truncate(120, true, '...') }}
+                    </div>
+                  {% endif %}
+                  
+                  <div class="saho-card-footer">
+                    <span class="saho-card-button">
+                      {{ 'Read biography'|t }}
+                      <i class="fas fa-arrow-right"></i>
+                    </span>
                   </div>
-                {% endif %}
-                
-                {% if item.body_summary %}
-                  <div class="featured-biography-summary">
-                    {{ item.body_summary|raw|striptags('<p><a><em><strong><ul><ol><li>')|truncate(200, true, '...') }}
-                  </div>
-                {% endif %}
-                
-                <div class="featured-biography-read-more">
-                  <a href="{{ item.url }}" class="featured-biography-link">{{ 'Read more'|t }} <span class="visually-hidden">about {{ item.title|striptags }}</span></a>
                 </div>
-              </div>
+              </a>
             </div>
           {% endfor %}
         </div>
       {# Handle single biography - either from old structure or new structure #}
       {% elseif biography_item is defined %}
-        <div class="featured-biography-item">
-          {% if biography_item.image %}
-            <div class="featured-biography-image">
-              <a href="{{ biography_item.url }}" aria-label="View full biography of {{ biography_item.title|striptags }}">
+        {% if biography_item.is_demo %}
+          <div class="saho-card saho-card--featured saho-card--demo">
+        {% else %}
+          <div class="saho-card saho-card--featured">
+        {% endif %}
+          <a href="{{ biography_item.url }}" class="saho-card-link">
+            {% if biography_item.image %}
+              <div class="saho-card-image">
                 <img src="{{ biography_item.image }}" alt="{{ biography_item.title|striptags }}" loading="lazy" />
-              </a>
-            </div>
-          {% endif %}
-          
-          <div class="featured-biography-details">
-            {% if biography_item.categories %}
-              <div class="featured-biography-categories">
-                {% for category in biography_item.categories %}
-                  <a href="{{ category.url }}" class="featured-biography-category">{{ category.name }}</a>
-                  {% if not loop.last %} › {% endif %}
-                {% endfor %}
+              </div>
+            {% else %}
+              <div class="saho-card-image saho-card-image--placeholder">
+                <i class="fas fa-user"></i>
               </div>
             {% endif %}
             
-            <h3 class="featured-biography-title">
-              <a href="{{ biography_item.url }}">{{ biography_item.title }}</a>
-            </h3>
-            
-            <div class="featured-biography-dates">
-              {% if biography_item.birth_date %}
-                <span class="featured-biography-birth">{{ biography_item.birth_date }}</span>
+            <div class="saho-card-content">
+              {% if biography_item.categories %}
+                <div class="saho-card-badge">
+                  {{ biography_item.categories[0].name }}
+                </div>
               {% endif %}
-              {% if biography_item.birth_date and biography_item.death_date %} - {% endif %}
-              {% if biography_item.death_date %}
-                <span class="featured-biography-death">{{ biography_item.death_date }}</span>
+              
+              <h3 class="saho-card-title">{{ biography_item.title }}</h3>
+              
+              {% if biography_item.birth_date or biography_item.death_date %}
+                <div class="saho-card-subtitle">
+                  <i class="far fa-calendar-alt me-1"></i>
+                  {% if biography_item.birth_date %}{{ biography_item.birth_date }}{% endif %}
+                  {% if biography_item.birth_date and biography_item.death_date %} - {% endif %}
+                  {% if biography_item.death_date %}{{ biography_item.death_date }}{% endif %}
+                </div>
               {% endif %}
-            </div>
-            
-            {% if biography_item.position %}
-              <div class="featured-biography-position">
-                {{ biography_item.position|raw }}
+              
+              {% if biography_item.position %}
+                <div class="saho-card-subtitle">
+                  <i class="fas fa-briefcase me-1"></i>
+                  {{ biography_item.position|striptags }}
+                </div>
+              {% endif %}
+              
+              {% if biography_item.body_summary %}
+                <div class="saho-card-description">
+                  {{ biography_item.body_summary|striptags|truncate(120, true, '...') }}
+                </div>
+              {% endif %}
+              
+              <div class="saho-card-footer">
+                <span class="saho-card-button">
+                  {{ 'Read biography'|t }}
+                  <i class="fas fa-arrow-right"></i>
+                </span>
               </div>
-            {% endif %}
-            
-            {% if biography_item.body_summary %}
-              <div class="featured-biography-summary">
-                {{ biography_item.body_summary|raw|striptags('<p><a><em><strong><ul><ol><li>')|truncate(200, true, '...') }}
-              </div>
-            {% endif %}
-            
-            <div class="featured-biography-read-more">
-              <a href="{{ biography_item.url }}" class="featured-biography-link">{{ 'Read more'|t }} <span class="visually-hidden">about {{ biography_item.title|striptags }}</span></a>
             </div>
-          </div>
+          </a>
         </div>
       {% endif %}
     </div>
   {% else %}
-    <div class="featured-biography-empty">
-      <p>{{ 'No featured biography available.'|t }}</p>
+    <div class="featured-biography-content">
+      <h2 class="block-title mb-4">{{ 'Featured Biography'|t }}</h2>
+      <div class="alert alert-info text-center">
+        <i class="fas fa-info-circle me-2"></i>
+        {% if error_message %}
+          {{ error_message|raw }}
+        {% else %}
+          {{ 'No featured biography available.'|t }}
+        {% endif %}
+      </div>
     </div>
   {% endif %}
 </div>
