@@ -110,6 +110,7 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
       'show_date_picker' => TRUE,
       'show_today_history' => TRUE,
       'show_explore_button' => TRUE,
+      'show_header_title' => TRUE,
     ] + parent::defaultConfiguration();
   }
 
@@ -128,6 +129,13 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
         'full' => $this->t('Full (with image and description)'),
       ],
       '#default_value' => $this->configuration['display_mode'],
+    ];
+
+    $form['show_header_title'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Show "This day in history" header title'),
+      '#description' => $this->t('Enable to show the "This day in history" title in the block header. If disabled, only the block title will be used.'),
+      '#default_value' => $this->configuration['show_header_title'],
     ];
 
     $form['show_date_picker'] = [
@@ -160,6 +168,7 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
   public function blockSubmit($form, FormStateInterface $form_state) {
     parent::blockSubmit($form, $form_state);
     $this->configuration['display_mode'] = $form_state->getValue('display_mode');
+    $this->configuration['show_header_title'] = $form_state->getValue('show_header_title');
     $this->configuration['show_date_picker'] = $form_state->getValue('show_date_picker');
     $this->configuration['show_today_history'] = $form_state->getValue('show_today_history');
     $this->configuration['show_explore_button'] = $form_state->getValue('show_explore_button');
@@ -217,21 +226,22 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
       $month = sprintf('%02d', (int) $selected_month);
       $year = (int) $selected_year;
 
-      // Get the NodeFetcher service.
+      // Get the NodeFetcher service via dependency injection.
       $node_fetcher = \Drupal::service('tdih.node_fetcher');
 
       // Create the full birth date and month-day pattern.
       $birth_date = sprintf('%04d-%02d-%02d', $year, $month, $day);
       $month_day_pattern = sprintf('%02d-%02d', $month, $day);
-      
-      // Load all events for this month-day combination.
-      $nodes = $node_fetcher->loadPotentialEvents($month_day_pattern);
+
+      // Load all events for this month-day combination - use loadAllBirthdayEvents to get ALL events
+      // not just those featured on the home page.
+      $nodes = $node_fetcher->loadAllBirthdayEvents($month_day_pattern);
       $exact_match_items = [];
       $same_day_items = [];
 
       // Separate exact date matches from same month-day matches.
       foreach ($nodes as $node) {
-        $item = self::buildNodeItems([$node])[0] ?? null;
+        $item = self::buildNodeItems([$node])[0] ?? NULL;
         if ($item && !empty($item['raw_date'])) {
           // Check if this is an exact date match (same year, month, day).
           if ($item['raw_date'] === $birth_date) {
@@ -349,7 +359,7 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
         // Build the node items for rendering and filter by exact date (front page filtering already done in NodeFetcher).
         foreach ($nodes as $node) {
           $item = $this->buildNodeItem($node);
-          
+
           // Check if this item matches the target date using simple string operations.
           if (!empty($item['raw_date'])) {
             // Extract MM-DD from YYYY-MM-DD format.
@@ -361,7 +371,7 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
             }
           }
         }
-        
+
         // Limit to only one random event for display.
         if (count($all_events) > 1) {
           $random_event = $all_events[array_rand($all_events)];
@@ -376,13 +386,6 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
       $form = $this->formBuilder->getForm('Drupal\tdih\Form\BirthdayDateForm');
     }
 
-    // Debug logging to see what data we have.
-    \Drupal::logger('tdih')->info('TDIH Interactive Block: Built @count events for target date @target, show_today_history: @show', [
-      '@count' => count($all_events),
-      '@target' => $target_date,
-      '@show' => $this->configuration['show_today_history'] ? 'TRUE' : 'FALSE',
-    ]);
-
     // Return a render array referencing our theme hook.
     return [
       '#theme' => 'tdih_interactive_block',
@@ -390,6 +393,7 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
       '#target_date' => $target_date,
       '#date_picker_form' => $form,
       '#display_mode' => $this->configuration['display_mode'],
+      '#show_header_title' => $this->configuration['show_header_title'],
       '#show_today_history' => $this->configuration['show_today_history'],
       '#show_explore_button' => $this->configuration['show_explore_button'],
       '#attached' => [
