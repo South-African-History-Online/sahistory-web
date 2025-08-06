@@ -228,15 +228,12 @@ class TdihBlock extends BlockBase implements ContainerFactoryPluginInterface {
         $month = $today->format('m');
         $day = $today->format('d');
 
-        $this->logger->info('TDIH block loading events for date @date in South African timezone', [
-          '@date' => $today->format('Y-m-d'),
-        ]);
-
         // Use our NodeFetcher to load a set of matching nodes for today's date.
         $target_date = $month . '-' . $day;
         $nodes = $this->nodeFetcher->loadPotentialEvents($target_date);
 
-        // Filter nodes by exact date match and front page feature using simple string operations.
+        // Filter nodes by exact date match and front page feature using simple
+        // string operations.
         $filtered_nodes = [];
         foreach ($nodes as $node) {
           // Only process nodes that are featured on front page.
@@ -260,11 +257,6 @@ class TdihBlock extends BlockBase implements ContainerFactoryPluginInterface {
           // Randomly pick one node from the filtered results.
           $selected_node = $filtered_nodes[array_rand($filtered_nodes)];
           $tdih_nodes[] = $this->buildNodeItem($selected_node);
-        }
-        else {
-          $this->logger->info('No TDIH events found for date @date.', [
-            '@date' => $today->format('Y-m-d'),
-          ]);
         }
       }
     }
@@ -326,10 +318,6 @@ class TdihBlock extends BlockBase implements ContainerFactoryPluginInterface {
     $midnight->setTime(0, 0, 0);
     $midnight->modify('+1 day');
     $seconds_until_midnight = $midnight->getTimestamp() - $now;
-
-    $this->logger->info('TDIH block cache will expire in @seconds seconds (midnight in South African timezone)', [
-      '@seconds' => $seconds_until_midnight,
-    ]);
 
     // Return seconds until midnight, or minimum 60 seconds to prevent
     // excessive cache rebuilds if we're very close to midnight.

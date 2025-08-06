@@ -3,7 +3,7 @@
  * JavaScript for the TDIH Interactive Block.
  */
 
-(function ($, Drupal, drupalSettings) {
+(function ($, Drupal, drupalSettings, once) {
   'use strict';
 
   /**
@@ -18,91 +18,39 @@
                           ('0' + today.getDate()).slice(-2);
 
       // Set the date picker to today's date if it's empty.
-      $('.tdih-birthday-date-picker', context).once('tdih-init').each(function () {
-        if (!$(this).val()) {
-          $(this).val(todayFormatted);
+      once('tdih-init', '.tdih-birthday-date-picker', context).forEach(function (element) {
+        var $this = $(element);
+        if (!$this.val()) {
+          $this.val(todayFormatted);
         }
       });
 
-      // Add toggle button for Today in history section
-      $('.tdih-interactive-block', context).once('tdih-toggle').each(function () {
-        var $block = $(this);
+      // Ensure Today in History section is always visible
+      once('tdih-visibility', '.tdih-interactive-block', context).forEach(function (element) {
+        var $block = $(element);
         var $wrapper = $block.find('.tdih-today-history-wrapper');
 
-        // Only add toggle if the wrapper exists
+        // Ensure the wrapper is always visible
         if ($wrapper.length) {
-          // Create toggle button with initial text based on visibility
-          var isVisible = $wrapper.is(':visible');
-          var $toggleButton = $('<button>', {
-            'class': 'tdih-toggle-button' + (isVisible ? '' : ' active'),
-            'text': isVisible ? Drupal.t('Hide Today in History') : Drupal.t('Show Today in History')
-          });
-
-          // Insert after header
-          $toggleButton.insertAfter($block.find('.tdih-interactive-header'));
-
-          // Function to update button text based on state
-          function updateButtonText(isVisible) {
-            $toggleButton.text(isVisible ?
-              Drupal.t('Hide Today in History') :
-              Drupal.t('Show Today in History')
-            );
-          }
-
-          // Function to set visibility state
-          function setVisibility(isVisible) {
-            // Set visibility of the wrapper
-            if (isVisible) {
-              $wrapper.slideDown();
-            } else {
-              $wrapper.slideUp();
-            }
-
-            // Update button state
-            $toggleButton.toggleClass('active', !isVisible);
-            updateButtonText(isVisible);
-
-            // Store preference in localStorage
-            try {
-              localStorage.setItem('tdihTodayHistoryVisibility', isVisible ? 'visible' : 'hidden');
-            } catch (e) {
-              // Local storage not available
-            }
-          }
-
-          // Add click handler
-          $toggleButton.on('click', function () {
-            // Toggle visibility (invert current state)
-            var isCurrentlyVisible = $wrapper.is(':visible');
-            setVisibility(!isCurrentlyVisible);
-          });
-
-          // Always show the Today in History section by default
-          // Clear any stored preference to reset to default state
-          try {
-            localStorage.removeItem('tdihTodayHistoryVisibility');
-            // Ensure the section is visible
-            if (!$wrapper.is(':visible')) {
-              setVisibility(TRUE);
-            }
-          } catch (e) {
-            // Local storage not available
-          }
+          $wrapper.show();
         }
       });
 
       // Add hover effects to event items.
-      $('.tdih-event-item', context).once('tdih-hover').hover(
-        function () {
-          $(this).addClass('tdih-event-item-hover');
-        },
-        function () {
-          $(this).removeClass('tdih-event-item-hover');
-        }
-      );
+      once('tdih-hover', '.tdih-event-item', context).forEach(function (element) {
+        $(element).hover(
+          function () {
+            $(this).addClass('tdih-event-item-hover');
+          },
+          function () {
+            $(this).removeClass('tdih-event-item-hover');
+          }
+        );
+      });
 
       // Add click handler to show/hide event body in compact mode.
-      $('.compact-mode .tdih-event-title a', context).once('tdih-toggle').click(function (e) {
+      once('tdih-toggle', '.compact-mode .tdih-event-title a', context).forEach(function (element) {
+        $(element).click(function (e) {
         // Only if there's a body to toggle.
         var $item = $(this).closest('.tdih-event-item');
         var $body = $item.find('.tdih-event-body');
@@ -113,15 +61,17 @@
           $item.toggleClass('expanded');
           return FALSE;
         }
+        });
       });
 
       // Add animation to newly loaded events.
-      $('.tdih-events-container', context).once('tdih-animate').each(function () {
-        $(this).hide().fadeIn(500);
+      once('tdih-animate', '.tdih-events-container', context).forEach(function (element) {
+        $(element).hide().fadeIn(500);
       });
 
       // Enhance the AJAX progress indicator with African drum animation.
-      $(document).once('tdih-ajax-setup').ajaxSend(function (event, xhr, settings) {
+      once('tdih-ajax-setup', document).forEach(function (element) {
+        $(element).ajaxSend(function (event, xhr, settings) {
         if (settings.url && settings.url.indexOf('tdih') !== -1) {
           // Add a class to the body during loading for potential page-wide effects.
           $('body').addClass('tdih-loading');
@@ -136,10 +86,12 @@
             }
           }, 10);
         }
+        });
       });
 
       // Handle AJAX completion for TDIH requests.
-      $(document).once('tdih-ajax-complete').ajaxComplete(function (event, xhr, settings) {
+      once('tdih-ajax-complete', document).forEach(function (element) {
+        $(element).ajaxComplete(function (event, xhr, settings) {
         if (settings.url && settings.url.indexOf('tdih') !== -1) {
           // Remove loading class.
           $('body').removeClass('tdih-loading');
@@ -195,10 +147,12 @@
             $('.tdih-events-container').removeClass('tdih-birthday-events');
           }
         }
+        });
       });
 
       // Add CSS for the highlight effect.
-      $('head').once('tdih-highlight-css').append(
+      once('tdih-highlight-css', 'head').forEach(function (element) {
+        $(element).append(
         '<style>' +
         '@keyframes tdih-highlight-pulse {' +
         '  0% { background-color: rgba(205, 133, 63, 0.2); }' +
@@ -208,10 +162,11 @@
         '  animation: tdih-highlight-pulse 1s ease-out;' +
         '}' +
         '</style>'
-      );
+        );
+      });
 
       // Initialize lazy loading for images.
-      $('.lazy', context).once('tdih-lazy-load').each(function () {
+      once('tdih-lazy-load', '.lazy', context).forEach(function (element) {
         // Check if IntersectionObserver is supported
         if ('IntersectionObserver' in window) {
           var lazyImageObserver = new IntersectionObserver(function (entries, observer) {
@@ -240,7 +195,7 @@
           });
 
           // Start observing the image
-          lazyImageObserver.observe(this);
+          lazyImageObserver.observe(element);
         } else {
           // Fallback for browsers that don't support IntersectionObserver
           // Load all images immediately
@@ -257,4 +212,4 @@
     }
   };
 
-})(jQuery, Drupal, drupalSettings);
+})(jQuery, Drupal, drupalSettings, once);

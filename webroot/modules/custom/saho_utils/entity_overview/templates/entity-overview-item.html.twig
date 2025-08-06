@@ -1,35 +1,48 @@
 {#
 /**
  * @file
- * Default theme implementation to display an entity overview item.
- *
- * Available variables:
- * - item: The entity item.
- *   - id: The entity ID.
- *   - title: The entity title.
- *   - url: The entity URL.
- *   - image: The entity image URL.
- *   - created: The entity creation timestamp.
- *
- * @ingroup themeable
+ * SAHO theme implementation for a single entity overview item using SAHO cards.
  */
 #}
-<div class="entity-overview-item">
+<div class="saho-card entity-overview-item" data-item-id="{{ item.id }}">
   {% if item.image %}
-    <div class="entity-overview-item-image">
+    <div class="saho-card-image">
       <a href="{{ item.url }}">
-        <img src="{{ item.image }}" alt="{{ item.title }}" />
+        <img src="{{ item.image }}" alt="{{ item.title|striptags }}" loading="lazy">
       </a>
     </div>
   {% endif %}
-  <div class="entity-overview-item-content">
-    <h3 class="entity-overview-item-title">
+  
+  <div class="saho-card-content">
+    <h3 class="saho-card-title">
       <a href="{{ item.url }}">{{ item.title }}</a>
     </h3>
-    {% if item.created %}
-      <div class="entity-overview-item-date">
-        {{ item.created|date('j F Y') }}
+    
+    {% if item.teaser %}
+      <div class="saho-card-teaser">
+        <p>{{ item.teaser }}</p>
       </div>
     {% endif %}
+    
+    <div class="saho-card-meta">
+      <time datetime="{{ item.changed|date('c') }}">
+        {{ 'Updated'|t }}: {{ item.changed|date('j M Y') }}
+      </time>
+      {% if item.created != item.changed %}
+        <span class="separator">•</span>
+        <time datetime="{{ item.created|date('c') }}">
+          {{ 'Created'|t }}: {{ item.created|date('j M Y') }}
+        </time>
+      {% endif %}
+    </div>
+    
+    <div class="saho-card-actions">
+      <a href="{{ item.url }}" class="btn btn-primary btn-sm">
+        {{ 'Read more'|t }}
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="ms-1">
+          <path d="M5 12h14M12 5l7 7-7 7"/>
+        </svg>
+      </a>
+    </div>
   </div>
 </div>

@@ -55,7 +55,6 @@
     }
     
     if (!listViewBtn || !gridViewBtn || !resultsContainer) {
-      console.log('View toggle elements not found');
       return;
     }
     
@@ -149,7 +148,6 @@
     const sortOptions = document.querySelectorAll('.sort-option');
     
     if (!sortDropdown || sortOptions.length === 0) {
-      console.log('Sort dropdown elements not found');
       return;
     }
     

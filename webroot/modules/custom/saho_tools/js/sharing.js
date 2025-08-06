@@ -11,21 +11,15 @@
      */
     Drupal.behaviors.sahoSharing = {
         attach: function (context, settings) {
-            console.log('SAHO Sharing behavior attached');
 
-            // Target both links and buttons with data-sharing-trigger attribute
-            const sharingLinks = document.querySelectorAll('a[data-sharing-trigger], button[data-sharing-trigger]');
-            console.log('Found sharing elements:', sharingLinks.length);
 
             once('sahoSharing', 'a[data-sharing-trigger], button[data-sharing-trigger]', context).forEach(
                 function (element) {
-                    console.log('Attaching click handler to:', element);
 
                     // Update the element to use our sharing functionality
                     $(element).on(
                         'click',
                         function (e) {
-                            console.log('Sharing element clicked');
                             e.preventDefault();
                             Drupal.sahoSharing.openSharingModal();
                         }
@@ -43,41 +37,33 @@
          * Open the sharing modal.
          */
         openSharingModal: function () {
-            console.log('Opening sharing modal');
 
             // Check if the modal element exists
             const modalElement = document.getElementById('sharing-modal');
             if (!modalElement) {
-                console.error('Sharing modal element not found! Make sure the HTML is added to the page.');
                 return;
             }
 
             // Check if we can use Bootstrap's JavaScript API
             if (typeof bootstrap !== 'undefined' && typeof bootstrap.Modal !== 'undefined') {
-                console.log('Using Bootstrap JS API for modal');
 
                 // Initialize the modal if it's not already
                 if (!this.modal) {
                     try {
-                        console.log('Initializing Bootstrap modal');
                         this.modal = new bootstrap.Modal(modalElement);
                     } catch (error) {
-                        console.error('Error initializing Bootstrap modal:', error);
                     }
                 }
 
                 // Show the modal
                 try {
-                    console.log('Showing modal');
                     this.modal.show();
                 } catch (error) {
-                    console.error('Error showing modal:', error);
                     // Fall back to jQuery if Bootstrap API fails
                     this.showModalWithjQuery(modalElement);
                 }
             } else {
                 // Fall back to jQuery if Bootstrap is not available
-                console.warn('Bootstrap JS API not available, falling back to jQuery');
                 this.showModalWithjQuery(modalElement);
             }
         },
@@ -89,7 +75,6 @@
          *   The modal element to show.
          */
         showModalWithjQuery: function (modalElement) {
-            console.log('Showing modal with jQuery');
 
             // Get jQuery object for the modal
             const $modal = $(modalElement);
@@ -136,7 +121,6 @@
                 function (e) {
                     e.preventDefault();
                     e.stopPropagation();
-                    console.log('Close button clicked');
                     Drupal.sahoSharing.hideModalWithjQuery($modal);
                     return FALSE;
                 }
@@ -147,7 +131,6 @@
                 'keydown.sharingModal',
                 function (e) {
                     if (e.key === 'Escape') {
-                        console.log('ESC key pressed');
                         Drupal.sahoSharing.hideModalWithjQuery($modal);
                     }
                 }
@@ -157,7 +140,6 @@
             $('.modal-backdrop').on(
                 'click',
                 function () {
-                    console.log('Backdrop clicked');
                     Drupal.sahoSharing.hideModalWithjQuery($modal);
                 }
             );
@@ -170,7 +152,6 @@
          *   The jQuery modal object to hide.
          */
         hideModalWithjQuery: function ($modal) {
-            console.log('Hiding modal with jQuery');
 
             // Remove classes to hide the modal
             $modal.removeClass('show').css('display', 'none').attr('aria-hidden', 'true').removeAttr('aria-modal');
@@ -183,7 +164,115 @@
             $modal.find('[data-bs-dismiss="modal"]').off('click');
             $('.modal-backdrop').off('click');
             $(document).off('keydown.sharingModal');
+        },
+
+        /**
+         * Initialize URL copy functionality.
+         */
+        initializeUrlCopy: function () {
+            // Handle URL copy button
+            once('urlCopy', '.url-copy-btn', document).forEach(
+                function (button) {
+                    $(button).on('click', function (e) {
+                        e.preventDefault();
+                        const urlInput = document.getElementById('page-url-input');
+                        
+                        if (urlInput) {
+                            // Select the text
+                            urlInput.select();
+                            urlInput.setSelectionRange(0, 99999); // For mobile devices
+
+                            // Try modern clipboard API first
+                            if (navigator.clipboard && navigator.clipboard.writeText) {
+                                navigator.clipboard.writeText(urlInput.value).then(function() {
+                                    Drupal.sahoSharing.showCopyFeedback($(button), 'URL copied!');
+                                }).catch(function(err) {
+                                    // Fall back to execCommand
+                                    Drupal.sahoSharing.fallbackCopyText(urlInput.value, $(button));
+                                });
+                            } else {
+                                // Fall back to execCommand
+                                Drupal.sahoSharing.fallbackCopyText(urlInput.value, $(button));
+                            }
+                        }
+                    });
+                }
+            );
+        },
+
+        /**
+         * Fallback text copying using execCommand.
+         *
+         * @param {string} text
+         *   The text to copy.
+         * @param {jQuery} $button
+         *   The button element for feedback.
+         */
+        fallbackCopyText: function (text, $button) {
+            // Create a temporary textarea
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.setAttribute('readonly', '');
+            textarea.style.position = 'absolute';
+            textarea.style.left = '-9999px';
+            document.body.appendChild(textarea);
+            
+            // Select and copy
+            textarea.select();
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    this.showCopyFeedback($button, 'URL copied!');
+                } else {
+                    this.showCopyFeedback($button, 'Copy failed', true);
+                }
+            } catch (err) {
+                this.showCopyFeedback($button, 'Copy failed', true);
+            }
+            
+            // Clean up
+            document.body.removeChild(textarea);
+        },
+
+        /**
+         * Show feedback for copy operations.
+         *
+         * @param {jQuery} $button
+         *   The button element.
+         * @param {string} message
+         *   The feedback message.
+         * @param {boolean} isError
+         *   Whether this is an error message.
+         */
+        showCopyFeedback: function ($button, message, isError = false) {
+            const originalText = $button.html();
+            const originalClass = $button.attr('class');
+            
+            // Update button
+            if (isError) {
+                $button.removeClass('url-copy-btn').addClass('btn-danger').html(
+                    '<svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">' +
+                    '<path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>' +
+                    '</svg> ' + message
+                );
+            } else {
+                $button.removeClass('url-copy-btn').addClass('btn-success').html(
+                    '<svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">' +
+                    '<path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"/>' +
+                    '</svg> ' + message
+                );
+            }
+            
+            // Restore original button after 2 seconds
+            setTimeout(function () {
+                $button.attr('class', originalClass).html(originalText);
+            }, 2000);
         }
     };
+    
+    // Initialize URL copy functionality when the document is ready
+    $(document).ready(function() {
+        Drupal.sahoSharing.initializeUrlCopy();
+    });
 
 })(jQuery, Drupal, drupalSettings, once);

@@ -121,7 +121,8 @@
 
     </div>
 
-    {# RIGHT: Sidebar #}
+
+    {# RIGHT: Simplified Sidebar #}
     {% if node.field_article_image.entity and node.field_feature_banner.entity %}
       {% set sidebar_has_content = true %}
     {% endif %}
@@ -165,8 +166,9 @@
     {% if sidebar_has_content %}
     <aside class="saho-article-sidebar">
 
+      {# Article Image Block - Always visible at top #}
       {% if node.field_article_image.entity and node.field_feature_banner.entity %}
-        <div class="saho-image-block">
+        <div class="saho-image-block mb-4">
           <img
             src="{{ file_url(node.field_article_image.entity.uri.value) }}"
             alt="{{ node.field_article_image.alt }}"
@@ -180,88 +182,66 @@
         </div>
       {% endif %}
 
-      {% if accordion_views is not empty %}
-        <div class="accordion saho-accordion mb-5" id="sahoFeatureAccordion">
-          {% for item in accordion_views %}
-            <div class="accordion-item">
-              <h2 class="accordion-header" id="heading-{{ item.id }}">
-                <button class="accordion-button {% if not loop.first %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-{{ item.id }}" aria-expanded="{{ loop.first ? 'true' : 'false' }}" aria-controls="collapse-{{ item.id }}">
-                  {{ item.title }}
-                </button>
-              </h2>
-              <div id="collapse-{{ item.id }}" class="accordion-collapse collapse {% if loop.first %}show{% endif %}" aria-labelledby="heading-{{ item.id }}" data-bs-parent="#sahoFeatureAccordion">
-                <div class="accordion-body">
-                  {{ drupal_view(item.view, item.block, node.id()) }}
+      {# Tabbed Content Area #}
+      <div class="saho-sidebar-tabs" id="saho-article-tabs">
+        
+        {# Simplified Content - No Tabs Needed #}
+        <div class="saho-simplified-sidebar">
+          
+          {# Related Content Accordion #}
+          {% if accordion_views is not empty %}
+            <div class="saho-accordion">
+              {% for item in accordion_views %}
+                <div class="saho-accordion-item">
+                  <h4 class="saho-accordion-header">
+                    <button class="saho-accordion-button {% if not loop.first %}collapsed{% endif %}" 
+                            type="button" 
+                            aria-expanded="{% if loop.first %}true{% else %}false{% endif %}" 
+                            aria-controls="collapse-{{ item.id }}"
+                            data-target="#collapse-{{ item.id }}">
+                      {{ item.title }}
+                    </button>
+                  </h4>
+                  <div id="collapse-{{ item.id }}" 
+                       class="saho-accordion-collapse {% if loop.first %}show{% endif %}" 
+                       aria-hidden="{% if loop.first %}false{% else %}true{% endif %}">
+                    <div class="saho-accordion-body">
+                      {{ drupal_view(item.view, item.block, node.id()) }}
+                    </div>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          {% endif %}
+
+
+          {# References Accordion #}
+          {% if node.field_ref_str.value %}
+            {% set refs = node.field_ref_str.value|split('|') %}
+            <div class="saho-accordion">
+              <div class="saho-accordion-item">
+                <h4 class="saho-accordion-header">
+                  <button class="saho-accordion-button collapsed" type="button" data-target="#references-collapse" aria-expanded="false" aria-controls="references-collapse">
+                    References
+                  </button>
+                </h4>
+                <div id="references-collapse" class="saho-accordion-collapse" aria-labelledby="references-header">
+                  <div class="saho-accordion-body">
+                    <ul class="saho-reference-list">
+                      {% for ref in refs %}
+                        {% if ref|trim %}
+                          <li>{{ ref|trim|raw }}</li>
+                        {% endif %}
+                      {% endfor %}
+                    </ul>
+                  </div>
                 </div>
               </div>
             </div>
-          {% endfor %}
-        </div>
-      {% endif %}
+          {% endif %}
 
-      {% if content.field_archive_page_feature is defined and content.field_archive_page_feature|render|trim %}
-        <div class="saho-taxonomy-group">
-          <h4>Archive Page Feature</h4>
-          {{ content.field_archive_page_feature }}
         </div>
-      {% endif %}
-
-      {% if content.field_africa_category is defined and content.field_africa_category|render|trim %}
-        <div class="saho-taxonomy-group">
-          <h4>Africa Category</h4>
-          {{ content.field_africa_category }}
-        </div>
-      {% endif %}
-
-      {% if content.field_topics_related_tab is defined and content.field_topics_related_tab|render|trim %}
-        <div class="saho-taxonomy-group">
-          <h4>Related Topics</h4>
-          {{ content.field_topics_related_tab }}
-        </div>
-      {% endif %}
-
-      {% if content.field_people_related_tab is defined and content.field_people_related_tab|render|trim %}
-        <div class="saho-taxonomy-group">
-          <h4>Related People</h4>
-          {{ content.field_people_related_tab }}
-        </div>
-      {% endif %}
-
-      {% if content.field_feature_parent is defined and content.field_feature_parent|render|trim %}
-        <div class="saho-taxonomy-group">
-          <h4>Related Content</h4>
-          {{ content.field_feature_parent }}
-        </div>
-      {% endif %}
-
-      {% if content.field_timeline_categories_type is defined and content.field_timeline_categories_type|render|trim %}
-        <div class="saho-taxonomy-group">
-          <h4>Timeline Context</h4>
-          {{ content.field_timeline_categories_type }}
-        </div>
-      {% endif %}
-
-      {% if content.field_further_reading is defined and content.field_further_reading|render|trim %}
-        <div class="saho-further-reading">
-          <h4>Further Reading</h4>
-          {{ content.field_further_reading }}
-        </div>
-      {% endif %}
-
-      {# References block remains as is — well formatted #}
-      {% if node.field_ref_str.value %}
-        {% set refs = node.field_ref_str.value|split('|') %}
-        <div class="saho-references">
-          <h3>References</h3>
-          <ul class="saho-reference-list">
-            {% for ref in refs %}
-              {% if ref|trim %}
-                <li>{{ ref|trim|raw }}</li>
-              {% endif %}
-            {% endfor %}
-          </ul>
-        </div>
-      {% endif %}
+      </div>
 
     </aside>
     {% endif %}
@@ -269,3 +249,126 @@
   </div>
 
 </article>
+
+{# Context & Related Topics Accordion #}
+{% set has_context = content.field_topics_related_tab|render|trim or content.field_people_related_tab|render|trim or content.field_feature_parent|render|trim or content.field_archive_page_feature|render|trim or content.field_africa_category|render|trim or content.field_timeline_categories_type|render|trim or content.field_further_reading|render|trim %}
+
+{% if has_context %}
+  <div class="saho-accordion saho-context-accordion">
+    <h2>Context & Related Topics</h2>
+    
+    {% if content.field_people_related_tab is defined and content.field_people_related_tab|render|trim %}
+      <div class="saho-accordion-item">
+        <h3 class="saho-accordion-header">
+          <button class="saho-accordion-button collapsed" type="button" data-target="#people-collapse" aria-expanded="false" aria-controls="people-collapse">
+            Related People
+          </button>
+        </h3>
+        <div id="people-collapse" class="saho-accordion-collapse" aria-labelledby="people-header">
+          <div class="saho-accordion-body">
+            {{ content.field_people_related_tab }}
+          </div>
+        </div>
+      </div>
+    {% endif %}
+
+    {% if content.field_archive_page_feature is defined and content.field_archive_page_feature|render|trim %}
+      <div class="saho-accordion-item">
+        <h3 class="saho-accordion-header">
+          <button class="saho-accordion-button collapsed" type="button" data-target="#organisations-collapse" aria-expanded="false" aria-controls="organisations-collapse">
+            Organisations
+          </button>
+        </h3>
+        <div id="organisations-collapse" class="saho-accordion-collapse" aria-labelledby="organisations-header">
+          <div class="saho-accordion-body">
+            {{ content.field_archive_page_feature }}
+          </div>
+        </div>
+      </div>
+    {% endif %}
+
+    {% if content.field_timeline_categories_type is defined and content.field_timeline_categories_type|render|trim %}
+      <div class="saho-accordion-item">
+        <h3 class="saho-accordion-header">
+          <button class="saho-accordion-button collapsed" type="button" data-target="#timelines-collapse" aria-expanded="false" aria-controls="timelines-collapse">
+            Timelines
+          </button>
+        </h3>
+        <div id="timelines-collapse" class="saho-accordion-collapse" aria-labelledby="timelines-header">
+          <div class="saho-accordion-body">
+            {{ content.field_timeline_categories_type }}
+          </div>
+        </div>
+      </div>
+    {% endif %}
+
+    {% if content.field_africa_category is defined and content.field_africa_category|render|trim %}
+      <div class="saho-accordion-item">
+        <h3 class="saho-accordion-header">
+          <button class="saho-accordion-button collapsed" type="button" data-target="#archive-collapse" aria-expanded="false" aria-controls="archive-collapse">
+            Archive
+          </button>
+        </h3>
+        <div id="archive-collapse" class="saho-accordion-collapse" aria-labelledby="archive-header">
+          <div class="saho-accordion-body">
+            {{ content.field_africa_category }}
+          </div>
+        </div>
+      </div>
+    {% endif %}
+
+    {% if content.field_topics_related_tab is defined and content.field_topics_related_tab|render|trim %}
+      <div class="saho-accordion-item">
+        <h3 class="saho-accordion-header">
+          <button class="saho-accordion-button collapsed" type="button" data-target="#topics-collapse" aria-expanded="false" aria-controls="topics-collapse">
+            Related Topics
+          </button>
+        </h3>
+        <div id="topics-collapse" class="saho-accordion-collapse" aria-labelledby="topics-header">
+          <div class="saho-accordion-body">
+            {{ content.field_topics_related_tab }}
+          </div>
+        </div>
+      </div>
+    {% endif %}
+
+    {% if content.field_feature_parent is defined and content.field_feature_parent|render|trim %}
+      <div class="saho-accordion-item">
+        <h3 class="saho-accordion-header">
+          <button class="saho-accordion-button collapsed" type="button" data-target="#related-content-collapse" aria-expanded="false" aria-controls="related-content-collapse">
+            Related Content
+          </button>
+        </h3>
+        <div id="related-content-collapse" class="saho-accordion-collapse" aria-labelledby="related-content-header">
+          <div class="saho-accordion-body">
+            <ul class="saho-context-list">
+              {% for item in content.field_feature_parent['#items'] %}
+                <li>{{ content.field_feature_parent[loop.index0] }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+
+    {% if content.field_further_reading is defined and content.field_further_reading|render|trim %}
+      <div class="saho-accordion-item">
+        <h3 class="saho-accordion-header">
+          <button class="saho-accordion-button collapsed" type="button" data-target="#further-reading-collapse" aria-expanded="false" aria-controls="further-reading-collapse">
+            Further Reading
+          </button>
+        </h3>
+        <div id="further-reading-collapse" class="saho-accordion-collapse" aria-labelledby="further-reading-header">
+          <div class="saho-accordion-body">
+            <ul class="saho-context-list">
+              {% for item in content.field_further_reading['#items'] %}
+                <li>{{ content.field_further_reading[loop.index0] }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+{% endif %}
+

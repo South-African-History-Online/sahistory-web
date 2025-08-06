@@ -282,7 +282,6 @@
               new bootstrap.Dropdown(toggle);
             } catch (e) {
               // Bootstrap might already have initialized this dropdown
-              console.warn('Bootstrap dropdown may already be initialized');
             }
           }
           

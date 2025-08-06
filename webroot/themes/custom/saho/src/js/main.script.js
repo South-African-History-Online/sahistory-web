@@ -121,7 +121,7 @@ document.addEventListener('DOMContentLoaded', () => {
             button.classList.remove('copied');
           }, 2000);
         } catch (err) {
-          console.error('Failed to copy quote: ', err);
+          // Failed to copy quote
         }
 
         document.body.removeChild(textarea);
@@ -251,7 +251,7 @@ document.addEventListener('DOMContentLoaded', () => {
             this.classList.add('btn-outline-secondary');
           }, 2000);
         } catch (err) {
-          console.error('Failed to copy URL: ', err);
+          // Failed to copy URL
         }
       }
     });

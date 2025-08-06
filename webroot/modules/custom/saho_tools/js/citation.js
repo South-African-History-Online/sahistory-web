@@ -11,43 +11,30 @@
      */
     Drupal.behaviors.sahoCitation = {
         attach: function (context, settings) {
-            console.log('SAHO Citation behavior attached');
 
             // Check if the library is loaded correctly
             if (drupalSettings.sahoTools && drupalSettings.sahoTools.debug) {
-                console.log('Citation library loaded:', drupalSettings.sahoTools.debug);
             } else {
-                console.warn('Citation library debug information not found in drupalSettings');
             }
 
             // Check if Bootstrap is available
             if (typeof bootstrap !== 'undefined' && typeof bootstrap.Modal !== 'undefined') {
-                console.log('Bootstrap Modal is available');
             } else {
-                console.error('Bootstrap Modal is not available! This will prevent the citation modal from working.');
-                console.log('Bootstrap object:', typeof bootstrap !== 'undefined' ? bootstrap : 'undefined');
             }
 
             // Target both links and buttons with data-citation-trigger attribute or href="#cite"
             const citeLinks = document.querySelectorAll('a[data-citation-trigger], a[href="#cite"], button[data-citation-trigger]');
-            console.log('Found cite elements:', citeLinks.length);
 
             if (citeLinks.length === 0) {
-                console.warn('No citation triggers found on page. Looking for elements with these selectors:');
-                console.warn('- a[data-citation-trigger]');
-                console.warn('- a[href="#cite"]');
-                console.warn('- button[data-citation-trigger]');
             }
 
             once('sahoCitation', 'a[data-citation-trigger], a[href="#cite"], button[data-citation-trigger]', context).forEach(
                 function (element) {
-                    console.log('Attaching click handler to:', element);
 
                     // Update the element to use our citation functionality
                     $(element).on(
                         'click',
                         function (e) {
-                            console.log('Citation element clicked');
                             e.preventDefault();
                             Drupal.sahoCitation.openCitationModal();
                         }
@@ -78,41 +65,33 @@
          * Open the citation modal and load citation data.
          */
         openCitationModal: function () {
-            console.log('Opening citation modal');
 
             // Check if the modal element exists
             const modalElement = document.getElementById('citation-modal');
             if (!modalElement) {
-                console.error('Citation modal element not found! Make sure the HTML is added to the page.');
                 return;
             }
 
             // Check if we can use Bootstrap's JavaScript API
             if (typeof bootstrap !== 'undefined' && typeof bootstrap.Modal !== 'undefined') {
-                console.log('Using Bootstrap JS API for modal');
 
                 // Initialize the modal if it's not already
                 if (!this.modal) {
                     try {
-                        console.log('Initializing Bootstrap modal');
                         this.modal = new bootstrap.Modal(modalElement);
                     } catch (error) {
-                        console.error('Error initializing Bootstrap modal:', error);
                     }
                 }
 
                 // Show the modal
                 try {
-                    console.log('Showing modal');
                     this.modal.show();
                 } catch (error) {
-                    console.error('Error showing modal:', error);
                     // Fall back to jQuery if Bootstrap API fails
                     this.showModalWithjQuery(modalElement);
                 }
             } else {
                 // Fall back to jQuery if Bootstrap is not available
-                console.warn('Bootstrap JS API not available, falling back to jQuery');
                 this.showModalWithjQuery(modalElement);
             }
 
@@ -120,8 +99,6 @@
             const nodeData = drupalSettings.sahoTools && drupalSettings.sahoTools.nodeData;
             const pageData = drupalSettings.sahoTools && drupalSettings.sahoTools.pageData;
 
-            console.log('Node data:', nodeData);
-            console.log('Page data:', pageData);
 
             if (nodeData) {
                 // If we have node data, try to load citation data from the API
@@ -135,7 +112,6 @@
                 this.generateBasicCitation(pageData);
             } else {
                 // Fallback for when no data is available
-                console.error('No page data available for citation.');
                 $('.citation-content').html('<div class="alert alert-danger">Unable to generate citation for this page.</div>');
             }
         },
@@ -147,7 +123,6 @@
          *   Node data from drupalSettings.
          */
         generateBasicCitationFromNodeData: function (nodeData) {
-            console.log('Generating basic citation from node data as fallback');
 
             // Always use South African History Online (SAHO) as the author
             const author = 'South African History Online (SAHO)';
@@ -262,7 +237,6 @@
 
             // Log the URL we're requesting
             const apiUrl = Drupal.url('api/citation/' + nid);
-            console.log('Requesting citation data from:', apiUrl);
 
             // Make an AJAX request to get the citation data
             $.ajax(
@@ -271,7 +245,6 @@
                     type: 'GET',
                     dataType: 'json',
                     success: function (response) {
-                        console.log('Citation data response:', response);
                         if (response && response.citations) {
                             // Update the citation content
                             self.updateCitationContent(response.citations);
@@ -281,15 +254,11 @@
                                 self.addImageToModal(response.image_info);
                             }
                         } else {
-                            console.error('Invalid response format:', response);
                             // Show error message
                             $('.citation-content').html('<div class="alert alert-danger">Failed to load citation data. Invalid response format.</div>');
                         }
                     },
                     error: function (xhr, status, error) {
-                        console.error('Error loading citation data:', error);
-                        console.error('Status:', status);
-                        console.error('Response:', xhr.responseText);
 
                         // Show detailed error message
                         let errorMessage = 'Failed to load citation data.';
@@ -324,45 +293,108 @@
          *   The citation data.
          */
         updateCitationContent: function (citations) {
-            // Update each citation format
-            $('.harvard-citation').html(citations.harvard);
-            $('.apa-citation').html(citations.apa);
-            $('.oxford-citation').html(citations.oxford);
-
-            // Add copy buttons for each citation
-            $('.citation-content').each(
-                function () {
-                    const $container = $(this);
-                    if (!$container.find('.copy-individual').length) {
-                        $container.append('<button class="btn btn-sm btn-outline-secondary copy-individual mt-2">Copy this format</button>');
-                    }
-                }
-            );
+            // Update each citation format in the new stacked structure
+            $('#apa-citation .citation-text').html(citations.apa);
+            $('#harvard-citation .citation-text').html(citations.harvard);
+            $('#oxford-citation .citation-text').html(citations.oxford);
 
             // Add click handler for individual copy buttons
-            once('citationCopyIndividual', '.copy-individual', document).forEach(
+            once('citationCopyIndividual', '.copy-btn', document).forEach(
                 function (button) {
                     $(button).on(
                         'click',
                         function (e) {
                             e.preventDefault();
-                            const citationText = $(this).parent().clone().children('button').remove().end().text().trim();
-                            Drupal.sahoCitation.copyTextToClipboard(citationText, $(this).parent());
-
-                            // Update button text temporarily
-                            const $button = $(this);
-                            const originalText = $button.text();
-                            $button.text('Copied!');
-                            setTimeout(
-                                function () {
-                                    $button.text(originalText);
-                                },
-                                1500
-                            );
+                            const format = $(this).data('format');
+                            const citationText = $('#' + format + '-citation .citation-text').text().trim();
+                            
+                            if (citationText) {
+                                // Try modern clipboard API first
+                                if (navigator.clipboard && navigator.clipboard.writeText) {
+                                    navigator.clipboard.writeText(citationText).then(function() {
+                                        Drupal.sahoCitation.showIndividualCopyFeedback($(button), 'Copied!');
+                                    }).catch(function(err) {
+                                        // Fall back to execCommand
+                                        Drupal.sahoCitation.fallbackIndividualCopy(citationText, $(button));
+                                    });
+                                } else {
+                                    // Fall back to execCommand
+                                    Drupal.sahoCitation.fallbackIndividualCopy(citationText, $(button));
+                                }
+                            }
                         }
                     );
                 }
             );
+        },
+
+        /**
+         * Fallback method for individual citation copy using execCommand.
+         *
+         * @param {string} text
+         *   The text to copy.
+         * @param {jQuery} $button
+         *   The button element.
+         */
+        fallbackIndividualCopy: function (text, $button) {
+            // Create a temporary textarea
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.setAttribute('readonly', '');
+            textarea.style.position = 'absolute';
+            textarea.style.left = '-9999px';
+            document.body.appendChild(textarea);
+            
+            // Select and copy
+            textarea.select();
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    this.showIndividualCopyFeedback($button, 'Copied!');
+                } else {
+                    this.showIndividualCopyFeedback($button, 'Failed', true);
+                }
+            } catch (err) {
+                this.showIndividualCopyFeedback($button, 'Failed', true);
+            }
+            
+            // Clean up
+            document.body.removeChild(textarea);
+        },
+
+        /**
+         * Show feedback for individual copy operations.
+         *
+         * @param {jQuery} $button
+         *   The button element.
+         * @param {string} message
+         *   The feedback message.
+         * @param {boolean} isError
+         *   Whether this is an error message.
+         */
+        showIndividualCopyFeedback: function ($button, message, isError = false) {
+            const originalHtml = $button.html();
+            const originalClass = $button.attr('class');
+            
+            // Update button
+            if (isError) {
+                $button.removeClass('btn-primary').addClass('btn-danger').html(
+                    '<svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">' +
+                    '<path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>' +
+                    '</svg><span class="visually-hidden">' + message + '</span>'
+                );
+            } else {
+                $button.removeClass('btn-primary').addClass('btn-success').html(
+                    '<svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">' +
+                    '<path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"/>' +
+                    '</svg><span class="visually-hidden">' + message + '</span>'
+                );
+            }
+            
+            // Restore original button after 1.5 seconds
+            setTimeout(function () {
+                $button.attr('class', originalClass).html(originalHtml);
+            }, 1500);
         },
 
         /**
@@ -475,7 +507,6 @@
          *   The modal element to show.
          */
         showModalWithjQuery: function (modalElement) {
-            console.log('Showing modal with jQuery');
 
             // Get jQuery object for the modal
             const $modal = $(modalElement);
@@ -511,7 +542,6 @@
                 function (e) {
                     e.preventDefault();
                     e.stopPropagation();
-                    console.log('Close button directly clicked');
                     Drupal.sahoCitation.hideModalWithjQuery($modal);
                     return FALSE;
                 }
@@ -555,7 +585,6 @@
                 }
             ).html('×');
 
-            console.log('Close button styled and set to use text "×" instead of SVG');
 
             // Handle close button clicks with a more specific selector
             $modal.find('button[data-bs-dismiss="modal"], .btn-close').on(
@@ -563,7 +592,6 @@
                 function (e) {
                     e.preventDefault();
                     e.stopPropagation();
-                    console.log('Close button clicked');
                     Drupal.sahoCitation.hideModalWithjQuery($modal);
                     return FALSE;
                 }
@@ -574,7 +602,6 @@
                 'keydown.citationModal',
                 function (e) {
                     if (e.key === 'Escape') {
-                        console.log('ESC key pressed');
                         Drupal.sahoCitation.hideModalWithjQuery($modal);
                     }
                 }
@@ -584,7 +611,6 @@
             $('.modal-backdrop').on(
                 'click',
                 function () {
-                    console.log('Backdrop clicked');
                     Drupal.sahoCitation.hideModalWithjQuery($modal);
                 }
             );
@@ -597,7 +623,6 @@
                     e.stopPropagation();
                     const $this = $(this);
                     const target = $this.attr('data-bs-target') || $this.attr('href');
-                    console.log('Tab clicked:', target);
 
                     // Remove active class from all tabs and tab panes
                     $modal.find('.nav-link').removeClass('active');
@@ -620,7 +645,6 @@
                         e.stopPropagation();
                         const $this = $(this);
                         const target = $this.attr('href');
-                        console.log('Tab link clicked:', target);
 
                         // Remove active class from all tabs and tab panes
                         $modal.find('.nav-link').removeClass('active');
@@ -637,6 +661,9 @@
 
             // Initialize copy buttons
             this.initializeCopyButtons($modal);
+            
+            // Initialize the new copy all button
+            this.initializeCopyAllButton($modal);
         },
 
         /**
@@ -646,7 +673,6 @@
          *   The jQuery modal object to hide.
          */
         hideModalWithjQuery: function ($modal) {
-            console.log('Hiding modal with jQuery');
 
             // Remove classes to hide the modal
             $modal.removeClass('show').css('display', 'none').attr('aria-hidden', 'true').removeAttr('aria-modal');
@@ -661,7 +687,6 @@
             $(document).off('keydown.citationModal');
             $modal.find('[data-bs-toggle="tab"]').off('click');
 
-            console.log('Modal hidden successfully');
         },
 
         /**
@@ -680,7 +705,6 @@
                 function (e) {
                     e.preventDefault();
                     e.stopPropagation();
-                    console.log('Main copy button clicked');
                     self.copyCitation();
                     return FALSE;
                 }
@@ -711,7 +735,6 @@
                 function (e) {
                     e.preventDefault();
                     e.stopPropagation();
-                    console.log('Individual copy button clicked');
                     const format = $(this).data('format');
                     const $citationElement = $modal.find('.' + format + '-citation');
                     const citationText = $citationElement.clone().children('button').remove().end().text().trim();
@@ -736,6 +759,139 @@
         },
 
         /**
+         * Initialize the copy all formats button.
+         *
+         * @param {jQuery} $modal
+         *   The jQuery modal object.
+         */
+        initializeCopyAllButton: function ($modal) {
+            const self = this;
+            
+            // Handle the new copy all citations button
+            const $copyAllButton = $modal.find('.copy-all-citations');
+            $copyAllButton.off('click').on(
+                'click',
+                function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    self.copyAllCitations();
+                    return false;
+                }
+            );
+        },
+
+        /**
+         * Copy all citation formats to clipboard.
+         */
+        copyAllCitations: function () {
+            // Get all citation content
+            let allCitationsText = '';
+            const formats = ['apa', 'harvard', 'oxford'];
+            const formatLabels = {
+                'apa': 'APA (7th edition)',
+                'harvard': 'Harvard (Author-Date)',
+                'oxford': 'Oxford (Footnote style)'
+            };
+
+            formats.forEach(
+                function (format) {
+                    const $citationElement = $('#' + format + '-citation .citation-text');
+                    const citationText = $citationElement.text().trim();
+
+                    if (citationText && citationText !== '') {
+                        allCitationsText += formatLabels[format] + ':\n' + citationText + '\n\n';
+                    }
+                }
+            );
+
+            // Trim the extra newlines at the end
+            allCitationsText = allCitationsText.trim();
+
+            if (allCitationsText) {
+                // Try modern clipboard API first
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(allCitationsText).then(function() {
+                        Drupal.sahoCitation.showCopyAllFeedback('All formats copied!');
+                    }).catch(function(err) {
+                        // Fall back to execCommand
+                        Drupal.sahoCitation.fallbackCopyAllText(allCitationsText);
+                    });
+                } else {
+                    // Fall back to execCommand
+                    this.fallbackCopyAllText(allCitationsText);
+                }
+            } else {
+                this.showCopyAllFeedback('No citations available', true);
+            }
+        },
+
+        /**
+         * Fallback method for copying all citations using execCommand.
+         *
+         * @param {string} text
+         *   The text to copy.
+         */
+        fallbackCopyAllText: function (text) {
+            // Create a temporary textarea
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.setAttribute('readonly', '');
+            textarea.style.position = 'absolute';
+            textarea.style.left = '-9999px';
+            document.body.appendChild(textarea);
+            
+            // Select and copy
+            textarea.select();
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    this.showCopyAllFeedback('All formats copied!');
+                } else {
+                    this.showCopyAllFeedback('Copy failed', true);
+                }
+            } catch (err) {
+                this.showCopyAllFeedback('Copy failed', true);
+            }
+            
+            // Clean up
+            document.body.removeChild(textarea);
+        },
+
+        /**
+         * Show feedback for copy all operation.
+         *
+         * @param {string} message
+         *   The feedback message.
+         * @param {boolean} isError
+         *   Whether this is an error message.
+         */
+        showCopyAllFeedback: function (message, isError = false) {
+            const $button = $('.copy-all-citations');
+            const originalText = $button.html();
+            const originalClass = $button.attr('class');
+            
+            // Update button
+            if (isError) {
+                $button.removeClass('btn-primary').addClass('btn-danger').html(
+                    '<svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" class="me-2">' +
+                    '<path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>' +
+                    '</svg>' + message
+                );
+            } else {
+                $button.removeClass('btn-primary').addClass('btn-success').html(
+                    '<svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" class="me-2">' +
+                    '<path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"/>' +
+                    '</svg>' + message
+                );
+            }
+            
+            // Restore original button after 2.5 seconds
+            setTimeout(function () {
+                $button.attr('class', originalClass).html(originalText);
+            }, 2500);
+        },
+
+        /**
          * Copy the active citation to the clipboard.
          */
         copyCitation: function () {
@@ -752,8 +908,8 @@
 
             formats.forEach(
                 function (format) {
-                    const $citationElement = $('.' + format + '-citation');
-                    const citationText = $citationElement.clone().children('button').remove().end().text().trim();
+                    const $citationElement = $('#' + format + '-citation .citation-text');
+                    const citationText = $citationElement.text().trim();
 
                     if (citationText) {
                         allCitationsText += formatLabels[format] + ':\n' + citationText + '\n\n';
@@ -765,7 +921,7 @@
             allCitationsText = allCitationsText.trim();
 
             // Copy the text and show feedback, auto-close the modal
-            this.copyTextToClipboard(allCitationsText, $('.citation-formats'), TRUE);
+            this.copyTextToClipboard(allCitationsText, $('.citation-format'), true);
 
             // Update the button text temporarily
             const $button = $('.copy-citation');
@@ -778,7 +934,6 @@
                 1500
             );
 
-            console.log('All citations copied:', allCitationsText);
         }
     };
 

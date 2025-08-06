@@ -28,138 +28,28 @@ class EntityOverviewBlock extends BlockBase implements ContainerFactoryPluginInt
       'content_type' => 'article',
       'sort_order' => 'latest',
       'limit' => 5,
+      'custom_header' => '',
       'intro_text' => 'Displaying the latest content from the %title section of the site.',
-      'enable_filtering' => TRUE,
-      'enable_sorting' => TRUE,
-      // Default to hiding display toggle from frontend users.
-      'show_display_toggle' => FALSE,
+      'enable_filtering' => FALSE,
+      'enable_sorting' => FALSE,
+      // No display toggles needed
     ] + parent::defaultConfiguration();
   }
 
-  /**
-   * Gets taxonomy fields for a content type.
-   *
-   * @param string $content_type
-   *   The content type machine name.
-   *
-   * @return array
-   *   An array of taxonomy field information.
-   */
-  protected function getTaxonomyFields($content_type) {
-    $fields = [];
-    // Get all field definitions for the content type.
-    $entity_field_manager = \Drupal::service('entity_field.manager');
-    $field_definitions = $entity_field_manager->getFieldDefinitions('node', $content_type);
-    // Filter for taxonomy term reference fields.
-    foreach ($field_definitions as $field_name => $field_definition) {
-      if ($field_definition->getType() == 'entity_reference' &&
-          $field_definition->getSetting('target_type') == 'taxonomy_term') {
-        $handler_settings = $field_definition->getSetting('handler_settings');
-        $target_bundles = $handler_settings['target_bundles'] ?? [];
-
-        // Get the field label.
-        $label = $field_definition->getLabel();
-
-        // Add the field to the list with its vocabularies.
-        $fields[$field_name] = [
-          'label' => $label,
-          'vocabularies' => $target_bundles,
-        ];
-      }
-    }
-    return $fields;
-  }
-
-  /**
-   * Gets taxonomy terms organized by vocabulary.
-   *
-   * @param string $content_type
-   *   The content type machine name.
-   *
-   * @return array
-   *   An array of terms organized by vocabulary.
-   */
-  protected function getTermsByVocabulary($content_type) {
-    $terms_by_vocabulary = [];
-    $vocabulary_labels = [];
-
-    // Get taxonomy fields for the content type.
-    $taxonomy_fields = $this->getTaxonomyFields($content_type);
-
-    if (!empty($taxonomy_fields)) {
-      $term_storage = \Drupal::entityTypeManager()->getStorage('taxonomy_term');
-      $vocabulary_storage = \Drupal::entityTypeManager()->getStorage('taxonomy_vocabulary');
-
-      // Get all vocabularies used by this content type.
-      $all_vocabularies = [];
-      foreach ($taxonomy_fields as $field_info) {
-        $all_vocabularies = array_merge($all_vocabularies, $field_info['vocabularies']);
-      }
-      $all_vocabularies = array_unique($all_vocabularies);
-
-      // Load vocabulary labels.
-      foreach ($all_vocabularies as $vocabulary_id) {
-        $vocabulary = $vocabulary_storage->load($vocabulary_id);
-        if ($vocabulary) {
-          $vocabulary_labels[$vocabulary_id] = $vocabulary->label();
-        }
-      }
-
-      // Load terms for each vocabulary.
-      foreach ($all_vocabularies as $vocabulary_id) {
-        $term_query = $term_storage->getQuery()
-          ->accessCheck(TRUE)
-          ->condition('vid', $vocabulary_id);
-        $tids = $term_query->execute();
-
-        if (!empty($tids)) {
-          $terms = $term_storage->loadMultiple($tids);
-          foreach ($terms as $term) {
-            $terms_by_vocabulary[$vocabulary_id][$term->id()] = $term->label();
-          }
-        }
-      }
-    }
-
-    return [
-      'terms' => $terms_by_vocabulary,
-      'vocabulary_labels' => $vocabulary_labels,
-    ];
-  }
-
-  /**
-   * Gets taxonomy term options for a select list.
-   *
-   * @param string $content_type
-   *   The content type machine name.
-   *
-   * @return array
-   *   An array of term options.
-   */
-  protected function getTermOptions($content_type) {
-    $term_options = ['' => $this->t('- None -')];
-    $terms_data = $this->getTermsByVocabulary($content_type);
-
-    foreach ($terms_data['terms'] as $vocabulary_id => $terms) {
-      $vocabulary_label = $terms_data['vocabulary_labels'][$vocabulary_id] ?? $vocabulary_id;
-      $term_options[$vocabulary_label] = $terms;
-    }
-
-    return $term_options;
-  }
-
-  /**
-   * AJAX callback to update taxonomy terms based on content type.
-   */
-  public function updateTaxonomyTerms(array &$form, FormStateInterface $form_state) {
-    return $form['settings']['filter_term_id'];
-  }
 
   /**
    * {@inheritdoc}
    */
   public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
     $form = parent::buildConfigurationForm($form, $form_state);
+
+    $form['custom_header'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Custom Header'),
+      '#description' => $this->t('Custom header text for the block. Leave empty to use the default block title. You can use %content_type to insert the content type name.'),
+      '#default_value' => $this->configuration['custom_header'],
+      '#maxlength' => 255,
+    ];
 
     $form['intro_text'] = [
       '#type' => 'textarea',
@@ -191,28 +81,11 @@ class EntityOverviewBlock extends BlockBase implements ContainerFactoryPluginInt
       ],
     ];
 
-    // No longer using taxonomy term filter in configuration form.
-    // Add options to enable/disable filtering, sorting, and display toggle.
-    $form['enable_filtering'] = [
-      '#type' => 'checkbox',
-      '#title' => $this->t('Enable filtering for frontend users'),
-      '#description' => $this->t('Allow users to filter content by taxonomy terms.'),
-      '#default_value' => $this->configuration['enable_filtering'],
-    ];
+    // No longer using filtering - focus on sorting and display modes
 
-    $form['enable_sorting'] = [
-      '#type' => 'checkbox',
-      '#title' => $this->t('Enable sorting for frontend users'),
-      '#description' => $this->t('Allow users to sort content by different criteria.'),
-      '#default_value' => $this->configuration['enable_sorting'],
-    ];
+    // Sorting is handled via backend configuration only
 
-    $form['show_display_toggle'] = [
-      '#type' => 'checkbox',
-      '#title' => $this->t('Show display mode toggle'),
-      '#description' => $this->t('Show the display mode toggle (Default, Compact, Full Width) to frontend users. This is typically only needed for backend administration.'),
-      '#default_value' => $this->configuration['show_display_toggle'],
-    ];
+    // No display mode toggle needed - clean content display only
 
     $form['sort_order'] = [
       '#type' => 'radios',
@@ -227,10 +100,12 @@ class EntityOverviewBlock extends BlockBase implements ContainerFactoryPluginInt
     $form['limit'] = [
       '#type' => 'number',
       '#title' => $this->t('Number of items'),
+      '#description' => $this->t('Number of items to show initially. Additional items can be loaded with "Load More" if enabled below.'),
       '#default_value' => $this->configuration['limit'],
       '#min' => 1,
       '#max' => 50,
     ];
+
 
     return $form;
   }
@@ -240,13 +115,14 @@ class EntityOverviewBlock extends BlockBase implements ContainerFactoryPluginInt
    */
   public function submitConfigurationForm(array &$form, FormStateInterface $form_state): void {
     parent::submitConfigurationForm($form, $form_state);
+    $this->configuration['custom_header'] = $form_state->getValue('custom_header');
     $this->configuration['intro_text'] = $form_state->getValue('intro_text');
     $this->configuration['content_type'] = $form_state->getValue('content_type');
     $this->configuration['sort_order'] = $form_state->getValue('sort_order');
     $this->configuration['limit'] = $form_state->getValue('limit');
-    $this->configuration['enable_filtering'] = $form_state->getValue('enable_filtering');
-    $this->configuration['enable_sorting'] = $form_state->getValue('enable_sorting');
-    $this->configuration['show_display_toggle'] = $form_state->getValue('show_display_toggle');
+    $this->configuration['enable_filtering'] = FALSE;
+    // No frontend sorting controls needed
+    // No display toggle configuration needed
   }
 
   /**
@@ -256,10 +132,18 @@ class EntityOverviewBlock extends BlockBase implements ContainerFactoryPluginInt
     $content_type = $this->configuration['content_type'];
     $sort_order = $this->configuration['sort_order'];
     $limit = $this->configuration['limit'];
-    $enable_filtering = $this->configuration['enable_filtering'];
-    $enable_sorting = $this->configuration['enable_sorting'];
-    // Use the built-in block label as the block title.
-    $block_title = $this->configuration['label'] ?? '';
+    // Simplified - backend configuration only
+    // Use custom header if provided, otherwise fall back to block label
+    $custom_header = $this->configuration['custom_header'];
+    if (!empty($custom_header)) {
+      // Get content type label for token replacement
+      $content_types = \Drupal::service('entity_type.bundle.info')->getBundleInfo('node');
+      $content_type_label = $content_types[$content_type]['label'] ?? $content_type;
+      
+      $block_title = str_replace('%content_type', $content_type_label, $custom_header);
+    } else {
+      $block_title = $this->configuration['label'] ?? '';
+    }
     $intro_text = $this->configuration['intro_text'];
 
     // Generate a unique ID for this block instance.
@@ -272,12 +156,16 @@ class EntityOverviewBlock extends BlockBase implements ContainerFactoryPluginInt
       ->range(0, $limit)
       ->accessCheck(TRUE);
 
-    // Removed filter_term_id condition from query.
+    // Apply sorting based on sort_order configuration.
     if ($sort_order == 'latest') {
-      $query->sort('created', 'DESC');
+      $query->sort('changed', 'DESC');
+    }
+    elseif ($sort_order == 'oldest') {
+      $query->sort('changed', 'ASC');
     }
     else {
-      $query->sort('created', 'ASC');
+      // Default to latest changed
+      $query->sort('changed', 'DESC');
     }
 
     // Execute the query and load the entities.
@@ -288,35 +176,39 @@ class EntityOverviewBlock extends BlockBase implements ContainerFactoryPluginInt
       $items[] = $this->buildEntityItem($node);
     }
 
-    // Check if there are more entities.
-    $total_count = $this->getEntityCount($content_type);
-    $has_more = count($items) < $total_count;
-
-    // Build filter options if filtering is enabled.
-    $filter_options = $enable_filtering ? $this->buildFilterOptions($content_type) : [];
-
-    // Build sort options if sorting is enabled.
-    $sort_options = $enable_sorting ? $this->buildSortOptions() : [];
+    // Simple display - no load more functionality needed
 
     // Return the render array.
-    return [
+    $build = [
       '#theme' => 'entity_overview_block',
       '#items' => $items,
       '#block_title' => $block_title,
       '#intro_text' => $intro_text,
       '#block_id' => $block_id,
-      '#filter_options' => $filter_options,
-      '#sort_options' => $sort_options,
-      '#has_more' => $has_more,
-      '#show_display_toggle' => $this->configuration['show_display_toggle'],
-      // Default display mode.
-      '#display_mode' => 'default',
+      // No filter options
+      // Backend sorting only
+      '#current_sort_order' => $sort_order,
       '#cache' => [
         'contexts' => ['url.query_args'],
         'tags' => ['node_list:' . $content_type],
         'max-age' => 3600,
       ],
+      '#attached' => [
+        'library' => ['entity_overview/entity_overview'],
+        'drupalSettings' => [
+          'entityOverview' => [
+            $block_id => [
+              'blockId' => $block_id,
+              'contentType' => $content_type,
+              'currentSortOrder' => $sort_order,
+              'limit' => $limit,
+            ],
+          ],
+        ],
+      ],
     ];
+
+    return $build;
   }
 
   /**
@@ -337,60 +229,6 @@ class EntityOverviewBlock extends BlockBase implements ContainerFactoryPluginInt
     return $query->count()->execute();
   }
 
-  /**
-   * Builds filter options for the block.
-   *
-   * @param string $content_type
-   *   The content type.
-   *
-   * @return array
-   *   An array of filter options.
-   */
-  protected function buildFilterOptions($content_type) {
-    $options = [];
-    $terms_data = $this->getTermsByVocabulary($content_type);
-
-    // Organize terms by vocabulary for the frontend.
-    foreach ($terms_data['terms'] as $vocabulary_id => $terms) {
-      $vocabulary_label = $terms_data['vocabulary_labels'][$vocabulary_id] ?? $vocabulary_id;
-
-      foreach ($terms as $term_id => $term_label) {
-        $options[] = [
-          'id' => $term_id,
-          'label' => $term_label,
-          'vocabulary' => $vocabulary_id,
-          'vocabulary_label' => $vocabulary_label,
-          // For grouping in frontend filters.
-          'group' => $vocabulary_label,
-        ];
-      }
-    }
-
-    return $options;
-  }
-
-  /**
-   * Builds sort options for the block.
-   *
-   * @return array
-   *   An array of sort options.
-   */
-  protected function buildSortOptions() {
-    return [
-      [
-        'id' => 'latest',
-        'label' => $this->t('Latest'),
-      ],
-      [
-        'id' => 'oldest',
-        'label' => $this->t('Oldest'),
-      ],
-      [
-        'id' => 'title',
-        'label' => $this->t('Title'),
-      ],
-    ];
-  }
 
   /**
    * Builds a data array from the node.
@@ -435,12 +273,48 @@ class EntityOverviewBlock extends BlockBase implements ContainerFactoryPluginInt
       }
     }
 
+    // Extract teaser text from body field
+    $teaser_text = '';
+    $body_field_candidates = ['body', 'field_body', 'field_description', 'field_summary'];
+    
+    foreach ($body_field_candidates as $field_name) {
+      if ($node->hasField($field_name) && !$node->get($field_name)->isEmpty()) {
+        $body_field = $node->get($field_name)->first();
+        if ($body_field) {
+          $body_value = $body_field->getValue();
+          $body_text = $body_value['value'] ?? '';
+          
+          // Strip HTML and create teaser (around 150 characters)
+          $teaser_text = strip_tags($body_text);
+          $teaser_text = substr($teaser_text, 0, 150);
+          
+          // Find the last complete sentence or word within the limit
+          if (strlen($teaser_text) == 150) {
+            $last_period = strrpos($teaser_text, '.');
+            $last_space = strrpos($teaser_text, ' ');
+            
+            if ($last_period !== false && $last_period > 100) {
+              $teaser_text = substr($teaser_text, 0, $last_period + 1);
+            } elseif ($last_space !== false) {
+              $teaser_text = substr($teaser_text, 0, $last_space) . '...';
+            } else {
+              $teaser_text .= '...';
+            }
+          }
+          
+          break; // Use first available body field
+        }
+      }
+    }
+
     return [
       'id' => $node->id(),
       'title' => $node->label(),
       'url' => $node->toUrl()->toString(),
       'image' => $image_url,
+      'teaser' => $teaser_text,
       'created' => $node->getCreatedTime(),
+      'changed' => $node->getChangedTime(),
     ];
   }
 
