@@ -1,0 +1,810 @@
+/**
+ * @file
+ * SAHO Sidebar Tabs System
+ * 
+ * Modern tabbed interface for organizing sidebar content including
+ * related content, timeline information, references, and further reading.
+ */
+
+/* ==========================================================================
+   SAHO Sidebar Tabs Container - Modern Design
+   ========================================================================== */
+
+.saho-sidebar-tabs {
+  background: #fff;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  margin-bottom: 2rem;
+  border: 1px solid #e2e8f0;
+}
+
+/* Tab Navigation - Modern Flat Design */
+.saho-tabs-nav {
+  display: flex;
+  background: #f8fafc;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-bottom: 1px solid #e2e8f0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.saho-tabs-nav::-webkit-scrollbar {
+  display: none;
+}
+
+.saho-tabs-nav li {
+  margin: 0;
+  flex-shrink: 0;
+  border-right: 1px solid #e2e8f0;
+}
+
+.saho-tabs-nav li:last-child {
+  border-right: none;
+}
+
+.saho-tab-button {
+  display: block;
+  padding: 1rem 1.5rem;
+  background: transparent;
+  border: none;
+  color: #64748b;
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+  position: relative;
+  min-width: auto;
+  border-bottom: 2px solid transparent;
+}
+
+.saho-tab-button:hover {
+  background: #f1f5f9;
+  color: #475569;
+  text-decoration: none;
+  border-bottom-color: #cbd5e1;
+}
+
+.saho-tab-button.active {
+  color: #900;
+  background: #fff;
+  font-weight: 600;
+  border-bottom-color: #900;
+}
+
+.saho-tab-button:focus {
+  outline: 2px solid #900;
+  outline-offset: -2px;
+}
+
+/* Tab Badge for counts - Modern Style */
+.saho-tab-badge {
+  display: inline-block;
+  background: #e2e8f0;
+  color: #64748b;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.5rem;
+  margin-left: 0.5rem;
+  min-width: 1.25rem;
+  text-align: center;
+  line-height: 1.2;
+  transition: all 0.15s ease;
+}
+
+.saho-tab-button:hover .saho-tab-badge {
+  background: #cbd5e1;
+  color: #475569;
+}
+
+.saho-tab-button.active .saho-tab-badge {
+  background: #900;
+  color: #fff;
+}
+
+/* Tab Content - Clean Modern Design */
+.saho-tabs-content {
+  background: #fff;
+  min-height: 200px;
+}
+
+.saho-tab-pane {
+  display: none;
+  padding: 2rem;
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+.saho-tab-pane.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ==========================================================================
+   Tab Content Sections
+   ========================================================================== */
+
+/* Related Content Tab - Clean Modern Design */
+.saho-related-content .saho-content-group {
+  margin-bottom: 2rem;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+}
+
+.saho-related-content .saho-content-group:last-child {
+  margin-bottom: 0;
+}
+
+.saho-content-group h5 {
+  color: #1e293b;
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 1rem 0;
+  padding: 0 0 0.5rem 0;
+  border: none;
+  border-bottom: 2px solid #900;
+  background: transparent;
+  position: relative;
+}
+
+.saho-content-group h5::after {
+  display: none;
+}
+
+.saho-content-group .saho-content-body {
+  padding: 0;
+}
+
+.saho-content-group .views-row {
+  margin-bottom: 0.75rem;
+  padding: 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  background: #f8fafc;
+  transition: all 0.15s ease;
+}
+
+.saho-content-group .views-row:last-child {
+  margin-bottom: 0;
+}
+
+.saho-content-group .views-row:hover {
+  border-color: #cbd5e1;
+  background: #f1f5f9;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.saho-content-group .views-row h3,
+.saho-content-group .views-row h4 {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 0.5rem;
+  line-height: 1.4;
+}
+
+.saho-content-group .views-row h3 a,
+.saho-content-group .views-row h4 a {
+  color: #900;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.saho-content-group .views-row h3 a:hover,
+.saho-content-group .views-row h4 a:hover {
+  color: #600;
+  text-decoration: underline;
+}
+
+.saho-content-group .views-row p {
+  font-size: 0.875rem;
+  color: #64748b;
+  line-height: 1.5;
+  margin-bottom: 0;
+}
+
+.saho-content-group .views-row a {
+  color: #900;
+  text-decoration: none;
+  font-weight: 500;
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.saho-content-group .views-row a:hover {
+  color: #600;
+  text-decoration: underline;
+}
+
+/* Context & Details Tab - Clean Modern Design */
+.saho-metadata-content .saho-content-group {
+  margin-bottom: 2rem;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+}
+
+.saho-metadata-content .saho-content-group:last-child {
+  margin-bottom: 0;
+}
+
+.saho-metadata-content .saho-content-group h5 {
+  color: #1e293b;
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 1rem 0;
+  padding: 0 0 0.5rem 0;
+  border: none;
+  border-bottom: 2px solid #900;
+  background: transparent;
+}
+
+.saho-metadata-content .field__items {
+  margin: 0;
+}
+
+.saho-metadata-content .field__item {
+  margin-bottom: 0.75rem;
+  padding: 1rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  transition: all 0.15s ease;
+}
+
+.saho-metadata-content .field__item:last-child {
+  margin-bottom: 0;
+}
+
+.saho-metadata-content .field__item:hover {
+  border-color: #cbd5e1;
+  background: #f1f5f9;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.saho-metadata-content .field__item a {
+  color: #900;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.saho-metadata-content .field__item a:hover {
+  color: #600;
+  text-decoration: underline;
+}
+
+/* Categories & Taxonomy Tab - Modern Clean Design */
+.saho-categories-content .saho-taxonomy-section {
+  margin-bottom: 2rem;
+}
+
+.saho-categories-content .saho-taxonomy-section:last-child {
+  margin-bottom: 0;
+}
+
+.saho-taxonomy-section h5 {
+  color: #1e293b;
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 1rem 0;
+  padding: 0 0 0.5rem 0;
+  border: none;
+  border-bottom: 2px solid #900;
+  background: transparent;
+}
+
+.saho-taxonomy-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0;
+}
+
+.saho-taxonomy-tags .field__item {
+  display: inline-block;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 0.8125rem;
+  padding: 0.5rem 0.875rem;
+  border-radius: 0.375rem;
+  text-decoration: none;
+  border: 1px solid #e2e8f0;
+  transition: all 0.15s ease;
+  font-weight: 500;
+}
+
+.saho-taxonomy-tags .field__item:hover {
+  background: #900;
+  color: #fff;
+  border-color: #900;
+  text-decoration: none;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.saho-taxonomy-tags .field__item a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Resources Tab - Clean Modern Design */
+.saho-resources-content .saho-resource-section {
+  margin-bottom: 2rem;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+.saho-resources-content .saho-resource-section:last-child {
+  margin-bottom: 0;
+}
+
+.saho-resource-section h5 {
+  color: #1e293b;
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 1rem 0;
+  padding: 0 0 0.5rem 0;
+  border: none;
+  border-bottom: 2px solid #900;
+  background: transparent;
+}
+
+.saho-resource-section h5::after {
+  display: none;
+}
+
+.saho-resource-section .saho-resource-body {
+  padding: 0;
+}
+
+.saho-resource-section .field__items {
+  margin: 0;
+}
+
+.saho-resource-section .field__item {
+  margin-bottom: 0.75rem;
+  padding: 1rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  transition: all 0.15s ease;
+}
+
+.saho-resource-section .field__item:last-child {
+  margin-bottom: 0;
+}
+
+.saho-resource-section .field__item:hover {
+  border-color: #cbd5e1;
+  background: #f1f5f9;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.saho-resource-section .field__item a {
+  color: #900;
+  text-decoration: none;
+  font-weight: 500;
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  word-break: break-all;
+}
+
+.saho-resource-section .field__item a:hover {
+  color: #600;
+  text-decoration: underline;
+}
+
+/* References Tab - Clean Modern Design */
+.saho-references-content {
+  margin: 0;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+.saho-references-content h5 {
+  color: #1e293b;
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 1rem 0;
+  padding: 0 0 0.5rem 0;
+  border: none;
+  border-bottom: 2px solid #900;
+  background: transparent;
+}
+
+.saho-references-content h5::after {
+  display: none;
+}
+
+.saho-reference-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+}
+
+.saho-reference-list li {
+  margin-bottom: 0.75rem;
+  padding: 1rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  transition: all 0.15s ease;
+}
+
+.saho-reference-list li:last-child {
+  margin-bottom: 0;
+}
+
+.saho-reference-list li:hover {
+  border-color: #cbd5e1;
+  background: #f1f5f9;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.saho-reference-list li a {
+  color: #900;
+  text-decoration: none;
+  font-weight: 500;
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  word-break: break-all;
+}
+
+.saho-reference-list li a:hover {
+  color: #600;
+  text-decoration: underline;
+}
+
+/* ==========================================================================
+   Responsive Design
+   ========================================================================== */
+
+@media (max-width: 768px) {
+  .saho-tab-button {
+    padding: 0.875rem 1rem;
+    font-size: 0.8125rem;
+  }
+  
+  .saho-tab-pane {
+    padding: 1.5rem;
+  }
+  
+  .saho-tabs-nav {
+    justify-content: flex-start;
+  }
+  
+  .saho-taxonomy-tags {
+    gap: 0.375rem;
+  }
+  
+  .saho-content-group .views-row {
+    padding: 0.875rem;
+  }
+  
+  .saho-resource-section .field__item,
+  .saho-reference-list li {
+    padding: 0.875rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .saho-tab-button {
+    padding: 0.75rem 0.875rem;
+    font-size: 0.8rem;
+  }
+  
+  .saho-tab-pane {
+    padding: 1rem;
+  }
+  
+  .saho-tab-badge {
+    font-size: 0.7rem;
+    padding: 0.0625rem 0.25rem;
+    margin-left: 0.375rem;
+  }
+  
+  .saho-content-group h5,
+  .saho-taxonomy-section h5,
+  .saho-resource-section h5,
+  .saho-references-content h5 {
+    font-size: 0.9rem;
+  }
+  
+  .saho-content-group .views-row,
+  .saho-resource-section .field__item,
+  .saho-reference-list li {
+    padding: 0.75rem;
+    font-size: 0.8125rem;
+  }
+  
+  .saho-taxonomy-tags .field__item {
+    font-size: 0.75rem;
+    padding: 0.375rem 0.625rem;
+  }
+}
+
+/* ==========================================================================
+   Integration with existing SAHO styles
+   ========================================================================== */
+
+/* Ensure compatibility with existing accordion styles */
+.saho-sidebar-tabs .accordion {
+  border: none;
+  background: none;
+}
+
+.saho-sidebar-tabs .accordion-item {
+  border: 1px solid #e9ecef;
+  margin-bottom: 0.75rem;
+  border-radius: 0.375rem;
+}
+
+.saho-sidebar-tabs .accordion-item:last-child {
+  margin-bottom: 0;
+}
+
+.saho-sidebar-tabs .accordion-button {
+  background: #f8f9fa;
+  color: #495057;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.saho-sidebar-tabs .accordion-button:not(.collapsed) {
+  background: #900;
+  color: #fff;
+}
+
+.saho-sidebar-tabs .accordion-body {
+  padding: 1rem;
+  font-size: 0.9rem;
+}
+
+/* Enhanced image block styling within tabs */
+.saho-sidebar-tabs .saho-image-block {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.saho-sidebar-tabs .saho-image-block img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.375rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.saho-sidebar-tabs .caption {
+  font-size: 0.8125rem;
+  color: #6c757d;
+  font-style: italic;
+  margin-top: 0.5rem;
+  line-height: 1.4;
+}
+
+/* ==========================================================================
+   Landing Page & General Content Area Styling
+   ========================================================================== */
+
+/* ==========================================================================
+   Clean Modern Styling for All Content Areas
+   ========================================================================== */
+
+/* Override any legacy sidebar styling with clean modern design */
+.saho-article-sidebar .saho-further-reading,
+.saho-article-sidebar .saho-references,
+.saho-article-sidebar .saho-taxonomy-group,
+.saho-sidebar-tabs .accordion {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  margin-bottom: 1.5rem;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Clean modern headers - NO GRADIENTS */
+.saho-further-reading h4,
+.saho-references h3,
+.saho-taxonomy-group h4,
+.accordion-button {
+  background: #f8fafc !important;
+  color: #1e293b !important;
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin: 0;
+  padding: 1rem 1.25rem;
+  border: none !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+  position: relative;
+}
+
+.saho-further-reading h4::after,
+.saho-references h3::after,
+.saho-taxonomy-group h4::after {
+  display: none;
+}
+
+/* Content areas */
+.saho-further-reading .field__items,
+.saho-references .saho-reference-list,
+.saho-taxonomy-group .field__items,
+.accordion-body {
+  padding: 1.25rem;
+  margin: 0;
+  background: #fff;
+}
+
+/* Modern taxonomy styling */
+.saho-taxonomy-group .field__item {
+  display: inline-block;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 0.8125rem;
+  padding: 0.5rem 0.875rem;
+  border-radius: 0.375rem;
+  text-decoration: none;
+  border: 1px solid #e2e8f0;
+  margin-right: 0.5rem;
+  margin-bottom: 0.5rem;
+  transition: all 0.15s ease;
+  font-weight: 500;
+}
+
+.saho-taxonomy-group .field__item a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.saho-taxonomy-group .field__item:hover {
+  background: #900;
+  color: #fff;
+  border-color: #900;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* ==========================================================================
+   Simplified Sidebar (No Tabs)
+   ========================================================================== */
+
+.saho-simplified-sidebar {
+  background: #fff;
+}
+
+.saho-sidebar-section {
+  margin-bottom: 2rem;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.saho-sidebar-section:last-child {
+  margin-bottom: 0;
+}
+
+.saho-sidebar-section h4 {
+  background: #f8fafc;
+  color: #1e293b;
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin: 0;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.saho-sidebar-section .field__items,
+.saho-sidebar-section .saho-reference-list {
+  padding: 1.25rem;
+  margin: 0;
+  background: #fff;
+}
+
+.saho-sidebar-section .saho-content-group {
+  margin-bottom: 1.5rem;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+}
+
+.saho-sidebar-section .saho-content-group:last-child {
+  margin-bottom: 0;
+}
+
+.saho-sidebar-section .saho-content-group h5 {
+  color: #900;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin: 0 0 0.75rem 0;
+  padding: 0 0 0.375rem 0;
+  border: none;
+  border-bottom: 1px solid #e2e8f0;
+  background: transparent;
+}
+
+.saho-sidebar-section .saho-content-body {
+  padding: 0;
+}
+
+.saho-sidebar-section .views-row {
+  margin-bottom: 0.75rem;
+  padding: 0.875rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.375rem;
+  transition: all 0.15s ease;
+}
+
+.saho-sidebar-section .views-row:last-child {
+  margin-bottom: 0;
+}
+
+.saho-sidebar-section .views-row:hover {
+  border-color: #cbd5e1;
+  background: #f1f5f9;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.saho-sidebar-section .views-row h3,
+.saho-sidebar-section .views-row h4 {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 0.5rem;
+  line-height: 1.4;
+}
+
+.saho-sidebar-section .views-row h3 a,
+.saho-sidebar-section .views-row h4 a {
+  color: #900;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.saho-sidebar-section .views-row h3 a:hover,
+.saho-sidebar-section .views-row h4 a:hover {
+  color: #600;
+  text-decoration: underline;
+}
+
+.saho-sidebar-section .views-row p {
+  font-size: 0.8125rem;
+  color: #64748b;
+  line-height: 1.4;
+  margin-bottom: 0;
+}

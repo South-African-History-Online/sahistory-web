@@ -1,0 +1,154 @@
+/**
+ * @file
+ * URL truncation styles for SAHO further reading and references sections.
+ * 
+ * This file provides CSS to truncate long URLs with ellipsis while preserving
+ * the actual link functionality for better readability.
+ */
+
+/* Comprehensive URL Truncation for All Content Areas */
+.saho-further-reading a,
+.saho-references a,
+.saho-saho-sources a,
+.saho-content-group a,
+.saho-resource-section a,
+.saho-taxonomy-section a,
+.saho-metadata-content a,
+.saho-sidebar-tabs a,
+.field--type-link a,
+.field--type-text-long a[href],
+.field--type-text a[href] {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: top;
+  word-break: break-all; /* Fallback for browsers that don't support text-overflow */
+}
+
+/* Removed problematic global URL truncation rules that affected inline links */
+
+/* Reference list specific styling */
+.saho-reference-list li {
+  margin-bottom: 0.75rem;
+  word-wrap: break-word;
+}
+
+.saho-reference-list a {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #900; /* SAHO red color */
+  text-decoration: underline;
+}
+
+.saho-reference-list a:hover {
+  color: #600; /* Darker red on hover */
+  text-decoration: none;
+}
+
+/* Allow for responsive URL truncation */
+@media (max-width: 768px) {
+  .saho-further-reading a,
+  .saho-references a,
+  .saho-saho-sources a,
+  .saho-reference-list a {
+    max-width: 250px; /* Shorter on mobile */
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .saho-further-reading a,
+  .saho-references a,
+  .saho-saho-sources a,
+  .saho-reference-list a {
+    max-width: 350px; /* Medium length on tablet */
+  }
+}
+
+@media (min-width: 1025px) {
+  .saho-further-reading a,
+  .saho-references a,
+  .saho-saho-sources a,
+  .saho-reference-list a {
+    max-width: 450px; /* Longer on desktop */
+  }
+}
+
+/* Improved styling for reference sections */
+.saho-references {
+  background-color: #f8f9fa;
+  border-left: 4px solid #900;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.saho-references h3 {
+  color: #900;
+  font-size: 1.25rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid #e9ecef;
+  padding-bottom: 0.5rem;
+}
+
+.saho-further-reading {
+  background-color: #fff;
+  border: 1px solid #e9ecef;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.saho-further-reading h4 {
+  color: #900;
+  font-size: 1.125rem;
+  margin-bottom: 1rem;
+}
+
+/* Special handling for URLs that might be in plain text */
+.saho-further-reading p,
+.saho-references p,
+.saho-reference-list li {
+  word-break: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+
+/* Tooltip for showing full URL on hover */
+.saho-url-truncated {
+  position: relative;
+}
+
+.saho-url-truncated:hover::after {
+  content: attr(data-full-url);
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: #333;
+  color: #fff;
+  padding: 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+  white-space: nowrap;
+  z-index: 1000;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  max-width: 400px;
+  word-break: break-all;
+}
+
+/* Archive specific sources styling */
+.saho-saho-sources {
+  background-color: #fff3cd;
+  border-left: 4px solid #B88A2E;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.saho-saho-sources h4 {
+  color: #B88A2E;
+  font-size: 1.125rem;
+  margin-bottom: 1rem;
+}

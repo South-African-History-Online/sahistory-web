@@ -1,0 +1,764 @@
+/**
+ * @file
+ * Modern, WCAG-compliant styling for citation and sharing modals
+ */
+
+/* ==========================================================================
+   MODERN CITATION MODAL STYLES - Mobile First Design
+   ========================================================================== */
+
+.saho-citation-modal {
+  border: 0;
+  box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.175);
+  border-radius: 0.75rem;
+}
+
+/* Mobile-first responsive design */
+@media (max-width: 768px) {
+  .saho-citation-modal {
+    padding: 0;
+  }
+  
+  .saho-citation-modal .modal-dialog {
+    max-width: 100vw;
+    height: 100vh;
+    margin: 0;
+    border-radius: 0;
+  }
+  
+  .saho-citation-modal .modal-content {
+    height: 100vh;
+    border-radius: 0;
+    border: none;
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+.saho-citation-modal .modal-header {
+  background: linear-gradient(135deg, #8B4513 0%, #A0522D 100%);
+  color: white;
+  border-radius: 0.75rem 0.75rem 0 0;
+  padding: 1.25rem 1.5rem;
+  flex-shrink: 0;
+  border-bottom: none;
+}
+
+@media (max-width: 768px) {
+  .saho-citation-modal .modal-header {
+    border-radius: 0;
+    padding: 1rem;
+  }
+}
+
+.saho-citation-modal .modal-title {
+  font-size: 1.35rem;
+  font-weight: 600;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: white;
+}
+
+.saho-citation-modal .modal-title svg {
+  width: 24px;
+  height: 24px;
+  fill: currentColor;
+}
+
+.saho-citation-modal .btn-close {
+  filter: invert(1);
+  opacity: 0.8;
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.saho-citation-modal .btn-close:hover {
+  opacity: 1;
+}
+
+.saho-citation-modal .modal-body {
+  padding: 1.5rem;
+  background-color: #fff;
+  flex: 1;
+  overflow-y: auto;
+}
+
+@media (max-width: 768px) {
+  .saho-citation-modal .modal-body {
+    padding: 1rem;
+  }
+}
+
+/* Citation Format Sections - New Stacked Layout */
+.citation-format {
+  margin-bottom: 2rem;
+  padding: 1.25rem;
+  border: 2px solid #e8e8e8;
+  border-radius: 12px;
+  background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  transition: all 0.2s ease;
+}
+
+.citation-format:hover {
+  border-color: #8B4513;
+  box-shadow: 0 4px 16px rgba(139, 69, 19, 0.1);
+}
+
+.citation-format:last-child {
+  margin-bottom: 0;
+}
+
+.citation-format-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.citation-format-header svg {
+  width: 20px;
+  height: 20px;
+  fill: #8B4513;
+  margin-right: 0.75rem;
+  flex-shrink: 0;
+}
+
+.citation-format h6 {
+  color: #8B4513;
+  font-weight: 600;
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.citation-text {
+  background: #ffffff;
+  padding: 1rem;
+  border: 2px solid #f0f0f0;
+  border-radius: 8px;
+  font-family: 'SF Mono', 'Monaco', 'Cascadia Code', 'Roboto Mono', monospace;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin-bottom: 1rem;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  color: #2c3e50;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+}
+
+/* Copy Buttons - Enhanced Design */
+.copy-btn {
+  background: linear-gradient(135deg, #8B4513 0%, #A0522D 100%);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  width: 100%;
+  min-height: 48px; /* Enhanced WCAG touch target */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  box-shadow: 0 2px 4px rgba(139, 69, 19, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.copy-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.5s;
+}
+
+.copy-btn:hover {
+  background: linear-gradient(135deg, #A0522D 0%, #8B4513 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(139, 69, 19, 0.3);
+}
+
+.copy-btn:hover::before {
+  left: 100%;
+}
+
+.copy-btn:active {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(139, 69, 19, 0.3);
+}
+
+.copy-btn:focus {
+  outline: 3px solid #007bff;
+  outline-offset: 2px;
+}
+
+.copy-btn svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}
+
+/* Copy All Button */
+.copy-all-citations {
+  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  box-shadow: 0 2px 4px rgba(40, 167, 69, 0.2);
+}
+
+.copy-all-citations:hover {
+  background: linear-gradient(135deg, #218838 0%, #1e7e34 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(40, 167, 69, 0.3);
+}
+
+/* Modal Footer */
+.saho-citation-modal .modal-footer {
+  background: linear-gradient(145deg, #f8f9fa 0%, #e9ecef 100%);
+  border-top: 2px solid #e0e0e0;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+  border-radius: 0 0 0.75rem 0.75rem;
+}
+
+@media (max-width: 768px) {
+  .saho-citation-modal .modal-footer {
+    padding: 1rem;
+    flex-direction: column;
+    gap: 0.75rem;
+    border-radius: 0;
+  }
+}
+
+.modal-footer .btn-secondary {
+  background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+  border-color: #6c757d;
+  min-height: 48px;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(108, 117, 125, 0.2);
+}
+
+.modal-footer .btn-secondary:hover {
+  background: linear-gradient(135deg, #5a6268 0%, #495057 100%);
+  border-color: #545b62;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(108, 117, 125, 0.3);
+}
+
+@media (max-width: 768px) {
+  .modal-footer .btn {
+    width: 100%;
+  }
+}
+
+/* Loading States */
+.copy-btn.loading,
+.copy-all-citations.loading {
+  position: relative;
+  color: transparent;
+  pointer-events: none;
+}
+
+.copy-btn.loading::after,
+.copy-all-citations.loading::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255,255,255,0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+/* Success States */
+.copy-btn.success {
+  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+  box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+}
+
+.copy-btn.success:hover {
+  background: linear-gradient(135deg, #218838 0%, #1e7e34 100%);
+}
+
+/* ==========================================================================
+   MODERN SHARING MODAL STYLES
+   ========================================================================== */
+
+.saho-sharing-modal {
+  border: 0;
+  box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.175);
+  border-radius: 0.75rem;
+}
+
+/* Mobile-first responsive design for sharing modal */
+@media (max-width: 768px) {
+  .saho-sharing-modal {
+    padding: 0;
+  }
+  
+  .saho-sharing-modal .modal-dialog {
+    max-width: 100vw;
+    height: 100vh;
+    margin: 0;
+    border-radius: 0;
+  }
+  
+  .saho-sharing-modal .modal-content {
+    height: 100vh;
+    border-radius: 0;
+    border: none;
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+.saho-sharing-modal .modal-header {
+  background: linear-gradient(135deg, #8B4513 0%, #A0522D 100%);
+  color: white;
+  border-radius: 0.75rem 0.75rem 0 0;
+  padding: 1.25rem 1.5rem;
+  flex-shrink: 0;
+  border-bottom: none;
+}
+
+@media (max-width: 768px) {
+  .saho-sharing-modal .modal-header {
+    border-radius: 0;
+    padding: 1rem;
+  }
+}
+
+.saho-sharing-modal .modal-title {
+  font-size: 1.35rem;
+  font-weight: 600;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: white;
+}
+
+.saho-sharing-modal .modal-title svg {
+  width: 24px;
+  height: 24px;
+  fill: currentColor;
+}
+
+.saho-sharing-modal .btn-close {
+  filter: invert(1);
+  opacity: 0.8;
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.saho-sharing-modal .btn-close:hover {
+  opacity: 1;
+}
+
+.saho-sharing-modal .modal-body {
+  padding: 1.5rem;
+  background-color: #fff;
+  flex: 1;
+  overflow-y: auto;
+}
+
+@media (max-width: 768px) {
+  .saho-sharing-modal .modal-body {
+    padding: 1rem;
+  }
+}
+
+/* Sharing Options - Enhanced Grid */
+.sharing-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (max-width: 768px) {
+  .sharing-options {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+}
+
+.share-option {
+  display: flex;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+  border: 2px solid #e8e8e8;
+  border-radius: 12px;
+  text-decoration: none;
+  color: #2c3e50;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  min-height: 56px; /* Enhanced WCAG touch target */
+  font-weight: 500;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  position: relative;
+  overflow: hidden;
+}
+
+.share-option::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(139, 69, 19, 0.05), transparent);
+  transition: left 0.4s;
+}
+
+.share-option:hover {
+  background: linear-gradient(145deg, #8B4513 0%, #A0522D 100%);
+  border-color: #8B4513;
+  color: white;
+  text-decoration: none;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(139, 69, 19, 0.2);
+}
+
+.share-option:hover::before {
+  left: 100%;
+}
+
+.share-option:focus {
+  outline: 3px solid #007bff;
+  outline-offset: 2px;
+}
+
+.share-option svg {
+  width: 24px;
+  height: 24px;
+  margin-right: 1rem;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.share-option:hover svg {
+  fill: currentColor;
+}
+
+/* URL Copy Section */
+.url-copy-section {
+  background: linear-gradient(145deg, #f8f9fa 0%, #e9ecef 100%);
+  border-radius: 12px;
+  padding: 1.25rem;
+  border: 2px solid #e0e0e0;
+  margin: 1.5rem 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.url-copy-section h6 {
+  color: #8B4513;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  font-size: 1rem;
+}
+
+.url-input-group {
+  display: flex;
+  gap: 0.75rem;
+  align-items: stretch;
+}
+
+@media (max-width: 576px) {
+  .url-input-group {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}
+
+.url-input {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  background: white;
+  font-size: 0.9rem;
+  font-family: 'SF Mono', 'Monaco', 'Cascadia Code', 'Roboto Mono', monospace;
+  color: #2c3e50;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.url-copy-btn {
+  background: linear-gradient(135deg, #8B4513 0%, #A0522D 100%);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 120px;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  box-shadow: 0 2px 4px rgba(139, 69, 19, 0.2);
+}
+
+.url-copy-btn:hover {
+  background: linear-gradient(135deg, #A0522D 0%, #8B4513 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(139, 69, 19, 0.3);
+}
+
+.url-copy-btn svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}
+
+/* Sharing modal footer */
+.saho-sharing-modal .modal-footer {
+  background: linear-gradient(145deg, #f8f9fa 0%, #e9ecef 100%);
+  border-top: 2px solid #e0e0e0;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+  border-radius: 0 0 0.75rem 0.75rem;
+}
+
+@media (max-width: 768px) {
+  .saho-sharing-modal .modal-footer {
+    padding: 1rem;
+    flex-direction: column;
+    gap: 0.75rem;
+    border-radius: 0;
+  }
+}
+
+/* ==========================================================================
+   ACCESSIBILITY ENHANCEMENTS
+   ========================================================================== */
+
+/* Focus indicators */
+.saho-citation-modal .btn:focus,
+.saho-sharing-modal .btn:focus,
+.copy-btn:focus,
+.copy-all-citations:focus,
+.share-option:focus,
+.url-copy-btn:focus {
+  outline: 3px solid #007bff;
+  outline-offset: 2px;
+}
+
+.saho-citation-modal .btn-close:focus,
+.saho-sharing-modal .btn-close:focus {
+  outline: 3px solid #ffffff;
+  outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .citation-format,
+  .citation-text,
+  .share-option,
+  .url-copy-section {
+    border-width: 3px;
+    border-color: #000;
+  }
+  
+  .copy-btn,
+  .copy-all-citations,
+  .url-copy-btn {
+    border: 2px solid #000;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .copy-btn,
+  .copy-all-citations,
+  .share-option,
+  .url-copy-btn,
+  .citation-format {
+    transition: none;
+  }
+  
+  .copy-btn:hover,
+  .copy-all-citations:hover,
+  .share-option:hover,
+  .url-copy-btn:hover {
+    transform: none;
+  }
+  
+  .copy-btn::before,
+  .share-option::before {
+    display: none;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .saho-citation-modal .modal-content,
+  .saho-sharing-modal .modal-content {
+    background: #2c3e50;
+    color: #e9ecef;
+  }
+  
+  .saho-citation-modal .modal-body,
+  .saho-sharing-modal .modal-body {
+    background: #2c3e50;
+  }
+  
+  .citation-text,
+  .url-input {
+    background: #34495e !important;
+    border-color: #495057;
+    color: #e9ecef;
+  }
+  
+  .citation-format {
+    background: linear-gradient(145deg, #34495e 0%, #2c3e50 100%);
+    border-color: #495057;
+  }
+  
+  .share-option,
+  .url-copy-section {
+    background: linear-gradient(145deg, #34495e 0%, #2c3e50 100%);
+    border-color: #495057;
+    color: #e9ecef;
+  }
+}
+
+/* Print styles */
+@media print {
+  .saho-citation-modal,
+  .saho-sharing-modal {
+    position: static;
+    display: block;
+  }
+  
+  .modal-dialog {
+    max-width: none;
+    margin: 0;
+  }
+  
+  .modal-header,
+  .modal-footer {
+    display: none;
+  }
+  
+  .citation-text {
+    border: 2px solid #000;
+    background: white !important;
+    color: #000;
+  }
+  
+  .copy-btn,
+  .copy-all-citations,
+  .share-option,
+  .url-copy-btn {
+    display: none;
+  }
+}
+
+/* Screen reader enhancements */
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+/* Additional responsive breakpoints */
+@media (max-width: 576px) {
+  .citation-format {
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .citation-text {
+    padding: 0.75rem;
+    font-size: 0.85rem;
+  }
+  
+  .copy-btn,
+  .copy-all-citations,
+  .url-copy-btn {
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+  }
+  
+  .share-option {
+    padding: 0.75rem 1rem;
+    min-height: 52px;
+  }
+  
+  .share-option svg {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+@media (max-width: 400px) {
+  .saho-citation-modal .modal-title,
+  .saho-sharing-modal .modal-title {
+    font-size: 1.15rem;
+  }
+  
+  .citation-format h6 {
+    font-size: 1rem;
+  }
+  
+  .citation-text {
+    font-size: 0.8rem;
+    line-height: 1.4;
+  }
+}

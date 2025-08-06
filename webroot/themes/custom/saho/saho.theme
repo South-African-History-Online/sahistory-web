@@ -219,8 +219,21 @@ function saho_preprocess_node(array &$variables) {
  $logo = \Drupal::theme()->getActiveTheme()->getLogo();
  $variables['site_logo'] = $logo;
  
-  // set the appropriate classes and accordion views with conditional logic.
+  // Add URL truncation, sidebar tabs, context details, and accordion libraries for content types
   $node = $variables['node'];
+  if (in_array($node->bundle(), ['article', 'archive', 'biography', 'place', 'event'])) {
+    $variables['#attached']['library'][] = 'saho/url.truncation';
+    $variables['#attached']['library'][] = 'saho/sidebar.tabs';
+    $variables['#attached']['library'][] = 'saho/context.details';
+    $variables['#attached']['library'][] = 'saho/sidebar.accordion';
+  }
+  
+  // Add biography-specific styling for biography content type
+  if ($node->bundle() == 'biography') {
+    $variables['#attached']['library'][] = 'saho/biography.metadata';
+  }
+ 
+  // set the appropriate classes and accordion views with conditional logic.
 
   // Add accordion views for article, archive, biography, and place content types
   if (in_array($node->bundle(), ['article', 'archive', 'biography', 'place'])) {

@@ -56,40 +56,7 @@
     
     {% if enable_carousel and biography_data.items|length > 1 %}
       <div class="featured-biography-carousel-controls">
-        <button class="featured-bio-prev-btn carousel-button" type="button" 
-          onclick="var grid = this.closest('.featured-biography-block').querySelector('.saho-cards-grid'); 
-                  var style = window.getComputedStyle(grid);
-                  var matrix = new DOMMatrix(style.transform);
-                  var currentX = matrix.m41;
-                  var cardWidth = grid.querySelector('.saho-card').offsetWidth + 24;
-                  var cardsPerView = 3;
-                  var cardIndex = Math.floor(Math.abs(currentX) / cardWidth);
-                  // Move one full view (3 cards) backward
-                  var newCardIndex = Math.max(0, cardIndex - cardsPerView);
-                  var newX = -newCardIndex * cardWidth;
-                  
-                  // Add smooth animation
-                  grid.style.transition = 'transform 0.5s ease';
-                  grid.style.transform = 'translateX(' + newX + 'px)';
-                  
-                  // Update active indicator
-                  var indicators = this.closest('.featured-biography-carousel-controls').querySelectorAll('.featured-bio-indicator');
-                  var activeIndex = Math.floor(newCardIndex / cardsPerView);
-                  for (var j = 0; j < indicators.length; j++) {
-                    indicators[j].classList.remove('active');
-                    if (j === activeIndex) {
-                      indicators[j].classList.add('active');
-                    }
-                  }
-                  
-                  this.classList.add('button-clicked');
-                  setTimeout(function() { 
-                    var btn = document.querySelector('.button-clicked'); 
-                    if (btn) btn.classList.remove('button-clicked'); 
-                  }, 300);
-                  
-                  console.log('Previous button clicked, showing cards starting at index: ' + newCardIndex);
-                  return false;"
+        <button class="featured-bio-prev-btn carousel-button" type="button"
           aria-label="{{ 'Previous biography'|t }}">
           <i class="fas fa-chevron-left"></i>
         </button>
@@ -98,62 +65,12 @@
             <button 
               class="featured-bio-indicator{% if loop.first %} active{% endif %}" 
               type="button"
-              onclick="var grid = this.closest('.featured-biography-block').querySelector('.saho-cards-grid');
-                      var cardWidth = grid.querySelector('.saho-card').offsetWidth + 24;
-                      var cardsPerView = 3;
-                      var newCardIndex = {{ i }} * cardsPerView;
-                      var newX = -newCardIndex * cardWidth;
-                      
-                      // Add smooth animation
-                      grid.style.transition = 'transform 0.5s ease';
-                      grid.style.transform = 'translateX(' + newX + 'px)';
-                      
-                      var indicators = this.closest('.featured-bio-indicators').querySelectorAll('.featured-bio-indicator');
-                      for (var j = 0; j < indicators.length; j++) {
-                        indicators[j].classList.remove('active');
-                      }
-                      this.classList.add('active');
-                      console.log('Indicator ' + {{ i }} + ' clicked, showing cards starting at index: ' + newCardIndex);
-                      return false;"
               data-slide-to="{{ i }}" 
               aria-label="{{ 'Biography'|t }} {{ i + 1 }}"
             ></button>
           {% endfor %}
         </div>
-        <button class="featured-bio-next-btn carousel-button" type="button" 
-          onclick="var grid = this.closest('.featured-biography-block').querySelector('.saho-cards-grid'); 
-                  var style = window.getComputedStyle(grid);
-                  var matrix = new DOMMatrix(style.transform);
-                  var currentX = matrix.m41;
-                  var cardWidth = grid.querySelector('.saho-card').offsetWidth + 24;
-                  var cardsPerView = 3;
-                  var cardIndex = Math.floor(Math.abs(currentX) / cardWidth);
-                  // Move one full view (3 cards) forward
-                  var newCardIndex = Math.min(grid.querySelectorAll('.saho-card').length - cardsPerView, cardIndex + cardsPerView);
-                  var newX = -newCardIndex * cardWidth;
-                  
-                  // Add smooth animation
-                  grid.style.transition = 'transform 0.5s ease';
-                  grid.style.transform = 'translateX(' + newX + 'px)';
-                  
-                  // Update active indicator
-                  var indicators = this.closest('.featured-biography-carousel-controls').querySelectorAll('.featured-bio-indicator');
-                  var activeIndex = Math.floor(newCardIndex / cardsPerView);
-                  for (var j = 0; j < indicators.length; j++) {
-                    indicators[j].classList.remove('active');
-                    if (j === activeIndex) {
-                      indicators[j].classList.add('active');
-                    }
-                  }
-                  
-                  this.classList.add('button-clicked');
-                  setTimeout(function() { 
-                    var btn = document.querySelector('.button-clicked'); 
-                    if (btn) btn.classList.remove('button-clicked'); 
-                  }, 300);
-                  
-                  console.log('Next button clicked, showing cards starting at index: ' + newCardIndex);
-                  return false;" 
+        <button class="featured-bio-next-btn carousel-button" type="button"
           aria-label="{{ 'Next biography'|t }}">
           <i class="fas fa-chevron-right"></i>
         </button>
@@ -186,9 +103,13 @@
           {% if biography_item.position %}
             <div class="featured-biography-position">{{ biography_item.position }}</div>
           {% endif %}
-          {% if biography_item.body %}
+          {% if biography_item.body_summary %}
             <div class="featured-biography-summary">
-              {{ biography_item.body|raw }}
+              {{ biography_item.body_summary|raw|striptags|truncate(300, true, '...') }}
+            </div>
+          {% elseif biography_item.body %}
+            <div class="featured-biography-summary">
+              {{ biography_item.body|raw|striptags|truncate(300, true, '...') }}
             </div>
           {% endif %}
           <div class="featured-biography-read-more">

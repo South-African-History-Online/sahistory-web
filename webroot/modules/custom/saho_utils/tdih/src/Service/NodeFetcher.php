@@ -63,9 +63,6 @@ class NodeFetcher {
       // If a specific month-day is provided, use LIKE to get potential matches.
       if ($month_day) {
         $query->condition('field_this_day_in_history_3', "%-$month_day", 'LIKE');
-        $this->logger->info('NodeFetcher searching for events with date ending in: %-@month_day', [
-          '@month_day' => $month_day,
-        ]);
       }
 
       // Limit to reasonable number for performance.
@@ -75,10 +72,6 @@ class NodeFetcher {
 
       if ($nids) {
         $nodes = $this->entityTypeManager->getStorage('node')->loadMultiple($nids);
-        $this->logger->info('NodeFetcher found @count potential event nodes: @nids', [
-          '@count' => count($nodes),
-          '@nids' => implode(', ', array_slice(array_keys($nids), 0, 10)) . (count($nids) > 10 ? '...' : ''),
-        ]);
         return $nodes;
       }
     }
@@ -113,9 +106,6 @@ class NodeFetcher {
       // If a specific month-day is provided, use LIKE to get potential matches.
       if ($month_day) {
         $query->condition('field_this_day_in_history_3', "%-$month_day", 'LIKE');
-        $this->logger->info('NodeFetcher searching for ALL birthday events with date ending in: %-@month_day', [
-          '@month_day' => $month_day,
-        ]);
       }
 
       // Limit to reasonable number for performance.
@@ -125,10 +115,6 @@ class NodeFetcher {
 
       if ($nids) {
         $nodes = $this->entityTypeManager->getStorage('node')->loadMultiple($nids);
-        $this->logger->info('NodeFetcher found @count potential birthday event nodes: @nids', [
-          '@count' => count($nodes),
-          '@nids' => implode(', ', array_slice(array_keys($nids), 0, 10)) . (count($nids) > 10 ? '...' : ''),
-        ]);
         return $nodes;
       }
     }
@@ -185,11 +171,6 @@ class NodeFetcher {
       // Sort the dates for better user experience.
       sort($dates);
 
-      // Debug logging with actual dates found.
-      $this->logger->info('NodeFetcher found @count unique dates for TDIH date picker: @dates', [
-        '@count' => count($dates),
-        '@dates' => implode(', ', array_slice($dates, 0, 10)) . (count($dates) > 10 ? '...' : ''),
-      ]);
     }
     catch (\Exception $e) {
       $this->logger->error('Error getting available dates: @message', [

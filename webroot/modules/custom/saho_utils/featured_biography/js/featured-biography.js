@@ -2,26 +2,23 @@
  * @file
  * JavaScript for the Featured Biography Block.
  */
-(function ($, Drupal) {
+(function ($, Drupal, once) {
   'use strict';
 
   // Add custom events for inline handlers
   $(document).on('slide.to', '.featured-bio-indicator', function(e, slideIndex) {
-    console.log('Custom slide.to event triggered with index:', slideIndex);
     var $block = $(this).closest('.featured-biography-block');
     $block.trigger('goToSlide', [slideIndex]);
   });
   
   // Direct click handlers for prev/next buttons
   $(document).on('click', '.featured-bio-prev-btn', function(e) {
-    console.log('Prev button clicked via document handler');
     e.preventDefault();
     $(this).closest('.featured-biography-block').trigger('prevSlide');
     return false;
   });
   
   $(document).on('click', '.featured-bio-next-btn', function(e) {
-    console.log('Next button clicked via document handler');
     e.preventDefault();
     $(this).closest('.featured-biography-block').trigger('nextSlide');
     return false;
@@ -29,11 +26,10 @@
 
   Drupal.behaviors.featuredBiographyCarousel = {
     attach: function (context, settings) {
-      console.log('Featured Biography Carousel JS loaded and running');
       
       // Initialize carousel for multiple biographies - using very specific selectors
-      $('.featured-biography-block', context).once('featured-biography-init').each(function () {
-        var $block = $(this);
+      once('featured-biography-init', '.featured-biography-block', context).forEach(function (element) {
+        var $block = $(element);
         var $blockInner = $block.find('.featured-biography-block');
         
         // If no inner container, the block itself might be the container
@@ -46,25 +42,21 @@
         // Only initialize carousel if we have multiple cards and carousel is enabled
         if ($cardsContainer.length && $cardsContainer.find('.saho-card').length > 1 && 
             ($blockInner.hasClass('enable-carousel') || $block.hasClass('enable-carousel'))) {
-          console.log('Initializing modern carousel for', $blockInner.attr('id') || 'featured biography block');
           initializeModernCarousel($cardsContainer, $blockInner);
         } else {
-          console.log('Not initializing carousel - conditions not met', {
-            'container': $cardsContainer.length > 0,
-            'cards': $cardsContainer.length ? $cardsContainer.find('.saho-card').length : 0,
-            'carousel enabled': $blockInner.hasClass('enable-carousel') || $block.hasClass('enable-carousel')
-          });
         }
         
         // Add hover effects to biography cards within this specific block only
-        $blockInner.find('.saho-card').once('biography-hover').hover(
-          function () {
-            $(this).addClass('saho-card--hover');
-          },
-          function () {
-            $(this).removeClass('saho-card--hover');
-          }
-        );
+        once('biography-hover', '.saho-card', $blockInner[0]).forEach(function (element) {
+          $(element).hover(
+            function () {
+              $(this).addClass('saho-card--hover');
+            },
+            function () {
+              $(this).removeClass('saho-card--hover');
+            }
+          );
+        });
       });
       
 // Function to initialize modern carousel with touch support
@@ -85,17 +77,9 @@
         // Reference to controls
         var $controls = $block.find('.featured-biography-carousel-controls');
         
-        // Debug carousel setup
-        console.log('Featured Biography: Initializing carousel', {
-          'blockId': $block.attr('id') || 'featured-bio-block',
-          'controlsFound': $controls.length > 0,
-          'totalItems': itemCount,
-          'visibleItems': visibleItems
-        });
         
         // If controls don't exist in template, don't try to add them
         if ($controls.length === 0) {
-          console.log('Featured Biography: No carousel controls found, skipping carousel initialization');
           return; // Exit early - don't try to initialize without controls
         }
         
@@ -106,17 +90,9 @@
         
         // Make sure we have valid data to work with
         if (itemCount === 0 || pages === 0) {
-          console.log('Featured Biography: No items to show in carousel');
           return; // Exit if no items to show
         }
         
-        console.log('Modern carousel setup:', {
-          items: itemCount, 
-          visibleItems: visibleItems, 
-          pages: pages,
-          containerWidth: containerWidth,
-          itemWidth: itemWidth
-        });
         
         // Prepare container for modern carousel
         $container.css({
@@ -141,7 +117,6 @@
           // Add click events to indicators
           $indicators.find('.featured-bio-indicator').off('click').on('click', function () {
             currentIndex = parseInt($(this).attr('data-slide-to')) * visibleItems;
-            console.log('Indicator clicked, moving to index:', currentIndex);
             updateCarousel(true);
           });
         }
@@ -154,15 +129,9 @@
         $prevBtn.off('click');
         $nextBtn.off('click');
         
-        // Debug button info
-        console.log('Button elements found:', {
-          'prevButton': $prevBtn.length > 0,
-          'nextButton': $nextBtn.length > 0
-        });
         
         // Add new explicit bindings with debugging
         $prevBtn.on('click', function (e) {
-          console.log('Previous button clicked');
           e.preventDefault();
           e.stopPropagation();
           slidePrev();
@@ -170,7 +139,6 @@
         });
         
         $nextBtn.on('click', function (e) {
-          console.log('Next button clicked');
           e.preventDefault();
           e.stopPropagation();
           slideNext();
@@ -179,13 +147,11 @@
         
         // Add direct click handling as a fallback
         $prevBtn[0].onclick = function() {
-          console.log('Prev button direct click');
           slidePrev();
           return false;
         };
         
         $nextBtn[0].onclick = function() {
-          console.log('Next button direct click');
           slideNext();
           return false;
         };
@@ -288,11 +254,6 @@
           // Update indicators
           updateIndicators();
           
-          console.log('Carousel updated:', {
-            currentIndex: currentIndex, 
-            visibleItems: visibleItems,
-            transform: offset + 'px'
-          });
         }
         
         // Update button states
@@ -367,8 +328,8 @@
       }
       
       // Add animation when new content is loaded
-      $('.block-featured-biography-block .saho-card, div[id^="block-featuredbiography"] .saho-card').once('featured-biography-animate').each(function (index) {
-        var $card = $(this);
+      once('featured-biography-animate', '.block-featured-biography-block .saho-card, div[id^="block-featuredbiography"] .saho-card', context).forEach(function (element, index) {
+        var $card = $(element);
         setTimeout(function () {
           $card.addClass('saho-card--visible');
         }, 100 * index);
@@ -376,4 +337,4 @@
     }
   };
 
-})(jQuery, Drupal);
+})(jQuery, Drupal, once);

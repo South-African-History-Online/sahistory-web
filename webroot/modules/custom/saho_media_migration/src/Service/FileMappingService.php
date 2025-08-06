@@ -55,22 +55,16 @@ class FileMappingService {
     $mapping = [];
     $sites_path = DRUPAL_ROOT . '/sites/default/files';
     
-    $this->loggerFactory->get('saho_file_mapping')->info('Starting file mapping build...');
-    
     // Scan all archive directories
     foreach ($this->archiveDirectories as $archive_dir) {
       $archive_path = $sites_path . '/' . $archive_dir;
       if (is_dir($archive_path)) {
-        $this->loggerFactory->get('saho_file_mapping')->info('Scanning directory: @dir', ['@dir' => $archive_dir]);
         $this->scanDirectory($archive_path, $archive_dir, $mapping);
       }
     }
     
     // Store mapping in database for quick lookups
     $this->storeMappingInDatabase($mapping);
-    
-    $this->loggerFactory->get('saho_file_mapping')->info('File mapping build complete. Total files: @count', 
-      ['@count' => array_sum(array_map('count', $mapping))]);
     
     return $mapping;
   }

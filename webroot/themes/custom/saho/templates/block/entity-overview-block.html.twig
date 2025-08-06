@@ -1,26 +1,78 @@
-<div class="entity-overview-block">
-  <h2 class="block-title">{{ block_title|default('') }}</h2>
-  <p class="intro-text">
-    {{ (intro_text|default('Displaying the latest content from the %title section of the site.'))|t({'%title': block_title|default('')}) }}
-  </p>
+{#
+/**
+ * @file
+ * SAHO theme implementation for Entity Overview Block using the unified card system.
+ * Clean, minimal template focused on content display.
+ */
+#}
+<div{{ attributes.addClass('entity-overview-block') }} data-block-id="{{ block_id }}">
+  {% if block_title %}
+    <h2 class="block-title mb-3">{{ block_title }}</h2>
+  {% endif %}
   
+  {% if intro_text %}
+    <div class="block-intro mb-4">
+      {{ intro_text|replace({'%title': block_title}) }}
+    </div>
+  {% endif %}
+  
+  {# Content using SAHO Card System #}
   {% if items %}
-    <div class="entity-overview-list">
+    <div class="entity-overview-items saho-card-grid">
       {% for item in items %}
-        <article class="entity-overview-item">
+        <div class="saho-card entity-overview-item" data-item-id="{{ item.id }}">
           {% if item.image %}
-            <a href="{{ item.url }}">
-              <img src="{{ item.image }}" alt="{{ item.title|striptags }}" class="entity-overview-image" />
-            </a>
+            <div class="saho-card-image">
+              <a href="{{ item.url }}">
+                <img src="{{ item.image }}" alt="{{ item.title|striptags }}" loading="lazy">
+              </a>
+            </div>
           {% endif %}
-          <h3>
-            <a href="{{ item.url }}">{{ item.title }}</a>
-          </h3>
-          <p class="date">{{ item.created|date('j F Y') }}</p>
-        </article>
+          
+          <div class="saho-card-content">
+            <h3 class="saho-card-title">
+              <a href="{{ item.url }}">{{ item.title }}</a>
+            </h3>
+            
+            {% if item.teaser %}
+              <div class="saho-card-teaser">
+                <p>{{ item.teaser }}</p>
+              </div>
+            {% endif %}
+            
+            <div class="saho-card-meta">
+              <time datetime="{{ item.changed|date('c') }}">
+                {{ 'Updated'|t }}: {{ item.changed|date('j M Y') }}
+              </time>
+              {% if item.created != item.changed %}
+                <span class="separator">•</span>
+                <time datetime="{{ item.created|date('c') }}">
+                  {{ 'Created'|t }}: {{ item.created|date('j M Y') }}
+                </time>
+              {% endif %}
+            </div>
+            
+            <div class="saho-card-actions">
+              <a href="{{ item.url }}" class="btn btn-primary btn-sm">
+                {{ 'Read more'|t }}
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="ms-1">
+                  <path d="M5 12h14M12 5l7 7-7 7"/>
+                </svg>
+              </a>
+            </div>
+          </div>
+        </div>
       {% endfor %}
     </div>
+    
   {% else %}
-    <p>{{ 'No content found.'|t }}</p>
+    <div class="alert alert-info text-center">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-2">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="16" x2="12" y2="12"/>
+        <line x1="12" y1="8" x2="12.01" y2="8"/>
+      </svg>
+      {{ 'No items found.'|t }}
+    </div>
   {% endif %}
 </div>

@@ -1,0 +1,315 @@
+/**
+ * @file
+ * SAHO Sidebar Accordion Styling
+ * 
+ * Modern accordion interface for the Related Content sidebar sections
+ * matching the design shown in the screenshot.
+ */
+
+/* ==========================================================================
+   Accordion Container
+   ========================================================================== */
+
+.saho-accordion {
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* ==========================================================================
+   Accordion Items
+   ========================================================================== */
+
+.saho-accordion-item {
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.saho-accordion-item:last-child {
+  border-bottom: none;
+}
+
+/* Accordion Headers */
+.saho-accordion-header {
+  margin: 0;
+}
+
+.saho-accordion-button {
+  width: 100%;
+  padding: 1rem 1.25rem;
+  background: #f8fafc;
+  border: none;
+  color: #900;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  user-select: none;
+}
+
+.saho-accordion-button:hover {
+  background: #f1f5f9;
+  color: #600;
+}
+
+.saho-accordion-button:focus {
+  outline: 2px solid #900;
+  outline-offset: -2px;
+  z-index: 1;
+}
+
+.saho-accordion-button.collapsed {
+  color: #475569;
+  font-weight: 500;
+  background: #f8fafc;
+}
+
+.saho-accordion-button.collapsed:hover {
+  color: #900;
+  background: #f1f5f9;
+}
+
+/* Active/Open accordion button styling */
+.saho-accordion-button:not(.collapsed) {
+  background: #900;
+  color: #fff;
+  font-weight: 600;
+}
+
+.saho-accordion-button:not(.collapsed):hover {
+  background: #600;
+  color: #fff;
+}
+
+/* Accordion Button Icons - Enhanced animations */
+.saho-accordion-button::after {
+  content: "";
+  width: 1rem;
+  height: 1rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23475569'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+  background-size: contain;
+  background-repeat: no-repeat;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  flex-shrink: 0;
+  transform-origin: center;
+}
+
+.saho-accordion-button:not(.collapsed)::after {
+  transform: rotate(180deg);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23ffffff'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+}
+
+.saho-accordion-button:hover::after {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23900'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+  transform: scale(1.1);
+}
+
+.saho-accordion-button:hover:not(.collapsed)::after {
+  transform: rotate(180deg) scale(1.1);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23ffffff'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+}
+
+/* Accordion Content - Enhanced animations */
+.saho-accordion-collapse {
+  overflow: hidden;
+  height: 0;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+.saho-accordion-collapse.show {
+  height: auto;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.saho-accordion-body {
+  padding: 0;
+  background: #fff;
+}
+
+/* ==========================================================================
+   Content within Accordion
+   ========================================================================== */
+
+.saho-accordion-body .views-row {
+  margin: 0;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid #f1f3f4;
+  background: #fff;
+  transition: all 0.15s ease;
+}
+
+.saho-accordion-body .views-row:last-child {
+  border-bottom: none;
+}
+
+.saho-accordion-body .views-row:hover {
+  background: #f8fafc;
+}
+
+.saho-accordion-body .views-row h3,
+.saho-accordion-body .views-row h4 {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 0.5rem;
+  line-height: 1.4;
+}
+
+.saho-accordion-body .views-row h3 a,
+.saho-accordion-body .views-row h4 a {
+  color: #900;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.saho-accordion-body .views-row h3 a:hover,
+.saho-accordion-body .views-row h4 a:hover {
+  color: #600;
+  text-decoration: underline;
+}
+
+.saho-accordion-body .views-row p {
+  font-size: 0.8125rem;
+  color: #64748b;
+  line-height: 1.4;
+  margin-bottom: 0;
+}
+
+/* Numbered list styling */
+.saho-accordion-body ol {
+  list-style: none;
+  counter-reset: accordion-counter;
+  padding: 0;
+  margin: 0;
+}
+
+.saho-accordion-body ol li {
+  counter-increment: accordion-counter;
+  margin: 0;
+  padding: 0.75rem 1.25rem;
+  border-bottom: 1px solid #f1f3f4;
+  position: relative;
+  transition: background-color 0.15s ease;
+}
+
+.saho-accordion-body ol li:last-child {
+  border-bottom: none;
+}
+
+.saho-accordion-body ol li:hover {
+  background: #f8fafc;
+}
+
+.saho-accordion-body ol li::before {
+  content: counter(accordion-counter) ".";
+  color: #900;
+  font-weight: 600;
+  margin-right: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.saho-accordion-body ol li a {
+  color: #900;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.875rem;
+  line-height: 1.4;
+  display: inline;
+}
+
+.saho-accordion-body ol li a:hover {
+  color: #600;
+  text-decoration: underline;
+}
+
+/* Handle Drupal view output in ordered lists */
+.saho-accordion-body ol li .views-row {
+  padding: 0;
+  border: none;
+  background: transparent;
+  margin: 0;
+}
+
+.saho-accordion-body ol li .views-row:hover {
+  background: transparent;
+}
+
+/* ==========================================================================
+   Responsive Design
+   ========================================================================== */
+
+@media (max-width: 768px) {
+  .saho-accordion-button {
+    padding: 0.875rem 1rem;
+    font-size: 0.875rem;
+  }
+  
+  .saho-accordion-body .views-row {
+    padding: 0.875rem 1rem;
+  }
+  
+  .saho-accordion-body ol li {
+    padding: 0.625rem 1rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .saho-accordion-button {
+    padding: 0.75rem 0.875rem;
+    font-size: 0.8125rem;
+  }
+  
+  .saho-accordion-body .views-row {
+    padding: 0.75rem 0.875rem;
+  }
+  
+  .saho-accordion-body ol li {
+    padding: 0.5rem 0.875rem;
+    font-size: 0.8125rem;
+  }
+}
+
+/* ==========================================================================
+   Integration with SAHO styles
+   ========================================================================== */
+
+/* Override any existing accordion styles */
+.saho-sidebar-tabs .saho-accordion {
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  margin-bottom: 0;
+}
+
+.saho-sidebar-tabs .saho-accordion .accordion-button {
+  background: #f8fafc !important;
+  color: #475569 !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.saho-sidebar-tabs .saho-accordion .accordion-button:not(.collapsed) {
+  background: #f1f5f9 !important;
+  color: #900 !important;
+}
+
+.saho-sidebar-tabs .saho-accordion .accordion-button:focus {
+  border: none !important;
+  box-shadow: none !important;
+  outline: 2px solid #900;
+  outline-offset: -2px;
+}
+
+.saho-sidebar-tabs .saho-accordion .accordion-body {
+  padding: 0 !important;
+  background: #fff !important;
+}

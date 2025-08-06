@@ -209,49 +209,21 @@ class BirthdayDateForm extends FormBase {
       $exact_match_items = [];
       $same_day_items = [];
       
-      // Debug logging.
-      \Drupal::logger('tdih')->info('BirthdayDateForm: Searching for birth_date=@birth_date, pattern=@pattern, found @count nodes. Selected: day=@day, month=@month, year=@year', [
-        '@birth_date' => $birth_date,
-        '@pattern' => $month_day_pattern,
-        '@count' => count($nodes),
-        '@day' => $selected_day,
-        '@month' => $selected_month,
-        '@year' => $selected_year,
-      ]);
 
       // Separate exact date matches from same month-day matches.
       foreach ($nodes as $node) {
         $item = TdihInteractiveBlock::buildNodeItems([$node])[0] ?? NULL;
         if ($item && !empty($item['raw_date'])) {
-          \Drupal::logger('tdih')->info('BirthdayDateForm: Processing node @nid with raw_date=@raw_date, title=@title', [
-            '@nid' => $node->id(),
-            '@raw_date' => $item['raw_date'],
-            '@title' => $item['title'],
-          ]);
-          
           // Check if this is an exact date match (same year, month, day).
           if ($item['raw_date'] === $birth_date) {
             $exact_match_items[] = $item;
-            \Drupal::logger('tdih')->info('BirthdayDateForm: Found exact match - @date for @title', [
-              '@date' => $item['raw_date'],
-              '@title' => $item['title'],
-            ]);
           }
           // Check if this is same month-day but different year.
           elseif (preg_match('/\d{4}-(\d{2})-(\d{2})/', $item['raw_date'], $matches)) {
             $item_month_day = $matches[1] . '-' . $matches[2];
-            \Drupal::logger('tdih')->info('BirthdayDateForm: Extracted month_day=@item_month_day from @raw_date, comparing to @target', [
-              '@item_month_day' => $item_month_day,
-              '@raw_date' => $item['raw_date'],
-              '@target' => $month_day_pattern,
-            ]);
             
             if ($item_month_day === $month_day_pattern) {
               $same_day_items[] = $item;
-              \Drupal::logger('tdih')->info('BirthdayDateForm: Found same day match - @date for @title', [
-                '@date' => $item['raw_date'],
-                '@title' => $item['title'],
-              ]);
             }
           }
         }
@@ -260,12 +232,6 @@ class BirthdayDateForm extends FormBase {
       // Combine results with exact matches first, then same day events.
       $all_birthday_events = array_merge($exact_match_items, $same_day_items);
       
-      // Debug logging for final results.
-      \Drupal::logger('tdih')->info('BirthdayDateForm: Final results - @exact_count exact matches, @same_count same day, @total total', [
-        '@exact_count' => count($exact_match_items),
-        '@same_count' => count($same_day_items),
-        '@total' => count($all_birthday_events),
-      ]);
       
       // If we have events, display them with appropriate messaging.
       if (!empty($all_birthday_events)) {

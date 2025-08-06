@@ -83,6 +83,7 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
       'entity_count' => 1,
       'category_label' => '',
       'enable_carousel' => FALSE,
+      'sort_by' => 'none',
     ];
   }
 
@@ -263,6 +264,24 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
       ],
     ];
 
+    $form['sort_by'] = [
+      '#type' => 'select',
+      '#title' => $this->t('Sort By'),
+      '#description' => $this->t('Choose how to sort the biographies.'),
+      '#options' => [
+        'none' => $this->t('No sorting (use the order as entered)'),
+        'title' => $this->t('Title (alphabetical)'),
+        'changed' => $this->t('Changed date (most recent first)'),
+        'created' => $this->t('Created date (most recent first)'),
+      ],
+      '#default_value' => $config['sort_by'],
+      '#states' => [
+        'invisible' => [
+          ':input[name="settings[entity_count]"]' => ['value' => '1'],
+        ],
+      ],
+    ];
+
     $form['enable_carousel'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Enable Carousel/Scroller'),
@@ -292,6 +311,7 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
     $this->configuration['highlight_category'] = $form_state->getValue('highlight_category');
     $this->configuration['entity_count'] = $form_state->getValue('entity_count');
     $this->configuration['category_label'] = $form_state->getValue('category_label');
+    $this->configuration['sort_by'] = $form_state->getValue('sort_by');
     $this->configuration['enable_carousel'] = $form_state->getValue('enable_carousel');
   }
 
@@ -444,8 +464,6 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
                 if (isset($field_definitions[$field_name])) {
                   $query->condition($field_name, $this->configuration['category']);
                   $field_exists = TRUE;
-                  \Drupal::logger('featured_biography')->notice('Using field @field for category filtering.',
-                    ['@field' => $field_name]);
                   break;
                 }
               }
@@ -457,6 +475,23 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
             }
           }
           break;
+      }
+
+      // Apply sorting if specified.
+      if (!empty($this->configuration['sort_by']) && $this->configuration['sort_by'] !== 'none') {
+        switch ($this->configuration['sort_by']) {
+          case 'title':
+            $query->sort('title', 'ASC');
+            break;
+
+          case 'changed':
+            $query->sort('changed', 'DESC');
+            break;
+
+          case 'created':
+            $query->sort('created', 'DESC');
+            break;
+        }
       }
 
       // Apply range after all conditions.
@@ -560,6 +595,18 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
       $item['death_date'] = $this->formatDateString($node->get('field_dod')->value);
     }
 
+    // Create a combined dates string for display
+    if (!empty($item['birth_date']) || !empty($item['death_date'])) {
+      $dates_parts = [];
+      if (!empty($item['birth_date'])) {
+        $dates_parts[] = $item['birth_date'];
+      }
+      if (!empty($item['death_date'])) {
+        $dates_parts[] = $item['death_date'];
+      }
+      $item['dates'] = implode(' – ', $dates_parts);
+    }
+
     // Get the biography categories - try different possible field names.
     $categories = [];
     $possible_category_fields = ['field_people_category', 'field_person_category', 'field_category'];
@@ -605,7 +652,8 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
         $body_text = $node->get('body')->value;
         // Create a simple summary by stripping tags and truncating.
         $plain_text = strip_tags($body_text);
-        $item['body_summary'] = mb_substr($plain_text, 0, 200) . (mb_strlen($plain_text) > 200 ? '...' : '');
+        // Use shorter excerpt for single biography display - aim for 2-3 lines
+        $item['body_summary'] = mb_substr($plain_text, 0, 250) . (mb_strlen($plain_text) > 250 ? '...' : '');
       }
     }
 
