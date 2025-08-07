@@ -65,7 +65,17 @@
 
       {% if content.body %}
         <div class="saho-article-body">
-          {# Remove the label by accessing the content directly #}
+          {# Article contents page field integrated within body text like biography metadata #}
+          {% if content.field_article_contents_page is defined and content.field_article_contents_page|render|trim %}
+            <div class="saho-article-index">
+              <h4>Contents</h4>
+              <div class="saho-index-content">
+                {{ content.field_article_contents_page }}
+              </div>
+            </div>
+          {% endif %}
+
+          {# Main body content #}
           {{ content.body.0 }}
         </div>
       {% endif %}
@@ -90,6 +100,7 @@
           {{ content.field_highlight }}
         </div>
       {% endif %}
+
 
       {# Render remaining fields not already shown manually #}
       {{ content|without(
@@ -116,6 +127,7 @@
         'field_featured',
         'field_gallery_tag',
         'field_timelines_related_tab',
+        'field_article_contents_page',
         'sharing_buttons'
       ) }}
 
@@ -182,66 +194,97 @@
         </div>
       {% endif %}
 
-      {# Tabbed Content Area #}
-      <div class="saho-sidebar-tabs" id="saho-article-tabs">
-        
-        {# Simplified Content - No Tabs Needed #}
-        <div class="saho-simplified-sidebar">
-          
-          {# Related Content Accordion #}
-          {% if accordion_views is not empty %}
-            <div class="saho-accordion">
-              {% for item in accordion_views %}
-                <div class="saho-accordion-item">
-                  <h4 class="saho-accordion-header">
-                    <button class="saho-accordion-button {% if not loop.first %}collapsed{% endif %}" 
-                            type="button" 
-                            aria-expanded="{% if loop.first %}true{% else %}false{% endif %}" 
-                            aria-controls="collapse-{{ item.id }}"
-                            data-target="#collapse-{{ item.id }}">
-                      {{ item.title }}
-                    </button>
-                  </h4>
-                  <div id="collapse-{{ item.id }}" 
-                       class="saho-accordion-collapse {% if loop.first %}show{% endif %}" 
-                       aria-hidden="{% if loop.first %}false{% else %}true{% endif %}">
-                    <div class="saho-accordion-body">
-                      {{ drupal_view(item.view, item.block, node.id()) }}
-                    </div>
-                  </div>
-                </div>
-              {% endfor %}
-            </div>
-          {% endif %}
-
-
-          {# References Accordion #}
-          {% if node.field_ref_str.value %}
-            {% set refs = node.field_ref_str.value|split('|') %}
-            <div class="saho-accordion">
-              <div class="saho-accordion-item">
-                <h4 class="saho-accordion-header">
-                  <button class="saho-accordion-button collapsed" type="button" data-target="#references-collapse" aria-expanded="false" aria-controls="references-collapse">
-                    References
-                  </button>
-                </h4>
-                <div id="references-collapse" class="saho-accordion-collapse" aria-labelledby="references-header">
-                  <div class="saho-accordion-body">
-                    <ul class="saho-reference-list">
-                      {% for ref in refs %}
-                        {% if ref|trim %}
-                          <li>{{ ref|trim|raw }}</li>
-                        {% endif %}
-                      {% endfor %}
-                    </ul>
-                  </div>
+      {# Custom Accordion for feature_children views #}
+      {% if accordion_views is not empty %}
+        <div class="saho-accordion mb-5" id="sahoFeatureAccordion">
+          {% for item in accordion_views %}
+            <div class="saho-accordion-item">
+              <h4 class="saho-accordion-header">
+                <button class="saho-accordion-button {% if not loop.first %}collapsed{% endif %}" 
+                        type="button" 
+                        aria-expanded="{{ loop.first ? 'true' : 'false' }}" 
+                        aria-controls="collapse-{{ item.id }}"
+                        data-target="#collapse-{{ item.id }}">
+                  {{ item.title }}
+                </button>
+              </h4>
+              <div id="collapse-{{ item.id }}" 
+                   class="saho-accordion-collapse {% if loop.first %}show{% endif %}" 
+                   aria-hidden="{{ loop.first ? 'false' : 'true' }}">
+                <div class="saho-accordion-body">
+                  {{ drupal_view(item.view, item.block, node.id()) }}
                 </div>
               </div>
             </div>
-          {% endif %}
-
+          {% endfor %}
         </div>
-      </div>
+      {% endif %}
+
+      {# Simple sections for entity reference fields #}
+      {% if content.field_archive_page_feature is defined and content.field_archive_page_feature|render|trim %}
+        <div class="saho-taxonomy-group">
+          <h4>Organisations</h4>
+          {{ content.field_archive_page_feature }}
+        </div>
+      {% endif %}
+
+
+      {% if content.field_africa_category is defined and content.field_africa_category|render|trim %}
+        <div class="saho-taxonomy-group">
+          <h4>Archive</h4>
+          {{ content.field_africa_category }}
+        </div>
+      {% endif %}
+
+      {% if content.field_topics_related_tab is defined and content.field_topics_related_tab|render|trim %}
+        <div class="saho-taxonomy-group">
+          <h4>Related Topics</h4>
+          {{ content.field_topics_related_tab }}
+        </div>
+      {% endif %}
+
+      {% if content.field_people_related_tab is defined and content.field_people_related_tab|render|trim %}
+        <div class="saho-taxonomy-group">
+          <h4>Related People</h4>
+          {{ content.field_people_related_tab }}
+        </div>
+      {% endif %}
+
+      {% if content.field_feature_parent is defined and content.field_feature_parent|render|trim %}
+        <div class="saho-taxonomy-group">
+          <h4>Related Content</h4>
+          {{ content.field_feature_parent }}
+        </div>
+      {% endif %}
+
+      {% if content.field_timeline_categories_type is defined and content.field_timeline_categories_type|render|trim %}
+        <div class="saho-taxonomy-group">
+          <h4>Timelines</h4>
+          {{ content.field_timeline_categories_type }}
+        </div>
+      {% endif %}
+
+      {% if content.field_further_reading is defined and content.field_further_reading|render|trim %}
+        <div class="saho-further-reading">
+          <h4>Further Reading</h4>
+          {{ content.field_further_reading }}
+        </div>
+      {% endif %}
+
+      {# References section #}
+      {% if node.field_ref_str.value %}
+        {% set refs = node.field_ref_str.value|split('|') %}
+        <div class="saho-references">
+          <h4>References</h4>
+          <ul class="saho-reference-list">
+            {% for ref in refs %}
+              {% if ref|trim %}
+                <li>{{ ref|trim|raw }}</li>
+              {% endif %}
+            {% endfor %}
+          </ul>
+        </div>
+      {% endif %}
 
     </aside>
     {% endif %}
@@ -250,125 +293,310 @@
 
 </article>
 
-{# Context & Related Topics Accordion #}
+{# Related Content & Topics section at bottom as suggested reading #}
 {% set has_context = content.field_topics_related_tab|render|trim or content.field_people_related_tab|render|trim or content.field_feature_parent|render|trim or content.field_archive_page_feature|render|trim or content.field_africa_category|render|trim or content.field_timeline_categories_type|render|trim or content.field_further_reading|render|trim %}
 
 {% if has_context %}
-  <div class="saho-accordion saho-context-accordion">
-    <h2>Context & Related Topics</h2>
+  <div class="saho-context-sections saho-context-bottom">
+    <h3>Related Content & Topics</h3>
     
     {% if content.field_people_related_tab is defined and content.field_people_related_tab|render|trim %}
-      <div class="saho-accordion-item">
-        <h3 class="saho-accordion-header">
-          <button class="saho-accordion-button collapsed" type="button" data-target="#people-collapse" aria-expanded="false" aria-controls="people-collapse">
-            Related People
-          </button>
-        </h3>
-        <div id="people-collapse" class="saho-accordion-collapse" aria-labelledby="people-header">
-          <div class="saho-accordion-body">
+      <div class="saho-related-content-section">
+        <h4>Related People</h4>
+        <div class="saho-cards-grid">
+          {% if node.field_people_related_tab %}
+            {% for item in content.field_people_related_tab['#items'] %}
+              {% if item.entity %}
+                <div class="saho-card">
+                  <a href="{{ path('entity.node.canonical', {'node': item.target_id}) }}" class="saho-card-link">
+                    {% if item.entity.field_bio_pic.entity or item.entity.field_article_image.entity or item.entity.field_image.entity or item.entity.field_event_image.entity or item.entity.field_tdih_image.entity %}
+                      <div class="saho-card-image">
+                        {% set image = item.entity.field_bio_pic.entity ?: (item.entity.field_article_image.entity ?: (item.entity.field_image.entity ?: (item.entity.field_event_image.entity ?: item.entity.field_tdih_image.entity))) %}
+                        <img src="{{ file_url(image.uri.value) }}" alt="{{ image.alt }}" loading="lazy">
+                      </div>
+                    {% endif %}
+                    <div class="saho-card-content">
+                      <h5 class="saho-card-title">{{ item.entity.label }}</h5>
+                      {% if item.entity.field_synopsis.value %}
+                        <p class="saho-card-description">{{ item.entity.field_synopsis.value|striptags|truncate(120) }}</p>
+                      {% endif %}
+                      <div class="saho-card-footer">
+                        <span class="saho-card-button">
+                          Read More
+                          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                            <path d="M8.22 2.97a.75.75 0 0 1 1.06 0L14 7.69a.75.75 0 0 1 0 1.06L9.28 13.47a.75.75 0 0 1-1.06-1.06L11.44 9.25H2.75a.75.75 0 0 1 0-1.5h8.69L8.22 4.53a.75.75 0 0 1 0-1.06z"/>
+                          </svg>
+                        </span>
+                      </div>
+                    </div>
+                  </a>
+                </div>
+              {% endif %}
+            {% endfor %}
+          {% else %}
             {{ content.field_people_related_tab }}
-          </div>
+          {% endif %}
         </div>
       </div>
     {% endif %}
 
     {% if content.field_archive_page_feature is defined and content.field_archive_page_feature|render|trim %}
-      <div class="saho-accordion-item">
-        <h3 class="saho-accordion-header">
-          <button class="saho-accordion-button collapsed" type="button" data-target="#organisations-collapse" aria-expanded="false" aria-controls="organisations-collapse">
-            Organisations
-          </button>
-        </h3>
-        <div id="organisations-collapse" class="saho-accordion-collapse" aria-labelledby="organisations-header">
-          <div class="saho-accordion-body">
+      <div class="saho-related-content-section">
+        <h4>Organisations</h4>
+        <div class="saho-cards-grid">
+          {% if node.field_archive_page_feature %}
+            {% for item in content.field_archive_page_feature['#items'] %}
+              {% if item.entity %}
+                <div class="saho-card">
+                  <a href="{{ path('entity.node.canonical', {'node': item.target_id}) }}" class="saho-card-link">
+                    {% if item.entity.field_article_image.entity or item.entity.field_image.entity or item.entity.field_bio_pic.entity or item.entity.field_event_image.entity or item.entity.field_tdih_image.entity %}
+                      <div class="saho-card-image">
+                        {% set image = item.entity.field_article_image.entity ?: (item.entity.field_image.entity ?: (item.entity.field_bio_pic.entity ?: (item.entity.field_event_image.entity ?: item.entity.field_tdih_image.entity))) %}
+                        <img src="{{ file_url(image.uri.value) }}" alt="{{ image.alt }}" loading="lazy">
+                      </div>
+                    {% endif %}
+                    <div class="saho-card-content">
+                      <h5 class="saho-card-title">{{ item.entity.label }}</h5>
+                      {% if item.entity.field_synopsis.value %}
+                        <p class="saho-card-description">{{ item.entity.field_synopsis.value|striptags|truncate(120) }}</p>
+                      {% endif %}
+                      <div class="saho-card-footer">
+                        <span class="saho-card-button">
+                          Read More
+                          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                            <path d="M8.22 2.97a.75.75 0 0 1 1.06 0L14 7.69a.75.75 0 0 1 0 1.06L9.28 13.47a.75.75 0 0 1-1.06-1.06L11.44 9.25H2.75a.75.75 0 0 1 0-1.5h8.69L8.22 4.53a.75.75 0 0 1 0-1.06z"/>
+                          </svg>
+                        </span>
+                      </div>
+                    </div>
+                  </a>
+                </div>
+              {% endif %}
+            {% endfor %}
+          {% else %}
             {{ content.field_archive_page_feature }}
-          </div>
+          {% endif %}
         </div>
       </div>
     {% endif %}
 
     {% if content.field_timeline_categories_type is defined and content.field_timeline_categories_type|render|trim %}
-      <div class="saho-accordion-item">
-        <h3 class="saho-accordion-header">
-          <button class="saho-accordion-button collapsed" type="button" data-target="#timelines-collapse" aria-expanded="false" aria-controls="timelines-collapse">
-            Timelines
-          </button>
-        </h3>
-        <div id="timelines-collapse" class="saho-accordion-collapse" aria-labelledby="timelines-header">
-          <div class="saho-accordion-body">
+      <div class="saho-related-content-section">
+        <h4>Timelines</h4>
+        <div class="saho-cards-grid">
+          {% if node.field_timeline_categories_type %}
+            {% for item in content.field_timeline_categories_type['#items'] %}
+              {% if item.entity %}
+                <div class="saho-card">
+                  <a href="{{ path('entity.node.canonical', {'node': item.target_id}) }}" class="saho-card-link">
+                    {% if item.entity.field_article_image.entity or item.entity.field_image.entity or item.entity.field_event_image.entity %}
+                      <div class="saho-card-image">
+                        {% set image = item.entity.field_article_image.entity ?: (item.entity.field_image.entity ?: item.entity.field_event_image.entity) %}
+                        <img src="{{ file_url(image.uri.value) }}" alt="{{ image.alt }}" loading="lazy">
+                      </div>
+                    {% endif %}
+                    <div class="saho-card-content">
+                      <h5 class="saho-card-title">{{ item.entity.label }}</h5>
+                      {% if item.entity.field_synopsis.value %}
+                        <p class="saho-card-description">{{ item.entity.field_synopsis.value|striptags|truncate(120) }}</p>
+                      {% endif %}
+                      <div class="saho-card-footer">
+                        <span class="saho-card-button">
+                          Read More
+                          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                            <path d="M8.22 2.97a.75.75 0 0 1 1.06 0L14 7.69a.75.75 0 0 1 0 1.06L9.28 13.47a.75.75 0 0 1-1.06-1.06L11.44 9.25H2.75a.75.75 0 0 1 0-1.5h8.69L8.22 4.53a.75.75 0 0 1 0-1.06z"/>
+                          </svg>
+                        </span>
+                      </div>
+                    </div>
+                  </a>
+                </div>
+              {% endif %}
+            {% endfor %}
+          {% else %}
             {{ content.field_timeline_categories_type }}
-          </div>
+          {% endif %}
         </div>
       </div>
     {% endif %}
 
     {% if content.field_africa_category is defined and content.field_africa_category|render|trim %}
-      <div class="saho-accordion-item">
-        <h3 class="saho-accordion-header">
-          <button class="saho-accordion-button collapsed" type="button" data-target="#archive-collapse" aria-expanded="false" aria-controls="archive-collapse">
-            Archive
-          </button>
-        </h3>
-        <div id="archive-collapse" class="saho-accordion-collapse" aria-labelledby="archive-header">
-          <div class="saho-accordion-body">
+      <div class="saho-related-content-section">
+        <h4>Archive</h4>
+        <div class="saho-cards-grid">
+          {% if node.field_africa_category %}
+            {% for item in content.field_africa_category['#items'] %}
+              {% if item.entity %}
+                <div class="saho-card">
+                  <a href="{{ path('entity.node.canonical', {'node': item.target_id}) }}" class="saho-card-link">
+                    {% if item.entity.field_article_image.entity or item.entity.field_image.entity or item.entity.field_archive_image.entity or item.entity.field_event_image.entity or item.entity.field_tdih_image.entity %}
+                      <div class="saho-card-image">
+                        {% set image = item.entity.field_article_image.entity ?: (item.entity.field_image.entity ?: (item.entity.field_archive_image.entity ?: (item.entity.field_event_image.entity ?: item.entity.field_tdih_image.entity))) %}
+                        <img src="{{ file_url(image.uri.value) }}" alt="{{ image.alt }}" loading="lazy">
+                      </div>
+                    {% endif %}
+                    <div class="saho-card-content">
+                      <h5 class="saho-card-title">{{ item.entity.label }}</h5>
+                      {% if item.entity.field_synopsis.value %}
+                        <p class="saho-card-description">{{ item.entity.field_synopsis.value|striptags|truncate(120) }}</p>
+                      {% endif %}
+                      <div class="saho-card-footer">
+                        <span class="saho-card-button">
+                          Read More
+                          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                            <path d="M8.22 2.97a.75.75 0 0 1 1.06 0L14 7.69a.75.75 0 0 1 0 1.06L9.28 13.47a.75.75 0 0 1-1.06-1.06L11.44 9.25H2.75a.75.75 0 0 1 0-1.5h8.69L8.22 4.53a.75.75 0 0 1 0-1.06z"/>
+                          </svg>
+                        </span>
+                      </div>
+                    </div>
+                  </a>
+                </div>
+              {% endif %}
+            {% endfor %}
+          {% else %}
             {{ content.field_africa_category }}
-          </div>
+          {% endif %}
         </div>
       </div>
     {% endif %}
 
     {% if content.field_topics_related_tab is defined and content.field_topics_related_tab|render|trim %}
-      <div class="saho-accordion-item">
-        <h3 class="saho-accordion-header">
-          <button class="saho-accordion-button collapsed" type="button" data-target="#topics-collapse" aria-expanded="false" aria-controls="topics-collapse">
-            Related Topics
-          </button>
-        </h3>
-        <div id="topics-collapse" class="saho-accordion-collapse" aria-labelledby="topics-header">
-          <div class="saho-accordion-body">
+      <div class="saho-related-content-section">
+        <h4>Related Topics</h4>
+        <div class="saho-cards-grid">
+          {% if node.field_topics_related_tab %}
+            {% for item in content.field_topics_related_tab['#items'] %}
+              {% if item.entity %}
+                <div class="saho-card">
+                  <a href="{{ path('entity.node.canonical', {'node': item.target_id}) }}" class="saho-card-link">
+                    {% if item.entity.field_article_image.entity or item.entity.field_image.entity or item.entity.field_archive_image.entity or item.entity.field_bio_pic.entity or item.entity.field_event_image.entity or item.entity.field_tdih_image.entity %}
+                      <div class="saho-card-image">
+                        {% set image = item.entity.field_article_image.entity ?: (item.entity.field_image.entity ?: (item.entity.field_archive_image.entity ?: (item.entity.field_bio_pic.entity ?: (item.entity.field_event_image.entity ?: item.entity.field_tdih_image.entity)))) %}
+                        <img src="{{ file_url(image.uri.value) }}" alt="{{ image.alt }}" loading="lazy">
+                      </div>
+                    {% endif %}
+                    <div class="saho-card-content">
+                      <h5 class="saho-card-title">{{ item.entity.label }}</h5>
+                      {% if item.entity.field_synopsis.value %}
+                        <p class="saho-card-description">{{ item.entity.field_synopsis.value|striptags|truncate(120) }}</p>
+                      {% endif %}
+                      <div class="saho-card-footer">
+                        <span class="saho-card-button">
+                          Read More
+                          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                            <path d="M8.22 2.97a.75.75 0 0 1 1.06 0L14 7.69a.75.75 0 0 1 0 1.06L9.28 13.47a.75.75 0 0 1-1.06-1.06L11.44 9.25H2.75a.75.75 0 0 1 0-1.5h8.69L8.22 4.53a.75.75 0 0 1 0-1.06z"/>
+                          </svg>
+                        </span>
+                      </div>
+                    </div>
+                  </a>
+                </div>
+              {% endif %}
+            {% endfor %}
+          {% else %}
             {{ content.field_topics_related_tab }}
-          </div>
+          {% endif %}
         </div>
       </div>
     {% endif %}
 
     {% if content.field_feature_parent is defined and content.field_feature_parent|render|trim %}
-      <div class="saho-accordion-item">
-        <h3 class="saho-accordion-header">
-          <button class="saho-accordion-button collapsed" type="button" data-target="#related-content-collapse" aria-expanded="false" aria-controls="related-content-collapse">
-            Related Content
-          </button>
-        </h3>
-        <div id="related-content-collapse" class="saho-accordion-collapse" aria-labelledby="related-content-header">
-          <div class="saho-accordion-body">
-            <ul class="saho-context-list">
-              {% for item in content.field_feature_parent['#items'] %}
-                <li>{{ content.field_feature_parent[loop.index0] }}</li>
-              {% endfor %}
-            </ul>
-          </div>
+      <div class="saho-related-content-section">
+        <h4>Related Content</h4>
+        <div class="saho-cards-grid">
+          {% for item in content.field_feature_parent['#items'] %}
+            {% if item.entity %}
+              <div class="saho-card">
+                <a href="{{ path('entity.node.canonical', {'node': item.target_id}) }}" class="saho-card-link">
+                  {% if item.entity.field_article_image.entity or item.entity.field_image.entity or item.entity.field_bio_pic.entity or item.entity.field_event_image.entity or item.entity.field_tdih_image.entity %}
+                    <div class="saho-card-image">
+                      {% set image = item.entity.field_article_image.entity ?: (item.entity.field_image.entity ?: (item.entity.field_bio_pic.entity ?: (item.entity.field_event_image.entity ?: item.entity.field_tdih_image.entity))) %}
+                      <img src="{{ file_url(image.uri.value) }}" alt="{{ image.alt }}" loading="lazy">
+                    </div>
+                  {% endif %}
+                  <div class="saho-card-content">
+                    <h5 class="saho-card-title">{{ item.entity.label }}</h5>
+                    {% if item.entity.field_synopsis.value %}
+                      <p class="saho-card-description">{{ item.entity.field_synopsis.value|striptags|truncate(120) }}</p>
+                    {% endif %}
+                    <div class="saho-card-footer">
+                      <span class="saho-card-button">
+                        Read More
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                          <path d="M8.22 2.97a.75.75 0 0 1 1.06 0L14 7.69a.75.75 0 0 1 0 1.06L9.28 13.47a.75.75 0 0 1-1.06-1.06L11.44 9.25H2.75a.75.75 0 0 1 0-1.5h8.69L8.22 4.53a.75.75 0 0 1 0-1.06z"/>
+                        </svg>
+                      </span>
+                    </div>
+                  </div>
+                </a>
+              </div>
+            {% endif %}
+          {% endfor %}
         </div>
       </div>
     {% endif %}
 
     {% if content.field_further_reading is defined and content.field_further_reading|render|trim %}
-      <div class="saho-accordion-item">
-        <h3 class="saho-accordion-header">
-          <button class="saho-accordion-button collapsed" type="button" data-target="#further-reading-collapse" aria-expanded="false" aria-controls="further-reading-collapse">
-            Further Reading
-          </button>
-        </h3>
-        <div id="further-reading-collapse" class="saho-accordion-collapse" aria-labelledby="further-reading-header">
-          <div class="saho-accordion-body">
-            <ul class="saho-context-list">
-              {% for item in content.field_further_reading['#items'] %}
-                <li>{{ content.field_further_reading[loop.index0] }}</li>
-              {% endfor %}
-            </ul>
-          </div>
+      <div class="saho-related-content-section">
+        <h4>Further Reading</h4>
+        <div class="saho-cards-grid">
+          {% if node.field_further_reading.value %}
+            {% set reading_items = node.field_further_reading.value|split('\n') %}
+            {% for item in reading_items %}
+              {% if item|trim %}
+                {% set processed_item = item|trim %}
+                
+                {# Check if it's an HTML anchor tag #}
+                {% if '<a href=' in processed_item %}
+                  {% set href_match = processed_item|split('href="')[1]|split('"')[0] %}
+                  {% set title_match = processed_item|striptags|trim %}
+                  {% if href_match and href_match starts with 'http' %}
+                    {% set url = href_match %}
+                    {% set title = title_match ?: url %}
+                  {% endif %}
+                {# Check if it's a pipe-delimited format #}
+                {% elseif '|' in processed_item %}
+                  {% set link_parts = processed_item|split('|') %}
+                  {% set url = link_parts[0]|trim %}
+                  {% set title = link_parts[1] is defined ? link_parts[1]|trim : url %}
+                  {% set description = link_parts[2] is defined ? link_parts[2]|trim : '' %}
+                {# Check if it's just a plain URL #}
+                {% elseif processed_item starts with 'http' %}
+                  {% set url = processed_item %}
+                  {% set title = url %}
+                {% else %}
+                  {% set url = null %}
+                {% endif %}
+                
+                {# Only display if we have a valid URL #}
+                {% if url is defined and url starts with 'http' %}
+                  <div class="saho-card">
+                    <a href="{{ url }}" class="saho-card-link" target="_blank" rel="noopener">
+                      <div class="saho-card-content">
+                        <h5 class="saho-card-title">{{ title|length > 80 ? title|slice(0, 77) ~ '...' : title }}</h5>
+                        {% if description is defined and description %}
+                          <p class="saho-card-description">{{ description|length > 120 ? description|slice(0, 117) ~ '...' : description }}</p>
+                        {% endif %}
+                        <div class="saho-card-footer">
+                          <span class="saho-card-button">
+                            Read More
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                              <path d="M8.22 2.97a.75.75 0 0 1 1.06 0L14 7.69a.75.75 0 0 1 0 1.06L9.28 13.47a.75.75 0 0 1-1.06-1.06L11.44 9.25H2.75a.75.75 0 0 1 0-1.5h8.69L8.22 4.53a.75.75 0 0 1 0-1.06z"/>
+                            </svg>
+                          </span>
+                        </div>
+                      </div>
+                    </a>
+                  </div>
+                {% endif %}
+                {% set url = null %}
+                {% set title = null %}
+                {% set description = null %}
+              {% endif %}
+            {% endfor %}
+          {% endif %}
         </div>
       </div>
     {% endif %}
   </div>
 {% endif %}
-

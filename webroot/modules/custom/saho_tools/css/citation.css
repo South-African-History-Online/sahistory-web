@@ -1,435 +1,414 @@
 /**
- * Citation modal styles.
+ * SAHO Tools Citation & Sharing Modal Styles
+ * Works with existing Bootstrap modals and provides modern styling
  */
 
-/* Citation modal - SAHO Design System */
-#citation-modal .modal-dialog {
-  max-width: 800px;
+/* Bootstrap Modal Enhancements */
+#citation-modal,
+#sharing-modal {
+  z-index: 1060;
 }
 
-#citation-modal .modal-content {
+#citation-modal .modal-dialog,
+#sharing-modal .modal-dialog {
+  max-width: 700px;
+  margin: 1.75rem auto;
+}
+
+/* Modern Modal Content Styling */
+#citation-modal .modal-content,
+#sharing-modal .modal-content {
   border: none;
-  box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.175);
-  border-radius: 0.75rem;
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
   overflow: hidden;
 }
 
-#citation-modal .modal-header {
-  background: linear-gradient(135deg, #900 0%, #B22222 100%);
+/* Enhanced Modal Headers */
+#citation-modal .modal-header,
+#sharing-modal .modal-header {
+  background: linear-gradient(135deg, #990000 0%, #b30000 100%);
   color: white;
-  border-bottom: none;
-  padding: 1.25rem 1.5rem;
-}
-
-#citation-modal .modal-title {
-  color: white;
-  font-weight: 600;
-  font-size: 1.35rem;
-  margin: 0;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-#citation-modal .modal-title::before {
-  content: "📋";
-  font-size: 1.5rem;
-}
-
-#citation-modal .modal-body {
-  padding: 1.5rem;
-  background-color: #fff;
-}
-
-/* Close button styling - enhanced visibility */
-#citation-modal .modal-header {
-  position: relative; /* Ensure proper positioning context */
-}
-
-/* Modern close button - SAHO style */
-#citation-modal .btn-close {
-  filter: invert(1);
-  opacity: 0.8;
-  min-width: 44px;
-  min-height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0;
-  padding: 0;
+  padding: 1.5rem 2rem;
   border: none;
-  background: none;
-  transition: all 0.2s ease;
-}
-
-#citation-modal .btn-close:hover {
-  opacity: 1;
-  transform: scale(1.1);
-}
-
-#citation-modal .btn-close:focus {
-  outline: 3px solid #ffffff;
-  outline-offset: 2px;
-}
-
-/* Add a fallback X character for browsers that don't support SVG background images */
-#citation-modal .btn-close::after {
-  content: "×";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  color: white;
-  font-size: 1.5rem;
-  font-weight: 700;
-  line-height: 1;
-  display: none; /* Hide by default, show only if needed */
-}
-
-/* Show the fallback X if the SVG background image fails to load */
-#citation-modal .btn-close:not([style*="background-image"]) {
-  background-image: none !important;
-}
-
-#citation-modal .btn-close:not([style*="background-image"])::after {
-  display: block;
-}
-
-/* Citation image container */
-.citation-image-container {
-  text-align: center;
-  margin-bottom: 1.5rem;
-  border-bottom: 1px solid #dee2e6;
-  padding-bottom: 1.5rem;
-}
-
-.citation-image-container img {
-  max-height: 300px; /* Limit image height */
-  width: auto;
-  margin: 0 auto;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.citation-image-container figcaption {
-  margin-top: 0.5rem;
-  font-size: 0.875rem;
-  color: #6c757d;
-}
-
-/* Citation formats - Modern SAHO styling */
-.citation-formats {
-  margin-top: 1rem;
-}
-
-.citation-format {
-  margin-bottom: 2rem;
-  padding: 1.25rem;
-  border: 2px solid #e8e8e8;
-  border-radius: 12px;
-  background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-  transition: all 0.2s ease;
-}
-
-.citation-format:hover {
-  border-color: #900;
-  box-shadow: 0 4px 16px rgba(153, 0, 0, 0.1);
-}
-
-.citation-format:last-child {
-  margin-bottom: 0;
-}
-
-.citation-format h4 {
-  color: #900;
-  font-weight: 600;
-  margin-bottom: 1rem;
-  font-size: 1.1rem;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding-bottom: 0.75rem;
-  border-bottom: 1px solid #e0e0e0;
-}
-
-.citation-format h4::before {
-  content: "📖";
-  font-size: 1.2rem;
-}
-
-/* Citation content - Modern styling */
-.citation-content {
-  background: #ffffff;
-  padding: 1rem;
-  border: 2px solid #f0f0f0;
-  border-radius: 8px;
-  font-family: 'SF Mono', 'Monaco', 'Cascadia Code', 'Roboto Mono', monospace;
-  font-size: 0.9rem;
-  line-height: 1.5;
-  margin-bottom: 1rem;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
-  color: #2c3e50;
-  box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
   position: relative;
 }
 
-.citation-content::before {
+#citation-modal .modal-header::after,
+#sharing-modal .modal-header::after {
   content: '';
   position: absolute;
-  top: 0;
+  bottom: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(255, 255, 255, 0.5);
-  border-radius: 4px;
-  opacity: 0;
-  transition: opacity 0.3s;
-  pointer-events: none;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
 }
 
-.citation-content.copying::before {
+#citation-modal .modal-title,
+#sharing-modal .modal-title {
+  color: white !important;
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* Enhanced Close Buttons */
+#citation-modal .btn-close,
+#sharing-modal .btn-close {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  border-radius: 8px;
+  color: white;
+  opacity: 1;
+  font-size: 1.125rem;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+#citation-modal .btn-close:hover,
+#citation-modal .btn-close:focus,
+#sharing-modal .btn-close:hover,
+#sharing-modal .btn-close:focus {
+  background: rgba(255, 255, 255, 0.2) !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  transform: scale(1.05);
+  opacity: 1;
+  box-shadow: none;
+}
+
+/* Enhanced Modal Bodies */
+#citation-modal .modal-body,
+#sharing-modal .modal-body {
+  background: #fafbfc;
+  padding: 2rem;
+}
+
+/* Citation Format Styling */
+.citation-format,
+.citation-text-container {
+  margin-bottom: 2rem;
+}
+
+.citation-format:last-child,
+.citation-text-container:last-child {
+  margin-bottom: 0;
+}
+
+.citation-format-header h6 {
+  color: #990000 !important;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 0.875rem;
+}
+
+.citation-text,
+.apa-citation,
+.harvard-citation,
+.oxford-citation {
+  background: white !important;
+  border: 1px solid #e1e5e9 !important;
+  border-radius: 8px;
+  padding: 1.5rem !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+  border-left: 3px solid #990000 !important;
+}
+
+.citation-content {
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: #374151;
+  margin-bottom: 1rem;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.citation-actions {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e1e5e9;
+}
+
+/* Enhanced Copy Buttons */
+.copy-individual,
+.copy-all-citations,
+.url-copy-btn,
+.copy-url-btn,
+.copy-btn {
+  background: linear-gradient(135deg, #990000 0%, #b30000 100%) !important;
+  color: white !important;
+  border: none !important;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  box-shadow: 0 2px 4px rgba(153, 0, 0, 0.2);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.copy-individual:hover,
+.copy-individual:focus,
+.copy-all-citations:hover,
+.copy-all-citations:focus,
+.url-copy-btn:hover,
+.url-copy-btn:focus,
+.copy-url-btn:hover,
+.copy-url-btn:focus,
+.copy-btn:hover,
+.copy-btn:focus {
+  background: linear-gradient(135deg, #7a0000 0%, #990000 100%) !important;
+  color: white !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(153, 0, 0, 0.25);
+  text-decoration: none;
+}
+
+.copy-individual:active,
+.copy-all-citations:active,
+.url-copy-btn:active,
+.copy-url-btn:active,
+.copy-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(153, 0, 0, 0.2);
+}
+
+.copied {
+  background: linear-gradient(135deg, #28a745 0%, #34ce57 100%) !important;
+  color: white !important;
+  box-shadow: 0 2px 4px rgba(40, 167, 69, 0.2);
+}
+
+/* Modal Footer Enhancements */
+#citation-modal .modal-footer,
+#sharing-modal .modal-footer {
+  background: #f8f9fa;
+  border-top: 1px solid #e1e5e9;
+  padding: 1.5rem 2rem;
+}
+
+.modal-footer .copy-all-citations {
+  padding: 1rem 2rem;
+  font-size: 1rem;
+}
+
+/* Sharing Modal Specific Styles */
+.url-copy-section {
+  background: white;
+  border: 1px solid #e1e5e9;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.url-copy-section h6 {
+  color: #990000 !important;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.url-copy-section h6::before {
+  content: '';
+  width: 3px;
+  height: 14px;
+  background: linear-gradient(135deg, #990000 0%, #b30000 100%);
+  border-radius: 2px;
+}
+
+.url-input-group {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.url-input,
+#page-url-input {
+  flex: 1;
+  padding: 0.75rem !important;
+  border: 1px solid #e1e5e9 !important;
+  border-radius: 6px;
+  background: #f8f9fa !important;
+  font-size: 0.875rem;
+  font-family: ui-monospace, 'SF Mono', 'Monaco', monospace;
+  color: #374151 !important;
+  transition: all 0.2s ease;
+}
+
+.url-input:focus,
+#page-url-input:focus {
+  border-color: #990000 !important;
+  background: white !important;
+  outline: none !important;
+  box-shadow: 0 0 0 3px rgba(153, 0, 0, 0.1) !important;
+}
+
+/* Sharing Options */
+.sharing-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.share-option {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: white;
+  border: 1px solid #e1e5e9;
+  border-radius: 8px;
+  text-decoration: none !important;
+  color: #374151 !important;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.share-option:hover,
+.share-option:focus {
+  background: linear-gradient(135deg, #990000 0%, #b30000 100%) !important;
+  border-color: #990000 !important;
+  color: white !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(153, 0, 0, 0.15);
+  text-decoration: none !important;
+}
+
+.share-option svg {
+  opacity: 0.8;
+  transition: opacity 0.2s ease;
+  flex-shrink: 0;
+}
+
+.share-option:hover svg {
   opacity: 1;
 }
 
-.citation-content.copying::after {
-  content: 'Copied!';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background-color: rgba(0, 0, 0, 0.7);
-  color: white;
-  padding: 5px 10px;
-  border-radius: 4px;
-  font-family: sans-serif;
-  font-size: 14px;
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  #citation-modal .modal-dialog,
+  #sharing-modal .modal-dialog {
+    max-width: 95%;
+    margin: 0.5rem auto;
+  }
+  
+  #citation-modal .modal-header,
+  #sharing-modal .modal-header {
+    padding: 1.25rem 1.5rem;
+  }
+  
+  #citation-modal .modal-header .modal-title,
+  #sharing-modal .modal-header .modal-title {
+    font-size: 1.125rem;
+  }
+  
+  #citation-modal .modal-body,
+  #sharing-modal .modal-body {
+    padding: 1.5rem;
+  }
+  
+  .citation-text,
+  .apa-citation,
+  .harvard-citation,
+  .oxford-citation {
+    padding: 1.25rem !important;
+  }
+  
+  .sharing-options {
+    grid-template-columns: 1fr;
+  }
+  
+  .url-input-group {
+    flex-direction: column;
+  }
+  
+  .copy-individual,
+  .copy-all-citations,
+  .url-copy-btn,
+  .copy-url-btn {
+    width: 100%;
+    justify-content: center;
+  }
 }
 
-/* Copy buttons - Modern SAHO styling */
-.copy-citation {
-  background: linear-gradient(135deg, #900 0%, #B22222 100%);
-  color: white;
-  border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  min-height: 48px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  box-shadow: 0 2px 4px rgba(153, 0, 0, 0.2);
-  margin-top: 1.5rem;
-  width: 100%;
+/* Small Mobile */
+@media (max-width: 480px) {
+  #citation-modal .modal-dialog,
+  #sharing-modal .modal-dialog {
+    max-width: 100%;
+    margin: 0;
+    height: 100vh;
+    max-height: none;
+  }
+  
+  #citation-modal .modal-content,
+  #sharing-modal .modal-content {
+    height: 100vh;
+    border-radius: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  #citation-modal .modal-body,
+  #sharing-modal .modal-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1.25rem;
+  }
 }
 
-.copy-citation::before {
-  content: "📋";
-  margin-right: 0.5rem;
-}
-
-.copy-citation:hover {
-  background: linear-gradient(135deg, #B22222 0%, #900 100%);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(153, 0, 0, 0.3);
-}
-
-.copy-citation:active {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(153, 0, 0, 0.3);
-}
-
-.copy-citation:focus {
-  outline: 3px solid #007bff;
+/* Focus and Accessibility */
+#citation-modal *:focus,
+#sharing-modal *:focus {
+  outline: 2px solid #990000;
   outline-offset: 2px;
 }
 
-/* Individual copy buttons */
-.copy-individual {
-  font-size: 1rem;
-  padding: 0.6rem 0.85rem;
-  float: right;
-  background-color: #343a40; /* Even darker background color */
-  border-color: #212529;
-  color: white;
-  border-radius: 4px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-  transition: all 0.2s ease;
-  margin-top: 0.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 600; /* Bolder text */
-  border: 2px solid #212529; /* More prominent border */
-}
-
-.copy-individual:hover {
-  background-color: #212529;
-  border-color: #000;
-  color: white;
-  transform: translateY(-1px);
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.4);
-}
-
-.copy-individual:before {
-  content: "📋 ";
-  margin-right: 0.25rem;
-}
-
-/* Citation styles */
-.harvard-citation,
-.apa-citation,
-.oxford-citation {
-  font-size: 16px;
-  color: #333;
-}
-
-.harvard-citation {
-  text-indent: -2em;
-  padding-left: 2em;
-}
-
-.apa-citation {
-  text-indent: -2em;
-  padding-left: 2em;
-}
-
-.oxford-citation {
-  text-indent: -2em;
-  padding-left: 2em;
-}
-
-/* Citation button styles for node templates */
-.saho-citation-wrapper {
-  display: inline-block;
-  margin-left: 15px;
-}
-
-.citation-button {
-  color: #8b0000;
-  border-color: #8b0000;
-  font-size: 0.875rem;
-  padding: 0.25rem 0.5rem;
-}
-
-.citation-button:hover {
-  background-color: #8b0000;
-  color: white;
-}
-
-/* For article meta section */
-.saho-article-meta .saho-citation-wrapper {
-  margin-left: 15px;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  #citation-modal .modal-dialog {
-    max-width: 90%; /* Slightly smaller for better margins */
-    margin: 20px auto;
-  }
-
-  .citation-image-container img {
-    max-height: 180px;
-  }
-
-  .citation-content {
-    padding: 12px;
-    max-width: 100%;
-    overflow-x: hidden;
-  }
-
-  /* Improved mobile styling */
-  #citation-modal .modal-title {
-    font-size: 1.3rem;
-  }
-
-  /* Larger close button on mobile */
-  #citation-modal .btn-close {
-    width: 2.5rem !important;
-    height: 2.5rem !important;
-    top: 0.5rem !important;
-    right: 0.75rem !important;
-    background-size: 1.25rem !important;
-  }
-
-  #citation-modal .btn-close::after {
-    font-size: 1.75rem;
-  }
-
-  .citation-format h4 {
-    font-size: 1.1rem;
-  }
-
-  .copy-individual {
-    padding: 0.5rem 0.75rem;
-    font-size: 0.95rem;
-    margin-top: 0.75rem;
-    width: 100%;
-    float: none;
-    display: block;
-  }
-
-  .copy-citation {
-    width: 100%;
-    padding: 0.7rem;
-    font-size: 1.1rem;
-  }
-
-  /* Fix for long URLs and text */
-  .citation-content a,
-  .citation-content {
-    word-break: break-word; /* Use break-word instead of break-all */
-    overflow-wrap: break-word;
-    max-width: 100%;
+/* Print Styles */
+@media print {
+  #citation-modal,
+  #sharing-modal {
+    display: none !important;
   }
 }
 
-/* Extra small devices */
-@media (max-width: 576px) {
-  #citation-modal .modal-dialog {
-    max-width: 85%; /* Even smaller for mobile phones */
-    margin: 15px auto;
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+  #citation-modal .modal-header,
+  #sharing-modal .modal-header {
+    border: 2px solid #990000;
   }
-
-  #citation-modal .modal-body {
-    padding: 0.85rem;
-  }
-
-  .citation-content {
-    font-size: 0.9rem;
-    line-height: 1.4;
-    padding: 10px;
-    max-width: 100%;
-    overflow-x: hidden;
-  }
-
-  .citation-format {
-    margin-bottom: 1.25rem;
-    padding-bottom: 1.25rem;
-  }
-
-  #citation-modal .modal-header {
-    padding: 0.75rem 0.85rem;
-  }
-
-  /* Ensure modal content fits on small screens */
-  #citation-modal .modal-content {
-    max-width: 100%;
-    overflow-x: hidden;
-    border-radius: 8px;
-  }
-
-  /* Make URLs wrap properly */
-  .citation-content a,
-  .citation-content {
-    word-break: break-word; /* Use break-word instead of break-all */
-    overflow-wrap: break-word;
-    max-width: 100%;
-    hyphens: auto;
+  
+  .copy-individual,
+  .copy-all-citations,
+  .url-copy-btn,
+  .copy-url-btn,
+  .share-option:hover {
+    border: 2px solid #990000 !important;
   }
 }
