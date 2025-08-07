@@ -122,7 +122,7 @@
                     e.preventDefault();
                     e.stopPropagation();
                     Drupal.sahoSharing.hideModalWithjQuery($modal);
-                    return FALSE;
+                    return false;
                 }
             );
 
@@ -143,6 +143,9 @@
                     Drupal.sahoSharing.hideModalWithjQuery($modal);
                 }
             );
+            
+            // Initialize URL copy functionality
+            this.initializeUrlCopy();
         },
 
         /**

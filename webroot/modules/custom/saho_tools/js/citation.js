@@ -86,6 +86,10 @@
                 // Show the modal
                 try {
                     this.modal.show();
+                    // Initialize copy buttons after modal is shown
+                    setTimeout(() => {
+                        this.initializeCopyButtons($(modalElement));
+                    }, 100);
                 } catch (error) {
                     // Fall back to jQuery if Bootstrap API fails
                     this.showModalWithjQuery(modalElement);
@@ -101,12 +105,11 @@
 
 
             if (nodeData) {
-                // If we have node data, try to load citation data from the API
-                // But also generate a basic citation as a fallback
-                this.loadCitationData(nodeData.nid);
-
-                // Generate a basic citation from node data as a fallback
+                // Generate a basic citation from node data first as immediate content
                 this.generateBasicCitationFromNodeData(nodeData);
+                
+                // Then try to load citation data from the API (will overwrite if successful)
+                this.loadCitationData(nodeData.nid);
             } else if (pageData) {
                 // For non-node pages, generate basic citation
                 this.generateBasicCitation(pageData);
@@ -232,8 +235,8 @@
         loadCitationData: function (nid) {
             const self = this;
 
-            // Show loading state
-            $('.citation-content').html('<div class="text-center"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>');
+            // Show loading state with spinner
+            $('.citation-content').html('<div class="text-center"><div class="spinner-border spinner-border-sm" role="status"><span class="visually-hidden">Loading...</span></div></div>');
 
             // Log the URL we're requesting
             const apiUrl = Drupal.url('api/citation/' + nid);
@@ -293,39 +296,16 @@
          *   The citation data.
          */
         updateCitationContent: function (citations) {
-            // Update each citation format in the new stacked structure
-            $('#apa-citation .citation-text').html(citations.apa);
-            $('#harvard-citation .citation-text').html(citations.harvard);
-            $('#oxford-citation .citation-text').html(citations.oxford);
+            // Update each citation format - use the correct selectors
+            $('.apa-citation .citation-content').html(citations.apa);
+            $('.harvard-citation .citation-content').html(citations.harvard);
+            $('.oxford-citation .citation-content').html(citations.oxford);
 
-            // Add click handler for individual copy buttons
-            once('citationCopyIndividual', '.copy-btn', document).forEach(
-                function (button) {
-                    $(button).on(
-                        'click',
-                        function (e) {
-                            e.preventDefault();
-                            const format = $(this).data('format');
-                            const citationText = $('#' + format + '-citation .citation-text').text().trim();
-                            
-                            if (citationText) {
-                                // Try modern clipboard API first
-                                if (navigator.clipboard && navigator.clipboard.writeText) {
-                                    navigator.clipboard.writeText(citationText).then(function() {
-                                        Drupal.sahoCitation.showIndividualCopyFeedback($(button), 'Copied!');
-                                    }).catch(function(err) {
-                                        // Fall back to execCommand
-                                        Drupal.sahoCitation.fallbackIndividualCopy(citationText, $(button));
-                                    });
-                                } else {
-                                    // Fall back to execCommand
-                                    Drupal.sahoCitation.fallbackIndividualCopy(citationText, $(button));
-                                }
-                            }
-                        }
-                    );
-                }
-            );
+            // Re-initialize copy buttons after content is loaded
+            const modalElement = document.getElementById('citation-modal');
+            if (modalElement) {
+                this.initializeCopyButtons($(modalElement));
+            }
         },
 
         /**
@@ -698,64 +678,43 @@
         initializeCopyButtons: function ($modal) {
             const self = this;
 
-            // Main copy citation button - make it more prominent
-            const $copyButton = $modal.find('.copy-citation');
-            $copyButton.off('click').on(
-                'click',
-                function (e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    self.copyCitation();
-                    return FALSE;
+            // Remove any existing click handlers first
+            $modal.find('.copy-individual').off('click');
+            $modal.find('.copy-citation').off('click');
+            $modal.find('.copy-all-citations').off('click');
+
+            // Individual copy buttons
+            $modal.find('.copy-individual').on('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                const format = $(this).data('format');
+                const citationText = $('.' + format + '-citation .citation-content').text().trim();
+                
+                if (citationText) {
+                    // Try modern clipboard API first
+                    if (navigator.clipboard && navigator.clipboard.writeText) {
+                        navigator.clipboard.writeText(citationText).then(() => {
+                            self.showIndividualCopyFeedback($(this), 'Copied!');
+                        }).catch(() => {
+                            // Fall back to execCommand
+                            self.fallbackIndividualCopy(citationText, $(this));
+                        });
+                    } else {
+                        // Fall back to execCommand
+                        self.fallbackIndividualCopy(citationText, $(this));
+                    }
                 }
-            );
+                return false;
+            });
 
-            // Make the copy button more prominent
-            $copyButton.addClass('btn-primary').removeClass('btn-secondary btn-outline-secondary')
-            .css(
-                {
-                    'font-weight': 'bold',
-                    'font-size': '1.1rem',
-                    'padding': '0.5rem 1rem',
-                    'margin-top': '1rem',
-                    'width': 'auto',
-                    'display': 'block'
-                }
-            )
-            .html('<i class="fas fa-copy"></i> Copy Citation');
-
-            // If Font Awesome isn't available, use a simple text
-            if ($copyButton.find('i').length === 0) {
-                $copyButton.text('📋 Copy Citation');
-            }
-
-            // Individual format copy buttons
-            $modal.find('.btn-copy-citation').off('click').on(
-                'click',
-                function (e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    const format = $(this).data('format');
-                    const $citationElement = $modal.find('.' + format + '-citation');
-                    const citationText = $citationElement.clone().children('button').remove().end().text().trim();
-
-                    // Copy the text and show feedback, auto-close the modal
-                    self.copyTextToClipboard(citationText, $citationElement, TRUE);
-
-                    // Update the button text temporarily
-                    const $button = $(this);
-                    const originalText = $button.text();
-                    $button.text('Copied!');
-                    setTimeout(
-                        function () {
-                            $button.text(originalText);
-                        },
-                        1500
-                    );
-
-                    return FALSE;
-                }
-            );
+            // Copy all button if it exists
+            const $copyAllButton = $modal.find('.copy-all-citations, .copy-citation');
+            $copyAllButton.off('click').on('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                self.copyAllCitations();
+                return false;
+            });
         },
 
         /**
@@ -795,7 +754,7 @@
 
             formats.forEach(
                 function (format) {
-                    const $citationElement = $('#' + format + '-citation .citation-text');
+                    const $citationElement = $('.' + format + '-citation .citation-content');
                     const citationText = $citationElement.text().trim();
 
                     if (citationText && citationText !== '') {
@@ -908,7 +867,7 @@
 
             formats.forEach(
                 function (format) {
-                    const $citationElement = $('#' + format + '-citation .citation-text');
+                    const $citationElement = $('.' + format + '-citation .citation-content');
                     const citationText = $citationElement.text().trim();
 
                     if (citationText) {

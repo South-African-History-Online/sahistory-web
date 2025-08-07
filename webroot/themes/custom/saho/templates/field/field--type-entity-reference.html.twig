@@ -1,0 +1,67 @@
+{#
+/**
+ * @file
+ * Theme override for entity reference fields.
+ *
+ * Displays entity reference fields as taxonomy tag links.
+ * This template applies to all entity reference fields unless overridden
+ * by a more specific template.
+ *
+ * Available variables:
+ * - attributes: HTML attributes for the field.
+ * - items: List of all the field items.
+ * - label: The label for the field.
+ * - entity_type: The entity type (e.g., node).
+ * - field_name: The field machine name.
+ * - field_type: The field type.
+ * - label_display: The label display setting.
+ *
+ * @see template_preprocess_field()
+ */
+#}
+{%
+  set classes = [
+    'field',
+    'field--name-' ~ field_name|clean_class,
+    'field--type-' ~ field_type|clean_class,
+    'field--label-' ~ label_display,
+  ]
+%}
+
+{# Check if this is a taxonomy term reference field #}
+{% set is_taxonomy = false %}
+{% if items[0] is defined and items[0].content['#type'] is defined and items[0].content['#type'] == 'link' %}
+  {% set is_taxonomy = true %}
+{% endif %}
+
+{% if is_taxonomy %}
+  {# Display as tags for taxonomy terms #}
+  <div{{ attributes.addClass('saho-tags') }}>
+    {% if label and label_display != 'hidden' %}
+      <h4>{{ label }}</h4>
+    {% endif %}
+    <ul class="saho-tags-list">
+      {% for item in items %}
+        <li>
+          {% if item.content['#url'] %}
+            <a href="{{ item.content['#url'] }}">{{ item.content['#title'] }}</a>
+          {% else %}
+            {{ item.content }}
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+{% else %}
+  {# Default display for non-taxonomy entity references #}
+  <div{{ attributes.addClass(classes, 'field--items') }}>
+    {% if label_display != 'hidden' %}
+      <div class="field--label{% if label_display == 'visually_hidden' %} visually-hidden{% endif %}">{{ label }}</div>
+    {% endif %}
+    <div class="field--items">
+      {% for item in items %}
+        <div{{ item.attributes.addClass('field--item') }}>{{ item.content }}</div>
+      {% endfor %}
+    </div>
+  </div>
+{% endif %}

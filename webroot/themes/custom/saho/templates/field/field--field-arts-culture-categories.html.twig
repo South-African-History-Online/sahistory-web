@@ -1,0 +1,36 @@
+{#
+/**
+ * @file
+ * Theme override for the field_arts_culture_categories field.
+ *
+ * Displays entity reference fields as taxonomy tag links.
+ *
+ * Available variables:
+ * - attributes: HTML attributes for the field.
+ * - items: List of all the field items.
+ * - label: The label for the field.
+ * - entity_type: The entity type (e.g., node).
+ * - field_name: The field machine name.
+ * - field_type: The field type.
+ *
+ * @see template_preprocess_field()
+ */
+#}
+{% if items %}
+  <div class="saho-tags">
+    {% if label %}
+      <h4>{{ label }}</h4>
+    {% endif %}
+    <ul class="saho-tags-list">
+      {% for item in items %}
+        <li>
+          {% if item.content['#url'] %}
+            <a href="{{ item.content['#url'] }}">{{ item.content['#title'] }}</a>
+          {% else %}
+            {{ item.content }}
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+{% endif %}
