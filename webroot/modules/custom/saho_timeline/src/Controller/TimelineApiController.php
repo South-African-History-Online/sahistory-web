@@ -326,7 +326,7 @@ class TimelineApiController extends ControllerBase {
       foreach ($image_fields as $field_name) {
         if ($event->hasField($field_name) && !$event->get($field_name)->isEmpty()) {
           $image = $event->get($field_name)->entity;
-          if ($image) {
+          if ($image && $image instanceof FileInterface) {
             $file_url_generator = \Drupal::service('file_url_generator');
             $data['image'] = $file_url_generator->generateAbsoluteString($image->getFileUri());
             break; // Use the first image found
@@ -338,7 +338,7 @@ class TimelineApiController extends ControllerBase {
       if ($event->hasField('field_location') && !$event->get('field_location')->isEmpty()) {
         $locations = [];
         foreach ($event->get('field_location') as $location) {
-          if ($location->entity) {
+          if (isset($location->entity) && $location->entity) {
             $locations[] = $location->entity->label();
           }
         }
@@ -348,7 +348,7 @@ class TimelineApiController extends ControllerBase {
       // Get themes.
       if ($event->hasField('field_themes') && !$event->get('field_themes')->isEmpty()) {
         foreach ($event->get('field_themes') as $theme) {
-          if ($theme->entity) {
+          if (isset($theme->entity) && $theme->entity) {
             $data['themes'][] = $theme->entity->label();
           }
         }
@@ -357,7 +357,7 @@ class TimelineApiController extends ControllerBase {
       // Get categories.
       if ($event->hasField('field_tags') && !$event->get('field_tags')->isEmpty()) {
         foreach ($event->get('field_tags') as $tag) {
-          if ($tag->entity) {
+          if (isset($tag->entity) && $tag->entity) {
             $data['categories'][] = $tag->entity->label();
           }
         }

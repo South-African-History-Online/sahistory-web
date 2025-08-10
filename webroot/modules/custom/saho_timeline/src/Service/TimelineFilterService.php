@@ -299,7 +299,7 @@ class TimelineFilterService {
       // Count geographical locations.
       if ($result instanceof ContentEntityInterface && $result->hasField('field_location') && !$result->get('field_location')->isEmpty()) {
         foreach ($result->get('field_location') as $location) {
-          if ($location->entity) {
+          if (isset($location->entity) && $location->entity) {
             $loc_key = $location->entity->id();
             if (!isset($facets['geographical_location'][$loc_key])) {
               $facets['geographical_location'][$loc_key] = 0;
@@ -312,7 +312,7 @@ class TimelineFilterService {
       // Count themes.
       if ($result instanceof ContentEntityInterface && $result->hasField('field_themes') && !$result->get('field_themes')->isEmpty()) {
         foreach ($result->get('field_themes') as $theme) {
-          if ($theme->entity) {
+          if (isset($theme->entity) && $theme->entity) {
             $theme_key = $theme->entity->id();
             if (!isset($facets['themes'][$theme_key])) {
               $facets['themes'][$theme_key] = 0;
