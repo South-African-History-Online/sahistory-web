@@ -113,9 +113,16 @@ class TimelineApiController extends ControllerBase {
     // Calculate facets.
     $facets = $this->timelineFilterService->buildFacetCounts($events);
     
-    // Apply pagination.
+    // Apply intelligent sampling if we have too many events
     $total = count($events);
-    $events = array_slice($events, $offset, $limit);
+    
+    // If we have more events than requested limit, do time-based sampling
+    // to ensure good distribution across all time periods
+    if ($limit < $total && $total > 1000) {
+      $events = $this->sampleEventsByTimePeriod($events, $limit);
+    } else {
+      $events = array_slice($events, $offset, $limit);
+    }
     
     // Build response data.
     $response_data = [
@@ -197,11 +204,21 @@ class TimelineApiController extends ControllerBase {
    */
   protected function getEventDateForSort($event) {
     if (method_exists($event, 'hasField')) {
-      if ($event->hasField('field_event_date') && !$event->get('field_event_date')->isEmpty()) {
-        return $event->get('field_event_date')->value;
-      }
-      if ($event->hasField('field_this_day_in_history_3') && !$event->get('field_this_day_in_history_3')->isEmpty()) {
-        return $event->get('field_this_day_in_history_3')->value;
+      // Check multiple date fields in order of preference for comprehensive coverage
+      $date_fields = [
+        'field_this_day_in_history_3',        // Primary TDIH field
+        'field_this_day_in_history_date_2',   // Secondary TDIH field (likely newer events)
+        'field_start_date',                   // Event start date
+        'field_end_date',                     // Event end date
+        'field_drupal_birth_date',            // Birth dates
+        'field_drupal_death_date',            // Death dates
+        'field_event_date',                   // Generic event date
+      ];
+      
+      foreach ($date_fields as $field_name) {
+        if ($event->hasField($field_name) && !$event->get($field_name)->isEmpty()) {
+          return $event->get($field_name)->value;
+        }
       }
     }
     elseif (is_object($event) && isset($event->date)) {
@@ -351,6 +368,75 @@ class TimelineApiController extends ControllerBase {
     }
     
     return $data;
+  }
+
+  /**
+   * Sample events by time period to ensure good distribution.
+   *
+   * @param array $events
+   *   Array of events to sample.
+   * @param int $target_count
+   *   Target number of events to return.
+   *
+   * @return array
+   *   Sampled events with good time distribution.
+   */
+  protected function sampleEventsByTimePeriod(array $events, int $target_count) {
+    if (count($events) <= $target_count) {
+      return $events;
+    }
+    
+    // Group events by decade for balanced sampling
+    $decades = [];
+    foreach ($events as $event) {
+      $date = $this->getEventDateForSort($event);
+      if (empty($date)) continue;
+      
+      $year = (int) substr($date, 0, 4);
+      $decade = floor($year / 10) * 10;
+      
+      if (!isset($decades[$decade])) {
+        $decades[$decade] = [];
+      }
+      $decades[$decade][] = $event;
+    }
+    
+    // Sort decades chronologically
+    ksort($decades);
+    
+    // Calculate events per decade based on target
+    $decade_count = count($decades);
+    $base_per_decade = max(1, floor($target_count / $decade_count));
+    $remainder = $target_count - ($base_per_decade * $decade_count);
+    
+    $sampled = [];
+    $decades_keys = array_keys($decades);
+    
+    foreach ($decades_keys as $i => $decade) {
+      $decade_events = $decades[$decade];
+      
+      // Recent decades get extra events from remainder
+      $events_for_decade = $base_per_decade;
+      if ($remainder > 0 && $i >= ($decade_count - $remainder)) {
+        $events_for_decade++;
+      }
+      
+      // Sample events from this decade
+      if (count($decade_events) <= $events_for_decade) {
+        $sampled = array_merge($sampled, $decade_events);
+      } else {
+        // Take evenly spaced events from this decade
+        $step = count($decade_events) / $events_for_decade;
+        for ($j = 0; $j < $events_for_decade; $j++) {
+          $index = floor($j * $step);
+          if (isset($decade_events[$index])) {
+            $sampled[] = $decade_events[$index];
+          }
+        }
+      }
+    }
+    
+    return $sampled;
   }
 
   /**

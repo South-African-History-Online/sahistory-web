@@ -193,8 +193,8 @@ class TimelineEventService {
       // Don't limit here - we'll sample later
       // $query->range(0, $max_results);
       
-      // Sort by date to get full range
-      $query->sort('field_this_day_in_history_3', 'ASC');
+      // Don't sort in database query - let API handle comprehensive date sorting
+      // This ensures we get events from ALL date fields, not just field_this_day_in_history_3
       
       $nids = $query->execute();
       
@@ -207,20 +207,12 @@ class TimelineEventService {
       $nids_array = is_array($nids) ? array_values($nids) : [$nids];
       $total_events = count($nids_array);
       
-      if ($total_events > $max_results) {
-        // Take every Nth event to get good distribution
-        $step = max(1, intval($total_events / $max_results));
-        $sampled_nids = [];
-        for ($i = 0; $i < $total_events; $i += $step) {
-          if (isset($nids_array[$i])) {
-            $sampled_nids[] = $nids_array[$i];
-            if (count($sampled_nids) >= $max_results) break;
-          }
-        }
-        $events = $storage->loadMultiple($sampled_nids);
-      } else {
-        $events = $storage->loadMultiple($nids_array);
-      }
+      // Load ALL events and let API do comprehensive date-based sampling
+      // This ensures we don't miss recent events due to random sampling
+      $events = $storage->loadMultiple($nids_array);
+      $this->logger->info('Loaded @total events from database for timeline processing', [
+        '@total' => count($events)
+      ]);
       
       // Sort by date for timeline display
       usort($events, function($a, $b) {
