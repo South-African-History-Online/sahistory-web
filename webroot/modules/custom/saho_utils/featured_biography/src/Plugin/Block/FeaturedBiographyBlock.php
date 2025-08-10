@@ -628,7 +628,7 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
             \Drupal::logger('featured_biography')->warning('Error loading category term: @message', ['@message' => $e->getMessage()]);
           }
         }
-        // If we found categories with this field, no need to check other fields.
+        // If we found categories with this field, no need to check others.
         if (!empty($categories)) {
           break;
         }

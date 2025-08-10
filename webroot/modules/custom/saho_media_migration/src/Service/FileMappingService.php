@@ -7,7 +7,7 @@ use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 
 /**
- * Service for building comprehensive file mappings and automated path resolution.
+ * Service for building file mappings and automated path resolution.
  */
 class FileMappingService {
 
@@ -291,7 +291,7 @@ class FileMappingService {
         if (strpos($file_path, '/') !== FALSE) {
           $filename = basename(urldecode($file_path));
           $replacement = $this->findReplacementPath($filename, 'comprehensive');
-          // Only replace if we found it in archive AND it's not in a special subdirectory.
+          // Only replace if found in archive AND not in special subdir.
           if ($replacement && !preg_match('#^(images|css|js|styles)/#', $file_path)) {
             return $replacement;
           }

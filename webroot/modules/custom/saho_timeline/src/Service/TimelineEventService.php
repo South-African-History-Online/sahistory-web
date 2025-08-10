@@ -176,7 +176,7 @@ class TimelineEventService {
         ->condition('status', NodeInterface::PUBLISHED)
         ->accessCheck(TRUE);
 
-      // Get events with any date field populated - comprehensive date field search.
+      // Get events with any date field populated - comprehensive search.
       $date_group = $query->orConditionGroup();
       $date_group->condition('field_this_day_in_history_3', NULL, 'IS NOT NULL');
       $date_group->condition('field_this_day_in_history_date_2', NULL, 'IS NOT NULL');
@@ -192,8 +192,8 @@ class TimelineEventService {
 
       // Don't limit here - we'll sample later
       // $query->range(0, $max_results);.
-      // Don't sort in database query - let API handle comprehensive date sorting
-      // This ensures we get events from ALL date fields, not just field_this_day_in_history_3.
+      // Don't sort in database query - let API handle date sorting
+      // This ensures we get events from ALL date fields.
       $nids = $query->execute();
 
       if (empty($nids)) {

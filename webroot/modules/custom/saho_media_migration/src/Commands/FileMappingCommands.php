@@ -392,14 +392,6 @@ class FileMappingCommands extends DrushCommands {
   }
 
   /**
-   * Ask for confirmation (wrapper for Drush IO).
-   */
-  protected function confirm($question, $default = FALSE): bool {
-    // Use parent's confirm method with proper signature.
-    return parent::confirm($question, $default);
-  }
-
-  /**
    * Format file size in human-readable format.
    */
   private function formatFileSize(int $size): string {

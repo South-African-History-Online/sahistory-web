@@ -208,7 +208,7 @@ class TimelineApiController extends ControllerBase {
    */
   protected function getEventDateForSort($event) {
     if ($event instanceof ContentEntityInterface) {
-      // Check multiple date fields in order of preference for comprehensive coverage.
+      // Check multiple date fields in order of preference.
       $date_fields = [
       // Primary TDIH field.
         'field_this_day_in_history_3',

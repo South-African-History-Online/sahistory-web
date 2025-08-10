@@ -489,7 +489,7 @@ class DirectCommands extends DrushCommands {
 
       foreach ($results as $node) {
         $original = $node->body_value;
-        // Fix the specific encoding issue: file%20uploads%20/ -> file%20uploads/.
+        // Fix encoding issue: file%20uploads%20/ -> file%20uploads/.
         $updated = str_replace('file%20uploads%20/', 'file%20uploads/', $original);
 
         if ($original !== $updated) {
