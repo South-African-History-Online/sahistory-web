@@ -244,7 +244,6 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
     ];
 
     // Remove duplicate entity_count field - using the select version above.
-
     $form['highlight_category'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Highlight Category'),
@@ -595,7 +594,7 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
       $item['death_date'] = $this->formatDateString($node->get('field_dod')->value);
     }
 
-    // Create a combined dates string for display
+    // Create a combined dates string for display.
     if (!empty($item['birth_date']) || !empty($item['death_date'])) {
       $dates_parts = [];
       if (!empty($item['birth_date'])) {
@@ -652,7 +651,7 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
         $body_text = $node->get('body')->value;
         // Create a simple summary by stripping tags and truncating.
         $plain_text = strip_tags($body_text);
-        // Use shorter excerpt for single biography display - aim for 2-3 lines
+        // Use shorter excerpt for single biography display - aim for 2-3 lines.
         $item['body_summary'] = mb_substr($plain_text, 0, 250) . (mb_strlen($plain_text) > 250 ? '...' : '');
       }
     }

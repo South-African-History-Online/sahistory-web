@@ -64,10 +64,9 @@ class TimelineMigrationForm extends FormBase {
   public function buildForm(array $form, FormStateInterface $form_state) {
     $form['info'] = [
       '#type' => 'markup',
-      '#markup' => '<div class="messages messages--status">' . 
-        $this->t('This tool helps migrate timeline articles to the event content type. ' .
-        'It will identify articles that appear to be timeline-related based on their titles, tags, and content.') .
-        '</div>',
+      '#markup' => '<div class="messages messages--status">' .
+      $this->t('This tool helps migrate timeline articles to the event content type. It will identify articles that appear to be timeline-related based on their titles, tags, and content.') .
+      '</div>',
     ];
 
     $form['identification'] = [
@@ -182,14 +181,14 @@ class TimelineMigrationForm extends FormBase {
 
     // Get migration statistics.
     $stats = $this->getMigrationStatistics();
-    
+
     $form['history']['stats'] = [
       '#type' => 'markup',
       '#markup' => '<ul>' .
-        '<li>' . $this->t('Total articles migrated: @count', ['@count' => $stats['total']]) . '</li>' .
-        '<li>' . $this->t('Last migration: @date', ['@date' => $stats['last_migration']]) . '</li>' .
-        '<li>' . $this->t('Failed migrations: @count', ['@count' => $stats['failed']]) . '</li>' .
-        '</ul>',
+      '<li>' . $this->t('Total articles migrated: @count', ['@count' => $stats['total']]) . '</li>' .
+      '<li>' . $this->t('Last migration: @date', ['@date' => $stats['last_migration']]) . '</li>' .
+      '<li>' . $this->t('Failed migrations: @count', ['@count' => $stats['failed']]) . '</li>' .
+      '</ul>',
     ];
 
     $form['history']['clear_history'] = [
@@ -216,7 +215,7 @@ class TimelineMigrationForm extends FormBase {
    */
   public function identifyArticles(array &$form, FormStateInterface $form_state) {
     $articles = $this->migrationService->identifyTimelineArticles();
-    
+
     if (empty($articles)) {
       $this->messenger->addWarning($this->t('No timeline articles found.'));
     }
@@ -234,24 +233,24 @@ class TimelineMigrationForm extends FormBase {
    */
   public function migrateSelectedArticles(array &$form, FormStateInterface $form_state) {
     $selected_ids = array_filter($form_state->getValue('article_ids'));
-    
+
     if (empty($selected_ids)) {
       $this->messenger->addWarning($this->t('No articles selected for migration.'));
       return;
     }
-    
+
     $batch_size = $form_state->getValue('batch_size') ?? 50;
     $preserve = $form_state->getValue('preserve_originals');
     $unpublish = $form_state->getValue('unpublish_originals');
     $redirect = $form_state->getValue('add_redirect');
-    
+
     // Create batch operation.
     $batch = new BatchBuilder();
     $batch->setTitle($this->t('Migrating Timeline Articles'))
       ->setInitMessage($this->t('Starting migration...'))
       ->setProgressMessage($this->t('Processing @current of @total articles.'))
       ->setErrorMessage($this->t('An error occurred during migration.'));
-    
+
     // Add operations in chunks.
     $chunks = array_chunk($selected_ids, $batch_size);
     foreach ($chunks as $chunk) {
@@ -260,12 +259,12 @@ class TimelineMigrationForm extends FormBase {
         'processBatch',
       ], [$chunk, $preserve, $unpublish, $redirect]);
     }
-    
+
     $batch->setFinishCallback([
       '\Drupal\saho_timeline\Form\TimelineMigrationForm',
       'finishBatch',
     ]);
-    
+
     batch_set($batch->toArray());
   }
 
@@ -274,12 +273,12 @@ class TimelineMigrationForm extends FormBase {
    */
   public function migrateAllArticles(array &$form, FormStateInterface $form_state) {
     $identified_articles = $form_state->get('identified_articles');
-    
+
     if (empty($identified_articles)) {
       $this->messenger->addWarning($this->t('No articles to migrate.'));
       return;
     }
-    
+
     $all_ids = array_keys($identified_articles);
     $form_state->setValue('article_ids', array_combine($all_ids, $all_ids));
     $this->migrateSelectedArticles($form, $form_state);
@@ -304,19 +303,19 @@ class TimelineMigrationForm extends FormBase {
    */
   public static function processBatch(array $article_ids, $preserve, $unpublish, $redirect, &$context) {
     $migration_service = \Drupal::service('saho_timeline.migration_service');
-    
+
     if (!isset($context['results']['success'])) {
       $context['results']['success'] = 0;
       $context['results']['failed'] = 0;
       $context['results']['skipped'] = 0;
     }
-    
+
     $results = $migration_service->batchMigrateArticles($article_ids);
-    
+
     $context['results']['success'] += $results['success'];
     $context['results']['failed'] += $results['failed'];
     $context['results']['skipped'] += $results['skipped'];
-    
+
     $context['message'] = t('Migrated @count articles...', ['@count' => $context['results']['success']]);
   }
 
@@ -325,7 +324,7 @@ class TimelineMigrationForm extends FormBase {
    */
   public static function finishBatch($success, $results, $operations) {
     $messenger = \Drupal::messenger();
-    
+
     if ($success) {
       $messenger->addStatus(t('Migration completed: @success migrated, @failed failed, @skipped skipped.', [
         '@success' => $results['success'] ?? 0,
@@ -348,7 +347,7 @@ class TimelineMigrationForm extends FormBase {
       'failed' => 0,
       'last_migration' => $this->t('Never'),
     ];
-    
+
     try {
       // Check if migration table exists.
       if ($database->schema()->tableExists('saho_timeline_migration')) {
@@ -356,14 +355,14 @@ class TimelineMigrationForm extends FormBase {
           ->countQuery()
           ->execute()
           ->fetchField();
-        
+
         $last = $database->select('saho_timeline_migration', 'm')
           ->fields('m', ['migrated'])
           ->orderBy('migrated', 'DESC')
           ->range(0, 1)
           ->execute()
           ->fetchField();
-        
+
         if ($last) {
           $stats['last_migration'] = \Drupal::service('date.formatter')
             ->format($last, 'medium');
@@ -373,7 +372,8 @@ class TimelineMigrationForm extends FormBase {
     catch (\Exception $e) {
       // Table doesn't exist yet.
     }
-    
+
     return $stats;
   }
+
 }

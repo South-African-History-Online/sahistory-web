@@ -58,34 +58,34 @@ class TimelineMigrationService {
   public function identifyTimelineArticles() {
     $storage = $this->entityTypeManager->getStorage('node');
     $taxonomy_storage = $this->entityTypeManager->getStorage('taxonomy_term');
-    
+
     // Look for articles with timeline-related tags or categories.
     $query = $storage->getQuery()
       ->condition('type', 'article')
       ->condition('status', NodeInterface::PUBLISHED)
       ->accessCheck(TRUE);
-    
+
     // Check for timeline tags/categories if they exist.
     $or_group = $query->orConditionGroup();
-    
+
     // Check title for timeline keywords.
     $or_group->condition('title', 'timeline', 'CONTAINS');
     $or_group->condition('title', 'chronology', 'CONTAINS');
     $or_group->condition('title', 'historical events', 'CONTAINS');
-    
+
     // Check if there are timeline-related taxonomy terms.
     $timeline_terms = $taxonomy_storage->getQuery()
       ->condition('name', 'timeline', 'CONTAINS')
       ->accessCheck(TRUE)
       ->execute();
-    
+
     if (!empty($timeline_terms)) {
       $or_group->condition('field_tags', $timeline_terms, 'IN');
     }
-    
+
     $query->condition($or_group);
     $nids = $query->execute();
-    
+
     return $storage->loadMultiple($nids);
   }
 
@@ -108,41 +108,41 @@ class TimelineMigrationService {
         'created' => $article->getCreatedTime(),
         'changed' => $article->getChangedTime(),
       ];
-      
+
       // Copy body field if it exists.
       if ($article->hasField('body') && !$article->get('body')->isEmpty()) {
         $event_data['body'] = $article->get('body')->getValue();
       }
-      
+
       // Extract date from article if possible.
       $event_date = $this->extractEventDate($article);
       if ($event_date) {
         $event_data['field_event_date'] = $event_date;
       }
-      
+
       // Copy taxonomy terms if applicable.
       if ($article->hasField('field_tags') && !$article->get('field_tags')->isEmpty()) {
         $event_data['field_event_tags'] = $article->get('field_tags')->getValue();
       }
-      
+
       // Copy media/images if they exist.
       if ($article->hasField('field_image') && !$article->get('field_image')->isEmpty()) {
         $event_data['field_event_image'] = $article->get('field_image')->getValue();
       }
-      
+
       // Create the event node.
       $event = $this->entityTypeManager->getStorage('node')->create($event_data);
       $event->save();
-      
+
       // Log the migration.
       $this->loggerFactory->get('saho_timeline')->info('Migrated article @article_id to event @event_id', [
         '@article_id' => $article->id(),
         '@event_id' => $event->id(),
       ]);
-      
+
       // Store migration mapping.
       $this->storeMigrationMapping($article->id(), $event->id());
-      
+
       return $event;
     }
     catch (\Exception $e) {
@@ -168,21 +168,24 @@ class TimelineMigrationService {
     if ($article->hasField('field_date') && !$article->get('field_date')->isEmpty()) {
       return $article->get('field_date')->value;
     }
-    
+
     // Try to extract date from title or body.
     $title = $article->getTitle();
     $body = '';
     if ($article->hasField('body') && !$article->get('body')->isEmpty()) {
       $body = $article->get('body')->value;
     }
-    
+
     // Look for date patterns.
     $patterns = [
-      '/(\d{4})-(\d{1,2})-(\d{1,2})/',  // YYYY-MM-DD
-      '/(\d{1,2})\/(\d{1,2})\/(\d{4})/', // MM/DD/YYYY
-      '/(\d{4})/',                       // Just year
+    // YYYY-MM-DD.
+      '/(\d{4})-(\d{1,2})-(\d{1,2})/',
+    // MM/DD/YYYY.
+      '/(\d{1,2})\/(\d{1,2})\/(\d{4})/',
+    // Just year.
+      '/(\d{4})/',
     ];
-    
+
     foreach ($patterns as $pattern) {
       if (preg_match($pattern, $title . ' ' . $body, $matches)) {
         if (count($matches) == 4) {
@@ -195,7 +198,7 @@ class TimelineMigrationService {
         }
       }
     }
-    
+
     return NULL;
   }
 
@@ -276,10 +279,10 @@ class TimelineMigrationService {
       'skipped' => 0,
       'events' => [],
     ];
-    
+
     $storage = $this->entityTypeManager->getStorage('node');
     $articles = $storage->loadMultiple($article_ids);
-    
+
     foreach ($articles as $article) {
       // Check if already migrated.
       $existing = $this->database->select('saho_timeline_migration', 'm')
@@ -287,12 +290,12 @@ class TimelineMigrationService {
         ->condition('article_id', $article->id())
         ->execute()
         ->fetchField();
-      
+
       if ($existing) {
         $results['skipped']++;
         continue;
       }
-      
+
       $event = $this->migrateArticleToEvent($article);
       if ($event) {
         $results['success']++;
@@ -302,7 +305,8 @@ class TimelineMigrationService {
         $results['failed']++;
       }
     }
-    
+
     return $results;
   }
+
 }

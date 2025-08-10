@@ -66,7 +66,7 @@ class AdvancedSearchForm extends FormBase {
 
     // Main search container.
     $form['#attributes']['class'][] = 'saho-advanced-search-form';
-    
+
     // Search keywords.
     $form['keywords'] = [
       '#type' => 'search',
@@ -217,22 +217,22 @@ class AdvancedSearchForm extends FormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $values = $form_state->getValues();
-    
+
     // Build query parameters from form values.
     $query_params = [];
-    
+
     if (!empty($values['keywords'])) {
       $query_params['keywords'] = $values['keywords'];
     }
-    
+
     if (!empty($values['sort'])) {
       $query_params['sort'] = $values['sort'];
     }
-    
+
     if (!empty($values['fuzzy_search'])) {
       $query_params['fuzzy_search'] = 1;
     }
-    
+
     // Add filter values.
     foreach ($values['filters'] as $key => $value) {
       if ($key === 'date_range') {
@@ -255,7 +255,7 @@ class AdvancedSearchForm extends FormBase {
         }
       }
     }
-    
+
     // Redirect to timeline page with search parameters.
     $form_state->setRedirect('saho_timeline.main', [], [
       'query' => $query_params,
@@ -269,4 +269,5 @@ class AdvancedSearchForm extends FormBase {
     // Redirect to timeline page without parameters.
     $form_state->setRedirect('saho_timeline.main');
   }
+
 }

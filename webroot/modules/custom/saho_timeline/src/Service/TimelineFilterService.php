@@ -4,7 +4,6 @@ namespace Drupal\saho_timeline\Service;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
-use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\ContentEntityInterface;
 
 /**
@@ -84,18 +83,18 @@ class TimelineFilterService {
   public function getActiveFilters() {
     $request = $this->requestStack->getCurrentRequest();
     $filters = [];
-    
+
     // Single-value parameters.
     $single_params = [
       'content_type',
-      'time_period', 
+      'time_period',
       'keywords',
       'start_date',
       'end_date',
       'sort',
       'fuzzy_search',
     ];
-    
+
     foreach ($single_params as $param) {
       $value = $request->query->get($param);
       if (!empty($value)) {
@@ -108,14 +107,14 @@ class TimelineFilterService {
         }
       }
     }
-    
+
     // Multi-value parameters (arrays).
     $array_params = [
       'geographical_location',
       'themes',
       'categories',
     ];
-    
+
     foreach ($array_params as $param) {
       $value = $request->query->get($param);
       if (!empty($value)) {
@@ -137,7 +136,7 @@ class TimelineFilterService {
         }
       }
     }
-    
+
     return $filters;
   }
 
@@ -215,7 +214,7 @@ class TimelineFilterService {
       'pre-colonial' => t('Pre-Colonial History'),
       'colonial' => t('Colonial Period'),
       'cultural-heritage' => t('Cultural Heritage'),
-      'womens-history' => t('Women\'s History'),
+      'womens-history' => t("Women's History"),
       'youth-activism' => t('Youth Activism'),
       'labour-history' => t('Labour History'),
       'education' => t('Education'),
@@ -238,10 +237,10 @@ class TimelineFilterService {
   protected function getCategoryOptions() {
     $options = [];
     $term_storage = $this->entityTypeManager->getStorage('taxonomy_term');
-    
+
     // Load terms from relevant vocabularies.
     $vocabularies = ['categories', 'tags', 'topics'];
-    
+
     foreach ($vocabularies as $vid) {
       try {
         $terms = $term_storage->loadTree($vid, 0, 1);
@@ -254,7 +253,7 @@ class TimelineFilterService {
         continue;
       }
     }
-    
+
     return $options;
   }
 
@@ -274,7 +273,7 @@ class TimelineFilterService {
       'geographical_location' => [],
       'themes' => [],
     ];
-    
+
     foreach ($results as $result) {
       // Count content types.
       if (method_exists($result, 'bundle')) {
@@ -284,7 +283,7 @@ class TimelineFilterService {
         }
         $facets['content_type'][$type]++;
       }
-      
+
       // Count time periods based on date.
       if ($result instanceof ContentEntityInterface && $result->hasField('field_this_day_in_history_3') && !$result->get('field_this_day_in_history_3')->isEmpty()) {
         $period = $this->calculateTimePeriod($result);
@@ -295,7 +294,7 @@ class TimelineFilterService {
           $facets['time_period'][$period]++;
         }
       }
-      
+
       // Count geographical locations.
       if ($result instanceof ContentEntityInterface && $result->hasField('field_location') && !$result->get('field_location')->isEmpty()) {
         foreach ($result->get('field_location') as $location) {
@@ -308,7 +307,7 @@ class TimelineFilterService {
           }
         }
       }
-      
+
       // Count themes.
       if ($result instanceof ContentEntityInterface && $result->hasField('field_themes') && !$result->get('field_themes')->isEmpty()) {
         foreach ($result->get('field_themes') as $theme) {
@@ -322,7 +321,7 @@ class TimelineFilterService {
         }
       }
     }
-    
+
     return $facets;
   }
 
@@ -337,24 +336,36 @@ class TimelineFilterService {
    */
   protected function calculateTimePeriod($result) {
     $date = NULL;
-    
+
     if ($result instanceof ContentEntityInterface && $result->hasField('field_this_day_in_history_3') && !$result->get('field_this_day_in_history_3')->isEmpty()) {
       $date = $result->get('field_this_day_in_history_3')->value;
     }
-    
+
     if (!$date) {
       return NULL;
     }
-    
+
     $year = (int) substr($date, 0, 4);
-    
-    if ($year < 1500) return 'pre-1500';
-    if ($year <= 1650) return '1500-1650';
-    if ($year <= 1800) return '1650-1800';
-    if ($year <= 1900) return '1800-1900';
-    if ($year <= 1950) return '1900-1950';
-    if ($year <= 1990) return '1950-1990';
-    
+
+    if ($year < 1500) {
+      return 'pre-1500';
+    }
+    if ($year <= 1650) {
+      return '1500-1650';
+    }
+    if ($year <= 1800) {
+      return '1650-1800';
+    }
+    if ($year <= 1900) {
+      return '1800-1900';
+    }
+    if ($year <= 1950) {
+      return '1900-1950';
+    }
+    if ($year <= 1990) {
+      return '1950-1990';
+    }
+
     return '1990-2025';
   }
 
@@ -374,25 +385,25 @@ class TimelineFilterService {
             $query->condition('type', $value);
           }
           break;
-          
+
         case 'time_period':
           if ($value !== 'all') {
             $this->applyTimePeriodFilter($query, $value);
           }
           break;
-          
+
         case 'geographical_location':
           if (is_array($value)) {
             $query->condition('field_location', $value, 'IN');
           }
           break;
-          
+
         case 'themes':
           if (is_array($value)) {
             $query->condition('field_themes', $value, 'IN');
           }
           break;
-          
+
         case 'categories':
           if (is_array($value)) {
             $or_group = $query->orConditionGroup();
@@ -401,7 +412,7 @@ class TimelineFilterService {
             $query->condition($or_group);
           }
           break;
-          
+
         case 'keywords':
           if (!empty($value)) {
             $or_group = $query->orConditionGroup();
@@ -410,7 +421,7 @@ class TimelineFilterService {
             $query->condition($or_group);
           }
           break;
-          
+
         case 'start_date':
           if (!empty($value)) {
             $or_group = $query->orConditionGroup();
@@ -419,7 +430,7 @@ class TimelineFilterService {
             $query->condition($or_group);
           }
           break;
-          
+
         case 'end_date':
           if (!empty($value)) {
             $or_group = $query->orConditionGroup();
@@ -450,19 +461,19 @@ class TimelineFilterService {
       '1950-1990' => ['1950-01-01', '1990-12-31'],
       '1990-2025' => ['1990-01-01', NULL],
     ];
-    
+
     if (isset($date_ranges[$period])) {
       [$start, $end] = $date_ranges[$period];
-      
+
       $or_group = $query->orConditionGroup();
-      
+
       // Apply to both date fields.
       if ($start && $end) {
         $and_group1 = $query->andConditionGroup();
         $and_group1->condition('field_event_date', $start, '>=');
         $and_group1->condition('field_event_date', $end, '<=');
         $or_group->condition($and_group1);
-        
+
         $and_group2 = $query->andConditionGroup();
         $and_group2->condition('field_this_day_in_history_3', $start, '>=');
         $and_group2->condition('field_this_day_in_history_3', $end, '<=');
@@ -476,8 +487,9 @@ class TimelineFilterService {
         $or_group->condition('field_event_date', $end, '<=');
         $or_group->condition('field_this_day_in_history_3', $end, '<=');
       }
-      
+
       $query->condition($or_group);
     }
   }
+
 }

@@ -214,37 +214,38 @@ class TimelineSettingsForm extends ConfigFormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $config = $this->config('saho_timeline.settings');
-    
+
     // General settings.
     $config->set('default_display_mode', $form_state->getValue('default_display_mode'));
     $config->set('items_per_page', $form_state->getValue('items_per_page'));
     $config->set('default_grouping', $form_state->getValue('default_grouping'));
     $config->set('enable_infinite_scroll', $form_state->getValue('enable_infinite_scroll'));
-    
+
     // Search settings.
     $config->set('enable_fuzzy_search', $form_state->getValue('enable_fuzzy_search'));
     $config->set('search_debounce', $form_state->getValue('search_debounce'));
     $config->set('min_search_length', $form_state->getValue('min_search_length'));
-    
+
     // Display settings.
     $config->set('show_event_images', $form_state->getValue('show_event_images'));
     $config->set('event_excerpt_length', $form_state->getValue('event_excerpt_length'));
     $config->set('enable_animations', $form_state->getValue('enable_animations'));
     $config->set('show_period_counts', $form_state->getValue('show_period_counts'));
-    
+
     // Filter settings.
     $config->set('show_filters', $form_state->getValue('show_filters'));
     $config->set('enable_location_filter', $form_state->getValue('enable_location_filter'));
     $config->set('enable_theme_filter', $form_state->getValue('enable_theme_filter'));
     $config->set('enable_date_range', $form_state->getValue('enable_date_range'));
-    
+
     // Integration settings.
     $config->set('include_tdih_events', $form_state->getValue('include_tdih_events'));
     $config->set('parse_html_timelines', $form_state->getValue('parse_html_timelines'));
     $config->set('enable_solr', $form_state->getValue('enable_solr'));
-    
+
     $config->save();
-    
+
     parent::submitForm($form, $form_state);
   }
+
 }

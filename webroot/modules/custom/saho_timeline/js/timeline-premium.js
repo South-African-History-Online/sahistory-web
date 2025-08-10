@@ -13,22 +13,22 @@
   Drupal.behaviors.sahoTimelinePremium = {
     attach: function (context, settings) {
       const containers = once('saho-timeline-premium', '.timeline-premium', context);
-      
-      containers.forEach(function(container) {
+
+      containers.forEach(function (container) {
         console.log('Initializing TimelineJS3 premium timeline...');
-        
+
         // Get API endpoint from settings
-        const apiEndpoint = settings.sahoTimeline?.apiEndpoint || '/api/timeline/events';
-        
+        const apiEndpoint = settings.sahoTimeline ? .apiEndpoint || '/api/timeline/events';
+
         // Create loading message with intro background
         container.innerHTML = `
-          <div class="timeline-intro">
-            <h1>South African History Timeline</h1>
-            <p>Explore the rich history of South Africa through time</p>
-          </div>
-          <div class="timeline-loading">Loading premium timeline...</div>
+          < div class = "timeline-intro" >
+            < h1 > South African History Timeline < / h1 >
+            < p > Explore the rich history of South Africa through time < / p >
+          < / div >
+          < div class = "timeline-loading" > Loading premium timeline... < / div >
         `;
-        
+
         // Wait for TimelineJS3 to load before fetching events
         const checkTimelineJS = () => {
           if (typeof TL === 'undefined' || typeof TL.Timeline === 'undefined') {
@@ -36,7 +36,7 @@
             setTimeout(checkTimelineJS, 200);
             return;
           }
-          
+
           // TimelineJS3 is ready, fetch events (max safe limit without UTF-8 issues)
           fetch(apiEndpoint + '?limit=550')
             .then(response => response.json())
@@ -45,26 +45,26 @@
                 initializeTimelineJS(container, data.events);
               } else {
                 container.innerHTML = `
-                  <div class="timeline-intro">
-                    <h1>South African History Timeline</h1>
-                    <p>Explore the rich history of South Africa through time</p>
-                  </div>
-                  <div class="timeline-error">No events found for timeline.</div>
+                  < div class = "timeline-intro" >
+                    < h1 > South African History Timeline < / h1 >
+                    < p > Explore the rich history of South Africa through time < / p >
+                  < / div >
+                  < div class = "timeline-error" > No events found for timeline.< / div >
                 `;
               }
             })
             .catch(error => {
               console.error('Error loading timeline events:', error);
               container.innerHTML = `
-                <div class="timeline-intro">
-                  <h1>South African History Timeline</h1>
-                  <p>Explore the rich history of South Africa through time</p>
-                </div>
-                <div class="timeline-error">Failed to load timeline. Please refresh the page.</div>
+                < div class = "timeline-intro" >
+                  < h1 > South African History Timeline < / h1 >
+                  < p > Explore the rich history of South Africa through time < / p >
+                < / div >
+                < div class = "timeline-error" > Failed to load timeline. Please refresh the page.< / div >
               `;
             });
         };
-        
+
         checkTimelineJS();
       });
     }
@@ -76,13 +76,13 @@
   function initializeTimelineJS(container, events) {
     // Convert SAHO events to TimelineJS3 format
     const timelineData = convertToTimelineJSFormat(events);
-    
+
     // Set container ID for TimelineJS
     container.id = container.id || 'timeline-embed-' + Date.now();
-    
+
     // TimelineJS3 options optimized for maximum 550 events display
     const options = {
-      hash_bookmark: true,
+      hash_bookmark: TRUE,
       initial_zoom: 0, // Start fully zoomed out to see all events
       height: 750, // Even taller for better navigation
       language: 'en',
@@ -95,28 +95,28 @@
       marker_padding: 2, // Minimal padding
       start_at_slide: Math.floor(events.length / 2), // Start in middle of timeline
       menubar_height: 0,
-      use_bc: true,
+      use_bc: TRUE,
       duration: 600, // Fast transitions
       ease: 'easeInOutQuint',
-      dragging: true,
-      trackResize: true,
+      dragging: TRUE,
+      trackResize: TRUE,
       slide_padding_lr: 60,
       slide_default_fade: '30%',
       zoom_sequence: [0.1, 0.25, 0.5, 1, 2, 4, 8, 16, 32, 64, 128], // Even more zoom out
-      ga_property_id: null,
+      ga_property_id: NULL,
       track_events: ['nav_next', 'nav_previous', 'nav_zoom_in', 'nav_zoom_out'],
       timenav_height: 200, // Taller navigation for dense events
       timenav_height_percentage: 30, // More space for navigation
       slide_height_percentage: 70, // Less for slides to see more timeline
       marker_width_min_factor: 0.5 // Allow very small markers
     };
-    
+
     // Initialize TimelineJS3
     window.timeline = new TL.Timeline(container.id, timelineData, options);
-    
+
     console.log('TimelineJS3 initialized with', events.length, 'events');
     console.log('Timeline spans from', getDateRange(events));
-    
+
     // Add custom styling class
     container.classList.add('saho-timeline-premium');
   }
@@ -126,13 +126,14 @@
    */
   function convertToTimelineJSFormat(events) {
     const timelineEvents = [];
-    
+
     // Process each event
     events.forEach((event, index) => {
       // Parse date
       let startDate = parseEventDate(event.date);
-      if (!startDate) return; // Skip events without valid dates
-      
+      if (!startDate) { return; // Skip events without valid dates
+      }
+
       // Create TimelineJS event object
       const tlEvent = {
         start_date: startDate,
@@ -141,7 +142,7 @@
           text: formatEventDescription(event)
         }
       };
-      
+
       // Add media if available
       if (event.image) {
         tlEvent.media = {
@@ -150,23 +151,23 @@
           thumbnail: event.image
         };
       }
-      
+
       // Add background color for different event types
       tlEvent.background = {
         color: getEventColor(event, index)
       };
-      
+
       // Add unique ID
       tlEvent.unique_id = event.id || 'event-' + index;
-      
+
       // Add group for categorization
       if (event.type) {
         tlEvent.group = event.type;
       }
-      
+
       timelineEvents.push(tlEvent);
     });
-    
+
     // Create timeline data structure
     const timelineData = {
       title: {
@@ -178,7 +179,7 @@
       events: timelineEvents,
       eras: getHistoricalEras()
     };
-    
+
     return timelineData;
   }
 
@@ -186,11 +187,12 @@
    * Parse event date to TimelineJS format.
    */
   function parseEventDate(dateStr) {
-    if (!dateStr) return null;
-    
+    if (!dateStr) { return NULL;
+    }
+
     try {
       const date = new Date(dateStr);
-      
+
       // Handle different date formats
       if (dateStr.match(/^\d{4}$/)) {
         // Year only
@@ -218,8 +220,8 @@
     } catch (e) {
       console.warn('Could not parse date:', dateStr);
     }
-    
-    return null;
+
+    return NULL;
   }
 
   /**
@@ -235,27 +237,27 @@
    */
   function formatEventDescription(event) {
     let description = '';
-    
+
     // Add body text
     if (event.body) {
       description += '<p>' + event.body + '</p>';
     }
-    
+
     // Add location if available
     if (event.location) {
       description += '<p><strong>Location:</strong> ' + event.location + '</p>';
     }
-    
+
     // Add themes if available
     if (event.themes && event.themes.length > 0) {
       description += '<p><strong>Themes:</strong> ' + event.themes.join(', ') + '</p>';
     }
-    
+
     // Add link to full article
     if (event.url) {
       description += '<p><a href="' + event.url + '" target="_blank" class="timeline-read-more">Read full article →</a></p>';
     }
-    
+
     return description || '<p>No description available.</p>';
   }
 
@@ -272,18 +274,26 @@
       '#8b2331', // Faded brick red
       '#343a40', // Dark charcoal
     ];
-    
+
     // Use different colors for different event types
     if (event.type) {
       switch(event.type) {
-        case 'biography': return colors[3]; // Green
-        case 'event': return colors[0]; // Red
-        case 'article': return colors[2]; // Blue
-        case 'archive': return colors[5]; // Charcoal
+        case 'biography': return colors[3];
+
+ // Green
+        case 'event': return colors[0];
+
+ // Red
+        case 'article': return colors[2];
+
+ // Blue
+        case 'archive': return colors[5];
+
+ // Charcoal
         default: return colors[index % colors.length];
       }
     }
-    
+
     // Default to rotating through colors
     return colors[index % colors.length];
   }
@@ -292,14 +302,16 @@
    * Get date range of events for logging.
    */
   function getDateRange(events) {
-    if (events.length === 0) return 'no events';
-    
+    if (events.length === 0) { return 'no events';
+    }
+
     const dates = events.map(e => new Date(e.date)).filter(d => !isNaN(d.getTime()));
-    if (dates.length === 0) return 'no valid dates';
-    
+    if (dates.length === 0) { return 'no valid dates';
+    }
+
     const minDate = new Date(Math.min(...dates));
     const maxDate = new Date(Math.max(...dates));
-    
+
     return `${minDate.getFullYear()} to ${maxDate.getFullYear()}`;
   }
 

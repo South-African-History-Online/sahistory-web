@@ -150,7 +150,7 @@ class TimelineBlock extends BlockBase implements BlockPluginInterface, Container
    */
   public function build() {
     $config = $this->getConfiguration();
-    
+
     // Get events based on configuration.
     if ($config['group_by'] !== 'none') {
       $events = $this->timelineEventService->getEventsGroupedByPeriod($config['group_by']);
@@ -158,12 +158,12 @@ class TimelineBlock extends BlockBase implements BlockPluginInterface, Container
     else {
       $events = $this->timelineEventService->getAllTimelineEvents();
     }
-    
+
     // Apply event limit.
     if ($config['event_limit'] && !is_array(reset($events))) {
       $events = array_slice($events, 0, $config['event_limit'], TRUE);
     }
-    
+
     $build = [
       '#theme' => 'saho_timeline',
       '#events' => $events,
@@ -179,7 +179,7 @@ class TimelineBlock extends BlockBase implements BlockPluginInterface, Container
         'contexts' => ['url.query_args'],
       ],
     ];
-    
+
     return $build;
   }
 
@@ -206,4 +206,5 @@ class TimelineBlock extends BlockBase implements BlockPluginInterface, Container
       ],
     ];
   }
+
 }
