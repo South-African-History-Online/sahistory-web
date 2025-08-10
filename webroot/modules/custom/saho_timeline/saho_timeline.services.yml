@@ -1,0 +1,12 @@
+services:
+  saho_timeline.event_service:
+    class: Drupal\saho_timeline\Service\TimelineEventService
+    arguments: ['@entity_type.manager', '@datetime.time', '@database', '@cache.data', '@logger.factory', '@config.factory']
+  
+  saho_timeline.migration_service:
+    class: Drupal\saho_timeline\Service\TimelineMigrationService
+    arguments: ['@entity_type.manager', '@database', '@logger.factory']
+  
+  saho_timeline.filter_service:
+    class: Drupal\saho_timeline\Service\TimelineFilterService
+    arguments: ['@entity_type.manager', '@request_stack']

@@ -1,0 +1,518 @@
+/**
+ * Search Suggestions Cards
+ * Beautiful card-styled search suggestions for 1-2 results
+ * Using SAHO color palette
+ */
+
+// Import SAHO colors from _bootswatch.scss
+$saho-deep-heritage-red: #97212d; // Primary heritage red
+$saho-dark-charcoal: #343a40; // Gray-800
+$saho-muted-gold: #b88a2e; // Gold accent
+$saho-aged-parchment: #f5f0e5; // Light background
+$saho-slate-blue: #3a4a64; // Professional blue
+$saho-faded-brick-red: #8b2331; // Secondary red
+$saho-forest-green: #2d5016; // Biography green
+
+// Search suggestions container
+.saho-search-suggestions {
+  position: relative;
+  margin-top: 1rem;
+  
+  // Always maintain consistent card width (same as 3-card layout)
+  .suggestions-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    max-width: 1200px; // Constrains to ~3 cards max width
+    gap: 1.5rem;
+    padding: 0;
+    margin: 0 auto;
+    
+    // Force consistent card width regardless of count
+    .suggestion-card {
+      width: 380px; // Fixed width per card
+      flex: 0 0 380px; // Don't grow or shrink
+    }
+  }
+}
+
+// Individual suggestion card
+.suggestion-card {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba($saho-deep-heritage-red, 0.1);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  
+  // Hover state
+  &:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 40px rgba($saho-deep-heritage-red, 0.15);
+    border-color: rgba($saho-deep-heritage-red, 0.3);
+    
+    .suggestion-image {
+      img {
+        transform: scale(1.05);
+      }
+    }
+    
+    .suggestion-title a {
+      color: darken($saho-deep-heritage-red, 10%);
+    }
+    
+    .suggestion-action {
+      background-color: $saho-deep-heritage-red;
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+  
+  // Featured suggestion indicator
+  &.featured-suggestion {
+    border: 2px solid $saho-muted-gold;
+    box-shadow: 0 6px 25px rgba($saho-muted-gold, 0.15);
+    
+    &::before {
+      content: 'FEATURED';
+      position: absolute;
+      top: 20px;
+      right: -30px;
+      background: linear-gradient(135deg, $saho-muted-gold, darken($saho-muted-gold, 10%));
+      color: white;
+      padding: 4px 40px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      transform: rotate(45deg);
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+      z-index: 10;
+    }
+  }
+}
+
+// Card image section
+.suggestion-image {
+  height: 180px;
+  overflow: hidden;
+  background: linear-gradient(135deg, $saho-aged-parchment, darken($saho-aged-parchment, 5%));
+  position: relative;
+  
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+  }
+  
+  // Fallback when no image
+  &.no-image {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, $saho-slate-blue, darken($saho-slate-blue, 10%));
+    
+    &::before {
+      content: '📚';
+      font-size: 48px;
+      opacity: 0.6;
+    }
+  }
+  
+  // Content type badge
+  .content-type-badge {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    background: rgba(white, 0.95);
+    backdrop-filter: blur(10px);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    
+    // Different colors for different content types
+    &.type-biography {
+      background: rgba($saho-forest-green, 0.9);
+      color: white;
+      
+      &::before {
+        content: '👤';
+      }
+    }
+    
+    &.type-event {
+      background: rgba($saho-deep-heritage-red, 0.9);
+      color: white;
+      
+      &::before {
+        content: '📅';
+      }
+    }
+    
+    &.type-article {
+      background: rgba($saho-slate-blue, 0.9);
+      color: white;
+      
+      &::before {
+        content: '📰';
+      }
+    }
+    
+    &.type-archive {
+      background: rgba($saho-dark-charcoal, 0.9);
+      color: white;
+      
+      &::before {
+        content: '📁';
+      }
+    }
+  }
+}
+
+// Card content section
+.suggestion-content {
+  padding: 20px;
+  
+  // Title
+  .suggestion-title {
+    margin: 0 0 12px 0;
+    
+    a {
+      color: $saho-deep-heritage-red;
+      text-decoration: none;
+      font-size: 1.25rem;
+      font-weight: 700;
+      line-height: 1.3;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      transition: color 0.3s ease;
+      
+      &:hover {
+        color: darken($saho-deep-heritage-red, 15%);
+        text-decoration: underline;
+      }
+    }
+  }
+  
+  // Meta information
+  .suggestion-meta {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 12px;
+    font-size: 0.875rem;
+    color: #666;
+    
+    .meta-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      
+      svg, .icon {
+        width: 14px;
+        height: 14px;
+        opacity: 0.6;
+      }
+    }
+    
+    .date {
+      &::before {
+        content: '📅';
+        margin-right: 3px;
+      }
+    }
+    
+    .author {
+      &::before {
+        content: '✍️';
+        margin-right: 3px;
+      }
+    }
+    
+    .location {
+      &::before {
+        content: '📍';
+        margin-right: 3px;
+      }
+    }
+  }
+  
+  // Description/excerpt
+  .suggestion-description {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: $saho-dark-charcoal;
+    margin-bottom: 15px;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    
+    // Highlight matching terms
+    mark, .highlight {
+      background: linear-gradient(120deg, rgba($saho-muted-gold, 0.3) 0%, rgba($saho-muted-gold, 0.3) 100%);
+      background-size: 100% 40%;
+      background-position: 0 85%;
+      background-repeat: no-repeat;
+      padding: 0 2px;
+      font-weight: 600;
+      color: darken($saho-dark-charcoal, 10%);
+    }
+  }
+  
+  // Tags/categories
+  .suggestion-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 15px;
+    
+    .tag {
+      background: $saho-aged-parchment;
+      color: $saho-dark-charcoal;
+      padding: 4px 10px;
+      border-radius: 15px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      
+      &:hover {
+        background: darken($saho-aged-parchment, 10%);
+        transform: translateY(-2px);
+      }
+    }
+  }
+}
+
+// Card footer/action section
+.suggestion-footer {
+  padding: 0 20px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  
+  .suggestion-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba($saho-deep-heritage-red, 0.1);
+    color: $saho-deep-heritage-red;
+    padding: 10px 18px;
+    border-radius: 25px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    transform: translateX(-5px);
+    opacity: 0.9;
+    
+    &::after {
+      content: '→';
+      font-size: 1.1rem;
+      transition: transform 0.3s ease;
+    }
+    
+    &:hover {
+      background: $saho-deep-heritage-red;
+      color: white;
+      transform: translateX(0);
+      opacity: 1;
+      
+      &::after {
+        transform: translateX(5px);
+      }
+    }
+  }
+  
+  .suggestion-relevance {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.8rem;
+    color: #999;
+    
+    .relevance-score {
+      display: flex;
+      gap: 2px;
+      
+      .star {
+        color: $saho-muted-gold;
+        
+        &.filled {
+          color: $saho-muted-gold;
+        }
+        
+        &.empty {
+          color: #ddd;
+        }
+      }
+    }
+  }
+}
+
+// Loading state for suggestions
+.suggestions-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  
+  .loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid $saho-aged-parchment;
+    border-top-color: $saho-deep-heritage-red;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  
+  .loading-text {
+    margin-left: 1rem;
+    color: $saho-dark-charcoal;
+    font-weight: 500;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// No suggestions state
+.no-suggestions {
+  text-align: center;
+  padding: 3rem;
+  background: $saho-aged-parchment;
+  border-radius: 12px;
+  
+  .no-suggestions-icon {
+    font-size: 48px;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+  }
+  
+  .no-suggestions-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: $saho-dark-charcoal;
+    margin-bottom: 0.5rem;
+  }
+  
+  .no-suggestions-text {
+    color: #666;
+    margin-bottom: 1.5rem;
+  }
+  
+  .alternative-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    
+    a {
+      display: inline-flex;
+      align-items: center;
+      padding: 10px 20px;
+      background: white;
+      border: 2px solid $saho-deep-heritage-red;
+      color: $saho-deep-heritage-red;
+      border-radius: 25px;
+      text-decoration: none;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      
+      &:hover {
+        background: $saho-deep-heritage-red;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba($saho-deep-heritage-red, 0.2);
+      }
+    }
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .saho-search-suggestions {
+    .suggestions-container {
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      
+      .suggestion-card {
+        width: 100%;
+        max-width: 480px; // Still constrained on mobile
+        flex: 0 0 auto;
+      }
+    }
+  }
+  
+  .suggestion-card {
+    &.featured-suggestion::before {
+      display: none; // Hide ribbon on mobile
+    }
+  }
+  
+  .suggestion-image {
+    height: 150px;
+  }
+  
+  .suggestion-content {
+    padding: 15px;
+    
+    .suggestion-title a {
+      font-size: 1.1rem;
+    }
+    
+    .suggestion-description {
+      font-size: 0.9rem;
+      -webkit-line-clamp: 2;
+    }
+  }
+  
+  .suggestion-footer {
+    flex-direction: column;
+    gap: 10px;
+    align-items: stretch;
+    
+    .suggestion-action {
+      text-align: center;
+      justify-content: center;
+    }
+  }
+}
+
+// Animation for cards appearing
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.suggestion-card {
+  animation: slideInUp 0.5s ease forwards;
+  
+  &:nth-child(1) {
+    animation-delay: 0.1s;
+  }
+  
+  &:nth-child(2) {
+    animation-delay: 0.2s;
+  }
+}

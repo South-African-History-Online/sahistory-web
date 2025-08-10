@@ -1,0 +1,135 @@
+{#
+/**
+ * @file
+ * Default theme implementation for timeline filters.
+ *
+ * Available variables:
+ * - filters: Array of filter options.
+ * - active_filters: Array of currently active filters.
+ * - attributes: HTML attributes for the filters container.
+ *
+ * @ingroup themeable
+ */
+#}
+<div{{ attributes.addClass('saho-timeline-filters') }}>
+  <div class="filters-header">
+    <h3 class="filters-title">{{ 'Filter Historical Events'|t }}</h3>
+    <button class="filters-toggle d-md-none" type="button" data-bs-toggle="collapse" data-bs-target="#timeline-filters" aria-expanded="false">
+      {{ 'Show Filters'|t }}
+    </button>
+  </div>
+
+  <div id="timeline-filters" class="filters-content collapse show">
+    <div class="row">
+      {% if filters.content_type %}
+        <div class="col-md-6 col-lg-4 mb-3">
+          <label class="form-label">{{ filters.content_type.label }}</label>
+          <select name="content_type" class="form-select">
+            {% for value, label in filters.content_type.options %}
+              <option value="{{ value }}" {{ active_filters.content_type == value ? 'selected' }}>
+                {{ label }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+      {% endif %}
+
+      {% if filters.time_period %}
+        <div class="col-md-6 col-lg-4 mb-3">
+          <label class="form-label">{{ filters.time_period.label }}</label>
+          <select name="time_period" class="form-select">
+            {% for value, label in filters.time_period.options %}
+              <option value="{{ value }}" {{ active_filters.time_period == value ? 'selected' }}>
+                {{ label }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+      {% endif %}
+
+      {% if filters.themes %}
+        <div class="col-md-6 col-lg-4 mb-3">
+          <label class="form-label">{{ filters.themes.label }}</label>
+          <select name="themes" class="form-select" multiple>
+            {% for value, label in filters.themes.options %}
+              <option value="{{ value }}" {{ value in active_filters.themes|default([]) ? 'selected' }}>
+                {{ label }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+      {% endif %}
+    </div>
+
+    <div class="row">
+      {% if filters.geographical_location %}
+        <div class="col-12 mb-3">
+          <label class="form-label">{{ filters.geographical_location.label }}</label>
+          <div class="location-checkboxes">
+            {% for value, label in filters.geographical_location.options %}
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" name="geographical_location[]" value="{{ value }}" id="location-{{ value }}"
+                  {{ value in active_filters.geographical_location|default([]) ? 'checked' }}>
+                <label class="form-check-label" for="location-{{ value }}">
+                  {{ label }}
+                </label>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
+    </div>
+
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        <label class="form-label">{{ 'Start Date'|t }}</label>
+        <input type="date" name="start_date" class="form-control" value="{{ active_filters.start_date|default('') }}">
+      </div>
+      <div class="col-md-6 mb-3">
+        <label class="form-label">{{ 'End Date'|t }}</label>
+        <input type="date" name="end_date" class="form-control" value="{{ active_filters.end_date|default('') }}">
+      </div>
+    </div>
+
+    <div class="filter-actions">
+      <button type="button" class="btn btn-primary apply-filters">
+        {{ 'Apply Filters'|t }}
+      </button>
+      <button type="button" class="btn btn-outline-secondary clear-filters">
+        {{ 'Clear All'|t }}
+      </button>
+    </div>
+
+    <div class="active-filters-summary mt-3">
+      {% if active_filters %}
+        <h4 class="h6">{{ 'Active Filters:'|t }}</h4>
+        <div class="active-filter-tags">
+          {% for key, value in active_filters %}
+            {% if value and value != 'all' %}
+              <span class="badge bg-primary me-1 mb-1">
+                {% if key == 'content_type' %}
+                  {{ 'Type'|t }}: {{ filters.content_type.options[value]|default(value) }}
+                {% elseif key == 'time_period' %}
+                  {{ 'Period'|t }}: {{ filters.time_period.options[value]|default(value) }}
+                {% elseif key == 'keywords' %}
+                  {{ 'Search'|t }}: "{{ value }}"
+                {% elseif key == 'start_date' %}
+                  {{ 'From'|t }}: {{ value|date('M j, Y') }}
+                {% elseif key == 'end_date' %}
+                  {{ 'To'|t }}: {{ value|date('M j, Y') }}
+                {% elseif key == 'geographical_location' and value is iterable %}
+                  {{ 'Location'|t }}: {{ value|join(', ') }}
+                {% elseif key == 'themes' and value is iterable %}
+                  {{ 'Themes'|t }}: {{ value|join(', ') }}
+                {% else %}
+                  {{ key|title }}: {{ value }}
+                {% endif %}
+                <button type="button" class="btn-close btn-close-white ms-1" data-filter="{{ key }}" aria-label="{{ 'Remove filter'|t }}"></button>
+              </span>
+            {% endif %}
+          {% endfor %}
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>

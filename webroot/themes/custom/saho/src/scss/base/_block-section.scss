@@ -1,80 +1,177 @@
 // Block Section Styling
-// Modern and professional styling for block sections
+// Modern and professional styling for block sections to complement TDIH interactive block
 
 // Featured topics and TDIH blocks container
 .two-blocks-container {
-  display: flex;
-  gap: 2rem;
-  justify-content: center; /* horizontally center both blocks in the container */
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+  gap: 3rem;
+  justify-content: center;
+  align-items: start;
   margin: 2rem 0;
+  max-width: 1600px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 0 1.5rem;
 }
 
-// Main block section styling
+// Clean modern block section styling - matching TDIH design
 .block-section {
-  margin: 0 auto; /* center each block within its "column" */
-  max-width: 320px;
-  text-align: center;
+  background: $white;
+  border-radius: 8px;
+  border: 1px solid $gray-200;
+  padding: 2rem;
   font-family: $font-family-base;
   color: $gray-800;
-  background-color: #fff;
-  padding: 1.5rem;
-  border-radius: 8px;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: all 0.3s ease;
+  position: relative;
   
+  // Override bootswatch.scss restrictive width
+  max-width: none !important;
+  width: 100%;
+  margin: 0;
+  text-align: left;
+  
+  // Clean hover effect
   &:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 8px rgba($gray-900, 0.1);
+    border-color: $gray-300;
   }
 }
 
-/* Larger heading for each block */
-.block-section h2 {
-  font-size: 1.4rem;
-  color: $saho-deep-heritage-red;
-  margin-bottom: 0.75rem;
-  font-family: $headings-font-family;
-  font-weight: $headings-font-weight;
+/* Clean heading with left accent bar - TDIH style */
+.block-section-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid $gray-200;
+  
+  .block-title-wrapper {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    
+    // Left accent bar
+    &::before {
+      content: '';
+      width: 4px;
+      height: 2rem;
+      background: $saho-deep-heritage-red;
+      flex-shrink: 0;
+      margin-top: 0.25rem;
+    }
+    
+    h2 {
+      font-size: 1.5rem;
+      color: $gray-800;
+      margin: 0;
+      font-family: $headings-font-family;
+      font-weight: 600;
+      line-height: 1.3;
+    }
+  }
+  
+  .block-meta {
+    font-size: 0.9rem;
+    color: $gray-600;
+    font-weight: 500;
+    flex-shrink: 0;
+  }
 }
 
-/* Intro text */
+/* Clean intro text */
 .block-section .intro-text {
   font-size: 0.9rem;
-  color: $gray-700;
+  color: $gray-600;
   line-height: 1.5;
-  margin-bottom: 1.25rem;
+  margin-bottom: 1.5rem;
+  font-weight: 400;
 }
 
-/* Image styling */
+/* Clean content area */
+.block-section .block-content {
+  margin-bottom: 1.5rem;
+}
+
+/* Clean image styling - TDIH style */
 .block-section .block-image {
   width: 100%;
-  height: auto;
+  height: 250px;
   border-radius: 8px;
   margin-bottom: 1rem;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease;
+  position: relative;
+  overflow: hidden;
   
-  &:hover {
-    transform: scale(1.02);
+  img {
+    width: 100%;
+    height: 100%;
+    border-radius: 8px;
+    display: block;
+    object-fit: cover;
+    object-position: center;
   }
 }
 
-/* Label (e.g. "Article", "Date") */
-.block-section .block-label {
-  font-size: 0.85rem;
-  color: $gray-600;
-  margin-bottom: 0.25rem;
-  font-style: italic;
+/* Clean overlay label - TDIH style */
+.block-section .block-image-wrapper {
+  position: relative;
+  margin-bottom: 1rem;
+  width: 100%;
+  height: 250px;
+  border-radius: 8px;
+  overflow: hidden;
+  
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    border-radius: 8px;
+    display: block;
+  }
+  
+  .block-label {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    background: $saho-deep-heritage-red;
+    color: $white;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    z-index: 2;
+  }
 }
 
-/* Subheading (title) */
+/* Clean title styling - TDIH style */
 .block-section h3 {
-  font-size: 1.1rem;
-  margin: 0 0 1rem;
-  line-height: 1.3;
+  font-size: 1.25rem;
+  margin: 0 0 0.5rem;
+  line-height: 1.4;
   font-family: $headings-font-family;
-  font-weight: $headings-font-weight;
+  font-weight: 600;
+  color: $gray-900;
+}
+
+/* Date/meta info */
+.block-section .block-date {
+  font-size: 0.9rem;
+  color: $gray-600;
+  margin-bottom: 1rem;
+  font-weight: 500;
+}
+
+/* Description text */
+.block-section .block-description {
+  font-size: 0.95rem;
+  color: $gray-700;
+  line-height: 1.5;
+  margin-bottom: 1.5rem;
 }
 
 /* Title link */
@@ -97,25 +194,51 @@
   color: $gray-700;
 }
 
-/* "More events"/"More features" button */
-.block-section .block-button {
+/* Clean button styling - TDIH style */
+.block-section .block-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.block-section .block-button,
+.block-section .block-button-primary,
+.block-section .block-button-secondary {
   display: inline-block;
-  padding: 0.6rem 1.2rem;
-  border: 1px solid $saho-deep-heritage-red;
-  color: $saho-deep-heritage-red;
-  background-color: transparent;
+  padding: 0.75rem 1.5rem;
   border-radius: 25px;
   text-decoration: none;
   font-size: 0.9rem;
-  font-weight: 600;
+  font-weight: 500;
+  text-align: center;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  cursor: pointer;
+  border: none;
+}
+
+/* Primary button - filled */
+.block-section .block-button,
+.block-section .block-button-primary {
+  background: $saho-deep-heritage-red;
+  color: $white;
   
   &:hover {
-    background-color: $saho-deep-heritage-red;
-    color: white;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    background: darken($saho-deep-heritage-red, 8%);
+    color: $white;
+    text-decoration: none;
+  }
+}
+
+/* Secondary button - outlined */
+.block-section .block-button-secondary {
+  background: transparent;
+  color: $saho-deep-heritage-red;
+  border: 1px solid $saho-deep-heritage-red;
+  
+  &:hover {
+    background: $saho-deep-heritage-red;
+    color: $white;
+    text-decoration: none;
   }
 }
 
@@ -201,14 +324,113 @@
   font-style: italic;
 }
 
-// Responsive adjustments
-@media (max-width: 767px) {
+// Enhanced responsive design to complement TDIH block
+@include media-breakpoint-down(lg) {
   .two-blocks-container {
-    gap: 1.5rem;
+    grid-template-columns: 1fr;
+    max-width: 1000px;
+    gap: 2.5rem;
   }
   
+  .block-section {
+    max-width: none;
+    width: 100%;
+  }
+}
+
+@include media-breakpoint-down(md) {
+  .two-blocks-container {
+    gap: 2rem;
+    padding: 0 1rem;
+    margin: 1.5rem auto;
+    max-width: 90%;
+  }
+  
+  .block-section {
+    padding: 1.75rem;
+    
+    h2 {
+      font-size: 1.5rem;
+    }
+    
+    .intro-text {
+      font-size: 0.95rem;
+      max-width: none;
+    }
+    
+    .block-image,
+    .block-image-wrapper {
+      height: 200px;
+    }
+    
+    .block-button {
+      padding: 0.6rem 1.5rem;
+      font-size: 0.9rem;
+    }
+  }
+}
+
+@include media-breakpoint-down(sm) {
+  .block-section {
+    padding: 1.25rem;
+    
+    h2 {
+      font-size: 1.4rem;
+      
+      &::after {
+        width: 50px;
+      }
+    }
+    
+    .block-image,
+    .block-image-wrapper {
+      height: 180px;
+      border-radius: 8px;
+    }
+    
+    .block-button {
+      padding: 0.6rem 1.25rem;
+      font-size: 0.85rem;
+      letter-spacing: 0.3px;
+    }
+    
+    .featured-content {
+      padding: 1.25rem;
+    }
+  }
+}
+
+// High contrast mode support
+@media (prefers-contrast: high) {
+  .block-section {
+    border: 2px solid $gray-700;
+    
+    &::before {
+      background: $saho-deep-heritage-red;
+    }
+    
+    .block-button {
+      border: 2px solid $saho-deep-heritage-red;
+    }
+  }
+}
+
+// Reduced motion support
+@media (prefers-reduced-motion: reduce) {
   .block-section,
-  .entity-overview-item {
-    max-width: 100%;
+  .block-section *,
+  .block-section .block-image,
+  .block-section .block-button,
+  .block-section .featured-content {
+    transition: none !important;
+    animation: none !important;
+  }
+  
+  .block-section:hover {
+    transform: none;
+  }
+  
+  .block-section .block-button::before {
+    transition: none;
   }
 }

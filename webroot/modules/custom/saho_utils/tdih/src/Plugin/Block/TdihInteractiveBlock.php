@@ -233,7 +233,7 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
       $birth_date = sprintf('%04d-%02d-%02d', $year, $month, $day);
       $month_day_pattern = sprintf('%02d-%02d', $month, $day);
 
-      // Load all events for this month-day combination - use loadAllBirthdayEvents to get ALL events
+      // Load all events for month-day combination - get ALL events
       // not just those featured on the home page.
       $nodes = $node_fetcher->loadAllBirthdayEvents($month_day_pattern);
       $exact_match_items = [];
@@ -294,7 +294,7 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
       $raw_date = $node->get('field_this_day_in_history_3')->value;
       $event_timestamp = 0;
       if (!empty($raw_date)) {
-        // Parse the date as-is without timezone conversion to avoid date shifting.
+        // Parse date as-is without timezone conversion to avoid shifting.
         // The raw_date should be in YYYY-MM-DD format.
         $dt = new \DateTime($raw_date);
         $event_timestamp = $dt->getTimestamp();
@@ -356,11 +356,11 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
       $nodes = $this->nodeFetcher->loadPotentialEvents($target_date);
 
       if (!empty($nodes)) {
-        // Build the node items for rendering and filter by exact date (front page filtering already done in NodeFetcher).
+        // Build node items for rendering and filter by exact date.
         foreach ($nodes as $node) {
           $item = $this->buildNodeItem($node);
 
-          // Check if this item matches the target date using simple string operations.
+          // Check if this item matches target date using strings.
           if (!empty($item['raw_date'])) {
             // Extract MM-DD from YYYY-MM-DD format.
             if (preg_match('/\d{4}-(\d{2})-(\d{2})/', $item['raw_date'], $matches)) {
@@ -412,7 +412,7 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
     $raw_date = $node->get('field_this_day_in_history_3')->value;
     $event_timestamp = 0;
     if (!empty($raw_date)) {
-      // Parse the date as-is without timezone conversion to avoid date shifting.
+      // Parse date as-is without timezone conversion to avoid shifting.
       // The raw_date should be in YYYY-MM-DD format.
       $dt = new \DateTime($raw_date);
       $event_timestamp = $dt->getTimestamp();

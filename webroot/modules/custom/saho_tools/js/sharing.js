@@ -12,7 +12,6 @@
     Drupal.behaviors.sahoSharing = {
         attach: function (context, settings) {
 
-
             once('sahoSharing', 'a[data-sharing-trigger], button[data-sharing-trigger]', context).forEach(
                 function (element) {
 
@@ -122,7 +121,7 @@
                     e.preventDefault();
                     e.stopPropagation();
                     Drupal.sahoSharing.hideModalWithjQuery($modal);
-                    return false;
+                    return FALSE;
                 }
             );
 
@@ -143,7 +142,7 @@
                     Drupal.sahoSharing.hideModalWithjQuery($modal);
                 }
             );
-            
+
             // Initialize URL copy functionality
             this.initializeUrlCopy();
         },
@@ -179,7 +178,7 @@
                     $(button).on('click', function (e) {
                         e.preventDefault();
                         const urlInput = document.getElementById('page-url-input');
-                        
+
                         if (urlInput) {
                             // Select the text
                             urlInput.select();
@@ -187,9 +186,9 @@
 
                             // Try modern clipboard API first
                             if (navigator.clipboard && navigator.clipboard.writeText) {
-                                navigator.clipboard.writeText(urlInput.value).then(function() {
+                                navigator.clipboard.writeText(urlInput.value).then(function () {
                                     Drupal.sahoSharing.showCopyFeedback($(button), 'URL copied!');
-                                }).catch(function(err) {
+                                }).catch(function (err) {
                                     // Fall back to execCommand
                                     Drupal.sahoSharing.fallbackCopyText(urlInput.value, $(button));
                                 });
@@ -219,7 +218,7 @@
             textarea.style.position = 'absolute';
             textarea.style.left = '-9999px';
             document.body.appendChild(textarea);
-            
+
             // Select and copy
             textarea.select();
             try {
@@ -227,12 +226,12 @@
                 if (successful) {
                     this.showCopyFeedback($button, 'URL copied!');
                 } else {
-                    this.showCopyFeedback($button, 'Copy failed', true);
+                    this.showCopyFeedback($button, 'Copy failed', TRUE);
                 }
             } catch (err) {
-                this.showCopyFeedback($button, 'Copy failed', true);
+                this.showCopyFeedback($button, 'Copy failed', TRUE);
             }
-            
+
             // Clean up
             document.body.removeChild(textarea);
         },
@@ -250,7 +249,7 @@
         showCopyFeedback: function ($button, message, isError = false) {
             const originalText = $button.html();
             const originalClass = $button.attr('class');
-            
+
             // Update button
             if (isError) {
                 $button.removeClass('url-copy-btn').addClass('btn-danger').html(
@@ -265,16 +264,16 @@
                     '</svg> ' + message
                 );
             }
-            
+
             // Restore original button after 2 seconds
             setTimeout(function () {
                 $button.attr('class', originalClass).html(originalText);
             }, 2000);
         }
     };
-    
+
     // Initialize URL copy functionality when the document is ready
-    $(document).ready(function() {
+    $(document).ready(function () {
         Drupal.sahoSharing.initializeUrlCopy();
     });
 

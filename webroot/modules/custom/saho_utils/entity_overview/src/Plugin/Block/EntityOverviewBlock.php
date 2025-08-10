@@ -32,10 +32,9 @@ class EntityOverviewBlock extends BlockBase implements ContainerFactoryPluginInt
       'intro_text' => 'Displaying the latest content from the %title section of the site.',
       'enable_filtering' => FALSE,
       'enable_sorting' => FALSE,
-      // No display toggles needed
+      // No display toggles needed.
     ] + parent::defaultConfiguration();
   }
-
 
   /**
    * {@inheritdoc}
@@ -81,12 +80,9 @@ class EntityOverviewBlock extends BlockBase implements ContainerFactoryPluginInt
       ],
     ];
 
-    // No longer using filtering - focus on sorting and display modes
-
-    // Sorting is handled via backend configuration only
-
-    // No display mode toggle needed - clean content display only
-
+    // No longer using filtering - focus on sorting and display modes.
+    // Sorting is handled via backend configuration only.
+    // No display mode toggle needed - clean content display only.
     $form['sort_order'] = [
       '#type' => 'radios',
       '#title' => $this->t('Sort Order'),
@@ -106,7 +102,6 @@ class EntityOverviewBlock extends BlockBase implements ContainerFactoryPluginInt
       '#max' => 50,
     ];
 
-
     return $form;
   }
 
@@ -122,7 +117,7 @@ class EntityOverviewBlock extends BlockBase implements ContainerFactoryPluginInt
     $this->configuration['limit'] = $form_state->getValue('limit');
     $this->configuration['enable_filtering'] = FALSE;
     // No frontend sorting controls needed
-    // No display toggle configuration needed
+    // No display toggle configuration needed.
   }
 
   /**
@@ -133,15 +128,16 @@ class EntityOverviewBlock extends BlockBase implements ContainerFactoryPluginInt
     $sort_order = $this->configuration['sort_order'];
     $limit = $this->configuration['limit'];
     // Simplified - backend configuration only
-    // Use custom header if provided, otherwise fall back to block label
+    // Use custom header if provided, otherwise fall back to block label.
     $custom_header = $this->configuration['custom_header'];
     if (!empty($custom_header)) {
-      // Get content type label for token replacement
+      // Get content type label for token replacement.
       $content_types = \Drupal::service('entity_type.bundle.info')->getBundleInfo('node');
       $content_type_label = $content_types[$content_type]['label'] ?? $content_type;
-      
+
       $block_title = str_replace('%content_type', $content_type_label, $custom_header);
-    } else {
+    }
+    else {
       $block_title = $this->configuration['label'] ?? '';
     }
     $intro_text = $this->configuration['intro_text'];
@@ -164,7 +160,7 @@ class EntityOverviewBlock extends BlockBase implements ContainerFactoryPluginInt
       $query->sort('changed', 'ASC');
     }
     else {
-      // Default to latest changed
+      // Default to latest changed.
       $query->sort('changed', 'DESC');
     }
 
@@ -176,8 +172,7 @@ class EntityOverviewBlock extends BlockBase implements ContainerFactoryPluginInt
       $items[] = $this->buildEntityItem($node);
     }
 
-    // Simple display - no load more functionality needed
-
+    // Simple display - no load more functionality needed.
     // Return the render array.
     $build = [
       '#theme' => 'entity_overview_block',
@@ -186,7 +181,7 @@ class EntityOverviewBlock extends BlockBase implements ContainerFactoryPluginInt
       '#intro_text' => $intro_text,
       '#block_id' => $block_id,
       // No filter options
-      // Backend sorting only
+      // Backend sorting only.
       '#current_sort_order' => $sort_order,
       '#cache' => [
         'contexts' => ['url.query_args'],
@@ -228,7 +223,6 @@ class EntityOverviewBlock extends BlockBase implements ContainerFactoryPluginInt
 
     return $query->count()->execute();
   }
-
 
   /**
    * Builds a data array from the node.
@@ -273,36 +267,39 @@ class EntityOverviewBlock extends BlockBase implements ContainerFactoryPluginInt
       }
     }
 
-    // Extract teaser text from body field
+    // Extract teaser text from body field.
     $teaser_text = '';
     $body_field_candidates = ['body', 'field_body', 'field_description', 'field_summary'];
-    
+
     foreach ($body_field_candidates as $field_name) {
       if ($node->hasField($field_name) && !$node->get($field_name)->isEmpty()) {
         $body_field = $node->get($field_name)->first();
         if ($body_field) {
           $body_value = $body_field->getValue();
           $body_text = $body_value['value'] ?? '';
-          
+
           // Strip HTML and create teaser (around 150 characters)
           $teaser_text = strip_tags($body_text);
           $teaser_text = substr($teaser_text, 0, 150);
-          
-          // Find the last complete sentence or word within the limit
+
+          // Find the last complete sentence or word within the limit.
           if (strlen($teaser_text) == 150) {
             $last_period = strrpos($teaser_text, '.');
             $last_space = strrpos($teaser_text, ' ');
-            
-            if ($last_period !== false && $last_period > 100) {
+
+            if ($last_period !== FALSE && $last_period > 100) {
               $teaser_text = substr($teaser_text, 0, $last_period + 1);
-            } elseif ($last_space !== false) {
+            }
+            elseif ($last_space !== FALSE) {
               $teaser_text = substr($teaser_text, 0, $last_space) . '...';
-            } else {
+            }
+            else {
               $teaser_text .= '...';
             }
           }
-          
-          break; // Use first available body field
+
+          // Use first available body field.
+          break;
         }
       }
     }

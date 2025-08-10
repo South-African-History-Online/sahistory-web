@@ -1,0 +1,61 @@
+{#
+/**
+ * @file
+ * Default theme implementation for the SAHO timeline.
+ *
+ * Available variables:
+ * - events: Array of event nodes or grouped events.
+ * - timeline_type: The display mode (default, compact, expanded, horizontal).
+ * - filters: Array of filter options.
+ * - attributes: HTML attributes for the timeline container.
+ *
+ * @ingroup themeable
+ */
+#}
+<div{{ attributes.addClass('timeline-premium', 'saho-timeline', 'saho-timeline--' ~ timeline_type) }}>
+  {% if filters %}
+    <div class="saho-timeline__filters">
+      {{ {'#theme': 'saho_timeline_filters', '#filters': filters}|render }}
+    </div>
+  {% endif %}
+
+  <div class="saho-timeline__content">
+    {% if timeline_type == 'horizontal' %}
+      <div class="saho-timeline__horizontal-container">
+        <div class="saho-timeline__line"></div>
+        {% for period, period_events in events %}
+          <div class="saho-timeline__period" data-period="{{ period }}">
+            <h3 class="saho-timeline__period-title">{{ period }}</h3>
+            <div class="saho-timeline__events">
+              {% for event in period_events %}
+                {{ {'#theme': 'saho_timeline_event', '#event': event, '#display_mode': timeline_type}|render }}
+              {% endfor %}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="saho-timeline__vertical-container">
+        {% for period, period_events in events %}
+          <div class="saho-timeline__period" data-period="{{ period }}">
+            <div class="saho-timeline__period-header">
+              <h3 class="saho-timeline__period-title">{{ period }}</h3>
+              <span class="saho-timeline__period-count">{{ period_events|length }} {{ 'event'|trans }}{{ period_events|length > 1 ? 's' }}</span>
+            </div>
+            <div class="saho-timeline__events">
+              {% for event in period_events %}
+                {{ {'#theme': 'saho_timeline_event', '#event': event, '#display_mode': timeline_type}|render }}
+              {% endfor %}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  </div>
+
+  <div class="saho-timeline__loading" style="display: none;">
+    <div class="spinner-border" role="status">
+      <span class="visually-hidden">{{ 'Loading...'|t }}</span>
+    </div>
+  </div>
+</div>

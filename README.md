@@ -18,7 +18,13 @@ This is a Github project is currently supported and maintained by Mads Nørgaard
 - [Composer](#composer)
 - [Drupal Configuration](#drupal-configuration-during-development)
 - [Code Quality Tools](#code-quality-tools)
+- [Custom Modules](#custom-modules)
+  - [Module Architecture](#module-architecture)
+  - [Available Modules](#available-modules)
 - [Theme Development](#radix-and-saho-subtheme)
+  - [Theme Architecture](#theme-architecture)
+  - [Component Development](#component-development)
+  - [Styling Guidelines](#styling-guidelines)
   - [Radix CLI with DDEV](#using-the-drupal-radix-cli-with-ddev)
 - [Git Strategy & Collaboration](#git-strategy--collaboration)
 - [Contributing to SAHO](#contributing-to-saho)
@@ -29,6 +35,8 @@ The full stack is:
 - **Drupal 11.1.7** (Project started with Drupal 6 and upgraded)
 - **PHP 8.3.10**
 - **Radix** theme framework with a custom subtheme called **"saho"**
+- **Bootstrap 5** for responsive design and UI components
+- **Node.js** for frontend asset compilation and build processes
 
 ## Development
 You can run this project in a local environment using DDEV (quick setup).
@@ -210,10 +218,277 @@ Drupal Check is used to identify deprecated code usage and other potential issue
 
 Running these tools regularly helps maintain code quality and prevents issues from accumulating over time.
 
+## Custom Modules
+
+The SAHO project includes several custom modules that provide specific functionality tailored to the site's needs. These modules are located in `/webroot/modules/custom/`.
+
+### Module Architecture
+
+Our custom modules follow Drupal's standard module structure and coding standards:
+
+- **Naming Convention**: All custom modules are prefixed with `saho_` to distinguish them from contributed modules
+- **Service-Oriented**: Modules utilize Drupal's service container for dependency injection
+- **Block Plugins**: Custom blocks are implemented as plugins for reusability
+- **Component-Based**: Frontend components use templates and libraries for consistent theming
+
+### Available Modules
+
+#### Core Functionality Modules
+
+##### `saho_tools`
+**Purpose**: Provides citation and sharing functionality across the site
+- **Features**:
+  - Citation generation for academic references
+  - Social media sharing buttons
+  - Citation formatter field plugin
+  - Citation block for node display
+- **Key Components**:
+  - CitationService: Handles citation formatting logic
+  - CitationController: Provides citation endpoints
+  - Custom JavaScript for citation interactions
+
+##### `saho_media_migration`
+**Purpose**: Handles migration of media assets and file mappings
+- **Features**:
+  - Batch processing for large media migrations
+  - File mapping service for tracking migrations
+  - Drush commands for command-line operations
+  - Admin UI for migration management
+- **Usage**: Essential for content migrations and media updates
+
+##### `saho_statistics`
+**Purpose**: Tracks and analyzes site usage statistics
+- **Features**:
+  - Term tracking for taxonomy usage
+  - Custom statistics collection
+  - Integration with Drupal's statistics module
+
+#### Utility Modules (`saho_utils`)
+
+The `saho_utils` module serves as a container for smaller, focused sub-modules:
+
+##### `tdih` (This Day in History)
+**Purpose**: Displays historical events for specific dates
+- **Features**:
+  - Interactive date selector
+  - Birthday event display
+  - AJAX-powered event loading
+  - Custom blocks for different display modes
+- **Components**:
+  - TdihBlock: Standard event display
+  - TdihInteractiveBlock: Interactive calendar interface
+  - NodeFetcher service: Retrieves events by date
+
+##### `featured_biography`
+**Purpose**: Showcases prominent biographical content
+- **Features**:
+  - Responsive biography cards
+  - Image carousel support
+  - Custom JavaScript for interactions
+  - Configurable block displays
+
+##### `featured_articles`
+**Purpose**: Highlights important articles and content
+- **Features**:
+  - Curated article selection
+  - Multiple display formats
+  - Integration with Views for dynamic content
+
+##### `entity_overview`
+**Purpose**: Provides comprehensive entity summaries
+- **Features**:
+  - Dynamic entity information display
+  - JavaScript-enhanced interactions
+  - Customizable overview templates
+
+#### Maintenance Modules
+
+##### `saho_cleanup`
+**Purpose**: Data cleanup and maintenance utilities
+- **Features**:
+  - Custom field type definitions
+  - Data migration helpers
+  - Legacy data handling
+
+##### `db_fixes`
+**Purpose**: Database maintenance and fixes
+- **Features**:
+  - Update hooks for database changes
+  - Data integrity checks
+  - Migration fixes
+
+##### `gdoc_field`
+**Purpose**: Google Docs field integration
+- **Features**:
+  - Custom field formatter for Google Docs
+  - Embedded document display
+  - Responsive iframe handling
+
+### Module Development Guidelines
+
+1. **Creating New Modules**:
+   - Use meaningful prefixes: `saho_` for general modules, descriptive names for specific features
+   - Include comprehensive README files in each module
+   - Follow Drupal coding standards (use PHPCS/PHPCBF)
+
+2. **Service Development**:
+   - Define services in `.services.yml` files
+   - Use dependency injection for service dependencies
+   - Document service methods with PHPDoc
+
+3. **Block Plugin Development**:
+   - Extend `BlockBase` for custom blocks
+   - Implement proper cache contexts and tags
+   - Use configuration forms for block settings
+
+4. **JavaScript Integration**:
+   - Define libraries in `.libraries.yml`
+   - Use Drupal behaviors for JavaScript initialization
+   - Follow ES6+ standards where supported
+
+5. **Template Structure**:
+   - Place templates in `templates/` directory
+   - Use semantic HTML5 elements
+   - Implement proper accessibility attributes
+
 ### Radix and "saho" Subtheme
 The SAHO website uses the Radix theme as the base, with a custom subtheme named "saho." The Radix theme allows for the use of components, which makes it easy to maintain consistency across the website.
 
 For detailed information on Radix, you can visit [Radix Documentation](https://radix.trydrupal.com/radix/working-with-the-components/components-intro).
+
+### Theme Architecture
+
+The SAHO theme follows a modern, component-based architecture built on top of Radix and Bootstrap 5:
+
+#### Directory Structure
+```
+webroot/themes/custom/saho/
+├── components/          # Radix components with Twig templates
+├── src/                 # Source files for compilation
+│   ├── scss/           # SCSS source files
+│   │   ├── base/       # Base styles and utilities
+│   │   └── components/ # Component-specific styles
+│   └── js/             # JavaScript source files
+├── css/                # Additional compiled CSS
+├── js/                 # Additional JavaScript files
+├── templates/          # Drupal template overrides
+└── includes/           # Theme hooks and preprocessing
+```
+
+### Component Development
+
+Components in the SAHO theme are self-contained units that include:
+- **Twig template** (`.twig`): HTML structure
+- **SCSS file** (`.scss`): Component styles
+- **Component definition** (`.component.yml`): Metadata and properties
+- **README** (`.mdx`): Documentation
+
+#### Available Components
+- **block**: Standard content blocks with consistent styling
+- **carousel**: Image and content carousels
+- **navbar**: Main navigation with responsive behavior
+- **page-footer**: Site footer with social links
+- **page-navigation**: Breadcrumbs and local navigation
+- **local-tasks**: Admin tabs and actions
+
+### Styling Guidelines
+
+#### SCSS Architecture
+The theme uses a structured SCSS approach:
+
+1. **Base Styles** (`src/scss/base/`):
+   - `_variables.scss`: Theme colors, spacing, typography
+   - `_mixins.scss`: Reusable style patterns
+   - `_typography.scss`: Font definitions and text styles
+   - `_utilities.scss`: Helper classes
+   - `_featured-biography.scss`: Biography-specific styles
+   - `_tdih-interactive.scss`: This Day in History styles
+
+2. **Component Styles** (`src/scss/components/`):
+   - `_unified-cards.scss`: Consistent card layouts
+   - `_glass-card.scss`: Modern glass-morphism effects
+   - `_hover-effects.scss`: Interactive hover states
+   - `_search-results.scss`: Search result styling
+   - `_context-sections.scss`: Contextual content areas
+
+3. **Additional Styles** (`css/`):
+   - `modern-modals.css`: Modal dialog enhancements
+   - `sidebar-accordion.css`: Collapsible sidebar elements
+   - `biography-metadata.css`: Biography-specific metadata display
+   - `url-truncation.css`: Smart URL display truncation
+
+#### CSS Best Practices
+- Use BEM naming convention for classes
+- Leverage Bootstrap 5 utilities where appropriate
+- Maintain mobile-first responsive design
+- Use CSS custom properties for dynamic theming
+- Minimize specificity to ease overrides
+
+#### JavaScript Architecture
+JavaScript files follow Drupal behaviors pattern:
+
+1. **Core Scripts** (`src/js/`):
+   - `main.script.js`: Primary theme JavaScript
+   - `search-enhancements.js`: Search UX improvements
+   - `mobile-enhancements.js`: Mobile-specific features
+   - `advanced-search.js`: Advanced search functionality
+
+2. **Bootstrap Integration**:
+   - Custom Bootstrap 5 configuration
+   - Toast notifications
+   - Tooltip initialization
+
+3. **Interactive Features** (`js/`):
+   - `sidebar-accordion.js`: Accordion functionality
+   - `sidebar-tabs.js`: Tab navigation
+   - `url-truncation.js`: Dynamic URL truncation
+
+### Build Process
+
+The theme uses Laravel Mix (Webpack) for asset compilation:
+
+1. **Install Dependencies**:
+   ```sh
+   cd webroot/themes/custom/saho
+   npm install
+   ```
+
+2. **Development Build** (with source maps):
+   ```sh
+   npm run dev
+   ```
+
+3. **Production Build** (minified):
+   ```sh
+   npm run production
+   ```
+
+4. **Watch Mode** (auto-compile on changes):
+   ```sh
+   npm run watch
+   ```
+
+5. **Code Quality** (Biome linting):
+   ```sh
+   npm run biome:check
+   npm run biome:fix
+   ```
+
+### Theme Configuration
+
+- **Libraries** (`saho.libraries.yml`): Defines CSS/JS assets
+- **Breakpoints** (`saho.breakpoints.yml`): Responsive breakpoints
+- **Theme Settings** (`saho.info.yml`): Theme metadata and regions
+- **Block Configuration** (`config/optional/`): Default block placement
+
+### Template Overrides
+
+The theme provides extensive template overrides organized by type:
+- **Content**: Node displays for articles, biographies, events
+- **Blocks**: Custom block templates
+- **Forms**: Search forms and exposed filters
+- **Views**: Landing pages, archives, search results
+- **Navigation**: Menus, breadcrumbs, pagers
 
 #### Working with the "saho" Subtheme
 - The "saho" subtheme builds upon Radix's component-based architecture.

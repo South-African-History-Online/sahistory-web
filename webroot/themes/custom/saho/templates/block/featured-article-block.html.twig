@@ -1,20 +1,32 @@
 <div class="block-section">
-  <h2>Featured topics</h2>
-  <p class="intro-text">Discover important themes, topics and events from South Africa’s past with our staff picks</p>
+  <div class="block-section-header">
+    <div class="block-title-wrapper">
+      <h2>Featured topics</h2>
+    </div>
+  </div>
+  
+  <p class="intro-text">Discover important themes, topics and events from South Africa's past with our staff picks</p>
 
   {% if article_item %}
-    {% if article_item.image %}
-      <img src="{{ article_item.image }}" alt="{{ article_item.title|striptags }}" class="block-image" />
-    {% endif %}
+    <div class="block-content">
+      {% if article_item.image %}
+        <div class="block-image-wrapper">
+          <img src="{{ article_item.image }}" alt="{{ article_item.title|striptags }}" class="block-image" />
+          <div class="block-label">Article</div>
+        </div>
+      {% endif %}
 
-    <div class="block-label">Article</div>
-
-    <h3>
-      <a href="{{ article_item.url }}">{{ article_item.title }}</a>
-    </h3>
+      <h3>
+        <a href="{{ article_item.url }}">{{ article_item.title }}</a>
+      </h3>
+    </div>
   {% else %}
-    <p class="block-main-text">No featured article found.</p>
+    <div class="block-content">
+      <p class="block-main-text">No featured article found.</p>
+    </div>
   {% endif %}
 
-  <a href="/featured" class="block-button">More features</a>
+  <div class="block-buttons">
+    <a href="/featured" class="block-button-secondary">More features</a>
+  </div>
 </div>

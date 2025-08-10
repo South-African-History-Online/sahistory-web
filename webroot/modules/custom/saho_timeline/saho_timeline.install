@@ -1,0 +1,159 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the SAHO Timeline module.
+ */
+
+use Drupal\Core\Database\Database;
+
+/**
+ * Implements hook_schema().
+ */
+function saho_timeline_schema() {
+  $schema['saho_timeline_migration'] = [
+    'description' => 'Tracks articles migrated to timeline events.',
+    'fields' => [
+      'article_id' => [
+        'description' => 'The original article node ID.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ],
+      'event_id' => [
+        'description' => 'The new event node ID.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ],
+      'migrated' => [
+        'description' => 'Timestamp when the migration occurred.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ],
+      'status' => [
+        'description' => 'Migration status (0 = failed, 1 = success).',
+        'type' => 'int',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 1,
+      ],
+    ],
+    'primary key' => ['article_id'],
+    'indexes' => [
+      'event_id' => ['event_id'],
+      'migrated' => ['migrated'],
+      'status' => ['status'],
+    ],
+  ];
+
+  return $schema;
+}
+
+/**
+ * Implements hook_install().
+ */
+function saho_timeline_install() {
+  // Set default configuration values.
+  $config = \Drupal::configFactory()->getEditable('saho_timeline.settings');
+  
+  $config->set('default_display_mode', 'default')
+    ->set('items_per_page', 20)
+    ->set('default_grouping', 'decade')
+    ->set('enable_infinite_scroll', TRUE)
+    ->set('enable_fuzzy_search', TRUE)
+    ->set('search_debounce', 500)
+    ->set('min_search_length', 3)
+    ->set('show_event_images', TRUE)
+    ->set('event_excerpt_length', 200)
+    ->set('enable_animations', TRUE)
+    ->set('show_period_counts', TRUE)
+    ->set('show_filters', TRUE)
+    ->set('enable_location_filter', TRUE)
+    ->set('enable_theme_filter', TRUE)
+    ->set('enable_date_range', TRUE)
+    ->set('include_tdih_events', TRUE)
+    ->set('parse_html_timelines', FALSE)
+    ->set('enable_solr', FALSE)
+    ->save();
+  
+  // Log installation.
+  \Drupal::logger('saho_timeline')->info('SAHO Timeline module installed successfully.');
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function saho_timeline_uninstall() {
+  // Remove configuration.
+  \Drupal::configFactory()->getEditable('saho_timeline.settings')->delete();
+  
+  // Clean up any cached data.
+  \Drupal::cache('data')->deleteAll();
+  \Drupal::cache('render')->deleteAll();
+  
+  // Log uninstallation.
+  \Drupal::logger('saho_timeline')->info('SAHO Timeline module uninstalled.');
+}
+
+/**
+ * Implements hook_requirements().
+ */
+function saho_timeline_requirements($phase) {
+  $requirements = [];
+  
+  if ($phase == 'runtime') {
+    // Check if event content type exists.
+    $node_type = \Drupal::entityTypeManager()
+      ->getStorage('node_type')
+      ->load('event');
+    
+    if (!$node_type) {
+      $requirements['saho_timeline_event_type'] = [
+        'title' => t('SAHO Timeline: Event Content Type'),
+        'value' => t('Missing'),
+        'severity' => REQUIREMENT_ERROR,
+        'description' => t('The Event content type is required for the SAHO Timeline module to function properly.'),
+      ];
+    }
+    else {
+      $requirements['saho_timeline_event_type'] = [
+        'title' => t('SAHO Timeline: Event Content Type'),
+        'value' => t('Enabled'),
+        'severity' => REQUIREMENT_OK,
+      ];
+    }
+    
+    // Check if TDIH field exists.
+    $field_storage = \Drupal::entityTypeManager()
+      ->getStorage('field_storage_config')
+      ->load('node.field_this_day_in_history_3');
+    
+    if (!$field_storage) {
+      $requirements['saho_timeline_tdih_field'] = [
+        'title' => t('SAHO Timeline: TDIH Field'),
+        'value' => t('Missing'),
+        'severity' => REQUIREMENT_WARNING,
+        'description' => t('The field_this_day_in_history_3 field is missing. Timeline functionality will be limited.'),
+      ];
+    }
+    else {
+      // Count events with TDIH data.
+      $query = \Drupal::database()->select('node__field_this_day_in_history_3', 'f');
+      $query->join('node_field_data', 'n', 'n.nid = f.entity_id');
+      $query->condition('n.type', 'event');
+      $query->condition('n.status', 1);
+      $count = $query->countQuery()->execute()->fetchField();
+      
+      $requirements['saho_timeline_tdih_field'] = [
+        'title' => t('SAHO Timeline: TDIH Events'),
+        'value' => t('@count events', ['@count' => $count]),
+        'severity' => REQUIREMENT_OK,
+        'description' => t('Timeline has @count events with date information.', ['@count' => $count]),
+      ];
+    }
+  }
+  
+  return $requirements;
+}
