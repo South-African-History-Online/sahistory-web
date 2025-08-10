@@ -335,7 +335,7 @@ class TimelineEventService {
         $raw_date = trim($dates->item(0)->textContent);
         $event_data['date'] = $this->normalizeFlexibleDate($raw_date);
       }
-      elseif ($item->hasAttribute('data-timeline-date')) {
+      elseif ($item instanceof \DOMElement && $item->hasAttribute('data-timeline-date')) {
         $raw_date = $item->getAttribute('data-timeline-date');
         $event_data['date'] = $this->normalizeFlexibleDate($raw_date);
       }

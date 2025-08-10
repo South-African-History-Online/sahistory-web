@@ -375,23 +375,22 @@ class FileMappingCommands extends DrushCommands {
    * Display a table (wrapper for Drush IO).
    */
   private function displayTable(array $headers, array $rows): void {
-    if (method_exists($this, 'io')) {
-      $this->io()->table($headers, $rows);
+    // Use parent's table method directly
+    if (method_exists($this, 'output')) {
+      $this->output()->writeln('');
+      foreach ($rows as $row) {
+        $this->output()->writeln(implode(' | ', $row));
+      }
+      $this->output()->writeln('');
     }
   }
 
   /**
    * Ask for confirmation (wrapper for Drush IO).
    */
-  private function confirm(string $question): bool {
-    if (method_exists($this, 'io')) {
-      return $this->io()->confirm($question);
-    }
-    
-    // Fallback for older Drush versions
-    $this->output()->writeln($question . ' [y/n]');
-    $answer = trim(fgets(STDIN));
-    return strtolower($answer) === 'y';
+  protected function confirm($question, $default = FALSE): bool {
+    // Use parent's confirm method with proper signature
+    return parent::confirm($question, $default);
   }
 
   /**

@@ -9,6 +9,10 @@ use Symfony\Component\HttpFoundation\Request;
 use Drupal\saho_timeline\Service\TimelineEventService;
 use Drupal\saho_timeline\Service\TimelineFilterService;
 use Drupal\Core\Render\RendererInterface;
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Entity\ContentEntityInterface;
+use Drupal\node\NodeInterface;
+use Drupal\file\FileInterface;
 
 /**
  * Controller for timeline API endpoints.
@@ -203,7 +207,7 @@ class TimelineApiController extends ControllerBase {
    *   The event date.
    */
   protected function getEventDateForSort($event) {
-    if (method_exists($event, 'hasField')) {
+    if ($event instanceof ContentEntityInterface) {
       // Check multiple date fields in order of preference for comprehensive coverage
       $date_fields = [
         'field_this_day_in_history_3',        // Primary TDIH field
@@ -271,7 +275,7 @@ class TimelineApiController extends ControllerBase {
       'categories' => [],
     ];
     
-    if (method_exists($event, 'id')) {
+    if ($event instanceof ContentEntityInterface) {
       $data['id'] = $event->id();
       $title = $event->label();
       $title = @iconv('UTF-8', 'UTF-8//IGNORE', $title);
@@ -300,7 +304,7 @@ class TimelineApiController extends ControllerBase {
       }
       
       // Fallback to creation date if no specific date field
-      if (empty($data['date'])) {
+      if (empty($data['date']) && $event instanceof NodeInterface) {
         $data['date'] = date('Y-m-d', $event->getCreatedTime());
       }
       

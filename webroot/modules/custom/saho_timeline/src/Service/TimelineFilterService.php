@@ -4,6 +4,8 @@ namespace Drupal\saho_timeline\Service;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Entity\ContentEntityInterface;
 
 /**
  * Service for managing timeline filters and facets.
@@ -284,7 +286,7 @@ class TimelineFilterService {
       }
       
       // Count time periods based on date.
-      if (method_exists($result, 'hasField') && $result->hasField('field_this_day_in_history_3') && !$result->get('field_this_day_in_history_3')->isEmpty()) {
+      if ($result instanceof ContentEntityInterface && $result->hasField('field_this_day_in_history_3') && !$result->get('field_this_day_in_history_3')->isEmpty()) {
         $period = $this->calculateTimePeriod($result);
         if ($period && !isset($facets['time_period'][$period])) {
           $facets['time_period'][$period] = 0;
@@ -295,7 +297,7 @@ class TimelineFilterService {
       }
       
       // Count geographical locations.
-      if (method_exists($result, 'hasField') && $result->hasField('field_location') && !$result->get('field_location')->isEmpty()) {
+      if ($result instanceof ContentEntityInterface && $result->hasField('field_location') && !$result->get('field_location')->isEmpty()) {
         foreach ($result->get('field_location') as $location) {
           if ($location->entity) {
             $loc_key = $location->entity->id();
@@ -308,7 +310,7 @@ class TimelineFilterService {
       }
       
       // Count themes.
-      if (method_exists($result, 'hasField') && $result->hasField('field_themes') && !$result->get('field_themes')->isEmpty()) {
+      if ($result instanceof ContentEntityInterface && $result->hasField('field_themes') && !$result->get('field_themes')->isEmpty()) {
         foreach ($result->get('field_themes') as $theme) {
           if ($theme->entity) {
             $theme_key = $theme->entity->id();
@@ -336,7 +338,7 @@ class TimelineFilterService {
   protected function calculateTimePeriod($result) {
     $date = NULL;
     
-    if (method_exists($result, 'hasField') && $result->hasField('field_this_day_in_history_3') && !$result->get('field_this_day_in_history_3')->isEmpty()) {
+    if ($result instanceof ContentEntityInterface && $result->hasField('field_this_day_in_history_3') && !$result->get('field_this_day_in_history_3')->isEmpty()) {
       $date = $result->get('field_this_day_in_history_3')->value;
     }
     
