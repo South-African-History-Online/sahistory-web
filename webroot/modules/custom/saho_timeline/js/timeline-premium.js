@@ -38,9 +38,17 @@
           }
 
           // TimelineJS3 is ready, fetch events (max safe limit without UTF-8 issues)
+          console.log('Fetching events from:', apiEndpoint + '?limit=550');
           fetch(apiEndpoint + '?limit=550')
-            .then(response => response.json())
+            .then(response => {
+              console.log('Response status:', response.status, response.statusText);
+              if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+              }
+              return response.json();
+            })
             .then(data => {
+              console.log('Received data:', data);
               if (data.events && data.events.length > 0) {
                 initializeTimelineJS(container, data.events);
               } else {
@@ -60,7 +68,7 @@
                   <h1>South African History Timeline</h1>
                   <p>Explore the rich history of South Africa through time</p>
                 </div>
-                <div class="timeline-error">Failed to load timeline. Please refresh the page.</div>
+                <div class="timeline-error">Failed to load timeline. Error: ${error.message}</div>
               `;
             });
         };
@@ -187,7 +195,7 @@
    * Parse event date to TimelineJS format.
    */
   function parseEventDate(dateStr) {
-    if (!dateStr) { return NULL;
+    if (!dateStr) { return null;
     }
 
     try {
@@ -221,7 +229,7 @@
       console.warn('Could not parse date:', dateStr);
     }
 
-    return NULL;
+    return null;
   }
 
   /**
@@ -290,7 +298,8 @@
         case 'archive': return colors[5];
 
  // Charcoal
-        default: return colors[index % colors.length];
+        default:
+          return colors[index % colors.length];
       }
     }
 

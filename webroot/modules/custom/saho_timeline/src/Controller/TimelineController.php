@@ -59,28 +59,17 @@ class TimelineController extends ControllerBase {
     // Get active filters from request.
     $filters = $this->timelineFilterService->getActiveFilters();
 
-    // Get timeline version from query parameter (default to premium).
-    $request = \Drupal::request();
-    $version = $request->query->get('version', 'premium');
-
-    // Validate version parameter.
-    $allowed_versions = ['premium', 'interactive', 'simple'];
-    if (!in_array($version, $allowed_versions)) {
-      $version = 'premium';
-    }
-
     // Get events based on filters.
     $events = $this->timelineEventService->getEventsGroupedByPeriod('decade');
 
-    // Build the render array based on selected version.
+    // Build the render array for premium timeline only.
     $build = [
-      '#theme' => 'saho_timeline_' . $version,
+      '#theme' => 'saho_timeline_premium',
       '#events' => $events,
       '#filters' => $this->timelineFilterService->getAvailableFilters(),
       '#attached' => [
         'library' => [
-          'saho_timeline/timeline',
-          'saho_timeline/timeline-' . $version,
+          'saho_timeline/timeline-premium',
         ],
         'drupalSettings' => [
           'sahoTimeline' => [
@@ -88,7 +77,7 @@ class TimelineController extends ControllerBase {
             'activeFilters' => $filters,
             'minYear' => 1000,
             'maxYear' => 2025,
-            'version' => $version,
+            'version' => 'premium',
           ],
         ],
       ],
@@ -97,12 +86,6 @@ class TimelineController extends ControllerBase {
         'contexts' => ['url.query_args'],
       ],
     ];
-
-    // Add all timeline libraries for version switching.
-    $build['#attached']['library'][] = 'saho_timeline/timeline-simple';
-    $build['#attached']['library'][] = 'saho_timeline/timeline-interactive';
-    $build['#attached']['library'][] = 'saho_timeline/timeline-premium-lib';
-    $build['#attached']['library'][] = 'saho_timeline/timeline-premium';
 
     return $build;
   }
