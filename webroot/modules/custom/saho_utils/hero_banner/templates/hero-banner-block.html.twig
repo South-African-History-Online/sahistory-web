@@ -1,0 +1,46 @@
+{#
+/**
+ * @file
+ * Default theme implementation to display a hero banner block.
+ *
+ * Available variables:
+ * - title: The title of the hero banner.
+ * - subtitle: The subtitle of the hero banner.
+ * - body: The body content of the hero banner.
+ * - background_image: The URL of the background image.
+ * - button_text: The text for the call to action button.
+ * - button_url: The URL for the call to action button.
+ * - button_attributes: Attributes for the button element.
+ * - overlay_opacity: The opacity of the overlay (0-1).
+ *
+ * @ingroup themeable
+ */
+#}
+<div class="hero-banner" {% if background_image %}style="background-image: url('{{ background_image }}');"{% endif %}>
+  <div class="hero-banner__overlay" style="opacity: {{ overlay_opacity }}"></div>
+  <div class="hero-banner__content">
+    <div class="hero-banner__inner">
+      {% if title %}
+        <h1 class="hero-banner__title">{{ title }}</h1>
+      {% endif %}
+      
+      {% if subtitle %}
+        <h2 class="hero-banner__subtitle">{{ subtitle }}</h2>
+      {% endif %}
+      
+      {% if body %}
+        <div class="hero-banner__body">
+          {{ body|raw }}
+        </div>
+      {% endif %}
+      
+      {% if button_text and button_url %}
+        <div class="hero-banner__cta">
+          <a href="{{ button_url }}" class="{{ button_attributes.class|join(' ') }}"{% if button_attributes.target %} target="{{ button_attributes.target }}"{% endif %}{% if button_attributes.rel %} rel="{{ button_attributes.rel }}"{% endif %}>
+            {{ button_text }}
+          </a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>

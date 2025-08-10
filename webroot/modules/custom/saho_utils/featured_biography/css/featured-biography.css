@@ -124,6 +124,8 @@
 
 /* Image styling - made more compact */
 .featured-biography-image {
+  display: block; /* Ensure container is displayed */
+  visibility: visible; /* Ensure visibility */
   flex: 0 0 200px; /* Fixed width instead of percentage */
   max-width: 200px; /* Maximum width constraint */
   position: relative;
@@ -139,6 +141,8 @@
 }
 
 .featured-biography-image img {
+  display: block; /* Ensure img element is displayed */
+  visibility: visible; /* Ensure visibility */
   position: absolute;
   top: 0;
   left: 0;
@@ -291,6 +295,16 @@
   text-align: center;
   color: #666;
   font-style: italic;
+}
+
+/* Force image visibility - override any potential conflicts */
+.featured-biography-image,
+.featured-biography-image img,
+.featured-biography-image a,
+.featured-biography-image a img {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
 }
 
 /* Accessibility */
@@ -719,11 +733,20 @@
 
 @media (max-width: 991px) {
   .featured-biography-image {
+    display: block !important; /* Ensure image is visible */
+    visibility: visible !important; /* Force visibility */
     flex: 0 0 35%;
     max-width: 35%;
   }
 
+  .featured-biography-image img {
+    display: block !important; /* Ensure img element is visible */
+    visibility: visible !important;
+  }
+
   .compact-mode .featured-biography-image {
+    display: block !important; /* Ensure image is visible */
+    visibility: visible !important; /* Force visibility */
     flex: 0 0 30%;
     max-width: 30%;
   }
@@ -751,13 +774,25 @@
 
   .featured-biography-image,
   .compact-mode .featured-biography-image {
+    display: block !important; /* Ensure image is visible */
+    visibility: visible !important; /* Force visibility */
+    opacity: 1 !important; /* Ensure full opacity */
     flex: 0 0 auto;
-    max-width: 200px; /* Keep compact size on mobile */
+    width: 200px; /* Fixed width instead of max-width */
+    max-width: 100%; /* Don't exceed container */
+    height: auto; /* Let height adjust */
     margin: 0 auto 1rem auto; /* Center the image */
+    position: relative; /* Ensure proper positioning */
   }
 
   .featured-biography-image::before {
     padding-top: 125%; /* Keep same aspect ratio */
+  }
+
+  .featured-biography-image img {
+    display: block !important; /* Ensure img element is visible */
+    visibility: visible !important;
+    opacity: 1 !important;
   }
 
   .featured-biography-details {
@@ -804,7 +839,18 @@
   }
 
   .featured-biography-image {
-    max-width: 150px; /* Smaller on very small screens */
+    display: block !important; /* Ensure image is visible */
+    visibility: visible !important; /* Force visibility */
+    opacity: 1 !important; /* Ensure full opacity */
+    width: 150px; /* Fixed width for very small screens */
+    max-width: 100%; /* Don't exceed container */
+    height: auto; /* Let height adjust */
+  }
+
+  .featured-biography-image img {
+    display: block !important; /* Ensure img element is visible */
+    visibility: visible !important;
+    opacity: 1 !important;
   }
 
   .featured-biography-title {

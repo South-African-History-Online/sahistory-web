@@ -1,0 +1,70 @@
+<?php
+
+/**
+ * @file
+ * Contains hero_banner.module.
+ */
+
+use Drupal\Core\Routing\RouteMatchInterface;
+
+/**
+ * Implements hook_help().
+ */
+function hero_banner_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    case 'help.page.hero_banner':
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('Provides a hero banner inline block with call to action button for SAHO.') . '</p>';
+      return $output;
+
+    default:
+  }
+}
+
+/**
+ * Implements hook_theme().
+ */
+function hero_banner_theme() {
+  return [
+    'hero_banner_block' => [
+      'variables' => [
+        'title' => NULL,
+        'subtitle' => NULL,
+        'body' => NULL,
+        'background_image' => NULL,
+        'button_text' => NULL,
+        'button_url' => NULL,
+        'button_attributes' => [],
+        'overlay_opacity' => 0.5,
+      ],
+    ],
+    'block_content__hero_banner' => [
+      'base hook' => 'block_content',
+    ],
+  ];
+}
+
+/**
+ * Implements hook_preprocess_block_content().
+ */
+function hero_banner_preprocess_block_content(&$variables) {
+  $block_content = $variables['elements']['#block_content'];
+  
+  if ($block_content->bundle() === 'hero_banner') {
+    // Attach the modern hero banner library.
+    $variables['#attached']['library'][] = 'hero_banner/hero_banner_modern';
+  }
+}
+
+/**
+ * Implements hook_theme_suggestions_HOOK_alter() for block_content.
+ */
+function hero_banner_theme_suggestions_block_content_alter(array &$suggestions, array $variables) {
+  if (isset($variables['elements']['#block_content'])) {
+    $block_content = $variables['elements']['#block_content'];
+    if ($block_content->bundle() === 'hero_banner') {
+      $suggestions[] = 'block_content__hero_banner';
+    }
+  }
+}

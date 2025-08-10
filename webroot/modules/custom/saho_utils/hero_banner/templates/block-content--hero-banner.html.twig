@@ -1,0 +1,70 @@
+{#
+/**
+ * @file
+ * Theme override to display a hero banner block content.
+ *
+ * Available variables:
+ * - content: All block content field items.
+ * - content.field_hero_title: The hero title field.
+ * - content.field_hero_subtitle: The hero subtitle field.
+ * - content.body: The body field.
+ * - content.field_hero_background_image: The background image field.
+ * - content.field_hero_cta_button: The call to action button field.
+ *
+ * @see template_preprocess_block_content()
+ *
+ * @ingroup themeable
+ */
+#}
+{% set classes = [
+  'block',
+  'block-block-content',
+  'block-hero-banner',
+] %}
+
+<div{{ attributes.addClass(classes) }}>
+  {% 
+    set background_image_url = null
+  %}
+  
+  {% if content.field_hero_banner[0] %}
+    {% set media = content.field_hero_banner[0]['#media'] %}
+    {% if media and media.field_media_image.entity %}
+      {% set background_image_url = file_url(media.field_media_image.entity.uri.value) %}
+    {% endif %}
+  {% endif %}
+
+  <div class="hero-banner" {% if background_image_url %}style="background-image: url('{{ background_image_url }}');"{% endif %}>
+    <div class="hero-banner__overlay" style="opacity: 0.5"></div>
+    <div class="hero-banner__content">
+      <div class="hero-banner__inner">
+        {% if label %}
+          <h1 class="hero-banner__title">{{ label }}</h1>
+        {% endif %}
+        
+        {% if content.body[0] %}
+          <div class="hero-banner__body">
+            {{ content.body[0] }}
+          </div>
+        {% endif %}
+        
+        {% if content.field_call_to_action_button[0] %}
+          <div class="hero-banner__cta">
+            {% set link = content.field_call_to_action_button[0] %}
+            {% set button_classes = ['hero-banner__button', 'btn', 'btn-primary'] %}
+            
+            {% if link['#url'].isExternal() %}
+              <a href="{{ link['#url'] }}" class="{{ button_classes|join(' ') }}" target="_blank" rel="noopener noreferrer">
+                {{ link['#title'] }}
+              </a>
+            {% else %}
+              <a href="{{ link['#url'] }}" class="{{ button_classes|join(' ') }}">
+                {{ link['#title'] }}
+              </a>
+            {% endif %}
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
