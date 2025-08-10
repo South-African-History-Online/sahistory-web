@@ -1,0 +1,70 @@
+<?php
+
+/**
+ * @file
+ * SAHO Timeline module.
+ */
+
+use Drupal\Core\Routing\RouteMatchInterface;
+
+/**
+ * Implements hook_help().
+ */
+function saho_timeline_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    case 'help.page.saho_timeline':
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('The SAHO Timeline module provides timeline functionality for displaying historical events chronologically. It includes features for migrating timeline articles to event content types and displaying them in an interactive timeline format.') . '</p>';
+      $output .= '<h3>' . t('Features') . '</h3>';
+      $output .= '<ul>';
+      $output .= '<li>' . t('Interactive timeline display with filtering options') . '</li>';
+      $output .= '<li>' . t('Migration tools for converting timeline articles to events') . '</li>';
+      $output .= '<li>' . t('Chronological event browsing') . '</li>';
+      $output .= '<li>' . t('Period-based grouping (decades, centuries)') . '</li>';
+      $output .= '<li>' . t('Category filtering for events') . '</li>';
+      $output .= '</ul>';
+      return $output;
+  }
+}
+
+/**
+ * Implements hook_theme().
+ */
+function saho_timeline_theme() {
+  return [
+    'saho_timeline' => [
+      'variables' => [
+        'events' => [],
+        'filters' => [],
+        'timeline_type' => 'default',
+        'attributes' => [],
+      ],
+      'template' => 'saho-timeline',
+    ],
+    'saho_timeline_interactive' => [
+      'variables' => [
+        'events' => [],
+        'filters' => [],
+        'attributes' => [],
+      ],
+      'template' => 'saho-timeline-interactive',
+    ],
+    'saho_timeline_event' => [
+      'variables' => [
+        'event' => NULL,
+        'display_mode' => 'default',
+        'attributes' => [],
+      ],
+      'template' => 'saho-timeline-event',
+    ],
+    'saho_timeline_filters' => [
+      'variables' => [
+        'filters' => [],
+        'active_filters' => [],
+        'attributes' => [],
+      ],
+      'template' => 'saho-timeline-filters',
+    ],
+  ];
+}

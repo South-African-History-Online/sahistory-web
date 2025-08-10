@@ -1,0 +1,52 @@
+{#
+/**
+ * @file
+ * Default theme implementation for a timeline event.
+ *
+ * Available variables:
+ * - event: The event node entity.
+ * - display_mode: The display mode for the event.
+ * - attributes: HTML attributes for the event container.
+ *
+ * @ingroup themeable
+ */
+#}
+{% set event_date = event.field_this_day_in_history_3.value ? event.field_this_day_in_history_3.value|date('F j, Y') : 'Date Unknown' %}
+{% set event_image = event.field_tdih_image.entity %}
+
+<article{{ attributes.addClass('saho-timeline-event', 'saho-timeline-event--' ~ display_mode) }}>
+  <div class="saho-timeline-event__marker"></div>
+  
+  <div class="saho-timeline-event__content">
+    <header class="saho-timeline-event__header">
+      <time class="saho-timeline-event__date" datetime="{{ event.field_this_day_in_history_3.value }}">
+        {{ event_date }}
+      </time>
+      <h4 class="saho-timeline-event__title">
+        <a href="{{ path('entity.node.canonical', {'node': event.id}) }}">
+          {{ event.label }}
+        </a>
+      </h4>
+    </header>
+
+    {% if event_image and display_mode != 'compact' %}
+      <div class="saho-timeline-event__image">
+        <img src="{{ file_url(event_image.uri.value) }}" alt="{{ event_image.filename.value }}" class="img-fluid" />
+      </div>
+    {% endif %}
+
+    {% if event.body.value and display_mode != 'compact' %}
+      <div class="saho-timeline-event__body">
+        {{ event.body.summary|default(event.body.value|striptags|slice(0, 200) ~ '...') }}
+      </div>
+    {% endif %}
+
+    {# Tags section - will check for actual tag fields that exist #}
+
+    <footer class="saho-timeline-event__footer">
+      <a href="{{ path('entity.node.canonical', {'node': event.id}) }}" class="btn btn-sm btn-outline-primary">
+        {{ 'Read more'|t }}
+      </a>
+    </footer>
+  </div>
+</article>
