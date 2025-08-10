@@ -1,0 +1,74 @@
+{#
+/**
+ * @file
+ * Template for the interactive SAHO timeline.
+ *
+ * Available variables:
+ * - events: Array of timeline events.
+ * - filters: Available filter options.
+ * - attributes: HTML attributes for the wrapper.
+ */
+#}
+
+<div{{ attributes.addClass('timeline-interactive') }}>
+  {# The interactive timeline will be dynamically created by JavaScript #}
+  <div class="timeline-loading-initial">
+    <div class="loading-spinner"></div>
+    <p>Loading South African History Timeline...</p>
+  </div>
+</div>
+
+{# Initial loading message styles #}
+<style>
+.timeline-loading-initial {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  border-radius: 12px;
+  margin: 20px 0;
+}
+
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  border-top: 4px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
+}
+
+.timeline-loading-initial p {
+  font-size: 18px;
+  font-weight: 500;
+  margin: 0;
+  text-align: center;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@media (max-width: 768px) {
+  .timeline-loading-initial {
+    min-height: 300px;
+    margin: 10px 0;
+  }
+  
+  .loading-spinner {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .timeline-loading-initial p {
+    font-size: 16px;
+    padding: 0 20px;
+  }
+}
+</style>

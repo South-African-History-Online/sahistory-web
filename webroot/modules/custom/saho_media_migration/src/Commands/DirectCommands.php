@@ -199,18 +199,19 @@ class DirectCommands extends DrushCommands {
   public function buildMapping() {
     $this->output()->writeln('🔍 Building comprehensive file mapping database...');
     $this->output()->writeln('');
-    
+
     try {
       $service = \Drupal::service('saho_media_migration.file_mapping');
       $mapping = $service->buildFileMapping();
       $total_files = array_sum(array_map('count', $mapping));
-      
+
       $this->output()->writeln('✅ File mapping built successfully!');
       $this->output()->writeln("📁 Total files mapped: " . number_format($total_files));
       $this->output()->writeln("🗂️  Unique filenames: " . number_format(count($mapping)));
       $this->output()->writeln('');
       $this->output()->writeln('💡 You can now use other commands to fix file references.');
-    } catch (\Exception $e) {
+    }
+    catch (\Exception $e) {
       $this->output()->writeln('❌ Error: ' . $e->getMessage());
     }
   }
@@ -228,27 +229,29 @@ class DirectCommands extends DrushCommands {
   public function fixArticleImages($options = ['dry-run' => FALSE, 'limit' => 100]) {
     $dry_run = $options['dry-run'];
     $limit = (int) $options['limit'];
-    
+
     $this->output()->writeln('🖼️  ' . ($dry_run ? 'PREVIEWING' : 'FIXING') . ' article image references...');
     $this->output()->writeln('');
-    
+
     try {
       $service = \Drupal::service('saho_media_migration.file_mapping');
       $results = $service->fixArticleImagePaths($dry_run, $limit);
-      
+
       $this->output()->writeln('📊 Results:');
       $this->output()->writeln("   Processed: {$results['processed']} nodes");
       $this->output()->writeln("   Fixed: {$results['fixed']} nodes");
-      
+
       if ($dry_run && $results['fixed'] > 0) {
         $this->output()->writeln('');
         $this->output()->writeln('💡 Run without --dry-run to apply these changes.');
-      } elseif ($results['fixed'] > 0) {
+      }
+      elseif ($results['fixed'] > 0) {
         $this->output()->writeln('');
         $this->output()->writeln('✅ Article image references updated!');
         $this->output()->writeln('💡 Clear caches: drush cache:rebuild');
       }
-    } catch (\Exception $e) {
+    }
+    catch (\Exception $e) {
       $this->output()->writeln('❌ Error: ' . $e->getMessage());
     }
   }
@@ -264,24 +267,26 @@ class DirectCommands extends DrushCommands {
    */
   public function fixDisaPdfs($options = ['create-symlinks' => TRUE]) {
     $create_symlinks = $options['create-symlinks'];
-    
+
     $this->output()->writeln('🔗 Creating symbolic links for DISA PDFs...');
     $this->output()->writeln('');
-    
+
     try {
       $service = \Drupal::service('saho_media_migration.file_mapping');
       $results = $service->fixDisaPdfPaths($create_symlinks, FALSE, 100);
-      
+
       $this->output()->writeln('📊 Results:');
       $this->output()->writeln("   Symlinks created: {$results['symlinks_created']}");
-      
+
       if ($results['symlinks_created'] > 0) {
         $this->output()->writeln('✅ DISA symlinks created successfully!');
         $this->output()->writeln('💡 Original URLs will now work without content changes.');
-      } else {
+      }
+      else {
         $this->output()->writeln('ℹ️  No new symlinks needed (may already exist).');
       }
-    } catch (\Exception $e) {
+    }
+    catch (\Exception $e) {
       $this->output()->writeln('❌ Error: ' . $e->getMessage());
     }
   }
@@ -297,45 +302,46 @@ class DirectCommands extends DrushCommands {
   public function auditFiles() {
     $this->output()->writeln('🔍 Generating comprehensive file audit report...');
     $this->output()->writeln('');
-    
+
     try {
       $service = \Drupal::service('saho_media_migration.file_mapping');
       $report = $service->generateAuditReport();
-      
-      // Display broken references
+
+      // Display broken references.
       if (!empty($report['broken_references'])) {
         $this->output()->writeln('❌ BROKEN REFERENCES: ' . count($report['broken_references']));
         $this->output()->writeln('');
       }
-      
-      // Display fixable patterns
+
+      // Display fixable patterns.
       if (!empty($report['fixable_patterns'])) {
         $this->output()->writeln('✅ AUTOMATICALLY FIXABLE:');
         $this->output()->writeln('-------------------------');
-        
+
         foreach ($report['fixable_patterns'] as $pattern => $info) {
           $confidence_icon = $info['confidence'] === 'high' ? '🎯' : '⚠️';
           $this->output()->writeln("   {$confidence_icon} {$info['description']}: {$info['count']} occurrences");
-          
-          // Suggest specific commands
+
+          // Suggest specific commands.
           if ($pattern === 'file_uploads') {
             $this->output()->writeln('      💡 Fix with: drush saho:fix-article-images');
-          } elseif ($pattern === 'disa_pdfs') {
+          }
+          elseif ($pattern === 'disa_pdfs') {
             $this->output()->writeln('      💡 Fix with: drush saho:fix-disa-pdfs');
           }
         }
         $this->output()->writeln('');
       }
-      
-      // Summary
+
+      // Summary.
       $total_issues = count($report['broken_references']) + count($report['missing_files'] ?? []);
       $fixable_issues = array_sum(array_column($report['fixable_patterns'], 'count'));
-      
+
       $this->output()->writeln('📋 SUMMARY:');
       $this->output()->writeln('-----------');
       $this->output()->writeln("Total issues found: {$total_issues}");
       $this->output()->writeln("Automatically fixable: {$fixable_issues}");
-      
+
       if ($fixable_issues > 0) {
         $this->output()->writeln('');
         $this->output()->writeln('🚀 RECOMMENDED ACTIONS:');
@@ -343,7 +349,8 @@ class DirectCommands extends DrushCommands {
         $this->output()->writeln('2. drush saho:fix-article-images --dry-run');
         $this->output()->writeln('3. drush saho:fix-disa-pdfs');
       }
-    } catch (\Exception $e) {
+    }
+    catch (\Exception $e) {
       $this->output()->writeln('❌ Error: ' . $e->getMessage());
     }
   }
@@ -359,19 +366,19 @@ class DirectCommands extends DrushCommands {
   public function findPatterns() {
     $this->output()->writeln('🔍 Searching for file reference patterns...');
     $this->output()->writeln('');
-    
+
     try {
       $db = \Drupal::database();
-      
+
       $patterns = [
         'file%20uploads' => '%file%20uploads%',
-        'file uploads' => '%file uploads%', 
+        'file uploads' => '%file uploads%',
         'file_uploads' => '%file_uploads%',
         'broken images' => '%<img%src%sites/default/files/%',
         'broken links' => '%<a%href%sites/default/files/%',
         'archive-files refs' => '%archive-files%',
         'DC refs' => '%/DC/%',
-        'any file refs' => '%sites/default/files/%'
+        'any file refs' => '%sites/default/files/%',
       ];
 
       foreach ($patterns as $name => $pattern) {
@@ -380,13 +387,14 @@ class DirectCommands extends DrushCommands {
         $query->addExpression('COUNT(*)', 'total_refs');
         $query->condition('body_value', $pattern, 'LIKE');
         $result = $query->execute()->fetchAssoc();
-        
+
         if ($result['nodes'] > 0) {
           $this->output()->writeln("📄 {$name}: {$result['nodes']} nodes, {$result['total_refs']} references");
         }
       }
-    
-    } catch (\Exception $e) {
+
+    }
+    catch (\Exception $e) {
       $this->output()->writeln('❌ Error: ' . $e->getMessage());
     }
   }
@@ -406,22 +414,22 @@ class DirectCommands extends DrushCommands {
     $dry_run = $options['dry-run'];
     $limit = (int) $options['limit'];
     $offset = (int) $options['offset'];
-    
+
     $this->output()->writeln('🔧 ' . ($dry_run ? 'PREVIEWING' : 'FIXING') . ' ALL broken file references...');
     if ($offset > 0) {
       $this->output()->writeln("📍 Starting from offset: {$offset}");
     }
     $this->output()->writeln('');
-    
+
     try {
       $service = \Drupal::service('saho_media_migration.file_mapping');
       $results = $service->fixAllBrokenReferences($dry_run, $limit, $offset);
-      
+
       $this->output()->writeln('📊 Results:');
       $this->output()->writeln("   Processed: {$results['processed']} nodes");
       $this->output()->writeln("   Fixed: {$results['fixed']} nodes");
-      
-      // Show sample references being processed
+
+      // Show sample references being processed.
       if (!empty($results['samples'])) {
         $this->output()->writeln('');
         $this->output()->writeln('🔍 Sample file references found:');
@@ -432,21 +440,23 @@ class DirectCommands extends DrushCommands {
           }
         }
       }
-      
+
       if ($results['processed'] > 0) {
         $next_offset = $offset + $results['processed'];
         $this->output()->writeln('');
         $this->output()->writeln("💡 To continue: drush saho:fix-all-files --offset={$next_offset} --limit={$limit}");
       }
-      
+
       if ($dry_run && $results['fixed'] > 0) {
         $this->output()->writeln('');
         $this->output()->writeln('💡 Run without --dry-run to apply these changes.');
-      } elseif ($results['fixed'] > 0) {
+      }
+      elseif ($results['fixed'] > 0) {
         $this->output()->writeln('');
         $this->output()->writeln('✅ File references updated!');
       }
-    } catch (\Exception $e) {
+    }
+    catch (\Exception $e) {
       $this->output()->writeln('❌ Error: ' . $e->getMessage());
     }
   }
@@ -462,26 +472,26 @@ class DirectCommands extends DrushCommands {
    */
   public function fixFileUploadsEncoding($options = ['dry-run' => FALSE]) {
     $dry_run = $options['dry-run'];
-    
+
     $this->output()->writeln('🔧 ' . ($dry_run ? 'PREVIEWING' : 'FIXING') . ' file uploads URL encoding variations...');
     $this->output()->writeln('');
-    
+
     try {
-      // Target specifically the problematic pattern with extra %20
+      // Target specifically the problematic pattern with extra %20.
       $db = \Drupal::database();
       $query = $db->select('node__body', 'nb');
       $query->fields('nb', ['entity_id', 'body_value']);
       $query->condition('body_value', '%file%20uploads%20/%', 'LIKE');
-      
+
       $results = $query->execute();
       $fixed = 0;
       $processed = 0;
-      
+
       foreach ($results as $node) {
         $original = $node->body_value;
-        // Fix the specific encoding issue: file%20uploads%20/ -> file%20uploads/
+        // Fix encoding issue: file%20uploads%20/ -> file%20uploads/.
         $updated = str_replace('file%20uploads%20/', 'file%20uploads/', $original);
-        
+
         if ($original !== $updated) {
           if (!$dry_run) {
             $db->update('node__body')
@@ -494,15 +504,16 @@ class DirectCommands extends DrushCommands {
         }
         $processed++;
       }
-      
+
       $this->output()->writeln('');
       $this->output()->writeln("📊 Results: Processed {$processed}, Fixed {$fixed}");
-      
+
       if ($dry_run && $fixed > 0) {
         $this->output()->writeln('💡 Run without --dry-run to apply changes.');
       }
-      
-    } catch (\Exception $e) {
+
+    }
+    catch (\Exception $e) {
       $this->output()->writeln('❌ Error: ' . $e->getMessage());
     }
   }
@@ -518,14 +529,14 @@ class DirectCommands extends DrushCommands {
    */
   public function fixRemainingUploads($options = ['dry-run' => FALSE]) {
     $dry_run = $options['dry-run'];
-    
+
     $this->output()->writeln('🔧 ' . ($dry_run ? 'PREVIEWING' : 'FIXING') . ' remaining file upload patterns...');
     $this->output()->writeln('');
-    
+
     try {
       $db = \Drupal::database();
-      
-      // Find ALL file upload variations
+
+      // Find ALL file upload variations.
       $query = $db->select('node__body', 'nb');
       $query->fields('nb', ['entity_id', 'body_value']);
       $or = $query->orConditionGroup();
@@ -533,36 +544,37 @@ class DirectCommands extends DrushCommands {
       $or->condition('body_value', '%file uploads/%', 'LIKE');
       $or->condition('body_value', '%file_uploads/%', 'LIKE');
       $query->condition($or);
-      
+
       $results = $query->execute();
       $fixed = 0;
       $processed = 0;
-      
+
       foreach ($results as $node) {
         $original = $node->body_value;
-        
-        // Try multiple replacement patterns
+
+        // Try multiple replacement patterns.
         $updated = preg_replace_callback(
           '#sites/default/files/file(?:%20|\s|_)+uploads/?/([^"\s)]+)#i',
-          function($matches) {
+          function ($matches) {
             $filename = urldecode($matches[1]);
-            
-            // Search archive directories
+
+            // Search archive directories.
             $sites_path = DRUPAL_ROOT . '/sites/default/files';
             $dirs = ['archive-files', 'archive-files3', 'archive-files2'];
-            
+
             foreach ($dirs as $dir) {
               $path = $sites_path . '/' . $dir . '/' . $filename;
               if (file_exists($path)) {
                 return "sites/default/files/{$dir}/{$filename}";
               }
             }
-            
-            return $matches[0]; // Keep original if not found
+
+            // Keep original if not found.
+            return $matches[0];
           },
           $original
         );
-        
+
         if ($original !== $updated) {
           if (!$dry_run) {
             $db->update('node__body')
@@ -575,12 +587,14 @@ class DirectCommands extends DrushCommands {
         }
         $processed++;
       }
-      
+
       $this->output()->writeln('');
       $this->output()->writeln("📊 Results: Processed {$processed}, Fixed {$fixed}");
-      
-    } catch (\Exception $e) {
+
+    }
+    catch (\Exception $e) {
       $this->output()->writeln('❌ Error: ' . $e->getMessage());
     }
   }
+
 }

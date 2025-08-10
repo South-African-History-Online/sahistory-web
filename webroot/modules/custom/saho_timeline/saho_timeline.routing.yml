@@ -1,0 +1,51 @@
+saho_timeline.main:
+  path: '/timeline'
+  defaults:
+    _controller: '\Drupal\saho_timeline\Controller\TimelineController::display'
+    _title: 'Historical Timeline'
+  requirements:
+    _permission: 'access timeline'
+
+saho_timeline.search:
+  path: '/search/advanced'
+  defaults:
+    _form: '\Drupal\saho_timeline\Form\AdvancedSearchForm'
+    _title: 'Advanced Search'
+  requirements:
+    _permission: 'access content'
+
+saho_timeline.api.events:
+  path: '/api/timeline/events'
+  defaults:
+    _controller: '\Drupal\saho_timeline\Controller\TimelineApiController::getEvents'
+  requirements:
+    _permission: 'use timeline api'
+  methods: [GET]
+  options:
+    no_cache: FALSE
+
+saho_timeline.api.search:
+  path: '/api/search/advanced'
+  defaults:
+    _controller: '\Drupal\saho_timeline\Controller\TimelineApiController::getEvents'
+  requirements:
+    _permission: 'use timeline api'
+  methods: [GET, POST]
+  options:
+    no_cache: FALSE
+
+saho_timeline.migration:
+  path: '/admin/config/saho/timeline/migration'
+  defaults:
+    _form: '\Drupal\saho_timeline\Form\TimelineMigrationForm'
+    _title: 'Timeline Migration'
+  requirements:
+    _permission: 'migrate timeline content'
+
+saho_timeline.settings:
+  path: '/admin/config/saho/timeline/settings'
+  defaults:
+    _form: '\Drupal\saho_timeline\Form\TimelineSettingsForm'
+    _title: 'Timeline Settings'
+  requirements:
+    _permission: 'administer timeline'

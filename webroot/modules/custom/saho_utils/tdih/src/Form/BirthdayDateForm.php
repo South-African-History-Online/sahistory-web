@@ -108,7 +108,7 @@ class BirthdayDateForm extends FormBase {
       ],
     ];
 
-    // Add year selection - reasonable range for birthdays
+    // Add year selection - reasonable range for birthdays.
     $current_year = date('Y');
     $year_options = ['' => $this->t('- Select Year -')];
     for ($year = $current_year; $year >= 1900; $year--) {
@@ -167,7 +167,7 @@ class BirthdayDateForm extends FormBase {
         ],
       ],
     ];
-    
+
     // Add JavaScript to handle form interactions.
     $form['#attached']['library'][] = 'tdih/tdih-interactive';
     $form['#attached']['drupalSettings']['tdihBirthdayForm'] = [
@@ -187,7 +187,7 @@ class BirthdayDateForm extends FormBase {
     $selected_day = $form_state->getValue('birthday_day');
     $selected_month = $form_state->getValue('birthday_month');
     $selected_year = $form_state->getValue('birthday_year');
-    
+
     // Ensure proper formatting for date comparison.
     if (!empty($selected_day)) {
       $selected_day = sprintf('%02d', (int) $selected_day);
@@ -195,7 +195,7 @@ class BirthdayDateForm extends FormBase {
     if (!empty($selected_month)) {
       $selected_month = sprintf('%02d', (int) $selected_month);
     }
-    
+
     if (!empty($selected_month) && !empty($selected_day) && !empty($selected_year)) {
       // Get the NodeFetcher service.
       $node_fetcher = \Drupal::service('tdih.node_fetcher');
@@ -203,12 +203,11 @@ class BirthdayDateForm extends FormBase {
       // Create the full birth date and month-day pattern.
       $birth_date = sprintf('%04d-%02d-%02d', $selected_year, $selected_month, $selected_day);
       $month_day_pattern = sprintf('%02d-%02d', $selected_month, $selected_day);
-      
+
       // Load all events for this month-day combination.
       $nodes = $node_fetcher->loadPotentialEvents($month_day_pattern);
       $exact_match_items = [];
       $same_day_items = [];
-      
 
       // Separate exact date matches from same month-day matches.
       foreach ($nodes as $node) {
@@ -221,18 +220,17 @@ class BirthdayDateForm extends FormBase {
           // Check if this is same month-day but different year.
           elseif (preg_match('/\d{4}-(\d{2})-(\d{2})/', $item['raw_date'], $matches)) {
             $item_month_day = $matches[1] . '-' . $matches[2];
-            
+
             if ($item_month_day === $month_day_pattern) {
               $same_day_items[] = $item;
             }
           }
         }
       }
-      
+
       // Combine results with exact matches first, then same day events.
       $all_birthday_events = array_merge($exact_match_items, $same_day_items);
-      
-      
+
       // If we have events, display them with appropriate messaging.
       if (!empty($all_birthday_events)) {
         $form['events_container']['events'] = [

@@ -103,11 +103,10 @@
             const nodeData = drupalSettings.sahoTools && drupalSettings.sahoTools.nodeData;
             const pageData = drupalSettings.sahoTools && drupalSettings.sahoTools.pageData;
 
-
             if (nodeData) {
                 // Generate a basic citation from node data first as immediate content
                 this.generateBasicCitationFromNodeData(nodeData);
-                
+
                 // Then try to load citation data from the API (will overwrite if successful)
                 this.loadCitationData(nodeData.nid);
             } else if (pageData) {
@@ -324,7 +323,7 @@
             textarea.style.position = 'absolute';
             textarea.style.left = '-9999px';
             document.body.appendChild(textarea);
-            
+
             // Select and copy
             textarea.select();
             try {
@@ -332,12 +331,12 @@
                 if (successful) {
                     this.showIndividualCopyFeedback($button, 'Copied!');
                 } else {
-                    this.showIndividualCopyFeedback($button, 'Failed', true);
+                    this.showIndividualCopyFeedback($button, 'Failed', TRUE);
                 }
             } catch (err) {
-                this.showIndividualCopyFeedback($button, 'Failed', true);
+                this.showIndividualCopyFeedback($button, 'Failed', TRUE);
             }
-            
+
             // Clean up
             document.body.removeChild(textarea);
         },
@@ -355,7 +354,7 @@
         showIndividualCopyFeedback: function ($button, message, isError = false) {
             const originalHtml = $button.html();
             const originalClass = $button.attr('class');
-            
+
             // Update button
             if (isError) {
                 $button.removeClass('btn-primary').addClass('btn-danger').html(
@@ -370,7 +369,7 @@
                     '</svg><span class="visually-hidden">' + message + '</span>'
                 );
             }
-            
+
             // Restore original button after 1.5 seconds
             setTimeout(function () {
                 $button.attr('class', originalClass).html(originalHtml);
@@ -565,7 +564,6 @@
                 }
             ).html('×');
 
-
             // Handle close button clicks with a more specific selector
             $modal.find('button[data-bs-dismiss="modal"], .btn-close').on(
                 'click',
@@ -641,7 +639,7 @@
 
             // Initialize copy buttons
             this.initializeCopyButtons($modal);
-            
+
             // Initialize the new copy all button
             this.initializeCopyAllButton($modal);
         },
@@ -689,7 +687,7 @@
                 e.stopPropagation();
                 const format = $(this).data('format');
                 const citationText = $('.' + format + '-citation .citation-content').text().trim();
-                
+
                 if (citationText) {
                     // Try modern clipboard API first
                     if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -704,7 +702,7 @@
                         self.fallbackIndividualCopy(citationText, $(this));
                     }
                 }
-                return false;
+                return FALSE;
             });
 
             // Copy all button if it exists
@@ -713,7 +711,7 @@
                 e.preventDefault();
                 e.stopPropagation();
                 self.copyAllCitations();
-                return false;
+                return FALSE;
             });
         },
 
@@ -725,7 +723,7 @@
          */
         initializeCopyAllButton: function ($modal) {
             const self = this;
-            
+
             // Handle the new copy all citations button
             const $copyAllButton = $modal.find('.copy-all-citations');
             $copyAllButton.off('click').on(
@@ -734,7 +732,7 @@
                     e.preventDefault();
                     e.stopPropagation();
                     self.copyAllCitations();
-                    return false;
+                    return FALSE;
                 }
             );
         },
@@ -769,9 +767,9 @@
             if (allCitationsText) {
                 // Try modern clipboard API first
                 if (navigator.clipboard && navigator.clipboard.writeText) {
-                    navigator.clipboard.writeText(allCitationsText).then(function() {
+                    navigator.clipboard.writeText(allCitationsText).then(function () {
                         Drupal.sahoCitation.showCopyAllFeedback('All formats copied!');
-                    }).catch(function(err) {
+                    }).catch(function (err) {
                         // Fall back to execCommand
                         Drupal.sahoCitation.fallbackCopyAllText(allCitationsText);
                     });
@@ -780,7 +778,7 @@
                     this.fallbackCopyAllText(allCitationsText);
                 }
             } else {
-                this.showCopyAllFeedback('No citations available', true);
+                this.showCopyAllFeedback('No citations available', TRUE);
             }
         },
 
@@ -798,7 +796,7 @@
             textarea.style.position = 'absolute';
             textarea.style.left = '-9999px';
             document.body.appendChild(textarea);
-            
+
             // Select and copy
             textarea.select();
             try {
@@ -806,12 +804,12 @@
                 if (successful) {
                     this.showCopyAllFeedback('All formats copied!');
                 } else {
-                    this.showCopyAllFeedback('Copy failed', true);
+                    this.showCopyAllFeedback('Copy failed', TRUE);
                 }
             } catch (err) {
-                this.showCopyAllFeedback('Copy failed', true);
+                this.showCopyAllFeedback('Copy failed', TRUE);
             }
-            
+
             // Clean up
             document.body.removeChild(textarea);
         },
@@ -828,7 +826,7 @@
             const $button = $('.copy-all-citations');
             const originalText = $button.html();
             const originalClass = $button.attr('class');
-            
+
             // Update button
             if (isError) {
                 $button.removeClass('btn-primary').addClass('btn-danger').html(
@@ -843,7 +841,7 @@
                     '</svg>' + message
                 );
             }
-            
+
             // Restore original button after 2.5 seconds
             setTimeout(function () {
                 $button.attr('class', originalClass).html(originalText);
@@ -880,7 +878,7 @@
             allCitationsText = allCitationsText.trim();
 
             // Copy the text and show feedback, auto-close the modal
-            this.copyTextToClipboard(allCitationsText, $('.citation-format'), true);
+            this.copyTextToClipboard(allCitationsText, $('.citation-format'), TRUE);
 
             // Update the button text temporarily
             const $button = $('.copy-citation');

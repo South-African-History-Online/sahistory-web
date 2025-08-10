@@ -33,9 +33,10 @@ function saho_tools_page_attachments_alter(array &$attachments) {
   // Check if we're on an admin route
   $is_admin = \Drupal::service('router.admin_context')->isAdminRoute();
   
-  // Only attach the citation library on non-admin routes
+  // Only attach the citation and sharing libraries on non-admin routes
   if (!$is_admin) {
     $attachments['#attached']['library'][] = 'saho_tools/citation';
+    $attachments['#attached']['library'][] = 'saho_tools/sharing';
     
     // Add debugging information to check if the library is loaded
     $attachments['#attached']['drupalSettings']['sahoTools']['debug'] = [

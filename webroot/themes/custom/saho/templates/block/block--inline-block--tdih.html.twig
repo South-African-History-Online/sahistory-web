@@ -10,28 +10,41 @@
 #}
 
 <div class="block-section">
-  <h2>This day in history</h2>
+  <div class="block-section-header">
+    <div class="block-title-wrapper">
+      <h2>Today in history</h2>
+    </div>
+    <div class="block-meta">{{ "now"|date('j F') }}</div>
+  </div>
+  
   <p class="intro-text">Find out who was born, who died and other significant events from this day in history</p>
 
   {% if tdih_nodes %}
-    {% for item in tdih_nodes %}
-      {% if item.image %}
-        <img src="{{ item.image }}" alt="{{ item.title|striptags }}" class="block-image" />
-      {% endif %}
+    <div class="block-content">
+      {% for item in tdih_nodes %}
+        {% if item.image %}
+          <div class="block-image-wrapper">
+            <img src="{{ item.image }}" alt="{{ item.title|striptags }}" class="block-image" />
+            <div class="block-label">{{ item.event_date|date('Y') }}</div>
+          </div>
+        {% endif %}
 
-      <div class="block-label">
-        {{ item.event_date|date('j F Y') }}
-      </div>
-
-      <h3>
-        <a href="{{ item.url }}">{{ item.title|striptags }}</a>
-      </h3>
-    {% endfor %}
+        <h3>
+          <a href="{{ item.url }}">{{ item.title|striptags }}</a>
+        </h3>
+        
+        <div class="block-date">{{ item.event_date|date('j F Y') }}</div>
+      {% endfor %}
+    </div>
   {% else %}
-    <p class="block-main-text">No events found.</p>
+    <div class="block-content">
+      <p class="block-main-text">No events found.</p>
+    </div>
   {% endif %}
   
-  {% if button_block %}
-    {{ button_block }}
-  {% endif %}
+  <div class="block-buttons">
+    {% if button_block %}
+      {{ button_block }}
+    {% endif %}
+  </div>
 </div>
