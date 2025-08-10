@@ -14,24 +14,18 @@
 
             // Check if the library is loaded correctly
             if (drupalSettings.sahoTools && drupalSettings.sahoTools.debug) {
-                console.log('SAHO Citation: Library loaded successfully');
             } else {
-                console.log('SAHO Citation: Debug info not available');
             }
 
             // Check if Bootstrap is available
             if (typeof bootstrap !== 'undefined' && typeof bootstrap.Modal !== 'undefined') {
-                console.log('SAHO Citation: Bootstrap Modal is available');
             } else {
-                console.log('SAHO Citation: Bootstrap Modal not available, will use jQuery fallback');
             }
 
             // Target both links and buttons with data-citation-trigger attribute or href="#cite"
             const citeLinks = document.querySelectorAll('a[data-citation-trigger], a[href="#cite"], button[data-citation-trigger]');
 
-            console.log('SAHO Citation: Found', citeLinks.length, 'citation trigger elements');
             if (citeLinks.length === 0) {
-                console.log('SAHO Citation: No citation triggers found in DOM');
             }
 
             once('sahoCitation', 'a[data-citation-trigger], a[href="#cite"], button[data-citation-trigger]', context).forEach(

@@ -171,7 +171,7 @@ class TimelineBlock extends BlockBase implements BlockPluginInterface, Container
       '#filters' => $config['show_filters'] ? $this->getFilterOptions() : [],
       '#attached' => [
         'library' => [
-          'saho_timeline/timeline',
+          'saho_timeline/timeline-premium',
         ],
       ],
       '#cache' => [

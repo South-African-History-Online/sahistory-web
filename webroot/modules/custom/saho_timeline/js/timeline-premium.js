@@ -18,15 +18,15 @@
         console.log('Initializing TimelineJS3 premium timeline...');
 
         // Get API endpoint from settings
-        const apiEndpoint = settings.sahoTimeline ? .apiEndpoint || '/api/timeline/events';
+        const apiEndpoint = (settings.sahoTimeline && settings.sahoTimeline.apiEndpoint) ? settings.sahoTimeline.apiEndpoint : '/api/timeline/events';
 
         // Create loading message with intro background
         container.innerHTML = `
-          < div class = "timeline-intro" >
-            < h1 > South African History Timeline < / h1 >
-            < p > Explore the rich history of South Africa through time < / p >
-          < / div >
-          < div class = "timeline-loading" > Loading premium timeline... < / div >
+          <div class="timeline-intro">
+            <h1>South African History Timeline</h1>
+            <p>Explore the rich history of South Africa through time</p>
+          </div>
+          <div class="timeline-loading">Loading premium timeline...</div>
         `;
 
         // Wait for TimelineJS3 to load before fetching events
@@ -45,22 +45,22 @@
                 initializeTimelineJS(container, data.events);
               } else {
                 container.innerHTML = `
-                  < div class = "timeline-intro" >
-                    < h1 > South African History Timeline < / h1 >
-                    < p > Explore the rich history of South Africa through time < / p >
-                  < / div >
-                  < div class = "timeline-error" > No events found for timeline.< / div >
+                  <div class="timeline-intro">
+                    <h1>South African History Timeline</h1>
+                    <p>Explore the rich history of South Africa through time</p>
+                  </div>
+                  <div class="timeline-error">No events found for timeline.</div>
                 `;
               }
             })
             .catch(error => {
               console.error('Error loading timeline events:', error);
               container.innerHTML = `
-                < div class = "timeline-intro" >
-                  < h1 > South African History Timeline < / h1 >
-                  < p > Explore the rich history of South Africa through time < / p >
-                < / div >
-                < div class = "timeline-error" > Failed to load timeline. Please refresh the page.< / div >
+                <div class="timeline-intro">
+                  <h1>South African History Timeline</h1>
+                  <p>Explore the rich history of South Africa through time</p>
+                </div>
+                <div class="timeline-error">Failed to load timeline. Please refresh the page.</div>
               `;
             });
         };
@@ -82,7 +82,7 @@
 
     // TimelineJS3 options optimized for maximum 550 events display
     const options = {
-      hash_bookmark: TRUE,
+      hash_bookmark: true,
       initial_zoom: 0, // Start fully zoomed out to see all events
       height: 750, // Even taller for better navigation
       language: 'en',
@@ -95,15 +95,15 @@
       marker_padding: 2, // Minimal padding
       start_at_slide: Math.floor(events.length / 2), // Start in middle of timeline
       menubar_height: 0,
-      use_bc: TRUE,
+      use_bc: true,
       duration: 600, // Fast transitions
       ease: 'easeInOutQuint',
-      dragging: TRUE,
-      trackResize: TRUE,
+      dragging: true,
+      trackResize: true,
       slide_padding_lr: 60,
       slide_default_fade: '30%',
       zoom_sequence: [0.1, 0.25, 0.5, 1, 2, 4, 8, 16, 32, 64, 128], // Even more zoom out
-      ga_property_id: NULL,
+      ga_property_id: null,
       track_events: ['nav_next', 'nav_previous', 'nav_zoom_in', 'nav_zoom_out'],
       timenav_height: 200, // Taller navigation for dense events
       timenav_height_percentage: 30, // More space for navigation

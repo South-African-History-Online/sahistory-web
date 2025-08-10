@@ -14,7 +14,7 @@
       containers.forEach(function (container) {
         container.classList.add('timeline-simple-mode');
         // Simple implementation that just loads and displays events
-        const apiEndpoint = settings.sahoTimeline ? .apiEndpoint || '/api/timeline/events';
+        const apiEndpoint = (settings.sahoTimeline && settings.sahoTimeline.apiEndpoint) ? settings.sahoTimeline.apiEndpoint : '/api/timeline/events';
 
         // Create simple structure
         container.innerHTML = `
