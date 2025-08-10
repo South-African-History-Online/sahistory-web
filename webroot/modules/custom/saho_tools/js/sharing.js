@@ -11,9 +11,15 @@
      */
     Drupal.behaviors.sahoSharing = {
         attach: function (context, settings) {
+            console.log('SAHO Sharing: Behavior attaching to context');
+            
+            // Check for sharing trigger elements
+            const sharingElements = document.querySelectorAll('a[data-sharing-trigger], button[data-sharing-trigger]');
+            console.log('SAHO Sharing: Found', sharingElements.length, 'sharing trigger elements');
 
             once('sahoSharing', 'a[data-sharing-trigger], button[data-sharing-trigger]', context).forEach(
                 function (element) {
+                    console.log('SAHO Sharing: Binding click handler to element', element);
 
                     // Update the element to use our sharing functionality
                     $(element).on(
