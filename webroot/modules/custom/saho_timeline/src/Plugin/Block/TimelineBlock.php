@@ -15,7 +15,7 @@ use Drupal\saho_timeline\Service\TimelineEventService;
  * @Block(
  *   id = "saho_timeline_block",
  *   admin_label = @Translation("SAHO Timeline"),
- *   category = @Translation("SAHO")
+ *   category = @Translation("All custom")
  * )
  */
 class TimelineBlock extends BlockBase implements BlockPluginInterface, ContainerFactoryPluginInterface {

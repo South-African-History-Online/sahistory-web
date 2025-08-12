@@ -27,6 +27,7 @@
 
         // Get API endpoint from settings
         const apiEndpoint = (settings.sahoTimeline && settings.sahoTimeline.apiEndpoint) ? settings.sahoTimeline.apiEndpoint : '/api/timeline/events';
+        const cacheKey = 'saho_timeline_events_4000';
 
         // Create loading message with intro background
         showTimelineLoading(container);
@@ -39,8 +40,27 @@
             return;
           }
 
-          // TimelineJS3 is ready, fetch events (max safe limit without UTF-8 issues)
-          fetch(apiEndpoint + '?limit=550')
+          // Check for cached data first (client-side cache for 30 minutes)
+          const cachedData = localStorage.getItem(cacheKey);
+          const cacheTime = localStorage.getItem(cacheKey + '_time');
+          const cacheExpiry = 30 * 60 * 1000; // 30 minutes
+          
+          if (cachedData && cacheTime && (Date.now() - parseInt(cacheTime)) < cacheExpiry) {
+            console.log('Loading timeline from cache...');
+            try {
+              const data = JSON.parse(cachedData);
+              if (data.events && data.events.length > 0) {
+                initializeTimelineJS(container, data.events);
+                return;
+              }
+            } catch (e) {
+              console.warn('Cache parse error, fetching fresh data:', e);
+            }
+          }
+
+          // TimelineJS3 is ready, fetch events (get all events after UTF-8 fixes)
+          console.log('Fetching timeline events from server...');
+          fetch(apiEndpoint + '?limit=4000')
             .then(response => {
               if (!response.ok) {
                 throw new Error('HTTP ' + response.status + ': ' + response.statusText);
@@ -49,6 +69,15 @@
             })
             .then(data => {
               if (data.events && data.events.length > 0) {
+                // Cache the data for faster future loads
+                try {
+                  localStorage.setItem(cacheKey, JSON.stringify(data));
+                  localStorage.setItem(cacheKey + '_time', Date.now().toString());
+                  console.log('Timeline events cached for future use');
+                } catch (e) {
+                  console.warn('Could not cache timeline data:', e);
+                }
+                
                 initializeTimelineJS(container, data.events);
               } else {
                 showTimelineError(container, 'No events found for timeline.');
@@ -75,35 +104,36 @@
     // Set container ID for TimelineJS
     container.id = container.id || 'timeline-embed-' + Date.now();
 
-    // TimelineJS3 options optimized for maximum 550 events display
+    // TimelineJS3 options optimized for desktop with 4000 events
     const options = {
       hash_bookmark: TRUE,
       initial_zoom: 0, // Start fully zoomed out to see all events
-      height: 750, // Even taller for better navigation
+      height: 900, // Taller for desktop viewing
+      width: '100%', // Full width for desktop
       language: 'en',
       timenav_position: 'bottom',
-      optimal_tick_width: 40, // Much smaller for dense events
-      scale_factor: 1, // Minimal scale factor for maximum density
+      optimal_tick_width: 35, // Slightly smaller for more events
+      scale_factor: 0.8, // Smaller scale for denser display
       theme_color: '#97212d', // SAHO heritage red
-      marker_height_min: 20, // Very small markers
-      marker_width_min: 60, // Compact marker width
-      marker_padding: 2, // Minimal padding
+      marker_height_min: 18, // Smaller markers for more events
+      marker_width_min: 50, // Compact marker width
+      marker_padding: 1, // Minimal padding
       start_at_slide: Math.floor(events.length / 2), // Start in middle of timeline
       menubar_height: 0,
       use_bc: TRUE,
-      duration: 600, // Fast transitions
+      duration: 500, // Faster transitions
       ease: 'easeInOutQuint',
       dragging: TRUE,
       trackResize: TRUE,
-      slide_padding_lr: 60,
-      slide_default_fade: '30%',
-      zoom_sequence: [0.1, 0.25, 0.5, 1, 2, 4, 8, 16, 32, 64, 128], // Even more zoom out
+      slide_padding_lr: 40, // Less padding for wider content
+      slide_default_fade: '20%',
+      zoom_sequence: [0.05, 0.1, 0.25, 0.5, 1, 2, 4, 8, 16, 32, 64], // More zoom out levels
       ga_property_id: NULL,
       track_events: ['nav_next', 'nav_previous', 'nav_zoom_in', 'nav_zoom_out'],
-      timenav_height: 200, // Taller navigation for dense events
-      timenav_height_percentage: 30, // More space for navigation
-      slide_height_percentage: 70, // Less for slides to see more timeline
-      marker_width_min_factor: 0.5 // Allow very small markers
+      timenav_height: 240, // 20% taller navigation (200 * 1.2 = 240)
+      timenav_height_percentage: 35, // More space for timeline navigation (30% + 5%)
+      slide_height_percentage: 65, // Less for slides to show more timeline (70% - 5%)
+      marker_width_min_factor: 0.4 // Allow even smaller markers
     };
 
     // Initialize TimelineJS3

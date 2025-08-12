@@ -21,7 +21,7 @@
   <div class="hero-banner__content">
     <div class="hero-banner__inner">
       {% if title %}
-        <h1 class="hero-banner__title">{{ title }}</h1>
+        <h1 class="hero-banner__title hero-banner__title--{{ title_color|default('white') }}">{{ title }}</h1>
       {% endif %}
       
       {% if subtitle %}
@@ -30,13 +30,13 @@
       
       {% if body %}
         <div class="hero-banner__body">
-          {{ body|raw }}
+          {{ body }}
         </div>
       {% endif %}
       
       {% if button_text and button_url %}
         <div class="hero-banner__cta">
-          <a href="{{ button_url }}" class="{{ button_attributes.class|join(' ') }}"{% if button_attributes.target %} target="{{ button_attributes.target }}"{% endif %}{% if button_attributes.rel %} rel="{{ button_attributes.rel }}"{% endif %}>
+          <a href="{{ button_url }}" class="hero-banner__button hero-banner__button--{{ button_style|default('solid') }} btn btn-primary"{% if button_target %} target="{{ button_target }}"{% endif %}{% if button_rel %} rel="{{ button_rel }}"{% endif %}>
             {{ button_text }}
           </a>
         </div>

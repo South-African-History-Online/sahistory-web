@@ -3,16 +3,17 @@
  * Overrides and enhancements for TimelineJS3
  */
 
-/* Enhanced container with background for better UX */
+/* Enhanced container optimized for desktop viewing */
 .timeline-premium {
   background: linear-gradient(135deg, #f5f0e5 0%, #ffffff 100%);
   border-radius: 12px;
-  padding: 1rem;
-  margin: 1rem 0;
+  padding: 1.5rem;
+  margin: 1rem auto;
   box-shadow: 0 8px 30px rgba(151, 33, 45, 0.1);
   border: 1px solid rgba(151, 33, 45, 0.1);
-  min-height: 750px;
+  min-height: 900px; /* Taller for desktop */
   width: 100%;
+  max-width: 1400px; /* Wider for desktop */
   position: relative;
 
   // Add background pattern for empty state
@@ -136,9 +137,9 @@
   z-index: 150 !important;
 }
 
-/* Improve timenav for very dense events */
+/* Improve timenav for very dense events - 20% taller */
 .saho-timeline-premium .tl-timenav {
-  height: 200px !important; // Even taller navigation for 550 events
+  height: 240px !important; /* 20% taller navigation for 4000 events */
 }
 
 /* Timeline line styling */
@@ -364,11 +365,33 @@
   border-bottom: 2px solid rgba(151, 33, 45, 0.2) !important;
 }
 
+/* Desktop optimizations */
+@media (min-width: 1200px) {
+  .timeline-premium {
+    max-width: 1600px; /* Even wider on large screens */
+    padding: 2rem;
+  }
+  
+  .saho-timeline-premium .tl-timenav {
+    height: 280px !important; /* Even taller on desktop */
+  }
+}
+
+/* Tablet adjustments */
+@media (max-width: 1024px) and (min-width: 769px) {
+  .timeline-premium {
+    max-width: 100%;
+    padding: 1.5rem;
+  }
+}
+
 /* Mobile responsive adjustments */
 @media (max-width: 768px) {
   .timeline-premium {
     padding: 1rem;
     margin: 1rem 0;
+    max-width: 100%;
+    min-height: 600px;
   }
 
   .saho-timeline-premium .tl-headline {
@@ -381,6 +404,10 @@
 
   .saho-timeline-premium .tl-slide-content {
     padding: 1rem !important;
+  }
+  
+  .saho-timeline-premium .tl-timenav {
+    height: 180px !important; /* Shorter on mobile */
   }
 }
 

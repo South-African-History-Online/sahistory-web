@@ -67,7 +67,7 @@ class TimelineApiController extends ControllerBase {
   }
 
   /**
-   * Get timeline events via API.
+   * Get timeline events via API with caching.
    *
    * @param \Symfony\Component\HttpFoundation\Request $request
    *   The request object.
@@ -76,6 +76,21 @@ class TimelineApiController extends ControllerBase {
    *   JSON response with events.
    */
   public function getEvents(Request $request) {
+    // Create cache ID based on all query parameters
+    $query_params = $request->query->all();
+    ksort($query_params);
+    $cache_id = 'timeline_api:' . md5(serialize($query_params));
+    
+    // Try to get from cache first (1 hour cache)
+    $cache = \Drupal::cache();
+    $cached = $cache->get($cache_id);
+    if ($cached && $cached->valid) {
+      // Add cache headers
+      $response = new JsonResponse($cached->data);
+      $response->setMaxAge(3600);
+      $response->headers->set('X-Cache', 'HIT');
+      return $response;
+    }
     // Validate and sanitize input parameters.
     $filters = $this->validateAndSanitizeFilters([
       'content_type' => $request->query->get('content_type'),
@@ -137,9 +152,29 @@ class TimelineApiController extends ControllerBase {
       'offset' => $offset,
     ];
 
-    // Format events for JSON response.
+    // Format events for JSON response with error handling.
     foreach ($events as $event) {
-      $response_data['events'][] = $this->formatEventForApi($event);
+      try {
+        $formatted_event = $this->formatEventForApi($event);
+        // Test if the event can be JSON encoded
+        $test_json = json_encode($formatted_event);
+        if ($test_json !== FALSE) {
+          $response_data['events'][] = $formatted_event;
+        }
+        else {
+          // Log the problematic event
+          \Drupal::logger('saho_timeline')->warning('Event @id has JSON encoding issues and was skipped.', [
+            '@id' => method_exists($event, 'id') ? $event->id() : 'unknown',
+          ]);
+        }
+      }
+      catch (\Exception $e) {
+        // Log and skip problematic events
+        \Drupal::logger('saho_timeline')->error('Error formatting event @id: @message', [
+          '@id' => method_exists($event, 'id') ? $event->id() : 'unknown',
+          '@message' => $e->getMessage(),
+        ]);
+      }
     }
 
     // If requested, return HTML instead of JSON.
@@ -148,7 +183,14 @@ class TimelineApiController extends ControllerBase {
       $response_data['html'] = $html;
     }
 
-    return new JsonResponse($response_data);
+    // Cache the response for 1 hour
+    $cache->set($cache_id, $response_data, time() + 3600, ['node_list:event']);
+    
+    // Create response with cache headers
+    $response = new JsonResponse($response_data);
+    $response->setMaxAge(3600);
+    $response->headers->set('X-Cache', 'MISS');
+    return $response;
   }
 
   /**
@@ -285,11 +327,15 @@ class TimelineApiController extends ControllerBase {
     if ($event instanceof ContentEntityInterface) {
       $data['id'] = $event->id();
       $title = $event->label();
+      // More robust UTF-8 cleaning
       $title = @iconv('UTF-8', 'UTF-8//IGNORE', $title);
       if ($title === FALSE) {
         $title = mb_convert_encoding($event->label(), 'UTF-8', 'UTF-8');
       }
-      $data['title'] = preg_replace('/[\x00-\x1F\x7F]/', '', $title);
+      // Remove any remaining invalid characters
+      $title = htmlspecialchars($title, ENT_QUOTES | ENT_HTML5, 'UTF-8', false);
+      $title = preg_replace('/[\x00-\x1F\x7F-\xFF]/', '', $title);
+      $data['title'] = trim(strip_tags($title));
       $data['url'] = $event->toUrl()->toString();
       $data['type'] = $event->bundle();
 
@@ -318,15 +364,18 @@ class TimelineApiController extends ControllerBase {
       // Get body with robust UTF-8 cleaning.
       if ($event->hasField('body') && !$event->get('body')->isEmpty()) {
         $body = $event->get('body')->value;
-        // Robust UTF-8 cleaning.
+        // More robust UTF-8 cleaning for body text
         $body = @iconv('UTF-8', 'UTF-8//IGNORE', $body);
         if ($body === FALSE) {
-          $body = mb_convert_encoding($body, 'UTF-8', 'UTF-8');
+          $body = mb_convert_encoding($event->get('body')->value, 'UTF-8', 'UTF-8');
         }
-        // Remove control characters.
-        $body = preg_replace('/[\x00-\x1F\x7F]/', '', $body);
-        $data['body'] = strip_tags($body);
-        $data['body'] = substr($data['body'], 0, 300) . '...';
+        // Strip HTML tags first to avoid breaking UTF-8 sequences
+        $body = strip_tags($body);
+        // Remove invalid characters using modern approach
+        $body = htmlspecialchars($body, ENT_QUOTES | ENT_HTML5, 'UTF-8', false);
+        $body = preg_replace('/[\x00-\x1F\x7F-\xFF]/', '', $body);
+        $body = trim(strip_tags($body));
+        $data['body'] = !empty($body) ? substr($body, 0, 300) . '...' : '';
       }
 
       // Get image from multiple possible fields.

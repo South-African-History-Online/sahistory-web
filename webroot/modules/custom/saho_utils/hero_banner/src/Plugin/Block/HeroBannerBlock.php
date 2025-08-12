@@ -74,6 +74,7 @@ class HeroBannerBlock extends BlockBase implements ContainerFactoryPluginInterfa
   public function defaultConfiguration() {
     return [
       'title' => '',
+      'title_color' => 'white',
       'subtitle' => '',
       'body' => [
         'value' => '',
@@ -83,6 +84,7 @@ class HeroBannerBlock extends BlockBase implements ContainerFactoryPluginInterfa
       'call_to_action' => [
         'title' => '',
         'uri' => '',
+        'style' => 'solid',
       ],
       'overlay_opacity' => 50,
     ] + parent::defaultConfiguration();
@@ -101,6 +103,19 @@ class HeroBannerBlock extends BlockBase implements ContainerFactoryPluginInterfa
       '#default_value' => $config['title'],
       '#required' => TRUE,
       '#maxlength' => 255,
+    ];
+    
+    $form['title_color'] = [
+      '#type' => 'select',
+      '#title' => $this->t('Title Color'),
+      '#default_value' => $config['title_color'] ?? 'white',
+      '#options' => [
+        'white' => $this->t('White'),
+        'red' => $this->t('SAHO Red'),
+        'gold' => $this->t('SAHO Gold'),
+        'green' => $this->t('SAHO Green'),
+      ],
+      '#description' => $this->t('Choose the color for the hero banner title.'),
     ];
 
     $form['subtitle'] = [
@@ -159,79 +174,28 @@ class HeroBannerBlock extends BlockBase implements ContainerFactoryPluginInterfa
     ];
 
     $form['call_to_action']['uri'] = [
-      '#type' => 'entity_autocomplete',
+      '#type' => 'textfield',
       '#title' => $this->t('Link'),
-      '#target_type' => 'node',
-      '#default_value' => $this->getNodeFromUri($config['call_to_action']['uri']),
-      '#description' => $this->t('Start typing the title of a piece of content to select it. You can also enter an external URL such as https://example.com.'),
-      '#process_default_value' => FALSE,
-      '#element_validate' => [[$this, 'validateUriElement']],
+      '#default_value' => $config['call_to_action']['uri'] ?? '',
+      '#description' => $this->t('Enter an internal path (e.g., /about-us), external URL (e.g., https://example.com), or node path (e.g., /node/123).'),
+      '#maxlength' => 2048,
+    ];
+    
+    $form['call_to_action']['style'] = [
+      '#type' => 'select',
+      '#title' => $this->t('Button Style'),
+      '#default_value' => $config['call_to_action']['style'] ?? 'solid',
+      '#options' => [
+        'solid' => $this->t('Solid Button'),
+        'ghost' => $this->t('Ghost Button (Outline)'),
+      ],
+      '#description' => $this->t('Choose the button style.'),
     ];
 
     return $form;
   }
 
-  /**
-   * Form element validation handler for the 'uri' element.
-   */
-  public function validateUriElement($element, FormStateInterface $form_state, $form) {
-    $uri = $this->getUserEnteredStringAsUri($element['#value']);
-    $form_state->setValueForElement($element, $uri);
-  }
 
-  /**
-   * Gets the user-entered string as a URI.
-   *
-   * @param string $string
-   *   The user-entered string.
-   *
-   * @return string
-   *   The URI.
-   */
-  protected function getUserEnteredStringAsUri($string) {
-    if (empty($string)) {
-      return '';
-    }
-
-    if (strpos($string, '(') !== FALSE && preg_match('/^(.*)\s\((\d+)\)$/', $string, $matches)) {
-      return 'entity:node/' . $matches[2];
-    }
-
-    if (parse_url($string, PHP_URL_SCHEME) === NULL) {
-      if (strpos($string, '<front>') === 0) {
-        return 'internal:' . $string;
-      }
-      if (strpos($string, '/') === 0) {
-        return 'internal:' . $string;
-      }
-      return 'internal:/' . $string;
-    }
-
-    return $string;
-  }
-
-  /**
-   * Get node from URI.
-   *
-   * @param string $uri
-   *   The URI.
-   *
-   * @return \Drupal\Core\Entity\EntityInterface|null
-   *   The node entity or NULL.
-   */
-  protected function getNodeFromUri($uri) {
-    if (empty($uri)) {
-      return NULL;
-    }
-
-    if (strpos($uri, 'entity:node/') === 0) {
-      $nid = substr($uri, strlen('entity:node/'));
-      $node = $this->entityTypeManager->getStorage('node')->load($nid);
-      return $node;
-    }
-
-    return NULL;
-  }
 
   /**
    * {@inheritdoc}
@@ -240,6 +204,7 @@ class HeroBannerBlock extends BlockBase implements ContainerFactoryPluginInterfa
     parent::blockSubmit($form, $form_state);
     $values = $form_state->getValues();
     $this->configuration['title'] = $values['title'];
+    $this->configuration['title_color'] = $values['title_color'];
     $this->configuration['subtitle'] = $values['subtitle'];
     $this->configuration['body'] = $values['body'];
     // Entity autocomplete returns an entity object, store just the ID.
@@ -256,7 +221,24 @@ class HeroBannerBlock extends BlockBase implements ContainerFactoryPluginInterfa
     }
     $this->configuration['overlay_opacity'] = $values['overlay_opacity'];
     $this->configuration['call_to_action']['title'] = $values['call_to_action']['title'];
-    $this->configuration['call_to_action']['uri'] = $values['call_to_action']['uri'];
+    $this->configuration['call_to_action']['style'] = $values['call_to_action']['style'];
+    // Handle URI from form.
+    $uri_input = $values['call_to_action']['uri'] ?? '';
+    if (!empty($uri_input)) {
+      // Convert to proper URI format.
+      if (strpos($uri_input, 'http://') === 0 || strpos($uri_input, 'https://') === 0) {
+        $this->configuration['call_to_action']['uri'] = $uri_input;
+      }
+      elseif (strpos($uri_input, '/') === 0) {
+        $this->configuration['call_to_action']['uri'] = 'internal:' . $uri_input;
+      }
+      else {
+        $this->configuration['call_to_action']['uri'] = 'internal:/' . $uri_input;
+      }
+    }
+    else {
+      $this->configuration['call_to_action']['uri'] = '';
+    }
   }
 
   /**
@@ -282,34 +264,49 @@ class HeroBannerBlock extends BlockBase implements ContainerFactoryPluginInterfa
     }
 
     $button_url = NULL;
-    $button_attributes = ['class' => ['hero-banner__button', 'btn', 'btn-primary']];
+    $button_target = NULL;
+    $button_rel = NULL;
     if (!empty($config['call_to_action']['uri'])) {
-      try {
-        $url = Url::fromUri($config['call_to_action']['uri']);
-        $button_url = $url->toString();
-        if ($url->isExternal()) {
-          $button_attributes['target'] = '_blank';
-          $button_attributes['rel'] = 'noopener noreferrer';
-        }
+      $uri = $config['call_to_action']['uri'];
+      
+      // Handle different URI formats.
+      if (strpos($uri, 'internal:') === 0) {
+        // Internal path.
+        $path = substr($uri, 9); // Remove 'internal:' prefix.
+        $button_url = $path;
       }
-      catch (\Exception $e) {
-        $button_url = NULL;
+      elseif (strpos($uri, 'http://') === 0 || strpos($uri, 'https://') === 0) {
+        // External URL.
+        $button_url = $uri;
+        $button_target = '_blank';
+        $button_rel = 'noopener noreferrer';
+      }
+      elseif (strpos($uri, '/') === 0) {
+        // Direct path.
+        $button_url = $uri;
+      }
+      else {
+        // Assume it's a path without leading slash.
+        $button_url = '/' . $uri;
       }
     }
 
     $build = [
       '#theme' => 'hero_banner_block',
-      '#title' => $config['title'],
-      '#subtitle' => $config['subtitle'],
-      '#body' => check_markup($config['body']['value'], $config['body']['format']),
-      '#background_image' => $background_image_url,
-      '#button_text' => $config['call_to_action']['title'],
-      '#button_url' => $button_url,
-      '#button_attributes' => $button_attributes,
-      '#overlay_opacity' => $config['overlay_opacity'] / 100,
+      '#title' => (string) ($config['title'] ?? ''),
+      '#title_color' => (string) ($config['title_color'] ?? 'white'),
+      '#subtitle' => (string) ($config['subtitle'] ?? ''),
+      '#body' => !empty($config['body']['value']) ? (string) $config['body']['value'] : '',
+      '#background_image' => (string) ($background_image_url ?? ''),
+      '#button_text' => (string) ($config['call_to_action']['title'] ?? ''),
+      '#button_url' => (string) ($button_url ?? ''),
+      '#button_target' => (string) ($button_target ?? ''),
+      '#button_rel' => (string) ($button_rel ?? ''),
+      '#button_style' => (string) ($config['call_to_action']['style'] ?? 'solid'),
+      '#overlay_opacity' => (float) (($config['overlay_opacity'] ?? 50) / 100),
       '#attached' => [
         'library' => [
-          'hero_banner/hero_banner',
+          'hero_banner/hero_banner_modern',
         ],
       ],
     ];
