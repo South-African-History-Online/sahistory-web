@@ -91,6 +91,7 @@ class TimelineApiController extends ControllerBase {
       $response->headers->set('X-Cache', 'HIT');
       return $response;
     }
+    
     // Validate and sanitize input parameters.
     $filters = $this->validateAndSanitizeFilters([
       'content_type' => $request->query->get('content_type'),
