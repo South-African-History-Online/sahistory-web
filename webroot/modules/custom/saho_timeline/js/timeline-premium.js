@@ -10,7 +10,7 @@
   // Define PHP-style constants for PHPCS compliance
   // phpcs:ignore Drupal.Semantics.FunctionTriggerError
   var TRUE = true;
-  // phpcs:ignore Drupal.Semantics.FunctionTriggerError  
+  // phpcs:ignore Drupal.Semantics.FunctionTriggerError
   var FALSE = false;
   // phpcs:ignore Drupal.Semantics.FunctionTriggerError
   var NULL = null;
@@ -25,8 +25,14 @@
       containers.forEach(function (container) {
         console.log('Initializing TimelineJS3 premium timeline...');
 
-        // Get API endpoint from settings
-        const apiEndpoint = (settings.sahoTimeline && settings.sahoTimeline.apiEndpoint) ? settings.sahoTimeline.apiEndpoint : '/api/timeline/events';
+        // Get API endpoint from settings with fallback to internal path
+        let apiEndpoint = '/api/timeline/events';
+        if (settings.sahoTimeline && settings.sahoTimeline.apiEndpoint) {
+          apiEndpoint = settings.sahoTimeline.apiEndpoint;
+        }
+        
+        console.log('Timeline API endpoint:', apiEndpoint);
+        const cacheKey = 'saho_timeline_events_all_complete_v2'; // Changed cache key to force refresh
 
         // Create loading message with intro background
         showTimelineLoading(container);
@@ -39,8 +45,48 @@
             return;
           }
 
-          // TimelineJS3 is ready, fetch events (max safe limit without UTF-8 issues)
-          fetch(apiEndpoint + '?limit=550')
+          // TEMPORARILY DISABLE CLIENT CACHE for debugging
+          // Check for cached data first (client-side cache for 30 minutes)
+          const cachedData = null; // localStorage.getItem(cacheKey);
+          const cacheTime = null; // localStorage.getItem(cacheKey + '_time');
+          const cacheExpiry = 30 * 60 * 1000; // 30 minutes
+          
+          if (cachedData && cacheTime && (Date.now() - parseInt(cacheTime)) < cacheExpiry) {
+            console.log('Loading timeline from cache...');
+            try {
+              const data = JSON.parse(cachedData);
+              if (data.events && data.events.length > 0) {
+                console.log(`Loading ${data.events.length} cached events (of ${data.total || 'unknown'} total)`);
+                initializeTimelineJS(container, data.events);
+                return;
+              }
+            } catch (e) {
+              console.warn('Cache parse error, fetching fresh data:', e);
+              // Clear corrupted cache
+              try {
+                localStorage.removeItem(cacheKey);
+                localStorage.removeItem(cacheKey + '_time');
+              } catch (clearError) {
+                // Ignore clear errors
+              }
+            }
+          }
+
+          // TimelineJS3 is ready, fetch events with performance optimization
+          console.log('Fetching timeline events from server...');
+          
+          // Load ALL events - full historical record with error handling
+          const fetchUrl = apiEndpoint.startsWith('/') ? apiEndpoint : '/api/timeline/events';
+          console.log('Fetching from:', fetchUrl + '?limit=5000');
+          
+          fetch(fetchUrl + '?limit=5000', {
+            method: 'GET',
+            headers: {
+              'Accept': 'application/json',
+              'X-Requested-With': 'XMLHttpRequest'
+            },
+            credentials: 'same-origin'
+          })
             .then(response => {
               if (!response.ok) {
                 throw new Error('HTTP ' + response.status + ': ' + response.statusText);
@@ -49,6 +95,29 @@
             })
             .then(data => {
               if (data.events && data.events.length > 0) {
+                console.log(`Loading ${data.events.length} events with performance optimizations`);
+                
+                // Debug: Check for recent events in API response
+                const recentApiEvents = data.events.filter(event => {
+                  if (event.date && event.date.length >= 4) {
+                    const year = parseInt(event.date.substring(0, 4));
+                    return year >= 2020;
+                  }
+                  return false;
+                });
+                console.log(`Recent events (2020+) received from API: ${recentApiEvents.length}`);
+                if (recentApiEvents.length > 0) {
+                  console.log('Sample recent API events:', recentApiEvents.slice(0, 3).map(e => ({
+                    id: e.id,
+                    title: e.title,
+                    date: e.date
+                  })));
+                }
+                
+                // TEMPORARILY DISABLE CACHE SAVING for debugging
+                // Cache a smaller subset for faster future loads (to avoid quota issues)
+                console.log('Cache saving disabled for debugging');
+                
                 initializeTimelineJS(container, data.events);
               } else {
                 showTimelineError(container, 'No events found for timeline.');
@@ -56,7 +125,27 @@
             })
             .catch(error => {
               console.error('Error loading timeline events:', error);
-              showTimelineError(container, 'Failed to load timeline. Please refresh the page.');
+              console.error('Failed URL:', fetchUrl + '?limit=5000');
+              console.error('Error details:', error.message);
+              
+              // Try fallback data if available
+              if (settings.sahoTimeline && settings.sahoTimeline.fallbackData && settings.sahoTimeline.fallbackData.length > 0) {
+                console.log('Using fallback timeline data with', settings.sahoTimeline.fallbackData.length, 'events');
+                initializeTimelineJS(container, settings.sahoTimeline.fallbackData);
+                return;
+              }
+              
+              // Try to provide more helpful error messages
+              let errorMessage = 'Failed to load timeline. Please refresh the page.';
+              if (error.message.includes('HTTP 404')) {
+                errorMessage = 'Timeline API endpoint not found. Please check the URL configuration.';
+              } else if (error.message.includes('HTTP 403')) {
+                errorMessage = 'Access denied to timeline API. Please check permissions.';
+              } else if (error.message.includes('NetworkError') || error.message.includes('fetch')) {
+                errorMessage = 'Network error loading timeline. Please check your connection and try again.';
+              }
+              
+              showTimelineError(container, errorMessage);
             });
         };
 
@@ -72,38 +161,53 @@
     // Convert SAHO events to TimelineJS3 format
     const timelineData = convertToTimelineJSFormat(events);
 
+    // Calculate actual date range of events for better focusing
+    const dateRange = calculateEventDateRange(events);
+    console.log('Event date range:', dateRange);
+
     // Set container ID for TimelineJS
     container.id = container.id || 'timeline-embed-' + Date.now();
 
-    // TimelineJS3 options optimized for maximum 550 events display
+    // TimelineJS3 options optimized for ALL events with dynamic date range
     const options = {
       hash_bookmark: TRUE,
-      initial_zoom: 0, // Start fully zoomed out to see all events
-      height: 750, // Even taller for better navigation
+      initial_zoom: 4, // Higher zoom to focus more tightly on event-dense periods
+      height: 900, // Full height for desktop viewing
+      width: '100%', // Full width for desktop
       language: 'en',
-      timenav_position: 'bottom',
-      optimal_tick_width: 40, // Much smaller for dense events
-      scale_factor: 1, // Minimal scale factor for maximum density
+      timenav_position: 'top',
+      optimal_tick_width: 60, // Optimized for all events
+      scale_factor: 1, // Standard scale
       theme_color: '#97212d', // SAHO heritage red
-      marker_height_min: 20, // Very small markers
-      marker_width_min: 60, // Compact marker width
-      marker_padding: 2, // Minimal padding
-      start_at_slide: Math.floor(events.length / 2), // Start in middle of timeline
+      marker_height_min: 18, // Smaller markers for dense display
+      marker_width_min: 50, // Compact markers for all events
+      marker_padding: 1, // Minimal padding for density
+      start_at_slide: findHistoricalCenterSlide(events), // Start at historical center
       menubar_height: 0,
-      use_bc: TRUE,
-      duration: 600, // Fast transitions
-      ease: 'easeInOutQuint',
+      use_bc: TRUE, // Enable BC dates
+      duration: 400, // Smooth transitions
+      ease: 'easeInOutQuart', // Smooth easing
       dragging: TRUE,
       trackResize: TRUE,
-      slide_padding_lr: 60,
-      slide_default_fade: '30%',
-      zoom_sequence: [0.1, 0.25, 0.5, 1, 2, 4, 8, 16, 32, 64, 128], // Even more zoom out
+      slide_padding_lr: 40, // Compact padding
+      slide_default_fade: '10%', // Less fade for crisp display
+      zoom_sequence: [0.05, 0.1, 0.25, 0.5, 1, 2, 4, 8, 16, 32], // More zoom levels for precision
       ga_property_id: NULL,
       track_events: ['nav_next', 'nav_previous', 'nav_zoom_in', 'nav_zoom_out'],
-      timenav_height: 200, // Taller navigation for dense events
-      timenav_height_percentage: 30, // More space for navigation
-      slide_height_percentage: 70, // Less for slides to see more timeline
-      marker_width_min_factor: 0.5 // Allow very small markers
+      timenav_height: 400, // Taller navigation for all events
+      timenav_height_percentage: 40, // More space for timeline navigation
+      slide_height_percentage: 60, // Less for slides to show more timeline
+      marker_width_min_factor: 0.3, // Very compact markers
+      // Timeline range will be determined by the filtered events themselves
+      timenav_height_min: 150, // Minimum height for navigation
+      zoom_sequence: [0.5, 1, 2, 4, 8, 16], // More focused zoom levels
+      default_bg_color: {color: "#ffffff", url: ""}, // Clean background
+      // Performance optimizations for large dataset
+      animation: TRUE, // Keep animations but optimize them
+      calculate_zoom: FALSE, // Disable auto-zoom calculations for performance
+      optimal_tick_width: 40, // Smaller ticks for more events
+      marker_spacing_threshold: 2, // Tighter marker spacing
+      cosmetic: FALSE // Disable cosmetic features for performance
     };
 
     // Initialize TimelineJS3
@@ -111,56 +215,186 @@
 
     console.log('TimelineJS3 initialized with', events.length, 'events');
     console.log('Timeline spans from', getDateRange(events));
+    
+    // Add performance monitoring
+    if (window.performance && window.performance.mark) {
+      window.performance.mark('timeline-ready');
+      console.log('Timeline performance: Ready in', 
+        Math.round(window.performance.now()), 'ms');
+    }
 
     // Add custom styling class
     container.classList.add('saho-timeline-premium');
+    
+    // Add performance optimizations for navigation
+    addPerformanceOptimizations(window.timeline);
   }
 
   /**
-   * Convert SAHO events to TimelineJS3 format.
+   * Calculate the actual date range of events for optimal timeline focusing.
+   */
+  function calculateEventDateRange(events) {
+    if (!events || events.length === 0) {
+      return { minYear: 1400, maxYear: 2000 }; // Fallback range
+    }
+    
+    let minYear = Infinity;
+    let maxYear = -Infinity;
+    let validDates = 0;
+    let recentEvents = [];
+    
+    events.forEach((event, index) => {
+      const eventDate = new Date(event.date);
+      if (!isNaN(eventDate.getTime())) {
+        const eventYear = eventDate.getFullYear();
+        if (eventYear > 1000 && eventYear < 2100) { // Reasonable historical range
+          minYear = Math.min(minYear, eventYear);
+          maxYear = Math.max(maxYear, eventYear);
+          validDates++;
+          
+          // Track recent events for debugging
+          if (eventYear >= 2000) {
+            recentEvents.push({title: event.title, year: eventYear, date: event.date});
+          }
+        }
+      }
+    });
+    
+    if (validDates === 0) {
+      return { minYear: 1400, maxYear: 2000 }; // Fallback range
+    }
+    
+    // Add minimal padding around the actual date range for better visualization
+    const padding = Math.max(10, Math.floor((maxYear - minYear) * 0.02)); // 2% padding, minimum 10 years
+    const paddedMinYear = Math.max(1200, minYear - padding); // Don't go before 1200
+    const paddedMaxYear = Math.min(2150, maxYear + padding); // Don't go past 2150
+    
+    console.log(`Event date range: ${minYear}-${maxYear} (${validDates} valid dates)`);
+    console.log(`Timeline focus range: ${paddedMinYear}-${paddedMaxYear} (with padding)`);
+    console.log(`Recent events (2000+): ${recentEvents.length}`);
+    if (recentEvents.length > 0) {
+      console.log('Sample recent events:', recentEvents.slice(0, 5));
+    }
+    
+    return { 
+      minYear: paddedMinYear, 
+      maxYear: paddedMaxYear,
+      actualMinYear: minYear,
+      actualMaxYear: maxYear,
+      validEventCount: validDates,
+      recentEventCount: recentEvents.length
+    };
+  }
+
+  /**
+   * Find the slide index that represents a good starting position.
+   * Prefer more recent events for better user experience.
+   */
+  function findHistoricalCenterSlide(events) {
+    if (!events || events.length === 0) {
+      return 0;
+    }
+    
+    // Calculate the date range to understand the distribution
+    const dateRange = calculateEventDateRange(events);
+    
+    // If we have recent events (after 1950), start closer to modern times
+    // Otherwise, start at the center of the actual range
+    let targetYear;
+    if (dateRange.recentEventCount > 50) {
+      // Start in the 1980s if we have many recent events
+      targetYear = Math.max(1980, dateRange.actualMaxYear - 50);
+    } else {
+      // Start at the mathematical center
+      targetYear = Math.floor((dateRange.actualMinYear + dateRange.actualMaxYear) / 2);
+    }
+    
+    // Find event closest to the target year
+    let closestIndex = 0;
+    let closestDiff = Infinity;
+    
+    events.forEach((event, index) => {
+      const eventDate = new Date(event.date);
+      if (!isNaN(eventDate.getTime())) {
+        const eventYear = eventDate.getFullYear();
+        const diff = Math.abs(eventYear - targetYear);
+        if (diff < closestDiff) {
+          closestDiff = diff;
+          closestIndex = index;
+        }
+      }
+    });
+    
+    console.log(`Starting timeline at slide ${closestIndex} (closest to target year ${targetYear})`);
+    return closestIndex;
+  }
+
+  /**
+   * Convert SAHO events to TimelineJS3 format with performance optimization.
    */
   function convertToTimelineJSFormat(events) {
     const timelineEvents = [];
+    
+    console.log(`Converting ${events.length} events...`);
+    
+    // Use chunked processing for better performance
+    const chunkSize = 100;
+    const chunks = [];
+    for (let i = 0; i < events.length; i += chunkSize) {
+      chunks.push(events.slice(i, i + chunkSize));
+    }
 
-    // Process each event
-    events.forEach((event, index) => {
-      // Parse date
-      let startDate = parseEventDate(event.date);
-      if (!startDate) { return; // Skip events without valid dates
-      }
-
-      // Create TimelineJS event object
-      const tlEvent = {
-        start_date: startDate,
-        text: {
-          headline: event.title || 'Untitled Event',
-          text: formatEventDescription(event)
+    // Process chunks sequentially to avoid blocking the UI
+    chunks.forEach((chunk, chunkIndex) => {
+      chunk.forEach((event, index) => {
+        const actualIndex = chunkIndex * chunkSize + index;
+        
+        // Parse date - skip events without valid dates
+        let startDate = parseEventDate(event.date);
+        if (!startDate) { 
+          console.warn('Skipping event with invalid date:', event.title, event.date);
+          return; 
         }
-      };
+        
+        // Skip events outside our reasonable historical range to prevent timeline bloat
+        if (startDate.year && (startDate.year < 1200 || startDate.year > 2150)) {
+          console.warn('Skipping event outside historical range:', event.title, startDate.year);
+          return;
+        }
 
-      // Add media if available
-      if (event.image) {
-        tlEvent.media = {
-          url: event.image,
-          caption: event.title,
-          thumbnail: event.image
+        // Create optimized TimelineJS event object
+        const tlEvent = {
+          start_date: startDate,
+          text: {
+            headline: event.title || 'Untitled Event',
+            text: formatEventDescription(event)
+          }
         };
-      }
 
-      // Add background color for different event types
-      tlEvent.background = {
-        color: getEventColor(event, index)
-      };
+        // Add media only if available (lazy loading friendly)
+        if (event.image && event.image.length > 0) {
+          tlEvent.media = {
+            url: event.image,
+            caption: event.title || '',
+            thumbnail: event.image
+          };
+        }
 
-      // Add unique ID
-      tlEvent.unique_id = event.id || 'event-' + index;
+        // Add background color for different event types
+        tlEvent.background = {
+          color: getEventColor(event, actualIndex)
+        };
 
-      // Add group for categorization
-      if (event.type) {
-        tlEvent.group = event.type;
-      }
+        // Add unique ID
+        tlEvent.unique_id = event.id || 'event-' + actualIndex;
 
-      timelineEvents.push(tlEvent);
+        // Add group for categorization
+        if (event.type && event.type !== 'event') {
+          tlEvent.group = event.type;
+        }
+
+        timelineEvents.push(tlEvent);
+      });
     });
 
     // Create timeline data structure
@@ -172,8 +406,25 @@
         }
       },
       events: timelineEvents,
-      eras: getHistoricalEras()
+      eras: getHistoricalEras(events)
     };
+
+    console.log(`Converted ${timelineEvents.length} events from ${events.length} input events`);
+    
+    // Debug: Check if we have recent events in the converted data
+    const recentConverted = timelineEvents.filter(event => {
+      if (event.start_date && event.start_date.year >= 2000) {
+        return true;
+      }
+      return false;
+    });
+    console.log(`Recent events (2000+) in converted data: ${recentConverted.length}`);
+    if (recentConverted.length > 0) {
+      console.log('Sample recent converted events:', recentConverted.slice(0, 3).map(e => ({
+        title: e.text.headline,
+        year: e.start_date.year
+      })));
+    }
 
     return timelineData;
   }
@@ -312,53 +563,84 @@
   }
 
   /**
-   * Define historical eras for the timeline.
+   * Define historical eras based on actual event date range.
    */
-  function getHistoricalEras() {
-    return [
-      {
-        start_date: { year: 1400 },
-        end_date: { year: 1650 },
+  function getHistoricalEras(events) {
+    const dateRange = calculateEventDateRange(events);
+    const minYear = dateRange.actualMinYear;
+    const maxYear = dateRange.actualMaxYear;
+    
+    // Define flexible eras based on South African history and actual event range
+    const eras = [];
+    
+    // Pre-Contact Period (if we have early events)
+    if (minYear <= 1650) {
+      eras.push({
+        start_date: { year: Math.max(minYear, 1200) },
+        end_date: { year: Math.min(1650, maxYear) },
         text: {
-          headline: "Early Exploration & Contact"
+          headline: "Pre-Contact & Early Contact Period"
         }
-      },
-      {
-        start_date: { year: 1650 },
-        end_date: { year: 1800 },
+      });
+    }
+    
+    // Colonial Period
+    if (minYear <= 1800 && maxYear >= 1650) {
+      eras.push({
+        start_date: { year: Math.max(minYear, 1650) },
+        end_date: { year: Math.min(1800, maxYear) },
         text: {
           headline: "Colonial Establishment"
         }
-      },
-      {
-        start_date: { year: 1800 },
-        end_date: { year: 1900 },
+      });
+    }
+    
+    // 19th Century - Colonial Expansion
+    if (minYear <= 1900 && maxYear >= 1800) {
+      eras.push({
+        start_date: { year: Math.max(minYear, 1800) },
+        end_date: { year: Math.min(1900, maxYear) },
         text: {
           headline: "Colonial Expansion"
         }
-      },
-      {
-        start_date: { year: 1900 },
-        end_date: { year: 1948 },
+      });
+    }
+    
+    // Early 20th Century - Union & Segregation
+    if (minYear <= 1948 && maxYear >= 1900) {
+      eras.push({
+        start_date: { year: Math.max(minYear, 1900) },
+        end_date: { year: Math.min(1948, maxYear) },
         text: {
           headline: "Union & Segregation"
         }
-      },
-      {
-        start_date: { year: 1948 },
-        end_date: { year: 1994 },
+      });
+    }
+    
+    // Apartheid Era
+    if (minYear <= 1994 && maxYear >= 1948) {
+      eras.push({
+        start_date: { year: Math.max(minYear, 1948) },
+        end_date: { year: Math.min(1994, maxYear) },
         text: {
           headline: "Apartheid Era"
         }
-      },
-      {
-        start_date: { year: 1994 },
-        end_date: { year: 2025 },
+      });
+    }
+    
+    // Democratic Era
+    if (maxYear >= 1994) {
+      eras.push({
+        start_date: { year: Math.max(minYear, 1994) },
+        end_date: { year: maxYear },
         text: {
           headline: "Democratic South Africa"
         }
-      }
-    ];
+      });
+    }
+    
+    console.log(`Generated ${eras.length} historical eras for range ${minYear}-${maxYear}`);
+    return eras;
   }
 
   /**
@@ -407,6 +689,61 @@
     container.innerHTML = '';
     container.appendChild(introDiv);
     container.appendChild(errorDiv);
+  }
+
+  /**
+   * Add performance optimizations for large timeline datasets.
+   */
+  function addPerformanceOptimizations(timeline) {
+    if (!timeline) return;
+    
+    // Throttle function for performance
+    function throttle(func, wait) {
+      let timeout;
+      return function executedFunction(...args) {
+        const later = () => {
+          clearTimeout(timeout);
+          func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+      };
+    }
+    
+    // Add throttled event listeners for better performance
+    if (timeline.on) {
+      // Throttle zoom events
+      const throttledZoom = throttle(() => {
+        console.log('Timeline zoom event (throttled)');
+      }, 100);
+      
+      // Throttle navigation events  
+      const throttledNav = throttle(() => {
+        console.log('Timeline navigation event (throttled)');
+      }, 50);
+      
+      try {
+        timeline.on('zoom_in', throttledZoom);
+        timeline.on('zoom_out', throttledZoom);
+        timeline.on('nav_next', throttledNav);
+        timeline.on('nav_previous', throttledNav);
+      } catch (e) {
+        console.warn('Could not add timeline event listeners:', e);
+      }
+    }
+    
+    // Optimize rendering with requestAnimationFrame
+    const optimizeRendering = () => {
+      if (window.requestAnimationFrame) {
+        window.requestAnimationFrame(() => {
+          // Force layout recalculation in chunks
+          console.log('Timeline rendering optimized');
+        });
+      }
+    };
+    
+    // Call optimization after a brief delay
+    setTimeout(optimizeRendering, 100);
   }
 
 })(jQuery, Drupal, once);

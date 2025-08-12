@@ -2,6 +2,7 @@
 
 namespace Drupal\saho_timeline\Controller;
 
+use Drupal\node\NodeInterface;
 use Drupal\Core\Controller\ControllerBase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\saho_timeline\Service\TimelineEventService;
@@ -75,9 +76,8 @@ class TimelineController extends ControllerBase {
           'sahoTimeline' => [
             'apiEndpoint' => '/api/timeline/events',
             'activeFilters' => $filters,
-            'minYear' => 1000,
-            'maxYear' => 2025,
             'version' => 'premium',
+            'fallbackData' => $this->getFallbackTimelineData(),
           ],
         ],
       ],
@@ -88,6 +88,73 @@ class TimelineController extends ControllerBase {
     ];
 
     return $build;
+  }
+
+  /**
+   * Get fallback timeline data for when API fails.
+   *
+   * @return array
+   *   Array of formatted timeline events.
+   */
+  protected function getFallbackTimelineData() {
+    try {
+      // Get a sample of events for fallback.
+      $events = $this->timelineEventService->getAllTimelineEvents();
+
+      // Limit to 100 events for fallback to avoid overwhelming the page.
+      $sample_events = array_slice($events, 0, 100);
+
+      $fallback_data = [];
+      foreach ($sample_events as $event) {
+        if ($event instanceof NodeInterface) {
+          $fallback_data[] = [
+            'id' => $event->id(),
+            'title' => $event->label(),
+            'date' => $this->getEventDate($event),
+            'body' => $this->getEventBody($event),
+            'url' => $event->toUrl()->toString(),
+            'type' => $event->bundle(),
+          ];
+        }
+      }
+
+      return $fallback_data;
+    }
+    catch (\Exception $e) {
+      \Drupal::logger('saho_timeline')->error('Failed to generate fallback data: @message', ['@message' => $e->getMessage()]);
+      return [];
+    }
+  }
+
+  /**
+   * Get event date from various date fields.
+   */
+  protected function getEventDate($event) {
+    $date_fields = [
+      'field_this_day_in_history_3',
+      'field_this_day_in_history_date_2',
+      'field_start_date',
+      'field_end_date',
+    ];
+
+    foreach ($date_fields as $field_name) {
+      if ($event->hasField($field_name) && !$event->get($field_name)->isEmpty()) {
+        return $event->get($field_name)->value;
+      }
+    }
+
+    return date('Y-m-d', $event->getCreatedTime());
+  }
+
+  /**
+   * Get event body text.
+   */
+  protected function getEventBody($event) {
+    if ($event->hasField('body') && !$event->get('body')->isEmpty()) {
+      $body = strip_tags($event->get('body')->value);
+      return substr($body, 0, 200) . '...';
+    }
+    return '';
   }
 
 }

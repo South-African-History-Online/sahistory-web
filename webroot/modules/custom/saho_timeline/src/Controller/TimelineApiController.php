@@ -67,7 +67,7 @@ class TimelineApiController extends ControllerBase {
   }
 
   /**
-   * Get timeline events via API.
+   * Get timeline events via API with caching.
    *
    * @param \Symfony\Component\HttpFoundation\Request $request
    *   The request object.
@@ -76,6 +76,24 @@ class TimelineApiController extends ControllerBase {
    *   JSON response with events.
    */
   public function getEvents(Request $request) {
+    // Create cache ID based on all query parameters.
+    $query_params = $request->query->all();
+    ksort($query_params);
+    $cache_id = 'timeline_api:' . md5(serialize($query_params));
+
+    // TEMPORARILY DISABLE API CACHE for debugging
+    // Try to get from cache first (1 hour cache)
+    $cache = \Drupal::cache();
+    // $cache->get($cache_id);
+    $cached = FALSE;
+    if ($cached && $cached->valid) {
+      // Add cache headers.
+      $response = new JsonResponse($cached->data);
+      $response->setMaxAge(3600);
+      $response->headers->set('X-Cache', 'HIT');
+      return $response;
+    }
+
     // Validate and sanitize input parameters.
     $filters = $this->validateAndSanitizeFilters([
       'content_type' => $request->query->get('content_type'),
@@ -119,12 +137,16 @@ class TimelineApiController extends ControllerBase {
     // Apply intelligent sampling if we have too many events.
     $total = count($events);
 
+    // For debugging: temporarily disable sampling to see if that's the issue
     // If we have more events than requested limit, do time-based sampling
     // to ensure good distribution across all time periods.
-    if ($limit < $total && $total > 1000) {
+    if ($limit < $total && $total > 1000 && $limit < 3000) {
+      // Only sample if requesting less than 3000 events.
       $events = $this->sampleEventsByTimePeriod($events, $limit);
     }
     else {
+      // For requests of 3000+ events, return them all (up to the limit)
+      // without sampling.
       $events = array_slice($events, $offset, $limit);
     }
 
@@ -137,9 +159,29 @@ class TimelineApiController extends ControllerBase {
       'offset' => $offset,
     ];
 
-    // Format events for JSON response.
+    // Format events for JSON response with error handling.
     foreach ($events as $event) {
-      $response_data['events'][] = $this->formatEventForApi($event);
+      try {
+        $formatted_event = $this->formatEventForApi($event);
+        // Test if the event can be JSON encoded.
+        $test_json = json_encode($formatted_event);
+        if ($test_json !== FALSE) {
+          $response_data['events'][] = $formatted_event;
+        }
+        else {
+          // Log the problematic event.
+          \Drupal::logger('saho_timeline')->warning('Event @id has JSON encoding issues and was skipped.', [
+            '@id' => method_exists($event, 'id') ? $event->id() : 'unknown',
+          ]);
+        }
+      }
+      catch (\Exception $e) {
+        // Log and skip problematic events.
+        \Drupal::logger('saho_timeline')->error('Error formatting event @id: @message', [
+          '@id' => method_exists($event, 'id') ? $event->id() : 'unknown',
+          '@message' => $e->getMessage(),
+        ]);
+      }
     }
 
     // If requested, return HTML instead of JSON.
@@ -148,7 +190,35 @@ class TimelineApiController extends ControllerBase {
       $response_data['html'] = $html;
     }
 
-    return new JsonResponse($response_data);
+    // Debug: Log info about returned events.
+    $recent_events = array_filter($response_data['events'], function ($event) {
+      if (!empty($event['date'])) {
+        $year = (int) substr($event['date'], 0, 4);
+        return $year >= 2000;
+      }
+      return FALSE;
+    });
+
+    \Drupal::logger('saho_timeline')->info('API returning @total events, @recent from 2000+, date range @min to @max', [
+      '@total' => count($response_data['events']),
+      '@recent' => count($recent_events),
+      '@min' => !empty($response_data['events']) ? min(array_map(function ($e) {
+        return $e['date'];
+      }, $response_data['events'])) : 'none',
+      '@max' => !empty($response_data['events']) ? max(array_map(function ($e) {
+        return $e['date'];
+      }, $response_data['events'])) : 'none',
+    ]);
+
+    // TEMPORARILY DISABLE API CACHE for debugging
+    // Cache the response for 1 hour.
+    // $cache->set($cache_id, $response_data, time() + 3600,
+    // ['node_list:event']);
+    // Create response with cache headers.
+    $response = new JsonResponse($response_data);
+    $response->setMaxAge(3600);
+    $response->headers->set('X-Cache', 'MISS');
+    return $response;
   }
 
   /**
@@ -285,11 +355,15 @@ class TimelineApiController extends ControllerBase {
     if ($event instanceof ContentEntityInterface) {
       $data['id'] = $event->id();
       $title = $event->label();
+      // More robust UTF-8 cleaning.
       $title = @iconv('UTF-8', 'UTF-8//IGNORE', $title);
       if ($title === FALSE) {
         $title = mb_convert_encoding($event->label(), 'UTF-8', 'UTF-8');
       }
-      $data['title'] = preg_replace('/[\x00-\x1F\x7F]/', '', $title);
+      // Remove any remaining invalid characters.
+      $title = htmlspecialchars($title, ENT_QUOTES | ENT_HTML5, 'UTF-8', FALSE);
+      $title = preg_replace('/[\x00-\x1F\x7F-\xFF]/', '', $title);
+      $data['title'] = trim(strip_tags($title));
       $data['url'] = $event->toUrl()->toString();
       $data['type'] = $event->bundle();
 
@@ -318,15 +392,18 @@ class TimelineApiController extends ControllerBase {
       // Get body with robust UTF-8 cleaning.
       if ($event->hasField('body') && !$event->get('body')->isEmpty()) {
         $body = $event->get('body')->value;
-        // Robust UTF-8 cleaning.
+        // More robust UTF-8 cleaning for body text.
         $body = @iconv('UTF-8', 'UTF-8//IGNORE', $body);
         if ($body === FALSE) {
-          $body = mb_convert_encoding($body, 'UTF-8', 'UTF-8');
+          $body = mb_convert_encoding($event->get('body')->value, 'UTF-8', 'UTF-8');
         }
-        // Remove control characters.
-        $body = preg_replace('/[\x00-\x1F\x7F]/', '', $body);
-        $data['body'] = strip_tags($body);
-        $data['body'] = substr($data['body'], 0, 300) . '...';
+        // Strip HTML tags first to avoid breaking UTF-8 sequences.
+        $body = strip_tags($body);
+        // Remove invalid characters using modern approach.
+        $body = htmlspecialchars($body, ENT_QUOTES | ENT_HTML5, 'UTF-8', FALSE);
+        $body = preg_replace('/[\x00-\x1F\x7F-\xFF]/', '', $body);
+        $body = trim(strip_tags($body));
+        $data['body'] = !empty($body) ? substr($body, 0, 300) . '...' : '';
       }
 
       // Get image from multiple possible fields.

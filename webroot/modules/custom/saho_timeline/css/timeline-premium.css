@@ -3,39 +3,44 @@
  * Overrides and enhancements for TimelineJS3
  */
 
-/* Enhanced container with background for better UX */
+/* Enhanced container optimized for desktop viewing and performance */
 .timeline-premium {
   background: linear-gradient(135deg, #f5f0e5 0%, #ffffff 100%);
   border-radius: 12px;
-  padding: 1rem;
-  margin: 1rem 0;
+  padding: 1.5rem;
+  margin: 1rem auto;
   box-shadow: 0 8px 30px rgba(151, 33, 45, 0.1);
   border: 1px solid rgba(151, 33, 45, 0.1);
-  min-height: 750px;
+  min-height: 900px; /* Taller for desktop */
   width: 100%;
+  max-width: 1400px; /* Wider for desktop */
   position: relative;
+  /* Performance optimizations */
+  contain: layout style;
+  will-change: transform;
+  transform: translateZ(0); /* Force GPU acceleration */
+}
 
-  // Add background pattern for empty state
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-image:
-      radial-gradient(circle at 20% 20%, rgba(151, 33, 45, 0.03) 0%, transparent 50%),
-      radial-gradient(circle at 80% 80%, rgba(184, 138, 46, 0.03) 0%, transparent 50%),
-      linear-gradient(135deg, rgba(245, 240, 229, 0.5) 0%, rgba(255, 255, 255, 0.8) 100%);
-    pointer-events: none;
-    border-radius: inherit;
-  }
+/* Add background pattern for empty state */
+.timeline-premium::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image:
+    radial-gradient(circle at 20% 20%, rgba(151, 33, 45, 0.03) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(184, 138, 46, 0.03) 0%, transparent 50%),
+    linear-gradient(135deg, rgba(245, 240, 229, 0.5) 0%, rgba(255, 255, 255, 0.8) 100%);
+  pointer-events: none;
+  border-radius: inherit;
+}
 
-  // Ensure content appears above background
-  > * {
-    position: relative;
-    z-index: 1;
-  }
+/* Ensure content appears above background */
+.timeline-premium > * {
+  position: relative;
+  z-index: 1;
 }
 
 /* Add intro section with South African themed background */
@@ -110,35 +115,39 @@
   font-weight: 700 !important;
 }
 
-/* Timeline navigation customization - optimized for more events */
+/* Timeline navigation customization - optimized for performance and more events */
 .saho-timeline-premium .tl-timemarker {
   background-color: rgba(151, 33, 45, 0.9) !important;
-  min-width: 2px !important; // Thinner markers for dense events
-  transition: all 0.2s ease !important;
+  min-width: 2px !important; /* Thinner markers for dense events */
+  transition: transform 0.2s ease, background-color 0.2s ease !important;
+  will-change: transform; /* Optimize for animations */
+  backface-visibility: hidden; /* Prevent flickering */
 }
 
 .saho-timeline-premium .tl-timemarker:hover {
   background-color: #97212d !important;
-  min-width: 4px !important; // Expand on hover
+  min-width: 4px !important; /* Expand on hover */
   z-index: 100 !important;
 }
 
 .saho-timeline-premium .tl-timemarker .tl-timemarker-content-container {
   background-color: rgba(255, 255, 255, 0.95) !important;
   border: 1px solid rgba(151, 33, 45, 0.2) !important;
-  padding: 0.3rem 0.5rem !important; // Smaller padding for dense display
-  font-size: 0.8rem !important; // Smaller text
+  padding: 0.3rem 0.5rem !important; /* Smaller padding for dense display */
+  font-size: 0.8rem !important; /* Smaller text */
 }
 
 .saho-timeline-premium .tl-timemarker.tl-timemarker-active {
   background-color: #b88a2e !important;
-  min-width: 5px !important; // Active marker stands out
+  min-width: 5px !important; /* Active marker stands out */
   z-index: 150 !important;
 }
 
-/* Improve timenav for very dense events */
+/* Improve timenav for performance and dense events - 20% taller */
 .saho-timeline-premium .tl-timenav {
-  height: 200px !important; // Even taller navigation for 550 events
+  height: 240px !important; /* 20% taller navigation for 2000 events */
+  transform: translateZ(0); /* GPU acceleration */
+  overflow: hidden; /* Prevent unnecessary repaints */
 }
 
 /* Timeline line styling */
@@ -221,8 +230,7 @@
   font-weight: bold !important;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
   box-shadow: 0 4px 15px rgba(151, 33, 45, 0.4) !important;
-
-  // Ensure they're always visible
+  /* Ensure they're always visible */
   opacity: 1 !important;
   visibility: visible !important;
 }
@@ -261,8 +269,7 @@
   font-weight: bold !important;
   padding: 0.5rem !important;
   box-shadow: 0 2px 8px rgba(151, 33, 45, 0.2) !important;
-
-  // Always visible
+  /* Always visible */
   opacity: 1 !important;
   visibility: visible !important;
 }
@@ -317,30 +324,29 @@
   text-transform: uppercase;
   letter-spacing: 0.5px;
   box-shadow: 0 4px 12px rgba(151, 33, 45, 0.3);
-
-  // Always visible - no opacity issues
+  /* Always visible - no opacity issues */
   opacity: 1 !important;
   visibility: visible !important;
+}
 
-  // Add arrow icon
-  &::after {
-    content: '→';
-    font-size: 1.1em;
-    font-weight: bold;
-    transition: transform 0.3s ease;
-  }
+/* Add arrow icon */
+.timeline-read-more::after {
+  content: '→';
+  font-size: 1.1em;
+  font-weight: bold;
+  transition: transform 0.3s ease;
 }
 
 .timeline-read-more:hover {
-  background: darken(#97212d, 10%) !important;
+  background: #7a1b24 !important;
   color: white !important;
   transform: translateY(-3px) scale(1.05);
   box-shadow: 0 6px 20px rgba(151, 33, 45, 0.4);
-  border-color: darken(#97212d, 10%);
+  border-color: #7a1b24;
+}
 
-  &::after {
-    transform: translateX(3px);
-  }
+.timeline-read-more:hover::after {
+  transform: translateX(3px);
 }
 
 .timeline-read-more:active {
@@ -364,11 +370,33 @@
   border-bottom: 2px solid rgba(151, 33, 45, 0.2) !important;
 }
 
+/* Desktop optimizations */
+@media (min-width: 1200px) {
+  .timeline-premium {
+    max-width: 1600px; /* Even wider on large screens */
+    padding: 2rem;
+  }
+  
+  .saho-timeline-premium .tl-timenav {
+    height: 280px !important; /* Even taller on desktop */
+  }
+}
+
+/* Tablet adjustments */
+@media (max-width: 1024px) and (min-width: 769px) {
+  .timeline-premium {
+    max-width: 100%;
+    padding: 1.5rem;
+  }
+}
+
 /* Mobile responsive adjustments */
 @media (max-width: 768px) {
   .timeline-premium {
     padding: 1rem;
     margin: 1rem 0;
+    max-width: 100%;
+    min-height: 600px;
   }
 
   .saho-timeline-premium .tl-headline {
@@ -381,6 +409,10 @@
 
   .saho-timeline-premium .tl-slide-content {
     padding: 1rem !important;
+  }
+  
+  .saho-timeline-premium .tl-timenav {
+    height: 180px !important; /* Shorter on mobile */
   }
 }
 

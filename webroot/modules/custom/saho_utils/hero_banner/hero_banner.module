@@ -1,0 +1,46 @@
+<?php
+
+/**
+ * @file
+ * Contains hero_banner.module.
+ */
+
+use Drupal\Core\Routing\RouteMatchInterface;
+
+/**
+ * Implements hook_help().
+ */
+function hero_banner_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    case 'help.page.hero_banner':
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('Provides a customizable hero banner block with background image and call to action button.') . '</p>';
+      return $output;
+
+    default:
+  }
+}
+
+/**
+ * Implements hook_theme().
+ */
+function hero_banner_theme() {
+  return [
+    'hero_banner_block' => [
+      'variables' => [
+        'title' => NULL,
+        'title_color' => 'white',
+        'subtitle' => NULL,
+        'body' => NULL,
+        'background_image' => NULL,
+        'button_text' => NULL,
+        'button_url' => NULL,
+        'button_target' => NULL,
+        'button_rel' => NULL,
+        'button_style' => 'solid',
+        'overlay_opacity' => 0.5,
+      ],
+    ],
+  ];
+}
