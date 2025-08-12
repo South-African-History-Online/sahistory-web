@@ -2,12 +2,12 @@
 
 namespace Drupal\hero_banner\Plugin\Block;
 
+use Drupal\file\Entity\File;
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\File\FileUrlGeneratorInterface;
-use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -104,7 +104,7 @@ class HeroBannerBlock extends BlockBase implements ContainerFactoryPluginInterfa
       '#required' => TRUE,
       '#maxlength' => 255,
     ];
-    
+
     $form['title_color'] = [
       '#type' => 'select',
       '#title' => $this->t('Title Color'),
@@ -180,7 +180,7 @@ class HeroBannerBlock extends BlockBase implements ContainerFactoryPluginInterfa
       '#description' => $this->t('Enter an internal path (e.g., /about-us), external URL (e.g., https://example.com), or node path (e.g., /node/123).'),
       '#maxlength' => 2048,
     ];
-    
+
     $form['call_to_action']['style'] = [
       '#type' => 'select',
       '#title' => $this->t('Button Style'),
@@ -194,8 +194,6 @@ class HeroBannerBlock extends BlockBase implements ContainerFactoryPluginInterfa
 
     return $form;
   }
-
-
 
   /**
    * {@inheritdoc}
@@ -256,7 +254,7 @@ class HeroBannerBlock extends BlockBase implements ContainerFactoryPluginInterfa
         $image_field = $media->get('field_media_image');
         if (!$image_field->isEmpty()) {
           $file = $image_field->entity;
-          if ($file) {
+          if ($file && $file instanceof File) {
             $background_image_url = $this->fileUrlGenerator->generateAbsoluteString($file->getFileUri());
           }
         }
@@ -268,11 +266,12 @@ class HeroBannerBlock extends BlockBase implements ContainerFactoryPluginInterfa
     $button_rel = NULL;
     if (!empty($config['call_to_action']['uri'])) {
       $uri = $config['call_to_action']['uri'];
-      
+
       // Handle different URI formats.
       if (strpos($uri, 'internal:') === 0) {
         // Internal path.
-        $path = substr($uri, 9); // Remove 'internal:' prefix.
+        // Remove 'internal:' prefix.
+        $path = substr($uri, 9);
         $button_url = $path;
       }
       elseif (strpos($uri, 'http://') === 0 || strpos($uri, 'https://') === 0) {
