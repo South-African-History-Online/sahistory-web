@@ -1,0 +1,76 @@
+version: '3.8'
+
+services:
+  # API Service
+  api:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.dev
+    ports:
+      - "8000:8000"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2
+      - LLM_MODEL=gpt-3.5-turbo
+      - LLM_TEMPERATURE=0.3
+      - VECTOR_DB_PATH=/app/data/chromadb
+      - REDIS_URL=redis://redis:6379
+    volumes:
+      - ./src:/app/src
+      - ./data:/app/data
+      - ./tests:/app/tests
+    depends_on:
+      - redis
+      - chromadb
+    command: python -m uvicorn src.api.main:app --host 0.0.0.0 --port 8000 --reload
+    networks:
+      - saho-ai
+
+  # Streamlit Web Interface
+  web:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.dev
+    ports:
+      - "8501:8501"
+    environment:
+      - API_URL=http://api:8000
+    volumes:
+      - ./src:/app/src
+    depends_on:
+      - api
+    command: streamlit run src/web/chat.py --server.port 8501 --server.address 0.0.0.0
+    networks:
+      - saho-ai
+
+  # Redis for caching
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - saho-ai
+
+  # ChromaDB for vector storage (local development)
+  chromadb:
+    image: chromadb/chroma:latest
+    ports:
+      - "8001:8000"
+    volumes:
+      - chroma_data:/chroma/chroma
+    environment:
+      - IS_PERSISTENT=TRUE
+      - PERSIST_DIRECTORY=/chroma/chroma
+    networks:
+      - saho-ai
+
+volumes:
+  redis_data:
+  chroma_data:
+
+networks:
+  saho-ai:
+    driver: bridge
