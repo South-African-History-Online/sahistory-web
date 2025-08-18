@@ -227,6 +227,10 @@ class HeroBannerBlock extends BlockBase implements ContainerFactoryPluginInterfa
       if (strpos($uri_input, 'http://') === 0 || strpos($uri_input, 'https://') === 0) {
         $this->configuration['call_to_action']['uri'] = $uri_input;
       }
+      elseif (strpos($uri_input, 'internal:') === 0) {
+        // URI already has internal: prefix, don't add it again.
+        $this->configuration['call_to_action']['uri'] = $uri_input;
+      }
       elseif (strpos($uri_input, '/') === 0) {
         $this->configuration['call_to_action']['uri'] = 'internal:' . $uri_input;
       }
