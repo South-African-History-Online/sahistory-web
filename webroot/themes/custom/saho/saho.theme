@@ -37,6 +37,73 @@ function saho_page_attachments_alter(array &$page) {
     ],
     'google_fonts_preconnect_crossorigin',
   ];
+  
+  // Inline critical CSS for immediate rendering
+  $critical_css_path = \Drupal::service('extension.list.theme')->getPath('saho') . '/css/critical.css';
+  if (file_exists($critical_css_path)) {
+    $critical_css = file_get_contents($critical_css_path);
+    $page['#attached']['html_head'][] = [
+      [
+        '#type' => 'html_tag',
+        '#tag' => 'style',
+        '#value' => $critical_css,
+        '#attributes' => [
+          'id' => 'critical-css',
+        ],
+      ],
+      'critical_css_inline',
+    ];
+  }
+  
+  // Add script to reveal hidden content after main CSS loads
+  $page['#attached']['html_head'][] = [
+    [
+      '#type' => 'html_tag',
+      '#tag' => 'script',
+      '#value' => "
+        document.addEventListener('DOMContentLoaded', function() {
+          // Show content that was hidden to prevent FOUC
+          var hiddenElements = document.querySelectorAll('.footer, .sidebar, .secondary-content');
+          setTimeout(function() {
+            hiddenElements.forEach(function(el) {
+              el.style.visibility = 'visible';
+            });
+          }, 100);
+        });
+      ",
+    ],
+    'reveal_content_script',
+  ];
+  
+  // Manually load AOS library to fix dependency issues
+  $page['#attached']['html_head'][] = [
+    [
+      '#type' => 'html_tag',
+      '#tag' => 'script',
+      '#attributes' => [
+        'src' => '/libraries/aos/dist/aos.js',
+        'defer' => FALSE,
+      ],
+    ],
+    'aos_library_manual',
+  ];
+}
+
+/**
+ * Implements hook_js_alter().
+ */
+function saho_js_alter(&$javascript, \Drupal\Core\Asset\AttachedAssetsInterface $assets) {
+  // Defer non-critical JavaScript for better performance
+  foreach ($javascript as $key => &$item) {
+    // Skip core essential scripts, bootstrap components, and our own critical scripts
+    if (strpos($key, 'core/') === FALSE && 
+        strpos($key, 'saho/') === FALSE &&
+        strpos($key, 'bootstrap') === FALSE &&
+        !in_array($key, ['drupalSettings', 'domReady'])) {
+      // Add defer attribute to non-critical scripts
+      $item['attributes']['defer'] = TRUE;
+    }
+  }
 }
 
 /**
@@ -54,15 +121,46 @@ function saho_preprocess_image(&$variables) {
       }
     }
     
-    // Add loading="lazy" for better performance (except for above-the-fold images)
+    // Add loading="lazy" for better performance (native browser lazy loading)
+    // Skip for first few images to avoid delaying LCP
     if (empty($variables['attributes']['loading'])) {
-      $variables['attributes']['loading'] = 'lazy';
+      // Check if this might be an above-the-fold image (hero, banner, etc.)
+      $is_above_fold = FALSE;
+      if (isset($variables['style_name'])) {
+        $above_fold_styles = ['hero', 'banner', 'featured', 'large'];
+        foreach ($above_fold_styles as $style) {
+          if (strpos($variables['style_name'], $style) !== FALSE) {
+            $is_above_fold = TRUE;
+            break;
+          }
+        }
+      }
+      
+      if (!$is_above_fold) {
+        $variables['attributes']['loading'] = 'lazy';
+      } else {
+        // For above-the-fold images, use eager loading
+        $variables['attributes']['loading'] = 'eager';
+      }
     }
     
     // Add decoding="async" for non-blocking image decoding
     if (empty($variables['attributes']['decoding'])) {
       $variables['attributes']['decoding'] = 'async';
     }
+  }
+}
+
+/**
+ * Implements hook_preprocess_responsive_image().
+ */
+function saho_preprocess_responsive_image(&$variables) {
+  // Apply the same lazy loading logic to responsive images
+  if (empty($variables['attributes']['loading'])) {
+    $variables['attributes']['loading'] = 'lazy';
+  }
+  if (empty($variables['attributes']['decoding'])) {
+    $variables['attributes']['decoding'] = 'async';
   }
 }
 
