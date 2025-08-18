@@ -198,17 +198,19 @@ document.addEventListener('DOMContentLoaded', () => {
     (offcanvasEl) => new bootstrap.Offcanvas(offcanvasEl)
   );
 
-  // Enhanced dropdown functionality for multilevel menus
+  // Enhanced dropdown functionality for all devices
   const dropdownElementList = [].slice.call(document.querySelectorAll('.dropdown-toggle'));
   for (const dropdownToggleEl of dropdownElementList) {
     const dropdown = new bootstrap.Dropdown(dropdownToggleEl, {
       autoClose: 'outside', // Prevents closing when clicking inside dropdown
     });
 
-    // For touch devices, first tap opens dropdown, second tap follows link
-    if ('ontouchstart' in document.documentElement) {
-      dropdownToggleEl.addEventListener('click', function (e) {
-        const parent = this.parentNode;
+    // Handle clicks for all devices (both desktop and mobile)
+    dropdownToggleEl.addEventListener('click', function (e) {
+      const parent = this.parentNode;
+      
+      // For touch devices, handle the two-tap behavior
+      if ('ontouchstart' in document.documentElement) {
         if (
           parent.classList.contains('show') &&
           this.getAttribute('href') &&
@@ -217,12 +219,23 @@ document.addEventListener('DOMContentLoaded', () => {
           // If dropdown is already open and has a real href, follow the link
           return true;
         }
-        // Otherwise just toggle the dropdown
+      }
+      
+      // Always prevent default and stop propagation for dropdown toggles
+      e.preventDefault();
+      e.stopPropagation();
+      
+      // Toggle the dropdown
+      dropdown.toggle();
+    });
+    
+    // Handle keyboard accessibility
+    dropdownToggleEl.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
-        e.stopPropagation();
         dropdown.toggle();
-      });
-    }
+      }
+    });
   }
 
   // Share modal URL copy functionality
