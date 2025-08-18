@@ -8,6 +8,65 @@ use Drupal\Core\Datetime\DateFormatter;
  * Theme functions.
  */
 
+/**
+ * Implements hook_page_attachments_alter().
+ */
+function saho_page_attachments_alter(array &$page) {
+  // Add preconnect hints for Google Fonts to improve performance
+  $page['#attached']['html_head'][] = [
+    [
+      '#type' => 'html_tag',
+      '#tag' => 'link',
+      '#attributes' => [
+        'rel' => 'preconnect',
+        'href' => 'https://fonts.googleapis.com',
+      ],
+    ],
+    'google_fonts_preconnect',
+  ];
+  
+  $page['#attached']['html_head'][] = [
+    [
+      '#type' => 'html_tag',
+      '#tag' => 'link',
+      '#attributes' => [
+        'rel' => 'preconnect',
+        'href' => 'https://fonts.gstatic.com',
+        'crossorigin' => TRUE,
+      ],
+    ],
+    'google_fonts_preconnect_crossorigin',
+  ];
+}
+
+/**
+ * Implements hook_preprocess_image().
+ */
+function saho_preprocess_image(&$variables) {
+  // Add width and height attributes to prevent CLS (Cumulative Layout Shift)
+  if (!empty($variables['uri'])) {
+    // Try to get image dimensions if not already set
+    if (empty($variables['attributes']['width']) || empty($variables['attributes']['height'])) {
+      $image = \Drupal::service('image.factory')->get($variables['uri']);
+      if ($image->isValid()) {
+        $variables['attributes']['width'] = $image->getWidth();
+        $variables['attributes']['height'] = $image->getHeight();
+      }
+    }
+    
+    // Add loading="lazy" for better performance (except for above-the-fold images)
+    if (empty($variables['attributes']['loading'])) {
+      $variables['attributes']['loading'] = 'lazy';
+    }
+    
+    // Add decoding="async" for non-blocking image decoding
+    if (empty($variables['attributes']['decoding'])) {
+      $variables['attributes']['decoding'] = 'async';
+    }
+  }
+}
+
+
 // Include all files from the includes directory.
 $includes_path = dirname(__FILE__) . '/includes/*.theme';
 foreach (glob($includes_path) as $file) {
@@ -231,6 +290,36 @@ function saho_preprocess_node(array &$variables) {
   // Add biography-specific styling for biography content type
   if ($node->bundle() == 'biography') {
     $variables['#attached']['library'][] = 'saho/biography.metadata';
+  }
+  
+  // For article and biography pages, preload the main image for better LCP
+  if ($variables['view_mode'] == 'full' && in_array($node->bundle(), ['article', 'biography'])) {
+    // Check if the node has a field_image
+    if ($node->hasField('field_image') && !$node->get('field_image')->isEmpty()) {
+      $image_field = $node->get('field_image')->first();
+      if ($image_field) {
+        $file = $image_field->entity;
+        if ($file) {
+          $image_uri = $file->getFileUri();
+          $image_url = \Drupal::service('file_url_generator')->generateAbsoluteString($image_uri);
+          
+          // Add preload link to page attachments
+          $variables['#attached']['html_head'][] = [
+            [
+              '#type' => 'html_tag',
+              '#tag' => 'link',
+              '#attributes' => [
+                'rel' => 'preload',
+                'as' => 'image',
+                'href' => $image_url,
+                'fetchpriority' => 'high',
+              ],
+            ],
+            'preload_main_image',
+          ];
+        }
+      }
+    }
   }
  
   // set the appropriate classes and accordion views with conditional logic.
