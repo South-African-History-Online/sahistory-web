@@ -1,0 +1,121 @@
+<?php
+
+/**
+ * @file
+ * SAHO WebP Converter module.
+ * Automatically creates WebP versions of uploaded images.
+ */
+
+use Drupal\file\Entity\File;
+use Drupal\Core\Entity\EntityInterface;
+
+/**
+ * Implements hook_ENTITY_TYPE_insert() for file entities.
+ */
+function saho_webp_file_insert(EntityInterface $entity) {
+  saho_webp_convert_file($entity);
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_update() for file entities.
+ */
+function saho_webp_file_update(EntityInterface $entity) {
+  saho_webp_convert_file($entity);
+}
+
+/**
+ * Convert an uploaded file to WebP format.
+ */
+function saho_webp_convert_file(File $file) {
+  // Only process image files
+  $mime_type = $file->getMimeType();
+  if (!in_array($mime_type, ['image/jpeg', 'image/png'])) {
+    return;
+  }
+  
+  // Get file path
+  $source_path = \Drupal::service('file_system')->realpath($file->getFileUri());
+  if (!$source_path || !file_exists($source_path)) {
+    return;
+  }
+  
+  // Create WebP path (replace extension, don't append)
+  $webp_path = preg_replace('/\.(jpg|jpeg|png)$/i', '.webp', $source_path);
+  
+  // Skip if WebP already exists
+  if (file_exists($webp_path)) {
+    return;
+  }
+  
+  // Convert to WebP
+  try {
+    $image_info = @getimagesize($source_path);
+    if (!$image_info) {
+      return;
+    }
+    
+    $source_image = null;
+    switch ($mime_type) {
+      case 'image/jpeg':
+        $source_image = @imagecreatefromjpeg($source_path);
+        break;
+        
+      case 'image/png':
+        $source_image = @imagecreatefrompng($source_path);
+        if ($source_image !== false) {
+          imagealphablending($source_image, false);
+          imagesavealpha($source_image, true);
+        }
+        break;
+    }
+    
+    if ($source_image) {
+      // Convert with 80% quality
+      $success = @imagewebp($source_image, $webp_path, 80);
+      imagedestroy($source_image);
+      
+      if ($success) {
+        // Set permissions to match source
+        chmod($webp_path, fileperms($source_path));
+        
+        // Log the conversion
+        \Drupal::logger('saho_webp')->info('Converted @source to WebP', [
+          '@source' => basename($source_path),
+        ]);
+      }
+    }
+  }
+  catch (\Exception $e) {
+    \Drupal::logger('saho_webp')->error('Failed to convert @source: @error', [
+      '@source' => basename($source_path),
+      '@error' => $e->getMessage(),
+    ]);
+  }
+}
+
+/**
+ * Implements hook_file_download().
+ * Allows WebP files to be served.
+ */
+function saho_webp_file_download($uri) {
+  if (preg_match('/\.webp$/i', $uri)) {
+    return [
+      'Content-Type' => 'image/webp',
+      'Content-Length' => filesize($uri),
+    ];
+  }
+}
+
+/**
+ * Implements hook_image_style_flush().
+ * When an image style is flushed, also remove WebP versions.
+ */
+function saho_webp_image_style_flush($style) {
+  $directory = 'public://styles/' . $style->id();
+  if (is_dir($directory)) {
+    $files = \Drupal::service('file_system')->scanDirectory($directory, '/\.webp$/');
+    foreach ($files as $file) {
+      unlink($file->uri);
+    }
+  }
+}

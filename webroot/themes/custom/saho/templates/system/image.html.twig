@@ -1,0 +1,25 @@
+{#
+/**
+ * @file
+ * SAHO theme implementation of an image with WebP support.
+ *
+ * Available variables:
+ * - attributes: HTML attributes for the img tag.
+ * - style_name: (optional) The name of the image style applied.
+ * - webp_src: (optional) WebP source URL when available.
+ * - original_src: (optional) Original image source URL.
+ *
+ * @see template_preprocess_image()
+ * @see saho_preprocess_image()
+ *
+ * @ingroup themeable
+ */
+#}
+{% if webp_src %}
+  <picture{{ attributes.removeClass('webp-enabled') }}>
+    <source srcset="{{ webp_src }}" type="image/webp">
+    <img{{ attributes }} />
+  </picture>
+{% else %}
+  <img{{ attributes }} />
+{% endif %}

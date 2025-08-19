@@ -2,6 +2,7 @@
 
 use Drupal\node\Entity\Node;
 use Drupal\Core\Datetime\DateFormatter;
+use Drupal\image\Entity\ImageStyle;
 
 /**
  * @file
@@ -38,42 +39,9 @@ function saho_page_attachments_alter(array &$page) {
     'google_fonts_preconnect_crossorigin',
   ];
   
-  // Inline critical CSS for immediate rendering
-  $critical_css_path = \Drupal::service('extension.list.theme')->getPath('saho') . '/css/critical.css';
-  if (file_exists($critical_css_path)) {
-    $critical_css = file_get_contents($critical_css_path);
-    $page['#attached']['html_head'][] = [
-      [
-        '#type' => 'html_tag',
-        '#tag' => 'style',
-        '#value' => $critical_css,
-        '#attributes' => [
-          'id' => 'critical-css',
-        ],
-      ],
-      'critical_css_inline',
-    ];
-  }
-  
-  // Add script to reveal hidden content after main CSS loads
-  $page['#attached']['html_head'][] = [
-    [
-      '#type' => 'html_tag',
-      '#tag' => 'script',
-      '#value' => "
-        document.addEventListener('DOMContentLoaded', function() {
-          // Show content that was hidden to prevent FOUC
-          var hiddenElements = document.querySelectorAll('.footer, .sidebar, .secondary-content');
-          setTimeout(function() {
-            hiddenElements.forEach(function(el) {
-              el.style.visibility = 'visible';
-            });
-          }, 100);
-        });
-      ",
-    ],
-    'reveal_content_script',
-  ];
+  // Critical CSS is now handled by the Critical CSS contrib module
+  // See: /admin/config/development/performance/critical-css
+  // Critical CSS files are located in: themes/custom/saho/critical-css/
   
   // Manually load AOS library to fix dependency issues
   $page['#attached']['html_head'][] = [
@@ -147,6 +115,41 @@ function saho_preprocess_image(&$variables) {
     // Add decoding="async" for non-blocking image decoding
     if (empty($variables['attributes']['decoding'])) {
       $variables['attributes']['decoding'] = 'async';
+    }
+    
+    // Add WebP support with fallback for images
+    $style_name = $variables['style_name'] ?? NULL;
+    
+    // For images with style, try to create WebP version
+    if ($style_name && strpos($style_name, 'webp_') !== 0) {
+      // Try to find corresponding WebP style
+      $webp_style_name = 'webp_' . $style_name;
+      $webp_style = ImageStyle::load($webp_style_name);
+      
+      if ($webp_style) {
+        // Generate WebP URL
+        $webp_url = $webp_style->buildUrl($variables['uri']);
+        
+        // Add WebP source to variables for template use
+        $variables['webp_src'] = $webp_url;
+        $variables['original_src'] = $variables['uri'];
+        
+        // Set attributes for picture element
+        $variables['attributes']['class'][] = 'webp-enabled';
+      }
+    }
+    // For images without style, create direct WebP conversion
+    elseif (!$style_name) {
+      // Temporarily disable direct WebP conversion to avoid errors
+      // This will be re-enabled after testing with image styles
+      /*
+      $webp_uri = saho_generate_webp_uri($variables['uri']);
+      if ($webp_uri) {
+        $variables['webp_src'] = \Drupal::service('file_url_generator')->generateAbsoluteString($webp_uri);
+        $variables['original_src'] = $variables['uri'];
+        $variables['attributes']['class'][] = 'webp-enabled';
+      }
+      */
     }
   }
 }
@@ -930,4 +933,132 @@ function saho_preprocess_header(array &$variables) {
   }
   
   $variables['main_menu'] = $main_menu;
+}
+
+
+/**
+ * Helper function to generate responsive WebP images.
+ */
+function saho_generate_responsive_webp_image($uri, $style_name, $alt = '', $title = '') {
+  if (!$uri || !$style_name) {
+    return '';
+  }
+  
+  $original_style = ImageStyle::load($style_name);
+  $webp_style_name = 'webp_' . $style_name;
+  $webp_style = ImageStyle::load($webp_style_name);
+  
+  if (!$original_style) {
+    return '';
+  }
+  
+  $original_url = $original_style->buildUrl($uri);
+  
+  $output = '<picture>';
+  
+  // Add WebP source if available.
+  if ($webp_style) {
+    $webp_url = $webp_style->buildUrl($uri);
+    $output .= '<source srcset="' . $webp_url . '" type="image/webp">';
+  }
+  
+  // Add original format as fallback.
+  $output .= '<img src="' . $original_url . '" alt="' . $alt . '"';
+  if ($title) {
+    $output .= ' title="' . $title . '"';
+  }
+  $output .= ' loading="lazy">';
+  $output .= '</picture>';
+  
+  return $output;
+}
+
+/**
+ * Generate WebP URI for a given image URI.
+ */
+function saho_generate_webp_uri($uri) {
+  if (!$uri) {
+    return NULL;
+  }
+  
+  // Only process certain image types
+  $supported_extensions = ['jpg', 'jpeg', 'png'];
+  $path_info = pathinfo($uri);
+  $extension = strtolower($path_info['extension'] ?? '');
+  
+  if (!in_array($extension, $supported_extensions)) {
+    return NULL;
+  }
+  
+  // Generate WebP filename
+  $webp_filename = $path_info['filename'] . '.webp';
+  $webp_uri = dirname($uri) . '/' . $webp_filename;
+  
+  // Check if WebP version already exists
+  if (file_exists($webp_uri)) {
+    return $webp_uri;
+  }
+  
+  // Create WebP version if original exists
+  if (file_exists($uri)) {
+    $file_system = \Drupal::service('file_system');
+    $real_path = $file_system->realpath($uri);
+    $webp_real_path = $file_system->realpath($webp_uri);
+    
+    if ($real_path && saho_create_webp_image($real_path, $webp_real_path)) {
+      return $webp_uri;
+    }
+  }
+  
+  return NULL;
+}
+
+/**
+ * Create WebP image from source image.
+ */
+function saho_create_webp_image($source_path, $webp_path) {
+  try {
+    $image_info = getimagesize($source_path);
+    if (!$image_info) {
+      return FALSE;
+    }
+    
+    $mime_type = $image_info['mime'];
+    $source_image = NULL;
+    
+    // Create image resource based on type
+    switch ($mime_type) {
+      case 'image/jpeg':
+        $source_image = imagecreatefromjpeg($source_path);
+        break;
+      case 'image/png':
+        $source_image = imagecreatefrompng($source_path);
+        // Preserve transparency
+        imagealphablending($source_image, FALSE);
+        imagesavealpha($source_image, TRUE);
+        break;
+      default:
+        return FALSE;
+    }
+    
+    if (!$source_image) {
+      return FALSE;
+    }
+    
+    // Ensure directory exists
+    $webp_dir = dirname($webp_path);
+    if (!is_dir($webp_dir)) {
+      mkdir($webp_dir, 0755, TRUE);
+    }
+    
+    // Create WebP image with 80% quality
+    $success = imagewebp($source_image, $webp_path, 80);
+    imagedestroy($source_image);
+    
+    return $success;
+  }
+  catch (Exception $e) {
+    \Drupal::logger('saho')->error('WebP creation failed: @error', ['@error' => $e->getMessage()]);
+    return FALSE;
+  }
 }
