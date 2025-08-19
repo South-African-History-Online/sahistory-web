@@ -10,6 +10,119 @@ use Drush\Commands\DrushCommands;
 class DirectCommands extends DrushCommands {
 
   /**
+   * Convert all images to WebP format.
+   *
+   * @command saho:webp-convert
+   * @aliases swc
+   * @usage saho:webp-convert
+   *   Convert all existing images to WebP format
+   */
+  public function webpConvert() {
+    $this->output()->writeln('Converting images to WebP...');
+    
+    // Use the PHP script for conversion
+    $script_path = DRUPAL_ROOT . '/../convert_webp_production_final.php';
+    if (file_exists($script_path)) {
+      $this->output()->writeln('Running WebP conversion script...');
+      passthru("php $script_path --fix-existing", $return_code);
+      
+      if ($return_code === 0) {
+        $this->output()->writeln('WebP conversion completed successfully!');
+      } else {
+        $this->output()->writeln('WebP conversion failed with code: ' . $return_code);
+      }
+    } else {
+      $this->output()->writeln('Conversion script not found at: ' . $script_path);
+    }
+  }
+
+  /**
+   * Fix WebP file naming (remove double extensions).
+   *
+   * @command saho:webp-fix
+   * @aliases swf
+   * @usage saho:webp-fix
+   *   Fix WebP files with double extensions
+   */
+  public function webpFix() {
+    $this->output()->writeln('Fixing WebP file names...');
+    
+    $script_path = DRUPAL_ROOT . '/../fix_webp_names.php';
+    if (file_exists($script_path)) {
+      passthru("php $script_path", $return_code);
+      
+      if ($return_code === 0) {
+        $this->output()->writeln('WebP naming fix completed!');
+      } else {
+        $this->output()->writeln('WebP fix failed with code: ' . $return_code);
+      }
+    } else {
+      $this->output()->writeln('Fix script not found at: ' . $script_path);
+    }
+  }
+
+  /**
+   * Show WebP conversion status.
+   *
+   * @command saho:webp-status
+   * @aliases sws
+   * @usage saho:webp-status
+   *   Show current WebP conversion status
+   */
+  public function webpStatus() {
+    $this->output()->writeln('WebP Conversion Status');
+    $this->output()->writeln('=====================');
+    
+    // Find the correct files directory
+    $files_dir = DRUPAL_ROOT . '/../webroot/sites/default/files';
+    if (!is_dir($files_dir)) {
+      $files_dir = DRUPAL_ROOT . '/sites/default/files';
+      if (!is_dir($files_dir)) {
+        $this->output()->writeln('Files directory not found.');
+        return;
+      }
+    }
+    
+    $total_images = 0;
+    $webp_files = 0;
+    $double_ext = 0;
+    
+    $iterator = new \RecursiveIteratorIterator(
+      new \RecursiveDirectoryIterator($files_dir, \RecursiveDirectoryIterator::SKIP_DOTS)
+    );
+    
+    foreach ($iterator as $file) {
+      if ($file->isFile()) {
+        $filename = $file->getFilename();
+        if (preg_match('/\.(jpg|jpeg|png)$/i', $filename)) {
+          $total_images++;
+        }
+        if (preg_match('/\.webp$/i', $filename)) {
+          $webp_files++;
+          if (preg_match('/\.(jpg|jpeg|png)\.webp$/i', $filename)) {
+            $double_ext++;
+          }
+        }
+      }
+    }
+    
+    $this->output()->writeln("Total images (JPG/PNG): " . number_format($total_images));
+    $this->output()->writeln("WebP files created: " . number_format($webp_files));
+    $this->output()->writeln("Double extension files: " . number_format($double_ext));
+    
+    if ($total_images > 0) {
+      $percentage = round(($webp_files / $total_images) * 100, 1);
+      $this->output()->writeln("Conversion rate: {$percentage}%");
+    }
+    
+    if ($double_ext > 0) {
+      $this->output()->writeln("⚠️  Warning: {$double_ext} files have double extensions and need fixing");
+    } else {
+      $this->output()->writeln("✅ All WebP files have correct naming");
+    }
+  }
+
+  /**
    * Test SAHO migration commands.
    *
    * @command saho:test
