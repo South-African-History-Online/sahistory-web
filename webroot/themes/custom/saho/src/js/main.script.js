@@ -281,4 +281,111 @@ document.addEventListener('DOMContentLoaded', () => {
   const _popoverList = popoverTriggerList.map(
     (popoverTriggerEl) => new bootstrap.Popover(popoverTriggerEl)
   );
+
+  // WebP conversion for existing images
+  function convertImagesToWebP() {
+    // Check if browser supports WebP
+    function supportsWebP() {
+      return new Promise((resolve) => {
+        const webP = new Image();
+        webP.onload = webP.onerror = function () {
+          resolve(webP.height === 2);
+        };
+        webP.src = 'data:image/webp;base64,UklGRjoAAABXRUJQVlA4IC4AAACyAgCdASoCAAIALmk0mk0iIiIiIgBoSygABc6WWgAA/veff/0PP8bA//LwYAAA';
+      });
+    }
+
+    // Convert image to WebP if available
+    function tryWebPConversion(img) {
+      if (!img.src || img.getAttribute('data-webp-converted')) {
+        return;
+      }
+
+      const originalSrc = img.src;
+      
+      // Only convert images from our own domain and common formats
+      if (!originalSrc.includes(window.location.hostname) && !originalSrc.startsWith('/')) {
+        return;
+      }
+
+      // Check if it's a convertible image format
+      if (!/\.(jpe?g|png)(\?.*)?$/i.test(originalSrc)) {
+        return;
+      }
+
+      // Try to find a WebP equivalent by replacing extension
+      let webpSrc = originalSrc;
+      
+      // For direct file URLs, try adding .webp
+      if (originalSrc.includes('/sites/default/files/')) {
+        // Try converting: image.jpg -> image.jpg.webp
+        webpSrc = originalSrc.replace(/\.(jpe?g|png)(\?.*)?$/i, '.webp$2');
+        
+        // Create a test image to see if WebP version exists
+        const testImg = new Image();
+        testImg.onload = function() {
+          // WebP version exists, create picture element
+          const picture = document.createElement('picture');
+          const source = document.createElement('source');
+          const newImg = img.cloneNode(true);
+          
+          source.srcset = webpSrc;
+          source.type = 'image/webp';
+          
+          picture.appendChild(source);
+          picture.appendChild(newImg);
+          
+          // Copy attributes from original image to picture
+          Array.from(img.attributes).forEach(attr => {
+            if (attr.name !== 'src') {
+              picture.setAttribute(attr.name, attr.value);
+            }
+          });
+          
+          // Replace original image with picture element
+          img.parentNode.replaceChild(picture, img);
+        };
+        testImg.onerror = function() {
+          // WebP version doesn't exist, mark as converted to avoid retrying
+          img.setAttribute('data-webp-converted', 'true');
+        };
+        testImg.src = webpSrc;
+      }
+
+      img.setAttribute('data-webp-converted', 'true');
+    }
+
+    // Apply WebP conversion if supported
+    supportsWebP().then(supported => {
+      if (supported) {
+        // Convert existing images
+        const images = document.querySelectorAll('img:not([data-webp-converted])');
+        images.forEach(tryWebPConversion);
+
+        // Watch for new images added dynamically
+        const observer = new MutationObserver(mutations => {
+          mutations.forEach(mutation => {
+            mutation.addedNodes.forEach(node => {
+              if (node.nodeType === Node.ELEMENT_NODE) {
+                if (node.tagName === 'IMG') {
+                  tryWebPConversion(node);
+                } else {
+                  const imgs = node.querySelectorAll?.('img:not([data-webp-converted])');
+                  imgs?.forEach(tryWebPConversion);
+                }
+              }
+            });
+          });
+        });
+
+        observer.observe(document.body, {
+          childList: true,
+          subtree: true
+        });
+      }
+    });
+  }
+
+  // Initialize WebP conversion
+  convertImagesToWebP();
 });
