@@ -14,27 +14,57 @@ class DirectCommands extends DrushCommands {
    *
    * @command saho:webp-convert
    * @aliases swc
-   * @usage saho:webp-convert
-   *   Convert all existing images to WebP format
+   * @option batch-size Number of files to process in each batch (default: 5000)
+   * @option resume Resume from where conversion left off
+   * @usage saho:webp-convert --batch-size=3000
+   *   Convert images in batches to avoid timeouts
+   * @usage saho:webp-convert --resume
+   *   Resume conversion from where it left off
    */
-  public function webpConvert() {
-    $this->output()->writeln('Converting images to WebP...');
+  public function webpConvert($options = ['batch-size' => 5000, 'resume' => FALSE]) {
+    $batch_size = (int) $options['batch-size'];
+    $resume = $options['resume'];
 
-    // Use the PHP script for conversion.
-    $script_path = DRUPAL_ROOT . '/../convert_webp_production_final.php';
-    if (file_exists($script_path)) {
-      $this->output()->writeln('Running WebP conversion script...');
-      passthru("php $script_path --fix-existing", $return_code);
-
-      if ($return_code === 0) {
-        $this->output()->writeln('WebP conversion completed successfully!');
+    if ($resume) {
+      $this->output()->writeln('🔄 Checking conversion status...');
+      $resume_script = DRUPAL_ROOT . '/../resume_webp_conversion.php';
+      if (file_exists($resume_script)) {
+        passthru("php $resume_script", $return_code);
       }
       else {
-        $this->output()->writeln('WebP conversion failed with code: ' . $return_code);
+        $this->output()->writeln('❌ Resume script not found');
+      }
+      return;
+    }
+
+    $this->output()->writeln('Converting images to WebP in batches...');
+    $this->output()->writeln("Batch size: {$batch_size} files");
+
+    // Check if chunked script exists.
+    $chunked_script = DRUPAL_ROOT . '/../convert_webp_chunked.php';
+    if (file_exists($chunked_script)) {
+      $this->output()->writeln('Running chunked WebP conversion...');
+      passthru("php $chunked_script $batch_size 0", $return_code);
+
+      if ($return_code === 0) {
+        $this->output()->writeln('✅ Batch conversion completed successfully!');
+        $this->output()->writeln('💡 Run with --resume to check progress and continue');
+      }
+      else {
+        $this->output()->writeln("⚠️  Batch completed with code: $return_code");
+        $this->output()->writeln('💡 Run with --resume to continue from where it left off');
       }
     }
     else {
-      $this->output()->writeln('Conversion script not found at: ' . $script_path);
+      // Fallback to original script.
+      $script_path = DRUPAL_ROOT . '/../convert_webp_production_final.php';
+      if (file_exists($script_path)) {
+        $this->output()->writeln('Running full WebP conversion script...');
+        passthru("php $script_path --fix-existing", $return_code);
+      }
+      else {
+        $this->output()->writeln('❌ No conversion scripts found');
+      }
     }
   }
 
