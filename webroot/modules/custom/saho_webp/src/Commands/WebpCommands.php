@@ -150,4 +150,65 @@ class WebpCommands extends DrushCommands {
     return 'error';
   }
 
+  /**
+   * Display WebP conversion status.
+   *
+   * @command saho:webp-status
+   * @usage saho:webp-status
+   *   Show current WebP conversion status.
+   */
+  public function status() {
+    $this->output()->writeln("WebP Conversion Status");
+    $this->output()->writeln("======================");
+
+    // Check queue status.
+    $queue = \Drupal::queue('saho_webp_conversion');
+    $queue_count = $queue->numberOfItems();
+    
+    if ($queue_count > 0) {
+      $this->output()->writeln("Queue items pending: $queue_count");
+    }
+    else {
+      $this->output()->writeln("No queue items pending");
+    }
+
+    $this->output()->writeln("Module is active and ready for conversions.");
+  }
+
+  /**
+   * Process WebP conversion queue.
+   *
+   * @command saho:webp-process-queue
+   * @option limit Number of queue items to process
+   * @usage saho:webp-process-queue --limit=50
+   *   Process up to 50 queue items.
+   */
+  public function processQueue($options = ['limit' => 0]) {
+    $queue = \Drupal::queue('saho_webp_conversion');
+    $queue_worker = \Drupal::service('plugin.manager.queue_worker')->createInstance('saho_webp_conversion');
+    
+    $limit = $options['limit'] ? (int) $options['limit'] : 0;
+    $processed = 0;
+    
+    $this->output()->writeln("Processing WebP conversion queue...");
+    
+    while (($limit === 0 || $processed < $limit) && ($item = $queue->claimItem())) {
+      try {
+        $queue_worker->processItem($item->data);
+        $queue->deleteItem($item);
+        $processed++;
+        
+        if ($processed % 10 === 0) {
+          $this->output()->writeln("Processed: $processed items");
+        }
+      }
+      catch (\Exception $e) {
+        $this->output()->writeln("Error processing item: " . $e->getMessage());
+        $queue->releaseItem($item);
+      }
+    }
+    
+    $this->output()->writeln("Completed. Processed $processed items.");
+  }
+
 }
