@@ -27,6 +27,7 @@ vendor/bin/drush en saho_webp -y
 - `complete_webp_conversion.php`
 - `resume_webp_conversion.php`
 - `fix_missing_webp.php` (targeted fix for problem files)
+- `clean_fake_images.php` (removes HTML 404 error pages saved as images)
 
 **Deployment:**
 ```bash
@@ -37,6 +38,7 @@ scp comprehensive_webp_status.php user@production:/path/to/drupal/
 scp complete_webp_conversion.php user@production:/path/to/drupal/
 scp resume_webp_conversion.php user@production:/path/to/drupal/
 scp fix_missing_webp.php user@production:/path/to/drupal/
+scp clean_fake_images.php user@production:/path/to/drupal/
 ```
 
 ### 3. .htaccess Rules
@@ -160,6 +162,9 @@ php convert_webp_production_final.php
 
 # Fix double extension files
 php fix_webp_names.php
+
+# Clean fake HTML error pages saved as images
+php clean_fake_images.php
 
 # Targeted fix for remaining problem files  
 php fix_missing_webp.php
