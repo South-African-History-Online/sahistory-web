@@ -11,14 +11,29 @@ $fixed = 0;
 $already_correct = 0;
 $errors = 0;
 
-// Find the correct files directory - always webroot/sites/default/files
-$files_dir = 'webroot/sites/default/files';
-if (!is_dir($files_dir)) {
+// Find the correct files directory - handle both root and webroot execution
+$possible_dirs = [
+    'sites/default/files',
+    'webroot/sites/default/files',
+    '../sites/default/files',
+];
+
+$files_dir = null;
+foreach ($possible_dirs as $dir) {
+    if (is_dir($dir)) {
+        $files_dir = $dir;
+        break;
+    }
+}
+
+if (!$files_dir) {
     echo "Files directory not found!\n";
-    echo "Expected: webroot/sites/default/files\n";
+    echo "Tried:\n";
+    foreach ($possible_dirs as $dir) {
+        echo "  - $dir\n";
+    }
     echo "Current working directory: " . getcwd() . "\n";
     echo "Script location: " . dirname(__FILE__) . "\n";
-    echo "\nPlease run this script from the Drupal root directory.\n";
     exit(1);
 }
 
