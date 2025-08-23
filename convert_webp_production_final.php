@@ -93,17 +93,13 @@ function fixExistingWebpFiles() {
     $fixed = 0;
     $removed = 0;
     
-    // Find the correct files directory
+    // Find the correct files directory - always webroot/sites/default/files
     $files_dir = 'webroot/sites/default/files';
     if (!is_dir($files_dir)) {
-        $files_dir = '/var/www/html/webroot/sites/default/files';
-        if (!is_dir($files_dir)) {
-            $files_dir = '/var/www/html/sites/default/files';
-            if (!is_dir($files_dir)) {
-                echo "Files directory not found - skipping WebP fix\n";
-                return;
-            }
-        }
+        echo "Files directory not found - skipping WebP fix\n";
+        echo "Expected: webroot/sites/default/files\n";
+        echo "Current working directory: " . getcwd() . "\n";
+        return;
     }
     
     $iterator = new RecursiveIteratorIterator(
@@ -143,17 +139,15 @@ function formatBytes($size, $precision = 2) {
 // Find all images
 $files_to_convert = [];
 
-// Find the correct files directory
+// Find the correct files directory - always webroot/sites/default/files
 $files_dir = 'webroot/sites/default/files';
 if (!is_dir($files_dir)) {
-    $files_dir = '/var/www/html/webroot/sites/default/files';
-    if (!is_dir($files_dir)) {
-        $files_dir = '/var/www/html/sites/default/files';
-        if (!is_dir($files_dir)) {
-            echo "Files directory not found!\n";
-            exit(1);
-        }
-    }
+    echo "Files directory not found!\n";
+    echo "Expected: webroot/sites/default/files\n";
+    echo "Current working directory: " . getcwd() . "\n";
+    echo "Script location: " . dirname(__FILE__) . "\n";
+    echo "\nPlease run this script from the Drupal root directory.\n";
+    exit(1);
 }
 
 echo "Using files directory: $files_dir\n";
