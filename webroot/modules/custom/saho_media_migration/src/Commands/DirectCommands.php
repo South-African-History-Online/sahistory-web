@@ -78,9 +78,9 @@ class DirectCommands extends DrushCommands {
     $this->output()->writeln('=====================');
 
     // Find the correct files directory.
-    $files_dir = DRUPAL_ROOT . '/../webroot/sites/default/files';
+    $files_dir = DRUPAL_ROOT . '/sites/default/files';
     if (!is_dir($files_dir)) {
-      $files_dir = DRUPAL_ROOT . '/sites/default/files';
+      $files_dir = DRUPAL_ROOT . '/../webroot/sites/default/files';
       if (!is_dir($files_dir)) {
         $this->output()->writeln('Files directory not found.');
         return;
