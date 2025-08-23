@@ -9,7 +9,8 @@ scp production_webp_audit.php user@production:/path/to/drupal/
 scp debug_specific_file.php user@production:/path/to/drupal/
 scp comprehensive_webp_status.php user@production:/path/to/drupal/
 scp fix_webp_names.php user@production:/path/to/drupal/
-scp complete_webp_conversion.php user@production:/path/to/drupal/
+scp safe_webp_generator.php user@production:/path/to/drupal/
+scp -r webroot/modules/custom/saho_webp/ user@production:/path/to/drupal/webroot/modules/custom/
 ```
 
 ## 📋 Step-by-Step Production Workflow
@@ -26,10 +27,16 @@ php comprehensive_webp_status.php
 php clean_fake_images.php
 ```
 
-### 3. Run Complete Conversion
+### 3. URGENT: Clear Cache After Module Fix
 ```bash
-# Automated conversion of all remaining images  
-php complete_webp_conversion.php
+# Clear Drupal cache to disable auto-conversion hooks
+vendor/bin/drush cr
+```
+
+### 4. Run Safe Conversion
+```bash
+# Safe manual conversion (doesn't modify originals)
+php safe_webp_generator.php 500 0
 ```
 
 ### 4. Targeted Audit & Fix
