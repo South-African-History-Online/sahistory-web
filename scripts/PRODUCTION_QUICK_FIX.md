@@ -7,16 +7,16 @@
 
 ## 🔧 Immediate Actions
 
-### 1. Copy Queue Processor
+### 1. Copy Scripts Directory
 ```bash
-# Copy the production queue processor
-scp process_webp_queue_production.php user@production:/path/to/drupal/
+# Copy the entire scripts directory
+scp -r scripts/ user@production:/path/to/drupal/
 ```
 
 ### 2. Process Queue (if items exist)
 ```bash
 # Check if queue has items and process them
-php process_webp_queue_production.php 50
+php scripts/process_webp_queue_production.php 50
 ```
 
 ### 3. Use Existing Production Commands
@@ -33,16 +33,14 @@ vendor/bin/drush saho:webp-status
 
 ### 4. Clean Fake Images
 ```bash
-# Copy and run fake image cleaner
-scp clean_fake_images.php user@production:/path/to/drupal/
-php clean_fake_images.php
+# Run fake image cleaner
+php scripts/clean_fake_images.php
 ```
 
 ### 5. Run Comprehensive Status Check
 ```bash
-# Copy comprehensive checker
-scp comprehensive_webp_status.php user@production:/path/to/drupal/
-php comprehensive_webp_status.php
+# Run comprehensive checker
+php scripts/comprehensive_webp_status.php
 ```
 
 ## 📊 Expected Improvement
@@ -55,18 +53,15 @@ After running these commands:
 
 ## 🎯 Quick Commands for Production
 
-Copy all files at once:
+Copy scripts directory:
 ```bash
-scp process_webp_queue_production.php \
-    clean_fake_images.php \
-    comprehensive_webp_status.php \
-    user@production:/path/to/drupal/
+scp -r scripts/ user@production:/path/to/drupal/
 ```
 
 Then run in sequence:
 ```bash
 # 1. Clean fake images
-php clean_fake_images.php
+php scripts/clean_fake_images.php
 
 # 2. Fix double extensions  
 vendor/bin/drush saho:webp-fix
@@ -75,5 +70,5 @@ vendor/bin/drush saho:webp-fix
 vendor/bin/drush saho:webp-convert
 
 # 4. Check final status
-php comprehensive_webp_status.php
+php scripts/comprehensive_webp_status.php
 ```
