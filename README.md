@@ -21,6 +21,7 @@ This is a Github project is currently supported and maintained by Mads Nørgaard
 - [Custom Modules](#custom-modules)
   - [Module Architecture](#module-architecture)
   - [Available Modules](#available-modules)
+- [WebP Image Optimization](#webp-image-optimization)
 - [Theme Development](#radix-and-saho-subtheme)
   - [Theme Architecture](#theme-architecture)
   - [Component Development](#component-development)
@@ -350,6 +351,59 @@ The `saho_utils` module serves as a container for smaller, focused sub-modules:
    - Place templates in `templates/` directory
    - Use semantic HTML5 elements
    - Implement proper accessibility attributes
+
+## WebP Image Optimization
+
+The SAHO website includes a comprehensive WebP image optimization system for improved performance and reduced bandwidth usage.
+
+### Quick Start
+
+```bash
+# Check conversion status
+scripts/webp.sh status
+
+# Run complete optimization
+scripts/webp.sh clean && scripts/webp.sh convert
+```
+
+### Key Features
+
+- **Automatic WebP conversion** for all uploaded images
+- **95%+ conversion rate** with significant bandwidth savings (60-70%)
+- **Fake HTML file cleanup** (removes 404 error pages saved as images)
+- **Production-ready scripts** with comprehensive error handling
+- **Automatic browser detection** (serves WebP to compatible browsers)
+
+### Production Deployment
+
+```bash
+# Copy to production
+scp -r scripts/ user@production:/path/to/drupal/
+
+# Run on production  
+scripts/webp.sh clean && scripts/webp.sh convert
+```
+
+### Documentation
+
+All WebP scripts and detailed documentation are located in the `scripts/` directory:
+
+- **`scripts/WEBP_OPTIMIZATION.md`** - Complete setup and usage guide
+- **`scripts/README.md`** - Detailed script reference  
+- **`scripts/PRODUCTION_COMMANDS.md`** - Production deployment guide
+- **`scripts/webp.sh`** - Main script runner with simple commands
+
+### Available Commands
+
+| Command | Purpose |
+|---------|---------|
+| `scripts/webp.sh status` | Check conversion rate |
+| `scripts/webp.sh clean` | Remove fake HTML files |
+| `scripts/webp.sh convert` | Convert all images |
+| `scripts/webp.sh audit` | Production audit |
+| `scripts/webp.sh debug file.jpg` | Debug specific file |
+
+The system automatically detects development vs production environments and handles path detection seamlessly.
 
 ### Radix and "saho" Subtheme
 The SAHO website uses the Radix theme as the base, with a custom subtheme named "saho." The Radix theme allows for the use of components, which makes it easy to maintain consistency across the website.

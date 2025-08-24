@@ -2,14 +2,12 @@
 
 ## 🚀 Complete Production Setup
 
-Copy these files to your production root directory first:
+Copy the scripts directory to your production root:
 ```bash
-scp clean_fake_images.php user@production:/path/to/drupal/
-scp production_webp_audit.php user@production:/path/to/drupal/
-scp debug_specific_file.php user@production:/path/to/drupal/
-scp comprehensive_webp_status.php user@production:/path/to/drupal/
-scp fix_webp_names.php user@production:/path/to/drupal/
-scp safe_webp_generator.php user@production:/path/to/drupal/
+# Copy entire scripts directory
+scp -r scripts/ user@production:/path/to/drupal/
+
+# Copy WebP module
 scp -r webroot/modules/custom/saho_webp/ user@production:/path/to/drupal/webroot/modules/custom/
 ```
 
@@ -18,13 +16,13 @@ scp -r webroot/modules/custom/saho_webp/ user@production:/path/to/drupal/webroot
 ### 1. Initial Audit
 ```bash
 # Check current WebP conversion status
-php comprehensive_webp_status.php
+php scripts/comprehensive_webp_status.php
 ```
 
 ### 2. Clean Fake Images
 ```bash
 # Remove HTML 404 error pages saved as images
-php clean_fake_images.php
+php scripts/clean_fake_images.php
 ```
 
 ### 3. URGENT: Clear Cache After Module Fix
@@ -36,31 +34,31 @@ vendor/bin/drush cr
 ### 4. Run Safe Conversion
 ```bash
 # Safe manual conversion (doesn't modify originals)
-php safe_webp_generator.php 500 0
+php scripts/safe_webp_generator.php 500 0
 ```
 
-### 4. Targeted Audit & Fix
+### 5. Targeted Audit & Fix
 ```bash
 # Audit missing files and attempt conversion
-php production_webp_audit.php
+php scripts/production_webp_audit.php
 ```
 
-### 5. Debug Specific Files
+### 6. Debug Specific Files
 ```bash
 # Debug why a specific file isn't converting
-php debug_specific_file.php sites/default/files/bio_pics/ReggieWilliams.jpg
+php scripts/debug_specific_file.php sites/default/files/bio_pics/ReggieWilliams.jpg
 ```
 
-### 6. Fix Double Extensions
+### 7. Fix Double Extensions
 ```bash
 # Clean up any .jpg.webp files
-php fix_webp_names.php
+php scripts/fix_webp_names.php
 ```
 
-### 7. Final Status Check
+### 8. Final Status Check
 ```bash
 # Verify final conversion rate
-php comprehensive_webp_status.php
+php scripts/comprehensive_webp_status.php
 ```
 
 ## 🎯 For Your Specific Issue
@@ -72,7 +70,7 @@ Since `ReggieWilliams.jpg` is not converting, run this:
 cd /home/yourusername/public_html/sahistory.org.za
 
 # Debug the specific file
-php debug_specific_file.php sites/default/files/bio_pics/ReggieWilliams.jpg
+php scripts/debug_specific_file.php sites/default/files/bio_pics/ReggieWilliams.jpg
 ```
 
 This will show you:
@@ -89,7 +87,7 @@ This will show you:
 
 ### Issue: HTML error pages as images
 - **Solution**: Clean fake images first
-- **Command**: `php clean_fake_images.php`
+- **Command**: `php scripts/clean_fake_images.php`
 
 ### Issue: WebP conversion fails
 - **Causes**: No GD WebP support, corrupt images, wrong permissions
@@ -117,7 +115,7 @@ After running all commands, you should see:
 ## 🎉 Success Indicators
 
 You'll know it's working when:
-1. `comprehensive_webp_status.php` shows 99%+ conversion rate
+1. `php scripts/comprehensive_webp_status.php` shows 99%+ conversion rate
 2. Browser dev tools show WebP files being served
 3. PageSpeed Insights scores improve significantly
 4. Bandwidth usage decreases
