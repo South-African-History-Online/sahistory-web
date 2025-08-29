@@ -74,10 +74,12 @@
 <style>
   main {
     height: 100vh;
+    height: 100dvh; /* Dynamic viewport height for mobile */
     margin: 0;
     padding: 0;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 
                  'Source Sans Pro', sans-serif;
+    overflow: hidden;
   }
   
   .loading {
@@ -216,8 +218,22 @@
       grid-template-columns: 1fr;
     }
     
+    .loading-content h2 {
+      font-size: 1.8rem;
+    }
+    
+    .loading-content p {
+      font-size: 1rem;
+    }
+    
     .error-actions {
       flex-direction: column;
+      width: 100%;
+    }
+    
+    .error-actions button,
+    .error-actions a {
+      width: 100%;
     }
   }
 </style>

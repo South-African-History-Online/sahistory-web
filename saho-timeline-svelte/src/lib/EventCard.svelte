@@ -343,6 +343,8 @@
       flex-direction: column;
       padding: 1rem;
       margin-bottom: 1rem;
+      min-height: 160px; /* Ensure good touch target */
+      -webkit-tap-highlight-color: rgba(151, 33, 45, 0.1); /* Better tap feedback */
     }
     
     .event-card.research-mode {
@@ -377,6 +379,7 @@
       width: 100%;
       height: 160px;
       order: -1; /* Move image to top on mobile */
+      -webkit-touch-callout: none; /* Prevent image save popup on long press */
     }
     
     .research-mode .event-image {

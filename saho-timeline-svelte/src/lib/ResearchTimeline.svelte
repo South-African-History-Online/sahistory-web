@@ -28,9 +28,19 @@
   let showCitations = false;
   let analyticalMode = 'density'; // 'density', 'themes', 'geographical'
   
-  // Virtual list configuration
-  let itemHeight = 140; // Taller for research content
+  // Virtual list configuration - responsive item height
+  let itemHeight = window.innerWidth <= 768 ? 180 : 140; // Taller on mobile for better touch targets
   let viewport;
+  
+  // Update item height on window resize
+  function updateItemHeight() {
+    itemHeight = window.innerWidth <= 768 ? 180 : 140;
+  }
+  
+  onMount(() => {
+    window.addEventListener('resize', updateItemHeight);
+    return () => window.removeEventListener('resize', updateItemHeight);
+  });
   
   // Advanced filtering
   $: filteredEvents = applyAdvancedFilters(events, {
@@ -1017,6 +1027,17 @@
     }
   }
   
+  /* Touch-friendly adjustments for mobile */
+  @media (max-width: 768px) and (pointer: coarse) {
+    .view-modes button,
+    .period-btn,
+    .year-button,
+    .export-btn {
+      min-height: 44px; /* iOS touch target minimum */
+      min-width: 44px;
+    }
+  }
+  
   /* Mobile phone styles */
   @media (max-width: 768px) {
     .research-timeline {
@@ -1051,6 +1072,8 @@
     .search-input {
       font-size: 16px; /* Prevents zoom on iOS */
       padding: 0.875rem 1rem;
+      -webkit-appearance: none; /* Remove iOS default styling */
+      appearance: none;
     }
     
     .export-btn {
@@ -1071,9 +1094,11 @@
     }
     
     .research-sidebar {
-      max-height: 300px;
+      max-height: 200px;
       border-right: none;
       border-bottom: 1px solid #e9ecef;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
     }
     
     .period-nav {
@@ -1103,6 +1128,7 @@
     
     .event-list {
       padding: 1rem;
+      -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
     }
     
     /* Modal improvements for mobile */
