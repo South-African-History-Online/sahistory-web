@@ -1,0 +1,30 @@
+version: '3.6'
+services:
+  # Node.js service for Svelte timeline development
+  nodejs:
+    image: node:18-alpine
+    container_name: ddev-${DDEV_SITENAME}-nodejs
+    hostname: ${DDEV_SITENAME}-nodejs
+    ports:
+      - "5173:5173"  # Vite dev server
+      - "4173:4173"  # Vite preview server
+      - "3000:3000"  # Production Node.js server
+    volumes:
+      - type: bind
+        source: ../saho-timeline-svelte
+        target: /app
+        consistency: cached
+      - type: bind
+        source: ./
+        target: /mnt/ddev_config
+    working_dir: /app
+    environment:
+      - NODE_ENV=development
+      - VITE_API_URL=https://sahistory-web.ddev.site
+    command: tail -f /dev/null
+    networks:
+      - default
+      - ddev_default
+    labels:
+      com.ddev.site-name: ${DDEV_SITENAME}
+      com.ddev.approot: $DDEV_APPROOT

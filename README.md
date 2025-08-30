@@ -21,6 +21,7 @@ This is a Github project is currently supported and maintained by Mads Nørgaard
 - [Custom Modules](#custom-modules)
   - [Module Architecture](#module-architecture)
   - [Available Modules](#available-modules)
+- [SAHO Timeline Application](#saho-timeline-application)
 - [WebP Image Optimization](#webp-image-optimization)
 - [Theme Development](#radix-and-saho-subtheme)
   - [Theme Architecture](#theme-architecture)
@@ -351,6 +352,75 @@ The `saho_utils` module serves as a container for smaller, focused sub-modules:
    - Place templates in `templates/` directory
    - Use semantic HTML5 elements
    - Implement proper accessibility attributes
+
+## SAHO Timeline Application
+
+The SAHO Timeline is a high-performance, interactive timeline application built with **Svelte 5** and **Vite**. It provides users with an immersive way to explore South African history through thousands of chronologically organized events.
+
+### 🌟 Key Features
+
+- **Interactive Timeline**: Smooth scrolling through centuries of South African history
+- **Advanced Filtering**: Filter by historical periods, themes, event types, and search terms  
+- **Research Tools**: Academic citation support with pipe-separated references
+- **Responsive Design**: Mobile-first approach with desktop enhancements
+- **Virtual Scrolling**: Efficient rendering of thousands of historical events
+- **Historical Periods**: Pre-Colonial, Colonial, Union, Apartheid, and Democratic eras
+
+### 📁 Location & Access
+
+- **Source Code**: `/saho-timeline-svelte/`
+- **Production URL**: `https://sahistory-web.ddev.site/saho-timeline/`
+- **Development Server**: `http://localhost:5173` (when running locally)
+
+### 🚀 Quick Start
+
+```bash
+# Navigate to timeline app
+cd saho-timeline-svelte
+
+# Install dependencies  
+npm install
+
+# Start development server
+npm run dev
+
+# Build for production
+npm run build
+
+# Deploy to production
+cp -r dist/* ../webroot/saho-timeline/
+```
+
+### 📖 Documentation
+
+For comprehensive documentation including:
+- Development workflow
+- Build and deployment processes  
+- Component architecture
+- API integration
+- Troubleshooting guide
+
+See the detailed README: **`saho-timeline-svelte/README.md`**
+
+### 🔧 Integration with SAHO
+
+The timeline app integrates seamlessly with the main SAHO Drupal site:
+
+- **API Connection**: Fetches events from `/api/timeline/events` endpoint
+- **Citation System**: Uses SAHO's academic citation format
+- **Responsive Design**: Matches SAHO's mobile-first approach
+- **Theme Consistency**: Follows SAHO's design language and color scheme
+
+### 🎯 For Developers
+
+The timeline app is a **standalone Svelte application** with its own:
+- Build process (`npm run build`)
+- Development server (`npm run dev`) 
+- Dependencies (`package.json`)
+- Component structure (`src/lib/`)
+- Deployment workflow (to `/webroot/saho-timeline/`)
+
+**Important**: Always deploy built files to `/webroot/saho-timeline/` (not `/webroot/timeline-app/`)
 
 ## WebP Image Optimization
 

@@ -55,7 +55,8 @@ class WebpConversionWorker extends QueueWorkerBase {
     }
 
     // Wait a moment to ensure file is fully written.
-    usleep(500000); // 0.5 seconds
+    // 0.5 seconds.
+    usleep(500000);
 
     // Create WebP path.
     $webp_path = preg_replace('/\.(jpg|jpeg|png)$/i', '.webp', $source_path);
