@@ -164,7 +164,7 @@ class WebpCommands extends DrushCommands {
     // Check queue status.
     $queue = \Drupal::queue('saho_webp_conversion');
     $queue_count = $queue->numberOfItems();
-    
+
     if ($queue_count > 0) {
       $this->output()->writeln("Queue items pending: $queue_count");
     }
@@ -186,18 +186,23 @@ class WebpCommands extends DrushCommands {
   public function processQueue($options = ['limit' => 0]) {
     $queue = \Drupal::queue('saho_webp_conversion');
     $queue_worker = \Drupal::service('plugin.manager.queue_worker')->createInstance('saho_webp_conversion');
-    
+
     $limit = $options['limit'] ? (int) $options['limit'] : 0;
     $processed = 0;
-    
+
     $this->output()->writeln("Processing WebP conversion queue...");
-    
+
     while (($limit === 0 || $processed < $limit) && ($item = $queue->claimItem())) {
+      // Ensure $item is an object with data property.
+      if (!is_object($item) || !property_exists($item, 'data')) {
+        continue;
+      }
+
       try {
         $queue_worker->processItem($item->data);
         $queue->deleteItem($item);
         $processed++;
-        
+
         if ($processed % 10 === 0) {
           $this->output()->writeln("Processed: $processed items");
         }
@@ -207,7 +212,7 @@ class WebpCommands extends DrushCommands {
         $queue->releaseItem($item);
       }
     }
-    
+
     $this->output()->writeln("Completed. Processed $processed items.");
   }
 
