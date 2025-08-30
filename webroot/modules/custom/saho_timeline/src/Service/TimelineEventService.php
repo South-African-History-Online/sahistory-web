@@ -177,15 +177,11 @@ class TimelineEventService {
         ->condition('status', NodeInterface::PUBLISHED)
         ->accessCheck(TRUE);
 
-      // Get events with any date field populated - comprehensive search.
-      $date_group = $query->orConditionGroup();
-      $date_group->condition('field_this_day_in_history_3', NULL, 'IS NOT NULL');
-      $date_group->condition('field_this_day_in_history_date_2', NULL, 'IS NOT NULL');
-      $date_group->condition('field_start_date', NULL, 'IS NOT NULL');
-      $date_group->condition('field_end_date', NULL, 'IS NOT NULL');
-      $date_group->condition('field_drupal_birth_date', NULL, 'IS NOT NULL');
-      $date_group->condition('field_drupal_death_date', NULL, 'IS NOT NULL');
-      $query->condition($date_group);
+      // Get ALL event nodes - we'll separate them into dated vs dateless later
+      // This ensures we include all events but handle them appropriately
+      
+      // For now, let's get ALL events and separate them by date availability
+      // No date filtering in query - we'll handle this in PHP
 
       // Get a larger sample with better time distribution.
       $config = $this->configFactory->get('saho_timeline.settings');
@@ -698,6 +694,89 @@ class TimelineEventService {
     }
 
     return NULL;
+  }
+
+  /**
+   * Check if an event has a proper historical date (not just creation date).
+   *
+   * @param \Drupal\node\NodeInterface $event
+   *   The event node.
+   *
+   * @return bool
+   *   TRUE if the event has a historical date field populated.
+   */
+  protected function hasHistoricalDate($event) {
+    if (!$event instanceof NodeInterface) {
+      return FALSE;
+    }
+
+    // Check historical date fields (excluding creation date)
+    $historical_date_fields = [
+      'field_this_day_in_history_3',
+      'field_this_day_in_history_date_2',
+      'field_start_date',
+      'field_end_date',
+      'field_drupal_birth_date',
+      'field_drupal_death_date',
+      'field_publication_date_archive',
+      'field_archive_publication_date',
+      'field_event_date',
+    ];
+
+    foreach ($historical_date_fields as $field_name) {
+      if ($event->hasField($field_name) && !$event->get($field_name)->isEmpty()) {
+        $date_value = $event->get($field_name)->value;
+        if (!empty($date_value)) {
+          return TRUE;
+        }
+      }
+    }
+
+    return FALSE;
+  }
+
+  /**
+   * Get timeline events separated into dated and dateless categories.
+   *
+   * @param bool $include_tdih
+   *   Whether to include TDIH events.
+   * @param bool $use_cache
+   *   Whether to use caching.
+   *
+   * @return array
+   *   Array with 'events' (with historical dates) and 'dateless_events' keys.
+   */
+  public function getAllTimelineEventsSegregated($include_tdih = TRUE, $use_cache = TRUE) {
+    $all_events = $this->getAllTimelineEvents($include_tdih, $use_cache);
+    
+    $events_with_dates = [];
+    $dateless_events = [];
+
+    foreach ($all_events as $event) {
+      if ($this->hasHistoricalDate($event)) {
+        $events_with_dates[] = $event;
+      } else {
+        // For dateless events, include metadata for admin review
+        $dateless_events[] = [
+          'node' => $event,
+          'id' => $event->id(),
+          'title' => $event->getTitle(),
+          'created' => $event->getCreatedTime(),
+          'status' => 'needs_date_review',
+          'reason' => 'No historical date fields populated'
+        ];
+      }
+    }
+
+    return [
+      'events' => $events_with_dates,
+      'dateless_events' => $dateless_events,
+      'stats' => [
+        'total_events' => count($all_events),
+        'events_with_dates' => count($events_with_dates),
+        'dateless_events' => count($dateless_events)
+      ]
+    ];
   }
 
 }

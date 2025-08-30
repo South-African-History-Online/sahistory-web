@@ -15,8 +15,25 @@
   }
   
   function generateCitation(event) {
+    // Use field_ref_str if available, otherwise generate generic citation
+    if (event.field_ref_str && event.field_ref_str.trim()) {
+      return event.field_ref_str.trim();
+    }
+    
+    // Fallback to generic citation
     const year = new Date(event.date).getFullYear();
     return `"${event.title}" (${year}). South African History Online. Retrieved ${format(new Date(), 'MMM d, yyyy')}.`;
+  }
+  
+  function parseCitations(citationString) {
+    if (!citationString || !citationString.trim()) {
+      return [];
+    }
+    
+    // Split by pipe symbol and clean up each citation
+    return citationString.split('|')
+      .map(citation => citation.trim())
+      .filter(citation => citation.length > 0);
   }
   
   // Extract year for visual emphasis
@@ -101,8 +118,13 @@
       
       {#if showCitations && researchMode}
         <div class="citation-preview">
-          <strong>Citation:</strong>
-          <p class="citation-text">{generateCitation(event)}</p>
+          <strong>Citations:</strong>
+          {#each parseCitations(generateCitation(event)) as citation, index}
+            <div class="citation-item">
+              <span class="citation-number">{index + 1}.</span>
+              <p class="citation-text">{citation}</p>
+            </div>
+          {/each}
         </div>
       {/if}
     </div>
@@ -327,15 +349,37 @@
     font-size: 0.85rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    display: block;
+    margin-bottom: 0.5rem;
+  }
+  
+  .citation-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+  
+  .citation-item:last-child {
+    margin-bottom: 0;
+  }
+  
+  .citation-number {
+    color: #97212d;
+    font-weight: 600;
+    font-size: 0.8rem;
+    min-width: 1.2rem;
+    flex-shrink: 0;
   }
   
   .citation-text {
-    margin: 0.5rem 0 0;
+    margin: 0;
     font-family: 'Georgia', serif;
     font-style: italic;
     font-size: 0.8rem;
     color: #555;
     line-height: 1.5;
+    flex: 1;
   }
   
   @media (max-width: 768px) {
@@ -424,6 +468,16 @@
     .citation-preview {
       padding: 0.75rem;
       margin-top: 0.75rem;
+    }
+    
+    .citation-item {
+      gap: 0.4rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    .citation-number {
+      font-size: 0.75rem;
+      min-width: 1rem;
     }
     
     .citation-text {

@@ -1,6 +1,26 @@
 import axios from 'axios';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'https://sahistory-web.ddev.site';
+// Dynamic API base URL detection
+function getApiBase() {
+  // If running in dev mode, use VITE_API_URL or default to DDEV
+  if (import.meta.env.DEV) {
+    return import.meta.env.VITE_API_URL || 'https://sahistory-web.ddev.site';
+  }
+  
+  // In production, detect based on current hostname
+  const currentHost = window.location.hostname;
+  
+  if (currentHost.includes('ddev.site') || currentHost.includes('localhost')) {
+    return 'https://sahistory-web.ddev.site';
+  } else if (currentHost.includes('sahistory.org.za')) {
+    return 'https://sahistory.org.za';
+  } else {
+    // Default fallback - same origin
+    return window.location.origin;
+  }
+}
+
+const API_BASE = getApiBase();
 const API_ENDPOINT = '/api/timeline/events';
 
 // Cache for API responses
@@ -27,15 +47,27 @@ export async function fetchTimelineEvents(limit = 5000) {
     });
     
     const events = response.data.events || [];
-    console.log(`Fetched ${events.length} events from API`);
+    const datelessEvents = response.data.dateless_events || response.data.datelessEvents || [];
+    console.log(`Fetched ${events.length} events with dates, ${datelessEvents.length} dateless events from API`);
+    
+    // Return both categories
+    const result = {
+      events,
+      datelessEvents,
+      stats: {
+        eventsWithDates: events.length,
+        datelessEvents: datelessEvents.length,
+        total: events.length + datelessEvents.length
+      }
+    };
     
     // Cache the response
     cache.set(cacheKey, {
-      data: events,
+      data: result,
       timestamp: Date.now()
     });
     
-    return events;
+    return result;
   } catch (error) {
     console.error('Failed to fetch timeline events:', error);
     throw error;

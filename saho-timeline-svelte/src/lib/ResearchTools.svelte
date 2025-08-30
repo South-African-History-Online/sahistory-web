@@ -1,4 +1,6 @@
 <script>
+  import { createEventDispatcher } from 'svelte';
+  
   export let historicalPeriods = [];
   export let availableThemes = [];
   export let eventTypes = [];
@@ -8,6 +10,8 @@
   export let selectedYear = null;
   export let showCitations = false;
   export let eventsCount = 0;
+  
+  const dispatch = createEventDispatcher();
   
   let expandedSections = {
     periods: true,
@@ -25,6 +29,7 @@
   function toggleSection(section) {
     expandedSections[section] = !expandedSections[section];
   }
+  
   
 </script>
 
@@ -53,7 +58,7 @@
           Show Academic Citations
         </label>
         
-        <button class="action-btn" on:click={clearAllFilters}>
+        <button class="action-btn clear-btn" on:click={clearAllFilters}>
           🗑️ Clear All Filters
         </button>
         
@@ -107,8 +112,6 @@
     {/if}
   </section>
   
-  
-  
   <!-- Research Tips -->
   <section class="tool-section tips-section">
     <button class="section-header" on:click={() => toggleSection('tips')}>
@@ -125,10 +128,10 @@
           <strong>Timeline Navigation:</strong> Click years to jump to specific periods
         </div>
         <div class="tip">
-          <strong>Data Export:</strong> Export filtered results for external analysis
+          <strong>Citations:</strong> Enable academic citations for scholarly work
         </div>
         <div class="tip">
-          <strong>Citations:</strong> Enable academic citations for scholarly work
+          <strong>Event Details:</strong> Click any event card to view full details and citations
         </div>
       </div>
     {/if}
@@ -206,6 +209,8 @@
     gap: 0.75rem;
     margin-bottom: 1rem;
     cursor: pointer;
+    color: #495057;
+    font-weight: 500;
   }
   
   .action-btn {
@@ -224,6 +229,7 @@
   .action-btn:hover {
     background: #7a1b24;
   }
+  
   
   .filter-summary {
     background: #f8f9fa;
@@ -282,6 +288,7 @@
     height: 3px;
     border-radius: 2px;
   }
+  
   
   
   .tips-section {

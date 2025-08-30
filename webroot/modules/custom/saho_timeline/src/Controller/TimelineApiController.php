@@ -116,6 +116,7 @@ class TimelineApiController extends ControllerBase {
     // Search for events.
     if (!empty($filters['keywords'])) {
       $events = $this->timelineEventService->searchEvents($filters['keywords'], $filters);
+      $dateless_events = []; // No dateless events for search results
     }
     elseif (!empty($filters['start_date']) && !empty($filters['end_date'])) {
       $events = $this->timelineEventService->getEventsByDateRange(
@@ -123,9 +124,13 @@ class TimelineApiController extends ControllerBase {
         $filters['end_date'],
         $filters
       );
+      $dateless_events = []; // No dateless events for date range queries
     }
     else {
-      $events = $this->timelineEventService->getAllTimelineEvents();
+      // Get all events segregated by date availability
+      $segregated = $this->timelineEventService->getAllTimelineEventsSegregated();
+      $events = $segregated['events']; // Events with proper historical dates
+      $dateless_events = $segregated['dateless_events']; // Events needing date review
     }
 
     // Apply sorting.
@@ -153,6 +158,7 @@ class TimelineApiController extends ControllerBase {
     // Build response data.
     $response_data = [
       'events' => [],
+      'dateless_events' => [],
       'facets' => $facets,
       'total' => $total,
       'limit' => $limit,
@@ -181,6 +187,28 @@ class TimelineApiController extends ControllerBase {
           '@id' => method_exists($event, 'id') ? $event->id() : 'unknown',
           '@message' => $e->getMessage(),
         ]);
+      }
+    }
+
+    // Add dateless events for admin review (if any exist)
+    if (!empty($dateless_events)) {
+      foreach ($dateless_events as $dateless_event) {
+        try {
+          $response_data['dateless_events'][] = [
+            'id' => $dateless_event['id'],
+            'title' => $dateless_event['title'],
+            'created' => date('Y-m-d H:i:s', $dateless_event['created']),
+            'status' => $dateless_event['status'],
+            'reason' => $dateless_event['reason'],
+            'edit_url' => '/node/' . $dateless_event['id'] . '/edit'
+          ];
+        }
+        catch (\Exception $e) {
+          \Drupal::logger('saho_timeline')->error('Error formatting dateless event @id: @message', [
+            '@id' => $dateless_event['id'],
+            '@message' => $e->getMessage(),
+          ]);
+        }
       }
     }
 
@@ -350,6 +378,7 @@ class TimelineApiController extends ControllerBase {
       'location' => NULL,
       'themes' => [],
       'categories' => [],
+      'field_ref_str' => NULL,
     ];
 
     if ($event instanceof ContentEntityInterface) {
@@ -364,7 +393,7 @@ class TimelineApiController extends ControllerBase {
       $title = htmlspecialchars($title, ENT_QUOTES | ENT_HTML5, 'UTF-8', FALSE);
       $title = preg_replace('/[\x00-\x1F\x7F-\xFF]/', '', $title);
       $data['title'] = trim(strip_tags($title));
-      $data['url'] = $event->toUrl()->toString();
+      $data['url'] = $event->toUrl('canonical', ['absolute' => TRUE])->toString();
       $data['type'] = $event->bundle();
 
       // Get date from multiple possible fields.
@@ -446,6 +475,20 @@ class TimelineApiController extends ControllerBase {
           if (isset($tag->entity) && $tag->entity) {
             $data['categories'][] = $tag->entity->label();
           }
+        }
+      }
+
+      // Get field_ref_str (reference/citation string).
+      if ($event->hasField('field_ref_str') && !$event->get('field_ref_str')->isEmpty()) {
+        $ref_str = $event->get('field_ref_str')->value;
+        if (!empty($ref_str)) {
+          // Clean the reference string similar to other text fields
+          $ref_str = @iconv('UTF-8', 'UTF-8//IGNORE', $ref_str);
+          if ($ref_str === FALSE) {
+            $ref_str = mb_convert_encoding($event->get('field_ref_str')->value, 'UTF-8', 'UTF-8');
+          }
+          $ref_str = trim(strip_tags($ref_str));
+          $data['field_ref_str'] = $ref_str;
         }
       }
     }

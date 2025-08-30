@@ -5,6 +5,7 @@
   import Icon from './lib/Icon.svelte';
   
   let events = [];
+  let datelessEvents = [];
   let processedData = null;
   let loading = true;
   let error = null;
@@ -12,13 +13,21 @@
   onMount(async () => {
     try {
       console.log('Loading SAHO Research Timeline...');
-      const rawEvents = await fetchTimelineEvents(5000);
+      const apiData = await fetchTimelineEvents(5000);
       
-      if (rawEvents && rawEvents.length > 0) {
-        processedData = processEvents(rawEvents);
+      if (apiData && apiData.events && apiData.events.length > 0) {
+        processedData = processEvents(apiData.events);
         events = processedData.all;
-        console.log(`✅ Loaded ${events.length} events spanning ${processedData.minYear}-${processedData.maxYear}`);
+        datelessEvents = apiData.datelessEvents || apiData.dateless_events || [];
+        console.log(`✅ Loaded ${events.length} events with dates spanning ${processedData.minYear}-${processedData.maxYear}`);
+        console.log(`📋 Found ${datelessEvents.length} dateless events for review`);
         console.log('🔬 Research Timeline ready for scholarly exploration');
+      } else if (apiData && apiData.events) {
+        // Handle case where events array exists but is empty
+        events = [];
+        datelessEvents = apiData.datelessEvents || apiData.dateless_events || [];
+        processedData = { all: [], byYear: {}, minYear: 1300, maxYear: 2024, totalEvents: 0 };
+        console.log('⚠️ No events with dates found, but API responded');
       } else {
         throw new Error('No events received from API');
       }
@@ -39,6 +48,9 @@
   {#if loading}
     <div class="loading">
       <div class="loading-content">
+        <div class="loading-logo">
+          <img src="/saho-timeline/saho_logo_white_transparent.svg" alt="SAHO" class="loading-saho-logo" />
+        </div>
         <div class="loading-spinner"></div>
         <h2>Loading SAHO Research Timeline</h2>
         <p>Preparing 3,500+ historical events for scholarly exploration</p>
@@ -64,6 +76,7 @@
   {:else}
     <ResearchTimeline 
       {events}
+      {datelessEvents}
       minYear={processedData.minYear}
       maxYear={processedData.maxYear}
       on:select={handleEventSelect}
@@ -95,6 +108,28 @@
   
   .loading-content {
     max-width: 500px;
+  }
+  
+  .loading-logo {
+    margin-bottom: 2rem;
+    animation: logoFloat 3s ease-in-out infinite;
+  }
+  
+  .loading-saho-logo {
+    width: 120px;
+    height: 120px;
+    object-fit: contain;
+    /* SVG is already white, adding subtle glow effect */
+    filter: drop-shadow(0 4px 12px rgba(255, 255, 255, 0.3));
+  }
+  
+  @keyframes logoFloat {
+    0%, 100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
   }
   
   .loading-content h2 {

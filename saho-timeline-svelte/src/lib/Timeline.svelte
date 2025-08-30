@@ -141,7 +141,7 @@
         </VirtualList>
       </div>
     {:else if viewMode === 'timeline'}
-      <!-- Canvas-based Timeline Visualization -->
+      <!-- Canvas-based Timeline Visualisation -->
       <TimelineCanvas 
         {events}
         {minYear}
