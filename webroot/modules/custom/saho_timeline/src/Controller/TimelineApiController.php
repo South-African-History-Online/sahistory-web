@@ -116,7 +116,8 @@ class TimelineApiController extends ControllerBase {
     // Search for events.
     if (!empty($filters['keywords'])) {
       $events = $this->timelineEventService->searchEvents($filters['keywords'], $filters);
-      $dateless_events = []; // No dateless events for search results
+      // No dateless events for search results.
+      $dateless_events = [];
     }
     elseif (!empty($filters['start_date']) && !empty($filters['end_date'])) {
       $events = $this->timelineEventService->getEventsByDateRange(
@@ -124,13 +125,16 @@ class TimelineApiController extends ControllerBase {
         $filters['end_date'],
         $filters
       );
-      $dateless_events = []; // No dateless events for date range queries
+      // No dateless events for date range queries.
+      $dateless_events = [];
     }
     else {
-      // Get all events segregated by date availability
+      // Get all events segregated by date availability.
       $segregated = $this->timelineEventService->getAllTimelineEventsSegregated();
-      $events = $segregated['events']; // Events with proper historical dates
-      $dateless_events = $segregated['dateless_events']; // Events needing date review
+      // Events with proper historical dates.
+      $events = $segregated['events'];
+      // Events needing date review.
+      $dateless_events = $segregated['dateless_events'];
     }
 
     // Apply sorting.
@@ -200,7 +204,7 @@ class TimelineApiController extends ControllerBase {
             'created' => date('Y-m-d H:i:s', $dateless_event['created']),
             'status' => $dateless_event['status'],
             'reason' => $dateless_event['reason'],
-            'edit_url' => '/node/' . $dateless_event['id'] . '/edit'
+            'edit_url' => '/node/' . $dateless_event['id'] . '/edit',
           ];
         }
         catch (\Exception $e) {
@@ -482,7 +486,7 @@ class TimelineApiController extends ControllerBase {
       if ($event->hasField('field_ref_str') && !$event->get('field_ref_str')->isEmpty()) {
         $ref_str = $event->get('field_ref_str')->value;
         if (!empty($ref_str)) {
-          // Clean the reference string similar to other text fields
+          // Clean the reference string similar to other text fields.
           $ref_str = @iconv('UTF-8', 'UTF-8//IGNORE', $ref_str);
           if ($ref_str === FALSE) {
             $ref_str = mb_convert_encoding($event->get('field_ref_str')->value, 'UTF-8', 'UTF-8');

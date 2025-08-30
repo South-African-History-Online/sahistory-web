@@ -178,11 +178,9 @@ class TimelineEventService {
         ->accessCheck(TRUE);
 
       // Get ALL event nodes - we'll separate them into dated vs dateless later
-      // This ensures we include all events but handle them appropriately
-      
+      // This ensures we include all events but handle them appropriately.
       // For now, let's get ALL events and separate them by date availability
-      // No date filtering in query - we'll handle this in PHP
-
+      // No date filtering in query - we'll handle this in PHP.
       // Get a larger sample with better time distribution.
       $config = $this->configFactory->get('saho_timeline.settings');
       $max_results = $config->get('max_api_results') ?: 10000;
@@ -748,22 +746,23 @@ class TimelineEventService {
    */
   public function getAllTimelineEventsSegregated($include_tdih = TRUE, $use_cache = TRUE) {
     $all_events = $this->getAllTimelineEvents($include_tdih, $use_cache);
-    
+
     $events_with_dates = [];
     $dateless_events = [];
 
     foreach ($all_events as $event) {
       if ($this->hasHistoricalDate($event)) {
         $events_with_dates[] = $event;
-      } else {
-        // For dateless events, include metadata for admin review
+      }
+      else {
+        // For dateless events, include metadata for admin review.
         $dateless_events[] = [
           'node' => $event,
           'id' => $event->id(),
           'title' => $event->getTitle(),
           'created' => $event->getCreatedTime(),
           'status' => 'needs_date_review',
-          'reason' => 'No historical date fields populated'
+          'reason' => 'No historical date fields populated',
         ];
       }
     }
@@ -774,8 +773,8 @@ class TimelineEventService {
       'stats' => [
         'total_events' => count($all_events),
         'events_with_dates' => count($events_with_dates),
-        'dateless_events' => count($dateless_events)
-      ]
+        'dateless_events' => count($dateless_events),
+      ],
     ];
   }
 
