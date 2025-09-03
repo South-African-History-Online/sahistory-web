@@ -24,11 +24,37 @@
 echo "=== Safe Image URL Conversion Script ===\n";
 echo "Converting absolute URLs to relative paths (only for existing files)\n\n";
 
-// Database connection
-$host = getenv('DB_HOST') ?: 'db';
+// Database connection - check environment
+$host = getenv('DB_HOST') ?: (getenv('IS_DDEV_PROJECT') ? 'db' : 'localhost');
 $db = getenv('DB_NAME') ?: 'db';
 $user = getenv('DB_USER') ?: 'db';
 $pass = getenv('DB_PASSWORD') ?: 'db';
+
+// Production fallback - try to read from Drupal settings
+if (!getenv('IS_DDEV_PROJECT') && $host === 'localhost') {
+    $settings_file = getcwd() . '/webroot/sites/default/settings.php';
+    if (file_exists($settings_file)) {
+        $settings_content = file_get_contents($settings_file);
+        
+        // Try to extract database settings from Drupal settings.php
+        if (preg_match('/\$databases\[\'default\'\]\[\'default\'\]\s*=\s*\[(.*?)\];/s', $settings_content, $matches)) {
+            $db_config = $matches[1];
+            
+            if (preg_match('/\'host\'\s*=>\s*[\'"]([^\'"]+)[\'"]/', $db_config, $host_match)) {
+                $host = $host_match[1];
+            }
+            if (preg_match('/\'database\'\s*=>\s*[\'"]([^\'"]+)[\'"]/', $db_config, $db_match)) {
+                $db = $db_match[1];
+            }
+            if (preg_match('/\'username\'\s*=>\s*[\'"]([^\'"]+)[\'"]/', $db_config, $user_match)) {
+                $user = $user_match[1];
+            }
+            if (preg_match('/\'password\'\s*=>\s*[\'"]([^\'"]+)[\'"]/', $db_config, $pass_match)) {
+                $pass = $pass_match[1];
+            }
+        }
+    }
+}
 
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$db;charset=utf8mb4", $user, $pass);
