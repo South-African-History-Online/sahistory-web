@@ -1,0 +1,970 @@
+/**
+ * Upcoming Events Component
+ * 
+ * Modern card styling for upcoming events view with responsive grid
+ * Works with both Drupal's responsive grid and standard grid layouts
+ */
+
+// Main view container and grid override
+.view-all-upcoming-events,
+.upcoming-events-grid {
+  
+  // Grid containers (both standard and responsive)
+  .views-view-grid,
+  .views-view-responsive-grid {
+    // Force CSS Grid layout
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    padding: 20px 0;
+    
+    @media (max-width: 1200px) {
+      grid-template-columns: repeat(3, 1fr);
+    }
+    
+    @media (max-width: 768px) {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+    
+    @media (max-width: 480px) {
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+    
+    // Grid rows and columns (both grid types)
+    .views-row,
+    .views-col,
+    &__item {
+      width: 100% !important;
+      max-width: none !important;
+      flex: none !important;
+      padding: 0 !important;
+      background: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      transition: all 0.3s ease;
+      border: 1px solid rgba(0, 0, 0, 0.06);
+      
+      &:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+        
+        .field--name-field-upcomingevent-image img,
+        .views-field-field-upcomingevent-image img {
+          transform: scale(1.08);
+        }
+      }
+        
+      // Title field - styled as card header
+      .field--name-title,
+      .views-field-title {
+        order: 2;
+        padding: 16px 20px 8px;
+        
+        .field__item,
+        .field-content {
+          font-size: 1.25rem !important;
+          font-weight: 700 !important;
+          line-height: 1.3 !important;
+          color: #2c3e50 !important;
+          
+          a {
+            color: #2c3e50 !important;
+            text-decoration: none !important;
+            font-size: inherit !important;
+            font-weight: inherit !important;
+            line-height: inherit !important;
+            transition: color 0.2s;
+            
+            &:hover {
+              color: #B22222 !important;
+            }
+          }
+          
+          // Reset any HTML formatting that might be in titles
+          *,
+          em,
+          i,
+          strong,
+          b,
+          span,
+          div,
+          p,
+          h1,
+          h2,
+          h3,
+          h4,
+          h5,
+          h6 {
+            font-size: 1.25rem !important;
+            font-weight: 700 !important;
+            line-height: 1.3 !important;
+            color: #2c3e50 !important;
+            font-style: normal !important;
+            text-transform: none !important;
+            letter-spacing: normal !important;
+            margin: 0 !important;
+            padding: 0 !important;
+          }
+        }
+      }
+        
+      // Image field - hero image at top
+      .field--name-field-upcomingevent-image,
+      .views-field-field-upcomingevent-image {
+        order: 1;
+        position: relative;
+        height: 286px;
+        overflow: hidden;
+        margin: 0;
+        padding: 0;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        
+        .field__item,
+        .field-content {
+          height: 100%;
+          margin: 0;
+          padding: 0;
+          background: transparent;
+          
+          a {
+            display: block;
+            height: 100%;
+            position: relative;
+            margin: 0;
+            padding: 0;
+            background: transparent;
+          }
+          
+          img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: crisp-edges;
+            margin: 0;
+            padding: 0;
+            background: transparent;
+          }
+        }
+        
+        // Fallback when no image
+        &:empty::after {
+          content: '';
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          width: 48px;
+          height: 48px;
+          background-color: rgba(255, 255, 255, 0.3);
+          mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor'%3E%3Cpath d='M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z'/%3E%3C/svg%3E") no-repeat;
+          mask-size: contain;
+        }
+      }
+        
+      // Date fields
+      .field--name-field-start-date,
+      .field--name-field-end-date,
+      .views-field-field-start-date,
+      .views-field-field-end-date {
+        order: 3;
+        padding: 0 20px;
+        font-size: 0.9rem;
+        color: #B22222;
+        font-weight: 600;
+        margin-bottom: 6px;
+        
+        &::before {
+          content: '';
+          display: inline-block;
+          width: 14px;
+          height: 14px;
+          margin-right: 6px;
+          background-color: currentColor;
+          mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor'%3E%3Cpath d='M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z'/%3E%3C/svg%3E") no-repeat;
+          mask-size: contain;
+          vertical-align: middle;
+        }
+        
+        .field__label,
+        .views-label {
+          display: inline-block;
+          font-weight: 600;
+          margin-right: 4px;
+          font-size: 0.85rem;
+        }
+        
+        .field__item,
+        .field-content {
+          display: inline;
+        }
+      }
+        
+      // If we want to show venue or other fields
+      .field--name-field-upcoming-venue,
+      .views-field-field-upcoming-venue {
+        order: 4;
+        padding: 0 20px;
+        font-size: 0.9rem;
+        color: #6c757d;
+        margin-bottom: 8px;
+        
+        &::before {
+          content: '';
+          display: inline-block;
+          width: 14px;
+          height: 14px;
+          margin-right: 6px;
+          background-color: currentColor;
+          mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor'%3E%3Cpath d='M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z'/%3E%3C/svg%3E") no-repeat;
+          mask-size: contain;
+          vertical-align: middle;
+        }
+        
+        .field__label,
+        .views-label {
+          display: none;
+        }
+        
+        .field__item,
+        .field-content {
+          display: inline;
+          font-style: italic;
+        }
+      }
+        
+      // Body field
+      .field--name-body,
+      .views-field-body {
+        order: 5;
+        padding: 8px 20px 16px;
+        flex-grow: 1;
+        display: block !important;
+        visibility: visible !important;
+        
+        .field__label,
+        .views-label {
+          display: none !important;
+        }
+        
+        .field__item,
+        .field-content {
+          font-size: 0.95rem !important;
+          color: #4a5568 !important;
+          line-height: 1.5;
+          display: -webkit-box !important;
+          -webkit-line-clamp: 3;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+          
+          p {
+            margin: 0;
+            color: #4a5568 !important;
+            display: block !important;
+          }
+        }
+      }
+        
+      // Node links / Read more
+      .node__links,
+      .views-field-view-node {
+        order: 10;
+        margin-top: auto;
+        padding: 16px 20px;
+        background: transparent;
+        border-top: none;
+        
+        a {
+          display: inline-block;
+          padding: 8px 20px;
+          background: #B22222;
+          color: white;
+          border-radius: 20px;
+          font-size: 0.9rem;
+          font-weight: 600;
+          text-decoration: none;
+          transition: all 0.3s;
+          
+          &:hover {
+            background: darken(#B22222, 10%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(178, 34, 34, 0.3);
+          }
+          
+          &::after {
+            content: ' →';
+            display: inline;
+          }
+        }
+      }
+    }
+    
+    // Handle responsive grid nested structure
+    &__item-inner {
+      height: 100%;
+    }
+    
+    // Remove any default Bootstrap or Drupal column styling  
+    .views-row,
+    .views-col,
+    &__item {
+      .field,
+      .views-field {
+        margin: 0 !important;
+        border: none !important;
+        background: none !important;
+      }
+    }
+  }
+  
+  
+  // Page title
+  .view-header {
+    text-align: center;
+    margin-bottom: 2rem;
+    
+    h1, h2 {
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: #1a202c;
+      letter-spacing: -0.025em;
+      
+      @media (max-width: 768px) {
+        font-size: 2rem;
+      }
+    }
+  }
+  
+  // Pagination
+  nav.pager {
+    margin-top: 3rem;
+    
+    .pager__items {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      list-style: none;
+      padding: 0;
+    }
+    
+    .pager__item {
+      a {
+        display: inline-block;
+        padding: 8px 16px;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        color: #4a5568;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.3s;
+        
+        &:hover {
+          background-color: #B22222;
+          border-color: #B22222;
+          color: white;
+        }
+      }
+      
+      &.is-active a,
+      &.pager__item--current {
+        background-color: #B22222;
+        border-color: #B22222;
+        color: white;
+      }
+    }
+  }
+  
+  // Empty view
+  .view-empty {
+    text-align: center;
+    padding: 4rem 2rem;
+    
+    h3 {
+      color: #2d3748;
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+    }
+    
+    p {
+      color: #718096;
+      font-size: 1.1rem;
+    }
+  }
+}
+
+// Also apply to any view with upcoming events that might use different classes
+// Direct targeting instead of extend to avoid compilation errors
+
+// Styling for template-based upcoming event cards
+.upcoming-event-card {
+  position: relative;
+  
+  // Card content wrapper that contains the Drupal fields
+  .card-content-wrapper {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    
+    // Style the individual fields as card components
+    .views-field {
+      margin: 0;
+      
+      // Hide field labels for cleaner look
+      .field__label,
+      .views-label {
+        display: none;
+      }
+      
+      // Image field - make it the hero
+      &.views-field-field-upcomingevent-image {
+        order: 1;
+        position: relative;
+        height: 286px;
+        overflow: hidden;
+        margin: 0;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        
+        .field-content img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          transition: transform 0.5s ease;
+        }
+      }
+      
+      // Title field
+      &.views-field-title {
+        order: 2;
+        padding: 16px 20px 8px;
+        
+        .field-content {
+          font-size: 1.25rem !important;
+          font-weight: 700 !important;
+          line-height: 1.3 !important;
+          color: #2c3e50 !important;
+          
+          a {
+            color: #2c3e50 !important;
+            text-decoration: none !important;
+            font-size: inherit !important;
+            font-weight: inherit !important;
+            line-height: inherit !important;
+            transition: color 0.2s;
+            
+            &:hover {
+              color: #B22222 !important;
+            }
+          }
+          
+          // Reset any HTML formatting that might be in titles
+          *,
+          em,
+          i,
+          strong,
+          b,
+          span,
+          div,
+          p,
+          h1,
+          h2,
+          h3,
+          h4,
+          h5,
+          h6 {
+            font-size: 1.25rem !important;
+            font-weight: 700 !important;
+            line-height: 1.3 !important;
+            color: #2c3e50 !important;
+            font-style: normal !important;
+            text-transform: none !important;
+            letter-spacing: normal !important;
+            margin: 0 !important;
+            padding: 0 !important;
+          }
+        }
+      }
+      
+      // Date fields
+      &.views-field-field-start-date,
+      &.views-field-field-end-date {
+        order: 3;
+        padding: 0 20px;
+        font-size: 0.9rem;
+        color: #B22222;
+        font-weight: 600;
+        margin-bottom: 6px;
+        
+        &::before {
+          content: '';
+          display: inline-block;
+          width: 14px;
+          height: 14px;
+          margin-right: 6px;
+          background-color: currentColor;
+          mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor'%3E%3Cpath d='M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z'/%3E%3C/svg%3E") no-repeat;
+          mask-size: contain;
+          vertical-align: middle;
+        }
+        
+        .field-content {
+          display: inline;
+        }
+      }
+      
+      // Venue field (if present)
+      &.views-field-field-upcoming-venue {
+        order: 4;
+        padding: 0 20px;
+        font-size: 0.9rem;
+        color: #6c757d;
+        margin-bottom: 8px;
+        
+        &::before {
+          content: '';
+          display: inline-block;
+          width: 14px;
+          height: 14px;
+          margin-right: 6px;
+          background-color: currentColor;
+          mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor'%3E%3Cpath d='M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z'/%3E%3C/svg%3E") no-repeat;
+          mask-size: contain;
+          vertical-align: middle;
+        }
+        
+        .field-content {
+          display: inline;
+          font-style: italic;
+        }
+      }
+      
+      // Body field (if present)
+      &.views-field-body {
+        order: 5;
+        padding: 8px 20px 16px;
+        flex-grow: 1;
+        display: block !important;
+        visibility: visible !important;
+        
+        .field-content {
+          font-size: 0.95rem !important;
+          color: #4a5568 !important;
+          line-height: 1.5;
+          display: -webkit-box !important;
+          -webkit-line-clamp: 3;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+          
+          p {
+            color: #4a5568 !important;
+            display: block !important;
+          }
+        }
+      }
+      
+      // Event type field (if present)
+      &.views-field-field-type-of-event {
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        z-index: 10;
+        
+        .field-content {
+          background: rgba(178, 34, 34, 0.95);
+          color: white;
+          padding: 6px 14px;
+          border-radius: 20px;
+          font-size: 0.75rem;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          backdrop-filter: blur(10px);
+        }
+      }
+      
+      // Any other fields go at the bottom
+      &:not(.views-field-field-upcomingevent-image):not(.views-field-title):not(.views-field-field-start-date):not(.views-field-field-end-date):not(.views-field-field-upcoming-venue):not(.views-field-body):not(.views-field-field-type-of-event) {
+        order: 10;
+        padding: 8px 20px;
+        font-size: 0.9rem;
+        color: #6c757d;
+      }
+    }
+  }
+  
+  // Hover effects
+  &:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+    
+    .views-field-field-upcomingevent-image .field-content img {
+      transform: scale(1.08);
+    }
+  }
+}
+
+// Force override any conflicting theme styles
+body .view-all-upcoming-events .views-row {
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  
+  > .field,
+  > .views-field {
+    margin: 0 !important;
+    border: none !important;
+    background: none !important;
+    
+    // Reset any theme label styling
+    .field__label,
+    .views-label {
+      font-weight: normal !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+  }
+  
+  // Extremely aggressive title reset for /all-upcoming-events page
+  .field--name-title,
+  .views-field-title {
+    .field__item,
+    .field-content {
+      a,
+      a *,
+      * {
+        font-size: 1.25rem !important;
+        font-weight: 700 !important;
+        line-height: 1.3 !important;
+        color: #2c3e50 !important;
+        font-style: normal !important;
+        text-transform: none !important;
+        letter-spacing: normal !important;
+        font-family: inherit !important;
+      }
+    }
+  }
+}
+
+// Upcoming Events Inline Block - Portrait/Leaflet Format
+// -----------------------------------------------------------------------------
+.upcoming-events-inline-block {
+  margin: 2rem 0;
+  
+  .upcoming-events-block-title {
+    text-align: center;
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #B22222;
+    margin-bottom: 2rem;
+    letter-spacing: -0.025em;
+    
+    @media (max-width: 768px) {
+      font-size: 2rem;
+    }
+  }
+  
+  .upcoming-events-block-content {
+    // 3-column grid for portrait cards
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+    
+    @media (max-width: 992px) {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.5rem;
+    }
+    
+    @media (max-width: 576px) {
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+    
+    // Individual event cards in portrait format
+    .views-row,
+    .upcoming-event-card {
+      background: #ffffff;
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+      overflow: hidden;
+      transition: all 0.3s ease;
+      border: 1px solid rgba(0, 0, 0, 0.06);
+      display: flex;
+      flex-direction: column;
+      
+      &:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.18);
+        
+        .field--name-field-upcomingevent-image img,
+        .views-field-field-upcomingevent-image img {
+          transform: scale(1.05);
+        }
+      }
+      
+      // Image field - portrait format like event leaflet
+      .field--name-field-upcomingevent-image,
+      .views-field-field-upcomingevent-image {
+        order: 1;
+        position: relative;
+        height: 400px; // Taller for portrait format
+        overflow: hidden;
+        margin: 0;
+        padding: 0;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        
+        .field__item,
+        .field-content {
+          height: 100%;
+          margin: 0;
+          padding: 0;
+          background: transparent;
+          
+          a {
+            display: block;
+            height: 100%;
+            position: relative;
+            margin: 0;
+            padding: 0;
+            background: transparent;
+          }
+          
+          img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+            margin: 0;
+            padding: 0;
+            background: transparent;
+          }
+        }
+        
+        // Fallback when no image
+        &:empty::after {
+          content: '';
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          width: 60px;
+          height: 60px;
+          background-color: rgba(255, 255, 255, 0.3);
+          mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor'%3E%3Cpath d='M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z'/%3E%3C/svg%3E") no-repeat;
+          mask-size: contain;
+        }
+      }
+      
+      // Card content area
+      .card-content {
+        padding: 1.5rem;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        
+        // Title field
+        .field--name-title,
+        .views-field-title {
+          order: 1;
+          margin-bottom: 1rem;
+          
+          .field__item,
+          .field-content {
+            font-size: 1.35rem !important;
+            font-weight: 800 !important;
+            line-height: 1.3 !important;
+            color: #2c3e50 !important;
+            
+            a {
+              color: #2c3e50 !important;
+              text-decoration: none !important;
+              font-size: inherit !important;
+              font-weight: inherit !important;
+              line-height: inherit !important;
+              transition: color 0.2s;
+              
+              &:hover {
+                color: #B22222 !important;
+              }
+            }
+          }
+        }
+        
+        // Date field with icon
+        .field--name-field-start-date,
+        .field--name-field-end-date,
+        .views-field-field-start-date,
+        .views-field-field-end-date {
+          order: 2;
+          font-size: 1rem;
+          color: #B22222;
+          font-weight: 600;
+          margin-bottom: 0.75rem;
+          display: flex;
+          align-items: center;
+          
+          &::before {
+            content: '';
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            margin-right: 8px;
+            background-color: currentColor;
+            mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor'%3E%3Cpath d='M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z'/%3E%3C/svg%3E") no-repeat;
+            mask-size: contain;
+            flex-shrink: 0;
+          }
+          
+          .field__label,
+          .views-label {
+            display: none;
+          }
+          
+          .field__item,
+          .field-content {
+            font-size: inherit;
+            color: inherit;
+            font-weight: inherit;
+          }
+        }
+        
+        // Venue field with location icon
+        .field--name-field-upcoming-venue,
+        .views-field-field-upcoming-venue {
+          order: 3;
+          font-size: 0.95rem;
+          color: #6c757d;
+          margin-bottom: 1rem;
+          display: flex;
+          align-items: flex-start;
+          line-height: 1.4;
+          
+          &::before {
+            content: '';
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            margin-right: 8px;
+            margin-top: 2px;
+            background-color: currentColor;
+            mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor'%3E%3Cpath d='M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z'/%3E%3C/svg%3E") no-repeat;
+            mask-size: contain;
+            flex-shrink: 0;
+          }
+          
+          .field__label,
+          .views-label {
+            display: none;
+          }
+          
+          .field__item,
+          .field-content {
+            flex: 1;
+            font-style: italic;
+          }
+        }
+        
+        // Body field (brief description)
+        .field--name-body,
+        .views-field-body {
+          order: 4;
+          flex-grow: 1;
+          margin-bottom: 1.5rem;
+          
+          .field__label,
+          .views-label {
+            display: none;
+          }
+          
+          .field__item,
+          .field-content {
+            font-size: 0.95rem;
+            color: #4a5568;
+            line-height: 1.5;
+            display: -webkit-box;
+            -webkit-line-clamp: 4;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            
+            p {
+              margin: 0 0 0.5rem 0;
+              color: inherit;
+              
+              &:last-child {
+                margin-bottom: 0;
+              }
+            }
+          }
+        }
+        
+        // Learn More button
+        .learn-more-button,
+        .node__links,
+        .views-field-view-node {
+          order: 10;
+          margin-top: auto;
+          
+          a {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #B22222;
+            color: white !important;
+            border-radius: 25px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s;
+            border: none;
+            
+            &:hover {
+              background: darken(#B22222, 10%);
+              transform: translateY(-2px);
+              box-shadow: 0 8px 20px rgba(178, 34, 34, 0.25);
+            }
+            
+            &::after {
+              content: ' →';
+              display: inline;
+              font-weight: normal;
+            }
+          }
+        }
+      }
+      
+      // Event type badge (if present)
+      .field--name-field-type-of-event,
+      .views-field-field-type-of-event {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        z-index: 10;
+        
+        .field__label,
+        .views-label {
+          display: none;
+        }
+        
+        .field__item,
+        .field-content {
+          background: rgba(178, 34, 34, 0.95);
+          color: white;
+          padding: 6px 14px;
+          border-radius: 20px;
+          font-size: 0.75rem;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          backdrop-filter: blur(10px);
+        }
+      }
+    }
+  }
+}

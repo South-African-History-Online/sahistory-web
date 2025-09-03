@@ -13,9 +13,11 @@ dependencies:
     - field.field.node.upcomingevent.field_type_of_event
     - field.field.node.upcomingevent.field_upcoming_venue
     - field.field.node.upcomingevent.field_upcomingevent_image
+    - image.style.max_650x650
     - node.type.upcomingevent
   module:
     - datetime
+    - file
     - image
     - text
     - user
@@ -37,25 +39,57 @@ content:
     label: inline
     settings:
       timezone_override: ''
-      format_type: medium
+      format_type: custom
+      date_format: 'j F Y'
     third_party_settings: {  }
     weight: 3
+    region: content
+  field_file_upload:
+    type: file_default
+    label: above
+    settings:
+      use_description_as_link_text: true
+    third_party_settings: {  }
+    weight: 6
+    region: content
+  field_parent:
+    type: entity_reference_label
+    label: above
+    settings:
+      link: true
+    third_party_settings: {  }
+    weight: 9
     region: content
   field_start_date:
     type: datetime_default
     label: inline
     settings:
       timezone_override: ''
-      format_type: medium
+      format_type: custom
+      date_format: 'j F Y'
     third_party_settings: {  }
     weight: 2
+    region: content
+  field_type_of_event:
+    type: text_default
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 7
+    region: content
+  field_upcoming_venue:
+    type: text_default
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 8
     region: content
   field_upcomingevent_image:
     type: image
     label: hidden
     settings:
       image_link: ''
-      image_style: ''
+      image_style: max_650x650
       image_loading:
         attribute: lazy
     third_party_settings: {  }
@@ -64,13 +98,14 @@ content:
   links:
     settings: {  }
     third_party_settings: {  }
-    weight: 100
+    weight: 5
+    region: content
+  sharing_buttons:
+    settings: {  }
+    third_party_settings: {  }
+    weight: 4
     region: content
 hidden:
   comment_node_upcomingevent: true
-  field_file_upload: true
-  field_parent: true
-  field_type_of_event: true
-  field_upcoming_venue: true
   langcode: true
   search_api_excerpt: true

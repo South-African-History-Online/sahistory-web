@@ -1,0 +1,99 @@
+{#
+/**
+ * @file
+ * Theme implementation for SAHO upcoming events block.
+ *
+ * Available variables:
+ * - events: An array of upcoming event nodes.
+ * - config: Block configuration array with display settings.
+ *
+ * @see \Drupal\saho_upcoming_events\Plugin\Block\UpcomingEventsBlock
+ *
+ * @ingroup themeable
+ */
+#}
+<div class="saho-upcoming-events-block">
+  {% if config.block_title %}
+    <div class="upcoming-events-header">
+      <h2>{{ config.block_title }}</h2>
+    </div>
+  {% endif %}
+  
+  {% if events %}
+    <div class="upcoming-events-grid">
+      {% for event in events %}
+        <article class="upcoming-event-card" data-event-id="{{ event.id }}">
+          {% if config.show_images and event.field_upcomingevent_image.0 %}
+            <div class="event-image">
+              <a href="{{ path('entity.node.canonical', {'node': event.id}) }}">
+                {% set image_uri = event.field_upcomingevent_image.0.entity.uri.value %}
+                {% set image_alt = event.field_upcomingevent_image.0.alt %}
+                <img src="{{ image_uri | image_style('upcoming_events_portrait') }}" 
+                     alt="{{ image_alt ?: event.getTitle() }}"
+                     loading="lazy">
+              </a>
+            </div>
+          {% endif %}
+          
+          <div class="event-content">
+            <h3 class="event-title">
+              <a href="{{ path('entity.node.canonical', {'node': event.id}) }}">
+                {{ event.getTitle() }}
+              </a>
+            </h3>
+            
+            <div class="event-meta">
+              {% if event.field_start_date.0 %}
+                <div class="event-date">
+                  <svg class="icon-calendar" width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                    <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/>
+                    <path d="M3.5 7a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-6 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z"/>
+                  </svg>
+                  <span>{{ event.field_start_date.0.value|date('j F Y') }}</span>
+                  {% if event.field_start_date.0.value|date('H:i') != '00:00' %}
+                    <span>at {{ event.field_start_date.0.value|date('g:i A') }}</span>
+                  {% endif %}
+                </div>
+              {% endif %}
+              
+              {% if config.show_venue and event.field_upcoming_venue.0 %}
+                <div class="event-venue">
+                  <svg class="icon-location" width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                    <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/>
+                  </svg>
+                  <span>{{ event.field_upcoming_venue.0.value|striptags|trim }}</span>
+                </div>
+              {% endif %}
+            </div>
+            
+            {% if config.show_excerpt and event.body.0 %}
+              <div class="event-excerpt">
+                {% set excerpt_text = event.body.0.value|striptags|slice(0, config.excerpt_length) %}
+                {{ excerpt_text }}
+                {% if excerpt_text|length == config.excerpt_length %}...{% endif %}
+              </div>
+            {% endif %}
+            
+            <div class="event-link">
+              <a href="{{ path('entity.node.canonical', {'node': event.id}) }}" class="read-more-link">
+                {{ 'Learn More'|t }}
+              </a>
+            </div>
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+    
+    {% if config.show_view_all_link %}
+      <div class="view-all-events">
+        <a href="/all-upcoming-events" class="view-all-link">
+          {{ 'View All Upcoming Events'|t }}
+        </a>
+      </div>
+    {% endif %}
+  {% else %}
+    <div class="no-events-message">
+      <p>{{ 'No upcoming events scheduled at this time.'|t }}</p>
+    </div>
+  {% endif %}
+</div>

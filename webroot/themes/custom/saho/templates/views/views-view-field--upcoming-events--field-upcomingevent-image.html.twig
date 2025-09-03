@@ -1,0 +1,46 @@
+{#
+/**
+ * @file
+ * Template for the upcoming event image field in upcoming events inline blocks.
+ *
+ * Uses portrait image style for event leaflet format.
+ *
+ * Available variables:
+ * - output: The raw field output from the entity.
+ * - row: The raw result object.
+ * - view: The view object.
+ * - field: The field handler object that can process the output.
+ */
+#}
+
+{%- if row._entity.field_upcomingevent_image.entity and row._entity.field_upcomingevent_image.entity.uri.value -%}
+  {% set image_entity = row._entity.field_upcomingevent_image.entity %}
+  {% set image_uri = image_entity.uri.value %}
+  {% set alt_text = row._entity.field_upcomingevent_image.alt %}
+  {% set title = row._entity.title.value %}
+  
+  {# Only apply image style if we have a valid image URI #}
+  {% if image_uri %}
+    {# Use portrait image style for inline block format #}
+    {% set styled_image_url = image_uri|image_style('upcoming_events_portrait') %}
+    
+    {# Check if this field should be linked based on view settings #}
+    {% if field.options.settings.image_link == 'content' %}
+      <a href="{{ path('entity.node.canonical', {'node': row._entity.nid.value}) }}" aria-label="View {{ title }}">
+        <img
+          src="{{ styled_image_url }}"
+          alt="{{ alt_text|default(title) }}"
+          loading="lazy"
+          decoding="async"
+        >
+      </a>
+    {% else %}
+      <img
+        src="{{ styled_image_url }}"
+        alt="{{ alt_text|default(title) }}"
+        loading="lazy"
+        decoding="async"
+      >
+    {% endif %}
+  {% endif %}
+{%- endif -%}
