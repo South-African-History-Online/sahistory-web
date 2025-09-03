@@ -107,4 +107,3 @@ echo "🔍 Verification: Check a few pages to ensure images display correctly."
 echo "🔄 If issues occur, you can restore from your database backup."
 
 exit 0
-EOF
