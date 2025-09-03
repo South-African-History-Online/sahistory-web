@@ -1,10 +1,12 @@
-# 🚀 WebP Optimization Scripts
+# 🚀 SAHO Website Scripts
 
-This directory contains all scripts and documentation for WebP image optimization on the SAHO website.
+This directory contains scripts and documentation for WebP image optimization and content management on the SAHO website.
 
 ## 📁 Directory Structure
 
 ### PHP Scripts
+
+#### WebP Optimization
 - **`clean_fake_images.php`** - Removes HTML 404 error pages saved with image extensions
 - **`comprehensive_webp_status.php`** - Detailed WebP conversion status across all subdirectories
 - **`complete_webp_conversion.php`** - Automated complete conversion system
@@ -17,6 +19,9 @@ This directory contains all scripts and documentation for WebP image optimizatio
 - **`resume_webp_conversion.php`** - Resume interrupted conversions
 - **`safe_webp_generator.php`** - Safe manual WebP generation
 
+#### Content Management
+- **`fix_image_urls_safe.php`** - Safely convert absolute image URLs to relative paths
+
 ### Shell Scripts
 - **`webp.sh`** - Main script runner with simple commands
 - **`deploy.sh`** - Deployment script for production
@@ -28,6 +33,7 @@ This directory contains all scripts and documentation for WebP image optimizatio
 - **`PRODUCTION_COMMANDS.md`** - Quick reference for production commands
 - **`PRODUCTION_QUICK_FIX.md`** - Immediate fixes for production issues
 - **`PRODUCTION_WEBP_DEPLOYMENT.md`** - Complete production deployment guide
+- **`IMAGE_URL_FIX.md`** - Safe image URL conversion guide
 
 ## 🔧 **Quick Start Commands**
 
@@ -52,18 +58,24 @@ php scripts/production_webp_audit.php
 
 ## 🎯 **Most Common Commands**
 
-### Development
+### WebP Development
 ```bash
 scripts/webp.sh status
 scripts/webp.sh clean
 scripts/webp.sh convert
 ```
 
-### Production
+### WebP Production
 ```bash
 scripts/webp.sh clean
 scripts/webp.sh audit
 vendor/bin/drush saho:webp-convert
+```
+
+### Content Management
+```bash
+# Fix absolute image URLs (safe - checks file existence)
+ddev exec php scripts/fix_image_urls_safe.php
 ```
 
 ## 📋 **Path Requirements**
