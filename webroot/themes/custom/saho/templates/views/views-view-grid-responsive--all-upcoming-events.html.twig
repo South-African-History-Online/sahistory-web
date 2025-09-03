@@ -1,0 +1,55 @@
+{#
+/**
+ * @file
+ * Template for upcoming events responsive grid display.
+ *
+ * Creates modern card layout for upcoming events using unified card system.
+ *
+ * Available variables:
+ * - attributes: HTML attributes for the wrapping element.
+ * - title: The title of this group of rows.
+ * - view: The view object.
+ * - options: The view plugin style options.
+ * - items: A list of grid items.
+ */
+#}
+
+{{ attach_library('views/views.responsive-grid') }}
+
+{%
+  set classes = [
+    'saho-cards-grid',
+    'upcoming-events-grid',
+    'views-view-responsive-grid',
+    'views-view-responsive-grid--' ~ options.alignment,
+  ]
+%}
+
+{% set responsive_grid_styles = [
+    '--views-responsive-grid--column-count:' ~ options.columns ~ ';',
+    '--views-responsive-grid--cell-min-width:' ~ options.cell_min_width ~ 'px;',
+    '--views-responsive-grid--layout-gap:' ~ options.grid_gutter ~ 'px;',
+  ]
+%}
+
+{% if title %}
+  <h3>{{ title }}</h3>
+{% endif %}
+
+<div{{ attributes.addClass(classes).setAttribute('style', responsive_grid_styles|join()) }}>
+  {% for item in items %}
+    <div class="views-view-responsive-grid__item">
+      <div class="views-view-responsive-grid__item-inner">
+        <div class="saho-card upcoming-event-card">
+          {# Extract rendered field content and wrap in card structure #}
+          {% set rendered_content = item.content|render %}
+          
+          {# Parse the fields - this is a simplified approach #}
+          <div class="card-content-wrapper">
+            {{ item.content }}
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+</div>

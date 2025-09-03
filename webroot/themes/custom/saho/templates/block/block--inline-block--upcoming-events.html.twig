@@ -1,0 +1,39 @@
+{#
+/**
+ * @file
+ * Custom inline block template for Upcoming Events block.
+ *
+ * Displays upcoming events in portrait leaflet format with proper date formatting.
+ *
+ * Available variables:
+ * - plugin_id: The ID of the block implementation.
+ * - label: The configured label of the block if visible.
+ * - configuration: A list of the block's configuration values.
+ * - content: The content of this block.
+ * - attributes: array of HTML attributes populated by modules, intended to
+ *   be added to the main container tag of this template.
+ */
+#}
+
+{%
+  set classes = [
+    'block',
+    'block-' ~ configuration.provider|clean_class,
+    'block-' ~ plugin_id|clean_class,
+    'upcoming-events-inline-block'
+  ]
+%}
+
+<div{{ attributes.addClass(classes) }}>
+  {{ title_prefix }}
+  {% if label %}
+    <h2{{ title_attributes.addClass('upcoming-events-block-title') }}>{{ label }}</h2>
+  {% endif %}
+  {{ title_suffix }}
+
+  <div class="upcoming-events-block-content">
+    {% block content %}
+      {{ content }}
+    {% endblock %}
+  </div>
+</div>

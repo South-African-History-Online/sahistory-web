@@ -204,6 +204,11 @@ class TdihBlock extends BlockBase implements ContainerFactoryPluginInterface {
     $manual_override = $this->configuration['use_manual_override'];
     $manual_entity_id = $this->configuration['manual_entity_id'];
 
+    $this->logger->notice('TDIH Block build() called. Manual override: @override, Entity ID: @id', [
+      '@override' => $manual_override ? 'true' : 'false',
+      '@id' => $manual_entity_id ?? 'none',
+    ]);
+
     $tdih_nodes = [];
 
     try {
@@ -228,9 +233,18 @@ class TdihBlock extends BlockBase implements ContainerFactoryPluginInterface {
         $month = $today->format('m');
         $day = $today->format('d');
 
+        $this->logger->notice('TDIH auto-selection: Today is @date, looking for @target', [
+          '@date' => $today->format('Y-m-d H:i:s T'),
+          '@target' => $month . '-' . $day,
+        ]);
+
         // Use our NodeFetcher to load a set of matching nodes for today's date.
         $target_date = $month . '-' . $day;
         $nodes = $this->nodeFetcher->loadPotentialEvents($target_date);
+
+        $this->logger->notice('TDIH found @count potential nodes', [
+          '@count' => count($nodes),
+        ]);
 
         // Filter nodes by exact date match and front page feature using simple
         // string operations.
@@ -370,16 +384,30 @@ class TdihBlock extends BlockBase implements ContainerFactoryPluginInterface {
    */
   protected function buildNodeItem($node) {
     try {
+      $this->logger->notice('TDIH buildNodeItem for node @nid: @title', [
+        '@nid' => $node->id(),
+        '@title' => $node->getTitle(),
+      ]);
+
       // Fetch the value from your event date field, e.g.
       // "field_this_day_in_history_3".
-      $event_timestamp = 0;
+      $event_date = NULL;
       if ($node->hasField('field_this_day_in_history_3') && !$node->get('field_this_day_in_history_3')->isEmpty()) {
         $raw_date = $node->get('field_this_day_in_history_3')->value;
+        $this->logger->notice('TDIH raw date value: @date', ['@date' => $raw_date]);
+
         if (!empty($raw_date)) {
-          // Force South African timezone for consistent TDIH functionality.
-          $dt = new \DateTime($raw_date, new \DateTimeZone('Africa/Johannesburg'));
-          $event_timestamp = $dt->getTimestamp();
+          // Create DateTime at noon to avoid timezone boundary issues.
+          // This prevents date shifting across different timezones.
+          $event_date = new \DateTime($raw_date . ' 12:00:00',
+            new \DateTimeZone('Africa/Johannesburg'));
+          $this->logger->notice('TDIH parsed DateTime: @formatted', [
+            '@formatted' => $event_date->format('j F Y'),
+          ]);
         }
+      }
+      else {
+        $this->logger->notice('TDIH node has no date field or field is empty');
       }
 
       // If there's an image field named "field_event_image," generate a URL.
@@ -416,14 +444,14 @@ class TdihBlock extends BlockBase implements ContainerFactoryPluginInterface {
       $body_text = html_entity_decode(strip_tags($node->get('body')->value));
     }
 
-    // Return a data array, including the event_date timestamp
+    // Return a data array, including the event_date DateTime object
     // and image with alt text.
     return [
       'id' => $node->id(),
       'title' => strip_tags($node->label()),
       'url' => $node->toUrl()->toString(),
       // Use this in Twig with |date filter.
-      'event_date' => $event_timestamp,
+      'event_date' => $event_date,
       'image' => $image_url ?? '',
       'image_alt' => $image_alt ?? strip_tags($node->label()),
       'body' => $body_text,
