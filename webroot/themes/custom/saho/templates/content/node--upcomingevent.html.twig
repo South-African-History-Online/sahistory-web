@@ -1,0 +1,154 @@
+{#
+/**
+ * @file
+ * Custom SAHO node template for Upcoming Event content type.
+ *
+ * Title is handled globally and not rendered here.
+ * Layout Builder is disabled — fields are output directly via Twig.
+ */
+#}
+
+{# Variable to track if sidebar has content #}
+{% set sidebar_has_content = false %}
+
+<article{{ attributes.addClass('saho-article-wrapper') }}>
+
+  <div class="saho-article-grid">
+
+    {# LEFT: Main content column #}
+    <div class="saho-main-content">
+
+      {# No feature banner or images in main content for upcoming events - images go to sidebar #}
+
+      {# Article metadata (Published/Updated dates) #}
+      <div class="saho-article-meta">
+        {% if node.getCreatedTime() %}
+          <span>Published {{ node.getCreatedTime()|date("j F Y") }}</span>
+        {% endif %}
+        {% if node.getChangedTime() != node.getCreatedTime() %}
+          <span>Updated {{ node.getChangedTime()|date("j F Y") }}</span>
+        {% endif %}
+        <div class="saho-tools-wrapper">
+          {% if citation_button %}
+            <div class="saho-citation-wrapper">
+              {{ citation_button }}
+            </div>
+          {% endif %}
+          {% if sharing_button %}
+            <div class="saho-sharing-wrapper">
+              {{ sharing_button }}
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+      {# Display event dates and venue #}
+      {% if node.field_start_date.value or node.field_end_date.value %}
+        <div class="saho-event-date" style="background-color: #f0f0f0; padding: 8px 12px; margin-bottom: 20px; display: inline-block;">
+          {% if node.field_start_date.value %}
+            <strong>Start Date:</strong> {{ node.field_start_date.value|date("j F Y") }}
+          {% endif %}
+          {% if node.field_end_date.value %}
+            <br><strong>End Date:</strong> {{ node.field_end_date.value|date("j F Y") }}
+          {% endif %}
+          {% if node.field_upcoming_venue.value %}
+            <br><strong>Venue:</strong> {{ node.field_upcoming_venue.value|striptags|trim }}
+          {% endif %}
+        </div>
+      {% endif %}
+
+      {# Main content with ID for TOC linking #}
+      <div id="event-details" class="saho-article-body">
+        {% if content.body %}
+          {# Remove the label by accessing the content directly #}
+          {{ content.body.0 }}
+        {% endif %}
+      </div>
+
+      {# Render remaining fields not already shown manually #}
+      {{ content|without(
+        'body',
+        'field_start_date',
+        'field_end_date',
+        'field_upcoming_venue',
+        'field_type_of_event',
+        'field_upcomingevent_image',
+        'field_file_upload',
+        'field_parent',
+        'comment_node_upcomingevent',
+        'sharing_buttons'
+      ) }}
+
+    </div>
+
+    {# RIGHT: Sidebar - always has content if there's an image #}
+    {% if node.field_upcomingevent_image.entity %}
+      {% set sidebar_has_content = true %}
+    {% endif %}
+    
+    {% if accordion_views is not empty %}
+      {% set sidebar_has_content = true %}
+    {% endif %}
+    
+    {% if content.field_parent is defined and content.field_parent|render|trim %}
+      {% set sidebar_has_content = true %}
+    {% endif %}
+    
+    {% if content.field_file_upload is defined and content.field_file_upload|render|trim %}
+      {% set sidebar_has_content = true %}
+    {% endif %}
+    
+    {% if content.field_type_of_event is defined and content.field_type_of_event|render|trim %}
+      {% set sidebar_has_content = true %}
+    {% endif %}
+    
+    {% if sidebar_has_content %}
+    <aside class="saho-article-sidebar">
+
+      {# Display upcoming event image if available #}
+      {% if node.field_upcomingevent_image.entity %}
+        <div class="saho-image-block">
+          {% set image_url = node.field_upcomingevent_image.entity.uri.value %}
+          {% if image_url %}
+            {% set styled_image_url = image_url|image_style('upcoming_events_front') %}
+            <img
+              src="{{ styled_image_url }}"
+              alt="{{ node.field_upcomingevent_image.alt }}"
+              class="saho-image"
+              loading="lazy"
+            >
+          {% endif %}
+        </div>
+      {% endif %}
+      
+      {# Display Event Type #}
+      {% if content.field_type_of_event %}
+        <div class="saho-event-type">
+          <h3>Type of Event</h3>
+          {{ content.field_type_of_event }}
+        </div>
+      {% endif %}
+      
+      {# Display file uploads if available #}
+      {% if content.field_file_upload %}
+        <div class="saho-file-downloads">
+          <h3>Downloads</h3>
+          {{ content.field_file_upload }}
+        </div>
+      {% endif %}
+      
+      {# Display parent field if available #}
+      {% if content.field_parent %}
+        <div class="saho-parent-reference">
+          <h3>Related</h3>
+          {{ content.field_parent }}
+        </div>
+      {% endif %}
+
+
+    </aside>
+    {% endif %}
+
+  </div>
+
+</article>

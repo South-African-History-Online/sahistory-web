@@ -1,0 +1,29 @@
+<?php
+
+/**
+ * @file
+ * Contains saho_utils.module.
+ */
+
+use Drupal\Core\Form\FormStateInterface;
+
+/**
+ * Implements hook_form_alter().
+ */
+function saho_utils_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  // Alter the exposed form for the SAHO global search view.
+  if ($form_id == 'views_exposed_form' && isset($form['#id']) && $form['#id'] == 'views-exposed-form-saho-global-search-page-1') {
+    // Customize the fulltext search field options to rename body/title labels.
+    if (isset($form['search_api_fulltext_searched_fields']) && isset($form['search_api_fulltext_searched_fields']['#options'])) {
+      $options = &$form['search_api_fulltext_searched_fields']['#options'];
+      
+      // Replace the field labels with custom names.
+      if (isset($options['body'])) {
+        $options['body'] = t('Flexible Search');
+      }
+      if (isset($options['title'])) {
+        $options['title'] = t('Strict Search');
+      }
+    }
+  }
+}

@@ -128,9 +128,12 @@
   }
 </style>
 
-{# Get URL from the title field which has link_to_entity: true #}
+{# Get URL from the entity directly #}
 {% set entity_url = '#' %}
-{% if fields.title is defined %}
+{% if row and row._entity %}
+  {% set entity_url = path('entity.node.canonical', {'node': row._entity.id()}) %}
+{% elseif fields.title is defined %}
+  {# Fallback: Extract URL from title field if it has link_to_entity: true #}
   {% set content = fields.title.content %}
   {% if content matches '/<a href="([^"]+)"/' %}
     {% set matches = content|split('href="')|last|split('"') %}

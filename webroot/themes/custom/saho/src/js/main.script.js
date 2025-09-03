@@ -198,76 +198,155 @@ document.addEventListener('DOMContentLoaded', () => {
     (offcanvasEl) => new bootstrap.Offcanvas(offcanvasEl)
   );
 
-  // Enhanced dropdown functionality for all devices
+  // Initialize Bootstrap dropdowns with proper configuration
   const dropdownElementList = [].slice.call(document.querySelectorAll('.dropdown-toggle'));
-  for (const dropdownToggleEl of dropdownElementList) {
-    const dropdown = new bootstrap.Dropdown(dropdownToggleEl, {
-      autoClose: 'outside', // Prevents closing when clicking inside dropdown
+  const dropdownList = dropdownElementList.map(function (dropdownToggleEl) {
+    return new bootstrap.Dropdown(dropdownToggleEl, {
+      autoClose: true
     });
+  });
 
-    // Handle clicks for all devices (both desktop and mobile)
-    dropdownToggleEl.addEventListener('click', function (e) {
-      const parent = this.parentNode;
-      
-      // For touch devices, handle the two-tap behavior
-      if ('ontouchstart' in document.documentElement) {
-        if (
-          parent.classList.contains('show') &&
-          this.getAttribute('href') &&
-          this.getAttribute('href') !== '#'
-        ) {
-          // If dropdown is already open and has a real href, follow the link
-          return true;
-        }
-      }
-      
-      // Always prevent default and stop propagation for dropdown toggles
-      e.preventDefault();
-      e.stopPropagation();
-      
-      // Toggle the dropdown
-      dropdown.toggle();
-    });
-    
-    // Handle keyboard accessibility
-    dropdownToggleEl.addEventListener('keydown', function (e) {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        dropdown.toggle();
-      }
+  // Citation and Share Modal Functionality
+  
+  // Initialize cite modal when shown
+  const citeModal = document.getElementById('citeModal');
+  if (citeModal) {
+    citeModal.addEventListener('shown.bs.modal', function () {
+      generateCitations();
     });
   }
 
-  // Share modal URL copy functionality
-  const copyShareUrlBtn = document.getElementById('copyShareUrl');
-  if (copyShareUrlBtn) {
-    copyShareUrlBtn.addEventListener('click', function () {
-      const shareUrlInput = document.getElementById('shareUrl');
-      if (shareUrlInput) {
-        shareUrlInput.select();
-        shareUrlInput.setSelectionRange(0, 99999); // For mobile devices
-
-        try {
-          // Copy the text to clipboard
-          document.execCommand('copy');
-
-          // Change button text temporarily to provide feedback
-          const originalText = this.textContent;
-          this.textContent = 'Copied!';
-          this.classList.add('btn-success');
-          this.classList.remove('btn-outline-secondary');
-
-          // Reset button after 2 seconds
-          setTimeout(() => {
-            this.textContent = originalText;
-            this.classList.remove('btn-success');
-            this.classList.add('btn-outline-secondary');
-          }, 2000);
-        } catch (err) {
-          // Failed to copy URL
-        }
-      }
+  // Initialize share modal when shown
+  const shareModal = document.getElementById('shareModal');
+  if (shareModal) {
+    shareModal.addEventListener('shown.bs.modal', function () {
+      initializeShareModal();
     });
+  }
+
+  // Generate citations function
+  function generateCitations() {
+    const pageTitle = document.title;
+    const pageUrl = window.location.href;
+    const siteName = "South African History Online";
+    const currentDate = new Date().toLocaleDateString();
+    const accessDate = new Date().toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
+
+    // MLA Format
+    const mlaCitation = `"${pageTitle}." ${siteName}, ${currentDate}, ${pageUrl}.`;
+    document.getElementById('citeMLA').textContent = mlaCitation;
+
+    // APA Format  
+    const apaCitation = `${pageTitle}. (${new Date().getFullYear()}). ${siteName}. Retrieved ${accessDate}, from ${pageUrl}`;
+    document.getElementById('citeAPA').textContent = apaCitation;
+
+    // Chicago Format
+    const chicagoCitation = `"${pageTitle}." ${siteName}. Accessed ${accessDate}. ${pageUrl}.`;
+    document.getElementById('citeChicago').textContent = chicagoCitation;
+  }
+
+  // Initialize share modal
+  function initializeShareModal() {
+    const pageUrl = window.location.href;
+    const pageTitle = document.title;
+    
+    // Set the URL input
+    document.getElementById('shareUrl').value = pageUrl;
+    
+    // Configure social media links
+    const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(pageUrl)}`;
+    const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(pageTitle)}&url=${encodeURIComponent(pageUrl)}`;
+    const linkedInUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(pageUrl)}`;
+    const emailUrl = `mailto:?subject=${encodeURIComponent(pageTitle)}&body=${encodeURIComponent(pageTitle + ' - ' + pageUrl)}`;
+    
+    document.getElementById('shareFacebook').href = facebookUrl;
+    document.getElementById('shareTwitter').href = twitterUrl;
+    document.getElementById('shareLinkedIn').href = linkedInUrl;
+    document.getElementById('shareEmail').href = emailUrl;
+  }
+
+  // Global functions for copy functionality
+  window.copyCitation = function(elementId) {
+    const element = document.getElementById(elementId);
+    const text = element.textContent;
+    
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(text).then(() => {
+        showCopyFeedback(elementId);
+      });
+    } else {
+      // Fallback for older browsers
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      document.body.appendChild(textarea);
+      textarea.select();
+      try {
+        document.execCommand('copy');
+        showCopyFeedback(elementId);
+      } catch (err) {
+        console.error('Failed to copy citation');
+      }
+      document.body.removeChild(textarea);
+    }
+  };
+
+  window.copyShareUrl = function() {
+    const shareUrlInput = document.getElementById('shareUrl');
+    const copyButton = shareUrlInput.nextElementSibling;
+    
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(shareUrlInput.value).then(() => {
+        const originalText = copyButton.textContent;
+        copyButton.textContent = 'Copied!';
+        copyButton.classList.remove('btn-outline-primary');
+        copyButton.classList.add('btn-success');
+        
+        setTimeout(() => {
+          copyButton.textContent = originalText;
+          copyButton.classList.remove('btn-success');
+          copyButton.classList.add('btn-outline-primary');
+        }, 2000);
+      });
+    } else {
+      // Fallback for older browsers
+      shareUrlInput.select();
+      shareUrlInput.setSelectionRange(0, 99999);
+      try {
+        document.execCommand('copy');
+        const originalText = copyButton.textContent;
+        copyButton.textContent = 'Copied!';
+        copyButton.classList.remove('btn-outline-primary');
+        copyButton.classList.add('btn-success');
+        
+        setTimeout(() => {
+          copyButton.textContent = originalText;
+          copyButton.classList.remove('btn-success');
+          copyButton.classList.add('btn-outline-primary');
+        }, 2000);
+      } catch (err) {
+        console.error('Failed to copy URL');
+      }
+    }
+  };
+
+  function showCopyFeedback(elementId) {
+    const button = document.querySelector(`#${elementId} + .btn`);
+    if (button) {
+      const originalText = button.textContent;
+      button.textContent = 'Copied!';
+      button.classList.remove('btn-outline-primary');
+      button.classList.add('btn-success');
+      
+      setTimeout(() => {
+        button.textContent = originalText;
+        button.classList.remove('btn-success');
+        button.classList.add('btn-outline-primary');
+      }, 2000);
+    }
   }
 
   // Initialize tooltips if needed
