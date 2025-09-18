@@ -1,7 +1,169 @@
 /**
- * SAHO Tools Citation & Sharing Modal Styles
- * Works with existing Bootstrap modals and provides modern styling
+ * SAHO Tools Citation & Sharing Styles - Refactored with SAHO Brand Colors
+ * Using CSS custom properties for consistent theming
+ * Improved UX with better button positioning and accessibility
  */
+
+/* Container for both buttons - positioned on the right */
+.saho-tools-wrapper {
+  display: flex;
+  gap: 0.5rem; /* Larger gap for bigger buttons */
+  align-items: center;
+  margin: 0;
+  list-style: none;
+  padding: 0;
+  margin-left: auto; /* Push to the right */
+  flex-shrink: 0; /* Prevent shrinking */
+}
+
+/* Ensure article meta container allows proper positioning */
+.saho-article-meta {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+}
+
+.saho-citation-wrapper,
+.saho-sharing-wrapper {
+  display: inline-flex;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* Remove any potential list styling and bullets from article meta */
+.saho-tools-wrapper::before,
+.saho-citation-wrapper::before,
+.saho-sharing-wrapper::before {
+  content: none !important;
+}
+
+/* Override article meta bullets for button containers */
+.saho-article-meta .saho-tools-wrapper span::before,
+.saho-article-meta .saho-citation-wrapper span::before,
+.saho-article-meta .saho-sharing-wrapper span::before,
+.saho-article-meta .saho-tools-wrapper div::before,
+.saho-article-meta .saho-citation-wrapper div::before,
+.saho-article-meta .saho-sharing-wrapper div::before {
+  content: none !important;
+  display: none !important;
+}
+
+/* Ghost button styling for Cite button - Larger for better visibility */
+.cite-button,
+button.cite-button,
+.saho-cite-btn,
+button.saho-cite-btn {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.8rem !important; /* Larger padding */
+  font-size: 0.875rem !important; /* More readable size */
+  font-weight: 500;
+  line-height: 1.3;
+  border: 1.5px solid #990000 !important; /* Thicker border for visibility */
+  border-radius: 6px !important; /* Slightly more rounded */
+  background: transparent !important; /* Ghost button */
+  color: #990000 !important; /* Red text */
+  text-decoration: none !important;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Remove bullets from button text spans */
+.cite-button span::before,
+.share-button span::before {
+  content: none !important;
+  display: none !important;
+}
+
+/* Share button with SAHO forest green - Larger for better visibility */
+.share-button,
+button.share-button,
+.saho-share-btn,
+button.saho-share-btn {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.8rem !important; /* Larger padding */
+  font-size: 0.875rem !important; /* More readable size */
+  font-weight: 500;
+  line-height: 1.3;
+  border: 1.5px solid #2d5016 !important; /* Thicker border for visibility */
+  border-radius: 6px !important; /* Slightly more rounded */
+  background: transparent !important; /* Ghost button - transparent background */
+  color: #2d5016 !important; /* Forest green text */
+  text-decoration: none !important;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Cite button hover - fills with red - Override all styles */
+.cite-button:hover,
+.cite-button:focus,
+button.cite-button:hover,
+button.cite-button:focus,
+.saho-cite-btn:hover,
+.saho-cite-btn:focus,
+button.saho-cite-btn:hover,
+button.saho-cite-btn:focus {
+  background: #990000 !important; /* Fill with SAHO red */
+  color: #ffffff !important; /* White text */
+  border-color: #990000 !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(153, 0, 0, 0.25) !important;
+  text-decoration: none !important;
+}
+
+/* Share button hover - fills with forest green - Override all styles */
+.share-button:hover,
+.share-button:focus,
+button.share-button:hover,
+button.share-button:focus,
+.saho-share-btn:hover,
+.saho-share-btn:focus,
+button.saho-share-btn:hover,
+button.saho-share-btn:focus {
+  background: #2d5016 !important; /* Fill with forest green */
+  color: #ffffff !important; /* White text */
+  border-color: #2d5016 !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(45, 80, 22, 0.25) !important;
+  text-decoration: none !important;
+}
+
+.cite-button:hover::before,
+.share-button:hover::before {
+  left: 100%;
+}
+
+.cite-button svg,
+.share-button svg {
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+  width: 15px !important; /* Larger icon size for better visibility */
+  height: 15px !important;
+}
+
+.cite-button:hover svg,
+.share-button:hover svg {
+  transform: scale(1.1);
+}
+
+/* Legacy button container support */
+.citation-share-buttons {
+  display: flex;
+  gap: 0.75rem;
+  margin: 1rem 0;
+  flex-wrap: wrap;
+  list-style: none;
+  padding: 0;
+}
 
 /* Bootstrap Modal Enhancements */
 #citation-modal,
@@ -20,75 +182,125 @@
 #sharing-modal .modal-content {
   border: none;
   border-radius: 12px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
   overflow: hidden;
+  background: #ffffff;
 }
 
-/* Enhanced Modal Headers */
-#citation-modal .modal-header,
-#sharing-modal .modal-header {
-  background: linear-gradient(135deg, #990000 0%, #b30000 100%);
-  color: white;
-  padding: 1.5rem 2rem;
+/* Modern Modal Headers - Clean and minimal */
+#citation-modal .modal-header {
+  background: #ffffff;
+  padding: 2rem 2.5rem;
   border: none;
+  border-bottom: 1px solid #e5e5e5;
   position: relative;
 }
 
-#citation-modal .modal-header::after,
+#sharing-modal .modal-header {
+  background: #ffffff;
+  padding: 2rem 2.5rem;
+  border: none;
+  border-bottom: 1px solid #e5e5e5;
+  position: relative;
+}
+
+/* Add subtle accent line under header */
+#citation-modal .modal-header::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 2.5rem;
+  width: 60px;
+  height: 3px;
+  background: #990000;
+  border-radius: 2px;
+}
+
 #sharing-modal .modal-header::after {
   content: '';
   position: absolute;
   bottom: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  left: 2.5rem;
+  width: 60px;
+  height: 3px;
+  background: #2d5016;
+  border-radius: 2px;
 }
 
-#citation-modal .modal-title,
-#sharing-modal .modal-title {
-  color: white !important;
-  font-size: 1.25rem;
+#citation-modal .modal-title {
+  color: #1a1a1a !important;
+  font-size: 1.5rem;
   font-weight: 600;
   margin: 0;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
+  font-family: "Open Sans", sans-serif;
+  letter-spacing: -0.02em;
 }
 
-/* Enhanced Close Buttons */
+#sharing-modal .modal-title {
+  color: #1a1a1a !important;
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0;
+  font-family: "Open Sans", sans-serif;
+  letter-spacing: -0.02em;
+}
+
+/* Modern Close Buttons - Clean and minimal */
 #citation-modal .btn-close,
 #sharing-modal .btn-close {
-  background: rgba(255, 255, 255, 0.1) !important;
-  border: 1px solid rgba(255, 255, 255, 0.2) !important;
-  border-radius: 8px;
-  color: white;
-  opacity: 1;
-  font-size: 1.125rem;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
+  position: absolute !important;
+  top: 1.5rem !important;
+  right: 1.5rem !important;
+  width: 32px !important;
+  height: 32px !important;
+  opacity: 0.6 !important;
+  transition: opacity 0.2s ease !important;
+  background-size: 1rem !important;
+  border: none !important;
+  border-radius: 50% !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  z-index: 10 !important;
 }
 
 #citation-modal .btn-close:hover,
-#citation-modal .btn-close:focus,
-#sharing-modal .btn-close:hover,
-#sharing-modal .btn-close:focus {
-  background: rgba(255, 255, 255, 0.2) !important;
-  border-color: rgba(255, 255, 255, 0.3) !important;
-  transform: scale(1.05);
-  opacity: 1;
-  box-shadow: none;
+#sharing-modal .btn-close:hover {
+  opacity: 1 !important;
+  background-color: rgba(0, 0, 0, 0.05) !important;
 }
 
-/* Enhanced Modal Bodies */
+/* Remove duplicate close button content - Bootstrap already provides it */
+#citation-modal .btn-close::before,
+#sharing-modal .btn-close::before {
+  content: none !important; /* Remove our custom content to avoid duplication */
+}
+
+#citation-modal .btn-close:hover,
+#citation-modal .btn-close:focus {
+  background: var(--saho-primary) !important;
+  border-color: var(--saho-primary) !important;
+  color: var(--saho-surface) !important;
+  transform: scale(1.1) rotate(90deg);
+  opacity: 1;
+  box-shadow: 0 4px 16px rgba(153, 0, 0, 0.25);
+}
+
+#sharing-modal .btn-close:hover,
+#sharing-modal .btn-close:focus {
+  background: #2d5016 !important; /* Forest green on hover */
+  border-color: #2d5016 !important;
+  color: var(--saho-surface) !important;
+  transform: scale(1.1) rotate(90deg);
+  opacity: 1;
+  box-shadow: 0 4px 16px rgba(45, 80, 22, 0.25);
+}
+
+/* Clean Modal Bodies */
 #citation-modal .modal-body,
 #sharing-modal .modal-body {
-  background: #fafbfc;
-  padding: 2rem;
+  background: #fafafa;
+  padding: 2rem 2.5rem;
+  position: relative;
 }
 
 /* Citation Format Styling */
@@ -103,81 +315,120 @@
 }
 
 .citation-format-header h6 {
-  color: #990000 !important;
-  font-weight: 700;
-  margin-bottom: 1rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  color: #3a4a64 !important;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
   font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  position: relative;
+  padding-left: 0;
 }
 
+/* Modern Citation Cards */
 .citation-text,
 .apa-citation,
 .harvard-citation,
 .oxford-citation {
-  background: white !important;
-  border: 1px solid #e1e5e9 !important;
+  background: #ffffff !important;
+  border: 1px solid #e5e5e5 !important;
   border-radius: 8px;
   padding: 1.5rem !important;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+  margin-bottom: 1.5rem;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.apa-citation {
   border-left: 3px solid #990000 !important;
 }
 
+.harvard-citation {
+  border-left: 3px solid #b88a2e !important;
+}
+
+.oxford-citation {
+  border-left: 3px solid #3a4a64 !important;
+}
+
+.citation-text:hover,
+.apa-citation:hover,
+.harvard-citation:hover,
+.oxford-citation:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+}
+
 .citation-content {
-  font-size: 0.9rem;
-  line-height: 1.6;
-  color: #374151;
-  margin-bottom: 1rem;
+  font-size: 0.9375rem;
+  line-height: 1.7;
+  color: var(--saho-text-primary);
+  margin-bottom: 1.25rem;
   word-wrap: break-word;
   overflow-wrap: break-word;
+  font-family: 'Georgia', serif;
 }
 
 .citation-actions {
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid #e1e5e9;
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--saho-border-light);
+  display: flex;
+  justify-content: flex-end;
 }
 
-/* Enhanced Copy Buttons */
-.copy-individual,
-.copy-all-citations,
-.url-copy-btn,
-.copy-url-btn,
-.copy-btn {
-  background: linear-gradient(135deg, #990000 0%, #b30000 100%) !important;
-  color: white !important;
+/* Modern Copy Buttons - Citation Modal */
+#citation-modal .copy-individual,
+#citation-modal .copy-all-citations,
+#citation-modal .copy-btn {
+  background: #990000 !important;
+  color: #ffffff !important;
   border: none !important;
-  padding: 0.75rem 1.5rem;
+  padding: 0.625rem 1.25rem;
   border-radius: 6px;
-  font-size: 0.875rem;
-  font-weight: 600;
+  font-size: 0.813rem;
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
-  box-shadow: 0 2px 4px rgba(153, 0, 0, 0.2);
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
 }
 
-.copy-individual:hover,
-.copy-individual:focus,
-.copy-all-citations:hover,
-.copy-all-citations:focus,
-.url-copy-btn:hover,
-.url-copy-btn:focus,
-.copy-url-btn:hover,
-.copy-url-btn:focus,
-.copy-btn:hover,
-.copy-btn:focus {
-  background: linear-gradient(135deg, #7a0000 0%, #990000 100%) !important;
-  color: white !important;
+/* Modern Copy Buttons - Sharing Modal */
+#sharing-modal .url-copy-btn,
+#sharing-modal .copy-url-btn,
+#sharing-modal .copy-btn {
+  background: #2d5016 !important;
+  color: #ffffff !important;
+  border: none !important;
+  padding: 0.625rem 1.25rem;
+  border-radius: 6px;
+  font-size: 0.813rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+#citation-modal .copy-individual:hover,
+#citation-modal .copy-all-citations:hover,
+#citation-modal .copy-btn:hover {
+  background: #7a0000 !important;
   transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(153, 0, 0, 0.25);
-  text-decoration: none;
+  box-shadow: 0 4px 8px rgba(153, 0, 0, 0.2);
+}
+
+#sharing-modal .url-copy-btn:hover,
+#sharing-modal .copy-url-btn:hover,
+#sharing-modal .copy-btn:hover {
+  background: #1a3009 !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(45, 80, 22, 0.2);
 }
 
 .copy-individual:active,
@@ -190,17 +441,22 @@
 }
 
 .copied {
-  background: linear-gradient(135deg, #28a745 0%, #34ce57 100%) !important;
-  color: white !important;
-  box-shadow: 0 2px 4px rgba(40, 167, 69, 0.2);
+  background: linear-gradient(135deg, var(--saho-accent) 0%, #d4af37 100%) !important;
+  color: var(--saho-text-primary) !important;
+  box-shadow: 0 4px 16px rgba(184, 138, 46, 0.4);
+  transform: translateY(-3px) scale(1.05);
+  border-color: var(--saho-accent) !important;
 }
 
-/* Modal Footer Enhancements */
+/* Clean Modal Footer */
 #citation-modal .modal-footer,
 #sharing-modal .modal-footer {
-  background: #f8f9fa;
-  border-top: 1px solid #e1e5e9;
-  padding: 1.5rem 2rem;
+  background: #ffffff;
+  border-top: 1px solid #e5e5e5;
+  padding: 1.5rem 2.5rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
 }
 
 .modal-footer .copy-all-citations {
@@ -208,34 +464,23 @@
   font-size: 1rem;
 }
 
-/* Sharing Modal Specific Styles */
+/* Modern Sharing URL Section */
 .url-copy-section {
-  background: white;
-  border: 1px solid #e1e5e9;
+  background: #ffffff;
+  border: 1px solid #e5e5e5;
   border-radius: 8px;
   padding: 1.5rem;
   margin-bottom: 2rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+  position: relative;
 }
 
 .url-copy-section h6 {
-  color: #990000 !important;
-  font-weight: 700;
+  color: #3a4a64 !important;
+  font-weight: 600;
   margin-bottom: 1rem;
   text-transform: uppercase;
-  letter-spacing: 0.8px;
+  letter-spacing: 0.05em;
   font-size: 0.875rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.url-copy-section h6::before {
-  content: '';
-  width: 3px;
-  height: 14px;
-  background: linear-gradient(135deg, #990000 0%, #b30000 100%);
-  border-radius: 2px;
 }
 
 .url-input-group {
@@ -246,29 +491,29 @@
 .url-input,
 #page-url-input {
   flex: 1;
-  padding: 0.75rem !important;
-  border: 1px solid #e1e5e9 !important;
+  padding: 0.75rem 1rem !important;
+  border: 1px solid #e5e5e5 !important;
   border-radius: 6px;
-  background: #f8f9fa !important;
+  background: #fafafa !important;
   font-size: 0.875rem;
   font-family: ui-monospace, 'SF Mono', 'Monaco', monospace;
-  color: #374151 !important;
+  color: #1a1a1a !important;
   transition: all 0.2s ease;
 }
 
 .url-input:focus,
 #page-url-input:focus {
-  border-color: #990000 !important;
-  background: white !important;
+  border-color: #2d5016 !important;
+  background: #ffffff !important;
   outline: none !important;
-  box-shadow: 0 0 0 3px rgba(153, 0, 0, 0.1) !important;
+  box-shadow: 0 0 0 3px rgba(45, 80, 22, 0.1) !important;
 }
 
-/* Sharing Options */
+/* Modern Sharing Options Grid */
 .sharing-options {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1rem;
+  gap: 0.75rem;
   margin-top: 1.5rem;
 }
 
@@ -278,24 +523,24 @@
   justify-content: center;
   gap: 0.75rem;
   padding: 1rem;
-  background: white;
-  border: 1px solid #e1e5e9;
+  background: #ffffff;
+  border: 1px solid #e5e5e5;
   border-radius: 8px;
   text-decoration: none !important;
-  color: #374151 !important;
+  color: #3a4a64 !important;
   font-size: 0.875rem;
-  font-weight: 600;
+  font-weight: 500;
   transition: all 0.2s ease;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+  position: relative;
 }
 
 .share-option:hover,
 .share-option:focus {
-  background: linear-gradient(135deg, #990000 0%, #b30000 100%) !important;
-  border-color: #990000 !important;
-  color: white !important;
+  background: #2d5016 !important;
+  border-color: #2d5016 !important;
+  color: #ffffff !important;
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(153, 0, 0, 0.15);
+  box-shadow: 0 4px 12px rgba(45, 80, 22, 0.2);
   text-decoration: none !important;
 }
 
@@ -311,40 +556,94 @@
 
 /* Mobile Responsiveness */
 @media (max-width: 768px) {
+  /* Good sized buttons on mobile for better touch targets */
+  .cite-button,
+  .share-button {
+    padding: 0.5rem 0.85rem !important;
+    font-size: 0.9rem !important;
+    gap: 0.4rem;
+  }
+
+  .cite-button svg,
+  .share-button svg {
+    width: 16px !important;
+    height: 16px !important;
+  }
+
+  .citation-share-buttons {
+    justify-content: center;
+    gap: 0.5rem;
+  }
+
+  /* On mobile, stack meta info vertically but keep buttons inline */
+  .saho-article-meta {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 0.75rem !important;
+  }
+
+  .saho-tools-wrapper {
+    margin-left: 0 !important;
+    align-self: flex-end; /* Align to right on mobile */
+    margin-top: 0;
+  }
+}
+
+/* Tablet Responsiveness */
+@media (max-width: 1024px) and (min-width: 769px) {
+  .saho-tools-wrapper {
+    gap: 0.45rem;
+  }
+  
+  .cite-button,
+  .share-button {
+    padding: 0.4rem 0.7rem !important;
+    font-size: 0.85rem !important;
+  }
+  
+  .cite-button svg,
+  .share-button svg {
+    width: 14px !important;
+    height: 14px !important;
+  }
+}
+
   #citation-modal .modal-dialog,
   #sharing-modal .modal-dialog {
     max-width: 95%;
-    margin: 0.5rem auto;
+    margin: 0.75rem auto;
   }
 
   #citation-modal .modal-header,
   #sharing-modal .modal-header {
-    padding: 1.25rem 1.5rem;
+    padding: 1.5rem 1.75rem;
   }
 
   #citation-modal .modal-header .modal-title,
   #sharing-modal .modal-header .modal-title {
-    font-size: 1.125rem;
+    font-size: 1.25rem;
   }
 
   #citation-modal .modal-body,
   #sharing-modal .modal-body {
-    padding: 1.5rem;
+    padding: 2rem 1.75rem;
   }
 
   .citation-text,
   .apa-citation,
   .harvard-citation,
   .oxford-citation {
-    padding: 1.25rem !important;
+    padding: 1.5rem !important;
   }
 
   .sharing-options {
     grid-template-columns: 1fr;
+    gap: 0.75rem;
   }
 
   .url-input-group {
     flex-direction: column;
+    gap: 1rem;
   }
 
   .copy-individual,
@@ -353,11 +652,29 @@
   .copy-url-btn {
     width: 100%;
     justify-content: center;
+    padding: 1rem 1.5rem;
+  }
+
+  .url-copy-section {
+    padding: 1.5rem;
   }
 }
 
 /* Small Mobile */
 @media (max-width: 480px) {
+  .cite-button,
+  .share-button {
+    flex: 1;
+    justify-content: center;
+    padding: 1rem;
+    font-size: 0.8125rem;
+  }
+
+  .citation-share-buttons {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
   #citation-modal .modal-dialog,
   #sharing-modal .modal-dialog {
     max-width: 100%;
@@ -374,34 +691,98 @@
     flex-direction: column;
   }
 
+  #citation-modal .modal-header,
+  #sharing-modal .modal-header {
+    padding: 1.25rem 1.5rem;
+    border-radius: 0;
+  }
+
   #citation-modal .modal-body,
   #sharing-modal .modal-body {
     flex: 1;
     overflow-y: auto;
+    padding: 1.5rem;
+  }
+
+  #citation-modal .modal-footer,
+  #sharing-modal .modal-footer {
+    padding: 1.5rem;
+    border-radius: 0;
+  }
+
+  .url-copy-section {
     padding: 1.25rem;
+    margin-bottom: 1.5rem;
   }
 }
 
 /* Focus and Accessibility */
-#citation-modal *:focus,
-#sharing-modal *:focus {
-  outline: 2px solid #990000;
+.cite-button:focus-visible,
+.share-button:focus-visible {
+  outline: 3px solid var(--saho-accent);
   outline-offset: 2px;
+  box-shadow: 0 0 0 6px var(--saho-primary-alpha-25);
+}
+
+#citation-modal *:focus-visible,
+#sharing-modal *:focus-visible {
+  outline: 2px solid var(--saho-accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .cite-button,
+  .share-button,
+  .copy-individual,
+  .copy-all-citations,
+  .url-copy-btn,
+  .copy-url-btn,
+  .share-option {
+    transition: none;
+  }
+
+  .cite-button::before,
+  .share-button::before,
+  .share-option::before {
+    display: none;
+  }
 }
 
 /* Print Styles */
 @media print {
+  .cite-button,
+  .share-button {
+    display: none !important;
+  }
+
   #citation-modal,
   #sharing-modal {
     display: none !important;
+  }
+
+  .citation-text,
+  .apa-citation,
+  .harvard-citation,
+  .oxford-citation {
+    box-shadow: none;
+    border: 1px solid #000;
+    background: white;
   }
 }
 
 /* High Contrast Mode Support */
 @media (prefers-contrast: high) {
+  .cite-button,
+  .share-button {
+    border-width: 3px;
+    font-weight: 700;
+  }
+
   #citation-modal .modal-header,
   #sharing-modal .modal-header {
-    border: 2px solid #990000;
+    border: 3px solid var(--saho-primary);
   }
 
   .copy-individual,
@@ -409,6 +790,78 @@
   .url-copy-btn,
   .copy-url-btn,
   .share-option:hover {
-    border: 2px solid #990000 !important;
+    border: 3px solid var(--saho-primary) !important;
+    font-weight: 700;
   }
+
+  .citation-text,
+  .apa-citation,
+  .harvard-citation,
+  .oxford-citation {
+    border-width: 2px !important;
+    border-left-width: 6px !important;
+  }
+}
+
+/* Dark mode support (future-proofing) */
+@media (prefers-color-scheme: dark) {
+  .cite-button,
+  .share-button {
+    background: var(--saho-secondary);
+    color: var(--saho-surface);
+    border-color: var(--saho-accent);
+  }
+
+  .cite-button:hover,
+  .share-button:hover {
+    background: var(--saho-accent);
+    color: var(--saho-text-primary);
+  }
+}
+
+/* Bootstrap Modal Backdrop Override - Modern neutral theme */
+.modal-backdrop {
+  background-color: rgba(0, 0, 0, 0.5) !important; /* Neutral black with 50% opacity */
+  backdrop-filter: blur(8px) !important;
+}
+
+.modal-backdrop.fade {
+  opacity: 0 !important;
+}
+
+.modal-backdrop.show {
+  opacity: 1 !important;
+}
+
+/* Force override any Bootstrap defaults */
+body.modal-open .modal-backdrop {
+  background-color: rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Modal animations and transitions */
+.modal.fade .modal-dialog {
+  transform: scale(0.95) translateY(-20px);
+  opacity: 0;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.modal.show .modal-dialog {
+  transform: scale(1) translateY(0);
+  opacity: 1;
+}
+
+/* Add entrance animation */
+@keyframes modalSlideIn {
+  from {
+    transform: translateY(-30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.modal.show .modal-content {
+  animation: modalSlideIn 0.3s ease-out;
 }

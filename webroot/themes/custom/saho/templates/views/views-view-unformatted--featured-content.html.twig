@@ -1,0 +1,36 @@
+{#
+/**
+ * @file
+ * Theme override for unformatted rows in the featured content view.
+ *
+ * This template renders each featured content item as a modern card.
+ *
+ * Available variables:
+ * - title: The title of this group of rows. May be empty.
+ * - rows: A list of the view's row items.
+ *   - attributes: The row's HTML attributes.
+ *   - content: The row's content.
+ * - view: The view object.
+ * - default_row_class: A boolean indicating if default row classes should be used.
+ */
+#}
+
+{% if title %}
+  <h3 class="featured-section-title">{{ title }}</h3>
+{% endif %}
+
+<div class="featured-cards-grid">
+  {% for row in rows %}
+    {%
+      set row_classes = [
+        default_row_class ? 'views-row',
+        'featured-card-item',
+      ]
+    %}
+    <div{{ row.attributes.addClass(row_classes) }}>
+      <div class="modern-card">
+        {{ row.content }}
+      </div>
+    </div>
+  {% endfor %}
+</div>

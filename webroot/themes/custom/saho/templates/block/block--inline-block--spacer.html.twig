@@ -1,23 +1,34 @@
 {#
 /**
  * @file
- * Template for the Spacer Block with predefined heights.
+ * Spacer Block Template - SDC Version
+ * Uses SAHO Spacer component for consistent spacing
+ * 
+ * Drupal 11 SDC Integration
  */
 #}
 
-{# Map height classes #}
-{% set height_classes = {
-  'Small (20px)': 'spacer-small',
-  'Medium (40px)': 'spacer-medium',
-  'Large (60px)': 'spacer-large'
+{{ attach_library('saho/saho-spacer') }}
+
+{# Map legacy height values to SDC component sizes #}
+{% set height_mapping = {
+  'Small (20px)': 'small',
+  'Medium (40px)': 'medium', 
+  'Large (60px)': 'large'
 } %}
 
 {# Get the height value from the field #}
 {% set height_value = content.field_height.0['#markup'] ?? 'Medium (40px)' %}
-{% set height_class = height_classes[height_value] ?? 'spacer-medium' %}
+{% set spacer_size = height_mapping[height_value] ?? 'medium' %}
 
-{# Ensure contextual attributes are preserved #}
-<div {{ attributes.addClass('spacer-block', height_class).setAttribute('data-block-id', content['#block_content'].id()) }}>
+{# Preserve contextual editing #}
+<div {{ attributes.addClass('spacer-block').setAttribute('data-block-id', content['#block_content'].id()) }}>
   {{ title_suffix.contextual_links }}
-  {# Render spacer block #}
+  
+  {# Use SAHO Spacer SDC Component #}
+  {% include 'saho:saho-spacer' with {
+    'size': spacer_size,
+    'aria_hidden': true,
+    'background': 'none'
+  } %}
 </div>

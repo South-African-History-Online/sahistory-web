@@ -78,7 +78,10 @@
                 // Initialize the modal if it's not already
                 if (!this.modal) {
                     try {
-                        this.modal = new bootstrap.Modal(modalElement);
+                        this.modal = new bootstrap.Modal(modalElement, {
+                            keyboard: true, // Allow ESC key to close
+                            backdrop: true  // Allow clicking outside to close
+                        });
                     } catch (error) {
                     }
                 }
@@ -86,9 +89,10 @@
                 // Show the modal
                 try {
                     this.modal.show();
-                    // Initialize copy buttons after modal is shown
+                    // Initialize copy buttons and close functionality after modal is shown
                     setTimeout(() => {
                         this.initializeCopyButtons($(modalElement));
+                        this.initializeCloseButton($(modalElement));
                     }, 100);
                 } catch (error) {
                     // Fall back to jQuery if Bootstrap API fails
@@ -491,89 +495,52 @@
             const $modal = $(modalElement);
 
             // Ensure the close button (X) is visible in the top right corner
-            const $closeButton = $modal.find('.btn-close');
+            let $closeButton = $modal.find('.btn-close');
             if ($closeButton.length === 0) {
                 // If no close button exists, add one
-                $modal.find('.modal-header').append('<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">&times;</button>');
-            } else {
-                // Make sure it's visible and styled correctly
-                $closeButton.css(
-                    {
-                        'display': 'block',
-                        'position': 'absolute',
-                        'right': '1rem',
-                        'top': '1rem',
-                        'font-size': '1.5rem',
-                        'font-weight': 'bold',
-                        'line-height': '1',
-                        'color': '#000',
-                        'opacity': '0.5',
-                        'background': 'transparent',
-                        'border': '0',
-                        'padding': '0.25rem 0.5rem'
-                    }
-                ).html('&times;');
+                $closeButton = $('<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">×</button>');
+                $modal.find('.modal-header').append($closeButton);
             }
-
-            // Explicitly add a click handler to the close button
-            $closeButton.off('click').on(
-                'click',
-                function (e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    Drupal.sahoCitation.hideModalWithjQuery($modal);
-                    return FALSE;
-                }
-            );
+            
+            // Ensure close button text is always visible
+            $closeButton.html('×');
+            
+            // Explicitly set up the close button functionality
+            $closeButton.off('click.citationClose').on('click.citationClose', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                Drupal.sahoCitation.hideModalWithjQuery($modal);
+                return false;
+            });
 
             // Add necessary classes to show the modal
             $modal.addClass('show').css('display', 'block').attr('aria-modal', 'true').removeAttr('aria-hidden');
 
-            // Add backdrop
-            $('body').addClass('modal-open').append('<div class="modal-backdrop fade show"></div>');
+            // Add backdrop with SAHO red color
+            var $backdrop = $('<div class="modal-backdrop fade"></div>');
+            $backdrop.css({
+                'background-color': 'rgba(153, 0, 0, 0.4)',
+                'backdrop-filter': 'blur(4px)'
+            });
+            $('body').addClass('modal-open').append($backdrop);
+            // Trigger reflow before adding show class for animation
+            $backdrop[0].offsetHeight;
+            $backdrop.addClass('show');
 
             // Remove any existing event handlers to prevent duplicates
-            $modal.find('[data-bs-dismiss="modal"]').off('click');
+            $modal.find('[data-bs-dismiss="modal"], .btn-close').off('click');
             $('.modal-backdrop').off('click');
             $(document).off('keydown.citationModal');
             $modal.find('.copy-citation').off('click');
             $modal.find('.btn-copy-citation').off('click');
 
-            // Enhance the close button visibility with better styling - use text instead of SVG
-            $modal.find('.btn-close').css(
-                {
-                    'display': 'block',
-                    'position': 'absolute',
-                    'right': '1rem',
-                    'top': '1rem',
-                    'font-size': '2rem',
-                    'font-weight': 'bold',
-                    'line-height': '1',
-                    'color': '#fff',
-                    'opacity': '1',
-                    'background-color': '#dc3545',
-                    'border-radius': '50%',
-                    'width': '2rem',
-                    'height': '2rem',
-                    'text-align': 'center',
-                    'padding': '0',
-                    'border': '2px solid white',
-                    'box-shadow': '0 2px 5px rgba(0, 0, 0, 0.3)',
-                    'z-index': '1060',
-                    'cursor': 'pointer'
-                }
-            ).html('×');
-
-            // Handle close button clicks with a more specific selector
-            $modal.find('button[data-bs-dismiss="modal"], .btn-close').on(
-                'click',
-                function (e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    Drupal.sahoCitation.hideModalWithjQuery($modal);
-                    return FALSE;
-                }
-            );
+            // Additional event handler setup for all dismiss elements
+            $modal.find('[data-bs-dismiss="modal"]').off('click.citationDismiss').on('click.citationDismiss', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                Drupal.sahoCitation.hideModalWithjQuery($modal);
+                return false;
+            });
 
             // Handle ESC key
             $(document).on(
@@ -642,6 +609,46 @@
 
             // Initialize the new copy all button
             this.initializeCopyAllButton($modal);
+            
+            // Initialize close button functionality
+            this.initializeCloseButton($modal);
+        },
+        
+        /**
+         * Initialize close button functionality.
+         *
+         * @param {jQuery} $modal
+         *   The jQuery modal object.
+         */
+        initializeCloseButton: function ($modal) {
+            const self = this;
+            
+            // Ensure close button exists and is functional
+            let $closeButton = $modal.find('.btn-close');
+            if ($closeButton.length === 0) {
+                $closeButton = $('<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">×</button>');
+                $modal.find('.modal-header').prepend($closeButton);
+            }
+            
+            // Ensure the × is visible
+            if ($closeButton.html().trim() === '') {
+                $closeButton.html('×');
+            }
+            
+            // Set up click handler
+            $closeButton.off('click.citationClose').on('click.citationClose', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // Try Bootstrap API first if available
+                if (self.modal && typeof self.modal.hide === 'function') {
+                    self.modal.hide();
+                } else {
+                    // Fall back to jQuery
+                    self.hideModalWithjQuery($modal);
+                }
+                return false;
+            });
         },
 
         /**
@@ -660,7 +667,7 @@
             $('body').removeClass('modal-open');
 
             // Remove event handlers
-            $modal.find('[data-bs-dismiss="modal"]').off('click');
+            $modal.find('[data-bs-dismiss="modal"], .btn-close').off('click');
             $('.modal-backdrop').off('click');
             $(document).off('keydown.citationModal');
             $modal.find('[data-bs-toggle="tab"]').off('click');
@@ -893,5 +900,153 @@
 
         }
     };
+
+    /**
+     * Fix Tools dropdown functionality in header.
+     */
+    Drupal.behaviors.sahoToolsDropdown = {
+        attach: function (context, settings) {
+            // Force manual dropdown implementation for reliable functionality
+            once('sahoToolsDropdown', '#toolsDropdown', context).forEach(
+                function (element) {
+                    console.log('Initializing Tools dropdown for element:', element);
+                    const $dropdown = $(element);
+                    
+                    // Always use manual dropdown to ensure it works
+                    Drupal.sahoCitation.initializeManualDropdown($dropdown);
+                }
+            );
+            
+            // Also try with a more generic selector in case ID doesn't work
+            once('sahoToolsDropdownGeneric', '.dropdown-toggle', context).forEach(
+                function (element) {
+                    if ($(element).text().trim().includes('Tools') || $(element).find('.bi-tools').length > 0) {
+                        console.log('Found Tools dropdown via generic selector:', element);
+                        const $dropdown = $(element);
+                        Drupal.sahoCitation.initializeManualDropdown($dropdown);
+                    }
+                }
+            );
+            
+            // Initialize dropdown item click handlers
+            once('sahoDropdownItems', '.dropdown-item[data-citation-trigger]', context).forEach(
+                function (element) {
+                    $(element).on('click', function(e) {
+                        e.preventDefault();
+                        Drupal.sahoCitation.openCitationModal();
+                        // Close the dropdown
+                        $('.dropdown-menu.show').removeClass('show');
+                        $('.dropdown-toggle[aria-expanded="true"]').attr('aria-expanded', 'false');
+                    });
+                }
+            );
+            
+            once('sahoDropdownItemsSharing', '.dropdown-item[data-sharing-trigger]', context).forEach(
+                function (element) {
+                    $(element).on('click', function(e) {
+                        e.preventDefault();
+                        Drupal.sahoSharing.openSharingModal();
+                        // Close the dropdown
+                        $('.dropdown-menu.show').removeClass('show');
+                        $('.dropdown-toggle[aria-expanded="true"]').attr('aria-expanded', 'false');
+                    });
+                }
+            );
+        }
+    };
+
+    /**
+     * Manual dropdown toggle functionality.
+     */
+    Drupal.sahoCitation.initializeManualDropdown = function($dropdown) {
+        console.log('Setting up manual dropdown for:', $dropdown[0]);
+        
+        // Find the dropdown menu - try multiple selectors
+        let $menu = $dropdown.siblings('.dropdown-menu');
+        if ($menu.length === 0) {
+            $menu = $dropdown.parent().find('.dropdown-menu');
+        }
+        if ($menu.length === 0) {
+            $menu = $dropdown.next('.dropdown-menu');
+        }
+        
+        console.log('Found dropdown menu:', $menu[0], 'Menu length:', $menu.length);
+        
+        if ($menu.length === 0) {
+            console.error('No dropdown menu found for Tools dropdown');
+            return;
+        }
+        
+        // Remove any existing handlers to prevent duplicates
+        $dropdown.off('click.manualDropdown');
+        
+        $dropdown.on('click.manualDropdown', function(e) {
+            console.log('Tools dropdown clicked');
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // Toggle the dropdown
+            const isOpen = $menu.hasClass('show');
+            console.log('Dropdown currently open:', isOpen);
+            
+            if (isOpen) {
+                $menu.removeClass('show');
+                $dropdown.attr('aria-expanded', 'false');
+                console.log('Closed dropdown');
+            } else {
+                // Close other dropdowns first
+                $('.dropdown-menu.show').removeClass('show');
+                $('.dropdown-toggle[aria-expanded="true"]').attr('aria-expanded', 'false');
+                
+                // Open this dropdown
+                $menu.addClass('show');
+                $dropdown.attr('aria-expanded', 'true');
+                console.log('Opened dropdown');
+            }
+        });
+        
+        // Close dropdown when clicking outside
+        $(document).off('click.dropdownClose').on('click.dropdownClose', function(e) {
+            if ($dropdown[0] && $menu[0] && 
+                !$dropdown[0].contains(e.target) && 
+                !$menu[0].contains(e.target)) {
+                $menu.removeClass('show');
+                $dropdown.attr('aria-expanded', 'false');
+            }
+        });
+        
+        // Close dropdown when pressing ESC
+        $(document).off('keydown.dropdownEsc').on('keydown.dropdownEsc', function(e) {
+            if (e.key === 'Escape') {
+                $menu.removeClass('show');
+                $dropdown.attr('aria-expanded', 'false');
+            }
+        });
+        
+        console.log('Manual dropdown initialized successfully');
+    };
+
+    // Additional fallback - direct initialization when document is ready
+    $(document).ready(function() {
+        console.log('Document ready - checking for Tools dropdown');
+        
+        // Wait a bit for other scripts to load
+        setTimeout(function() {
+            const $toolsDropdown = $('#toolsDropdown');
+            if ($toolsDropdown.length > 0) {
+                console.log('Found Tools dropdown, initializing directly');
+                Drupal.sahoCitation.initializeManualDropdown($toolsDropdown);
+            } else {
+                console.log('Tools dropdown not found by ID, trying class selector');
+                $('.dropdown-toggle').each(function() {
+                    const $this = $(this);
+                    if ($this.text().includes('Tools') || $this.find('.bi-tools').length > 0) {
+                        console.log('Found Tools dropdown by content, initializing');
+                        Drupal.sahoCitation.initializeManualDropdown($this);
+                    }
+                });
+            }
+        }, 1000);
+    });
 
 })(jQuery, Drupal, drupalSettings, once);

@@ -1,0 +1,84 @@
+# Drupal 11 Single Directory Component (SDC) Definition
+# SAHO Citation Button - Academic citation utility with heritage branding
+
+'$schema': https://git.drupalcode.org/project/drupal/-/raw/11.0.x/core/modules/sdc/src/metadata.schema.json
+
+name: SAHO Citation Button
+machine_name: saho_citation_button
+description: 'Academic citation button with SAHO heritage styling for scholarly referencing.'
+status: stable
+group: Utilities
+category: Academic
+
+props:
+  type: object
+  properties:
+    title:
+      type: string
+      title: Button Text
+      description: Text displayed on the button
+      default: "Cite This Page"
+      examples:
+        - "Cite This Page"
+        - "Academic Citation"
+        - "Reference This Article"
+    
+    variant:
+      type: string
+      title: Button Variant
+      description: Visual style variant
+      enum:
+        - primary
+        - secondary
+        - outline
+        - minimal
+      default: primary
+    
+    size:
+      type: string
+      title: Button Size
+      description: Size of the citation button
+      enum:
+        - small
+        - medium
+        - large
+      default: medium
+    
+    show_icon:
+      type: boolean
+      title: Show Citation Icon
+      description: Whether to display the citation quote icon
+      default: true
+    
+    position:
+      type: string
+      title: Button Position
+      description: Position context for styling
+      enum:
+        - inline
+        - toolbar
+        - floating
+      default: inline
+    
+    modal_target:
+      type: string
+      title: Modal Target ID
+      description: ID of the citation modal to trigger
+      default: "citation-modal"
+    
+    accessibility:
+      type: object
+      title: Accessibility Options
+      properties:
+        aria_label:
+          type: string
+          title: ARIA Label
+          description: Screen reader label
+        description:
+          type: string
+          title: Button Description
+          description: Additional context for screen readers
+
+libraryDependencies:
+  - saho/saho-citation-button
+  - saho/saho.colors

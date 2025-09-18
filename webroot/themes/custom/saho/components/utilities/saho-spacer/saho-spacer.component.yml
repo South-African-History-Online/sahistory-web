@@ -1,0 +1,78 @@
+# Drupal 11 Single Directory Component (SDC) Definition
+# SAHO Spacer Component - Utility for consistent spacing
+
+'$schema': https://git.drupalcode.org/project/drupal/-/raw/11.0.x/core/modules/sdc/src/metadata.schema.json
+
+name: SAHO Spacer
+machine_name: saho_spacer
+description: 'Utility component for consistent vertical spacing between content sections.'
+status: stable
+group: Utilities
+category: Layout
+
+props:
+  type: object
+  properties:
+    size:
+      type: string
+      title: Spacer Size
+      description: Predefined spacing sizes following SAHO design system
+      enum:
+        - xs
+        - small
+        - medium
+        - large
+        - xl
+        - xxl
+      default: medium
+      examples:
+        - small
+        - large
+    
+    custom_height:
+      type: string
+      title: Custom Height
+      description: Custom CSS height value (overrides size)
+      examples:
+        - "40px"
+        - "2rem"
+        - "10vh"
+    
+    responsive:
+      type: object
+      title: Responsive Spacing
+      description: Different spacing for different screen sizes
+      properties:
+        mobile:
+          type: string
+          title: Mobile Size
+          enum: [xs, small, medium, large, xl, xxl]
+        tablet:
+          type: string  
+          title: Tablet Size
+          enum: [xs, small, medium, large, xl, xxl]
+        desktop:
+          type: string
+          title: Desktop Size
+          enum: [xs, small, medium, large, xl, xxl]
+    
+    aria_hidden:
+      type: boolean
+      title: Hide from Screen Readers
+      description: Whether to hide this spacer from assistive technologies
+      default: true
+    
+    background:
+      type: string
+      title: Background Color
+      description: Optional background color for visual separation
+      enum:
+        - none
+        - light
+        - primary
+        - secondary
+        - accent
+      default: none
+
+libraryDependencies:
+  - saho/saho-spacer

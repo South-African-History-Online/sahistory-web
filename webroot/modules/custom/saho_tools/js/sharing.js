@@ -49,7 +49,10 @@
                 // Initialize the modal if it's not already
                 if (!this.modal) {
                     try {
-                        this.modal = new bootstrap.Modal(modalElement);
+                        this.modal = new bootstrap.Modal(modalElement, {
+                            keyboard: true, // Allow ESC key to close
+                            backdrop: true  // Allow clicking outside to close
+                        });
                     } catch (error) {
                     }
                 }
@@ -57,6 +60,11 @@
                 // Show the modal
                 try {
                     this.modal.show();
+                    // Initialize close button functionality after modal is shown
+                    setTimeout(() => {
+                        this.initializeCloseButton($(modalElement));
+                        this.initializeUrlCopy();
+                    }, 100);
                 } catch (error) {
                     // Fall back to jQuery if Bootstrap API fails
                     this.showModalWithjQuery(modalElement);
@@ -79,51 +87,50 @@
             const $modal = $(modalElement);
 
             // Ensure the close button (X) is visible in the top right corner
-            const $closeButton = $modal.find('.btn-close');
+            let $closeButton = $modal.find('.btn-close');
             if ($closeButton.length === 0) {
                 // If no close button exists, add one
-                $modal.find('.modal-header').append('<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">&times;</button>');
-            } else {
-                // Make sure it's visible and styled correctly
-                $closeButton.css(
-                    {
-                        'display': 'block',
-                        'position': 'absolute',
-                        'right': '1rem',
-                        'top': '1rem',
-                        'font-size': '1.5rem',
-                        'font-weight': 'bold',
-                        'line-height': '1',
-                        'color': '#000',
-                        'opacity': '0.5',
-                        'background': 'transparent',
-                        'border': '0',
-                        'padding': '0.25rem 0.5rem'
-                    }
-                ).html('&times;');
+                $closeButton = $('<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">×</button>');
+                $modal.find('.modal-header').append($closeButton);
             }
+            
+            // Ensure close button text is always visible
+            $closeButton.html('×');
+            
+            // Set up close button click handler
+            $closeButton.off('click.sharingClose').on('click.sharingClose', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                Drupal.sahoSharing.hideModalWithjQuery($modal);
+                return false;
+            });
 
             // Add necessary classes to show the modal
             $modal.addClass('show').css('display', 'block').attr('aria-modal', 'true').removeAttr('aria-hidden');
 
-            // Add backdrop
-            $('body').addClass('modal-open').append('<div class="modal-backdrop fade show"></div>');
+            // Add backdrop with SAHO red color
+            var $backdrop = $('<div class="modal-backdrop fade"></div>');
+            $backdrop.css({
+                'background-color': 'rgba(153, 0, 0, 0.4)',
+                'backdrop-filter': 'blur(4px)'
+            });
+            $('body').addClass('modal-open').append($backdrop);
+            // Trigger reflow before adding show class for animation
+            $backdrop[0].offsetHeight;
+            $backdrop.addClass('show');
 
             // Remove any existing event handlers to prevent duplicates
-            $modal.find('[data-bs-dismiss="modal"]').off('click');
+            $modal.find('[data-bs-dismiss="modal"], .btn-close').off('click');
             $('.modal-backdrop').off('click');
             $(document).off('keydown.sharingModal');
 
-            // Handle close button clicks
-            $modal.find('[data-bs-dismiss="modal"]').on(
-                'click',
-                function (e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    Drupal.sahoSharing.hideModalWithjQuery($modal);
-                    return FALSE;
-                }
-            );
+            // Handle all dismiss elements
+            $modal.find('[data-bs-dismiss="modal"]').off('click.sharingDismiss').on('click.sharingDismiss', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                Drupal.sahoSharing.hideModalWithjQuery($modal);
+                return false;
+            });
 
             // Handle ESC key
             $(document).on(
@@ -145,6 +152,46 @@
 
             // Initialize URL copy functionality
             this.initializeUrlCopy();
+            
+            // Initialize close button
+            this.initializeCloseButton($modal);
+        },
+        
+        /**
+         * Initialize close button functionality.
+         *
+         * @param {jQuery} $modal
+         *   The jQuery modal object.
+         */
+        initializeCloseButton: function ($modal) {
+            const self = this;
+            
+            // Ensure close button exists and is functional
+            let $closeButton = $modal.find('.btn-close');
+            if ($closeButton.length === 0) {
+                $closeButton = $('<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">×</button>');
+                $modal.find('.modal-header').prepend($closeButton);
+            }
+            
+            // Ensure the × is visible
+            if ($closeButton.html().trim() === '') {
+                $closeButton.html('×');
+            }
+            
+            // Set up click handler
+            $closeButton.off('click.sharingClose').on('click.sharingClose', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // Try Bootstrap API first if available
+                if (self.modal && typeof self.modal.hide === 'function') {
+                    self.modal.hide();
+                } else {
+                    // Fall back to jQuery
+                    self.hideModalWithjQuery($modal);
+                }
+                return false;
+            });
         },
 
         /**
@@ -163,7 +210,7 @@
             $('body').removeClass('modal-open');
 
             // Remove event handlers
-            $modal.find('[data-bs-dismiss="modal"]').off('click');
+            $modal.find('[data-bs-dismiss="modal"], .btn-close').off('click');
             $('.modal-backdrop').off('click');
             $(document).off('keydown.sharingModal');
         },

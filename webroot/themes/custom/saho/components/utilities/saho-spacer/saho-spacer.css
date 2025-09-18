@@ -1,0 +1,209 @@
+/**
+ * SAHO Spacer Component Styles
+ * Drupal 11 SDC - Consistent spacing utility
+ * Uses SAHO design system spacing scale
+ */
+
+/* Base Spacer */
+.saho-spacer {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  flex-shrink: 0; /* Prevents compression in flex containers */
+}
+
+/* Size Variants - Following SAHO design system scale */
+.saho-spacer--xs {
+  height: 0.5rem; /* 8px */
+}
+
+.saho-spacer--small {
+  height: 1.25rem; /* 20px - Original "Small (20px)" */
+}
+
+.saho-spacer--medium {
+  height: 2.5rem; /* 40px - Original "Medium (40px)" */
+}
+
+.saho-spacer--large {
+  height: 3.75rem; /* 60px - Original "Large (60px)" */
+}
+
+.saho-spacer--xl {
+  height: 5rem; /* 80px */
+}
+
+.saho-spacer--xxl {
+  height: 7.5rem; /* 120px */
+}
+
+/* Background Variants */
+.saho-spacer--bg-light {
+  background-color: var(--saho-surface-alt);
+  border-top: 1px solid var(--saho-border-light);
+  border-bottom: 1px solid var(--saho-border-light);
+}
+
+.saho-spacer--bg-primary {
+  background-color: var(--saho-primary-alpha-10);
+}
+
+.saho-spacer--bg-secondary {
+  background-color: rgba(58, 74, 100, 0.1);
+}
+
+.saho-spacer--bg-accent {
+  background-color: var(--saho-accent-alpha-10);
+}
+
+/* Responsive Variants */
+
+/* Mobile First - Base sizes apply to mobile */
+@media (max-width: 767px) {
+  .saho-spacer--mobile-xs {
+    height: 0.5rem !important;
+  }
+  .saho-spacer--mobile-small {
+    height: 1rem !important;
+  }
+  .saho-spacer--mobile-medium {
+    height: 1.5rem !important;
+  }
+  .saho-spacer--mobile-large {
+    height: 2rem !important;
+  }
+  .saho-spacer--mobile-xl {
+    height: 3rem !important;
+  }
+  .saho-spacer--mobile-xxl {
+    height: 4rem !important;
+  }
+}
+
+/* Tablet */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .saho-spacer--tablet-xs {
+    height: 0.75rem !important;
+  }
+  .saho-spacer--tablet-small {
+    height: 1.5rem !important;
+  }
+  .saho-spacer--tablet-medium {
+    height: 2rem !important;
+  }
+  .saho-spacer--tablet-large {
+    height: 3rem !important;
+  }
+  .saho-spacer--tablet-xl {
+    height: 4rem !important;
+  }
+  .saho-spacer--tablet-xxl {
+    height: 6rem !important;
+  }
+}
+
+/* Desktop */
+@media (min-width: 1024px) {
+  .saho-spacer--desktop-xs {
+    height: 0.5rem !important;
+  }
+  .saho-spacer--desktop-small {
+    height: 1.25rem !important;
+  }
+  .saho-spacer--desktop-medium {
+    height: 2.5rem !important;
+  }
+  .saho-spacer--desktop-large {
+    height: 3.75rem !important;
+  }
+  .saho-spacer--desktop-xl {
+    height: 5rem !important;
+  }
+  .saho-spacer--desktop-xxl {
+    height: 7.5rem !important;
+  }
+}
+
+/* Accessibility */
+.saho-spacer[aria-hidden="true"] {
+  /* Ensures spacers are not announced by screen readers */
+}
+
+/* Print Styles */
+@media print {
+  .saho-spacer {
+    height: 0.5rem !important; /* Minimal spacing in print */
+    background: none !important;
+    border: none !important;
+  }
+
+  /* Hide large spacers in print to save space */
+  .saho-spacer--xl,
+  .saho-spacer--xxl {
+    height: 1rem !important;
+  }
+}
+
+/* Legacy Compatibility Classes */
+/* For backward compatibility with existing spacer usage */
+.spacer-small {
+  @extend .saho-spacer--small;
+}
+
+.spacer-medium {
+  @extend .saho-spacer--medium;
+}
+
+.spacer-large {
+  @extend .saho-spacer--large;
+}
+
+/* Utility Classes for Quick Use */
+.saho-mt-spacer-small {
+  margin-top: 1.25rem;
+}
+.saho-mt-spacer-medium {
+  margin-top: 2.5rem;
+}
+.saho-mt-spacer-large {
+  margin-top: 3.75rem;
+}
+
+.saho-mb-spacer-small {
+  margin-bottom: 1.25rem;
+}
+.saho-mb-spacer-medium {
+  margin-bottom: 2.5rem;
+}
+.saho-mb-spacer-large {
+  margin-bottom: 3.75rem;
+}
+
+/* Debug Mode - Enable with .saho-spacer-debug class on parent */
+.saho-spacer-debug .saho-spacer {
+  background: repeating-linear-gradient(
+    90deg,
+    transparent,
+    transparent 10px,
+    rgba(255, 0, 0, 0.1) 10px,
+    rgba(255, 0, 0, 0.1) 11px
+  );
+  border: 1px dashed rgba(255, 0, 0, 0.3);
+  position: relative;
+}
+
+.saho-spacer-debug .saho-spacer::after {
+  content: "SPACER (" attr(class) ")";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 10px;
+  color: rgba(255, 0, 0, 0.7);
+  font-family: monospace;
+  white-space: nowrap;
+  pointer-events: none;
+}

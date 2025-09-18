@@ -69,16 +69,6 @@
     // Add classes and data attributes
     $link.addClass('saho-url-truncated');
     $link.attr('data-full-url', linkText);
-    $link.attr('title', 'Full URL: ' + linkText + ' (Click to visit, Ctrl+Click to copy)');
-    
-    // Add click-to-copy functionality (Ctrl+Click)
-    $link.on('click', function (e) {
-      if (e.ctrlKey || e.metaKey) {
-        e.preventDefault();
-        copyToClipboard(linkText);
-        showCopyNotification($link);
-      }
-    });
 
     // Add keyboard accessibility
     $link.on('keydown', function (e) {

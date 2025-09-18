@@ -1,0 +1,219 @@
+{#
+/**
+ * @file
+ * Theme override for the featured content view.
+ * 
+ * Clean layout with hero section, then "More to Explore" with sidebar navigation.
+ */
+#}
+
+{{ attach_library('saho/featured.content.modern') }}
+
+<div class="view-featured-content">
+  
+  {# Hero Section - Featured Articles #}
+  <section class="featured-hero-section mb-5">
+    <div class="container">
+      <div class="saho-section-title-wrapper">
+        <h1 class="saho-section-title">Featured Articles</h1>
+        <div class="saho-section-title-accent saho-bg-deep-heritage-red"></div>
+      </div>
+      <p class="lead mb-5">Explore featured content from South African History Online, showcasing important articles, biographies, and places.</p>
+      
+      {# Hero Cards - First 3 featured items #}
+      {% if rows %}
+        <div class="row saho-landing-grid" id="hero-grid">
+          {% for row in rows|slice(0, 3) %}
+            <div class="col-lg-4 mb-4">
+              <div class="saho-grid-item">
+                {{ row.content }}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    </div>
+  </section>
+  
+  {# More to Explore Section #}
+  <section class="more-to-explore-section">
+    <div class="container">
+      <h2 class="h3 mb-4">More to Explore</h2>
+      
+      <div class="row">
+        {# Sidebar Navigation #}
+        <div class="col-lg-3 mb-4 mb-lg-0">
+          <div class="saho-landing-sidebar p-3 rounded shadow-sm">
+            <div class="saho-sidebar-header saho-bg-primary text-white p-3 rounded-top mb-3">
+              <h3 class="h6 m-0">Browse Categories</h3>
+            </div>
+            
+            <div class="saho-landing-categories">
+              <div class="saho-category-grid">
+                <a href="#" class="saho-category-item active" data-target="all-featured">
+                  <div class="saho-category-icon">
+                    <i class="fas fa-star"></i>
+                  </div>
+                  <div class="saho-category-name">All Featured</div>
+                  <div class="saho-category-count">{{ rows|length }}</div>
+                </a>
+                
+                <a href="#" class="saho-category-item" data-target="staff-picks">
+                  <div class="saho-category-icon">
+                    <i class="fas fa-medal"></i>
+                  </div>
+                  <div class="saho-category-name">Staff Picks</div>
+                  <div class="saho-category-count" id="staff-picks-count">-</div>
+                </a>
+                
+                <a href="#" class="saho-category-item" data-target="most-read">
+                  <div class="saho-category-icon">
+                    <i class="fas fa-fire"></i>
+                  </div>
+                  <div class="saho-category-name">Most Read</div>
+                  <div class="saho-category-count" id="most-read-count">-</div>
+                </a>
+                
+                <a href="#" class="saho-category-item" data-target="africa-featured">
+                  <div class="saho-category-icon">
+                    <i class="fas fa-globe-africa"></i>
+                  </div>
+                  <div class="saho-category-name">Africa Featured</div>
+                  <div class="saho-category-count">-</div>
+                </a>
+                
+                <a href="#" class="saho-category-item" data-target="places">
+                  <div class="saho-category-icon">
+                    <i class="fas fa-map-marker-alt"></i>
+                  </div>
+                  <div class="saho-category-name">Places</div>
+                  <div class="saho-category-count">-</div>
+                </a>
+                
+                <a href="#" class="saho-category-item" data-target="timelines">
+                  <div class="saho-category-icon">
+                    <i class="fas fa-clock"></i>
+                  </div>
+                  <div class="saho-category-name">Timelines</div>
+                  <div class="saho-category-count">-</div>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        {# Main Content Area #}
+        <div class="col-lg-9">
+          
+          {# All Featured Content Section #}
+          <div class="featured-content-section active" id="all-featured">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+              <h3 class="h4 mb-0 saho-text-primary">All Featured Content</h3>
+              <select class="form-select form-select-sm w-auto" id="sort-all">
+                <option value="recent">Most Recent</option>
+                <option value="title">Title A-Z</option>
+                <option value="type">Content Type</option>
+              </select>
+            </div>
+            
+            {% if rows %}
+              <div class="row saho-landing-grid" id="all-featured-grid">
+                {% for row in rows %}
+                  <div class="col-lg-6 mb-4">
+                    <div class="saho-grid-item">
+                      {{ row.content }}
+                    </div>
+                  </div>
+                {% endfor %}
+              </div>
+            {% else %}
+              <div class="alert alert-info">
+                No featured content available.
+              </div>
+            {% endif %}
+          </div>
+          
+          {# Staff Picks Section #}
+          <div class="featured-content-section" id="staff-picks" style="display: none;">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+              <h3 class="h4 mb-0 saho-text-primary">Staff Picks</h3>
+              <span class="badge bg-warning text-dark">
+                <i class="fas fa-star me-1"></i>Editor's Choice
+              </span>
+            </div>
+            
+            <div class="row saho-landing-grid" id="staff-picks-content">
+              <div class="col-12 text-center py-5">
+                <div class="spinner-border saho-text-primary" role="status">
+                  <span class="visually-hidden">Loading staff picks...</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {# Most Read Section #}
+          <div class="featured-content-section" id="most-read" style="display: none;">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+              <h3 class="h4 mb-0 saho-text-primary">Most Read</h3>
+              <span class="badge bg-danger">
+                <i class="fas fa-fire me-1"></i>Trending
+              </span>
+            </div>
+            
+            <div class="row saho-landing-grid" id="most-read-content">
+              <div class="col-12 text-center py-5">
+                <div class="spinner-border saho-text-primary" role="status">
+                  <span class="visually-hidden">Loading most read content...</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {# Other Category Sections #}
+          <div class="featured-content-section" id="africa-featured" style="display: none;">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+              <h3 class="h4 mb-0 saho-text-deep-heritage-red">Africa Featured</h3>
+              <span class="badge bg-success">Continental Stories</span>
+            </div>
+            <div class="row" id="africa-featured-content">
+              <div class="col-12 text-center py-5">
+                <div class="spinner-border saho-text-primary" role="status">
+                  <span class="visually-hidden">Loading content...</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="featured-content-section" id="places" style="display: none;">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+              <h3 class="h4 mb-0 saho-text-deep-heritage-red">Featured Places</h3>
+              <span class="badge bg-info">Historic Locations</span>
+            </div>
+            <div class="row" id="places-content">
+              <div class="col-12 text-center py-5">
+                <div class="spinner-border saho-text-primary" role="status">
+                  <span class="visually-hidden">Loading content...</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="featured-content-section" id="timelines" style="display: none;">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+              <h3 class="h4 mb-0 saho-text-deep-heritage-red">Timeline Features</h3>
+              <span class="badge bg-secondary">Chronological Events</span>
+            </div>
+            <div class="row" id="timelines-content">
+              <div class="col-12 text-center py-5">
+                <div class="spinner-border saho-text-primary" role="status">
+                  <span class="visually-hidden">Loading content...</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+        </div>
+      </div>
+    </div>
+  </section>
+</div>

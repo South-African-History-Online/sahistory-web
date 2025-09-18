@@ -1,0 +1,132 @@
+# Drupal 11 Single Directory Component (SDC) Definition
+# SAHO Card Component - Reusable content card with heritage branding
+
+'$schema': https://git.drupalcode.org/project/drupal/-/raw/11.0.x/core/modules/sdc/src/metadata.schema.json
+
+name: SAHO Card
+machine_name: saho_card
+description: 'Reusable card component with SAHO heritage branding for displaying content teasers, articles, and media.'
+status: stable
+group: Content
+category: Display
+
+props:
+  type: object
+  properties:
+    title:
+      type: string
+      title: Card Title
+      description: Main heading for the card
+      examples:
+        - "Nelson Mandela Biography"
+        - "The June 16, 1976 Soweto Uprising"
+    
+    content:
+      type: string
+      title: Card Content  
+      description: Main body content or summary text
+      examples:
+        - "Nelson Mandela was a South African activist..."
+    
+    image:
+      type: object
+      title: Card Image
+      description: Image object with URL and alt text
+      properties:
+        url:
+          type: string
+          format: uri
+          title: Image URL
+        alt:
+          type: string
+          title: Alt Text
+          description: Descriptive alt text for accessibility
+      examples:
+        - url: "/sites/default/files/mandela-portrait.jpg"
+          alt: "Portrait of Nelson Mandela"
+    
+    url:
+      type: string
+      format: uri
+      title: Link URL
+      description: URL for the card link destination
+      examples:
+        - "/biographies/nelson-mandela"
+    
+    variant:
+      type: string
+      title: Card Variant
+      description: Visual style variant for different contexts
+      enum:
+        - primary
+        - secondary
+        - accent
+        - highlight
+      default: primary
+    
+    size:
+      type: string  
+      title: Card Size
+      description: Size variant for different layouts
+      enum:
+        - small
+        - medium
+        - large
+      default: medium
+    
+    content_type:
+      type: string
+      title: Content Type
+      description: Type of content being displayed (for badges/icons)
+      examples:
+        - biography
+        - place
+        - event
+        - article
+      default: article
+    
+    metadata:
+      type: object
+      title: Card Metadata
+      description: Additional information like dates, authors, etc.
+      properties:
+        date:
+          type: string
+          title: Date
+          description: Last updated or published date
+        author:
+          type: string
+          title: Author
+          description: Content author
+        category:
+          type: string
+          title: Category
+          description: Content category
+        featured:
+          type: boolean
+          title: Featured
+          description: Whether this is featured content
+          default: false
+        staff_pick:
+          type: boolean
+          title: Staff Pick
+          description: Whether this is an editor's choice
+          default: false
+
+  required:
+    - title
+
+libraryDependencies:
+  - saho/saho-card
+
+# Drupal 11 SDC slots for flexible content insertion
+slots:
+  card_header:
+    title: Card Header
+    description: Optional header content above the main content
+  card_footer:
+    title: Card Footer  
+    description: Optional footer content below the main content
+  card_badge:
+    title: Card Badge
+    description: Optional badge or status indicator

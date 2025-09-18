@@ -1,0 +1,164 @@
+# Drupal 11 Single Directory Component (SDC) Definition
+# SAHO Featured Grid Component - Layout for displaying featured content
+
+'$schema': https://git.drupalcode.org/project/drupal/-/raw/11.0.x/core/modules/sdc/src/metadata.schema.json
+
+name: SAHO Featured Grid
+machine_name: saho_featured_grid
+description: 'Grid layout component for displaying featured content with category sidebar navigation using SAHO heritage design.'
+status: stable
+group: Layout
+category: Display
+
+props:
+  type: object
+  properties:
+    title:
+      type: string
+      title: Grid Title
+      description: Main title for the featured content section
+      default: "Featured Content"
+      examples:
+        - "Featured Articles"
+        - "Staff Picks"
+        - "Most Popular Content"
+    
+    description:
+      type: string
+      title: Description
+      description: Optional description text for the featured content
+      examples:
+        - "Discover the stories that shaped South Africa"
+    
+    items:
+      type: array
+      title: Featured Items
+      description: Array of content items to display in the grid
+      items:
+        type: object
+        properties:
+          id:
+            type: string
+            title: Item ID
+          title:
+            type: string
+            title: Item Title
+          content:
+            type: string
+            title: Item Content
+          url:
+            type: string
+            format: uri
+            title: Item URL
+          image:
+            type: object
+            properties:
+              url:
+                type: string
+                format: uri
+              alt:
+                type: string
+          content_type:
+            type: string
+            title: Content Type
+            enum:
+              - biography
+              - place
+              - event
+              - article
+          metadata:
+            type: object
+            properties:
+              date:
+                type: string
+              author:
+                type: string
+              category:
+                type: string
+              featured:
+                type: boolean
+              staff_pick:
+                type: boolean
+        required:
+          - id
+          - title
+    
+    layout:
+      type: string
+      title: Grid Layout
+      description: Grid layout style
+      enum:
+        - default
+        - hero-first
+        - masonry
+        - equal-height
+      default: default
+    
+    columns:
+      type: string
+      title: Grid Columns
+      description: Number of columns per row
+      enum:
+        - "2"
+        - "3"
+        - "4"
+      default: "2"
+    
+    show_sidebar:
+      type: boolean
+      title: Show Category Sidebar
+      description: Whether to display the category navigation sidebar
+      default: true
+    
+    categories:
+      type: array
+      title: Categories
+      description: Available categories for filtering
+      items:
+        type: object
+        properties:
+          id:
+            type: string
+            title: Category ID
+          name:
+            type: string
+            title: Category Name  
+          icon:
+            type: string
+            title: FontAwesome Icon Class
+          count:
+            type: integer
+            title: Item Count
+        required:
+          - id
+          - name
+    
+    variant:
+      type: string
+      title: Color Variant
+      description: SAHO heritage color theme
+      enum:
+        - primary
+        - secondary
+        - accent
+        - highlight
+      default: primary
+
+  required:
+    - items
+
+libraryDependencies:
+  - saho/saho-featured-grid
+  - saho/saho-card
+
+# Drupal 11 SDC slots
+slots:
+  hero_content:
+    title: Hero Content
+    description: Optional hero section content above the grid
+  sidebar_extra:
+    title: Sidebar Extra
+    description: Additional sidebar content below categories
+  grid_actions:
+    title: Grid Actions
+    description: Action buttons or controls for the grid

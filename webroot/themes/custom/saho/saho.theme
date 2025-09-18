@@ -1004,3 +1004,44 @@ function saho_create_webp_image($source_path, $webp_path) {
     return FALSE;
   }
 }
+
+/**
+ * Implements hook_preprocess_views_view().
+ * Add preprocessing for featured content view.
+ */
+function saho_preprocess_views_view_featured_content(&$variables) {
+  $view = $variables['view'];
+  
+  // Add specific preprocessing for featured content view
+  if ($view->id() == 'featured_content' && $view->current_display == 'page_1') {
+    // Get staff picks count
+    $database = \Drupal::database();
+    
+    try {
+      $staff_picks_query = $database->select('node__field_staff_picks', 'sp');
+      $staff_picks_query->join('node_field_data', 'n', 'sp.entity_id = n.nid');
+      $staff_picks_query->condition('sp.field_staff_picks_value', 1);
+      $staff_picks_query->condition('sp.deleted', 0);
+      $staff_picks_query->condition('n.status', 1);
+      $staff_picks_count = $staff_picks_query->countQuery()->execute()->fetchField();
+      
+      $variables['staff_picks_count'] = $staff_picks_count;
+      
+      // Get most read count from statistics if available
+      if (\Drupal::moduleHandler()->moduleExists('statistics')) {
+        $most_read_query = $database->select('node_counter', 'nc');
+        $most_read_query->join('node_field_data', 'n', 'nc.nid = n.nid');
+        $most_read_query->condition('nc.totalcount', 50, '>'); // Articles with more than 50 views
+        $most_read_query->condition('n.status', 1);
+        $most_read_count = $most_read_query->countQuery()->execute()->fetchField();
+        
+        $variables['most_read_count'] = $most_read_count;
+      } else {
+        $variables['most_read_count'] = 0;
+      }
+    } catch (Exception $e) {
+      $variables['staff_picks_count'] = 0;
+      $variables['most_read_count'] = 0;
+    }
+  }
+}

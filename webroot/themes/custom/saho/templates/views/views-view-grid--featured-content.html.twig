@@ -1,0 +1,178 @@
+{#
+/**
+ * @file
+ * Theme override for grid view of featured content.
+ *
+ * Available variables:
+ * - options: The grid plugin options.
+ * - items: A list of row/column data or column/row data.
+ * - attributes: The container's HTML attributes.
+ * - title: The optional title from the Views UI.
+ * - view: The view object.
+ */
+#}
+
+{# Use the same modern cards grid from the landing pages #}
+{% set grid_classes = [
+  'saho-cards-grid',
+  'featured-modern-grid'
+] %}
+
+<div{{ attributes.addClass(grid_classes) }}>
+  {% for row in items %}
+    {% for column in row.content %}
+      {% if column.content %}
+        {# Extract node from column content for better card rendering #}
+        {% set node = false %}
+        {% set content_type = 'Featured' %}
+        {% set title = false %}
+        {% set body = false %}
+        {% set image = false %}
+        {% set url = false %}
+        {% set date = false %}
+        
+        {# Try to extract node entity from content #}
+        {% if column.content['#row'] is defined %}
+          {% set node = column.content['#row']._entity %}
+        {% elseif column.content['#node'] is defined %}
+          {% set node = column.content['#node'] %}
+        {% endif %}
+        
+        {# Get node data if available #}
+        {% if node %}
+          {% set title = node.label() %}
+          {% set content_type = node.bundle()|capitalize|replace({'_': ' '}) %}
+          {% set url = path('entity.node.canonical', {'node': node.id()}) %}
+          {% set date = node.getChangedTime()|date('j F Y') %}
+          
+          {# Get body/synopsis #}
+          {% if node.hasField('field_synopsis') and not node.get('field_synopsis').isEmpty() %}
+            {% set body = node.get('field_synopsis').value %}
+          {% elseif node.hasField('body') and not node.get('body').isEmpty() %}
+            {% set body = node.get('body').value %}
+          {% endif %}
+          
+          {# Check for image #}
+          {% set image_field = false %}
+          {% set image_fields = [
+            'field_article_image',
+            'field_image', 
+            'field_bio_pic',
+            'field_place_image',
+            'field_event_image',
+            'field_archive_image'
+          ] %}
+          
+          {% for field_name in image_fields %}
+            {% if not image_field and node.hasField(field_name) and not node.get(field_name).isEmpty() %}
+              {% set image_field = field_name %}
+            {% endif %}
+          {% endfor %}
+        {% endif %}
+        
+        <div class="col">
+          <a href="{{ url ?: '#' }}" class="saho-card-link" aria-label="View {{ content_type|lower }} details">
+            <div class="saho-card saho-card--{{ content_type|lower|replace({' ': '-'}) }}">
+              
+              {# Card Image Area #}
+              <div class="saho-card-image">
+                {% if node and image_field %}
+                  {% set file_entity = node.get(image_field).entity %}
+                  {% if file_entity %}
+                    {% set image_url = file_url(file_entity.uri.value) %}
+                    <img src="{{ image_url }}" alt="{{ title }}" class="img-fluid w-100 h-100" style="object-fit: cover;">
+                  {% else %}
+                    {% include 'featured-placeholder.twig' with {'content_type': content_type} %}
+                  {% endif %}
+                {% else %}
+                  {# Placeholder based on content type #}
+                  <div class="saho-card-image--placeholder">
+                    {% if 'biography' in content_type|lower %}
+                      <i class="fas fa-user"></i>
+                    {% elseif 'article' in content_type|lower %}
+                      <i class="fas fa-newspaper"></i>
+                    {% elseif 'event' in content_type|lower %}
+                      <i class="fas fa-calendar"></i>
+                    {% elseif 'place' in content_type|lower %}
+                      <i class="fas fa-map-marker-alt"></i>
+                    {% elseif 'archive' in content_type|lower %}
+                      <i class="fas fa-archive"></i>
+                    {% else %}
+                      <i class="fas fa-star"></i>
+                    {% endif %}
+                  </div>
+                {% endif %}
+                
+                {# Card Badge #}
+                <div class="saho-card-badge">{{ content_type }}</div>
+                
+                {# Check for special badges #}
+                {% if node %}
+                  {% set is_staff_pick = false %}
+                  {% set is_featured = false %}
+                  
+                  {% if node.hasField('field_staff_picks') and not node.get('field_staff_picks').isEmpty() %}
+                    {% if node.get('field_staff_picks').value == 1 %}
+                      {% set is_staff_pick = true %}
+                    {% endif %}
+                  {% endif %}
+                  
+                  {% if node.hasField('field_home_page_feature') and not node.get('field_home_page_feature').isEmpty() %}
+                    {% if node.get('field_home_page_feature').value == 1 %}
+                      {% set is_featured = true %}
+                    {% endif %}
+                  {% endif %}
+                  
+                  {% if is_staff_pick or is_featured %}
+                    <div class="saho-card-featured-badge">
+                      {% if is_staff_pick %}
+                        <span class="badge bg-warning text-dark">
+                          <i class="fas fa-star me-1"></i>Staff Pick
+                        </span>
+                      {% endif %}
+                      {% if is_featured %}
+                        <span class="badge bg-primary">
+                          <i class="fas fa-home me-1"></i>Featured
+                        </span>
+                      {% endif %}
+                    </div>
+                  {% endif %}
+                {% endif %}
+              </div>
+              
+              {# Card Content #}
+              <div class="saho-card-content">
+                {# Title #}
+                <div class="saho-card-title">
+                  {{ title ?: 'Featured Content' }}
+                </div>
+                
+                {# Date subtitle #}
+                {% if date %}
+                  <div class="saho-card-subtitle">{{ date }}</div>
+                {% endif %}
+                
+                {# Description #}
+                {% if body %}
+                  <div class="saho-card-description">
+                    {{ body|striptags|trim|slice(0, 120) ~ (body|striptags|trim|length > 120 ? '...' : '') }}
+                  </div>
+                {% endif %}
+                
+                {# Button in footer #}
+                <div class="saho-card-footer">
+                  <span class="saho-card-button">
+                    Read more
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                      <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/>
+                    </svg>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </a>
+        </div>
+      {% endif %}
+    {% endfor %}
+  {% endfor %}
+</div>

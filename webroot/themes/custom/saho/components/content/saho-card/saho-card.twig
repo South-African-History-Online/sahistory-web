@@ -1,0 +1,174 @@
+{#
+/**
+ * @file
+ * SAHO Card Component Template
+ * 
+ * Drupal 11 Single Directory Component (SDC)
+ * Reusable card for displaying content with SAHO heritage branding
+ *
+ * Props:
+ * - title (string, required): Card title
+ * - content (string): Main content text
+ * - image (object): { url: string, alt: string }
+ * - url (string): Link destination
+ * - variant (string): primary|secondary|accent|highlight
+ * - size (string): small|medium|large
+ * - content_type (string): biography|place|event|article
+ * - metadata (object): { date, author, category, featured, staff_pick }
+ *
+ * Slots:
+ * - card_header: Optional header content
+ * - card_footer: Optional footer content  
+ * - card_badge: Optional badge content
+ */
+#}
+
+{%
+  set classes = [
+    'saho-card',
+    'card',
+    'h-100',
+    variant ? 'saho-card--' ~ variant : 'saho-card--primary',
+    size ? 'saho-card--' ~ size : 'saho-card--medium',
+    content_type ? 'saho-card--type-' ~ content_type|replace({'_': '-'}) : 'saho-card--type-article'
+  ]
+%}
+
+{%
+  set card_classes = [
+    'saho-grid-item'
+  ]
+%}
+
+<div class="{{ card_classes|join(' ') }}">
+  <article class="{{ classes|join(' ') }}" {% if url %}role="link" tabindex="0"{% endif %}>
+    
+    {# Card Header Slot #}
+    {% if slots.card_header %}
+      <div class="saho-card__header">
+        {{ slots.card_header }}
+      </div>
+    {% endif %}
+    
+    {# Image Section #}
+    {% if image and image.url %}
+      <div class="card-img-top-wrapper position-relative overflow-hidden saho-card__image">
+        <img src="{{ image.url }}" 
+             alt="{{ image.alt|default(title) }}" 
+             class="card-img-top w-100 h-100 saho-card__img"
+             loading="lazy"
+             style="object-fit: cover; height: 200px;">
+        
+        {# Content Type Badge #}
+        <div class="position-absolute top-0 end-0 m-2">
+          <span class="badge saho-card__type-badge">
+            {{ content_type|replace({'_': ' '})|title|default('Article') }}
+          </span>
+        </div>
+        
+        {# Badge Slot - Custom badges #}
+        {% if slots.card_badge %}
+          <div class="position-absolute top-0 start-0 m-2">
+            {{ slots.card_badge }}
+          </div>
+        {% endif %}
+      </div>
+    {% else %}
+      {# Fallback placeholder with icon #}
+      <div class="card-img-top bg-light d-flex align-items-center justify-content-center saho-card__placeholder" 
+           style="height: 200px; position: relative;">
+        {% if content_type == 'biography' %}
+          <i class="fas fa-user fa-3x text-muted" aria-hidden="true"></i>
+        {% elseif content_type == 'place' %}
+          <i class="fas fa-map-marker-alt fa-3x text-muted" aria-hidden="true"></i>
+        {% elseif content_type == 'event' %}
+          <i class="fas fa-calendar-alt fa-3x text-muted" aria-hidden="true"></i>
+        {% else %}
+          <i class="fas fa-file-alt fa-3x text-muted" aria-hidden="true"></i>
+        {% endif %}
+        
+        <div class="position-absolute top-0 end-0 m-2">
+          <span class="badge saho-card__type-badge">
+            {{ content_type|replace({'_': ' '})|title|default('Article') }}
+          </span>
+        </div>
+      </div>
+    {% endif %}
+    
+    {# Card Body #}
+    <div class="card-body d-flex flex-column saho-card__body">
+      
+      {# Title #}
+      <h3 class="card-title saho-card__title">
+        {% if url %}
+          <a href="{{ url }}" class="text-decoration-none stretched-link saho-card__link">
+            {{ title }}
+          </a>
+        {% else %}
+          {{ title }}
+        {% endif %}
+      </h3>
+      
+      {# Metadata - Date/Author #}
+      {% if metadata %}
+        <div class="saho-card__meta text-muted small mb-2">
+          {% if metadata.date %}
+            <span class="saho-card__date">
+              <i class="fas fa-clock me-1" aria-hidden="true"></i>
+              {{ metadata.date }}
+            </span>
+          {% endif %}
+          {% if metadata.author %}
+            <span class="saho-card__author ms-2">
+              <i class="fas fa-user me-1" aria-hidden="true"></i>
+              {{ metadata.author }}
+            </span>
+          {% endif %}
+        </div>
+      {% endif %}
+      
+      {# Content #}
+      {% if content %}
+        <div class="card-text saho-card__content text-muted mb-3">
+          {{ content|length > 120 ? content|slice(0, 120) ~ '...' : content }}
+        </div>
+      {% endif %}
+      
+      {# Footer Section #}
+      <div class="mt-auto saho-card__footer-section">
+        
+        {# Card Footer Slot #}
+        {% if slots.card_footer %}
+          <div class="saho-card__footer mb-2">
+            {{ slots.card_footer }}
+          </div>
+        {% endif %}
+        
+        {# Status Badges and Category #}
+        <div class="d-flex justify-content-between align-items-center">
+          {% if metadata and metadata.category %}
+            <small class="text-muted saho-card__category">
+              {{ metadata.category }}
+            </small>
+          {% endif %}
+          
+          <div class="btn-group saho-card__badges">
+            {% if metadata and metadata.staff_pick %}
+              <span class="badge bg-warning text-dark saho-card__staff-pick">
+                <i class="fas fa-star me-1" aria-hidden="true"></i>
+                Staff Pick
+              </span>
+            {% endif %}
+            {% if metadata and metadata.featured %}
+              <span class="badge bg-info saho-card__featured">
+                <i class="fas fa-bookmark me-1" aria-hidden="true"></i>
+                Featured
+              </span>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      
+    </div>
+  </article>
+</div>
