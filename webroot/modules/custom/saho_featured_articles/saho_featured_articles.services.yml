@@ -1,0 +1,22 @@
+services:
+  saho_featured_articles.content_service:
+    class: Drupal\saho_featured_articles\Service\FeaturedContentService
+    arguments: 
+      - '@entity_type.manager'
+      - '@database'
+      - '@logger.factory'
+      - '@config.factory'
+    
+  saho_featured_articles.statistics_service:
+    class: Drupal\saho_featured_articles\Service\StatisticsService
+    arguments:
+      - '@database'
+      - '@logger.factory'
+      
+  saho_featured_articles.render_service:
+    class: Drupal\saho_featured_articles\Service\RenderService
+    arguments:
+      - '@renderer'
+      - '@date.formatter'
+      - '@url_generator'
+      - '@logger.factory'

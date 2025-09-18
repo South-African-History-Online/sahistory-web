@@ -1,0 +1,359 @@
+{#
+/**
+ * @file
+ * Template for the featured articles landing page.
+ *
+ * Available variables:
+ * - nodes: Array of featured article nodes.
+ */
+#}
+
+{% set section_name = 'Featured Articles' %}
+{% set section_color = 'saho-deep-heritage-red' %}
+{% set section_bg_class = 'saho-bg-primary' %}
+{% set section_border_class = 'saho-border-primary' %}
+{% set section_text_class = 'saho-text-primary' %}
+
+<div class="saho-landing-page saho-featured-articles">
+  
+  {# Hero Section #}
+  <section class="saho-landing-hero mb-5">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-12">
+          <div class="saho-section-title-wrapper mb-3">
+            <h1 class="display-4 saho-section-title {{ section_text_class }}">{{ section_name }}</h1>
+            <div class="saho-section-title-accent {{ section_bg_class }}"></div>
+          </div>
+          
+          <div class="saho-landing-description lead mb-4">
+            Discover the stories that shaped South Africa. From struggle heroes and liberation movements to 
+            cultural heritage and social transformation, these featured articles illuminate the rich tapestry 
+            of South African history and the ongoing journey toward unity and progress.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  {# Stats Section #}
+  <section class="saho-landing-stats py-4 mb-5 bg-light">
+    <div class="container">
+      <div class="row text-center">
+        <div class="col-md-4 mb-3 mb-md-0">
+          <div class="saho-stat-card">
+            <div class="saho-stat-number {{ section_text_class }}">{{ nodes|length }}</div>
+            <div class="saho-stat-label">Featured Stories</div>
+          </div>
+        </div>
+        <div class="col-md-4 mb-3 mb-md-0">
+          <div class="saho-stat-card">
+            <div class="saho-stat-number {{ section_text_class }}">
+              {% set staff_picks = 0 %}
+              {% for node in nodes %}
+                {% if node.hasField('field_staff_picks') and not node.get('field_staff_picks').isEmpty() and node.get('field_staff_picks').value == 1 %}
+                  {% set staff_picks = staff_picks + 1 %}
+                {% endif %}
+              {% endfor %}
+              {{ staff_picks }}
+            </div>
+            <div class="saho-stat-label">Editor's Choices</div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="saho-stat-card">
+            <div class="saho-stat-number {{ section_text_class }}">
+              {% set current_year = "now"|date("Y") %}
+              {% set updated_this_year = 0 %}
+              {% for node in nodes %}
+                {% if node.getChangedTime()|date("Y") == current_year %}
+                  {% set updated_this_year = updated_this_year + 1 %}
+                {% endif %}
+              {% endfor %}
+              {{ updated_this_year }}
+            </div>
+            <div class="saho-stat-label">Recent Updates</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  {# Main Content Section #}
+  <section class="saho-landing-content mb-5">
+    <div class="container">
+      <div class="row">
+        
+        {# Sidebar Navigation #}
+        <div class="col-lg-3 mb-4 mb-lg-0">
+          <div class="saho-landing-sidebar p-3 rounded shadow-sm">
+            <div class="saho-sidebar-header {{ section_bg_class }} text-white p-3 rounded-top mb-3">
+              <h3 class="h6 m-0">Browse Categories</h3>
+            </div>
+            
+            <div class="saho-landing-categories">
+              <div class="saho-category-grid" role="tablist" aria-label="Featured content categories">
+                <button type="button" class="saho-category-item active" data-target="all-featured" role="tab" aria-selected="true" aria-controls="all-featured" id="tab-all-featured">
+                  <div class="saho-category-icon" aria-hidden="true">
+                    <i class="fas fa-star"></i>
+                  </div>
+                  <div class="saho-category-name">All Featured</div>
+                  <div class="saho-category-count">{{ nodes|length }}</div>
+                </button>
+                
+                <button type="button" class="saho-category-item" data-target="staff-picks" role="tab" aria-selected="false" aria-controls="staff-picks" id="tab-staff-picks">
+                  <div class="saho-category-icon" aria-hidden="true">
+                    <i class="fas fa-medal"></i>
+                  </div>
+                  <div class="saho-category-name">Staff Picks</div>
+                  <div class="saho-category-count" id="staff-picks-count">-</div>
+                </button>
+                
+                <button type="button" class="saho-category-item" data-target="most-read" role="tab" aria-selected="false" aria-controls="most-read" id="tab-most-read">
+                  <div class="saho-category-icon" aria-hidden="true">
+                    <i class="fas fa-fire"></i>
+                  </div>
+                  <div class="saho-category-name">Most Read</div>
+                  <div class="saho-category-count" id="most-read-count">-</div>
+                </button>
+                
+                <button type="button" class="saho-category-item" data-target="africa-section" role="tab" aria-selected="false" aria-controls="africa-section" id="tab-africa-section">
+                  <div class="saho-category-icon" aria-hidden="true">
+                    <i class="fas fa-globe-africa"></i>
+                  </div>
+                  <div class="saho-category-name">Africa Section</div>
+                  <div class="saho-category-count" id="africa-section-count">-</div>
+                </button>
+                
+                <button type="button" class="saho-category-item" data-target="politics-society" role="tab" aria-selected="false" aria-controls="politics-society" id="tab-politics-society">
+                  <div class="saho-category-icon" aria-hidden="true">
+                    <i class="fas fa-users"></i>
+                  </div>
+                  <div class="saho-category-name">Politics & Society</div>
+                  <div class="saho-category-count" id="politics-society-count">-</div>
+                </button>
+                
+                <button type="button" class="saho-category-item" data-target="timelines" role="tab" aria-selected="false" aria-controls="timelines" id="tab-timelines">
+                  <div class="saho-category-icon" aria-hidden="true">
+                    <i class="fas fa-clock"></i>
+                  </div>
+                  <div class="saho-category-name">Timeline Features</div>
+                  <div class="saho-category-count" id="timelines-count">-</div>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        {# Main Content Area #}
+        <div class="col-lg-9">
+          
+          {# All Featured Content Section #}
+          <div class="featured-content-section active" id="all-featured" role="tabpanel" aria-labelledby="tab-all-featured">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+              <h3 class="h4 mb-0 {{ section_text_class }}">All Featured Content</h3>
+              <label for="sort-all" class="visually-hidden">Sort content by</label>
+              <select class="form-select form-select-sm w-auto" id="sort-all" aria-label="Sort content">
+                <option value="recent">Most Recent</option>
+                <option value="title">Title A-Z</option>
+                <option value="type">Content Type</option>
+              </select>
+            </div>
+            
+            {% if nodes %}
+              <div class="row saho-landing-grid" id="all-featured-grid">
+                {% for node in nodes %}
+                  {% set node_url = path('entity.node.canonical', {'node': node.id()}) %}
+                  {% set node_title = node.label() %}
+                  {% set node_type = node.bundle() %}
+                  {% set updated_date = node.getChangedTime()|date('j M Y') %}
+                  
+                  {# Get summary text #}
+                  {% set summary = '' %}
+                  {% if node.hasField('field_synopsis') and not node.get('field_synopsis').isEmpty() %}
+                    {% set summary = node.get('field_synopsis').value|striptags|trim %}
+                  {% elseif node.hasField('body') and not node.get('body').isEmpty() %}
+                    {% set summary = node.get('body').value|striptags|trim %}
+                  {% endif %}
+                  
+                  {# Get image #}
+                  {% set image_url = null %}
+                  {% set image_fields = ['field_article_image', 'field_image', 'field_bio_pic', 'field_place_image', 'field_event_image'] %}
+                  {% for field_name in image_fields %}
+                    {% if not image_url and node.hasField(field_name) and not node.get(field_name).isEmpty() %}
+                      {% set file_entity = node.get(field_name).entity %}
+                      {% if file_entity %}
+                        {% set image_url = file_url(file_entity.uri.value) %}
+                      {% endif %}
+                    {% endif %}
+                  {% endfor %}
+                  
+                  <div class="col-lg-6 mb-4" data-node-type="{{ node_type }}" data-title="{{ node_title|lower }}" data-updated="{{ node.getChangedTime() }}">
+                    <div class="saho-grid-item">
+                      <div class="card h-100">
+                        {% if image_url %}
+                          <div class="card-img-top-wrapper position-relative overflow-hidden" style="height: 200px;">
+                            <img src="{{ image_url }}" alt="{{ node_title }}" class="card-img-top w-100 h-100" style="object-fit: cover;">
+                            <div class="position-absolute top-0 end-0 m-2">
+                              <span class="badge bg-primary">{{ node_type|replace({'_': ' '})|title }}</span>
+                            </div>
+                          </div>
+                        {% else %}
+                          <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px; position: relative;">
+                            {% if node_type == 'biography' %}
+                              <i class="fas fa-user fa-3x text-muted"></i>
+                            {% elseif node_type == 'place' %}
+                              <i class="fas fa-map-marker-alt fa-3x text-muted"></i>
+                            {% else %}
+                              <i class="fas fa-file-alt fa-3x text-muted"></i>
+                            {% endif %}
+                            <div class="position-absolute top-0 end-0 m-2">
+                              <span class="badge bg-primary">{{ node_type|replace({'_': ' '})|title }}</span>
+                            </div>
+                          </div>
+                        {% endif %}
+                        
+                        <div class="card-body d-flex flex-column">
+                          <h3 class="card-title h5 {{ section_text_class }}">
+                            <a href="{{ node_url }}" class="text-decoration-none stretched-link">{{ node_title }}</a>
+                          </h3>
+                          
+                          <div class="text-muted small mb-2">Updated {{ updated_date }}</div>
+                          
+                          {% if summary %}
+                            <p class="card-text text-muted mb-3">
+                              {{ summary|slice(0, 120) }}{% if summary|length > 120 %}...{% endif %}
+                            </p>
+                          {% endif %}
+                          
+                          <div class="mt-auto">
+                            <div class="d-flex justify-content-between align-items-center">
+                              <small class="text-muted">{{ node_type|replace({'_': ' '})|title }}</small>
+                              <div class="btn-group">
+                                {% if node.hasField('field_staff_picks') and not node.get('field_staff_picks').isEmpty() and node.get('field_staff_picks').value == 1 %}
+                                  <span class="badge bg-warning text-dark me-1">Staff Pick</span>
+                                {% endif %}
+                                {% if node.hasField('field_home_page_feature') and not node.get('field_home_page_feature').isEmpty() and node.get('field_home_page_feature').value == 1 %}
+                                  <span class="badge bg-info">Featured</span>
+                                {% endif %}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                {% endfor %}
+              </div>
+            {% else %}
+              <div class="alert alert-info">
+                No featured content available.
+              </div>
+            {% endif %}
+          </div>
+          
+          {# Staff Picks Section #}
+          <div class="featured-content-section" id="staff-picks" style="display: none;" role="tabpanel" aria-labelledby="tab-staff-picks">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+              <h3 class="h4 mb-0 {{ section_text_class }}">Staff Picks</h3>
+              <span class="badge bg-warning text-dark">
+                <i class="fas fa-star me-1" aria-hidden="true"></i>Editor's Choice
+              </span>
+            </div>
+            
+            <div class="row saho-landing-grid" id="staff-picks-content">
+              <div class="col-12 text-center py-5">
+                <div class="spinner-border {{ section_text_class }}" role="status" aria-live="polite">
+                  <span class="visually-hidden">Loading staff picks...</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {# Most Read Section #}
+          <div class="featured-content-section" id="most-read" style="display: none;" role="tabpanel" aria-labelledby="tab-most-read">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+              <h3 class="h4 mb-0 {{ section_text_class }}">Most Read</h3>
+              <span class="badge bg-danger">
+                <i class="fas fa-fire me-1" aria-hidden="true"></i>Trending
+              </span>
+            </div>
+            
+            <div class="row saho-landing-grid" id="most-read-content">
+              <div class="col-12 text-center py-5">
+                <div class="spinner-border {{ section_text_class }}" role="status" aria-live="polite">
+                  <span class="visually-hidden">Loading most read content...</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {# Africa Section #}
+          <div class="featured-content-section" id="africa-section" style="display: none;" role="tabpanel" aria-labelledby="tab-africa-section">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+              <h3 class="h4 mb-0 {{ section_text_class }}">Africa Section</h3>
+              <span class="badge bg-success">Continental Focus</span>
+            </div>
+            <div class="row saho-landing-grid" id="africa-section-content">
+              <div class="col-12 text-center py-5">
+                <div class="spinner-border {{ section_text_class }}" role="status" aria-live="polite">
+                  <span class="visually-hidden">Loading Africa section content...</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="featured-content-section" id="politics-society" style="display: none;" role="tabpanel" aria-labelledby="tab-politics-society">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+              <h3 class="h4 mb-0 {{ section_text_class }}">Politics & Society</h3>
+              <span class="badge bg-info">Social & Political History</span>
+            </div>
+            <div class="row saho-landing-grid" id="politics-society-content">
+              <div class="col-12 text-center py-5">
+                <div class="spinner-border {{ section_text_class }}" role="status" aria-live="polite">
+                  <span class="visually-hidden">Loading politics & society content...</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="featured-content-section" id="timelines" style="display: none;" role="tabpanel" aria-labelledby="tab-timelines">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+              <h3 class="h4 mb-0 {{ section_text_class }}">Timeline Features</h3>
+              <span class="badge bg-secondary">Chronological Events</span>
+            </div>
+            <div class="row saho-landing-grid" id="timelines-content">
+              <div class="col-12 text-center py-5">
+                <div class="spinner-border {{ section_text_class }}" role="status" aria-live="polite">
+                  <span class="visually-hidden">Loading timeline content...</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  {# Call to Action Section #}
+  <section class="saho-landing-cta py-5 {{ section_bg_class }}">
+    <div class="container text-center">
+      <h2 class="h3 text-white mb-3">Continue Your Journey Through SA History</h2>
+      <p class="text-white mb-4">Explore more stories of resilience, transformation, and the ongoing struggle for social justice across South Africa.</p>
+      <div class="btn-group" role="group">
+        <a href="/politics-society" class="btn btn-light {{ section_text_class }} px-4 py-2 me-2">
+          <i class="fas fa-users me-2"></i> Politics & Society
+        </a>
+        <a href="/biographies" class="btn btn-outline-light px-4 py-2 me-2">
+          <i class="fas fa-user-friends me-2"></i> Notable Figures
+        </a>
+        <a href="/search" class="btn btn-outline-light px-4 py-2">
+          <i class="fas fa-search me-2"></i> Advanced Search
+        </a>
+      </div>
+    </div>
+  </section>
+</div>
+
+{# JavaScript for category navigation is loaded via the featured-navigation library #}

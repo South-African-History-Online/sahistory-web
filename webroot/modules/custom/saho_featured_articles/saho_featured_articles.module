@@ -1,0 +1,35 @@
+<?php
+
+/**
+ * @file
+ * Module file for SAHO Featured Articles.
+ */
+
+use Drupal\Core\Routing\RouteMatchInterface;
+
+/**
+ * Implements hook_help().
+ */
+function saho_featured_articles_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    case 'help.page.saho_featured_articles':
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('Provides a featured articles landing page for SA History Online.') . '</p>';
+      return $output;
+  }
+}
+
+/**
+ * Implements hook_theme().
+ */
+function saho_featured_articles_theme($existing, $type, $theme, $path) {
+  return [
+    'saho_featured_articles' => [
+      'variables' => [
+        'nodes' => [],
+      ],
+      'template' => 'saho-featured-articles',
+    ],
+  ];
+}
