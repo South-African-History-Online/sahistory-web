@@ -120,7 +120,7 @@ document.addEventListener('DOMContentLoaded', () => {
           setTimeout(() => {
             button.classList.remove('copied');
           }, 2000);
-        } catch (err) {
+        } catch (_err) {
           // Failed to copy quote
         }
 
@@ -200,18 +200,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Initialize Bootstrap dropdowns with proper configuration
   const dropdownElementList = [].slice.call(document.querySelectorAll('.dropdown-toggle'));
-  const dropdownList = dropdownElementList.map(function (dropdownToggleEl) {
-    return new bootstrap.Dropdown(dropdownToggleEl, {
-      autoClose: true
-    });
-  });
+  const _dropdownList = dropdownElementList.map(
+    (dropdownToggleEl) =>
+      new bootstrap.Dropdown(dropdownToggleEl, {
+        autoClose: true,
+      })
+  );
 
   // Citation and Share Modal Functionality
-  
+
   // Initialize cite modal when shown
   const citeModal = document.getElementById('citeModal');
   if (citeModal) {
-    citeModal.addEventListener('shown.bs.modal', function () {
+    citeModal.addEventListener('shown.bs.modal', () => {
       generateCitations();
     });
   }
@@ -219,7 +220,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Initialize share modal when shown
   const shareModal = document.getElementById('shareModal');
   if (shareModal) {
-    shareModal.addEventListener('shown.bs.modal', function () {
+    shareModal.addEventListener('shown.bs.modal', () => {
       initializeShareModal();
     });
   }
@@ -228,19 +229,19 @@ document.addEventListener('DOMContentLoaded', () => {
   function generateCitations() {
     const pageTitle = document.title;
     const pageUrl = window.location.href;
-    const siteName = "South African History Online";
+    const siteName = 'South African History Online';
     const currentDate = new Date().toLocaleDateString();
-    const accessDate = new Date().toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
+    const accessDate = new Date().toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
     });
 
     // MLA Format
     const mlaCitation = `"${pageTitle}." ${siteName}, ${currentDate}, ${pageUrl}.`;
     document.getElementById('citeMLA').textContent = mlaCitation;
 
-    // APA Format  
+    // APA Format
     const apaCitation = `${pageTitle}. (${new Date().getFullYear()}). ${siteName}. Retrieved ${accessDate}, from ${pageUrl}`;
     document.getElementById('citeAPA').textContent = apaCitation;
 
@@ -253,16 +254,16 @@ document.addEventListener('DOMContentLoaded', () => {
   function initializeShareModal() {
     const pageUrl = window.location.href;
     const pageTitle = document.title;
-    
+
     // Set the URL input
     document.getElementById('shareUrl').value = pageUrl;
-    
+
     // Configure social media links
     const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(pageUrl)}`;
     const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(pageTitle)}&url=${encodeURIComponent(pageUrl)}`;
     const linkedInUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(pageUrl)}`;
-    const emailUrl = `mailto:?subject=${encodeURIComponent(pageTitle)}&body=${encodeURIComponent(pageTitle + ' - ' + pageUrl)}`;
-    
+    const emailUrl = `mailto:?subject=${encodeURIComponent(pageTitle)}&body=${encodeURIComponent(`${pageTitle} - ${pageUrl}`)}`;
+
     document.getElementById('shareFacebook').href = facebookUrl;
     document.getElementById('shareTwitter').href = twitterUrl;
     document.getElementById('shareLinkedIn').href = linkedInUrl;
@@ -270,10 +271,10 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Global functions for copy functionality
-  window.copyCitation = function(elementId) {
+  window.copyCitation = (elementId) => {
     const element = document.getElementById(elementId);
     const text = element.textContent;
-    
+
     if (navigator.clipboard && window.isSecureContext) {
       navigator.clipboard.writeText(text).then(() => {
         showCopyFeedback(elementId);
@@ -287,24 +288,24 @@ document.addEventListener('DOMContentLoaded', () => {
       try {
         document.execCommand('copy');
         showCopyFeedback(elementId);
-      } catch (err) {
+      } catch (_err) {
         console.error('Failed to copy citation');
       }
       document.body.removeChild(textarea);
     }
   };
 
-  window.copyShareUrl = function() {
+  window.copyShareUrl = () => {
     const shareUrlInput = document.getElementById('shareUrl');
     const copyButton = shareUrlInput.nextElementSibling;
-    
+
     if (navigator.clipboard && window.isSecureContext) {
       navigator.clipboard.writeText(shareUrlInput.value).then(() => {
         const originalText = copyButton.textContent;
         copyButton.textContent = 'Copied!';
         copyButton.classList.remove('btn-outline-primary');
         copyButton.classList.add('btn-success');
-        
+
         setTimeout(() => {
           copyButton.textContent = originalText;
           copyButton.classList.remove('btn-success');
@@ -321,13 +322,13 @@ document.addEventListener('DOMContentLoaded', () => {
         copyButton.textContent = 'Copied!';
         copyButton.classList.remove('btn-outline-primary');
         copyButton.classList.add('btn-success');
-        
+
         setTimeout(() => {
           copyButton.textContent = originalText;
           copyButton.classList.remove('btn-success');
           copyButton.classList.add('btn-outline-primary');
         }, 2000);
-      } catch (err) {
+      } catch (_err) {
         console.error('Failed to copy URL');
       }
     }
@@ -340,7 +341,7 @@ document.addEventListener('DOMContentLoaded', () => {
       button.textContent = 'Copied!';
       button.classList.remove('btn-outline-primary');
       button.classList.add('btn-success');
-      
+
       setTimeout(() => {
         button.textContent = originalText;
         button.classList.remove('btn-success');
@@ -367,10 +368,11 @@ document.addEventListener('DOMContentLoaded', () => {
     function supportsWebP() {
       return new Promise((resolve) => {
         const webP = new Image();
-        webP.onload = webP.onerror = function () {
+        webP.onload = webP.onerror = () => {
           resolve(webP.height === 2);
         };
-        webP.src = 'data:image/webp;base64,UklGRjoAAABXRUJQVlA4IC4AAACyAgCdASoCAAIALmk0mk0iIiIiIgBoSygABc6WWgAA/veff/0PP8bA//LwYAAA';
+        webP.src =
+          'data:image/webp;base64,UklGRjoAAABXRUJQVlA4IC4AAACyAgCdASoCAAIALmk0mk0iIiIiIgBoSygABc6WWgAA/veff/0PP8bA//LwYAAA';
       });
     }
 
@@ -381,7 +383,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       const originalSrc = img.src;
-      
+
       // Only convert images from our own domain and common formats
       if (!originalSrc.includes(window.location.hostname) && !originalSrc.startsWith('/')) {
         return;
@@ -394,37 +396,37 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Try to find a WebP equivalent by replacing extension
       let webpSrc = originalSrc;
-      
+
       // For direct file URLs, try adding .webp
       if (originalSrc.includes('/sites/default/files/')) {
         // Try converting: image.jpg -> image.jpg.webp
         webpSrc = originalSrc.replace(/\.(jpe?g|png)(\?.*)?$/i, '.webp$2');
-        
+
         // Create a test image to see if WebP version exists
         const testImg = new Image();
-        testImg.onload = function() {
+        testImg.onload = () => {
           // WebP version exists, create picture element
           const picture = document.createElement('picture');
           const source = document.createElement('source');
           const newImg = img.cloneNode(true);
-          
+
           source.srcset = webpSrc;
           source.type = 'image/webp';
-          
+
           picture.appendChild(source);
           picture.appendChild(newImg);
-          
+
           // Copy attributes from original image to picture
-          Array.from(img.attributes).forEach(attr => {
+          Array.from(img.attributes).forEach((attr) => {
             if (attr.name !== 'src') {
               picture.setAttribute(attr.name, attr.value);
             }
           });
-          
+
           // Replace original image with picture element
           img.parentNode.replaceChild(picture, img);
         };
-        testImg.onerror = function() {
+        testImg.onerror = () => {
           // WebP version doesn't exist, mark as converted to avoid retrying
           img.setAttribute('data-webp-converted', 'true');
         };
@@ -435,16 +437,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Apply WebP conversion if supported
-    supportsWebP().then(supported => {
+    supportsWebP().then((supported) => {
       if (supported) {
         // Convert existing images
         const images = document.querySelectorAll('img:not([data-webp-converted])');
         images.forEach(tryWebPConversion);
 
         // Watch for new images added dynamically
-        const observer = new MutationObserver(mutations => {
-          mutations.forEach(mutation => {
-            mutation.addedNodes.forEach(node => {
+        const observer = new MutationObserver((mutations) => {
+          mutations.forEach((mutation) => {
+            mutation.addedNodes.forEach((node) => {
               if (node.nodeType === Node.ELEMENT_NODE) {
                 if (node.tagName === 'IMG') {
                   tryWebPConversion(node);
@@ -459,7 +461,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         observer.observe(document.body, {
           childList: true,
-          subtree: true
+          subtree: true,
         });
       }
     });

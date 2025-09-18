@@ -1,0 +1,54 @@
+{#
+/**
+ * @file
+ * SAHO Spacer Component Template
+ * 
+ * Drupal 11 Single Directory Component (SDC)
+ * Utility component for consistent vertical spacing
+ *
+ * Props:
+ * - size (string): xs|small|medium|large|xl|xxl
+ * - custom_height (string): Custom CSS height value
+ * - responsive (object): { mobile, tablet, desktop }
+ * - aria_hidden (boolean): Hide from screen readers
+ * - background (string): Background color variant
+ */
+#}
+
+{%
+  set classes = [
+    'saho-spacer',
+    size ? 'saho-spacer--' ~ size : 'saho-spacer--medium',
+    background and background != 'none' ? 'saho-spacer--bg-' ~ background : null,
+    responsive ? 'saho-spacer--responsive' : null
+  ]
+%}
+
+{%
+  set responsive_classes = []
+%}
+{% if responsive %}
+  {% if responsive.mobile %}
+    {% set responsive_classes = responsive_classes|merge(['saho-spacer--mobile-' ~ responsive.mobile]) %}
+  {% endif %}
+  {% if responsive.tablet %}
+    {% set responsive_classes = responsive_classes|merge(['saho-spacer--tablet-' ~ responsive.tablet]) %}
+  {% endif %}
+  {% if responsive.desktop %}
+    {% set responsive_classes = responsive_classes|merge(['saho-spacer--desktop-' ~ responsive.desktop]) %}
+  {% endif %}
+{% endif %}
+
+{%
+  set all_classes = classes|merge(responsive_classes)|filter
+%}
+
+{%
+  set inline_styles = custom_height ? 'height: ' ~ custom_height ~ ';' : null
+%}
+
+<div class="{{ all_classes|join(' ') }}"
+     {% if inline_styles %}style="{{ inline_styles }}"{% endif %}
+     {% if aria_hidden %}aria-hidden="true"{% endif %}>
+  {# Spacer content is intentionally empty for pure spacing #}
+</div>

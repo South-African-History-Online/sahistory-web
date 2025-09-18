@@ -1,0 +1,71 @@
+{#
+/**
+ * @file
+ * SAHO Sharing Button Component Template
+ * 
+ * Drupal 11 Single Directory Component (SDC)
+ * Social sharing button with SAHO heritage branding
+ *
+ * Props:
+ * - title (string): Button text
+ * - variant (string): primary|secondary|outline|minimal
+ * - size (string): small|medium|large
+ * - show_icon (boolean): Display sharing icon
+ * - position (string): inline|toolbar|floating
+ * - modal_target (string): Target modal ID
+ * - share_data (object): { url, title, description }
+ * - accessibility (object): { aria_label, description }
+ */
+#}
+
+{%
+  set classes = [
+    'saho-sharing-button',
+    'btn',
+    variant ? 'saho-sharing-button--' ~ variant : 'saho-sharing-button--secondary',
+    size ? 'saho-sharing-button--' ~ size : 'saho-sharing-button--medium',
+    position ? 'saho-sharing-button--' ~ position : 'saho-sharing-button--inline'
+  ]
+%}
+
+{%
+  set button_attributes = {
+    'type': 'button',
+    'class': classes|join(' '),
+    'data-sharing-trigger': 'true',
+    'data-bs-toggle': 'modal',
+    'data-bs-target': '#' ~ (modal_target|default('sharing-modal')),
+    'aria-label': accessibility.aria_label|default(title ~ ' - Opens sharing modal'),
+    'title': accessibility.description|default('Share this content on social media')
+  }
+%}
+
+{# Add share data attributes if provided #}
+{% if share_data %}
+  {% set share_attributes = {
+    'data-share-url': share_data.url,
+    'data-share-title': share_data.title,
+    'data-share-description': share_data.description
+  } %}
+  {% set button_attributes = button_attributes|merge(share_attributes) %}
+{% endif %}
+
+<button
+  {% for attr_name, attr_value in button_attributes %}
+    {% if attr_value %}{{ attr_name }}="{{ attr_value }}"{% endif %}
+  {% endfor %}>
+  
+  {% if show_icon|default(true) %}
+    <span class="saho-sharing-button__icon" aria-hidden="true">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" role="img">
+        <title>Share network icon</title>
+        <path d="M13.5 1a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM11 2.5a2.5 2.5 0 1 1 .603 1.628l-6.718 3.12a2.499 2.499 0 0 1 0 1.504l6.718 3.12a2.5 2.5 0 1 1-.488.876l-6.718-3.12a2.5 2.5 0 1 1 0-3.256l6.718-3.12A2.5 2.5 0 0 1 11 2.5zm-8.5 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm11 5.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3z"/>
+      </svg>
+    </span>
+  {% endif %}
+  
+  <span class="saho-sharing-button__text">
+    {{ title|default('Share') }}
+  </span>
+  
+</button>

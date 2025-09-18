@@ -1,0 +1,273 @@
+{#
+/**
+ * @file
+ * SAHO Featured Grid Component Template
+ * 
+ * Drupal 11 Single Directory Component (SDC)
+ * Grid layout for displaying featured content with heritage branding
+ *
+ * Props:
+ * - title (string): Grid title
+ * - description (string): Optional description
+ * - items (array): Content items to display
+ * - layout (string): Grid layout style
+ * - columns (string): Number of columns
+ * - show_sidebar (boolean): Show category sidebar
+ * - categories (array): Filter categories
+ * - variant (string): Color variant
+ *
+ * Slots:
+ * - hero_content: Hero section content
+ * - sidebar_extra: Additional sidebar content
+ * - grid_actions: Grid action controls
+ */
+#}
+
+{%
+  set classes = [
+    'saho-featured-grid',
+    'saho-featured-grid--' ~ (layout|default('default')),
+    'saho-featured-grid--variant-' ~ (variant|default('primary')),
+    'saho-featured-grid--cols-' ~ (columns|default('2'))
+  ]
+%}
+
+{%
+  set variant_classes = {
+    'primary': {
+      'bg': 'saho-bg-primary',
+      'text': 'saho-text-primary',
+      'border': 'saho-border-primary'
+    },
+    'secondary': {
+      'bg': 'saho-bg-secondary', 
+      'text': 'saho-text-secondary',
+      'border': 'saho-border-secondary'
+    },
+    'accent': {
+      'bg': 'saho-bg-accent',
+      'text': 'saho-text-accent', 
+      'border': 'saho-border-accent'
+    },
+    'highlight': {
+      'bg': 'saho-bg-highlight',
+      'text': 'saho-text-highlight',
+      'border': 'saho-border-highlight'
+    }
+  }
+%}
+
+{%
+  set current_variant = variant_classes[variant|default('primary')]
+%}
+
+<section class="{{ classes|join(' ') }}">
+  
+  {# Hero Section #}
+  {% if title or description or slots.hero_content %}
+    <div class="saho-featured-grid__hero mb-5">
+      <div class="container">
+        {% if slots.hero_content %}
+          {{ slots.hero_content }}
+        {% else %}
+          <div class="row">
+            <div class="col-12">
+              {% if title %}
+                <div class="saho-section-title-wrapper mb-3">
+                  <h1 class="display-4 saho-section-title {{ current_variant.text }}">
+                    {{ title }}
+                  </h1>
+                  <div class="saho-section-title-accent {{ current_variant.bg }}"></div>
+                </div>
+              {% endif %}
+              
+              {% if description %}
+                <div class="saho-featured-grid__description lead mb-4">
+                  {{ description }}
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  {% endif %}
+
+  {# Stats Section - if we have items data #}
+  {% if items %}
+    <div class="saho-featured-grid__stats py-4 mb-5 bg-light">
+      <div class="container">
+        <div class="row text-center">
+          <div class="col-md-4 mb-3 mb-md-0">
+            <div class="saho-stat-card">
+              <div class="saho-stat-number {{ current_variant.text }}">{{ items|length }}</div>
+              <div class="saho-stat-label">Featured Items</div>
+            </div>
+          </div>
+          <div class="col-md-4 mb-3 mb-md-0">
+            <div class="saho-stat-card">
+              <div class="saho-stat-number {{ current_variant.text }}">
+                {% set staff_picks = items|filter(item => item.metadata.staff_pick)|length %}
+                {{ staff_picks }}
+              </div>
+              <div class="saho-stat-label">Staff Picks</div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="saho-stat-card">
+              <div class="saho-stat-number {{ current_variant.text }}">
+                {% set featured_count = items|filter(item => item.metadata.featured)|length %}
+                {{ featured_count }}
+              </div>
+              <div class="saho-stat-label">Featured</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+  {# Main Content Grid #}
+  <div class="saho-featured-grid__content mb-5">
+    <div class="container">
+      <div class="row">
+        
+        {# Sidebar - Categories and Filters #}
+        {% if show_sidebar and categories %}
+          <div class="col-lg-3 mb-4 mb-lg-0">
+            <div class="saho-featured-grid__sidebar saho-landing-sidebar p-3 rounded shadow-sm">
+              <div class="saho-sidebar-header {{ current_variant.bg }} text-white p-3 rounded-top mb-3">
+                <h3 class="h6 m-0">Browse Categories</h3>
+              </div>
+              
+              <div class="saho-landing-categories">
+                <div class="saho-category-grid" role="tablist" aria-label="Featured content categories">
+                  
+                  {# All Items Category #}
+                  <button type="button" 
+                          class="saho-category-item active" 
+                          data-target="all-featured" 
+                          role="tab" 
+                          aria-selected="true" 
+                          aria-controls="all-featured" 
+                          id="tab-all-featured">
+                    <div class="saho-category-icon" aria-hidden="true">
+                      <i class="fas fa-star"></i>
+                    </div>
+                    <div class="saho-category-name">All Featured</div>
+                    <div class="saho-category-count">{{ items|length }}</div>
+                  </button>
+                  
+                  {# Dynamic Categories #}
+                  {% for category in categories %}
+                    <button type="button" 
+                            class="saho-category-item" 
+                            data-target="{{ category.id }}" 
+                            role="tab" 
+                            aria-selected="false" 
+                            aria-controls="{{ category.id }}" 
+                            id="tab-{{ category.id }}">
+                      <div class="saho-category-icon" aria-hidden="true">
+                        <i class="{{ category.icon|default('fas fa-folder') }}"></i>
+                      </div>
+                      <div class="saho-category-name">{{ category.name }}</div>
+                      <div class="saho-category-count">{{ category.count|default('0') }}</div>
+                    </button>
+                  {% endfor %}
+                </div>
+              </div>
+              
+              {# Sidebar Extra Slot #}
+              {% if slots.sidebar_extra %}
+                <div class="saho-featured-grid__sidebar-extra mt-4">
+                  {{ slots.sidebar_extra }}
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        {% endif %}
+        
+        {# Grid Content Area #}
+        <div class="col-{{ show_sidebar ? 'lg-9' : '12' }}">
+          
+          {# Grid Actions Slot #}
+          {% if slots.grid_actions %}
+            <div class="saho-featured-grid__actions mb-4">
+              {{ slots.grid_actions }}
+            </div>
+          {% endif %}
+          
+          {# All Items Grid #}
+          <div class="featured-content-section active" id="all-featured" role="tabpanel" aria-labelledby="tab-all-featured">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+              <h3 class="h4 mb-0 {{ current_variant.text }}">All Featured Content</h3>
+              <select class="form-select form-select-sm w-auto" id="sort-all" aria-label="Sort content">
+                <option value="recent">Most Recent</option>
+                <option value="title">Title A-Z</option>
+                <option value="type">Content Type</option>
+              </select>
+            </div>
+            
+            {% if items %}
+              <div class="row saho-landing-grid saho-featured-grid__items" id="all-featured-grid">
+                {% for item in items %}
+                  
+                  {% set grid_column_class = 'col-lg-' ~ (12 / (columns|default('2')|number_format(0, '', ''))) %}
+                  
+                  <div class="{{ grid_column_class }} mb-4" 
+                       data-node-type="{{ item.content_type|default('article') }}" 
+                       data-title="{{ item.title|lower }}" 
+                       data-featured="{{ item.metadata.featured ? '1' : '0' }}"
+                       data-staff-pick="{{ item.metadata.staff_pick ? '1' : '0' }}">
+                    
+                    {# Use the saho-card SDC component #}
+                    {% include 'saho:saho-card' with {
+                      'title': item.title,
+                      'content': item.content,
+                      'image': item.image,
+                      'url': item.url,
+                      'variant': variant|default('primary'),
+                      'size': 'medium',
+                      'content_type': item.content_type|default('article'),
+                      'metadata': item.metadata
+                    } %}
+                    
+                  </div>
+                {% endfor %}
+              </div>
+            {% else %}
+              <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                No featured content available.
+              </div>
+            {% endif %}
+          </div>
+          
+          {# Dynamic Category Sections #}
+          {% for category in categories %}
+            <div class="featured-content-section" 
+                 id="{{ category.id }}" 
+                 style="display: none;" 
+                 role="tabpanel" 
+                 aria-labelledby="tab-{{ category.id }}">
+              <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="h4 mb-0 {{ current_variant.text }}">{{ category.name }}</h3>
+                <span class="badge bg-info">{{ category.name }}</span>
+              </div>
+              
+              <div class="row saho-landing-grid" id="{{ category.id }}-content">
+                <div class="col-12 text-center py-5">
+                  <div class="spinner-border saho-text-primary" role="status" aria-live="polite">
+                    <span class="visually-hidden">Loading {{ category.name|lower }} content...</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+          
+        </div>
+      </div>
+    </div>
+  </div>
+
+</section>

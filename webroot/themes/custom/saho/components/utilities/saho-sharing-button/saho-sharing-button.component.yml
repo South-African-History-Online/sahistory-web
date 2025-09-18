@@ -1,0 +1,100 @@
+# Drupal 11 Single Directory Component (SDC) Definition
+# SAHO Sharing Button - Social sharing utility with heritage branding
+
+'$schema': https://git.drupalcode.org/project/drupal/-/raw/11.0.x/core/modules/sdc/src/metadata.schema.json
+
+name: SAHO Sharing Button
+machine_name: saho_sharing_button
+description: 'Social sharing button with SAHO heritage styling for content distribution.'
+status: stable
+group: Utilities
+category: Social
+
+props:
+  type: object
+  properties:
+    title:
+      type: string
+      title: Button Text
+      description: Text displayed on the button
+      default: "Share"
+      examples:
+        - "Share"
+        - "Share This Article"
+        - "Social Share"
+    
+    variant:
+      type: string
+      title: Button Variant
+      description: Visual style variant
+      enum:
+        - primary
+        - secondary
+        - outline
+        - minimal
+      default: secondary
+    
+    size:
+      type: string
+      title: Button Size
+      description: Size of the sharing button
+      enum:
+        - small
+        - medium
+        - large
+      default: medium
+    
+    show_icon:
+      type: boolean
+      title: Show Share Icon
+      description: Whether to display the sharing network icon
+      default: true
+    
+    position:
+      type: string
+      title: Button Position
+      description: Position context for styling
+      enum:
+        - inline
+        - toolbar
+        - floating
+      default: inline
+    
+    modal_target:
+      type: string
+      title: Modal Target ID
+      description: ID of the sharing modal to trigger
+      default: "sharing-modal"
+    
+    share_data:
+      type: object
+      title: Share Data
+      description: Data for sharing functionality
+      properties:
+        url:
+          type: string
+          format: uri
+          title: Share URL
+        title:
+          type: string
+          title: Share Title
+        description:
+          type: string
+          title: Share Description
+    
+    accessibility:
+      type: object
+      title: Accessibility Options
+      properties:
+        aria_label:
+          type: string
+          title: ARIA Label
+          description: Screen reader label
+        description:
+          type: string
+          title: Button Description
+          description: Additional context for screen readers
+
+libraryDependencies:
+  - saho/saho-sharing-button
+  - saho/saho.colors

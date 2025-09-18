@@ -1,0 +1,182 @@
+{#
+/**
+ * @file
+ * Unified Featured Content View Template
+ * 
+ * Uses SAHO SDC components for consistent, maintainable display
+ * Replaces both the theme and module featured content templates
+ * 
+ * Drupal 11 SDC Integration - Production Ready
+ *
+ * Available variables:
+ * - view: The view object.
+ * - rows: The result of the view query.
+ * - header: The header area of the view.
+ * - footer: The footer area of the view.
+ * - empty: The empty text to display if no content.
+ * - title: The title of this group of rows.
+ */
+#}
+
+{{ attach_library('saho/saho-featured-grid') }}
+{{ attach_library('saho/saho.colors') }}
+
+{# Process view results into SDC-compatible format #}
+{% set processed_items = [] %}
+{% for row in rows %}
+  {% set node = row.content['#node'] %}
+  {% if node %}
+    
+    {# Extract node data #}
+    {% set node_url = path('entity.node.canonical', {'node': node.id()}) %}
+    {% set node_title = node.label() %}
+    {% set node_type = node.bundle() %}
+    {% set updated_date = node.getChangedTime()|date('j M Y') %}
+    
+    {# Get summary text #}
+    {% set summary = '' %}
+    {% if node.hasField('field_synopsis') and not node.get('field_synopsis').isEmpty() %}
+      {% set summary = node.get('field_synopsis').value|striptags|trim %}
+    {% elseif node.hasField('body') and not node.get('body').isEmpty() %}
+      {% set summary = node.get('body').value|striptags|trim %}
+    {% endif %}
+    
+    {# Get image #}
+    {% set image_data = null %}
+    {% set image_fields = ['field_article_image', 'field_image', 'field_bio_pic', 'field_place_image', 'field_event_image'] %}
+    {% for field_name in image_fields %}
+      {% if not image_data and node.hasField(field_name) and not node.get(field_name).isEmpty() %}
+        {% set file_entity = node.get(field_name).entity %}
+        {% if file_entity %}
+          {% set image_data = {
+            'url': file_url(file_entity.uri.value),
+            'alt': node_title
+          } %}
+        {% endif %}
+      {% endif %}
+    {% endfor %}
+    
+    {# Check for staff pick and featured status #}
+    {% set is_staff_pick = false %}
+    {% set is_featured = false %}
+    {% if node.hasField('field_staff_picks') and not node.get('field_staff_picks').isEmpty() %}
+      {% set is_staff_pick = node.get('field_staff_picks').value == 1 %}
+    {% endif %}
+    {% if node.hasField('field_home_page_feature') and not node.get('field_home_page_feature').isEmpty() %}
+      {% set is_featured = node.get('field_home_page_feature').value == 1 %}
+    {% endif %}
+    
+    {# Build item data structure for SDC #}
+    {% set item_data = {
+      'id': node.id(),
+      'title': node_title,
+      'content': summary,
+      'url': node_url,
+      'image': image_data,
+      'content_type': node_type,
+      'metadata': {
+        'date': updated_date,
+        'category': node_type|replace({'_': ' '})|title,
+        'featured': is_featured,
+        'staff_pick': is_staff_pick
+      }
+    } %}
+    
+    {% set processed_items = processed_items|merge([item_data]) %}
+  {% endif %}
+{% endfor %}
+
+{# Define categories for filtering #}
+{% set categories = [
+  {
+    'id': 'staff-picks',
+    'name': 'Staff Picks', 
+    'icon': 'fas fa-medal',
+    'count': processed_items|filter(item => item.metadata.staff_pick)|length
+  },
+  {
+    'id': 'most-read',
+    'name': 'Most Read',
+    'icon': 'fas fa-fire',
+    'count': 0
+  },
+  {
+    'id': 'africa-section',
+    'name': 'Africa Section',
+    'icon': 'fas fa-globe-africa', 
+    'count': 0
+  },
+  {
+    'id': 'politics-society',
+    'name': 'Politics & Society',
+    'icon': 'fas fa-users',
+    'count': 0
+  },
+  {
+    'id': 'timelines',
+    'name': 'Timeline Features',
+    'icon': 'fas fa-clock',
+    'count': 0
+  }
+] %}
+
+<div class="view-featured-content view-featured-content--unified">
+  
+  {# Header #}
+  {% if header %}
+    {{ header }}
+  {% endif %}
+  
+  {# Main Content - Use SAHO Featured Grid SDC Component #}
+  {% if processed_items %}
+    {% include 'saho:saho-featured-grid' with {
+      'title': 'Featured Articles',
+      'description': 'Explore featured content from South African History Online, showcasing important articles, biographies, and places.',
+      'items': processed_items,
+      'layout': 'default',
+      'columns': '2', 
+      'show_sidebar': true,
+      'categories': categories,
+      'variant': 'primary'
+    } %}
+  {% else %}
+    {# Empty state #}
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-md-8 text-center py-5">
+          <div class="alert alert-info">
+            <i class="fas fa-info-circle fa-2x mb-3 saho-text-primary"></i>
+            <h3>No Featured Content Available</h3>
+            <p class="mb-0">Featured content will appear here once it has been published and marked as featured.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+  
+  {# Footer #}
+  {% if footer %}
+    {{ footer }}
+  {% endif %}
+
+  {# Call to Action Section #}
+  <section class="saho-landing-cta py-5 saho-bg-primary">
+    <div class="container text-center">
+      <h2 class="h3 text-white mb-3">Continue Your Journey Through SA History</h2>
+      <p class="text-white mb-4">
+        Explore more stories of resilience, transformation, and the ongoing struggle for social justice across South Africa.
+      </p>
+      <div class="btn-group" role="group">
+        <a href="/politics-society" class="btn btn-light saho-text-primary px-4 py-2 me-2">
+          <i class="fas fa-users me-2"></i> Politics & Society
+        </a>
+        <a href="/biographies" class="btn btn-outline-light px-4 py-2 me-2">
+          <i class="fas fa-user-friends me-2"></i> Notable Figures
+        </a>
+        <a href="/search" class="btn btn-outline-light px-4 py-2">
+          <i class="fas fa-search me-2"></i> Advanced Search
+        </a>
+      </div>
+    </div>
+  </section>
+</div>
