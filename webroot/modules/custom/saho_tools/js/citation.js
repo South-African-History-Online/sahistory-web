@@ -293,17 +293,48 @@
         },
 
         /**
-         * Update citation content in the modal.
+         * Update citation content in the modal using template structure.
          *
          * @param {Object} citations
          *   The citation data.
          */
         updateCitationContent: function (citations) {
-            // Update each citation format - use the correct selectors
-            $('.apa-citation .citation-content').html(citations.apa);
-            $('.harvard-citation .citation-content').html(citations.harvard);
-            $('.oxford-citation .citation-content').html(citations.oxford);
-
+            // Use template structure matching citation-formatter-all.html.twig
+            const templateHtml = `
+              <div class="citation-formatter citation-formatter-all">
+                <div class="citation-formats">
+                  <div class="citation-format mb-4">
+                    <h4>APA (7th edition)</h4>
+                    <div class="citation-content apa-citation">
+                      ${citations.apa || 'Citation not available'}
+                      <button class="btn btn-sm btn-outline-secondary copy-individual mt-2">Copy APA Citation</button>
+                    </div>
+                  </div>
+                  <div class="citation-format mb-4">
+                    <h4>Oxford (Footnote style)</h4>
+                    <div class="citation-content oxford-citation">
+                      ${citations.oxford || 'Citation not available'}
+                      <button class="btn btn-sm btn-outline-secondary copy-individual mt-2">Copy Oxford Citation</button>
+                    </div>
+                  </div>
+                  <div class="citation-format">
+                    <h4>Harvard</h4>
+                    <div class="citation-content harvard-citation">
+                      ${citations.harvard || 'Citation not available'}
+                      <button class="btn btn-sm btn-outline-secondary copy-individual mt-2">Copy Harvard Citation</button>
+                    </div>
+                  </div>
+                  
+                  <div class="citation-format citation-resources text-center mt-4">
+                    <a href="/content/referencing-resources-historical-research" class="btn btn-danger">Referencing Resources for Historical Research</a>
+                  </div>
+                </div>
+              </div>
+            `;
+            
+            // Replace the modal body content
+            $('#citation-modal .citation-content').html(templateHtml);
+            
             // Re-initialize copy buttons after content is loaded
             const modalElement = document.getElementById('citation-modal');
             if (modalElement) {
@@ -494,16 +525,14 @@
             // Get jQuery object for the modal
             const $modal = $(modalElement);
 
-            // Ensure the close button (X) is visible in the top right corner
+            // Find existing close button - don't create duplicate
             let $closeButton = $modal.find('.btn-close');
-            if ($closeButton.length === 0) {
-                // If no close button exists, add one
-                $closeButton = $('<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">×</button>');
-                $modal.find('.modal-header').append($closeButton);
-            }
             
-            // Ensure close button text is always visible
-            $closeButton.html('×');
+            // If close button exists, ensure it's properly set up but don't create duplicate
+            if ($closeButton.length > 0) {
+                // Ensure close button text is always visible
+                $closeButton.html('×');
+            }
             
             // Explicitly set up the close button functionality
             $closeButton.off('click.citationClose').on('click.citationClose', function(e) {
@@ -688,28 +717,40 @@
             $modal.find('.copy-citation').off('click');
             $modal.find('.copy-all-citations').off('click');
 
-            // Individual copy buttons
+            // Individual copy buttons - updated to work with actual HTML structure
             $modal.find('.copy-individual').on('click', function (e) {
                 e.preventDefault();
                 e.stopPropagation();
-                const format = $(this).data('format');
-                const citationText = $('.' + format + '-citation .citation-content').text().trim();
+                
+                
+                // Find the citation text in the same container
+                const $button = $(this);
+                const $citationContainer = $button.closest('.citation-content');
+                
+                // Get all text except the button text by cloning and removing button
+                const $clone = $citationContainer.clone();
+                $clone.find('button').remove();
+                const citationText = $clone.text().trim();
+                
 
                 if (citationText) {
                     // Try modern clipboard API first
                     if (navigator.clipboard && navigator.clipboard.writeText) {
                         navigator.clipboard.writeText(citationText).then(() => {
-                            self.showIndividualCopyFeedback($(this), 'Copied!');
+                            self.showIndividualCopyFeedback($button, 'Copied!');
                         }).catch(() => {
                             // Fall back to execCommand
-                            self.fallbackIndividualCopy(citationText, $(this));
+                            self.fallbackIndividualCopy(citationText, $button);
                         });
                     } else {
                         // Fall back to execCommand
-                        self.fallbackIndividualCopy(citationText, $(this));
+                        self.fallbackIndividualCopy(citationText, $button);
                     }
+                } else {
+                    console.error('No citation text found');
+                    self.showIndividualCopyFeedback($button, 'Error: No text found', true);
                 }
-                return FALSE;
+                return false;
             });
 
             // Copy all button if it exists
@@ -909,7 +950,6 @@
             // Force manual dropdown implementation for reliable functionality
             once('sahoToolsDropdown', '#toolsDropdown', context).forEach(
                 function (element) {
-                    console.log('Initializing Tools dropdown for element:', element);
                     const $dropdown = $(element);
                     
                     // Always use manual dropdown to ensure it works
@@ -921,7 +961,6 @@
             once('sahoToolsDropdownGeneric', '.dropdown-toggle', context).forEach(
                 function (element) {
                     if ($(element).text().trim().includes('Tools') || $(element).find('.bi-tools').length > 0) {
-                        console.log('Found Tools dropdown via generic selector:', element);
                         const $dropdown = $(element);
                         Drupal.sahoCitation.initializeManualDropdown($dropdown);
                     }
@@ -959,7 +998,6 @@
      * Manual dropdown toggle functionality.
      */
     Drupal.sahoCitation.initializeManualDropdown = function($dropdown) {
-        console.log('Setting up manual dropdown for:', $dropdown[0]);
         
         // Find the dropdown menu - try multiple selectors
         let $menu = $dropdown.siblings('.dropdown-menu');
@@ -970,7 +1008,6 @@
             $menu = $dropdown.next('.dropdown-menu');
         }
         
-        console.log('Found dropdown menu:', $menu[0], 'Menu length:', $menu.length);
         
         if ($menu.length === 0) {
             console.error('No dropdown menu found for Tools dropdown');
@@ -978,21 +1015,20 @@
         }
         
         // Remove any existing handlers to prevent duplicates
-        $dropdown.off('click.manualDropdown');
+        $dropdown.off('click.manualDropdown pointerdown.manualDropdown');
         
-        $dropdown.on('click.manualDropdown', function(e) {
-            console.log('Tools dropdown clicked');
+        // Use both click and pointer events to ensure it works
+        $dropdown.on('click.manualDropdown pointerdown.manualDropdown', function(e) {
             e.preventDefault();
             e.stopPropagation();
+            e.stopImmediatePropagation();
             
             // Toggle the dropdown
             const isOpen = $menu.hasClass('show');
-            console.log('Dropdown currently open:', isOpen);
             
             if (isOpen) {
                 $menu.removeClass('show');
                 $dropdown.attr('aria-expanded', 'false');
-                console.log('Closed dropdown');
             } else {
                 // Close other dropdowns first
                 $('.dropdown-menu.show').removeClass('show');
@@ -1001,8 +1037,9 @@
                 // Open this dropdown
                 $menu.addClass('show');
                 $dropdown.attr('aria-expanded', 'true');
-                console.log('Opened dropdown');
             }
+            
+            return false;
         });
         
         // Close dropdown when clicking outside
@@ -1023,28 +1060,17 @@
             }
         });
         
-        console.log('Manual dropdown initialized successfully');
     };
 
     // Additional fallback - direct initialization when document is ready
     $(document).ready(function() {
-        console.log('Document ready - checking for Tools dropdown');
         
         // Wait a bit for other scripts to load
         setTimeout(function() {
             const $toolsDropdown = $('#toolsDropdown');
-            if ($toolsDropdown.length > 0) {
-                console.log('Found Tools dropdown, initializing directly');
+            if ($toolsDropdown.length > 0 && !$toolsDropdown.data('enhanced')) {
+                $toolsDropdown.data('enhanced', true);
                 Drupal.sahoCitation.initializeManualDropdown($toolsDropdown);
-            } else {
-                console.log('Tools dropdown not found by ID, trying class selector');
-                $('.dropdown-toggle').each(function() {
-                    const $this = $(this);
-                    if ($this.text().includes('Tools') || $this.find('.bi-tools').length > 0) {
-                        console.log('Found Tools dropdown by content, initializing');
-                        Drupal.sahoCitation.initializeManualDropdown($this);
-                    }
-                });
             }
         }, 1000);
     });

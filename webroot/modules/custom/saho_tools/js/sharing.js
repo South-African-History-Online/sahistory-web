@@ -86,16 +86,14 @@
             // Get jQuery object for the modal
             const $modal = $(modalElement);
 
-            // Ensure the close button (X) is visible in the top right corner
+            // Find existing close button - don't create duplicate
             let $closeButton = $modal.find('.btn-close');
-            if ($closeButton.length === 0) {
-                // If no close button exists, add one
-                $closeButton = $('<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">×</button>');
-                $modal.find('.modal-header').append($closeButton);
-            }
             
-            // Ensure close button text is always visible
-            $closeButton.html('×');
+            // If close button exists, ensure it's properly set up but don't create duplicate
+            if ($closeButton.length > 0) {
+                // Ensure close button text is always visible
+                $closeButton.html('×');
+            }
             
             // Set up close button click handler
             $closeButton.off('click.sharingClose').on('click.sharingClose', function(e) {
@@ -166,15 +164,11 @@
         initializeCloseButton: function ($modal) {
             const self = this;
             
-            // Ensure close button exists and is functional
+            // Find existing close button - don't create duplicate
             let $closeButton = $modal.find('.btn-close');
-            if ($closeButton.length === 0) {
-                $closeButton = $('<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">×</button>');
-                $modal.find('.modal-header').prepend($closeButton);
-            }
             
-            // Ensure the × is visible
-            if ($closeButton.html().trim() === '') {
+            // Only ensure the × is visible if button exists
+            if ($closeButton.length > 0 && $closeButton.html().trim() === '') {
                 $closeButton.html('×');
             }
             
