@@ -1,0 +1,129 @@
+{#
+/**
+ * @file
+ * SAHO Featured Articles - SDC Version
+ * 
+ * Drupal 11 SDC-powered template replacement
+ * Uses consistent SAHO components for maintainability
+ *
+ * Available variables:
+ * - nodes: Array of featured article nodes.
+ */
+#}
+
+{{ attach_library('saho/saho-featured-grid') }}
+{{ attach_library('saho/saho.colors') }}
+
+{# Process nodes into SDC format #}
+{% set processed_items = [] %}
+{% if nodes %}
+  {% for node in nodes %}
+    
+    {# Extract node data #}
+    {% set node_url = path('entity.node.canonical', {'node': node.id()}) %}
+    {% set node_title = node.label() %}
+    {% set node_type = node.bundle() %}
+    {% set updated_date = node.getChangedTime()|date('j M Y') %}
+    
+    {# Get summary text #}
+    {% set summary = '' %}
+    {% if node.hasField('field_synopsis') and not node.get('field_synopsis').isEmpty() %}
+      {% set summary = node.get('field_synopsis').value|striptags|trim %}
+    {% elseif node.hasField('body') and not node.get('body').isEmpty() %}
+      {% set summary = node.get('body').value|striptags|trim %}
+    {% endif %}
+    
+    {# Get image #}
+    {% set image_data = null %}
+    {% set image_fields = ['field_article_image', 'field_image', 'field_bio_pic', 'field_place_image', 'field_event_image'] %}
+    {% for field_name in image_fields %}
+      {% if not image_data and node.hasField(field_name) and not node.get(field_name).isEmpty() %}
+        {% set file_entity = node.get(field_name).entity %}
+        {% if file_entity %}
+          {% set image_data = {
+            'url': file_url(file_entity.uri.value),
+            'alt': node_title
+          } %}
+        {% endif %}
+      {% endif %}
+    {% endfor %}
+    
+    {# Check metadata fields #}
+    {% set is_staff_pick = false %}
+    {% set is_featured = false %}
+    {% if node.hasField('field_staff_picks') and not node.get('field_staff_picks').isEmpty() %}
+      {% set is_staff_pick = node.get('field_staff_picks').value == 1 %}
+    {% endif %}
+    {% if node.hasField('field_home_page_feature') and not node.get('field_home_page_feature').isEmpty() %}
+      {% set is_featured = node.get('field_home_page_feature').value == 1 %}
+    {% endif %}
+    
+    {# Build item data #}
+    {% set item_data = {
+      'id': node.id(),
+      'title': node_title,
+      'content': summary,
+      'url': node_url,
+      'image': image_data,
+      'content_type': node_type,
+      'metadata': {
+        'date': updated_date,
+        'category': node_type|replace({'_': ' '})|title,
+        'featured': is_featured,
+        'staff_pick': is_staff_pick
+      }
+    } %}
+    
+    {% set processed_items = processed_items|merge([item_data]) %}
+  {% endfor %}
+{% endif %}
+
+{# Define categories with dynamic counts #}
+{% set categories = [
+  {
+    'id': 'staff-picks',
+    'name': 'Staff Picks',
+    'icon': 'fas fa-medal',
+    'count': processed_items|filter(item => item.metadata.staff_pick)|length
+  },
+  {
+    'id': 'most-read',
+    'name': 'Most Read', 
+    'icon': 'fas fa-fire',
+    'count': 0
+  },
+  {
+    'id': 'africa-section',
+    'name': 'Africa Section',
+    'icon': 'fas fa-globe-africa',
+    'count': processed_items|filter(item => item.content_type in ['place'])|length
+  },
+  {
+    'id': 'politics-society', 
+    'name': 'Politics & Society',
+    'icon': 'fas fa-users',
+    'count': processed_items|filter(item => item.content_type in ['biography', 'event'])|length
+  },
+  {
+    'id': 'timelines',
+    'name': 'Timeline Features',
+    'icon': 'fas fa-clock', 
+    'count': processed_items|filter(item => item.content_type == 'event')|length
+  }
+] %}
+
+<div class="saho-featured-articles saho-featured-articles--sdc">
+  
+  {# Use the SAHO Featured Grid SDC Component #}
+  {% include 'saho:saho-featured-grid' with {
+    'title': 'Featured Articles',
+    'description': 'Discover the stories that shaped South Africa. From struggle heroes and liberation movements to cultural heritage and social transformation, these featured articles illuminate the rich tapestry of South African history and the ongoing journey toward unity and progress.',
+    'items': processed_items,
+    'layout': 'default',
+    'columns': '2',
+    'show_sidebar': true,
+    'categories': categories, 
+    'variant': 'primary'
+  } %}
+  
+</div>
