@@ -245,34 +245,48 @@ button.saho-share-btn:focus {
   letter-spacing: -0.02em;
 }
 
-/* Modern Close Buttons - Clean and minimal */
+/* Visible Close Buttons - SAHO red styling */
 #citation-modal .btn-close,
 #sharing-modal .btn-close {
   position: absolute !important;
   top: 1.5rem !important;
   right: 1.5rem !important;
-  width: 32px !important;
-  height: 32px !important;
-  opacity: 0.6 !important;
-  transition: opacity 0.2s ease !important;
-  background-size: 1rem !important;
-  border: none !important;
+  width: 40px !important;
+  height: 40px !important;
+  background: #ffffff !important;
+  border: 2px solid #990000 !important; /* SAHO red border */
   border-radius: 50% !important;
+  color: #990000 !important; /* SAHO red X */
+  font-size: 18px !important;
+  font-weight: bold !important;
+  line-height: 1 !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  opacity: 1 !important;
   padding: 0 !important;
   margin: 0 !important;
   z-index: 10 !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
 }
 
 #citation-modal .btn-close:hover,
 #sharing-modal .btn-close:hover {
-  opacity: 1 !important;
-  background-color: rgba(0, 0, 0, 0.05) !important;
+  background: #990000 !important; /* Fill with SAHO red on hover */
+  color: #ffffff !important; /* White X on hover */
+  transform: scale(1.1) !important;
+  box-shadow: 0 4px 12px rgba(153, 0, 0, 0.25) !important;
 }
 
-/* Remove duplicate close button content - Bootstrap already provides it */
+/* Ensure close button has visible X symbol */
 #citation-modal .btn-close::before,
 #sharing-modal .btn-close::before {
-  content: none !important; /* Remove our custom content to avoid duplication */
+  content: "×" !important; /* Explicit X symbol */
+  font-size: 20px !important;
+  line-height: 1 !important;
+  font-weight: bold !important;
 }
 
 #citation-modal .btn-close:hover,
@@ -314,15 +328,18 @@ button.saho-share-btn:focus {
   margin-bottom: 0;
 }
 
-.citation-format-header h6 {
-  color: #3a4a64 !important;
+.citation-format-header h6,
+.citation-format h4,
+#citation-modal h4 {
+  color: #990000 !important; /* SAHO red for readability */
   font-weight: 600;
   margin-bottom: 0.75rem;
-  font-size: 0.875rem;
+  font-size: 1rem !important; /* Larger for better readability */
   text-transform: uppercase;
   letter-spacing: 0.05em;
   position: relative;
   padding-left: 0;
+  background: transparent !important; /* Ensure no background conflicts */
 }
 
 /* Modern Citation Cards */
@@ -377,23 +394,27 @@ button.saho-share-btn:focus {
   justify-content: flex-end;
 }
 
-/* Modern Copy Buttons - Citation Modal */
+/* Modern Copy Buttons - Citation Modal - Enhanced Size and Clarity */
 #citation-modal .copy-individual,
 #citation-modal .copy-all-citations,
 #citation-modal .copy-btn {
   background: #990000 !important;
   color: #ffffff !important;
   border: none !important;
-  padding: 0.625rem 1.25rem;
-  border-radius: 6px;
-  font-size: 0.813rem;
-  font-weight: 500;
+  padding: 0.875rem 1.5rem !important; /* Bigger padding for better touch targets */
+  border-radius: 8px !important; /* Slightly more rounded */
+  font-size: 0.95rem !important; /* Larger text for better readability */
+  font-weight: 600 !important; /* Bolder text */
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.5rem;
+  min-height: 44px !important; /* WCAG compliant touch target */
+  width: 100% !important; /* Full width for better visibility */
+  box-shadow: 0 2px 8px rgba(153, 0, 0, 0.25) !important; /* Better depth */
 }
 
 /* Modern Copy Buttons - Sharing Modal */
@@ -816,6 +837,380 @@ button.saho-share-btn:focus {
   .share-button:hover {
     background: var(--saho-accent);
     color: var(--saho-text-primary);
+  }
+}
+
+/* CRITICAL OVERRIDE: Modern SAHO Styling - Highest Specificity */
+/* Force clean, modern white design over any dark/brown/blue theme conflicts */
+
+/* Clean White Modal Header */
+#citation-modal .modal-header,
+#citation-modal.modal .modal-header,
+body #citation-modal .modal-header,
+.modal#citation-modal .modal-header {
+  background: #ffffff !important; /* Clean white background */
+  color: #1a1a1a !important; /* Dark text for readability */
+  border-bottom: 1px solid #e5e5e5 !important;
+  border-radius: 0.375rem 0.375rem 0 0 !important;
+  padding: 1.5rem 2rem !important;
+}
+
+/* Clean Light Modal Body */
+#citation-modal .modal-body,
+#citation-modal.modal .modal-body,
+body #citation-modal .modal-body,
+.modal#citation-modal .modal-body {
+  background: #ffffff !important; /* Clean white background */
+  color: #1a1a1a !important; /* Dark text for readability */
+  padding: 2rem !important;
+}
+
+/* Modern Citation Format Sections - Clean White Cards */
+#citation-modal .citation-format,
+#citation-modal .citation-formatter .citation-format,
+body #citation-modal .citation-format {
+  background: #ffffff !important; /* Clean white background */
+  border: 1px solid #e5e5e5 !important; /* Light border */
+  border-radius: 0.5rem !important; /* Modern rounded corners */
+  padding: 1.5rem !important;
+  margin-bottom: 1.5rem !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) !important; /* Subtle shadow */
+}
+
+/* Citation Headers - SAHO Red, Clean Styling */
+#citation-modal h4,
+#citation-modal .citation-format h4,
+#citation-modal .citation-format h6,
+body #citation-modal h4 {
+  color: #990000 !important; /* SAHO red for headers */
+  background: transparent !important; /* No background */
+  font-size: 1.1rem !important;
+  font-weight: 600 !important;
+  margin-bottom: 1rem !important;
+  text-transform: none !important; /* Remove uppercase for readability */
+}
+
+/* Citation Content Areas - Clean White */
+#citation-modal .citation-content,
+#citation-modal .apa-citation,
+#citation-modal .harvard-citation,
+#citation-modal .oxford-citation,
+body #citation-modal .citation-content {
+  background: #f8f9fa !important; /* Very light gray for content */
+  border: 1px solid #e9ecef !important;
+  border-radius: 0.375rem !important;
+  padding: 1rem !important;
+  margin-bottom: 1rem !important;
+  font-family: 'Georgia', serif !important;
+  line-height: 1.6 !important;
+  color: #2c3e50 !important;
+}
+
+/* Copy Buttons - Modern SAHO Red */
+#citation-modal .copy-individual,
+#citation-modal .copy-btn,
+#citation-modal .copy-all-citations,
+#citation-modal button[class*="copy"],
+#citation-modal .btn-outline-secondary,
+body #citation-modal .copy-individual {
+  background: #990000 !important; /* SAHO red */
+  color: #ffffff !important;
+  border: 2px solid #990000 !important;
+  border-radius: 0.375rem !important;
+  padding: 0.75rem 1.5rem !important;
+  font-size: 0.9rem !important;
+  font-weight: 500 !important;
+  transition: all 0.2s ease !important;
+  width: 100% !important;
+  text-align: center !important;
+}
+
+#citation-modal .copy-individual:hover,
+#citation-modal .copy-btn:hover,
+#citation-modal .copy-all-citations:hover,
+#citation-modal .btn-outline-secondary:hover,
+body #citation-modal .copy-individual:hover {
+  background: #7a0000 !important; /* Darker red on hover */
+  border-color: #7a0000 !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 8px rgba(153, 0, 0, 0.25) !important;
+}
+
+/* Close Button - Single, Visible, SAHO Red */
+#citation-modal .btn-close,
+#citation-modal.modal .btn-close,
+body #citation-modal .btn-close {
+  position: absolute !important;
+  top: 1rem !important;
+  right: 1rem !important;
+  width: 36px !important;
+  height: 36px !important;
+  background: #ffffff !important;
+  border: 2px solid #990000 !important;
+  border-radius: 50% !important;
+  color: #990000 !important;
+  font-size: 16px !important;
+  font-weight: bold !important;
+  opacity: 1 !important;
+  z-index: 999 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+#citation-modal .btn-close:hover,
+body #citation-modal .btn-close:hover {
+  background: #990000 !important;
+  color: #ffffff !important;
+  border-color: #990000 !important;
+  transform: scale(1.05) !important;
+}
+
+/* Hide any duplicate close buttons from theme */
+#citation-modal .btn-close + .btn-close,
+#citation-modal .modal-header > button:not(.btn-close),
+#citation-modal .modal-header .close,
+.saho-citation-modal .btn-close:not(:first-of-type) {
+  display: none !important;
+}
+
+/* Override any dark theme completely */
+.saho-citation-modal,
+.saho-citation-modal .modal-header,
+.saho-citation-modal .modal-body,
+.saho-citation-modal .citation-format {
+  background: #ffffff !important;
+  color: #1a1a1a !important;
+}
+
+/* COMPLETE OVERRIDE OF CONFLICTING THEME STYLES */
+/* Target and override the brown/blue gradient styles from modern-modals.css */
+
+/* Kill any brown/saddle brown gradients completely */
+.saho-citation-modal .modal-header,
+.saho-citation-modal .modal-body,
+.saho-citation-modal .citation-format,
+.saho-citation-modal .citation-text,
+.saho-citation-modal .copy-btn,
+#citation-modal .modal-content.saho-citation-modal,
+#citation-modal .modal-content.saho-citation-modal .modal-header,
+#citation-modal .modal-content.saho-citation-modal .modal-body {
+  background: #ffffff !important; /* Force white over any gradients */
+  background-image: none !important; /* Kill gradients */
+  border-color: #e5e5e5 !important;
+  color: #1a1a1a !important;
+}
+
+/* Override brown button gradients with clean SAHO red */
+.saho-citation-modal .copy-btn,
+.saho-citation-modal .copy-individual,
+.saho-citation-modal .copy-all-citations {
+  background: #990000 !important; /* SAHO red, not brown */
+  background-image: none !important; /* Kill gradients */
+  color: #ffffff !important;
+}
+
+/* Force citation format background to be white, not blue/brown */
+.citation-format {
+  background: #ffffff !important;
+  background-image: none !important;
+  border: 1px solid #e5e5e5 !important;
+  color: #1a1a1a !important;
+}
+
+/* ========================================================================
+   SHARING MODAL - MODERN SAHO STYLING
+   ======================================================================== */
+
+/* Clean White Sharing Modal Header */
+#sharing-modal .modal-header,
+#sharing-modal.modal .modal-header,
+body #sharing-modal .modal-header,
+.modal#sharing-modal .modal-header {
+  background: #ffffff !important; /* Clean white background */
+  color: #1a1a1a !important; /* Dark text for readability */
+  border-bottom: 1px solid #e5e5e5 !important;
+  border-radius: 0.375rem 0.375rem 0 0 !important;
+  padding: 1.5rem 2rem !important;
+}
+
+/* Clean White Sharing Modal Body */
+#sharing-modal .modal-body,
+#sharing-modal.modal .modal-body,
+body #sharing-modal .modal-body,
+.modal#sharing-modal .modal-body {
+  background: #ffffff !important; /* Clean white background */
+  color: #1a1a1a !important; /* Dark text for readability */
+  padding: 2rem !important;
+}
+
+/* URL Copy Section - Clean White Card */
+#sharing-modal .url-copy-section,
+#sharing-modal .sharing-content .url-copy-section,
+body #sharing-modal .url-copy-section {
+  background: #f8f9fa !important; /* Light gray background */
+  border: 1px solid #e5e5e5 !important;
+  border-radius: 0.5rem !important;
+  padding: 1.5rem !important;
+  margin-bottom: 1.5rem !important;
+}
+
+#sharing-modal .url-copy-section h6,
+body #sharing-modal .url-copy-section h6 {
+  color: #2d5016 !important; /* SAHO forest green for sharing headers */
+  font-weight: 600 !important;
+  margin-bottom: 1rem !important;
+  font-size: 1rem !important;
+}
+
+/* URL Input Field - Clean Styling */
+#sharing-modal .url-input,
+#sharing-modal #page-url-input,
+body #sharing-modal .url-input {
+  background: #ffffff !important;
+  border: 1px solid #e5e5e5 !important;
+  border-radius: 0.375rem !important;
+  padding: 0.75rem 1rem !important;
+  font-size: 0.9rem !important;
+  color: #495057 !important;
+  font-family: 'SF Mono', 'Monaco', monospace !important;
+}
+
+/* Copy URL Button - SAHO Forest Green */
+#sharing-modal .url-copy-btn,
+#sharing-modal .copy-url-btn,
+#sharing-modal button[class*="copy"],
+body #sharing-modal .url-copy-btn {
+  background: #2d5016 !important; /* SAHO forest green */
+  color: #ffffff !important;
+  border: 2px solid #2d5016 !important;
+  border-radius: 0.375rem !important;
+  padding: 0.75rem 1.5rem !important;
+  font-size: 0.9rem !important;
+  font-weight: 500 !important;
+  transition: all 0.2s ease !important;
+  white-space: nowrap !important;
+}
+
+#sharing-modal .url-copy-btn:hover,
+#sharing-modal .copy-url-btn:hover,
+body #sharing-modal .url-copy-btn:hover {
+  background: #1a3009 !important; /* Darker forest green on hover */
+  border-color: #1a3009 !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 8px rgba(45, 80, 22, 0.25) !important;
+}
+
+/* Sharing Options Grid - Clean Cards */
+#sharing-modal .sharing-options,
+body #sharing-modal .sharing-options {
+  display: grid !important;
+  grid-template-columns: repeat(2, 1fr) !important;
+  gap: 1rem !important;
+  margin-top: 1.5rem !important;
+}
+
+/* Social Share Buttons - Clean White Cards with SAHO Accents */
+#sharing-modal .share-option,
+#sharing-modal .sharing-options a,
+body #sharing-modal .share-option {
+  background: #ffffff !important; /* Clean white background */
+  border: 1px solid #e5e5e5 !important;
+  border-radius: 0.5rem !important;
+  padding: 1rem 1.25rem !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.75rem !important;
+  text-decoration: none !important;
+  color: #495057 !important;
+  font-weight: 500 !important;
+  font-size: 0.9rem !important;
+  transition: all 0.2s ease !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) !important;
+}
+
+#sharing-modal .share-option:hover,
+#sharing-modal .sharing-options a:hover,
+body #sharing-modal .share-option:hover {
+  background: #2d5016 !important; /* SAHO forest green on hover */
+  border-color: #2d5016 !important;
+  color: #ffffff !important;
+  text-decoration: none !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 12px rgba(45, 80, 22, 0.2) !important;
+}
+
+#sharing-modal .share-option svg,
+#sharing-modal .sharing-options a svg,
+body #sharing-modal .share-option svg {
+  width: 20px !important;
+  height: 20px !important;
+  flex-shrink: 0 !important;
+  fill: currentColor !important;
+}
+
+/* Close Button - Single, Visible, SAHO Forest Green */
+#sharing-modal .btn-close,
+#sharing-modal.modal .btn-close,
+body #sharing-modal .btn-close {
+  position: absolute !important;
+  top: 1rem !important;
+  right: 1rem !important;
+  width: 36px !important;
+  height: 36px !important;
+  background: #ffffff !important;
+  border: 2px solid #2d5016 !important; /* Forest green border */
+  border-radius: 50% !important;
+  color: #2d5016 !important; /* Forest green X */
+  font-size: 16px !important;
+  font-weight: bold !important;
+  opacity: 1 !important;
+  z-index: 999 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+#sharing-modal .btn-close:hover,
+body #sharing-modal .btn-close:hover {
+  background: #2d5016 !important; /* Fill with forest green on hover */
+  color: #ffffff !important;
+  border-color: #2d5016 !important;
+  transform: scale(1.05) !important;
+}
+
+/* Hide any duplicate close buttons from theme */
+#sharing-modal .btn-close + .btn-close,
+#sharing-modal .modal-header > button:not(.btn-close),
+#sharing-modal .modal-header .close,
+.saho-sharing-modal .btn-close:not(:first-of-type) {
+  display: none !important;
+}
+
+/* Override any dark theme completely for sharing modal */
+.saho-sharing-modal,
+.saho-sharing-modal .modal-header,
+.saho-sharing-modal .modal-body,
+.saho-sharing-modal .url-copy-section,
+.saho-sharing-modal .sharing-options {
+  background: #ffffff !important;
+  background-image: none !important;
+  color: #1a1a1a !important;
+}
+
+/* Mobile Responsive for Sharing Modal */
+@media (max-width: 768px) {
+  #sharing-modal .sharing-options {
+    grid-template-columns: 1fr !important;
+  }
+  
+  #sharing-modal .url-input-group {
+    flex-direction: column !important;
+    gap: 1rem !important;
+  }
+  
+  #sharing-modal .url-copy-btn {
+    width: 100% !important;
   }
 }
 
