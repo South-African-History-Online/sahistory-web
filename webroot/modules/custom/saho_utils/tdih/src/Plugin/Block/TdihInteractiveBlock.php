@@ -108,6 +108,7 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
     return [
       'display_mode' => 'compact',
       'show_date_picker' => TRUE,
+      'date_picker_mode' => 'full',
       'show_today_history' => TRUE,
       'show_explore_button' => TRUE,
       'show_header_title' => TRUE,
@@ -145,6 +146,22 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
       '#default_value' => $this->configuration['show_date_picker'],
     ];
 
+    $form['date_picker_mode'] = [
+      '#type' => 'select',
+      '#title' => $this->t('Date picker mode'),
+      '#description' => $this->t('Choose whether to show day/month only or full date picker with year.'),
+      '#options' => [
+        'day_month' => $this->t('Day and Month only'),
+        'full' => $this->t('Full date with Year (birthday mode)'),
+      ],
+      '#default_value' => $this->configuration['date_picker_mode'],
+      '#states' => [
+        'visible' => [
+          ':input[name="show_date_picker"]' => ['checked' => TRUE],
+        ],
+      ],
+    ];
+
     $form['show_today_history'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Show Today in history section'),
@@ -170,6 +187,7 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
     $this->configuration['display_mode'] = $form_state->getValue('display_mode');
     $this->configuration['show_header_title'] = $form_state->getValue('show_header_title');
     $this->configuration['show_date_picker'] = $form_state->getValue('show_date_picker');
+    $this->configuration['date_picker_mode'] = $form_state->getValue('date_picker_mode');
     $this->configuration['show_today_history'] = $form_state->getValue('show_today_history');
     $this->configuration['show_explore_button'] = $form_state->getValue('show_explore_button');
   }
@@ -383,7 +401,14 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
     // Build the date picker form if enabled.
     $form = [];
     if ($this->configuration['show_date_picker']) {
-      $form = $this->formBuilder->getForm('Drupal\tdih\Form\BirthdayDateForm');
+      if ($this->configuration['date_picker_mode'] === 'day_month') {
+        // Use simplified day/month form.
+        $form = $this->formBuilder->getForm('Drupal\tdih\Form\DayMonthDateForm');
+      }
+      else {
+        // Use full birthday form with year.
+        $form = $this->formBuilder->getForm('Drupal\tdih\Form\BirthdayDateForm');
+      }
     }
 
     // Return a render array referencing our theme hook.
@@ -392,6 +417,7 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
       '#all_events' => $all_events,
       '#target_date' => $target_date,
       '#date_picker_form' => $form,
+      '#date_picker_mode' => $this->configuration['date_picker_mode'],
       '#display_mode' => $this->configuration['display_mode'],
       '#show_header_title' => $this->configuration['show_header_title'],
       '#show_today_history' => $this->configuration['show_today_history'],

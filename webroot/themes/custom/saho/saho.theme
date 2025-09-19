@@ -309,6 +309,24 @@ function saho_preprocess_node(array &$variables) {
     $variables['#attached']['library'][] = 'saho/context.details';
     $variables['#attached']['library'][] = 'saho/sidebar.accordion';
   }
+
+  // Add TDIH Interactive Block to event nodes - minimal version
+  if ($node->bundle() == 'event' && $variables['view_mode'] == 'full') {
+    // Load the TDIH Interactive Block configured for minimal display
+    $block_manager = \Drupal::service('plugin.manager.block');
+    $config = [
+      'display_mode' => 'compact',
+      'show_date_picker' => TRUE,
+      'date_picker_mode' => 'day_month',
+      'show_today_history' => FALSE,
+      'show_explore_button' => FALSE,
+      'show_header_title' => FALSE,
+    ];
+
+    $plugin_block = $block_manager->createInstance('tdih_interactive_block', $config);
+    $render = $plugin_block->build();
+    $variables['tdih_minimal_block'] = $render;
+  }
   
   // Add biography-specific styling for biography content type
   if ($node->bundle() == 'biography') {
