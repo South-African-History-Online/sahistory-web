@@ -57,6 +57,21 @@
         {% endif %}
       </div>
 
+      {# Add minimal TDIH Interactive Block after body content #}
+      {% if tdih_minimal_block %}
+        <div class="saho-tdih-minimal-block mt-4">
+          <div class="card border-0 shadow-sm">
+            <div class="card-body p-3">
+              <h4 class="h6 mb-3 text-muted">
+                <i class="fas fa-search me-2"></i>
+                {{ 'Explore events by date'|t }}
+              </h4>
+              {{ tdih_minimal_block }}
+            </div>
+          </div>
+        </div>
+      {% endif %}
+
       {% if content.field_highlight %}
         <div id="highlights" class="saho-highlight">
           <h3>Highlights</h3>
@@ -127,9 +142,11 @@
     {% if node.field_ref_str.value %}
       {% set sidebar_has_content = true %}
     {% endif %}
-    
+
+
     {% if sidebar_has_content %}
     <aside class="saho-article-sidebar">
+
 
       {# Always display images in sidebar - prioritize in order: feature banner, tdih image, event image #}
       {% if node.field_feature_banner.entity %}

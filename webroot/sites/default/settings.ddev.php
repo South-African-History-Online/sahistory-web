@@ -49,9 +49,47 @@ $config['symfony_mailer.mailer_transport.sendmail']['configuration']['pass'] = '
 $config['symfony_mailer.mailer_transport.sendmail']['configuration']['host'] = 'localhost';
 $config['symfony_mailer.mailer_transport.sendmail']['configuration']['port'] = '1025';
 
+// ============================================
+// DEVELOPMENT OVERRIDES
+// ============================================
+// These settings override production optimizations for local development.
+
 // Enable verbose logging for errors.
 // https://www.drupal.org/forum/support/post-installation/2018-07-18/enable-drupal-8-backend-errorlogdebugging-mode
 $config['system.logging']['error_level'] = 'verbose';
+
+// Database log settings - keep more messages for debugging
+$config['dblog.settings']['row_limit'] = 10000;
+
+// Disable caching for development
+$config['system.performance']['cache']['page']['max_age'] = 0;
+$config['system.performance']['css']['preprocess'] = FALSE;
+$config['system.performance']['js']['preprocess'] = FALSE;
+
+// Enable development modules
+$config['core.extension']['module']['devel'] = 1;
+$config['core.extension']['module']['views_ui'] = 1;
+$config['core.extension']['module']['field_ui'] = 1;
+$config['core.extension']['module']['dblog'] = 1;
+
+// Enable Twig debugging for theme development
+$settings['twig_debug'] = TRUE;
+$settings['twig_auto_reload'] = TRUE;
+$settings['twig_cache'] = FALSE;
+
+// PHP settings for development
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+ini_set('max_execution_time', 300); // 5 minutes for debugging
+ini_set('memory_limit', '512M'); // More memory for development
+
+// Disable secure cookies for local development (no HTTPS)
+ini_set('session.cookie_secure', 0);
+
+// Disable cache for better debugging - use memory backend instead of null
+$settings['cache']['bins']['render'] = 'cache.backend.memory';
+$settings['cache']['bins']['page'] = 'cache.backend.memory';
+$settings['cache']['bins']['dynamic_page_cache'] = 'cache.backend.memory';
 
 // Redis configuration.
 if (extension_loaded('redis') && !empty(getenv('REDIS_HOST'))) {
