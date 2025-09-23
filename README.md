@@ -10,6 +10,10 @@ This is a Github project is currently supported and maintained by Mads Nørgaard
 ## Table of Contents
 
 - [Stack Overview](#stack-overview)
+- [SAHO Design System & Style Guide](#saho-design-system--style-guide)
+  - [Color Palette](#color-palette)
+  - [Typography](#typography)
+  - [Component Guidelines](#component-guidelines)
 - [Development](#development)
   - [Getting Started with DDEV](#getting-started)
   - [Backend Developer Commands](#backend-developer-commands)
@@ -39,6 +43,107 @@ The full stack is:
 - **Radix** theme framework with a custom subtheme called **"saho"**
 - **Bootstrap 5** for responsive design and UI components
 - **Node.js** for frontend asset compilation and build processes
+
+## SAHO Design System & Style Guide
+
+The SAHO Design System ensures consistency across the platform while maintaining our heritage-focused brand identity. This system prioritizes accessibility, readability for long-form academic content, and mobile-first responsive design.
+
+### Color Palette
+
+#### Primary Colors
+- **Deep Heritage Red** `#990000` - Primary brand color representing heritage and authority
+- **Slate Blue** `#3a4a64` - Used for academic/research sections
+- **Muted Gold** `#b88a2e` - Secondary accent for historical significance
+- **Faded Brick Red** `#8b2331` - Complementary highlighting for important content
+
+#### Text Colors
+- **Primary Text** `#1e293b` - Main body text for optimal readability
+- **Secondary Text** `#475569` - Supporting text and descriptions
+- **Muted Text** `#94a3b8` - De-emphasized content, timestamps, metadata
+
+#### Background Colors
+- **Surface** `#ffffff` - Primary content areas
+- **Surface Alt** `#f8fafc` - Secondary surfaces for hierarchy
+- **Hover State** `#f1f5f9` - Interactive element hover states
+
+#### Semantic Colors
+- **Success** `#22c55e` - Successful operations, confirmations
+- **Warning** `#eab308` - Warnings, important notices
+- **Danger** `#ef4444` - Errors, destructive actions
+- **Info** `#3b82f6` - Informational messages
+
+### Typography
+
+#### Font Stack
+```css
+font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+```
+
+#### Type Scale (Desktop)
+- **Display XL**: `clamp(3rem, 5vw + 1rem, 5rem)` - Hero sections
+- **Display**: `clamp(2.5rem, 4vw + 1rem, 4rem)` - Page titles
+- **H1**: `clamp(2rem, 3vw + 1rem, 3rem)` - 36px (2.25rem)
+- **H2**: `clamp(1.5rem, 2vw + 1rem, 2.25rem)` - 28px (1.75rem)
+- **H3**: `clamp(1.25rem, 1.5vw + 0.5rem, 1.875rem)` - 24px (1.5rem)
+- **H4**: `clamp(1.125rem, 1vw + 0.5rem, 1.5rem)` - 20px (1.25rem)
+- **Body Large**: 18px (1.125rem) - Lead paragraphs
+- **Body**: 16px (1rem) - Standard content
+- **Body Small**: 14px (0.875rem) - Supporting text
+- **Caption**: 12px (0.75rem) - Smallest text
+
+#### Font Weights
+- **Light**: 300 - Decorative text only
+- **Regular**: 400 - Body text
+- **Medium**: 500 - UI elements
+- **Semibold**: 600 - Subheadings
+- **Bold**: 700 - Headings, emphasis
+- **Black**: 900 - Display text (sparingly)
+
+### Component Guidelines
+
+#### Spacing System
+- **XS**: 4px (0.25rem) - Tight spacing
+- **SM**: 8px (0.5rem) - Compact elements
+- **MD**: 16px (1rem) - Standard spacing
+- **LG**: 24px (1.5rem) - Section spacing
+- **XL**: 32px (2rem) - Major sections
+
+#### Border Radius
+- **Small**: 6px (0.375rem) - Buttons, inputs
+- **Medium**: 8px (0.5rem) - Cards, modals
+- **Large**: 12px (0.75rem) - Large containers
+
+#### Shadows
+```css
+--shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+--shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+--shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+--shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.15);
+```
+
+#### Mobile-First Breakpoints
+- **Mobile**: 320px - 640px
+- **Tablet**: 641px - 1024px
+- **Desktop**: 1025px - 1280px
+- **Large Desktop**: 1281px+
+
+### Design Principles
+
+1. **Heritage & Authority**: Use deep red sparingly for primary actions and brand moments
+2. **Readability First**: Maintain high contrast ratios (minimum 4.5:1) for all text
+3. **Academic Tone**: Clean, professional layouts that prioritize content over decoration
+4. **Mobile Optimization**: Over 50% of users are mobile - ensure touch-friendly interfaces
+5. **Progressive Enhancement**: Start with a solid mobile experience, enhance for larger screens
+6. **Consistent Spacing**: Use the spacing scale consistently to create visual rhythm
+7. **Accessible Colors**: All color combinations meet WCAG AA standards
+
+### Implementation Notes
+
+- CSS custom properties are defined in `/webroot/themes/custom/saho/src/scss/base/_variables.scss`
+- Modern components use CSS Grid and Flexbox for layouts
+- Fluid typography scales smoothly between breakpoints using `clamp()`
+- Interactive elements have clear hover, focus, and active states
+- Forms follow Bootstrap 5 patterns with SAHO color overrides
 
 ## Development
 You can run this project in a local environment using DDEV (quick setup).
