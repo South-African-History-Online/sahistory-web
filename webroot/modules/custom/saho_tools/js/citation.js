@@ -299,46 +299,78 @@
          *   The citation data.
          */
         updateCitationContent: function (citations) {
-            // Use template structure matching citation-formatter-all.html.twig
+            // Store citation data for export functionality
+            this.citationData = citations;
+            this.currentFormat = 'apa'; // Default format
+
+            // Use modern template structure
             const templateHtml = `
-              <div class="citation-formatter citation-formatter-all">
-                <div class="citation-formats">
-                  <div class="citation-format mb-4">
-                    <h4>APA (7th edition)</h4>
-                    <div class="citation-content apa-citation">
+              <div class="citation-formatter-modern">
+                <!-- Format selector tabs -->
+                <div class="citation-format-selector">
+                  <button class="citation-format-btn active" data-format="apa">APA 7th</button>
+                  <button class="citation-format-btn" data-format="harvard">Harvard</button>
+                  <button class="citation-format-btn" data-format="oxford">Oxford</button>
+                  <button class="citation-format-btn" data-format="mla">MLA 9th</button>
+                  <button class="citation-format-btn" data-format="chicago">Chicago</button>
+                </div>
+
+                <!-- Citation display area -->
+                <div class="citation-content-wrapper">
+                  <div class="citation-display" id="citation-text">
+                    <div class="citation-text-content">
                       ${citations.apa || 'Citation not available'}
-                      <button class="btn btn-sm btn-outline-secondary copy-individual mt-2">Copy APA Citation</button>
                     </div>
-                  </div>
-                  <div class="citation-format mb-4">
-                    <h4>Oxford (Footnote style)</h4>
-                    <div class="citation-content oxford-citation">
-                      ${citations.oxford || 'Citation not available'}
-                      <button class="btn btn-sm btn-outline-secondary copy-individual mt-2">Copy Oxford Citation</button>
-                    </div>
-                  </div>
-                  <div class="citation-format">
-                    <h4>Harvard</h4>
-                    <div class="citation-content harvard-citation">
-                      ${citations.harvard || 'Citation not available'}
-                      <button class="btn btn-sm btn-outline-secondary copy-individual mt-2">Copy Harvard Citation</button>
-                    </div>
-                  </div>
-                  
-                  <div class="citation-format citation-resources text-center mt-4">
-                    <a href="/content/referencing-resources-historical-research" class="btn btn-danger">Referencing Resources for Historical Research</a>
+                    <button class="copy-citation-btn" id="copy-btn">
+                      <svg class="citation-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                      </svg>
+                      <span>Copy</span>
+                    </button>
                   </div>
                 </div>
+
+                <!-- Export section -->
+                <div class="citation-export-section">
+                  <div class="export-section-title">Export for Reference Managers</div>
+                  <div class="export-buttons">
+                    <button class="export-btn" data-export="bibtex">
+                      <svg class="citation-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                      </svg>
+                      BibTeX (.bib)
+                    </button>
+                    <button class="export-btn" data-export="ris">
+                      <svg class="citation-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                      </svg>
+                      RIS (.ris)
+                    </button>
+                    <button class="export-btn" data-export="endnote">
+                      <svg class="citation-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                      </svg>
+                      EndNote
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Help link -->
+                <a href="/content/referencing-resources-historical-research" class="citation-help-link">
+                  Learn more about citation formats →
+                </a>
               </div>
             `;
-            
+
             // Replace the modal body content
             $('#citation-modal .citation-content').html(templateHtml);
-            
-            // Re-initialize copy buttons after content is loaded
+
+            // Initialize all interactions
             const modalElement = document.getElementById('citation-modal');
             if (modalElement) {
-                this.initializeCopyButtons($(modalElement));
+                this.initializeFormatButtons($(modalElement));
+                this.initializeModernCopyButton($(modalElement));
+                this.initializeModernExportButtons($(modalElement));
             }
         },
 
@@ -525,15 +557,14 @@
             // Get jQuery object for the modal
             const $modal = $(modalElement);
 
-            // Find existing close button - don't create duplicate
-            let $closeButton = $modal.find('.btn-close');
-            
-            // If close button exists, ensure it's properly set up but don't create duplicate
+            // Find existing close button and clean it up
+            let $closeButton = $modal.find('.btn-close').first();
+
+            // Clear any text content to let CSS handle the X
             if ($closeButton.length > 0) {
-                // Ensure close button text is always visible
-                $closeButton.html('×');
+                $closeButton.empty();
             }
-            
+
             // Explicitly set up the close button functionality
             $closeButton.off('click.citationClose').on('click.citationClose', function(e) {
                 e.preventDefault();
@@ -638,7 +669,10 @@
 
             // Initialize the new copy all button
             this.initializeCopyAllButton($modal);
-            
+
+            // Initialize export buttons
+            this.initializeExportButtons($modal);
+
             // Initialize close button functionality
             this.initializeCloseButton($modal);
         },
@@ -651,24 +685,24 @@
          */
         initializeCloseButton: function ($modal) {
             const self = this;
-            
-            // Ensure close button exists and is functional
-            let $closeButton = $modal.find('.btn-close');
+
+            // Find existing close button - don't create duplicate
+            let $closeButton = $modal.find('.btn-close').first();
+
+            // Only create if absolutely none exist
             if ($closeButton.length === 0) {
-                $closeButton = $('<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">×</button>');
-                $modal.find('.modal-header').prepend($closeButton);
+                $closeButton = $('<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>');
+                $modal.find('.modal-header').append($closeButton);
             }
-            
-            // Ensure the × is visible
-            if ($closeButton.html().trim() === '') {
-                $closeButton.html('×');
-            }
-            
+
+            // Remove any text content to prevent double X
+            $closeButton.empty();
+
             // Set up click handler
             $closeButton.off('click.citationClose').on('click.citationClose', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
-                
+
                 // Try Bootstrap API first if available
                 if (self.modal && typeof self.modal.hide === 'function') {
                     self.modal.hide();
@@ -701,6 +735,381 @@
             $(document).off('keydown.citationModal');
             $modal.find('[data-bs-toggle="tab"]').off('click');
 
+        },
+
+        /**
+         * Initialize format selector buttons.
+         *
+         * @param {jQuery} $modal
+         *   The jQuery modal object.
+         */
+        initializeFormatButtons: function ($modal) {
+            const self = this;
+
+            $modal.find('.citation-format-btn').off('click').on('click', function (e) {
+                e.preventDefault();
+                const $btn = $(this);
+                const format = $btn.data('format');
+
+                // Update active state
+                $modal.find('.citation-format-btn').removeClass('active');
+                $btn.addClass('active');
+
+                // Update citation display
+                self.currentFormat = format;
+                let citationText = '';
+
+                switch (format) {
+                    case 'apa':
+                        citationText = self.citationData.apa || 'APA citation not available';
+                        break;
+                    case 'harvard':
+                        citationText = self.citationData.harvard || 'Harvard citation not available';
+                        break;
+                    case 'oxford':
+                        citationText = self.citationData.oxford || 'Oxford citation not available';
+                        break;
+                    case 'mla':
+                        citationText = self.generateMLACitation() || 'MLA citation coming soon';
+                        break;
+                    case 'chicago':
+                        citationText = self.generateChicagoCitation() || 'Chicago citation coming soon';
+                        break;
+                    default:
+                        citationText = 'Citation format not available';
+                }
+
+                $('#citation-text').html('<div class="citation-text-content">' + citationText + '</div>' + $('#copy-btn')[0].outerHTML);
+            });
+        },
+
+        /**
+         * Initialize modern copy button.
+         *
+         * @param {jQuery} $modal
+         *   The jQuery modal object.
+         */
+        initializeModernCopyButton: function ($modal) {
+            const self = this;
+
+            $modal.on('click', '.copy-citation-btn', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                const $btn = $(this);
+                const $citationDisplay = $btn.closest('.citation-display');
+                const $textContent = $citationDisplay.find('.citation-text-content');
+                const citationText = $textContent.length ? $textContent.text().trim() : $citationDisplay.clone().find('.copy-citation-btn').remove().end().text().trim();
+
+                if (citationText) {
+                    if (navigator.clipboard && navigator.clipboard.writeText) {
+                        navigator.clipboard.writeText(citationText).then(() => {
+                            self.showModernFeedback($btn, 'Copied!', 'copied');
+                        }).catch(() => {
+                            self.fallbackCopy(citationText, $btn);
+                        });
+                    } else {
+                        self.fallbackCopy(citationText, $btn);
+                    }
+                }
+            });
+        },
+
+        /**
+         * Initialize modern export buttons.
+         *
+         * @param {jQuery} $modal
+         *   The jQuery modal object.
+         */
+        initializeModernExportButtons: function ($modal) {
+            const self = this;
+
+            $modal.find('.export-btn').off('click').on('click', function (e) {
+                e.preventDefault();
+                const $btn = $(this);
+                const exportType = $btn.data('export');
+
+                if (exportType === 'bibtex') {
+                    self.exportCitation('bibtex');
+                    self.showModernFeedback($btn, 'Exported!', 'exported');
+                } else if (exportType === 'ris') {
+                    self.exportCitation('ris');
+                    self.showModernFeedback($btn, 'Exported!', 'exported');
+                } else if (exportType === 'endnote') {
+                    // EndNote uses RIS format
+                    self.exportCitation('ris');
+                    self.showModernFeedback($btn, 'Exported!', 'exported');
+                }
+            });
+        },
+
+        /**
+         * Show modern feedback.
+         *
+         * @param {jQuery} $element
+         *   The element to update.
+         * @param {string} message
+         *   The feedback message.
+         * @param {string} className
+         *   The CSS class to add.
+         */
+        showModernFeedback: function ($element, message, className) {
+            const originalHtml = $element.html();
+            const originalClass = $element.attr('class');
+
+            $element.addClass(className);
+            if (message === 'Copied!') {
+                $element.html('<svg class="citation-icon" fill="currentColor" viewBox="0 0 20 20"><path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/><path fill-rule="evenodd" d="M4 5a2 2 0 012-2 1 1 0 000 2H6a2 2 0 100 4h2a2 2 0 100-4h-.5a1 1 0 000-2H9a2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5z" clip-rule="evenodd"/></svg><span>' + message + '</span>');
+            }
+
+            setTimeout(function () {
+                $element.removeClass(className).attr('class', originalClass).html(originalHtml);
+            }, 2000);
+        },
+
+        /**
+         * Fallback copy method.
+         *
+         * @param {string} text
+         *   The text to copy.
+         * @param {jQuery} $btn
+         *   The button element.
+         */
+        fallbackCopy: function (text, $btn) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'absolute';
+            textarea.style.left = '-9999px';
+            document.body.appendChild(textarea);
+            textarea.select();
+
+            try {
+                document.execCommand('copy');
+                this.showModernFeedback($btn, 'Copied!', 'copied');
+            } catch (err) {
+                this.showModernFeedback($btn, 'Failed', 'error');
+            }
+
+            document.body.removeChild(textarea);
+        },
+
+        /**
+         * Generate MLA citation (placeholder).
+         *
+         * @return {string}
+         *   The MLA citation.
+         */
+        generateMLACitation: function () {
+            // This is a placeholder - implement MLA format if needed
+            const nodeData = drupalSettings.sahoTools && drupalSettings.sahoTools.nodeData;
+            if (nodeData) {
+                const title = nodeData.title || document.title;
+                const date = new Date();
+                return '"' + title + '." <em>South African History Online</em>, ' + date.getDate() + ' ' +
+                       ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][date.getMonth()] +
+                       '. ' + date.getFullYear() + ', ' + window.location.href + '.';
+            }
+            return null;
+        },
+
+        /**
+         * Generate Chicago citation (placeholder).
+         *
+         * @return {string}
+         *   The Chicago citation.
+         */
+        generateChicagoCitation: function () {
+            // This is a placeholder - implement Chicago format if needed
+            const nodeData = drupalSettings.sahoTools && drupalSettings.sahoTools.nodeData;
+            if (nodeData) {
+                const title = nodeData.title || document.title;
+                const date = new Date();
+                return 'South African History Online. "' + title + '." Accessed ' +
+                       ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'][date.getMonth()] +
+                       ' ' + date.getDate() + ', ' + date.getFullYear() + '. ' + window.location.href + '.';
+            }
+            return null;
+        },
+
+        /**
+         * Initialize export buttons in the modal.
+         *
+         * @param {jQuery} $modal
+         *   The jQuery modal object.
+         */
+        initializeExportButtons: function ($modal) {
+            const self = this;
+
+            // Remove any existing click handlers first
+            $modal.find('.export-bibtex, .export-ris').off('click');
+
+            // Export button click handlers
+            $modal.find('.export-bibtex, .export-ris').on('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                const $button = $(this);
+                const format = $button.data('citation-format');
+
+                if (format === 'bibtex' || format === 'ris') {
+                    self.exportCitation(format);
+                }
+
+                return false;
+            });
+        },
+
+        /**
+         * Export citation in the specified format.
+         *
+         * @param {string} format
+         *   The export format ('bibtex' or 'ris').
+         */
+        exportCitation: function (format) {
+            // Check if we have citation data
+            if (!this.citationData) {
+                return;
+            }
+
+            // Generate BibTeX or RIS from node data if not already available
+            let citationContent;
+            let fileName;
+            let mimeType;
+
+            const nodeData = drupalSettings.sahoTools && drupalSettings.sahoTools.nodeData;
+            const pageTitle = (nodeData && nodeData.title) || document.title;
+
+            // Generate a file-safe slug from the title
+            const slug = pageTitle
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, '-')
+                .replace(/^-|-$/g, '')
+                .substring(0, 50);
+
+            if (format === 'bibtex') {
+                // Check if BibTeX was returned from the server
+                if (this.citationData.bibtex) {
+                    citationContent = this.citationData.bibtex;
+                } else {
+                    // Generate BibTeX format locally as fallback
+                    citationContent = this.generateBibTeXLocally(nodeData);
+                }
+                fileName = slug + '.bib';
+                mimeType = 'application/x-bibtex';
+            } else if (format === 'ris') {
+                // Check if RIS was returned from the server
+                if (this.citationData.ris) {
+                    citationContent = this.citationData.ris;
+                } else {
+                    // Generate RIS format locally as fallback
+                    citationContent = this.generateRISLocally(nodeData);
+                }
+                fileName = slug + '.ris';
+                mimeType = 'application/x-research-info-systems';
+            }
+
+            // Create a Blob and download the file
+            const blob = new Blob([citationContent], { type: mimeType + ';charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = fileName;
+
+            // Trigger download
+            document.body.appendChild(link);
+            link.click();
+
+            // Clean up
+            setTimeout(function () {
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+            }, 100);
+
+            // Show feedback
+            this.showExportFeedback(format);
+        },
+
+        /**
+         * Generate BibTeX format locally.
+         *
+         * @param {Object} nodeData
+         *   The node data.
+         *
+         * @return {string}
+         *   The BibTeX citation.
+         */
+        generateBibTeXLocally: function (nodeData) {
+            const title = (nodeData && nodeData.title) || document.title;
+            const url = window.location.href;
+            const year = new Date().getFullYear();
+
+            // Generate a cite key
+            const citeKey = title
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, '')
+                .substring(0, 20) + year;
+
+            let bibtex = '@online{' + citeKey + ',\n';
+            bibtex += '  author = {{South African History Online (SAHO)}},\n';
+            bibtex += '  title = {{' + title + '}},\n';
+            bibtex += '  year = {' + year + '},\n';
+            bibtex += '  url = {' + url + '},\n';
+            bibtex += '  urldate = {' + new Date().toISOString().split('T')[0] + '},\n';
+            bibtex += '  publisher = {{South African History Online}}\n';
+            bibtex += '}';
+
+            return bibtex;
+        },
+
+        /**
+         * Generate RIS format locally.
+         *
+         * @param {Object} nodeData
+         *   The node data.
+         *
+         * @return {string}
+         *   The RIS citation.
+         */
+        generateRISLocally: function (nodeData) {
+            const title = (nodeData && nodeData.title) || document.title;
+            const url = window.location.href;
+            const currentDate = new Date();
+            const year = currentDate.getFullYear();
+            const formattedDate = currentDate.toISOString().split('T')[0].replace(/-/g, '/');
+
+            let ris = 'TY  - ELEC\n';
+            ris += 'AU  - South African History Online (SAHO)\n';
+            ris += 'TI  - ' + title + '\n';
+            ris += 'PY  - ' + year + '\n';
+            ris += 'DA  - ' + formattedDate + '\n';
+            ris += 'UR  - ' + url + '\n';
+            ris += 'Y2  - ' + formattedDate + '\n';
+            ris += 'PB  - South African History Online\n';
+            ris += 'ER  - \n';
+
+            return ris;
+        },
+
+        /**
+         * Show feedback after export.
+         *
+         * @param {string} format
+         *   The export format.
+         */
+        showExportFeedback: function (format) {
+            const formatName = format === 'bibtex' ? 'BibTeX' : 'RIS';
+            const $buttons = $('.export-' + format);
+            const originalHtml = $buttons.html();
+
+            // Update button with success feedback
+            $buttons.html(
+                '<i class="bi bi-check-circle text-success"></i> ' + formatName + ' Exported!'
+            );
+
+            // Restore original button after 2 seconds
+            setTimeout(function () {
+                $buttons.html(originalHtml);
+            }, 2000);
         },
 
         /**
@@ -747,7 +1156,6 @@
                         self.fallbackIndividualCopy(citationText, $button);
                     }
                 } else {
-                    console.error('No citation text found');
                     self.showIndividualCopyFeedback($button, 'Error: No text found', true);
                 }
                 return false;
@@ -1010,7 +1418,6 @@
         
         
         if ($menu.length === 0) {
-            console.error('No dropdown menu found for Tools dropdown');
             return;
         }
         
