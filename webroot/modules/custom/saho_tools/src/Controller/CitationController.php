@@ -66,9 +66,6 @@ class CitationController extends ControllerBase {
       ]);
     }
     catch (\Exception $e) {
-      // Log the error.
-      $this->getLogger('saho_tools')->error('Error generating citation: @message', ['@message' => $e->getMessage()]);
-
       // Return an error response.
       return new JsonResponse([
         'success' => FALSE,
