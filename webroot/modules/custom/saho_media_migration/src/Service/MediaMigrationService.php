@@ -5,7 +5,6 @@ namespace Drupal\saho_media_migration\Service;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\File\FileSystemInterface;
-use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\file\FileInterface;
 
@@ -35,12 +34,6 @@ class MediaMigrationService {
    */
   protected $fileSystem;
 
-  /**
-   * The logger channel.
-   *
-   * @var \Drupal\Core\Logger\LoggerChannelInterface
-   */
-  protected $logger;
 
   /**
    * The messenger service.
@@ -56,13 +49,11 @@ class MediaMigrationService {
     EntityTypeManagerInterface $entity_type_manager,
     Connection $database,
     FileSystemInterface $file_system,
-    LoggerChannelFactoryInterface $logger_factory,
     MessengerInterface $messenger,
   ) {
     $this->entityTypeManager = $entity_type_manager;
     $this->database = $database;
     $this->fileSystem = $file_system;
-    $this->logger = $logger_factory->get('saho_media_migration');
     $this->messenger = $messenger;
   }
 
@@ -172,11 +163,6 @@ class MediaMigrationService {
     }
 
     fclose($handle);
-
-    $this->logger->notice('Generated CSV mapping with @count files: @file', [
-      '@count' => $processed,
-      '@file' => $filename,
-    ]);
 
     return $filename;
   }

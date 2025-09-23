@@ -175,13 +175,9 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
       }
 
       if (!$found_vocab) {
-        // Log that no vocabulary was found.
-        \Drupal::logger('featured_biography')->warning('No valid people category vocabulary found. Tried: @vocabs',
-          ['@vocabs' => implode(', ', $possible_vocab_names)]);
       }
     }
     catch (\Exception $e) {
-      \Drupal::logger('featured_biography')->error('Error loading taxonomy terms: @message', ['@message' => $e->getMessage()]);
     }
 
     $form['category'] = [
@@ -414,7 +410,6 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
       // Verify the content type exists.
       $type_exists = $this->entityTypeManager->getStorage('node_type')->load($content_type);
       if (!$type_exists) {
-        \Drupal::logger('featured_biography')->warning('Biography content type not found. Please ensure "biography" content type exists.');
         return NULL;
       }
 
@@ -468,8 +463,6 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
               }
 
               if (!$field_exists) {
-                \Drupal::logger('featured_biography')->warning('No valid category field found for biography content type. Tried: @fields',
-                  ['@fields' => implode(', ', $possible_field_names)]);
               }
             }
           }
@@ -625,7 +618,6 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
             }
           }
           catch (\Exception $e) {
-            \Drupal::logger('featured_biography')->warning('Error loading category term: @message', ['@message' => $e->getMessage()]);
           }
         }
         // If we found categories with this field, no need to check others.
