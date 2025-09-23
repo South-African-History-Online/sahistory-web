@@ -121,7 +121,6 @@ class TimelineController extends ControllerBase {
       return $fallback_data;
     }
     catch (\Exception $e) {
-      \Drupal::logger('saho_timeline')->error('Failed to generate fallback data: @message', ['@message' => $e->getMessage()]);
       return [];
     }
   }

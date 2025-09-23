@@ -128,7 +128,6 @@
         }
       })
       .catch(error => {
-        console.error('Error loading timeline:', error);
         const eventsContainer = container.querySelector('.timeline-events-list');
         eventsContainer.innerHTML = '<div class="error">Failed to load timeline events. Please refresh the page.</div>';
       });
