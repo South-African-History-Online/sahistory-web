@@ -1,0 +1,429 @@
+/**
+ * @file
+ * Modern sharing modal styles for SAHO
+ * Optimized for mobile-first design and accessibility
+ */
+
+/* Use same design system variables as citation modal */
+:root {
+  /* Primary Colors */
+  --saho-primary: #990000;
+  --saho-secondary: #3a4a64;
+  --saho-accent: #b88a2e;
+
+  /* Text Colors */
+  --saho-text-primary: #1e293b;
+  --saho-text-secondary: #475569;
+  --saho-text-muted: #94a3b8;
+
+  /* Background Colors */
+  --saho-bg-surface: #ffffff;
+  --saho-bg-surface-alt: #f8fafc;
+  --saho-bg-hover: #f1f5f9;
+
+  /* Borders */
+  --saho-border: #e2e8f0;
+  --saho-border-hover: #cbd5e1;
+
+  /* Typography */
+  --saho-font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  /* Shadows */
+  --saho-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --saho-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  --saho-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+  --saho-shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.15);
+
+  /* Spacing */
+  --saho-spacing-xs: 0.25rem;
+  --saho-spacing-sm: 0.5rem;
+  --saho-spacing-md: 1rem;
+  --saho-spacing-lg: 1.5rem;
+  --saho-spacing-xl: 2rem;
+
+  /* Border Radius */
+  --saho-radius-sm: 0.375rem;
+  --saho-radius-md: 0.5rem;
+  --saho-radius-lg: 0.75rem;
+}
+
+/* Modal Container */
+#sharing-modal .modal-dialog {
+  max-width: 480px;
+  margin: var(--saho-spacing-lg) auto;
+  font-family: var(--saho-font-primary);
+}
+
+/* Modal Content */
+#sharing-modal .modal-content {
+  border: none;
+  border-radius: var(--saho-radius-lg);
+  box-shadow: var(--saho-shadow-xl);
+  background: var(--saho-bg-surface);
+  overflow: hidden;
+}
+
+/* Modal Header - Clean and minimal */
+#sharing-modal .modal-header {
+  background: var(--saho-bg-surface);
+  border-bottom: 1px solid var(--saho-border);
+  padding: var(--saho-spacing-lg);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+#sharing-modal .modal-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--saho-text-primary);
+  margin: 0;
+}
+
+/* Close Button - Modern style - Same as citation modal */
+#sharing-modal .btn-close {
+  position: relative !important;
+  width: 32px;
+  height: 32px;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--saho-radius-sm);
+  transition: all 0.2s ease;
+  background: transparent !important;
+  border: none !important;
+  color: var(--saho-text-muted) !important;
+  opacity: 1 !important;
+  margin: 0 !important;
+  flex-shrink: 0;
+  box-shadow: none !important;
+}
+
+#sharing-modal .btn-close::before {
+  content: '×';
+  font-size: 1.5rem;
+  line-height: 1;
+  font-weight: normal;
+}
+
+#sharing-modal .btn-close:hover {
+  background-color: var(--saho-bg-hover) !important;
+  color: var(--saho-text-primary) !important;
+  opacity: 1 !important;
+}
+
+#sharing-modal .btn-close:focus {
+  background-color: var(--saho-bg-hover) !important;
+  color: var(--saho-text-primary) !important;
+  opacity: 1 !important;
+  outline: 2px solid var(--saho-primary);
+  outline-offset: 2px;
+}
+
+/* Modal Body */
+#sharing-modal .modal-body {
+  padding: var(--saho-spacing-lg);
+  background: var(--saho-bg-surface);
+}
+
+/* URL Copy Section */
+.share-url-section {
+  margin-bottom: var(--saho-spacing-lg);
+  padding-bottom: var(--saho-spacing-lg);
+  border-bottom: 1px solid var(--saho-border);
+}
+
+.share-url-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--saho-text-secondary);
+  margin-bottom: var(--saho-spacing-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.share-url-input-group {
+  display: flex;
+  gap: var(--saho-spacing-xs);
+  background: var(--saho-bg-surface-alt);
+  border: 1px solid var(--saho-border);
+  border-radius: var(--saho-radius-md);
+  padding: var(--saho-spacing-xs);
+}
+
+.share-url-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  padding: var(--saho-spacing-sm);
+  font-size: 0.875rem;
+  color: var(--saho-text-primary);
+  outline: none;
+}
+
+.share-url-copy-btn {
+  padding: var(--saho-spacing-sm) var(--saho-spacing-md);
+  background: var(--saho-bg-surface);
+  border: 1px solid var(--saho-border);
+  border-radius: var(--saho-radius-sm);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--saho-text-primary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: var(--saho-spacing-xs);
+}
+
+.share-url-copy-btn:hover {
+  background: var(--saho-primary);
+  color: white;
+  border-color: var(--saho-primary);
+}
+
+.share-url-copy-btn.copied {
+  background: #22c55e;
+  color: white;
+  border-color: #22c55e;
+}
+
+/* Social Media Section */
+.social-media-section {
+  margin-bottom: var(--saho-spacing-lg);
+}
+
+.social-media-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--saho-text-secondary);
+  margin-bottom: var(--saho-spacing-md);
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.social-media-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: var(--saho-spacing-sm);
+}
+
+.social-share-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--saho-spacing-sm);
+  padding: var(--saho-spacing-md);
+  background: var(--saho-bg-surface);
+  border: 1px solid var(--saho-border);
+  border-radius: var(--saho-radius-md);
+  text-decoration: none;
+  color: var(--saho-text-primary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  min-height: 48px;
+}
+
+.social-share-btn:hover {
+  background: var(--saho-bg-hover);
+  border-color: var(--saho-border-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--saho-shadow-md);
+  color: var(--saho-text-primary);
+  text-decoration: none;
+}
+
+.social-share-btn:focus {
+  outline: 2px solid var(--saho-primary);
+  outline-offset: 2px;
+}
+
+/* Platform-specific colors on hover */
+.social-share-btn.facebook:hover {
+  background: #1877f2;
+  color: white;
+  border-color: #1877f2;
+}
+
+.social-share-btn.twitter:hover,
+.social-share-btn.x:hover {
+  background: #000000;
+  color: white;
+  border-color: #000000;
+}
+
+.social-share-btn.linkedin:hover {
+  background: #0077b5;
+  color: white;
+  border-color: #0077b5;
+}
+
+.social-share-btn.whatsapp:hover {
+  background: #25d366;
+  color: white;
+  border-color: #25d366;
+}
+
+.social-share-btn.email:hover {
+  background: var(--saho-primary);
+  color: white;
+  border-color: var(--saho-primary);
+}
+
+.social-share-btn.reddit:hover {
+  background: #ff4500;
+  color: white;
+  border-color: #ff4500;
+}
+
+.social-share-btn.pinterest:hover {
+  background: #bd081c;
+  color: white;
+  border-color: #bd081c;
+}
+
+/* Icon styles */
+.social-share-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+/* QR Code Section (if needed) */
+.qr-code-section {
+  text-align: center;
+  padding-top: var(--saho-spacing-lg);
+  border-top: 1px solid var(--saho-border);
+}
+
+.qr-code-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--saho-text-secondary);
+  margin-bottom: var(--saho-spacing-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.qr-code-container {
+  display: inline-block;
+  padding: var(--saho-spacing-md);
+  background: var(--saho-bg-surface-alt);
+  border-radius: var(--saho-radius-md);
+  border: 1px solid var(--saho-border);
+}
+
+/* Mobile Responsive Design */
+@media (max-width: 640px) {
+  #sharing-modal .modal-dialog {
+    margin: var(--saho-spacing-sm);
+    max-width: calc(100% - var(--saho-spacing-md));
+  }
+
+  #sharing-modal .modal-content {
+    border-radius: var(--saho-radius-md);
+  }
+
+  #sharing-modal .modal-header {
+    padding: var(--saho-spacing-md);
+  }
+
+  #sharing-modal .modal-title {
+    font-size: 1.125rem;
+  }
+
+  #sharing-modal .modal-body {
+    padding: var(--saho-spacing-md);
+  }
+
+  .social-media-grid {
+    grid-template-columns: 1fr;
+    gap: var(--saho-spacing-xs);
+  }
+
+  .social-share-btn {
+    padding: var(--saho-spacing-md) var(--saho-spacing-lg);
+    justify-content: flex-start;
+  }
+
+  .share-url-input-group {
+    flex-direction: column;
+    gap: var(--saho-spacing-sm);
+  }
+
+  .share-url-copy-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* Tablet Responsive */
+@media (min-width: 641px) and (max-width: 1024px) {
+  #sharing-modal .modal-dialog {
+    max-width: 450px;
+  }
+
+  .social-media-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Animations */
+@keyframes shareModalFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.share-url-section,
+.social-media-section {
+  animation: shareModalFadeIn 0.3s ease;
+}
+
+/* Loading State */
+.sharing-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 150px;
+  color: var(--saho-text-muted);
+}
+
+.sharing-spinner {
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--saho-border);
+  border-top-color: var(--saho-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Focus States for Accessibility */
+.share-url-copy-btn:focus-visible,
+.social-share-btn:focus-visible,
+#sharing-modal .btn-close:focus-visible {
+  outline: 2px solid var(--saho-primary);
+  outline-offset: 2px;
+}
+
+/* Print Styles */
+@media print {
+  .modal-backdrop,
+  #sharing-modal {
+    display: none !important;
+  }
+}
