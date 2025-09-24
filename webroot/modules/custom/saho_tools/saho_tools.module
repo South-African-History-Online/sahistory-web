@@ -34,15 +34,26 @@ function saho_tools_library_info_alter(&$libraries, $extension) {
   if ($extension === 'saho_tools') {
     $module_path = \Drupal::service('extension.list.module')->getPath('saho_tools');
 
-    // Get file modification times for cache busting.
-    $css_file = $module_path . '/css/citation.css';
-    $css_mtime = file_exists(DRUPAL_ROOT . '/' . $css_file) ? filemtime(DRUPAL_ROOT . '/' . $css_file) : time();
+    // Get file modification times for cache busting - check all CSS files.
+    $css_files = [
+      $module_path . '/css/citation.css',
+      $module_path . '/css/citation-modern.css',
+      $module_path . '/css/sharing-modern.css',
+    ];
+
+    $max_mtime = time();
+    foreach ($css_files as $css_file) {
+      if (file_exists(DRUPAL_ROOT . '/' . $css_file)) {
+        $mtime = filemtime(DRUPAL_ROOT . '/' . $css_file);
+        $max_mtime = max($max_mtime, $mtime);
+      }
+    }
 
     // Apply timestamp-based versioning to all saho_tools libraries.
     foreach (['citation', 'sharing', 'citation_simple'] as $library_name) {
       if (isset($libraries[$library_name])) {
         // Update version with file modification time for cache busting.
-        $libraries[$library_name]['version'] = '3.1.0-' . $css_mtime;
+        $libraries[$library_name]['version'] = '3.1.0-' . $max_mtime;
       }
     }
   }
