@@ -7,7 +7,6 @@ use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Database\Connection;
 use Drupal\node\NodeInterface;
 use Drupal\Core\Cache\CacheBackendInterface;
-use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 
 /**
@@ -43,12 +42,6 @@ class TimelineEventService {
    */
   protected $cache;
 
-  /**
-   * The logger.
-   *
-   * @var \Drupal\Core\Logger\LoggerChannelInterface
-   */
-  protected $logger;
 
   /**
    * The config factory.
@@ -68,17 +61,14 @@ class TimelineEventService {
    *   The database connection.
    * @param \Drupal\Core\Cache\CacheBackendInterface $cache
    *   The cache backend.
-   * @param \Drupal\Core\Logger\LoggerChannelFactoryInterface $logger_factory
-   *   The logger factory.
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The config factory.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, TimeInterface $time, Connection $database, CacheBackendInterface $cache, LoggerChannelFactoryInterface $logger_factory, ConfigFactoryInterface $config_factory) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, TimeInterface $time, Connection $database, CacheBackendInterface $cache, ConfigFactoryInterface $config_factory) {
     $this->entityTypeManager = $entity_type_manager;
     $this->time = $time;
     $this->database = $database;
     $this->cache = $cache;
-    $this->logger = $logger_factory->get('saho_timeline');
     $this->configFactory = $config_factory;
   }
 
@@ -165,7 +155,6 @@ class TimelineEventService {
     // TEMPORARILY DISABLE SERVICE CACHE for debugging
     // Try to get from cache first.
     if (FALSE && $use_cache && $cached = $this->cache->get($cache_id)) {
-      $this->logger->debug('Timeline events loaded from cache.');
       return $cached->data;
     }
 
@@ -192,7 +181,6 @@ class TimelineEventService {
       $nids = $query->execute();
 
       if (empty($nids)) {
-        $this->logger->warning('No timeline events found in database.');
         return [];
       }
 
@@ -203,9 +191,6 @@ class TimelineEventService {
       // Load ALL events and let API do comprehensive date-based sampling
       // This ensures we don't miss recent events due to random sampling.
       $events = $storage->loadMultiple($nids_array);
-      $this->logger->info('Loaded @total events from database for timeline processing', [
-        '@total' => count($events),
-      ]);
 
       // Sort by date for timeline display.
       usort($events, function ($a, $b) {
@@ -213,11 +198,6 @@ class TimelineEventService {
         $date_b = $this->getEventDate($b);
         return strcmp($date_a, $date_b);
       });
-
-      $this->logger->info('Loaded @count timeline events (sampled from @total)', [
-        '@count' => count($events),
-        '@total' => $total_events,
-      ]);
 
       // Also include timeline HTML entities if configured.
       if ($include_tdih && $config->get('parse_html_timelines')) {
@@ -239,15 +219,12 @@ class TimelineEventService {
       if (FALSE && $use_cache) {
         $cache_lifetime = $config->get('cache_lifetime') ?: 3600;
         $this->cache->set($cache_id, $events, $this->time->getRequestTime() + $cache_lifetime, ['node_list:event']);
-        $this->logger->debug('Timeline events cached for @lifetime seconds.', ['@lifetime' => $cache_lifetime]);
       }
 
-      $this->logger->info('Loaded @count timeline events.', ['@count' => count($events)]);
       return $events;
 
     }
     catch (\Exception $e) {
-      $this->logger->error('Failed to load timeline events: @message', ['@message' => $e->getMessage()]);
       return [];
     }
   }
@@ -554,11 +531,6 @@ class TimelineEventService {
         $period_events = $storage->loadMultiple($nids);
         $all_events = array_merge($all_events, $period_events);
 
-        $this->logger->info('Loaded @count events for period @start to @end', [
-          '@count' => count($period_events),
-          '@start' => $period['start'],
-          '@end' => $period['end'],
-        ]);
       }
     }
 
@@ -569,7 +541,6 @@ class TimelineEventService {
       return strcmp($date_a, $date_b);
     });
 
-    $this->logger->info('Loaded total of @count distributed timeline events', ['@count' => count($all_events)]);
     return array_slice($all_events, 0, $total_limit);
   }
 

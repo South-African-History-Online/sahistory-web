@@ -1,0 +1,428 @@
+/**
+ * @file
+ * Modern citation modal styles for SAHO
+ * Optimized for mobile-first design and accessibility
+ */
+
+/* Import Google Font - Inter for modern typography */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* SAHO Design System Variables */
+:root {
+  /* Primary Colors */
+  --saho-primary: #990000;
+  --saho-secondary: #3a4a64;
+  --saho-accent: #b88a2e;
+  --saho-highlight: #8b2331;
+
+  /* Text Colors */
+  --saho-text-primary: #1e293b;
+  --saho-text-secondary: #475569;
+  --saho-text-muted: #94a3b8;
+
+  /* Background Colors */
+  --saho-bg-surface: #ffffff;
+  --saho-bg-surface-alt: #f8fafc;
+  --saho-bg-hover: #f1f5f9;
+
+  /* Borders */
+  --saho-border: #e2e8f0;
+  --saho-border-hover: #cbd5e1;
+
+  /* Typography */
+  --saho-font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  /* Shadows */
+  --saho-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --saho-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  --saho-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+  --saho-shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.15);
+
+  /* Spacing */
+  --saho-spacing-xs: 0.25rem;
+  --saho-spacing-sm: 0.5rem;
+  --saho-spacing-md: 1rem;
+  --saho-spacing-lg: 1.5rem;
+  --saho-spacing-xl: 2rem;
+
+  /* Border Radius */
+  --saho-radius-sm: 0.375rem;
+  --saho-radius-md: 0.5rem;
+  --saho-radius-lg: 0.75rem;
+}
+
+/* Modal Overlay - Simplified backdrop */
+.modal-backdrop {
+  background-color: rgba(15, 23, 42, 0.5) !important;
+  backdrop-filter: blur(4px);
+}
+
+/* Modal Container */
+#citation-modal .modal-dialog {
+  max-width: 720px;
+  margin: var(--saho-spacing-lg) auto;
+  font-family: var(--saho-font-primary);
+}
+
+/* Modal Content */
+#citation-modal .modal-content {
+  border: none;
+  border-radius: var(--saho-radius-lg);
+  box-shadow: var(--saho-shadow-xl);
+  background: var(--saho-bg-surface);
+  overflow: hidden;
+}
+
+/* Modal Header - Clean and minimal */
+#citation-modal .modal-header {
+  background: var(--saho-bg-surface);
+  border-bottom: 1px solid var(--saho-border);
+  padding: var(--saho-spacing-lg);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+#citation-modal .modal-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--saho-text-primary);
+  margin: 0;
+}
+
+/* Close Button - Modern style - Fix positioning */
+#citation-modal .btn-close {
+  position: relative !important;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--saho-radius-sm);
+  transition: all 0.2s ease;
+  background: transparent;
+  border: none;
+  color: var(--saho-text-muted);
+  opacity: 1 !important;
+  margin: 0 !important;
+  flex-shrink: 0;
+}
+
+#citation-modal .btn-close::before {
+  content: '×';
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+#citation-modal .btn-close:hover {
+  background-color: var(--saho-bg-hover);
+  color: var(--saho-text-primary);
+}
+
+/* Modal Body */
+#citation-modal .modal-body {
+  padding: 0;
+  background: var(--saho-bg-surface);
+}
+
+/* Citation Format Selection - Tab-like design */
+.citation-format-selector {
+  display: flex;
+  gap: var(--saho-spacing-xs);
+  padding: var(--saho-spacing-md);
+  background: var(--saho-bg-surface-alt);
+  border-bottom: 1px solid var(--saho-border);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.citation-format-btn {
+  padding: var(--saho-spacing-sm) var(--saho-spacing-md);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--saho-radius-sm);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--saho-text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.citation-format-btn:hover {
+  background: var(--saho-bg-surface);
+  color: var(--saho-text-primary);
+}
+
+.citation-format-btn.active {
+  background: var(--saho-bg-surface);
+  color: var(--saho-primary);
+  border-color: var(--saho-border);
+  box-shadow: var(--saho-shadow-sm);
+}
+
+/* Citation Content Area */
+.citation-content-wrapper {
+  padding: var(--saho-spacing-lg);
+  min-height: 200px;
+}
+
+.citation-display {
+  background: var(--saho-bg-surface-alt);
+  border: 1px solid var(--saho-border);
+  border-radius: var(--saho-radius-md);
+  padding: var(--saho-spacing-md);
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: var(--saho-text-primary);
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  gap: var(--saho-spacing-md);
+}
+
+.citation-text-content {
+  flex: 1;
+  width: 100%;
+}
+
+.citation-display:hover {
+  border-color: var(--saho-border-hover);
+  box-shadow: var(--saho-shadow-sm);
+}
+
+/* Copy Button - Positioned below citation text */
+.copy-citation-btn {
+  align-self: flex-end;
+  padding: var(--saho-spacing-xs) var(--saho-spacing-sm);
+  background: var(--saho-bg-surface);
+  border: 1px solid var(--saho-border);
+  border-radius: var(--saho-radius-sm);
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--saho-text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: var(--saho-spacing-xs);
+  flex-shrink: 0;
+}
+
+.copy-citation-btn:hover {
+  background: var(--saho-primary);
+  color: white;
+  border-color: var(--saho-primary);
+}
+
+.copy-citation-btn.copied {
+  background: #22c55e;
+  color: white;
+  border-color: #22c55e;
+}
+
+/* Export Section - Clean button group */
+.citation-export-section {
+  padding: var(--saho-spacing-lg);
+  background: var(--saho-bg-surface-alt);
+  border-top: 1px solid var(--saho-border);
+}
+
+.export-section-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--saho-text-secondary);
+  margin-bottom: var(--saho-spacing-md);
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.export-buttons {
+  display: flex;
+  gap: var(--saho-spacing-sm);
+  flex-wrap: wrap;
+}
+
+.export-btn {
+  flex: 1;
+  min-width: 120px;
+  padding: var(--saho-spacing-sm) var(--saho-spacing-md);
+  background: var(--saho-bg-surface);
+  border: 1px solid var(--saho-border);
+  border-radius: var(--saho-radius-sm);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--saho-text-primary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--saho-spacing-xs);
+}
+
+.export-btn:hover {
+  background: var(--saho-primary);
+  color: white;
+  border-color: var(--saho-primary);
+  transform: translateY(-1px);
+  box-shadow: var(--saho-shadow-md);
+}
+
+.export-btn.exported {
+  background: #22c55e;
+  color: white;
+  border-color: #22c55e;
+}
+
+/* Icon styles */
+.citation-icon {
+  width: 16px;
+  height: 16px;
+  display: inline-block;
+}
+
+/* Help Link - SAHO red by default */
+.citation-help-link {
+  display: block;
+  text-align: center;
+  padding: var(--saho-spacing-md);
+  font-size: 0.875rem;
+  color: var(--saho-primary) !important;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+.citation-help-link:hover {
+  color: var(--saho-text-primary) !important;
+  text-decoration: underline;
+  transform: translateY(-1px);
+}
+
+/* Mobile Responsive Design */
+@media (max-width: 640px) {
+  #citation-modal .modal-dialog {
+    margin: var(--saho-spacing-sm);
+    max-width: calc(100% - var(--saho-spacing-md));
+  }
+
+  #citation-modal .modal-content {
+    border-radius: var(--saho-radius-md);
+  }
+
+  #citation-modal .modal-header {
+    padding: var(--saho-spacing-md);
+  }
+
+  #citation-modal .modal-title {
+    font-size: 1.125rem;
+  }
+
+  .citation-content-wrapper {
+    padding: var(--saho-spacing-md);
+  }
+
+  .citation-format-selector {
+    padding: var(--saho-spacing-sm);
+    gap: 0.125rem;
+  }
+
+  .citation-format-btn {
+    padding: var(--saho-spacing-xs) var(--saho-spacing-sm);
+    font-size: 0.8125rem;
+  }
+
+  .export-buttons {
+    flex-direction: column;
+  }
+
+  .export-btn {
+    width: 100%;
+  }
+
+  .citation-display {
+    gap: var(--saho-spacing-sm);
+  }
+
+  .copy-citation-btn {
+    align-self: stretch;
+    justify-content: center;
+  }
+}
+
+/* Tablet Responsive */
+@media (min-width: 641px) and (max-width: 1024px) {
+  #citation-modal .modal-dialog {
+    max-width: 600px;
+  }
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.citation-display {
+  animation: fadeIn 0.3s ease;
+}
+
+/* Loading State */
+.citation-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 150px;
+  color: var(--saho-text-muted);
+}
+
+.citation-spinner {
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--saho-border);
+  border-top-color: var(--saho-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Focus States for Accessibility */
+.citation-format-btn:focus-visible,
+.copy-citation-btn:focus-visible,
+.export-btn:focus-visible,
+.btn-close:focus-visible {
+  outline: 2px solid var(--saho-primary);
+  outline-offset: 2px;
+}
+
+/* Print Styles */
+@media print {
+  .modal-backdrop,
+  .modal-header,
+  .citation-format-selector,
+  .citation-export-section,
+  .copy-citation-btn {
+    display: none !important;
+  }
+
+  .citation-display {
+    border: none;
+    background: white;
+    padding: 0;
+  }
+}

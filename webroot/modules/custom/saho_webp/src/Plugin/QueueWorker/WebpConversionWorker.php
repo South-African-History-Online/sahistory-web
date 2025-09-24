@@ -48,9 +48,6 @@ class WebpConversionWorker extends QueueWorkerBase {
     // Get file path.
     $source_path = \Drupal::service('file_system')->realpath($file->getFileUri());
     if (!$source_path || !file_exists($source_path)) {
-      \Drupal::logger('saho_webp')->warning('Source file not found: @path', [
-        '@path' => $file->getFileUri(),
-      ]);
       return;
     }
 
@@ -69,9 +66,6 @@ class WebpConversionWorker extends QueueWorkerBase {
     // Validate image file.
     $image_info = @getimagesize($source_path);
     if (!$image_info) {
-      \Drupal::logger('saho_webp')->warning('Invalid image file: @file', [
-        '@file' => basename($source_path),
-      ]);
       return;
     }
 
@@ -82,9 +76,6 @@ class WebpConversionWorker extends QueueWorkerBase {
       fclose($handle);
 
       if (strpos($first_bytes, '<html') !== FALSE || strpos($first_bytes, '<!DOCTYPE') !== FALSE) {
-        \Drupal::logger('saho_webp')->warning('HTML file with image extension: @file', [
-          '@file' => basename($source_path),
-        ]);
         return;
       }
     }
@@ -118,20 +109,12 @@ class WebpConversionWorker extends QueueWorkerBase {
         // Set permissions to match source.
         chmod($webp_path, fileperms($source_path));
 
-        // Log successful conversion.
-        \Drupal::logger('saho_webp')->info('Converted @source to WebP', [
-          '@source' => basename($source_path),
-        ]);
       }
       else {
         throw new \Exception('imagewebp() returned FALSE');
       }
     }
     catch (\Exception $e) {
-      \Drupal::logger('saho_webp')->error('Failed to convert @source: @error', [
-        '@source' => basename($source_path),
-        '@error' => $e->getMessage(),
-      ]);
     }
   }
 
