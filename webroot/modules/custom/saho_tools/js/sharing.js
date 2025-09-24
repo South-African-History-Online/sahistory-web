@@ -130,8 +130,8 @@
                 <div class="share-url-section">
                     <div class="share-url-title">Copy Link</div>
                     <div class="share-url-input-group">
-                        <input type="text" class="share-url-input" value="${currentUrl}" readonly>
-                        <button class="share-url-copy-btn" id="copy-url-btn">
+                        <input type="text" class="share-url-input" id="page-url-input" value="${currentUrl}" readonly>
+                        <button class="share-url-copy-btn url-copy-btn" id="copy-url-btn">
                             <svg class="citation-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
                             </svg>
@@ -432,8 +432,8 @@
          * Initialize URL copy functionality.
          */
         initializeUrlCopy: function () {
-            // Handle URL copy button
-            once('urlCopy', '.url-copy-btn', document).forEach(
+            // Handle URL copy button - also check for share-url-copy-btn class and copy-url-btn ID
+            once('urlCopy', '.url-copy-btn, .share-url-copy-btn, #copy-url-btn', document).forEach(
                 function (button) {
                     $(button).on('click', function (e) {
                         e.preventDefault();
