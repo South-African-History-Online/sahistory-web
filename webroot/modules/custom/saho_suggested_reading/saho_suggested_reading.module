@@ -1,0 +1,418 @@
+<?php
+
+/**
+ * @file
+ * SAHO Suggested Reading module.
+ */
+
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Entity\FieldableEntityInterface;
+use Drupal\node\Entity\Node;
+use Drupal\node\NodeInterface;
+use Drupal\Core\Cache\Cache;
+
+/**
+ * Implements hook_preprocess_node().
+ */
+function saho_suggested_reading_preprocess_node(array &$variables) {
+  $node = $variables['node'];
+
+  // Only process full view mode for articles and archives
+  if ($variables['view_mode'] !== 'full' || !in_array($node->bundle(), ['article', 'archive'])) {
+    return;
+  }
+
+  // Enhance suggested reading content
+  $variables['suggested_reading'] = _saho_suggested_reading_get_enhanced_content($node);
+  $variables['#attached']['library'][] = 'saho_suggested_reading/suggested_reading';
+}
+
+/**
+ * Get enhanced suggested reading content (IMAGES REQUIRED).
+ */
+function _saho_suggested_reading_get_enhanced_content(NodeInterface $node) {
+  $suggested_items = [];
+  $min_items = 6; // Minimum number of items to display
+  $max_items = 12; // Maximum number of items to display
+
+  // Priority 1: Get directly related entities (ONLY those with images)
+  $related_fields = [
+    'field_people_related_tab' => 'Related People',
+    'field_archive_page_feature' => 'Organisations',
+    'field_topics_related_tab' => 'Related Topics',
+    'field_feature_parent' => 'Related Content',
+    'field_timeline_categories_type' => 'Timelines',
+    'field_africa_category' => 'Archive'
+  ];
+
+  $entities_by_type = [];
+
+  foreach ($related_fields as $field_name => $label) {
+    if ($node->hasField($field_name) && !$node->get($field_name)->isEmpty()) {
+      foreach ($node->get($field_name) as $item) {
+        /** @var \Drupal\Core\Field\Plugin\Field\FieldType\EntityReferenceItem $item */
+        $entity = $item->entity;
+        if ($entity && $entity instanceof NodeInterface && $entity->isPublished() && _saho_suggested_reading_entity_has_image($entity)) {
+          $entities_by_type[$label][] = $entity;
+        }
+      }
+    }
+  }
+
+  // Priority 2: Get child entities (ONLY those with images)
+  $child_entities = _saho_suggested_reading_get_child_entities($node, 'with_images');
+  if (!empty($child_entities)) {
+    $entities_by_type['Related Articles'] = $child_entities;
+  }
+
+  // Priority 3: Get sibling entities (ONLY those with images)
+  $current_count = array_sum(array_map('count', $entities_by_type));
+  if ($current_count < $min_items) {
+    $sibling_entities = _saho_suggested_reading_get_sibling_entities($node, 'with_images');
+    if (!empty($sibling_entities)) {
+      $entities_by_type['Related Content'] = array_merge(
+        $entities_by_type['Related Content'] ?? [],
+        $sibling_entities
+      );
+    }
+  }
+
+  // Priority 4: Get entities with same tags/topics (ONLY those with images)
+  $current_count = array_sum(array_map('count', $entities_by_type));
+  if ($current_count < $min_items) {
+    $tag_entities = _saho_suggested_reading_get_tag_related_entities($node, 'with_images');
+    if (!empty($tag_entities)) {
+      $entities_by_type['Similar Topics'] = $tag_entities;
+    }
+  }
+
+  // Build suggested items array - all entities already have images
+  foreach ($entities_by_type as $type => $entities) {
+    foreach ($entities as $entity) {
+      if (count($suggested_items) >= $max_items) {
+        break 2;
+      }
+
+      // Avoid duplicates
+      $entity_id = $entity->id();
+      $existing_ids = array_column($suggested_items, 'id');
+      if (!in_array($entity_id, $existing_ids)) {
+        $suggested_items[] = [
+          'id' => $entity_id,
+          'type' => $type,
+          'entity' => $entity,
+          'has_image' => true, // All items have images now
+        ];
+      }
+    }
+  }
+
+  // If still not enough items, get recent popular content (ONLY with images)
+  $current_count = count($suggested_items);
+  if ($current_count < $min_items) {
+    $popular_entities = _saho_suggested_reading_get_popular_content($node, $min_items - $current_count, 'with_images');
+    foreach ($popular_entities as $entity) {
+      if (count($suggested_items) >= $max_items) {
+        break;
+      }
+      $suggested_items[] = [
+        'id' => $entity->id(),
+        'type' => 'Popular Content',
+        'entity' => $entity,
+        'has_image' => true,
+      ];
+    }
+  }
+
+  // If we don't have enough items, don't show the section at all
+  if (count($suggested_items) < 3) {
+    return [];
+  }
+
+  // Group items by type for display
+  $grouped_items = [];
+  foreach ($suggested_items as $item) {
+    $grouped_items[$item['type']][] = $item;
+  }
+
+  return $grouped_items;
+}
+
+/**
+ * Get child entities of a node (with images only).
+ */
+function _saho_suggested_reading_get_child_entities(NodeInterface $node, $mode = 'all', $limit = 6) {
+  if ($mode === 'with_images') {
+    return _saho_suggested_reading_query_entities_with_images([
+      'field_feature_parent' => $node->id()
+    ], $limit);
+  }
+
+  $query = \Drupal::entityQuery('node')
+    ->condition('status', 1)
+    ->condition('field_feature_parent', $node->id())
+    ->range(0, $limit)
+    ->sort('created', 'DESC')
+    ->accessCheck(TRUE);
+
+  $nids = $query->execute();
+  return $nids ? Node::loadMultiple($nids) : [];
+}
+
+/**
+ * Get sibling entities (same parent, with images only).
+ */
+function _saho_suggested_reading_get_sibling_entities(NodeInterface $node, $mode = 'all', $limit = 4) {
+  if ($mode === 'with_images') {
+    $siblings = [];
+    if ($node->hasField('field_feature_parent') && !$node->get('field_feature_parent')->isEmpty()) {
+      foreach ($node->get('field_feature_parent') as $parent_item) {
+        /** @var \Drupal\Core\Field\Plugin\Field\FieldType\EntityReferenceItem $parent_item */
+        $parent_id = $parent_item->target_id;
+        $sibling_nodes = _saho_suggested_reading_query_entities_with_images([
+          'field_feature_parent' => $parent_id,
+          'exclude_nid' => $node->id()
+        ], $limit);
+        $siblings = array_merge($siblings, $sibling_nodes);
+      }
+    }
+    return array_slice($siblings, 0, $limit);
+  }
+
+  $siblings = [];
+  if ($node->hasField('field_feature_parent') && !$node->get('field_feature_parent')->isEmpty()) {
+    foreach ($node->get('field_feature_parent') as $parent_item) {
+      /** @var \Drupal\Core\Field\Plugin\Field\FieldType\EntityReferenceItem $parent_item */
+      $parent_id = $parent_item->target_id;
+
+      $query = \Drupal::entityQuery('node')
+        ->condition('status', 1)
+        ->condition('field_feature_parent', $parent_id)
+        ->condition('nid', $node->id(), '!=')
+        ->range(0, $limit)
+        ->sort('created', 'DESC')
+        ->accessCheck(TRUE);
+
+      $nids = $query->execute();
+      if ($nids) {
+        $siblings = array_merge($siblings, Node::loadMultiple($nids));
+      }
+    }
+  }
+
+  return array_slice($siblings, 0, $limit);
+}
+
+/**
+ * Get entities with similar tags (with images only).
+ */
+function _saho_suggested_reading_get_tag_related_entities(NodeInterface $node, $mode = 'all', $limit = 4) {
+  if ($mode === 'with_images') {
+    $tag_ids = [];
+    if ($node->hasField('field_tags') && !$node->get('field_tags')->isEmpty()) {
+      foreach ($node->get('field_tags') as $tag_item) {
+        /** @var \Drupal\Core\Field\Plugin\Field\FieldType\EntityReferenceItem $tag_item */
+        $tag_ids[] = $tag_item->target_id;
+      }
+    }
+
+    if (!empty($tag_ids)) {
+      return _saho_suggested_reading_query_entities_with_images([
+        'field_tags' => $tag_ids,
+        'exclude_nid' => $node->id()
+      ], $limit);
+    }
+    return [];
+  }
+
+  $related = [];
+  if ($node->hasField('field_tags') && !$node->get('field_tags')->isEmpty()) {
+    $tag_ids = [];
+    foreach ($node->get('field_tags') as $tag_item) {
+      /** @var \Drupal\Core\Field\Plugin\Field\FieldType\EntityReferenceItem $tag_item */
+      $tag_ids[] = $tag_item->target_id;
+    }
+
+    if (!empty($tag_ids)) {
+      $query = \Drupal::entityQuery('node')
+        ->condition('status', 1)
+        ->condition('type', ['article', 'biography', 'archive', 'place'], 'IN')
+        ->condition('field_tags', $tag_ids, 'IN')
+        ->condition('nid', $node->id(), '!=')
+        ->range(0, $limit)
+        ->sort('created', 'DESC')
+        ->accessCheck(TRUE);
+
+      $nids = $query->execute();
+      if ($nids) {
+        $related = Node::loadMultiple($nids);
+      }
+    }
+  }
+
+  return $related;
+}
+
+/**
+ * Get popular/recent content as fallback (with images only).
+ */
+function _saho_suggested_reading_get_popular_content(NodeInterface $node, $limit = 6, $mode = 'all') {
+  if ($mode === 'with_images') {
+    return _saho_suggested_reading_query_entities_with_images([
+      'exclude_nid' => $node->id()
+    ], $limit);
+  }
+
+  // Get recent content with images preferred
+  $query = \Drupal::entityQuery('node')
+    ->condition('status', 1)
+    ->condition('type', ['article', 'biography', 'archive', 'place'], 'IN')
+    ->condition('nid', $node->id(), '!=')
+    ->range(0, $limit * 2) // Get more to filter for images
+    ->sort('created', 'DESC')
+    ->accessCheck(TRUE);
+
+  $nids = $query->execute();
+  $entities = $nids ? Node::loadMultiple($nids) : [];
+
+  // Sort by image availability
+  $with_images = [];
+  $without_images = [];
+
+  foreach ($entities as $entity) {
+    if (_saho_suggested_reading_entity_has_image($entity)) {
+      $with_images[] = $entity;
+    } else {
+      $without_images[] = $entity;
+    }
+  }
+
+  // Return prioritized list
+  return array_slice(array_merge($with_images, $without_images), 0, $limit);
+}
+
+/**
+ * Check if entity has an image.
+ */
+function _saho_suggested_reading_entity_has_image(FieldableEntityInterface $entity) {
+  $image_fields = [
+    'field_article_image',
+    'field_bio_pic',
+    'field_image',
+    'field_event_image',
+    'field_tdih_image',
+    'field_archive_image',
+    'field_place_image',
+    'field_feature_banner'
+  ];
+
+  foreach ($image_fields as $field_name) {
+    if ($entity->hasField($field_name) && !$entity->get($field_name)->isEmpty()) {
+      return TRUE;
+    }
+  }
+
+  return FALSE;
+}
+
+/**
+ * Get image URL for an entity.
+ */
+function _saho_suggested_reading_get_entity_image_url(FieldableEntityInterface $entity) {
+  $image_fields = [
+    'field_article_image',
+    'field_bio_pic',
+    'field_image',
+    'field_event_image',
+    'field_tdih_image',
+    'field_archive_image',
+    'field_place_image',
+    'field_feature_banner'
+  ];
+
+  foreach ($image_fields as $field_name) {
+    if ($entity->hasField($field_name) && !$entity->get($field_name)->isEmpty()) {
+      $image_field = $entity->get($field_name)->first();
+      /** @var \Drupal\image\Plugin\Field\FieldType\ImageItem $image_field */
+      if ($image_field && $image_field->entity) {
+        /** @var \Drupal\file\FileInterface $file */
+        $file = $image_field->entity;
+        return $file->createFileUrl();
+      }
+    }
+  }
+
+  return NULL;
+}
+
+/**
+ * Query entities that have images using database joins.
+ */
+function _saho_suggested_reading_query_entities_with_images($conditions = [], $limit = 6) {
+  $database = \Drupal::database();
+
+  // Build the base query
+  $query = $database->select('node_field_data', 'n');
+  $query->fields('n', ['nid']);
+  $query->condition('n.status', 1);
+  $query->condition('n.type', ['article', 'biography', 'archive', 'place', 'event'], 'IN');
+
+  // Exclude specific node if provided
+  if (!empty($conditions['exclude_nid'])) {
+    $query->condition('n.nid', $conditions['exclude_nid'], '!=');
+  }
+
+  // Join with image field tables to ensure images exist
+  $image_joins = [
+    // Articles: field_article_image OR field_feature_banner
+    'article' => ['field_article_image', 'field_feature_banner'],
+    // Biographies: field_bio_pic OR field_feature_banner
+    'biography' => ['field_bio_pic', 'field_feature_banner'],
+    // Archives: field_archive_image OR field_image
+    'archive' => ['field_archive_image', 'field_image'],
+    // Places: field_place_image OR field_feature_banner
+    'place' => ['field_place_image', 'field_feature_banner'],
+    // Events: field_event_image OR field_tdih_image
+    'event' => ['field_event_image', 'field_tdih_image']
+  ];
+
+  // Create a complex OR condition for images across all content types
+  $image_condition = $query->orConditionGroup();
+
+  foreach ($image_joins as $bundle => $fields) {
+    $bundle_condition = $query->andConditionGroup();
+    $bundle_condition->condition('n.type', $bundle);
+
+    $field_condition = $query->orConditionGroup();
+    foreach ($fields as $field) {
+      $alias = 'img_' . $bundle . '_' . str_replace('field_', '', $field);
+      $query->leftJoin('node__' . $field, $alias, $alias . '.entity_id = n.nid AND ' . $alias . '.bundle = :bundle_' . $alias, [':bundle_' . $alias => $bundle]);
+      $field_condition->isNotNull($alias . '.' . $field . '_target_id');
+    }
+
+    $bundle_condition->condition($field_condition);
+    $image_condition->condition($bundle_condition);
+  }
+
+  $query->condition($image_condition);
+
+  // Add specific field conditions
+  if (!empty($conditions['field_feature_parent'])) {
+    $query->join('node__field_feature_parent', 'fp', 'fp.entity_id = n.nid');
+    $query->condition('fp.field_feature_parent_target_id', $conditions['field_feature_parent']);
+  }
+
+  if (!empty($conditions['field_tags'])) {
+    $query->join('node__field_tags', 'ft', 'ft.entity_id = n.nid');
+    $query->condition('ft.field_tags_target_id', $conditions['field_tags'], 'IN');
+  }
+
+  // Order and limit
+  $query->orderBy('n.created', 'DESC');
+  $query->range(0, $limit);
+
+  $result = $query->execute();
+  $nids = $result->fetchCol();
+
+  return !empty($nids) ? Node::loadMultiple($nids) : [];
+}
