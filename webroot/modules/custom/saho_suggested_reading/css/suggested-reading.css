@@ -1,0 +1,471 @@
+/**
+ * Enhanced suggested reading styles - Mobile First Approach
+ */
+
+/* Base mobile styles (320px+) */
+.saho-suggested-reading-enhanced .saho-cards-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  padding: 0 0.5rem;
+  min-height: auto;
+}
+
+/* Mobile card styling */
+.saho-suggested-reading-enhanced .saho-card {
+  display: flex;
+  flex-direction: column;
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
+  transition: all 0.3s ease;
+  min-height: 280px;
+  margin-bottom: 0.5rem;
+
+  /* Enhanced touch targets for mobile */
+  -webkit-tap-highlight-color: rgba(153, 0, 0, 0.1);
+}
+
+.saho-suggested-reading-enhanced .saho-card-link {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  text-decoration: none;
+  color: inherit;
+  padding: 0;
+  border-radius: 12px;
+  overflow: hidden;
+
+  /* Enhanced touch feedback */
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Mobile touch interactions */
+.saho-suggested-reading-enhanced .saho-card-link:active {
+  transform: scale(0.98);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Prioritize cards with images */
+.saho-suggested-reading-enhanced .saho-card:has(.saho-card-image) {
+  order: -1; /* Move cards with images to the front */
+}
+
+/* Mobile-optimized image display */
+.saho-suggested-reading-enhanced .saho-card-image {
+  height: 160px; /* Smaller for mobile */
+  overflow: hidden;
+  background: linear-gradient(135deg, #f0f0f0 0%, #e0e0e0 100%);
+  position: relative;
+}
+
+.saho-suggested-reading-enhanced .saho-card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+/* Subtle hover/touch effect */
+.saho-suggested-reading-enhanced .saho-card-link:hover .saho-card-image img,
+.saho-suggested-reading-enhanced .saho-card-link:focus .saho-card-image img {
+  transform: scale(1.03);
+}
+
+/* Mobile content styling */
+.saho-suggested-reading-enhanced .saho-card-content {
+  padding: 1rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.saho-suggested-reading-enhanced .saho-card-title {
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.3;
+  color: #374151;
+  margin: 0 0 0.5rem 0;
+  transition: color 0.2s ease;
+
+  /* Better touch readability */
+  letter-spacing: -0.01em;
+}
+
+.saho-suggested-reading-enhanced .saho-card-description {
+  font-size: 0.875rem;
+  line-height: 1.4;
+  color: #6b7280;
+  margin: 0 0 auto 0;
+  flex-grow: 1;
+}
+
+/* All cards now have images - removed image-less card styles */
+
+/* Mobile button styling */
+.saho-suggested-reading-enhanced .saho-card-footer {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #f3f4f6;
+}
+
+.saho-suggested-reading-enhanced .saho-card-button {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #990000;
+  transition: all 0.2s ease;
+
+  /* Enhanced touch target */
+  padding: 0.25rem 0;
+  min-height: 44px;
+  justify-content: flex-start;
+}
+
+.saho-suggested-reading-enhanced .saho-card-button svg {
+  margin-left: 0.5rem;
+  width: 14px;
+  height: 14px;
+  transition: transform 0.2s ease;
+}
+
+.saho-suggested-reading-enhanced .saho-card-link:hover .saho-card-button,
+.saho-suggested-reading-enhanced .saho-card-link:focus .saho-card-button {
+  color: #b30000;
+}
+
+.saho-suggested-reading-enhanced .saho-card-link:hover .saho-card-button svg,
+.saho-suggested-reading-enhanced .saho-card-link:focus .saho-card-button svg {
+  transform: translateX(2px);
+}
+
+/* Loading placeholder for dynamic content */
+.saho-suggested-reading-enhanced.loading .saho-cards-grid::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 40px;
+  height: 40px;
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #990000;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: translate(-50%, -50%) rotate(0deg); }
+  100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* Touch interaction states */
+.saho-suggested-reading-enhanced .saho-card-link.touch-active {
+  transform: scale(0.98);
+  box-shadow: 0 2px 8px rgba(153, 0, 0, 0.2);
+}
+
+.saho-suggested-reading-enhanced .touch-active .saho-card-image img {
+  transform: scale(1.02);
+}
+
+/* Lazy loading states */
+.saho-suggested-reading-enhanced .saho-card-image img.lazy-loading {
+  background: linear-gradient(135deg, #f0f0f0 25%, transparent 25%, transparent 50%, #f0f0f0 50%, #f0f0f0 75%, transparent 75%, transparent);
+  background-size: 20px 20px;
+  animation: loading-shimmer 1.5s infinite;
+}
+
+@keyframes loading-shimmer {
+  0% { background-position: 0 0; }
+  100% { background-position: 40px 40px; }
+}
+
+.saho-suggested-reading-enhanced .saho-card-image img.loaded {
+  animation: fade-in 0.3s ease;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Horizontal scroll styles for mobile */
+.saho-suggested-reading-enhanced .saho-cards-grid.horizontal-scroll {
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: #990000 #f1f5f9;
+  padding-bottom: 1rem;
+}
+
+.saho-suggested-reading-enhanced .saho-cards-grid.horizontal-scroll .saho-card {
+  scroll-snap-align: start;
+  flex-shrink: 0;
+}
+
+.saho-suggested-reading-enhanced .saho-cards-grid.scrolling {
+  scroll-snap-type: none;
+}
+
+/* Mobile viewport adjustments */
+.saho-suggested-reading-enhanced .saho-cards-grid.mobile-optimized {
+  padding: 0 1rem;
+}
+
+.saho-suggested-reading-enhanced .saho-cards-grid.in-viewport {
+  animation: slide-up 0.6s ease;
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Mobile section headers */
+.saho-suggested-reading-enhanced .saho-related-content-section {
+  margin-bottom: 1.5rem;
+  padding: 0 0.5rem;
+}
+
+.saho-suggested-reading-enhanced .saho-related-content-section:last-child {
+  margin-bottom: 0;
+}
+
+.saho-suggested-reading-enhanced .saho-related-content-section h4 {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #990000;
+  margin: 0 0 1rem 0;
+  padding: 0.75rem 1rem;
+  background: linear-gradient(135deg, #fef2f2 0%, #fef7f7 100%);
+  border-radius: 8px;
+  border-left: 4px solid #990000;
+}
+
+/* Mobile horizontal scroll for many items */
+.saho-suggested-reading-enhanced .saho-cards-scroll-container {
+  overflow-x: auto;
+  overflow-y: visible;
+  padding: 0 0.5rem 1rem 0.5rem;
+  margin: 0 -0.5rem;
+
+  /* Smooth scrolling */
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+.saho-suggested-reading-enhanced .saho-cards-scroll-container::-webkit-scrollbar {
+  height: 4px;
+}
+
+.saho-suggested-reading-enhanced .saho-cards-scroll-container::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 2px;
+}
+
+.saho-suggested-reading-enhanced .saho-cards-scroll-container::-webkit-scrollbar-thumb {
+  background: #990000;
+  border-radius: 2px;
+}
+
+/* Small mobile phones (320px - 479px) */
+@media (max-width: 479px) {
+  .saho-suggested-reading-enhanced .saho-cards-grid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+    padding: 0;
+  }
+
+  .saho-suggested-reading-enhanced .saho-card {
+    min-height: 260px;
+    margin-bottom: 0;
+  }
+
+  .saho-suggested-reading-enhanced .saho-card-image {
+    height: 140px;
+  }
+
+  .saho-suggested-reading-enhanced .saho-card-content {
+    padding: 0.875rem;
+  }
+
+  .saho-suggested-reading-enhanced .saho-card-title {
+    font-size: 0.9375rem;
+  }
+
+  .saho-suggested-reading-enhanced .saho-card-description {
+    font-size: 0.8125rem;
+  }
+
+  .saho-suggested-reading-enhanced .saho-related-content-section {
+    padding: 0;
+  }
+}
+
+/* Large mobile phones / small tablets (480px - 767px) */
+@media (min-width: 480px) and (max-width: 767px) {
+  .saho-suggested-reading-enhanced .saho-cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+
+  .saho-suggested-reading-enhanced .saho-card {
+    min-height: 300px;
+  }
+
+  .saho-suggested-reading-enhanced .saho-card-image {
+    height: 150px;
+  }
+}
+
+/* Tablets (768px - 1023px) */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .saho-suggested-reading-enhanced .saho-cards-grid {
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.25rem;
+    padding: 0 1rem;
+  }
+
+  .saho-suggested-reading-enhanced .saho-card {
+    min-height: 320px;
+  }
+
+  .saho-suggested-reading-enhanced .saho-card-image {
+    height: 170px;
+  }
+
+  .saho-suggested-reading-enhanced .saho-related-content-section {
+    margin-bottom: 2rem;
+    padding: 0 1rem;
+  }
+
+  .saho-suggested-reading-enhanced .saho-related-content-section h4 {
+    font-size: 1.25rem;
+    padding: 1rem 1.25rem;
+  }
+}
+
+/* Desktop (1024px+) */
+@media (min-width: 1024px) {
+  .saho-suggested-reading-enhanced .saho-cards-grid {
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 1.5rem;
+    padding: 0 1.5rem;
+    min-height: 200px;
+  }
+
+  .saho-suggested-reading-enhanced .saho-card {
+    min-height: 350px;
+  }
+
+  .saho-suggested-reading-enhanced .saho-card-image {
+    height: 200px;
+  }
+
+  /* For single item, limit width */
+  .saho-suggested-reading-enhanced .saho-cards-grid:has(.saho-card:only-child) {
+    grid-template-columns: 1fr;
+    max-width: 500px;
+    margin: 0 auto;
+  }
+
+  /* For two items, show side by side */
+  .saho-suggested-reading-enhanced .saho-cards-grid:has(.saho-card:nth-child(2):last-child) {
+    grid-template-columns: repeat(2, 1fr);
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .saho-suggested-reading-enhanced .saho-related-content-section {
+    margin-bottom: 2.5rem;
+    padding: 0 1.5rem;
+  }
+
+  .saho-suggested-reading-enhanced .saho-related-content-section h4 {
+    font-size: 1.5rem;
+  }
+
+  /* Hover effects for non-touch devices */
+  .saho-suggested-reading-enhanced .saho-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    border-color: #990000;
+  }
+}
+
+/* Additional mobile accessibility improvements */
+@media (max-width: 1023px) {
+  /* Remove hover effects on touch devices */
+  .saho-suggested-reading-enhanced .saho-card:hover {
+    transform: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Ensure touch targets are at least 44px */
+  .saho-suggested-reading-enhanced .saho-card-link {
+    min-height: 44px;
+  }
+
+  /* Better spacing for mobile section headers */
+  .saho-context-bottom > h3 {
+    font-size: 1.5rem;
+    padding: 1rem 0.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .saho-context-bottom > h3::before {
+    font-size: 0.75rem;
+  }
+}
+
+/* Landscape mobile optimizations */
+@media (max-width: 767px) and (orientation: landscape) {
+  .saho-suggested-reading-enhanced .saho-card {
+    min-height: 240px;
+  }
+
+  .saho-suggested-reading-enhanced .saho-card-image {
+    height: 120px;
+  }
+
+  .saho-suggested-reading-enhanced .saho-cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+}
+
+/* High DPI mobile displays */
+@media (-webkit-min-device-pixel-ratio: 2) and (max-width: 767px),
+       (min-resolution: 192dpi) and (max-width: 767px) {
+  .saho-suggested-reading-enhanced .saho-card-title {
+    font-weight: 500;
+    letter-spacing: -0.005em;
+  }
+
+  .saho-suggested-reading-enhanced .saho-card-description {
+    line-height: 1.5;
+  }
+}
+
+/* Ensure accessibility on smaller screens */
+@media (max-width: 360px) {
+  .saho-suggested-reading-enhanced .saho-card-content {
+    padding: 0.75rem;
+  }
+
+  .saho-suggested-reading-enhanced .saho-related-content-section h4 {
+    font-size: 1rem;
+    padding: 0.625rem 0.75rem;
+  }
+}
