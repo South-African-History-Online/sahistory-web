@@ -349,3 +349,109 @@
   </div>
 
 </article>
+
+{# Enhanced Related Content & Topics section with dynamic content for Archives #}
+{% if suggested_reading is defined and suggested_reading is not empty %}
+  <div class="saho-context-sections saho-context-bottom saho-suggested-reading-enhanced">
+    <h3>Related Content & Topics</h3>
+
+    {% for section_title, items in suggested_reading %}
+      <div class="saho-related-content-section">
+        <h4>{{ section_title }}</h4>
+        <div class="saho-cards-grid">
+          {% for item in items %}
+            {% set entity = item.entity %}
+            {% set image_url = null %}
+
+{# Get image URL based on content type and available fields #}
+            {% set bundle = entity.bundle %}
+
+            {# Content-type specific image field priority #}
+            {% if bundle == 'biography' %}
+              {% if entity.field_bio_pic.entity %}
+                {% set image_url = file_url(entity.field_bio_pic.entity.uri.value) %}
+                {% set image_alt = entity.field_bio_pic.alt %}
+              {% elseif entity.field_feature_banner.entity %}
+                {% set image_url = file_url(entity.field_feature_banner.entity.uri.value) %}
+                {% set image_alt = entity.field_feature_banner.alt %}
+              {% endif %}
+
+            {% elseif bundle == 'article' %}
+              {% if entity.field_article_image.entity %}
+                {% set image_url = file_url(entity.field_article_image.entity.uri.value) %}
+                {% set image_alt = entity.field_article_image.alt %}
+              {% elseif entity.field_feature_banner.entity %}
+                {% set image_url = file_url(entity.field_feature_banner.entity.uri.value) %}
+                {% set image_alt = entity.field_feature_banner.alt %}
+              {% endif %}
+
+            {% elseif bundle == 'archive' %}
+              {% if entity.field_archive_image.entity %}
+                {% set image_url = file_url(entity.field_archive_image.entity.uri.value) %}
+                {% set image_alt = entity.field_archive_image.alt %}
+              {% elseif entity.field_image.entity %}
+                {% set image_url = file_url(entity.field_image.entity.uri.value) %}
+                {% set image_alt = entity.field_image.alt %}
+              {% endif %}
+
+            {% elseif bundle == 'place' %}
+              {% if entity.field_place_image.entity %}
+                {% set image_url = file_url(entity.field_place_image.entity.uri.value) %}
+                {% set image_alt = entity.field_place_image.alt %}
+              {% elseif entity.field_feature_banner.entity %}
+                {% set image_url = file_url(entity.field_feature_banner.entity.uri.value) %}
+                {% set image_alt = entity.field_feature_banner.alt %}
+              {% endif %}
+
+            {% elseif bundle == 'event' %}
+              {% if entity.field_event_image.entity %}
+                {% set image_url = file_url(entity.field_event_image.entity.uri.value) %}
+                {% set image_alt = entity.field_event_image.alt %}
+              {% elseif entity.field_tdih_image.entity %}
+                {% set image_url = file_url(entity.field_tdih_image.entity.uri.value) %}
+                {% set image_alt = entity.field_tdih_image.alt %}
+              {% endif %}
+
+            {% else %}
+              {# Fallback for other content types #}
+              {% if entity.field_image.entity %}
+                {% set image_url = file_url(entity.field_image.entity.uri.value) %}
+                {% set image_alt = entity.field_image.alt %}
+              {% elseif entity.field_article_image.entity %}
+                {% set image_url = file_url(entity.field_article_image.entity.uri.value) %}
+                {% set image_alt = entity.field_article_image.alt %}
+              {% elseif entity.field_feature_banner.entity %}
+                {% set image_url = file_url(entity.field_feature_banner.entity.uri.value) %}
+                {% set image_alt = entity.field_feature_banner.alt %}
+              {% endif %}
+            {% endif %}
+
+            <div class="saho-card">
+              <a href="{{ path('entity.node.canonical', {'node': entity.id()}) }}" class="saho-card-link">
+                <div class="saho-card-image">
+                  <img src="{{ image_url }}" alt="{{ image_alt }}" loading="lazy">
+                </div>
+                <div class="saho-card-content">
+                  <h5 class="saho-card-title">{{ entity.label }}</h5>
+                  {% if entity.field_synopsis.value %}
+                    <p class="saho-card-description">{{ entity.field_synopsis.value|striptags|truncate(120) }}</p>
+                  {% elseif entity.body.value %}
+                    <p class="saho-card-description">{{ entity.body.value|striptags|truncate(120) }}</p>
+                  {% endif %}
+                  <div class="saho-card-footer">
+                    <span class="saho-card-button">
+                      Read More
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                        <path d="M8.22 2.97a.75.75 0 0 1 1.06 0L14 7.69a.75.75 0 0 1 0 1.06L9.28 13.47a.75.75 0 0 1-1.06-1.06L11.44 9.25H2.75a.75.75 0 0 1 0-1.5h8.69L8.22 4.53a.75.75 0 0 1 0-1.06z"/>
+                      </svg>
+                    </span>
+                  </div>
+                </div>
+              </a>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
