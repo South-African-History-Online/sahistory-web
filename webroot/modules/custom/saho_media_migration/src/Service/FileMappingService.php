@@ -4,7 +4,6 @@ namespace Drupal\saho_media_migration\Service;
 
 use Drupal\Core\Database\Connection;
 use Drupal\Core\File\FileSystemInterface;
-use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 
 /**
  * Service for building file mappings and automated path resolution.
@@ -21,10 +20,6 @@ class FileMappingService {
    */
   protected FileSystemInterface $fileSystem;
 
-  /**
-   * The logger factory.
-   */
-  protected LoggerChannelFactoryInterface $loggerFactory;
 
   /**
    * Archive directories to search.
@@ -41,11 +36,9 @@ class FileMappingService {
   public function __construct(
     Connection $database,
     FileSystemInterface $file_system,
-    LoggerChannelFactoryInterface $logger_factory,
   ) {
     $this->database = $database;
     $this->fileSystem = $file_system;
-    $this->loggerFactory = $logger_factory;
   }
 
   /**
@@ -429,10 +422,6 @@ class FileMappingService {
       }
     }
     catch (\Exception $e) {
-      $this->loggerFactory->get('saho_file_mapping')->error('Error scanning directory @dir: @error', [
-        '@dir' => $path,
-        '@error' => $e->getMessage(),
-      ]);
     }
   }
 

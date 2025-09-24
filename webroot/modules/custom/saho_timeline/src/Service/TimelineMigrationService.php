@@ -4,7 +4,6 @@ namespace Drupal\saho_timeline\Service;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Database\Connection;
-use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\node\NodeInterface;
 
 /**
@@ -27,26 +26,16 @@ class TimelineMigrationService {
   protected $database;
 
   /**
-   * The logger factory.
-   *
-   * @var \Drupal\Core\Logger\LoggerChannelFactoryInterface
-   */
-  protected $loggerFactory;
-
-  /**
    * Constructs a TimelineMigrationService object.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
    * @param \Drupal\Core\Database\Connection $database
    *   The database connection.
-   * @param \Drupal\Core\Logger\LoggerChannelFactoryInterface $logger_factory
-   *   The logger factory.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, Connection $database, LoggerChannelFactoryInterface $logger_factory) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, Connection $database) {
     $this->entityTypeManager = $entity_type_manager;
     $this->database = $database;
-    $this->loggerFactory = $logger_factory;
   }
 
   /**
@@ -134,22 +123,12 @@ class TimelineMigrationService {
       $event = $this->entityTypeManager->getStorage('node')->create($event_data);
       $event->save();
 
-      // Log the migration.
-      $this->loggerFactory->get('saho_timeline')->info('Migrated article @article_id to event @event_id', [
-        '@article_id' => $article->id(),
-        '@event_id' => $event->id(),
-      ]);
-
       // Store migration mapping.
       $this->storeMigrationMapping($article->id(), $event->id());
 
       return $event;
     }
     catch (\Exception $e) {
-      $this->loggerFactory->get('saho_timeline')->error('Failed to migrate article @id: @message', [
-        '@id' => $article->id(),
-        '@message' => $e->getMessage(),
-      ]);
       return NULL;
     }
   }

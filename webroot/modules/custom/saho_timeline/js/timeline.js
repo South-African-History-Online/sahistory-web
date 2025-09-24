@@ -100,7 +100,6 @@
         updateTimelineContent($timeline, response);
       },
       error: function () {
-        console.error('Failed to load timeline events');
       },
       complete: function () {
         $loading.hide();

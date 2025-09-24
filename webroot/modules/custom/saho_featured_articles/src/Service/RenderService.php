@@ -5,8 +5,6 @@ namespace Drupal\saho_featured_articles\Service;
 use Drupal\Core\Render\RendererInterface;
 use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\Routing\UrlGeneratorInterface;
-use Drupal\Core\Logger\LoggerChannelFactoryInterface;
-use Drupal\Core\Logger\LoggerChannelInterface;
 use Drupal\node\NodeInterface;
 
 /**
@@ -36,13 +34,6 @@ class RenderService {
   protected $urlGenerator;
 
   /**
-   * The logger channel.
-   *
-   * @var \Drupal\Core\Logger\LoggerChannelInterface
-   */
-  protected $logger;
-
-  /**
    * Constructs a RenderService object.
    *
    * @param \Drupal\Core\Render\RendererInterface $renderer
@@ -51,19 +42,15 @@ class RenderService {
    *   The date formatter service.
    * @param \Drupal\Core\Routing\UrlGeneratorInterface $url_generator
    *   The URL generator service.
-   * @param \Drupal\Core\Logger\LoggerChannelFactoryInterface $logger_factory
-   *   The logger factory.
    */
   public function __construct(
     RendererInterface $renderer,
     DateFormatterInterface $date_formatter,
     UrlGeneratorInterface $url_generator,
-    LoggerChannelFactoryInterface $logger_factory
   ) {
     $this->renderer = $renderer;
     $this->dateFormatter = $date_formatter;
     $this->urlGenerator = $url_generator;
-    $this->logger = $logger_factory->get('saho_featured_articles');
   }
 
   /**
@@ -78,7 +65,6 @@ class RenderService {
    *   Rendered HTML string.
    */
   public function renderContentItems(array $nodes, array $options = []) {
-    $this->logger->info('Rendering @count content items', ['@count' => count($nodes)]);
 
     if (empty($nodes)) {
       return '<div class="col-12"><div class="alert alert-info">No content available.</div></div>';
@@ -110,7 +96,7 @@ class RenderService {
       $node_type = $node->bundle();
       $updated_date = $this->dateFormatter->format($node->getChangedTime(), 'custom', 'j M Y');
 
-      // Get view count if statistics service is available
+      // Get view count if statistics service is available.
       $view_count = '';
       if (!empty($options['show_stats'])) {
         $stats_service = \Drupal::service('saho_featured_articles.statistics_service');
@@ -120,7 +106,7 @@ class RenderService {
         }
       }
 
-      // Get badges
+      // Get badges.
       $badges = $this->getBadges($node);
 
       $html = '<div class="col-lg-6 mb-4">';
@@ -131,15 +117,15 @@ class RenderService {
       $html .= '<a href="' . $node_url . '" class="text-decoration-none">' . htmlspecialchars($node_title) . '</a>';
       $html .= '</h3>';
       $html .= '<div class="text-muted small mb-2">' . ucfirst(str_replace('_', ' ', $node_type)) . ' • Updated ' . $updated_date . '</div>';
-      
+
       if ($view_count) {
         $html .= $view_count;
       }
-      
+
       if ($badges) {
         $html .= '<div class="mt-auto">' . $badges . '</div>';
       }
-      
+
       $html .= '</div>';
       $html .= '</div>';
       $html .= '</div>';
@@ -148,10 +134,6 @@ class RenderService {
       return $html;
     }
     catch (\Exception $e) {
-      $this->logger->error('Error rendering node @nid: @error', [
-        '@nid' => $node->id(),
-        '@error' => $e->getMessage(),
-      ]);
       return '';
     }
   }
@@ -168,16 +150,16 @@ class RenderService {
   protected function getBadges(NodeInterface $node) {
     $badges = [];
 
-    // Check for staff picks
-    if ($node->hasField('field_staff_picks') && 
-        !$node->get('field_staff_picks')->isEmpty() && 
+    // Check for staff picks.
+    if ($node->hasField('field_staff_picks') &&
+        !$node->get('field_staff_picks')->isEmpty() &&
         $node->get('field_staff_picks')->value == 1) {
       $badges[] = '<span class="badge bg-warning text-dark me-1">Staff Pick</span>';
     }
 
-    // Check for general featured
-    if ($node->hasField('field_home_page_feature') && 
-        !$node->get('field_home_page_feature')->isEmpty() && 
+    // Check for general featured.
+    if ($node->hasField('field_home_page_feature') &&
+        !$node->get('field_home_page_feature')->isEmpty() &&
         $node->get('field_home_page_feature')->value == 1) {
       $badges[] = '<span class="badge bg-info">Featured</span>';
     }

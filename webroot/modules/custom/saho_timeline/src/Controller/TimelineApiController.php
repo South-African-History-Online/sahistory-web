@@ -179,18 +179,9 @@ class TimelineApiController extends ControllerBase {
           $response_data['events'][] = $formatted_event;
         }
         else {
-          // Log the problematic event.
-          \Drupal::logger('saho_timeline')->warning('Event @id has JSON encoding issues and was skipped.', [
-            '@id' => method_exists($event, 'id') ? $event->id() : 'unknown',
-          ]);
         }
       }
       catch (\Exception $e) {
-        // Log and skip problematic events.
-        \Drupal::logger('saho_timeline')->error('Error formatting event @id: @message', [
-          '@id' => method_exists($event, 'id') ? $event->id() : 'unknown',
-          '@message' => $e->getMessage(),
-        ]);
       }
     }
 
@@ -208,10 +199,6 @@ class TimelineApiController extends ControllerBase {
           ];
         }
         catch (\Exception $e) {
-          \Drupal::logger('saho_timeline')->error('Error formatting dateless event @id: @message', [
-            '@id' => $dateless_event['id'],
-            '@message' => $e->getMessage(),
-          ]);
         }
       }
     }
@@ -221,26 +208,6 @@ class TimelineApiController extends ControllerBase {
       $html = $this->renderEventsAsHtml($events);
       $response_data['html'] = $html;
     }
-
-    // Debug: Log info about returned events.
-    $recent_events = array_filter($response_data['events'], function ($event) {
-      if (!empty($event['date'])) {
-        $year = (int) substr($event['date'], 0, 4);
-        return $year >= 2000;
-      }
-      return FALSE;
-    });
-
-    \Drupal::logger('saho_timeline')->info('API returning @total events, @recent from 2000+, date range @min to @max', [
-      '@total' => count($response_data['events']),
-      '@recent' => count($recent_events),
-      '@min' => !empty($response_data['events']) ? min(array_map(function ($e) {
-        return $e['date'];
-      }, $response_data['events'])) : 'none',
-      '@max' => !empty($response_data['events']) ? max(array_map(function ($e) {
-        return $e['date'];
-      }, $response_data['events'])) : 'none',
-    ]);
 
     // TEMPORARILY DISABLE API CACHE for debugging
     // Cache the response for 1 hour.

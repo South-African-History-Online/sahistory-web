@@ -199,10 +199,10 @@ class DayMonthDateForm extends FormBase {
       else {
         $form['events_container']['no_events'] = [
           '#markup' => '<div class="alert alert-info text-center">' .
-            '<i class="fas fa-info-circle me-2"></i>' .
-            $this->t('No historical events found for @date.', [
-              '@date' => date('F j', mktime(0, 0, 0, $month, $day)),
-            ]) . '</div>',
+          '<i class="fas fa-info-circle me-2"></i>' .
+          $this->t('No historical events found for @date.', [
+            '@date' => date('F j', mktime(0, 0, 0, $month, $day)),
+          ]) . '</div>',
         ];
       }
     }
@@ -275,10 +275,10 @@ class DayMonthDateForm extends FormBase {
       else {
         $events_html = [
           '#markup' => '<div class="alert alert-info text-center">' .
-            '<i class="fas fa-info-circle me-2"></i>' .
-            $this->t('No historical events found for @date.', [
-              '@date' => date('F j', mktime(0, 0, 0, $month, $day)),
-            ]) . '</div>',
+          '<i class="fas fa-info-circle me-2"></i>' .
+          $this->t('No historical events found for @date.', [
+            '@date' => date('F j', mktime(0, 0, 0, $month, $day)),
+          ]) . '</div>',
         ];
       }
 

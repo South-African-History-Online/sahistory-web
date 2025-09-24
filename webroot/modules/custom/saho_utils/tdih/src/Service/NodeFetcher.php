@@ -3,7 +3,6 @@
 namespace Drupal\tdih\Service;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 
 /**
  * Service to fetch nodes for "Today in History" logic.
@@ -18,26 +17,15 @@ class NodeFetcher {
   protected $entityTypeManager;
 
   /**
-   * The logger channel.
-   *
-   * @var \Drupal\Core\Logger\LoggerChannelInterface
-   */
-  protected $logger;
-
-  /**
    * Constructs a new NodeFetcher object.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
-   * @param \Drupal\Core\Logger\LoggerChannelFactoryInterface $logger_factory
-   *   The logger factory service.
    */
   public function __construct(
     EntityTypeManagerInterface $entity_type_manager,
-    LoggerChannelFactoryInterface $logger_factory,
   ) {
     $this->entityTypeManager = $entity_type_manager;
-    $this->logger = $logger_factory->get('tdih');
   }
 
   /**
@@ -76,9 +64,6 @@ class NodeFetcher {
       }
     }
     catch (\Exception $e) {
-      $this->logger->error('Error loading potential event nodes: @message', [
-        '@message' => $e->getMessage(),
-      ]);
     }
     return [];
   }
@@ -119,9 +104,6 @@ class NodeFetcher {
       }
     }
     catch (\Exception $e) {
-      $this->logger->error('Error loading birthday event nodes: @message', [
-        '@message' => $e->getMessage(),
-      ]);
     }
     return [];
   }
@@ -173,9 +155,6 @@ class NodeFetcher {
 
     }
     catch (\Exception $e) {
-      $this->logger->error('Error getting available dates: @message', [
-        '@message' => $e->getMessage(),
-      ]);
     }
 
     return $dates;

@@ -9,11 +9,11 @@
 
   // Define PHP-style constants for PHPCS compliance
   // phpcs:ignore Drupal.Semantics.FunctionTriggerError
-  var TRUE = true;
+  var TRUE = TRUE;
   // phpcs:ignore Drupal.Semantics.FunctionTriggerError
-  var FALSE = false;
+  var FALSE = FALSE;
   // phpcs:ignore Drupal.Semantics.FunctionTriggerError
-  var NULL = null;
+  var NULL = NULL;
 
   /**
    * Premium Timeline behavior using TimelineJS3.
@@ -23,15 +23,13 @@
       const containers = once('saho-timeline-premium', '.timeline-premium', context);
 
       containers.forEach(function (container) {
-        console.log('Initializing TimelineJS3 premium timeline...');
 
         // Get API endpoint from settings with fallback to internal path
         let apiEndpoint = '/api/timeline/events';
         if (settings.sahoTimeline && settings.sahoTimeline.apiEndpoint) {
           apiEndpoint = settings.sahoTimeline.apiEndpoint;
         }
-        
-        console.log('Timeline API endpoint:', apiEndpoint);
+
         const cacheKey = 'saho_timeline_events_all_complete_v2'; // Changed cache key to force refresh
 
         // Create loading message with intro background
@@ -40,28 +38,24 @@
         // Wait for TimelineJS3 to load before fetching events
         const checkTimelineJS = () => {
           if (typeof TL === 'undefined' || typeof TL.Timeline === 'undefined') {
-            console.log('Waiting for TimelineJS3 to load...');
             setTimeout(checkTimelineJS, 200);
             return;
           }
 
           // TEMPORARILY DISABLE CLIENT CACHE for debugging
           // Check for cached data first (client-side cache for 30 minutes)
-          const cachedData = null; // localStorage.getItem(cacheKey);
-          const cacheTime = null; // localStorage.getItem(cacheKey + '_time');
+          const cachedData = NULL; // localStorage.getItem(cacheKey);
+          const cacheTime = NULL; // localStorage.getItem(cacheKey + '_time');
           const cacheExpiry = 30 * 60 * 1000; // 30 minutes
-          
+
           if (cachedData && cacheTime && (Date.now() - parseInt(cacheTime)) < cacheExpiry) {
-            console.log('Loading timeline from cache...');
             try {
               const data = JSON.parse(cachedData);
               if (data.events && data.events.length > 0) {
-                console.log(`Loading ${data.events.length} cached events (of ${data.total || 'unknown'} total)`);
                 initializeTimelineJS(container, data.events);
                 return;
               }
             } catch (e) {
-              console.warn('Cache parse error, fetching fresh data:', e);
               // Clear corrupted cache
               try {
                 localStorage.removeItem(cacheKey);
@@ -73,12 +67,10 @@
           }
 
           // TimelineJS3 is ready, fetch events with performance optimization
-          console.log('Fetching timeline events from server...');
-          
+
           // Load ALL events - full historical record with error handling
           const fetchUrl = apiEndpoint.startsWith('/') ? apiEndpoint : '/api/timeline/events';
-          console.log('Fetching from:', fetchUrl + '?limit=5000');
-          
+
           fetch(fetchUrl + '?limit=5000', {
             method: 'GET',
             headers: {
@@ -95,46 +87,32 @@
             })
             .then(data => {
               if (data.events && data.events.length > 0) {
-                console.log(`Loading ${data.events.length} events with performance optimizations`);
-                
+
                 // Debug: Check for recent events in API response
                 const recentApiEvents = data.events.filter(event => {
                   if (event.date && event.date.length >= 4) {
                     const year = parseInt(event.date.substring(0, 4));
                     return year >= 2020;
                   }
-                  return false;
+                  return FALSE;
                 });
-                console.log(`Recent events (2020+) received from API: ${recentApiEvents.length}`);
-                if (recentApiEvents.length > 0) {
-                  console.log('Sample recent API events:', recentApiEvents.slice(0, 3).map(e => ({
-                    id: e.id,
-                    title: e.title,
-                    date: e.date
-                  })));
-                }
-                
+
                 // TEMPORARILY DISABLE CACHE SAVING for debugging
                 // Cache a smaller subset for faster future loads (to avoid quota issues)
-                console.log('Cache saving disabled for debugging');
-                
+
                 initializeTimelineJS(container, data.events);
               } else {
                 showTimelineError(container, 'No events found for timeline.');
               }
             })
             .catch(error => {
-              console.error('Error loading timeline events:', error);
-              console.error('Failed URL:', fetchUrl + '?limit=5000');
-              console.error('Error details:', error.message);
-              
+
               // Try fallback data if available
               if (settings.sahoTimeline && settings.sahoTimeline.fallbackData && settings.sahoTimeline.fallbackData.length > 0) {
-                console.log('Using fallback timeline data with', settings.sahoTimeline.fallbackData.length, 'events');
                 initializeTimelineJS(container, settings.sahoTimeline.fallbackData);
                 return;
               }
-              
+
               // Try to provide more helpful error messages
               let errorMessage = 'Failed to load timeline. Please refresh the page.';
               if (error.message.includes('HTTP 404')) {
@@ -144,7 +122,7 @@
               } else if (error.message.includes('NetworkError') || error.message.includes('fetch')) {
                 errorMessage = 'Network error loading timeline. Please check your connection and try again.';
               }
-              
+
               showTimelineError(container, errorMessage);
             });
         };
@@ -163,7 +141,6 @@
 
     // Calculate actual date range of events for better focusing
     const dateRange = calculateEventDateRange(events);
-    console.log('Event date range:', dateRange);
 
     // Set container ID for TimelineJS
     container.id = container.id || 'timeline-embed-' + Date.now();
@@ -213,19 +190,14 @@
     // Initialize TimelineJS3
     window.timeline = new TL.Timeline(container.id, timelineData, options);
 
-    console.log('TimelineJS3 initialized with', events.length, 'events');
-    console.log('Timeline spans from', getDateRange(events));
-    
     // Add performance monitoring
     if (window.performance && window.performance.mark) {
       window.performance.mark('timeline-ready');
-      console.log('Timeline performance: Ready in', 
-        Math.round(window.performance.now()), 'ms');
     }
 
     // Add custom styling class
     container.classList.add('saho-timeline-premium');
-    
+
     // Add performance optimizations for navigation
     addPerformanceOptimizations(window.timeline);
   }
@@ -237,12 +209,12 @@
     if (!events || events.length === 0) {
       return { minYear: 1400, maxYear: 2000 }; // Fallback range
     }
-    
+
     let minYear = Infinity;
     let maxYear = -Infinity;
     let validDates = 0;
     let recentEvents = [];
-    
+
     events.forEach((event, index) => {
       const eventDate = new Date(event.date);
       if (!isNaN(eventDate.getTime())) {
@@ -251,7 +223,7 @@
           minYear = Math.min(minYear, eventYear);
           maxYear = Math.max(maxYear, eventYear);
           validDates++;
-          
+
           // Track recent events for debugging
           if (eventYear >= 2000) {
             recentEvents.push({title: event.title, year: eventYear, date: event.date});
@@ -259,25 +231,18 @@
         }
       }
     });
-    
+
     if (validDates === 0) {
       return { minYear: 1400, maxYear: 2000 }; // Fallback range
     }
-    
+
     // Add minimal padding around the actual date range for better visualization
     const padding = Math.max(10, Math.floor((maxYear - minYear) * 0.02)); // 2% padding, minimum 10 years
     const paddedMinYear = Math.max(1200, minYear - padding); // Don't go before 1200
     const paddedMaxYear = Math.min(2150, maxYear + padding); // Don't go past 2150
-    
-    console.log(`Event date range: ${minYear}-${maxYear} (${validDates} valid dates)`);
-    console.log(`Timeline focus range: ${paddedMinYear}-${paddedMaxYear} (with padding)`);
-    console.log(`Recent events (2000+): ${recentEvents.length}`);
-    if (recentEvents.length > 0) {
-      console.log('Sample recent events:', recentEvents.slice(0, 5));
-    }
-    
-    return { 
-      minYear: paddedMinYear, 
+
+    return {
+      minYear: paddedMinYear,
       maxYear: paddedMaxYear,
       actualMinYear: minYear,
       actualMaxYear: maxYear,
@@ -294,10 +259,10 @@
     if (!events || events.length === 0) {
       return 0;
     }
-    
+
     // Calculate the date range to understand the distribution
     const dateRange = calculateEventDateRange(events);
-    
+
     // If we have recent events (after 1950), start closer to modern times
     // Otherwise, start at the center of the actual range
     let targetYear;
@@ -308,11 +273,11 @@
       // Start at the mathematical center
       targetYear = Math.floor((dateRange.actualMinYear + dateRange.actualMaxYear) / 2);
     }
-    
+
     // Find event closest to the target year
     let closestIndex = 0;
     let closestDiff = Infinity;
-    
+
     events.forEach((event, index) => {
       const eventDate = new Date(event.date);
       if (!isNaN(eventDate.getTime())) {
@@ -324,8 +289,7 @@
         }
       }
     });
-    
-    console.log(`Starting timeline at slide ${closestIndex} (closest to target year ${targetYear})`);
+
     return closestIndex;
   }
 
@@ -334,9 +298,7 @@
    */
   function convertToTimelineJSFormat(events) {
     const timelineEvents = [];
-    
-    console.log(`Converting ${events.length} events...`);
-    
+
     // Use chunked processing for better performance
     const chunkSize = 100;
     const chunks = [];
@@ -348,17 +310,15 @@
     chunks.forEach((chunk, chunkIndex) => {
       chunk.forEach((event, index) => {
         const actualIndex = chunkIndex * chunkSize + index;
-        
+
         // Parse date - skip events without valid dates
         let startDate = parseEventDate(event.date);
-        if (!startDate) { 
-          console.warn('Skipping event with invalid date:', event.title, event.date);
-          return; 
+        if (!startDate) {
+          return;
         }
-        
+
         // Skip events outside our reasonable historical range to prevent timeline bloat
         if (startDate.year && (startDate.year < 1200 || startDate.year > 2150)) {
-          console.warn('Skipping event outside historical range:', event.title, startDate.year);
           return;
         }
 
@@ -409,23 +369,6 @@
       eras: getHistoricalEras(events)
     };
 
-    console.log(`Converted ${timelineEvents.length} events from ${events.length} input events`);
-    
-    // Debug: Check if we have recent events in the converted data
-    const recentConverted = timelineEvents.filter(event => {
-      if (event.start_date && event.start_date.year >= 2000) {
-        return true;
-      }
-      return false;
-    });
-    console.log(`Recent events (2000+) in converted data: ${recentConverted.length}`);
-    if (recentConverted.length > 0) {
-      console.log('Sample recent converted events:', recentConverted.slice(0, 3).map(e => ({
-        title: e.text.headline,
-        year: e.start_date.year
-      })));
-    }
-
     return timelineData;
   }
 
@@ -464,7 +407,6 @@
         };
       }
     } catch (e) {
-      console.warn('Could not parse date:', dateStr);
     }
 
     return NULL;
@@ -569,10 +511,10 @@
     const dateRange = calculateEventDateRange(events);
     const minYear = dateRange.actualMinYear;
     const maxYear = dateRange.actualMaxYear;
-    
+
     // Define flexible eras based on South African history and actual event range
     const eras = [];
-    
+
     // Pre-Contact Period (if we have early events)
     if (minYear <= 1650) {
       eras.push({
@@ -583,7 +525,7 @@
         }
       });
     }
-    
+
     // Colonial Period
     if (minYear <= 1800 && maxYear >= 1650) {
       eras.push({
@@ -594,7 +536,7 @@
         }
       });
     }
-    
+
     // 19th Century - Colonial Expansion
     if (minYear <= 1900 && maxYear >= 1800) {
       eras.push({
@@ -605,7 +547,7 @@
         }
       });
     }
-    
+
     // Early 20th Century - Union & Segregation
     if (minYear <= 1948 && maxYear >= 1900) {
       eras.push({
@@ -616,7 +558,7 @@
         }
       });
     }
-    
+
     // Apartheid Era
     if (minYear <= 1994 && maxYear >= 1948) {
       eras.push({
@@ -627,7 +569,7 @@
         }
       });
     }
-    
+
     // Democratic Era
     if (maxYear >= 1994) {
       eras.push({
@@ -638,8 +580,7 @@
         }
       });
     }
-    
-    console.log(`Generated ${eras.length} historical eras for range ${minYear}-${maxYear}`);
+
     return eras;
   }
 
@@ -695,8 +636,9 @@
    * Add performance optimizations for large timeline datasets.
    */
   function addPerformanceOptimizations(timeline) {
-    if (!timeline) return;
-    
+    if (!timeline) { return;
+    }
+
     // Throttle function for performance
     function throttle(func, wait) {
       let timeout;
@@ -709,39 +651,35 @@
         timeout = setTimeout(later, wait);
       };
     }
-    
+
     // Add throttled event listeners for better performance
     if (timeline.on) {
       // Throttle zoom events
       const throttledZoom = throttle(() => {
-        console.log('Timeline zoom event (throttled)');
       }, 100);
-      
-      // Throttle navigation events  
+
+      // Throttle navigation events
       const throttledNav = throttle(() => {
-        console.log('Timeline navigation event (throttled)');
       }, 50);
-      
+
       try {
         timeline.on('zoom_in', throttledZoom);
         timeline.on('zoom_out', throttledZoom);
         timeline.on('nav_next', throttledNav);
         timeline.on('nav_previous', throttledNav);
       } catch (e) {
-        console.warn('Could not add timeline event listeners:', e);
       }
     }
-    
+
     // Optimize rendering with requestAnimationFrame
     const optimizeRendering = () => {
       if (window.requestAnimationFrame) {
         window.requestAnimationFrame(() => {
           // Force layout recalculation in chunks
-          console.log('Timeline rendering optimized');
         });
       }
     };
-    
+
     // Call optimization after a brief delay
     setTimeout(optimizeRendering, 100);
   }

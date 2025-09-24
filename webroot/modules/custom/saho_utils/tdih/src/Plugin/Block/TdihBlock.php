@@ -8,7 +8,6 @@ use Drupal\Core\Cache\Cache;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\File\FileUrlGeneratorInterface;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\file\FileInterface;
 use Drupal\tdih\Service\NodeFetcher;
@@ -34,13 +33,6 @@ class TdihBlock extends BlockBase implements ContainerFactoryPluginInterface {
    * @var \Drupal\tdih\Service\NodeFetcher
    */
   protected $nodeFetcher;
-
-  /**
-   * The logger channel.
-   *
-   * @var \Drupal\Core\Logger\LoggerChannelInterface
-   */
-  protected $logger;
 
   /**
    * The entity type manager.
@@ -74,8 +66,6 @@ class TdihBlock extends BlockBase implements ContainerFactoryPluginInterface {
    *   The plugin implementation definition.
    * @param \Drupal\tdih\Service\NodeFetcher $nodeFetcher
    *   Our custom NodeFetcher service.
-   * @param \Drupal\Core\Logger\LoggerChannelFactoryInterface $logger_factory
-   *   The logger factory service.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager service.
    * @param \Drupal\Component\Datetime\TimeInterface $time
@@ -88,14 +78,12 @@ class TdihBlock extends BlockBase implements ContainerFactoryPluginInterface {
     $plugin_id,
     $plugin_definition,
     NodeFetcher $nodeFetcher,
-    LoggerChannelFactoryInterface $logger_factory,
     EntityTypeManagerInterface $entity_type_manager,
     TimeInterface $time,
     FileUrlGeneratorInterface $file_url_generator,
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->nodeFetcher = $nodeFetcher;
-    $this->logger = $logger_factory->get('tdih');
     $this->entityTypeManager = $entity_type_manager;
     $this->time = $time;
     $this->fileUrlGenerator = $file_url_generator;
@@ -110,7 +98,6 @@ class TdihBlock extends BlockBase implements ContainerFactoryPluginInterface {
       $plugin_id,
       $plugin_definition,
       $container->get('tdih.node_fetcher'),
-      $container->get('logger.factory'),
       $container->get('entity_type.manager'),
       $container->get('datetime.time'),
       $container->get('file_url_generator')
@@ -204,11 +191,6 @@ class TdihBlock extends BlockBase implements ContainerFactoryPluginInterface {
     $manual_override = $this->configuration['use_manual_override'];
     $manual_entity_id = $this->configuration['manual_entity_id'];
 
-    $this->logger->notice('TDIH Block build() called. Manual override: @override, Entity ID: @id', [
-      '@override' => $manual_override ? 'true' : 'false',
-      '@id' => $manual_entity_id ?? 'none',
-    ]);
-
     $tdih_nodes = [];
 
     try {
@@ -219,11 +201,6 @@ class TdihBlock extends BlockBase implements ContainerFactoryPluginInterface {
         if ($node) {
           $tdih_nodes[] = $this->buildNodeItem($node);
         }
-        else {
-          $this->logger->warning('Manual override node @nid not found for TDIH block.', [
-            '@nid' => $manual_entity_id,
-          ]);
-        }
       }
       // 2) Otherwise, do automatic selection based on today's date.
       else {
@@ -233,18 +210,9 @@ class TdihBlock extends BlockBase implements ContainerFactoryPluginInterface {
         $month = $today->format('m');
         $day = $today->format('d');
 
-        $this->logger->notice('TDIH auto-selection: Today is @date, looking for @target', [
-          '@date' => $today->format('Y-m-d H:i:s T'),
-          '@target' => $month . '-' . $day,
-        ]);
-
         // Use our NodeFetcher to load a set of matching nodes for today's date.
         $target_date = $month . '-' . $day;
         $nodes = $this->nodeFetcher->loadPotentialEvents($target_date);
-
-        $this->logger->notice('TDIH found @count potential nodes', [
-          '@count' => count($nodes),
-        ]);
 
         // Filter nodes by exact date match and front page feature using simple
         // string operations.
@@ -275,9 +243,7 @@ class TdihBlock extends BlockBase implements ContainerFactoryPluginInterface {
       }
     }
     catch (\Exception $e) {
-      $this->logger->error('Error building TDIH block: @message', [
-        '@message' => $e->getMessage(),
-      ]);
+      // Silently handle exceptions.
     }
     // Prepare the render array.
     $build = [
@@ -304,9 +270,7 @@ class TdihBlock extends BlockBase implements ContainerFactoryPluginInterface {
         }
       }
       catch (\Exception $e) {
-        $this->logger->error('Error loading button block for TDIH block: @message', [
-          '@message' => $e->getMessage(),
-        ]);
+        // Silently handle exceptions.
       }
     }
 
@@ -384,30 +348,18 @@ class TdihBlock extends BlockBase implements ContainerFactoryPluginInterface {
    */
   protected function buildNodeItem($node) {
     try {
-      $this->logger->notice('TDIH buildNodeItem for node @nid: @title', [
-        '@nid' => $node->id(),
-        '@title' => $node->getTitle(),
-      ]);
-
       // Fetch the value from your event date field, e.g.
       // "field_this_day_in_history_3".
       $event_date = NULL;
       if ($node->hasField('field_this_day_in_history_3') && !$node->get('field_this_day_in_history_3')->isEmpty()) {
         $raw_date = $node->get('field_this_day_in_history_3')->value;
-        $this->logger->notice('TDIH raw date value: @date', ['@date' => $raw_date]);
 
         if (!empty($raw_date)) {
           // Create DateTime at noon to avoid timezone boundary issues.
           // This prevents date shifting across different timezones.
           $event_date = new \DateTime($raw_date . ' 12:00:00',
             new \DateTimeZone('Africa/Johannesburg'));
-          $this->logger->notice('TDIH parsed DateTime: @formatted', [
-            '@formatted' => $event_date->format('j F Y'),
-          ]);
         }
-      }
-      else {
-        $this->logger->notice('TDIH node has no date field or field is empty');
       }
 
       // If there's an image field named "field_event_image," generate a URL.
@@ -430,10 +382,7 @@ class TdihBlock extends BlockBase implements ContainerFactoryPluginInterface {
       }
     }
     catch (\Exception $e) {
-      $this->logger->error('Error building node item for TDIH block: @message', [
-        '@message' => $e->getMessage(),
-        '@nid' => $node->id(),
-      ]);
+      // Silently handle exceptions.
     }
 
     // Get the body text, strip HTML tags, and decode HTML entities.
@@ -477,10 +426,6 @@ class TdihBlock extends BlockBase implements ContainerFactoryPluginInterface {
       return $view_builder->view($node, $view_mode);
     }
     catch (\Exception $e) {
-      $this->logger->error('Error rendering node @nid for TDIH block: @message', [
-        '@nid' => $node->id(),
-        '@message' => $e->getMessage(),
-      ]);
       return [];
     }
   }

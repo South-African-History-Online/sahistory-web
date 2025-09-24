@@ -68,6 +68,8 @@ class CitationService {
       'harvard' => $this->generateHarvardCitation($data),
       'apa' => $this->generateApaCitation($data),
       'oxford' => $this->generateOxfordCitation($data),
+      'bibtex' => $this->generateBibtexCitation($data),
+      'ris' => $this->generateRisCitation($data),
     ];
   }
 
@@ -381,6 +383,77 @@ class CitationService {
       );
 
     return $citation;
+  }
+
+  /**
+   * Generates a BibTeX format citation.
+   *
+   * @param array $data
+   *   The node data for citation generation.
+   *
+   * @return string
+   *   The BibTeX format citation.
+   */
+  protected function generateBibtexCitation(array $data) {
+    // Create a unique cite key based on the title and year.
+    $cite_key = $this->generateCiteKey($data['title'], $data['created_year']);
+
+    // BibTeX format for online resource.
+    $bibtex = "@online{" . $cite_key . ",\n";
+    $bibtex .= "  author = {{" . $data['site_name'] . "}},\n";
+    $bibtex .= "  title = {{" . $data['title'] . "}},\n";
+    $bibtex .= "  year = {" . $data['created_year'] . "},\n";
+    $bibtex .= "  url = {" . $data['url'] . "},\n";
+    $bibtex .= "  urldate = {" . date('Y-m-d') . "},\n";
+    $bibtex .= "  publisher = {{South African History Online}}\n";
+    $bibtex .= "}";
+
+    return $bibtex;
+  }
+
+  /**
+   * Generates an RIS format citation.
+   *
+   * @param array $data
+   *   The node data for citation generation.
+   *
+   * @return string
+   *   The RIS format citation.
+   */
+  protected function generateRisCitation(array $data) {
+    // RIS format for web page.
+    $ris = "TY  - ELEC\n";
+    $ris .= "AU  - " . $data['site_name'] . "\n";
+    $ris .= "TI  - " . $data['title'] . "\n";
+    $ris .= "PY  - " . $data['created_year'] . "\n";
+    $ris .= "DA  - " . date('Y/m/d', strtotime($data['created_formatted'])) . "\n";
+    $ris .= "UR  - " . $data['url'] . "\n";
+    $ris .= "Y2  - " . date('Y/m/d') . "\n";
+    $ris .= "PB  - South African History Online\n";
+    $ris .= "ER  - \n";
+
+    return $ris;
+  }
+
+  /**
+   * Generates a cite key for BibTeX citations.
+   *
+   * @param string $title
+   *   The title of the content.
+   * @param string $year
+   *   The year of publication.
+   *
+   * @return string
+   *   A sanitized cite key.
+   */
+  protected function generateCiteKey(string $title, string $year) {
+    // Remove special characters and convert to lowercase.
+    $key = preg_replace('/[^a-zA-Z0-9]+/', '', strtolower($title));
+
+    // Limit to 20 characters and append year.
+    $key = substr($key, 0, 20) . $year;
+
+    return $key;
   }
 
 }
