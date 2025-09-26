@@ -7,15 +7,15 @@
  */
 
 (() => {
+  // Detect if we're on a touch device (must be declared before use)
+  const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
   // Execute as soon as DOM is ready
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initEnhancements);
   } else {
     initEnhancements();
   }
-
-  // Detect if we're on a touch device
-  const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
   /**
    * Initialize all enhancements for both mobile and desktop.
