@@ -1,0 +1,330 @@
+<?php
+
+/**
+ * @file
+ * SAHO Performance module for optimizing site performance.
+ */
+
+use Drupal\Core\Asset\AttachedAssetsInterface;
+
+/**
+ * Implements hook_page_attachments_alter().
+ */
+function saho_performance_page_attachments_alter(array &$page) {
+  // Add critical CSS inline for above-the-fold content
+  $critical_css = _saho_performance_get_critical_css();
+  if ($critical_css) {
+    $page['#attached']['html_head'][] = [
+      [
+        '#type' => 'html_tag',
+        '#tag' => 'style',
+        '#value' => $critical_css,
+        '#attributes' => [
+          'id' => 'critical-css',
+        ],
+      ],
+      'critical_css',
+    ];
+  }
+
+  // Add preload hints for critical resources
+  _saho_performance_add_preload_hints($page);
+
+  // Add resource hints for faster connections
+  _saho_performance_add_resource_hints($page);
+}
+
+/**
+ * Implements hook_css_alter().
+ */
+function saho_performance_css_alter(&$css, AttachedAssetsInterface $assets) {
+  // Defer non-critical CSS files
+  foreach ($css as $key => &$item) {
+    // Skip critical CSS files
+    $critical_files = [
+      'core/themes/stable9/css/system/components/ajax-progress.module.css',
+      'core/themes/stable9/css/system/components/align.module.css',
+      'core/themes/stable9/css/system/components/autocomplete-loading.module.css',
+    ];
+
+    if (!in_array($key, $critical_files)) {
+      // Add media="print" and onload to defer CSS loading
+      if (!isset($item['attributes']['media']) || $item['attributes']['media'] === 'all') {
+        $item['attributes']['media'] = 'print';
+        $item['attributes']['onload'] = "this.media='all'";
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_js_alter().
+ */
+function saho_performance_js_alter(&$javascript, AttachedAssetsInterface $assets) {
+  // Add defer attribute to non-critical JavaScript
+  foreach ($javascript as $key => &$item) {
+    // Skip critical scripts
+    $critical_scripts = [
+      'core/assets/vendor/modernizr/modernizr.min.js',
+      'core/misc/drupal.js',
+      'core/misc/drupalSettingsLoader.js',
+    ];
+
+    if (!in_array($key, $critical_scripts) && !empty($item['type']) && $item['type'] === 'file') {
+      // Add defer attribute
+      $item['attributes']['defer'] = TRUE;
+    }
+  }
+}
+
+/**
+ * Get critical CSS for inline insertion.
+ */
+function _saho_performance_get_critical_css() {
+  // Critical CSS for above-the-fold content
+  $critical_css = '
+    /* Critical CSS for SAHO - Above the fold styles */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-size: 16px;
+      line-height: 1.6;
+      color: #1e293b;
+      background-color: #ffffff;
+    }
+
+    .visually-hidden {
+      position: absolute !important;
+      clip: rect(1px, 1px, 1px, 1px);
+      overflow: hidden;
+      height: 1px;
+      width: 1px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 15px;
+    }
+
+    header {
+      background-color: #990000;
+      color: white;
+      min-height: 60px;
+    }
+
+    .navbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 0;
+    }
+
+    .navbar-brand {
+      font-size: 1.5rem;
+      font-weight: 700;
+      text-decoration: none;
+      color: white;
+    }
+
+    .navbar-nav {
+      display: flex;
+      list-style: none;
+      gap: 1rem;
+    }
+
+    .nav-link {
+      color: white;
+      text-decoration: none;
+      padding: 0.5rem 1rem;
+      transition: opacity 0.3s;
+    }
+
+    .nav-link:hover {
+      opacity: 0.8;
+    }
+
+    main {
+      min-height: calc(100vh - 120px);
+      padding: 2rem 0;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+      font-weight: 700;
+      line-height: 1.3;
+      margin-bottom: 1rem;
+      color: #1e293b;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+    }
+
+    h2 {
+      font-size: 2rem;
+    }
+
+    h3 {
+      font-size: 1.75rem;
+    }
+
+    p {
+      margin-bottom: 1.25rem;
+    }
+
+    a {
+      color: #990000;
+      text-decoration: underline;
+    }
+
+    img {
+      max-width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    /* Hero Banner Critical Styles */
+    .hero-banner {
+      background-color: #990000;
+      color: white;
+      padding: 3rem 0;
+      margin-bottom: 2rem;
+    }
+
+    .hero-banner h1 {
+      color: white;
+      margin-bottom: 1rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .navbar-nav {
+        flex-direction: column;
+      }
+
+      h1 {
+        font-size: 2rem;
+      }
+
+      h2 {
+        font-size: 1.5rem;
+      }
+    }
+  ';
+
+  // Minify the CSS
+  $critical_css = preg_replace('/\s+/', ' ', $critical_css);
+  $critical_css = preg_replace('/\/\*.*?\*\//', '', $critical_css);
+
+  return $critical_css;
+}
+
+/**
+ * Add preload hints for critical resources.
+ */
+function _saho_performance_add_preload_hints(array &$page) {
+  // Preload self-hosted Inter fonts
+  $fonts = [
+    '/themes/custom/saho/fonts/inter/Inter-Regular.woff2',
+    '/themes/custom/saho/fonts/inter/Inter-Medium.woff2',
+    '/themes/custom/saho/fonts/inter/Inter-Bold.woff2',
+  ];
+
+  foreach ($fonts as $font) {
+    $page['#attached']['html_head'][] = [
+      [
+        '#type' => 'html_tag',
+        '#tag' => 'link',
+        '#attributes' => [
+          'rel' => 'preload',
+          'href' => $font,
+          'as' => 'font',
+          'type' => 'font/woff2',
+          'crossorigin' => 'anonymous',
+        ],
+      ],
+      'font_preload_' . basename($font),
+    ];
+  }
+
+  // Preload critical CSS files
+  $critical_css_files = [
+    '/themes/custom/saho/build/css/main.style.css',
+  ];
+
+  foreach ($critical_css_files as $css_file) {
+    $page['#attached']['html_head'][] = [
+      [
+        '#type' => 'html_tag',
+        '#tag' => 'link',
+        '#attributes' => [
+          'rel' => 'preload',
+          'href' => $css_file . '?v=' . time(),
+          'as' => 'style',
+        ],
+      ],
+      'css_preload_' . basename($css_file),
+    ];
+  }
+}
+
+/**
+ * Add resource hints for faster connections.
+ */
+function _saho_performance_add_resource_hints(array &$page) {
+  // DNS prefetch for external resources if any
+  $dns_prefetch_domains = [
+    // Add any external domains here if needed
+  ];
+
+  foreach ($dns_prefetch_domains as $domain) {
+    $page['#attached']['html_head'][] = [
+      [
+        '#type' => 'html_tag',
+        '#tag' => 'link',
+        '#attributes' => [
+          'rel' => 'dns-prefetch',
+          'href' => $domain,
+        ],
+      ],
+      'dns_prefetch_' . str_replace(['https://', 'http://', '/'], '', $domain),
+    ];
+  }
+
+  // Add preconnect for critical third-party origins
+  $preconnect_origins = [
+    // Add any critical third-party origins here
+  ];
+
+  foreach ($preconnect_origins as $origin) {
+    $page['#attached']['html_head'][] = [
+      [
+        '#type' => 'html_tag',
+        '#tag' => 'link',
+        '#attributes' => [
+          'rel' => 'preconnect',
+          'href' => $origin,
+          'crossorigin' => TRUE,
+        ],
+      ],
+      'preconnect_' . str_replace(['https://', 'http://', '/'], '', $origin),
+    ];
+  }
+}
+
+/**
+ * Implements hook_preprocess_html().
+ */
+function saho_performance_preprocess_html(&$variables) {
+  // Add loading strategy for CSS
+  $variables['#attached']['library'][] = 'saho_performance/css_loading';
+
+  // Add performance monitoring script
+  $variables['#attached']['library'][] = 'saho_performance/performance_monitoring';
+}
