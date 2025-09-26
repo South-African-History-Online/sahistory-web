@@ -11,7 +11,20 @@ use Drupal\Core\Asset\AttachedAssetsInterface;
  * Implements hook_page_attachments_alter().
  */
 function saho_performance_page_attachments_alter(array &$page) {
-  // Add critical CSS inline for above-the-fold content
+  $current_user = \Drupal::currentUser();
+  $route_match = \Drupal::routeMatch();
+  $route_name = $route_match->getRouteName();
+
+  // Don't add performance optimizations for admin users or admin routes
+  if ($current_user->hasPermission('access toolbar') ||
+      strpos($route_name, 'system.admin') === 0 ||
+      strpos($route_name, 'entity.') !== FALSE && strpos($route_name, '.edit') !== FALSE ||
+      strpos($route_name, 'node.add') === 0 ||
+      strpos($route_name, 'admin') !== FALSE) {
+    return;
+  }
+
+  // Add critical CSS inline for above-the-fold content (front-end only)
   $critical_css = _saho_performance_get_critical_css();
   if ($critical_css) {
     $page['#attached']['html_head'][] = [
@@ -27,10 +40,10 @@ function saho_performance_page_attachments_alter(array &$page) {
     ];
   }
 
-  // Add preload hints for critical resources
+  // Add preload hints for critical resources (front-end only)
   _saho_performance_add_preload_hints($page);
 
-  // Add resource hints for faster connections
+  // Add resource hints for faster connections (front-end only)
   _saho_performance_add_resource_hints($page);
 }
 
@@ -38,9 +51,25 @@ function saho_performance_page_attachments_alter(array &$page) {
  * Implements hook_css_alter().
  */
 function saho_performance_css_alter(&$css, AttachedAssetsInterface $assets) {
-  // Get current route to determine what CSS is actually needed
+  // Don't optimize CSS for admin users or admin routes
+  $current_user = \Drupal::currentUser();
   $route_match = \Drupal::routeMatch();
   $route_name = $route_match->getRouteName();
+
+  // Skip optimization for admin users and admin routes
+  if ($current_user->hasPermission('access toolbar') ||
+      strpos($route_name, 'system.admin') === 0 ||
+      strpos($route_name, 'entity.') !== FALSE && strpos($route_name, '.edit') !== FALSE ||
+      strpos($route_name, 'node.add') === 0 ||
+      strpos($route_name, 'admin') !== FALSE) {
+    return;
+  }
+
+  // Only optimize for anonymous users and non-admin routes
+  $config = \Drupal::config('saho_performance.settings');
+  if ($config->get('enable_css_removal') === FALSE) {
+    return;
+  }
 
   // Defer non-critical CSS files based on page type
   foreach ($css as $key => &$item) {
@@ -51,9 +80,18 @@ function saho_performance_css_alter(&$css, AttachedAssetsInterface $assets) {
       'core/themes/stable9/css/system/components/autocomplete-loading.module.css',
       'themes/custom/saho/build/css/main.style.css',
       'themes/contrib/radix/assets/css/radix.style.css',
+      // Keep all admin and toolbar related CSS
+      'core/themes/stable9/css/system/components/tablesort.module.css',
+      'core/themes/stable9/css/system/components/tabledrag.module.css',
+      'core/themes/stable9/css/system/components/tabs.module.css',
+      'core/modules/toolbar/',
+      'core/modules/admin_toolbar/',
+      'core/modules/contextual/',
+      'core/modules/quickedit/',
+      'core/modules/shortcut/',
     ];
 
-    // CSS files that are only needed on specific pages
+    // CSS files that are only needed on specific pages (only for front-end)
     $conditional_css = [
       'modules/custom/saho_tools/css/citation.css' => ['entity.node.canonical'],
       'modules/custom/saho_tools/css/citation-modern.css' => ['entity.node.canonical'],
@@ -70,6 +108,16 @@ function saho_performance_css_alter(&$css, AttachedAssetsInterface $assets) {
       }
     }
 
+    // Always keep admin/toolbar related CSS
+    if (strpos($key, 'toolbar') !== FALSE ||
+        strpos($key, 'admin') !== FALSE ||
+        strpos($key, 'contextual') !== FALSE ||
+        strpos($key, 'quickedit') !== FALSE ||
+        strpos($key, 'shortcut') !== FALSE ||
+        strpos($key, 'tabs') !== FALSE) {
+      $is_critical = TRUE;
+    }
+
     // Check if this CSS is needed for current route
     $is_needed = TRUE;
     foreach ($conditional_css as $css_file => $routes) {
@@ -79,14 +127,15 @@ function saho_performance_css_alter(&$css, AttachedAssetsInterface $assets) {
       }
     }
 
-    // Remove CSS not needed for this page
-    if (!$is_needed) {
+    // Remove CSS not needed for this page (only for front-end users)
+    if (!$is_needed && !$current_user->hasPermission('access toolbar')) {
       unset($css[$key]);
       continue;
     }
 
-    // Defer non-critical CSS that is still needed
-    if (!$is_critical && isset($item['type']) && $item['type'] === 'file') {
+    // Defer non-critical CSS that is still needed (only for front-end)
+    if (!$is_critical && isset($item['type']) && $item['type'] === 'file' &&
+        !$current_user->hasPermission('access toolbar')) {
       if (!isset($item['attributes']['media']) || $item['attributes']['media'] === 'all') {
         $item['attributes']['media'] = 'print';
         $item['attributes']['onload'] = "this.media='all'";
