@@ -83,7 +83,18 @@ class ResponseSubscriber implements EventSubscriberInterface {
       '</themes/custom/saho/build/css/main.style.css>; rel=preload; as=style',
     ];
 
-    $links = array_merge($fonts, $css);
+    // Preload critical JavaScript.
+    $js = [
+      '</themes/custom/saho/build/js/main.script.js>; rel=preload; as=script',
+    ];
+
+    // DNS prefetch for external resources.
+    $dns_prefetch = [
+      '</www.google-analytics.com>; rel=dns-prefetch',
+      '</fonts.gstatic.com>; rel=dns-prefetch',
+    ];
+
+    $links = array_merge($fonts, $css, $js, $dns_prefetch);
 
     // Set Link header with all preload hints.
     $response->headers->set('Link', implode(', ', $links));
