@@ -40,18 +40,31 @@ function saho_performance_page_attachments_alter(array &$page) {
 function saho_performance_css_alter(&$css, AttachedAssetsInterface $assets) {
   // Defer non-critical CSS files
   foreach ($css as $key => &$item) {
-    // Skip critical CSS files
+    // Skip critical CSS files - expanded list to prevent layout issues
     $critical_files = [
       'core/themes/stable9/css/system/components/ajax-progress.module.css',
       'core/themes/stable9/css/system/components/align.module.css',
       'core/themes/stable9/css/system/components/autocomplete-loading.module.css',
+      'themes/custom/saho/build/css/main.style.css',
+      'themes/contrib/radix/assets/css/radix.style.css',
     ];
 
-    if (!in_array($key, $critical_files)) {
+    // Only defer external and non-critical CSS
+    $is_critical = FALSE;
+    foreach ($critical_files as $critical) {
+      if (strpos($key, $critical) !== FALSE) {
+        $is_critical = TRUE;
+        break;
+      }
+    }
+
+    if (!$is_critical && isset($item['type']) && $item['type'] === 'file') {
       // Add media="print" and onload to defer CSS loading
+      // But skip if it's already set to something specific
       if (!isset($item['attributes']['media']) || $item['attributes']['media'] === 'all') {
         $item['attributes']['media'] = 'print';
         $item['attributes']['onload'] = "this.media='all'";
+        $item['attributes']['noscript'] = '<link rel="stylesheet" href="' . $key . '">';
       }
     }
   }

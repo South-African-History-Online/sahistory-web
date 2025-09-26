@@ -45,8 +45,8 @@ class ResponseSubscriber implements EventSubscriberInterface {
     // Add performance hints
     $this->addLinkHeaders($response, $request);
 
-    // Enable compression hint
-    $response->headers->set('Content-Encoding', 'gzip', FALSE);
+    // Do NOT set Content-Encoding header here - let Apache handle compression
+    // Setting this header without actual compression causes encoding errors
 
     // Add timing headers for debugging
     if ($request->server->get('REQUEST_TIME_FLOAT')) {
