@@ -486,10 +486,10 @@
                 if (successful) {
                     this.showCopyFeedback($button, 'URL copied!');
                 } else {
-                    this.showCopyFeedback($button, 'Copy failed', TRUE);
+                    this.showCopyFeedback($button, 'Copy failed', true);
                 }
             } catch (err) {
-                this.showCopyFeedback($button, 'Copy failed', TRUE);
+                this.showCopyFeedback($button, 'Copy failed', true);
             }
 
             // Clean up
