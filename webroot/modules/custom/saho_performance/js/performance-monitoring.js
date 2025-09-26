@@ -11,23 +11,23 @@
     return;
   }
 
-  window.addEventListener('load', function() {
-    setTimeout(function() {
-      var timing = performance.timing;
-      var metrics = {
-        // Navigation timing
-        dns: timing.domainLookupEnd - timing.domainLookupStart,
-        tcp: timing.connectEnd - timing.connectStart,
-        request: timing.responseStart - timing.requestStart,
-        response: timing.responseEnd - timing.responseStart,
-        dom: timing.domComplete - timing.domLoading,
-        load: timing.loadEventEnd - timing.navigationStart,
+  // Use requestIdleCallback to avoid forced reflow
+  function collectMetrics() {
+    var timing = performance.timing;
+    var metrics = {
+      // Navigation timing
+      dns: timing.domainLookupEnd - timing.domainLookupStart,
+      tcp: timing.connectEnd - timing.connectStart,
+      request: timing.responseStart - timing.requestStart,
+      response: timing.responseEnd - timing.responseStart,
+      dom: timing.domComplete - timing.domLoading,
+      load: timing.loadEventEnd - timing.navigationStart,
 
-        // Paint timing
-        firstPaint: 0,
-        firstContentfulPaint: 0,
-        largestContentfulPaint: 0
-      };
+      // Paint timing
+      firstPaint: 0,
+      firstContentfulPaint: 0,
+      largestContentfulPaint: 0
+    };
 
       // Get paint timing if available
       if (performance.getEntriesByType) {
@@ -85,8 +85,15 @@
           page_path: window.location.pathname
         });
       }
+  }
 
-    }, 0);
+  // Use requestIdleCallback if available, otherwise use setTimeout
+  window.addEventListener('load', function() {
+    if (window.requestIdleCallback) {
+      requestIdleCallback(collectMetrics, { timeout: 2000 });
+    } else {
+      setTimeout(collectMetrics, 100);
+    }
   });
 
   // Monitor long tasks

@@ -291,44 +291,20 @@ function _saho_performance_add_preload_hints(array &$page) {
  * Add resource hints for faster connections.
  */
 function _saho_performance_add_resource_hints(array &$page) {
-  // DNS prefetch for external resources if any
-  $dns_prefetch_domains = [
-    // Add any external domains here if needed
-  ];
-
-  foreach ($dns_prefetch_domains as $domain) {
-    $page['#attached']['html_head'][] = [
-      [
-        '#type' => 'html_tag',
-        '#tag' => 'link',
-        '#attributes' => [
-          'rel' => 'dns-prefetch',
-          'href' => $domain,
-        ],
-      ],
-      'dns_prefetch_' . str_replace(['https://', 'http://', '/'], '', $domain),
-    ];
+  // Remove any external font preconnects that might be added by other modules
+  if (isset($page['#attached']['html_head'])) {
+    foreach ($page['#attached']['html_head'] as $key => $item) {
+      if (isset($item[1]) && (
+        strpos($item[1], 'google_fonts') !== FALSE ||
+        strpos($item[1], 'gstatic') !== FALSE
+      )) {
+        unset($page['#attached']['html_head'][$key]);
+      }
+    }
   }
 
-  // Add preconnect for critical third-party origins
-  $preconnect_origins = [
-    // Add any critical third-party origins here
-  ];
-
-  foreach ($preconnect_origins as $origin) {
-    $page['#attached']['html_head'][] = [
-      [
-        '#type' => 'html_tag',
-        '#tag' => 'link',
-        '#attributes' => [
-          'rel' => 'preconnect',
-          'href' => $origin,
-          'crossorigin' => TRUE,
-        ],
-      ],
-      'preconnect_' . str_replace(['https://', 'http://', '/'], '', $origin),
-    ];
-  }
+  // Only add preconnect for actually needed domains
+  // Currently no external domains needed since fonts are self-hosted
 }
 
 /**
@@ -340,4 +316,30 @@ function saho_performance_preprocess_html(&$variables) {
 
   // Add performance monitoring script
   $variables['#attached']['library'][] = 'saho_performance/performance_monitoring';
+}
+
+/**
+ * Implements hook_preprocess_block().
+ */
+function saho_performance_preprocess_block(&$variables) {
+  // Optimize hero banner for LCP
+  if (isset($variables['plugin_id']) && strpos($variables['plugin_id'], 'hero_banner') !== FALSE) {
+    // Add preload for hero banner background image if exists
+    if (!empty($variables['content']['#background_image'])) {
+      $image_url = $variables['content']['#background_image'];
+      $variables['#attached']['html_head'][] = [
+        [
+          '#type' => 'html_tag',
+          '#tag' => 'link',
+          '#attributes' => [
+            'rel' => 'preload',
+            'href' => $image_url,
+            'as' => 'image',
+            'fetchpriority' => 'high',
+          ],
+        ],
+        'hero_banner_preload',
+      ];
+    }
+  }
 }
