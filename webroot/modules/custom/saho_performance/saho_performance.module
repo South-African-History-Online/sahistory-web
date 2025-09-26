@@ -212,16 +212,203 @@ function _saho_performance_get_critical_css() {
   if ($route_name === 'system.front_page') {
     $critical_css .= '
       .hero-banner {
-        background-color: #990000;
-        color: white;
-        padding: 3rem 0;
-        margin-bottom: 2rem;
+        position: relative;
+        width: 100%;
+        min-height: 320px;
         background-size: cover;
         background-position: center;
+        background-repeat: no-repeat;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        margin: 0;
+        padding: 2rem 0;
       }
-      .hero-banner h1 { color: white; }
+      .hero-banner__overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.45);
+        z-index: 1;
+      }
+      .hero-banner__content {
+        position: relative;
+        z-index: 2;
+        text-align: center;
+        padding: 2rem;
+        max-width: 700px;
+        margin: 0 auto;
+      }
+      .hero-banner__inner {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.75rem;
+      }
+      .hero-banner__title {
+        font-size: 2.5rem;
+        font-weight: 600;
+        color: #ffffff !important;
+        margin: 0 0 0.5rem 0;
+        line-height: 1.2;
+        letter-spacing: -0.5px;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+      }
+      .hero-banner__title--white {
+        color: #ffffff !important;
+        font-weight: 600 !important;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7) !important;
+      }
+      .hero-banner__title--red {
+        color: #990000 !important;
+        font-weight: 600 !important;
+        text-shadow: 1px 1px 3px rgba(255, 255, 255, 0.5) !important;
+      }
+      .hero-banner__title--gold {
+        color: #b88a2e !important;
+        font-weight: 600 !important;
+        text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5) !important;
+      }
+      .hero-banner__title--green {
+        color: #2e7d32 !important;
+        font-weight: 600 !important;
+        text-shadow: 1px 1px 3px rgba(255, 255, 255, 0.4) !important;
+      }
+      .hero-banner__subtitle {
+        font-size: 1.125rem;
+        color: #ffffff !important;
+        margin: 0 0 0.5rem 0;
+        font-weight: 400;
+        line-height: 1.5;
+        opacity: 0.95;
+      }
+      .hero-banner__body {
+        font-size: 0.9375rem;
+        color: rgba(255, 255, 255, 0.9) !important;
+        margin: 0 0 1.25rem 0;
+        line-height: 1.6;
+        max-width: 500px;
+      }
+      .hero-banner__body * {
+        color: rgba(255, 255, 255, 0.9) !important;
+      }
+      .hero-banner__body p {
+        margin: 0 0 0.5rem 0;
+        color: rgba(255, 255, 255, 0.9) !important;
+      }
+      .hero-banner__body p:last-child {
+        margin-bottom: 0;
+      }
+      .hero-banner__body strong {
+        font-weight: 600;
+        color: rgba(255, 255, 255, 1) !important;
+      }
+      .hero-banner__body em {
+        font-style: italic;
+      }
+      .hero-banner__body a {
+        color: #ffffff !important;
+        text-decoration: underline;
+      }
+      .hero-banner__body ul, .hero-banner__body ol {
+        text-align: left;
+        margin: 0.5rem 0;
+        padding-left: 1.5rem;
+      }
+      .hero-banner__body li {
+        margin-bottom: 0.25rem;
+        color: rgba(255, 255, 255, 0.9) !important;
+      }
+      .hero-banner__cta {
+        margin-top: 1rem;
+      }
+      .hero-banner__button {
+        display: inline-block;
+        padding: 0.625rem 1.875rem;
+        background: #990000;
+        color: #ffffff !important;
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-decoration: none;
+        border: 2px solid #990000;
+        border-radius: 25px;
+        transition: all 0.3s ease;
+        letter-spacing: 0.025em;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      .hero-banner__button:hover {
+        background: #ffffff !important;
+        color: #990000 !important;
+        border-color: #990000 !important;
+        text-decoration: none !important;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        transform: translateY(-1px);
+      }
+      .hero-banner__cta a {
+        display: inline-block;
+        padding: 0.625rem 1.875rem !important;
+        background: #990000 !important;
+        color: #ffffff !important;
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-decoration: none !important;
+        border: 2px solid #990000 !important;
+        border-radius: 25px !important;
+        transition: all 0.3s ease;
+        letter-spacing: 0.025em;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      .hero-banner__cta a:hover {
+        background: #ffffff !important;
+        color: #990000 !important;
+        border-color: #990000 !important;
+        text-decoration: none !important;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        transform: translateY(-1px);
+      }
     ';
   }
+
+  // Add common inline block styles for rich text content
+  $critical_css .= '
+    .text-formatted, .field--type-text-long, .field--type-text-with-summary {
+      line-height: 1.6;
+    }
+    .text-formatted p, .field--type-text-long p, .field--type-text-with-summary p {
+      margin-bottom: 1rem;
+    }
+    .text-formatted strong, .field--type-text-long strong, .field--type-text-with-summary strong {
+      font-weight: 600;
+    }
+    .text-formatted em, .field--type-text-long em, .field--type-text-with-summary em {
+      font-style: italic;
+    }
+    .text-formatted ul, .text-formatted ol, .field--type-text-long ul, .field--type-text-long ol {
+      margin: 1rem 0;
+      padding-left: 1.5rem;
+    }
+    .text-formatted li, .field--type-text-long li {
+      margin-bottom: 0.5rem;
+    }
+    .text-formatted a, .field--type-text-long a {
+      color: #990000;
+      text-decoration: underline;
+    }
+    .text-formatted h2, .text-formatted h3, .text-formatted h4 {
+      margin-top: 1.5rem;
+      margin-bottom: 0.75rem;
+    }
+    .text-formatted blockquote, .field--type-text-long blockquote {
+      border-left: 4px solid #990000;
+      padding-left: 1rem;
+      margin: 1.5rem 0;
+      font-style: italic;
+      color: #666;
+    }
+  ';
 
   // Mobile responsive styles (always include)
   $critical_css .= '
@@ -229,7 +416,37 @@ function _saho_performance_get_critical_css() {
       .navbar-nav { display: none; }
       h1 { font-size: 2rem; }
       h2 { font-size: 1.5rem; }
-      .container { padding: 0 10px; }
+      .container { padding: 0 10px; }';
+
+  // Add mobile hero banner styles if on front page
+  if ($route_name === 'system.front_page') {
+    $critical_css .= '
+      .hero-banner {
+        min-height: 280px;
+        padding: 1.5rem 0;
+      }
+      .hero-banner__content {
+        padding: 1.5rem;
+      }
+      .hero-banner__title {
+        font-size: 1.875rem;
+        margin-bottom: 0.375rem;
+      }
+      .hero-banner__subtitle {
+        font-size: 1rem;
+        margin-bottom: 0.375rem;
+      }
+      .hero-banner__body {
+        font-size: 0.875rem;
+        margin-bottom: 1rem;
+      }
+      .hero-banner__button, .hero-banner__cta a {
+        padding: 0.4375rem 1.25rem;
+        font-size: 0.75rem;
+      }';
+  }
+
+  $critical_css .= '
     }
   ';
 
