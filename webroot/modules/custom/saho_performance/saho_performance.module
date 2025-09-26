@@ -65,6 +65,11 @@ function saho_performance_css_alter(&$css, AttachedAssetsInterface $assets) {
     return;
   }
 
+  // Skip optimization if in maintenance mode or if running via CLI
+  if (\Drupal::state()->get('system.maintenance_mode') || php_sapi_name() === 'cli') {
+    return;
+  }
+
   // Only optimize for anonymous users and non-admin routes
   $config = \Drupal::config('saho_performance.settings');
   if ($config->get('enable_css_removal') === FALSE) {
@@ -80,6 +85,10 @@ function saho_performance_css_alter(&$css, AttachedAssetsInterface $assets) {
       'core/themes/stable9/css/system/components/autocomplete-loading.module.css',
       'themes/custom/saho/build/css/main.style.css',
       'themes/contrib/radix/assets/css/radix.style.css',
+      'modules/custom/saho_tools/css/citation.css',
+      'modules/custom/saho_tools/css/citation-modern.css',
+      'modules/custom/saho_tools/css/sharing-modern.css',
+      'modules/custom/saho_utils/hero_banner/css/hero-banner-modern.css',
       // Keep all admin and toolbar related CSS
       'core/themes/stable9/css/system/components/tablesort.module.css',
       'core/themes/stable9/css/system/components/tabledrag.module.css',
@@ -584,34 +593,48 @@ function _saho_performance_add_resource_hints(array &$page) {
  */
 function saho_performance_preprocess_html(&$variables) {
   $config = \Drupal::config('saho_performance.settings');
-
-  // Add loading strategy for CSS
-  $variables['#attached']['library'][] = 'saho_performance/css_loading';
-
-  // Add dynamic CSS loader if enabled
-  if ($config->get('enable_css_removal') !== FALSE) {
-    $variables['#attached']['library'][] = 'saho_performance/dynamic_css_loader';
-  }
-
-  // Add performance monitoring script if enabled
-  if ($config->get('enable_monitoring') !== FALSE) {
-    $variables['#attached']['library'][] = 'saho_performance/performance_monitoring';
-  }
-
-  // Add image optimization libraries
-  $variables['#attached']['library'][] = 'saho_performance/image_optimization';
-  $variables['#attached']['library'][] = 'saho_performance/responsive_images';
-
-  // Add analytics optimization (defer GA loading) - only if no editor functionality needed
   $current_user = \Drupal::currentUser();
-  if (!$current_user->hasPermission('access toolbar')) {
-    $variables['#attached']['library'][] = 'saho_performance/analytics_optimization';
+
+  // Skip all optimizations for admin users to preserve full functionality
+  if ($current_user && $current_user->hasPermission('access toolbar')) {
+    return;
   }
 
-  // Add functionality check for debugging
-  if (\Drupal::config('system.logging')->get('error_level') == 'verbose') {
-    $variables['#attached']['library'][] = 'saho_performance/functionality_check';
+  // Also skip optimizations for authenticated users to preserve functionality
+  if ($current_user && !$current_user->isAnonymous()) {
+    return;
   }
+
+  // Temporarily disable CSS loading strategy to prevent errors
+  // $variables['#attached']['library'][] = 'saho_performance/css_loading';
+
+  // Temporarily disable dynamic CSS loader to preserve functionality
+  // if ($config->get('enable_css_removal') !== FALSE) {
+  //   $variables['#attached']['library'][] = 'saho_performance/dynamic_css_loader';
+  // }
+
+  // Temporarily disable performance monitoring to prevent errors
+  // if ($config->get('enable_monitoring') !== FALSE) {
+  //   $variables['#attached']['library'][] = 'saho_performance/performance_monitoring';
+  // }
+
+  // Temporarily disable aggressive optimizations to preserve functionality
+  // $variables['#attached']['library'][] = 'saho_performance/production_safe';
+
+  // Temporarily disable image optimizations that might interfere with modals
+  // $variables['#attached']['library'][] = 'saho_performance/image_optimization';
+  // $variables['#attached']['library'][] = 'saho_performance/responsive_images';
+
+  // Temporarily disable analytics optimization to preserve functionality
+  // if ($current_user->isAnonymous()) {
+  //   $variables['#attached']['library'][] = 'saho_performance/analytics_optimization';
+  // }
+
+  // Temporarily disable functionality check to prevent errors
+  // if (\Drupal::config('system.logging')->get('error_level') == 'verbose' ||
+  //     (isset($_SERVER['HTTP_HOST']) && strpos($_SERVER['HTTP_HOST'], 'ddev.site') !== FALSE)) {
+  //   $variables['#attached']['library'][] = 'saho_performance/functionality_check';
+  // }
 }
 
 /**

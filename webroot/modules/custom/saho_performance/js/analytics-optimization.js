@@ -10,8 +10,9 @@
       // Defer Google Analytics until user interaction or page load complete
       once('saho-analytics-defer', 'html', context).forEach(function () {
 
-        // Check if GA is already loaded
-        if (window.gtag || window.ga || document.querySelector('[src*="googletagmanager"]')) {
+        // Check if GA is already loaded or if we're in admin context
+        if (window.gtag || window.ga || document.querySelector('[src*="googletagmanager"]') ||
+            document.querySelector('#toolbar-administration') || document.body.classList.contains('toolbar-vertical')) {
           return;
         }
 
