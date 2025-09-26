@@ -13,31 +13,7 @@ use Drupal\image\Entity\ImageStyle;
  * Implements hook_page_attachments_alter().
  */
 function saho_page_attachments_alter(array &$page) {
-  // Add preconnect hints for Google Fonts to improve performance
-  $page['#attached']['html_head'][] = [
-    [
-      '#type' => 'html_tag',
-      '#tag' => 'link',
-      '#attributes' => [
-        'rel' => 'preconnect',
-        'href' => 'https://fonts.googleapis.com',
-      ],
-    ],
-    'google_fonts_preconnect',
-  ];
-  
-  $page['#attached']['html_head'][] = [
-    [
-      '#type' => 'html_tag',
-      '#tag' => 'link',
-      '#attributes' => [
-        'rel' => 'preconnect',
-        'href' => 'https://fonts.gstatic.com',
-        'crossorigin' => TRUE,
-      ],
-    ],
-    'google_fonts_preconnect_crossorigin',
-  ];
+  // Removed Google Fonts preconnect - using self-hosted fonts instead
   
   // Critical CSS is now handled by the Critical CSS contrib module
   // See: /admin/config/development/performance/critical-css
