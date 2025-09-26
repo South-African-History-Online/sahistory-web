@@ -9,8 +9,8 @@
 
       // Add lazy loading to images that don't have it.
       once('saho-lazy-loading', 'img:not([loading])', context).forEach(function (img) {
-        // Skip images that are above the fold or critical.
-        if (!img.closest('.hero-banner, .navbar, .breadcrumb')) {
+        // Skip images that are above the fold, critical, or in modals.
+        if (!img.closest('.hero-banner, .navbar, .breadcrumb, .modal, .citation-modal, .sharing-modal')) {
           img.setAttribute('loading', 'lazy');
         }
       });

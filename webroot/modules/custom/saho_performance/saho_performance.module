@@ -73,7 +73,7 @@ function saho_performance_css_alter(&$css, AttachedAssetsInterface $assets) {
 
   // Defer non-critical CSS files based on page type
   foreach ($css as $key => &$item) {
-    // Always keep critical CSS files
+    // Always keep critical CSS files for layout
     $critical_files = [
       'core/themes/stable9/css/system/components/ajax-progress.module.css',
       'core/themes/stable9/css/system/components/align.module.css',
@@ -93,10 +93,12 @@ function saho_performance_css_alter(&$css, AttachedAssetsInterface $assets) {
 
     // CSS files that are only needed on specific pages (only for front-end)
     $conditional_css = [
-      'modules/custom/saho_tools/css/citation.css' => ['entity.node.canonical'],
-      'modules/custom/saho_tools/css/citation-modern.css' => ['entity.node.canonical'],
-      'modules/custom/saho_tools/css/sharing-modern.css' => ['entity.node.canonical'],
-      'modules/custom/saho_utils/hero_banner/css/hero-banner-modern.css' => ['system.front_page'],
+      // Don't defer citation and sharing CSS - they're needed for modal functionality
+      // 'modules/custom/saho_tools/css/citation.css' => ['entity.node.canonical'],
+      // 'modules/custom/saho_tools/css/citation-modern.css' => ['entity.node.canonical'],
+      // 'modules/custom/saho_tools/css/sharing-modern.css' => ['entity.node.canonical'],
+      // Hero banner CSS deferred since it's in critical CSS
+      'modules/custom/saho_utils/hero_banner/css/hero-banner-modern.css' => [],
     ];
 
     // Check if this CSS is critical for current page
@@ -596,8 +598,20 @@ function saho_performance_preprocess_html(&$variables) {
     $variables['#attached']['library'][] = 'saho_performance/performance_monitoring';
   }
 
-  // Add image optimization library
+  // Add image optimization libraries
   $variables['#attached']['library'][] = 'saho_performance/image_optimization';
+  $variables['#attached']['library'][] = 'saho_performance/responsive_images';
+
+  // Add analytics optimization (defer GA loading) - only if no editor functionality needed
+  $current_user = \Drupal::currentUser();
+  if (!$current_user->hasPermission('access toolbar')) {
+    $variables['#attached']['library'][] = 'saho_performance/analytics_optimization';
+  }
+
+  // Add functionality check for debugging
+  if (\Drupal::config('system.logging')->get('error_level') == 'verbose') {
+    $variables['#attached']['library'][] = 'saho_performance/functionality_check';
+  }
 }
 
 /**
