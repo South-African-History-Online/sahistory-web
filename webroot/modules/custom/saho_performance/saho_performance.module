@@ -51,30 +51,8 @@ function saho_performance_page_attachments_alter(array &$page) {
  * Implements hook_css_alter().
  */
 function saho_performance_css_alter(&$css, AttachedAssetsInterface $assets) {
-  // Don't optimize CSS for admin users or admin routes
-  $current_user = \Drupal::currentUser();
-  $route_match = \Drupal::routeMatch();
-  $route_name = $route_match->getRouteName();
-
-  // Skip optimization for admin users and admin routes
-  if ($current_user->hasPermission('access toolbar') ||
-      strpos($route_name, 'system.admin') === 0 ||
-      strpos($route_name, 'entity.') !== FALSE && strpos($route_name, '.edit') !== FALSE ||
-      strpos($route_name, 'node.add') === 0 ||
-      strpos($route_name, 'admin') !== FALSE) {
-    return;
-  }
-
-  // Skip optimization if in maintenance mode or if running via CLI
-  if (\Drupal::state()->get('system.maintenance_mode') || php_sapi_name() === 'cli') {
-    return;
-  }
-
-  // Only optimize for anonymous users and non-admin routes
-  $config = \Drupal::config('saho_performance.settings');
-  if ($config->get('enable_css_removal') === FALSE) {
-    return;
-  }
+  // COMPLETELY DISABLE CSS OPTIMIZATION TO PRESERVE HERO BANNER STYLING
+  return;
 
   // Defer non-critical CSS files based on page type
   foreach ($css as $key => &$item) {
@@ -159,20 +137,8 @@ function saho_performance_css_alter(&$css, AttachedAssetsInterface $assets) {
  * Implements hook_js_alter().
  */
 function saho_performance_js_alter(&$javascript, AttachedAssetsInterface $assets) {
-  // Add defer attribute to non-critical JavaScript
-  foreach ($javascript as $key => &$item) {
-    // Skip critical scripts
-    $critical_scripts = [
-      'core/assets/vendor/modernizr/modernizr.min.js',
-      'core/misc/drupal.js',
-      'core/misc/drupalSettingsLoader.js',
-    ];
-
-    if (!in_array($key, $critical_scripts) && !empty($item['type']) && $item['type'] === 'file') {
-      // Add defer attribute
-      $item['attributes']['defer'] = TRUE;
-    }
-  }
+  // COMPLETELY DISABLE JS OPTIMIZATION TO PRESERVE FUNCTIONALITY
+  return;
 }
 
 /**
