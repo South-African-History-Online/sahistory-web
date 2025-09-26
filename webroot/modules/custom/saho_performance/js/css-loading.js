@@ -22,7 +22,7 @@
 
   // Convert print stylesheets to screen stylesheets after load
   var printStylesheets = document.querySelectorAll('link[media="print"][onload]');
-  printStylesheets.forEach(function(link) {
+  printStylesheets.forEach(function (link) {
     // This handles the deferred CSS loading pattern
     if (link.media === 'print' && link.onload) {
       // The onload will switch it to 'all'
@@ -34,24 +34,24 @@
   var links = document.querySelectorAll('link[rel="stylesheet"][media="print"]');
   var loadedCount = 0;
 
-  links.forEach(function(link) {
+  links.forEach(function (link) {
     if (!link.onload) {
       // Use a timeout as fallback
-      setTimeout(function() {
+      setTimeout(function () {
         link.media = 'all';
       }, 0);
     }
   });
 
   // Handle CSS loading errors
-  window.addEventListener('error', function(e) {
+  window.addEventListener('error', function (e) {
     if (e.target.tagName === 'LINK' && e.target.rel === 'stylesheet') {
       console.error('Failed to load stylesheet:', e.target.href);
       // Retry loading after a delay
-      setTimeout(function() {
+      setTimeout(function () {
         loadCSS(e.target.href, e.target.media);
       }, 1000);
     }
-  }, true);
+  }, TRUE);
 
 })();

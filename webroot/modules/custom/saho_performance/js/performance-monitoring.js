@@ -32,7 +32,7 @@
       // Get paint timing if available
       if (performance.getEntriesByType) {
         var paintEntries = performance.getEntriesByType('paint');
-        paintEntries.forEach(function(entry) {
+        paintEntries.forEach(function (entry) {
           if (entry.name === 'first-paint') {
             metrics.firstPaint = Math.round(entry.startTime);
           }
@@ -44,12 +44,12 @@
         // Get LCP if available
         if (window.PerformanceObserver) {
           try {
-            var lcpObserver = new PerformanceObserver(function(entryList) {
+            var lcpObserver = new PerformanceObserver(function (entryList) {
               var entries = entryList.getEntries();
               var lastEntry = entries[entries.length - 1];
               metrics.largestContentfulPaint = Math.round(lastEntry.startTime);
             });
-            lcpObserver.observe({ type: 'largest-contentful-paint', buffered: true });
+            lcpObserver.observe({ type: 'largest-contentful-paint', buffered: TRUE });
           } catch (e) {
             // LCP not supported
           }
@@ -88,7 +88,7 @@
   }
 
   // Use requestIdleCallback if available, otherwise use setTimeout
-  window.addEventListener('load', function() {
+  window.addEventListener('load', function () {
     if (window.requestIdleCallback) {
       requestIdleCallback(collectMetrics, { timeout: 2000 });
     } else {
@@ -99,7 +99,7 @@
   // Monitor long tasks
   if (window.PerformanceObserver) {
     try {
-      var longTaskObserver = new PerformanceObserver(function(list) {
+      var longTaskObserver = new PerformanceObserver(function (list) {
         for (var entry of list.getEntries()) {
           // Log long tasks in development
           if (window.location.hostname === 'localhost' || window.location.hostname.includes('.ddev.site')) {

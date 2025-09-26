@@ -97,7 +97,7 @@ class PerformanceSettingsForm extends ConfigFormBase {
       ->set('enable_preload_hints', $form_state->getValue('enable_preload_hints'))
       ->save();
 
-    // Clear CSS cache to apply changes
+    // Clear CSS cache to apply changes.
     \Drupal::service('asset.css.collection_optimizer')->deleteAll();
     drupal_flush_all_caches();
 

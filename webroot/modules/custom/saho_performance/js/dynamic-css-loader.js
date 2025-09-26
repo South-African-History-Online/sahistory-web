@@ -53,21 +53,21 @@
   }
 
   // Load citation CSS when user hovers over citation elements
-  document.addEventListener('mouseover', function(e) {
+  document.addEventListener('mouseover', function (e) {
     if (e.target.closest('[data-cite], .citation, .cite')) {
       loadCSSGroup('citation');
     }
-  }, { once: true, passive: true });
+  }, { once: TRUE, passive: TRUE });
 
   // Load sharing CSS when user interacts with sharing elements
-  document.addEventListener('mouseover', function(e) {
+  document.addEventListener('mouseover', function (e) {
     if (e.target.closest('[data-share], .sharing, .share-button')) {
       loadCSSGroup('sharing');
     }
-  }, { once: true, passive: true });
+  }, { once: TRUE, passive: TRUE });
 
   // Load all remaining CSS on user interaction (scroll, click, touch)
-  var loadRemainingCSS = function() {
+  var loadRemainingCSS = function () {
     Object.keys(conditionalCSS).forEach(loadCSSGroup);
 
     // Remove event listeners after loading
@@ -77,9 +77,9 @@
   };
 
   // Load remaining CSS on first user interaction
-  window.addEventListener('scroll', loadRemainingCSS, { once: true, passive: true });
-  window.addEventListener('touchstart', loadRemainingCSS, { once: true, passive: true });
-  window.addEventListener('click', loadRemainingCSS, { once: true, passive: true });
+  window.addEventListener('scroll', loadRemainingCSS, { once: TRUE, passive: TRUE });
+  window.addEventListener('touchstart', loadRemainingCSS, { once: TRUE, passive: TRUE });
+  window.addEventListener('click', loadRemainingCSS, { once: TRUE, passive: TRUE });
 
   // Fallback: load remaining CSS after 3 seconds
   setTimeout(loadRemainingCSS, 3000);
