@@ -15,75 +15,58 @@
  * - exposed: Exposed widget form/info to display.
  * - feed_icons: Optional feed icons to display.
  * - more: An optional link to the next page of results.
- * - title: Title of the view, only used when displaying in the admin preview.
- * - title_prefix: Additional output populated by modules, intended to be
- *   displayed in front of the view title.
- * - title_suffix: Additional output populated by modules, intended to be
- *   displayed after the view title.
  */
 #}
 {{ attach_library('saho_upcoming_events/upcoming_events') }}
 
-<!-- DEBUG: Custom template is loading! -->
-<style>
-/* Inline styles to force override */
-.debug-events-page {
-  background: #f8f9fa !important;
-  min-height: 100vh !important;
-}
-.debug-events-header {
-  background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%) !important;
-  color: white !important;
-  padding: 3rem 0 2rem !important;
-  text-align: center !important;
-}
-.debug-events-header h1 {
-  font-size: 2.5rem !important;
-  font-weight: 700 !important;
-  margin: 0 0 1rem !important;
-}
-.debug-events-grid {
-  display: grid !important;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)) !important;
-  gap: 2rem !important;
-  padding: 2rem !important;
-  max-width: 1200px !important;
-  margin: 0 auto !important;
-}
-.debug-event-card {
-  background: white !important;
-  border-radius: 12px !important;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
-  padding: 1.5rem !important;
-  transition: transform 0.3s ease !important;
-}
-.debug-event-card:hover {
-  transform: translateY(-4px) !important;
-}
-</style>
-
-<div class="debug-events-page">
-  <div class="debug-events-header">
-    <div style="max-width: 1200px; margin: 0 auto; padding: 0 1rem;">
-      <h1>All Upcoming Events</h1>
-      <p style="font-size: 1.1rem; opacity: 0.9;">Explore upcoming events from SAHO and within the broader sphere of culture, history, education, and historical research.</p>
+<div class="all-upcoming-events-page">
+  {# Page Header #}
+  <div class="all-events-header">
+    <div class="container">
+      <h1 class="page-title">All Upcoming Events</h1>
+      <div class="page-description">
+        <p>Explore upcoming events from SAHO and within the broader sphere of culture, history, education, and historical research.</p>
+      </div>
     </div>
   </div>
 
-  {% if rows %}
-    <div class="debug-events-grid">
-      {{ rows }}
-    </div>
-  {% else %}
-    <div style="text-align: center; padding: 3rem;">
-      <h3>No upcoming events</h3>
-      <p>There are currently no upcoming events scheduled.</p>
-    </div>
-  {% endif %}
+  {# Main Content #}
+  <div class="container" style="padding: 2rem 1rem; max-width: 1200px; margin: 0 auto;">
+    {% if header %}
+      <div class="view-header">
+        {{ header }}
+      </div>
+    {% endif %}
 
-  {% if pager %}
-    <div style="text-align: center; padding: 2rem;">
-      {{ pager }}
-    </div>
-  {% endif %}
+    {% if exposed %}
+      <div class="view-filters">
+        {{ exposed }}
+      </div>
+    {% endif %}
+
+    {% if rows %}
+      <div class="view-content all-events-grid">
+        {{ rows }}
+      </div>
+    {% elseif empty %}
+      <div class="view-empty">
+        <div class="empty-events-message">
+          <h3>No Upcoming Events</h3>
+          <p>There are currently no upcoming events scheduled. Please check back soon!</p>
+        </div>
+      </div>
+    {% endif %}
+
+    {% if pager %}
+      <div class="view-pager">
+        {{ pager }}
+      </div>
+    {% endif %}
+
+    {% if footer %}
+      <div class="view-footer">
+        {{ footer }}
+      </div>
+    {% endif %}
+  </div>
 </div>
