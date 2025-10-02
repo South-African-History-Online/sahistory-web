@@ -198,7 +198,9 @@ class UpcomingEventsBlock extends BlockBase implements ContainerFactoryPluginInt
    */
   private function getUpcomingEvents($limit = 4) {
     $storage = $this->entityTypeManager->getStorage('node');
-    $current_date = date(DateTimeItemInterface::DATETIME_STORAGE_FORMAT);
+    // Use start of today to include events happening today.
+    $today = new \DateTime('today', new \DateTimeZone('UTC'));
+    $current_date = $today->format(DateTimeItemInterface::DATETIME_STORAGE_FORMAT);
 
     $query = $storage->getQuery()
       ->accessCheck(TRUE)
