@@ -203,7 +203,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const _dropdownList = dropdownElementList.map(
     (dropdownToggleEl) =>
       new bootstrap.Dropdown(dropdownToggleEl, {
-        autoClose: true,
+        autoClose: 'outside',
       })
   );
 
