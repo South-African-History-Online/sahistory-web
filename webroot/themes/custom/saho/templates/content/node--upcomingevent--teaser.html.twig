@@ -1,0 +1,59 @@
+{#
+/**
+ * @file
+ * Theme override to display a teaser view of an upcoming event node.
+ */
+#}
+<article{{ attributes.addClass('event-card-clickable') }}>
+
+  {# Event Image #}
+  {% if content.field_upcomingevent_image|render|striptags|trim %}
+    <div class="event-card__image">
+      {{ content.field_upcomingevent_image }}
+    </div>
+  {% endif %}
+
+  <div class="event-card__content">
+    {# Event Title #}
+    {{ title_prefix }}
+    {% if label %}
+      <h2{{ title_attributes.addClass('event-card__title') }}>
+        <a href="{{ url }}" rel="bookmark">{{ label }}</a>
+      </h2>
+    {% endif %}
+    {{ title_suffix }}
+
+    {# Event Meta Information #}
+    <div class="event-card__meta">
+      {# Start Date #}
+      {% if content.field_start_date|render|striptags|trim %}
+        <div class="event-card__date">
+          📅 {{ content.field_start_date }}
+        </div>
+      {% endif %}
+
+      {# Venue #}
+      {% if content.field_upcoming_venue|render|striptags|trim %}
+        <div class="event-card__venue">
+          📍 {{ content.field_upcoming_venue }}
+        </div>
+      {% endif %}
+    </div>
+
+    {# Event Description/Body #}
+    {% if content.body|render|striptags|trim %}
+      <div class="event-card__excerpt">
+        {{ content.body }}
+      </div>
+    {% endif %}
+
+    {# Call to Action Button #}
+    <div class="event-card__action">
+      <a href="{{ url }}" class="event-card__button">
+        Learn More
+        <span class="event-card__button-arrow">→</span>
+      </a>
+    </div>
+  </div>
+
+</article>
