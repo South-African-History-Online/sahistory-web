@@ -36,6 +36,7 @@
          * Open the sharing modal.
          */
         openSharingModal: function () {
+            const self = this;
 
             // Check if the modal element exists, create if not
             let modalElement = document.getElementById('sharing-modal');
@@ -46,36 +47,53 @@
             // Update modal content with current page data
             this.updateSharingContent(modalElement);
 
-            // Check if we can use Bootstrap's JavaScript API
-            if (typeof bootstrap !== 'undefined' && typeof bootstrap.Modal !== 'undefined') {
+            // Function to initialize modal once Bootstrap is ready
+            function initModal() {
+                if (typeof bootstrap !== 'undefined' && typeof bootstrap.Modal !== 'undefined') {
+                    // Bootstrap is ready - use the Modal API
+                    if (!self.modal) {
+                        try {
+                            self.modal = new bootstrap.Modal(modalElement, {
+                                keyboard: true,
+                                backdrop: true
+                            });
+                        } catch (error) {
+                            // Modal might already be initialized
+                        }
+                    }
 
-                // Initialize the modal if it's not already
-                if (!this.modal) {
+                    // Show the modal
                     try {
-                        this.modal = new bootstrap.Modal(modalElement, {
-                            keyboard: true, // Allow ESC key to close
-                            backdrop: true  // Allow clicking outside to close
-                        });
+                        self.modal.show();
+                        // Initialize close button functionality after modal is shown
+                        setTimeout(() => {
+                            self.initializeCloseButton($(modalElement));
+                            self.initializeUrlCopy();
+                        }, 100);
                     } catch (error) {
+                        // Fall back to jQuery if Bootstrap API fails
+                        self.showModalWithjQuery(modalElement);
+                    }
+                } else {
+                    // Bootstrap not ready - wait and retry
+                    if (!self._bootstrapCheckAttempts) {
+                        self._bootstrapCheckAttempts = 0;
+                    }
+
+                    if (self._bootstrapCheckAttempts < 20) {
+                        // Try again in 50ms (max 1 second total)
+                        self._bootstrapCheckAttempts++;
+                        setTimeout(initModal, 50);
+                    } else {
+                        // Fallback to jQuery after 1 second
+                        self._bootstrapCheckAttempts = 0;
+                        self.showModalWithjQuery(modalElement);
                     }
                 }
-
-                // Show the modal
-                try {
-                    this.modal.show();
-                    // Initialize close button functionality after modal is shown
-                    setTimeout(() => {
-                        this.initializeCloseButton($(modalElement));
-                        this.initializeUrlCopy();
-                    }, 100);
-                } catch (error) {
-                    // Fall back to jQuery if Bootstrap API fails
-                    this.showModalWithjQuery(modalElement);
-                }
-            } else {
-                // Fall back to jQuery if Bootstrap is not available
-                this.showModalWithjQuery(modalElement);
             }
+
+            // Start the initialization
+            initModal();
         },
 
         /**
@@ -123,7 +141,8 @@
         updateSharingContent: function (modalElement) {
             const currentUrl = window.location.href;
             const pageTitle = document.title;
-            const metaDescription = document.querySelector('meta[name="description"]')?.content || '';
+            const metaTag = document.querySelector('meta[name="description"]');
+            const metaDescription = metaTag ? metaTag.content : '';
 
             const contentHtml = `
                 <!-- URL Copy Section -->

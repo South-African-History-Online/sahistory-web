@@ -68,13 +68,18 @@ function saho_tools_page_attachments_alter(array &$attachments) {
 
   // Only attach the citation and sharing libraries on non-admin routes.
   if (!$is_admin) {
+    // Attach modal libraries - these depend on Bootstrap which loads via saho/style
     $attachments['#attached']['library'][] = 'saho_tools/citation';
     $attachments['#attached']['library'][] = 'saho_tools/sharing';
+
+    // Attach mobile enhancements for dropdown/offcanvas support
+    $attachments['#attached']['library'][] = 'saho/mobile.enhancements';
 
     // Add debugging information to check if the library is loaded.
     $attachments['#attached']['drupalSettings']['sahoTools']['debug'] = [
       'libraryLoaded' => TRUE,
       'timestamp' => time(),
+      'bootstrapRequired' => TRUE,
     ];
 
     // If we're on a node page, add node data.

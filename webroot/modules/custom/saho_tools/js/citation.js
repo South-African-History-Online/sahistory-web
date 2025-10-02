@@ -65,43 +65,60 @@
          * Open the citation modal and load citation data.
          */
         openCitationModal: function () {
-
-            // Check if the modal element exists
+            const self = this;
             const modalElement = document.getElementById('citation-modal');
+
             if (!modalElement) {
                 return;
             }
 
-            // Check if we can use Bootstrap's JavaScript API
-            if (typeof bootstrap !== 'undefined' && typeof bootstrap.Modal !== 'undefined') {
+            // Function to initialize modal once Bootstrap is ready
+            function initModal() {
+                if (typeof bootstrap !== 'undefined' && typeof bootstrap.Modal !== 'undefined') {
+                    // Bootstrap is ready - use the Modal API
+                    if (!self.modal) {
+                        try {
+                            self.modal = new bootstrap.Modal(modalElement, {
+                                keyboard: true,
+                                backdrop: true
+                            });
+                        } catch (error) {
+                            // Modal might already be initialized
+                        }
+                    }
 
-                // Initialize the modal if it's not already
-                if (!this.modal) {
+                    // Show the modal
                     try {
-                        this.modal = new bootstrap.Modal(modalElement, {
-                            keyboard: true, // Allow ESC key to close
-                            backdrop: true  // Allow clicking outside to close
-                        });
+                        self.modal.show();
+                        // Initialize copy buttons and close functionality after modal is shown
+                        setTimeout(() => {
+                            self.initializeCopyButtons($(modalElement));
+                            self.initializeCloseButton($(modalElement));
+                        }, 100);
                     } catch (error) {
+                        // Fall back to jQuery if Bootstrap API fails
+                        self.showModalWithjQuery(modalElement);
+                    }
+                } else {
+                    // Bootstrap not ready - wait and retry
+                    if (!self._bootstrapCheckAttempts) {
+                        self._bootstrapCheckAttempts = 0;
+                    }
+
+                    if (self._bootstrapCheckAttempts < 20) {
+                        // Try again in 50ms (max 1 second total)
+                        self._bootstrapCheckAttempts++;
+                        setTimeout(initModal, 50);
+                    } else {
+                        // Fallback to jQuery after 1 second
+                        self._bootstrapCheckAttempts = 0;
+                        self.showModalWithjQuery(modalElement);
                     }
                 }
-
-                // Show the modal
-                try {
-                    this.modal.show();
-                    // Initialize copy buttons and close functionality after modal is shown
-                    setTimeout(() => {
-                        this.initializeCopyButtons($(modalElement));
-                        this.initializeCloseButton($(modalElement));
-                    }, 100);
-                } catch (error) {
-                    // Fall back to jQuery if Bootstrap API fails
-                    this.showModalWithjQuery(modalElement);
-                }
-            } else {
-                // Fall back to jQuery if Bootstrap is not available
-                this.showModalWithjQuery(modalElement);
             }
+
+            // Start the initialization
+            initModal();
 
             // Get the node data from drupalSettings
             const nodeData = drupalSettings.sahoTools && drupalSettings.sahoTools.nodeData;
@@ -1349,137 +1366,5 @@
 
         }
     };
-
-    /**
-     * Fix Tools dropdown functionality in header.
-     */
-    Drupal.behaviors.sahoToolsDropdown = {
-        attach: function (context, settings) {
-            // Force manual dropdown implementation for reliable functionality
-            once('sahoToolsDropdown', '#toolsDropdown', context).forEach(
-                function (element) {
-                    const $dropdown = $(element);
-                    
-                    // Always use manual dropdown to ensure it works
-                    Drupal.sahoCitation.initializeManualDropdown($dropdown);
-                }
-            );
-            
-            // Also try with a more generic selector in case ID doesn't work
-            once('sahoToolsDropdownGeneric', '.dropdown-toggle', context).forEach(
-                function (element) {
-                    if ($(element).text().trim().includes('Tools') || $(element).find('.bi-tools').length > 0) {
-                        const $dropdown = $(element);
-                        Drupal.sahoCitation.initializeManualDropdown($dropdown);
-                    }
-                }
-            );
-            
-            // Initialize dropdown item click handlers
-            once('sahoDropdownItems', '.dropdown-item[data-citation-trigger]', context).forEach(
-                function (element) {
-                    $(element).on('click', function(e) {
-                        e.preventDefault();
-                        Drupal.sahoCitation.openCitationModal();
-                        // Close the dropdown
-                        $('.dropdown-menu.show').removeClass('show');
-                        $('.dropdown-toggle[aria-expanded="true"]').attr('aria-expanded', 'false');
-                    });
-                }
-            );
-            
-            once('sahoDropdownItemsSharing', '.dropdown-item[data-sharing-trigger]', context).forEach(
-                function (element) {
-                    $(element).on('click', function(e) {
-                        e.preventDefault();
-                        Drupal.sahoSharing.openSharingModal();
-                        // Close the dropdown
-                        $('.dropdown-menu.show').removeClass('show');
-                        $('.dropdown-toggle[aria-expanded="true"]').attr('aria-expanded', 'false');
-                    });
-                }
-            );
-        }
-    };
-
-    /**
-     * Manual dropdown toggle functionality.
-     */
-    Drupal.sahoCitation.initializeManualDropdown = function($dropdown) {
-        
-        // Find the dropdown menu - try multiple selectors
-        let $menu = $dropdown.siblings('.dropdown-menu');
-        if ($menu.length === 0) {
-            $menu = $dropdown.parent().find('.dropdown-menu');
-        }
-        if ($menu.length === 0) {
-            $menu = $dropdown.next('.dropdown-menu');
-        }
-        
-        
-        if ($menu.length === 0) {
-            return;
-        }
-        
-        // Remove any existing handlers to prevent duplicates
-        $dropdown.off('click.manualDropdown pointerdown.manualDropdown');
-        
-        // Use both click and pointer events to ensure it works
-        $dropdown.on('click.manualDropdown pointerdown.manualDropdown', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            e.stopImmediatePropagation();
-            
-            // Toggle the dropdown
-            const isOpen = $menu.hasClass('show');
-            
-            if (isOpen) {
-                $menu.removeClass('show');
-                $dropdown.attr('aria-expanded', 'false');
-            } else {
-                // Close other dropdowns first
-                $('.dropdown-menu.show').removeClass('show');
-                $('.dropdown-toggle[aria-expanded="true"]').attr('aria-expanded', 'false');
-                
-                // Open this dropdown
-                $menu.addClass('show');
-                $dropdown.attr('aria-expanded', 'true');
-            }
-            
-            return false;
-        });
-        
-        // Close dropdown when clicking outside
-        $(document).off('click.dropdownClose').on('click.dropdownClose', function(e) {
-            if ($dropdown[0] && $menu[0] && 
-                !$dropdown[0].contains(e.target) && 
-                !$menu[0].contains(e.target)) {
-                $menu.removeClass('show');
-                $dropdown.attr('aria-expanded', 'false');
-            }
-        });
-        
-        // Close dropdown when pressing ESC
-        $(document).off('keydown.dropdownEsc').on('keydown.dropdownEsc', function(e) {
-            if (e.key === 'Escape') {
-                $menu.removeClass('show');
-                $dropdown.attr('aria-expanded', 'false');
-            }
-        });
-        
-    };
-
-    // Additional fallback - direct initialization when document is ready
-    $(document).ready(function() {
-        
-        // Wait a bit for other scripts to load
-        setTimeout(function() {
-            const $toolsDropdown = $('#toolsDropdown');
-            if ($toolsDropdown.length > 0 && !$toolsDropdown.data('enhanced')) {
-                $toolsDropdown.data('enhanced', true);
-                Drupal.sahoCitation.initializeManualDropdown($toolsDropdown);
-            }
-        }, 1000);
-    });
 
 })(jQuery, Drupal, drupalSettings, once);

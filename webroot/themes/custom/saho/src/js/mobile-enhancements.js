@@ -27,6 +27,9 @@
     // Fix for Tools dropdown on all devices
     fixToolsDropdown();
 
+    // Fix for Offcanvas menu on mobile
+    fixOffcanvasMenu();
+
     // Add mutation observer to handle dynamically loaded content
     setupMutationObserver();
   }
@@ -348,6 +351,152 @@
   }
 
   /**
+   * Fixes Offcanvas menu functionality on mobile devices.
+   * Enhanced to handle Bootstrap Offcanvas with fallback.
+   */
+  function fixOffcanvasMenu() {
+    // Target all offcanvas toggles
+    const offcanvasToggles = document.querySelectorAll('[data-bs-toggle="offcanvas"]');
+
+    offcanvasToggles.forEach((toggle) => {
+      // Skip toggles we've already processed
+      if (toggle.hasAttribute('data-enhanced')) {
+        return;
+      }
+
+      // Find the offcanvas menu
+      const targetId = toggle.getAttribute('data-bs-target');
+      if (!targetId) {
+        return;
+      }
+
+      const offcanvasMenu = document.querySelector(targetId);
+      if (!offcanvasMenu) {
+        return;
+      }
+
+      // For touch devices, we need custom implementation for reliability
+      if (isTouchDevice) {
+        // Manual toggle implementation for mobile
+        const toggleOffcanvas = (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+
+          const isOpen = offcanvasMenu.classList.contains('show');
+
+          if (isOpen) {
+            // Close offcanvas
+            offcanvasMenu.classList.remove('show');
+            toggle.setAttribute('aria-expanded', 'false');
+            document.body.classList.remove('modal-open');
+
+            // Remove backdrop
+            const backdrop = document.querySelector('.offcanvas-backdrop');
+            if (backdrop) {
+              backdrop.remove();
+            }
+          } else {
+            // Open offcanvas
+            offcanvasMenu.classList.add('show');
+            toggle.setAttribute('aria-expanded', 'true');
+            document.body.classList.add('modal-open');
+
+            // Add backdrop
+            const backdrop = document.createElement('div');
+            backdrop.className = 'offcanvas-backdrop fade show';
+            backdrop.style.cssText =
+              'position:fixed;top:0;left:0;z-index:1040;width:100vw;height:100vh;background-color:rgba(0,0,0,0.5)';
+            document.body.appendChild(backdrop);
+
+            // Close on backdrop click
+            backdrop.addEventListener('click', () => {
+              offcanvasMenu.classList.remove('show');
+              toggle.setAttribute('aria-expanded', 'false');
+              document.body.classList.remove('modal-open');
+              backdrop.remove();
+            });
+          }
+        };
+
+        // Add touch event for mobile
+        toggle.addEventListener('touchend', toggleOffcanvas, { passive: false });
+
+        // Also handle click for hybrid devices
+        toggle.addEventListener('click', (e) => {
+          if (isTouchDevice) {
+            toggleOffcanvas(e);
+          }
+        });
+
+        // Handle close button in offcanvas
+        const closeButton = offcanvasMenu.querySelector('[data-bs-dismiss="offcanvas"]');
+        if (closeButton) {
+          closeButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            offcanvasMenu.classList.remove('show');
+            toggle.setAttribute('aria-expanded', 'false');
+            document.body.classList.remove('modal-open');
+
+            const backdrop = document.querySelector('.offcanvas-backdrop');
+            if (backdrop) {
+              backdrop.remove();
+            }
+          });
+        }
+      } else {
+        // For desktop, ensure Bootstrap Offcanvas is initialized if available
+        if (typeof bootstrap !== 'undefined' && bootstrap.Offcanvas) {
+          try {
+            new bootstrap.Offcanvas(offcanvasMenu);
+          } catch (_e) {
+            // Offcanvas might already be initialized
+          }
+        } else {
+          // Fallback click handler if Bootstrap isn't available
+          toggle.addEventListener('click', (e) => {
+            e.preventDefault();
+
+            const isOpen = offcanvasMenu.classList.contains('show');
+
+            if (isOpen) {
+              offcanvasMenu.classList.remove('show');
+              toggle.setAttribute('aria-expanded', 'false');
+            } else {
+              offcanvasMenu.classList.add('show');
+              toggle.setAttribute('aria-expanded', 'true');
+            }
+          });
+        }
+      }
+
+      // Mark toggle as processed
+      toggle.setAttribute('data-enhanced', 'true');
+    });
+
+    // Document-level handler to close offcanvas when clicking outside (ESC key)
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        const openOffcanvas = document.querySelector('.offcanvas.show');
+        if (openOffcanvas) {
+          openOffcanvas.classList.remove('show');
+          document.body.classList.remove('modal-open');
+
+          const backdrop = document.querySelector('.offcanvas-backdrop');
+          if (backdrop) {
+            backdrop.remove();
+          }
+
+          // Find and update the toggle button
+          const toggle = document.querySelector(`[data-bs-target="#${openOffcanvas.id}"]`);
+          if (toggle) {
+            toggle.setAttribute('aria-expanded', 'false');
+          }
+        }
+      }
+    });
+  }
+
+  /**
    * Sets up a mutation observer to handle dynamically loaded content.
    */
   function setupMutationObserver() {
@@ -355,6 +504,7 @@
     const observer = new MutationObserver((mutations) => {
       let needsSearchFormFix = false;
       let needsDropdownFix = false;
+      let needsOffcanvasFix = false;
 
       mutations.forEach((mutation) => {
         if (mutation.type === 'childList' && mutation.addedNodes.length) {
@@ -376,6 +526,14 @@
               ) {
                 needsDropdownFix = true;
               }
+
+              // Check for offcanvas
+              if (
+                node.hasAttribute('data-bs-toggle') ||
+                node.querySelector('[data-bs-toggle="offcanvas"]')
+              ) {
+                needsOffcanvasFix = true;
+              }
             }
           });
         }
@@ -388,6 +546,10 @@
 
       if (needsDropdownFix) {
         fixToolsDropdown();
+      }
+
+      if (needsOffcanvasFix) {
+        fixOffcanvasMenu();
       }
     });
 
