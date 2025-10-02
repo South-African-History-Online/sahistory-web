@@ -216,7 +216,7 @@
     document.addEventListener('click', (e) => {
       if (!e.target.matches('#sortDropdown') && !e.target.closest('.dropdown-menu')) {
         const dropdownMenu = document.querySelector('[aria-labelledby="sortDropdown"]');
-        if (dropdownMenu?.classList.contains('show')) {
+        if (dropdownMenu && dropdownMenu.classList.contains('show')) {
           dropdownMenu.classList.remove('show');
           dropdownMenu.style.display = 'none';
         }

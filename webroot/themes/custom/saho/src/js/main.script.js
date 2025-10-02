@@ -450,9 +450,11 @@ document.addEventListener('DOMContentLoaded', () => {
               if (node.nodeType === Node.ELEMENT_NODE) {
                 if (node.tagName === 'IMG') {
                   tryWebPConversion(node);
-                } else {
-                  const imgs = node.querySelectorAll?.('img:not([data-webp-converted])');
-                  imgs?.forEach(tryWebPConversion);
+                } else if (node.querySelectorAll) {
+                  const imgs = node.querySelectorAll('img:not([data-webp-converted])');
+                  if (imgs) {
+                    imgs.forEach(tryWebPConversion);
+                  }
                 }
               }
             });
