@@ -27,7 +27,7 @@
       const $dialog = $context.closest('.modal-content');
       if ($dialog.length) {
         const dialogSettings = $dialog.closest('.modal').data('settings');
-        if (dialogSettings?.drupalAutoButtons) {
+        if (dialogSettings && dialogSettings.drupalAutoButtons) {
           $dialog.trigger('dialogButtonsChange');
         }
       }

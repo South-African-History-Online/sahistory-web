@@ -219,8 +219,11 @@
 
     links.forEach(function (link) {
       link.addEventListener('click', function (e) {
-        const title = link.querySelector('.saho-card-title') ? .textContent || 'Unknown';
-        const section = link.closest('.saho-related-content-section') ? .querySelector('h4') ? .textContent || 'Unknown Section';
+        const titleElement = link.querySelector('.saho-card-title');
+        const title = titleElement ? titleElement.textContent : 'Unknown';
+        const sectionContainer = link.closest('.saho-related-content-section');
+        const sectionHeading = sectionContainer ? sectionContainer.querySelector('h4') : null;
+        const section = sectionHeading ? sectionHeading.textContent : 'Unknown Section';
 
         // Track engagement
         if (typeof gtag !== 'undefined') {
