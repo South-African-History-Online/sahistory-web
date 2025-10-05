@@ -147,17 +147,68 @@
         
         {# Main Content Area #}
         <div class="col-lg-9">
-          
+
           {# All Featured Content Section #}
           <div class="featured-content-section active" id="all-featured" role="tabpanel" aria-labelledby="tab-all-featured">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-              <h3 class="h4 mb-0 {{ section_text_class }}">All Featured Content</h3>
-              <label for="sort-all" class="visually-hidden">Sort content by</label>
-              <select class="form-select form-select-sm w-auto" id="sort-all" aria-label="Sort content">
-                <option value="recent">Most Recent</option>
-                <option value="title">Title A-Z</option>
-                <option value="type">Content Type</option>
-              </select>
+            {# Search and Filter Bar #}
+            <div class="featured-search-filter-bar mb-4 p-3 bg-light rounded">
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label for="search-featured" class="form-label small text-muted">Search Content</label>
+                  <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-search"></i></span>
+                    <input type="text" class="form-control" id="search-featured" placeholder="Search by title or keyword..." aria-label="Search featured content">
+                    <button class="btn btn-outline-secondary" type="button" id="clear-search" aria-label="Clear search">
+                      <i class="fas fa-times"></i>
+                    </button>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <label for="filter-type" class="form-label small text-muted">Content Type</label>
+                  <select class="form-select" id="filter-type" aria-label="Filter by content type">
+                    <option value="all">All Types</option>
+                    <option value="article">Articles</option>
+                    <option value="biography">Biographies</option>
+                    <option value="place">Places</option>
+                    <option value="event">Events</option>
+                    <option value="organisation">Organisations</option>
+                  </select>
+                </div>
+                <div class="col-md-3">
+                  <label for="sort-all" class="form-label small text-muted">Sort By</label>
+                  <select class="form-select" id="sort-all" aria-label="Sort content">
+                    <option value="recent">Most Recent</option>
+                    <option value="title">Title A-Z</option>
+                    <option value="title-desc">Title Z-A</option>
+                    <option value="type">Content Type</option>
+                    <option value="oldest">Oldest First</option>
+                  </select>
+                </div>
+              </div>
+
+              {# Active Filters Display #}
+              <div class="active-filters mt-3" id="active-filters" style="display: none;">
+                <div class="d-flex align-items-center flex-wrap gap-2">
+                  <span class="small text-muted">Active filters:</span>
+                  <div id="filter-badges" class="d-flex flex-wrap gap-2"></div>
+                  <button type="button" class="btn btn-sm btn-link text-danger" id="clear-all-filters">Clear all</button>
+                </div>
+              </div>
+            </div>
+
+            {# Results Summary #}
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h3 class="h5 mb-0 {{ section_text_class }}">
+                <span id="results-count">{{ nodes|length }}</span> <span id="results-label">Featured Items</span>
+              </h3>
+              <div class="view-options btn-group btn-group-sm" role="group" aria-label="View options">
+                <button type="button" class="btn btn-outline-secondary active" data-view="grid" aria-label="Grid view">
+                  <i class="fas fa-th"></i>
+                </button>
+                <button type="button" class="btn btn-outline-secondary" data-view="list" aria-label="List view">
+                  <i class="fas fa-list"></i>
+                </button>
+              </div>
             </div>
             
             {% if nodes %}
@@ -245,11 +296,26 @@
                   </div>
                 {% endfor %}
               </div>
+
+              {# Load More Button #}
+              <div class="text-center mt-4" id="load-more-container">
+                <button type="button" class="btn btn-outline-primary btn-lg" id="load-more-btn" style="display: none;">
+                  <i class="fas fa-chevron-down me-2"></i>Load More
+                </button>
+                <div class="mt-2 text-muted small" id="showing-count">
+                  Showing <span id="visible-count">{{ nodes|length }}</span> of <span id="total-count">{{ nodes|length }}</span> items
+                </div>
+              </div>
             {% else %}
               <div class="alert alert-info">
                 No featured content available.
               </div>
             {% endif %}
+
+            {# No Results Message #}
+            <div id="no-results" class="alert alert-warning" style="display: none;">
+              <i class="fas fa-search me-2"></i>No content matches your search or filter criteria. Try adjusting your filters.
+            </div>
           </div>
           
           {# Staff Picks Section #}
