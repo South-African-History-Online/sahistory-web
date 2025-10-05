@@ -245,12 +245,18 @@ class TdihBlock extends BlockBase implements ContainerFactoryPluginInterface {
     catch (\Exception $e) {
       // Silently handle exceptions.
     }
+    // Force South African timezone for cache key.
+    $sa_timezone = new \DateTimeZone('Africa/Johannesburg');
+    $today = new \DateTime('now', $sa_timezone);
+    $cache_date = $today->format('Y-m-d');
+
     // Prepare the render array.
     $build = [
       '#theme' => 'tdih_block',
       '#tdih_nodes' => $tdih_nodes,
       // Add cache metadata to ensure the block updates at midnight.
       '#cache' => [
+        'keys' => ['tdih_block', $cache_date],
         'contexts' => $this->getCacheContexts(),
         'tags' => $this->getCacheTags(),
         'max-age' => $this->getCacheMaxAge(),
