@@ -38,32 +38,31 @@
 
 // Card image wrapper - standardized dimensions and behavior
 .saho-card-image {
-  position: relative;
   width: 100%;
   height: 200px; // Standardized height for all cards
   overflow: hidden;
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-  
+  display: flex; // Flex container to properly contain the image
+  align-items: center;
+  justify-content: center;
+
   img {
-    position: absolute;
-    top: 0;
-    left: 0;
+    flex-shrink: 0; // Prevent image from shrinking
+    min-width: 100%; // Ensure image covers full width
+    min-height: 100%; // Ensure image covers full height
     width: 100%;
     height: 100%;
     object-fit: cover;
     object-position: center;
     transition: transform 0.5s ease;
   }
-  
+
   .saho-card:hover & img {
     transform: scale(1.05);
   }
-  
+
   // Placeholder styling
   &--placeholder {
-    display: flex;
-    align-items: center;
-    justify-content: center;
     font-size: 3rem;
     color: rgba(255,255,255,0.7);
   }
@@ -197,15 +196,15 @@
   .saho-card-image {
     height: 160px;
   }
-  
+
   .saho-card-content {
     padding: 16px;
   }
-  
+
   .saho-card-title {
     font-size: 1rem;
   }
-  
+
   .saho-card:hover {
     transform: translateY(-3px);
   }
