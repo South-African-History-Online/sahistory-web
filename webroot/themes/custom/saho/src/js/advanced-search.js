@@ -182,7 +182,9 @@
         urlParams.set('sort', sortValue);
 
         // Update active class
-        sortOptions.forEach((opt) => opt.classList.remove('active'));
+        sortOptions.forEach((opt) => {
+          opt.classList.remove('active');
+        });
         this.classList.add('active');
 
         // Update dropdown button text
