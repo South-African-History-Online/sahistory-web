@@ -32,40 +32,46 @@
 
 {# Custom structure for search result fields #}
 <div class="search-result-inner">
-  {# Search result title - typically the first field #}
-  {% if fields.title %}
-    <h3 class="search-result-title">
-      {{ fields.title.content }}
-    </h3>
-  {% endif %}
-  
-  {# Result metadata (if available) #}
-  <div class="search-result-meta">
-    {# Content type #}
-    {% if fields.type %}
-      <span class="search-result-type">{{ fields.type.content }}</span>
-    {% endif %}
-    
-    {# Date (if available) #}
-    {% if fields.created or fields.changed %}
-      <span class="search-result-date">
-        {{ fields.created.content ?? fields.changed.content }}
-      </span>
-    {% endif %}
-  </div>
+  {# Render all fields in order #}
+  {% for key, field in fields %}
+    {% if not field.empty %}
+      {# Title field gets special treatment #}
+      {% if key == 'title' %}
+        <h3 class="search-result-title">
+          {{ field.content }}
+        </h3>
 
-  {# Search result snippet/excerpt #}
-  {% if fields.search_api_excerpt %}
-    <div class="search-snippet-info">
-      <div class="search-snippet">
-        {{ fields.search_api_excerpt.content }}
-      </div>
-    </div>
-  {% elseif fields.body %}
-    <div class="search-snippet-info">
-      <div class="search-snippet">
-        {{ fields.body.content }}
-      </div>
-    </div>
-  {% endif %}
+      {# Excerpt/snippet field #}
+      {% elseif key == 'search_api_excerpt' or key == 'body' %}
+        <div class="search-snippet-info">
+          <div class="search-snippet">
+            {{ field.content }}
+          </div>
+        </div>
+
+      {# Type field #}
+      {% elseif key == 'type' %}
+        <div class="search-result-meta">
+          <span class="search-result-type">{{ field.content }}</span>
+        </div>
+
+      {# Date fields #}
+      {% elseif key == 'created' or key == 'changed' %}
+        <div class="search-result-meta">
+          <span class="search-result-date">{{ field.content }}</span>
+        </div>
+
+      {# All other fields #}
+      {% else %}
+        <div class="search-result-field search-result-field--{{ key|clean_class }}">
+          {% if field.label %}
+            <div class="search-result-field-label">{{ field.label }}:</div>
+          {% endif %}
+          <div class="search-result-field-content">
+            {{ field.content }}
+          </div>
+        </div>
+      {% endif %}
+    {% endif %}
+  {% endfor %}
 </div>
