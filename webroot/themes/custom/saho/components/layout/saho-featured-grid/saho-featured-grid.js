@@ -132,8 +132,8 @@
         break;
       default:
         sortedItems = items.sort((a, b) => {
-          const dateA = Number.parseInt(a.getAttribute('data-updated')) || 0;
-          const dateB = Number.parseInt(b.getAttribute('data-updated')) || 0;
+          const dateA = Number.parseInt(a.getAttribute('data-updated'), 10) || 0;
+          const dateB = Number.parseInt(b.getAttribute('data-updated'), 10) || 0;
           return dateB - dateA; // Newest first
         });
         break;
