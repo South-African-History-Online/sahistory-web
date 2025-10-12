@@ -182,7 +182,9 @@
         urlParams.set('sort', sortValue);
 
         // Update active class
-        sortOptions.forEach((opt) => opt.classList.remove('active'));
+        sortOptions.forEach((opt) => {
+          opt.classList.remove('active');
+        });
         this.classList.add('active');
 
         // Update dropdown button text
@@ -216,7 +218,7 @@
     document.addEventListener('click', (e) => {
       if (!e.target.matches('#sortDropdown') && !e.target.closest('.dropdown-menu')) {
         const dropdownMenu = document.querySelector('[aria-labelledby="sortDropdown"]');
-        if (dropdownMenu && dropdownMenu.classList.contains('show')) {
+        if (dropdownMenu?.classList.contains('show')) {
           dropdownMenu.classList.remove('show');
           dropdownMenu.style.display = 'none';
         }
