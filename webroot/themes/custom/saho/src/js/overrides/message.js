@@ -104,7 +104,7 @@
       wrapper.classList.add('alert-dismissible', 'fade', 'show');
       wrapper.appendChild(Drupal.theme('messageClose'));
     }
-    wrapper.innerHTML += message && message.text ? message.text : '';
+    wrapper.innerHTML += message?.text ? message.text : '';
 
     return wrapper;
   };
