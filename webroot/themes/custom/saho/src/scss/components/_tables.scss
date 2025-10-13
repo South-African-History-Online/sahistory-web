@@ -1,0 +1,543 @@
+// ============================================================================
+// SAHO Table Styles
+// Professional table styling optimized for narrow content areas
+// ============================================================================
+//
+// USAGE:
+// ------
+// 1. DEFAULT: Tables stay within content area with horizontal scroll
+//    <table>...</table>
+//
+// 2. FULL-WIDTH (RECOMMENDED FOR LARGE TABLES): Break out to full viewport
+//    Add class="table-full-width-enabled" directly to the <table> tag:
+//    <table class="table-full-width-enabled">...</table>
+//
+//    This is ideal for:
+//    - Banned People List
+//    - Deaths in Detention List
+//    - Any table with many columns
+//
+// 3. WRAPPER METHOD (Alternative): Wrap table in div
+//    <div class="table-full-width">
+//      <table>...</table>
+//    </div>
+//
+// 4. WIDE: Extend 10% beyond content area on each side
+//    <div class="table-wide">
+//      <table>...</table>
+//    </div>
+//
+// 5. SCROLLABLE WITH INDICATORS: Add visual scroll shadows
+//    <div class="table-scroll-wrapper">
+//      <table>...</table>
+//    </div>
+//
+// 6. COMPACT: Reduce padding and font size for narrow spaces
+//    <div class="table-compact">
+//      <table>...</table>
+//    </div>
+//
+// 7. EXTRA COMPACT: Even smaller for very narrow areas
+//    <div class="table-extra-compact">
+//      <table>...</table>
+//    </div>
+//
+// HOW TO APPLY IN CKEDITOR:
+// --------------------------
+// 1. Click on the table in CKEditor
+// 2. Right-click → Table Properties
+// 3. Go to "Advanced" tab
+// 4. In "Stylesheet Classes" field, enter: table-full-width-enabled
+// 5. Click OK
+//
+// OR edit the HTML source and add class="table-full-width-enabled" to <table> tag
+//
+// ============================================================================
+
+// Table Container
+// ----------------------------------------------------------------------------
+.saho-article-body,
+.saho-main-content {
+
+  // Default table styling (stays within content area)
+  table {
+    width: 100%;
+    margin: 2rem 0;
+    border-collapse: collapse;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+
+    // Add horizontal scroll by default for tables in narrow content areas
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+
+    // Table Header
+    thead {
+      background: linear-gradient(135deg, #8B0000 0%, #a52a2a 100%);
+
+      tr {
+        th {
+          padding: 1rem 1.25rem;
+          text-align: left;
+          font-weight: 600;
+          font-size: 0.875rem;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          color: #fff;
+          border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+
+          // First column (usually names)
+          &:first-child {
+            padding-left: 1.5rem;
+          }
+
+          // Last column
+          &:last-child {
+            padding-right: 1.5rem;
+          }
+        }
+      }
+    }
+
+    // Table Body
+    tbody {
+      tr {
+        border-bottom: 1px solid #e0e0e0;
+        transition: background-color 0.2s ease;
+
+        // Hover effect
+        &:hover {
+          background-color: #f8f9fa;
+        }
+
+        // Alternating row colors
+        &:nth-child(even) {
+          background-color: #fafafa;
+
+          &:hover {
+            background-color: #f5f5f5;
+          }
+        }
+
+        // Last row
+        &:last-child {
+          border-bottom: none;
+        }
+
+        td {
+          padding: 1rem 1.25rem;
+          font-size: 0.9375rem;
+          line-height: 1.6;
+          color: #333;
+          vertical-align: top;
+
+          // First column (usually names or IDs)
+          &:first-child {
+            padding-left: 1.5rem;
+            font-weight: 500;
+            color: #8B0000;
+
+            a {
+              color: #8B0000;
+              text-decoration: none;
+              transition: color 0.2s ease;
+
+              &:hover {
+                color: #a52a2a;
+                text-decoration: underline;
+              }
+            }
+          }
+
+          // Last column
+          &:last-child {
+            padding-right: 1.5rem;
+          }
+
+          // Links in table cells
+          a {
+            color: #0066cc;
+            text-decoration: none;
+            transition: color 0.2s ease;
+
+            &:hover {
+              color: #004499;
+              text-decoration: underline;
+            }
+          }
+        }
+      }
+    }
+
+    // Table caption/title
+    caption {
+      padding: 1rem;
+      font-size: 1.25rem;
+      font-weight: 600;
+      text-align: left;
+      color: #333;
+      caption-side: top;
+    }
+  }
+
+  // Responsive table wrapper
+  .table-responsive {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 2rem 0;
+
+    table {
+      margin: 0;
+      display: table; // Override default block
+    }
+  }
+}
+
+// Full-Width Table (breaks out of narrow content area)
+// ----------------------------------------------------------------------------
+// Apply this class directly to <table> tag in CKEditor
+.table-full-width-enabled,
+.saho-article-body table.table-full-width-enabled,
+.saho-main-content table.table-full-width-enabled {
+  // Break out beyond content area, but not full viewport
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 95vw !important;
+  max-width: 1400px !important;
+  display: table !important; // Override block display
+
+  // Table styling
+  border-collapse: collapse;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-top: 2rem !important;
+  margin-bottom: 2rem !important;
+
+  // Add horizontal scroll for very wide tables
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+
+  // Responsive: reduce width on mobile
+  @media (max-width: 768px) {
+    width: 100vw !important;
+    left: 50%;
+    margin-left: -50vw;
+    transform: none;
+  }
+}
+
+// Wrapper method (legacy support)
+.table-full-width {
+  position: relative;
+  left: 50%;
+  right: 50%;
+  margin-left: -50vw;
+  margin-right: -50vw;
+  width: 100vw;
+  max-width: 100vw;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+
+  table {
+    width: 100%;
+    min-width: 800px; // Ensure table doesn't get too cramped
+    margin: 2rem auto;
+    max-width: 1400px; // Keep readable on very wide screens
+    display: table !important;
+  }
+}
+
+// Wide Table (extends beyond content but not full viewport)
+// ----------------------------------------------------------------------------
+.table-wide {
+  margin-left: -5%;
+  margin-right: -5%;
+  width: 110%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+
+  table {
+    width: 100%;
+    min-width: 600px;
+  }
+}
+
+// Scrollable table wrapper with visual indicators
+// ----------------------------------------------------------------------------
+.table-scroll-wrapper {
+  position: relative;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: 2rem 0;
+
+  // Scroll indicators
+  &:before,
+  &:after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 30px;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    z-index: 2;
+  }
+
+  // Left shadow
+  &:before {
+    left: 0;
+    background: linear-gradient(to right, rgba(255, 255, 255, 0.9), transparent);
+    opacity: 0;
+  }
+
+  // Right shadow
+  &:after {
+    right: 0;
+    background: linear-gradient(to left, rgba(255, 255, 255, 0.9), transparent);
+    opacity: 1;
+  }
+
+  // Show left shadow when scrolled
+  &.scrolled-left:before {
+    opacity: 1;
+  }
+
+  // Hide right shadow when scrolled to end
+  &.scrolled-right:after {
+    opacity: 0;
+  }
+
+  table {
+    margin: 0;
+    min-width: 600px; // Ensure table has minimum width
+    display: table; // Override default block
+  }
+}
+
+// Specific table variants
+// ----------------------------------------------------------------------------
+
+// Compact table (for dense data in narrow spaces)
+.table-compact {
+  table {
+    thead tr th {
+      padding: 0.625rem 0.75rem;
+      font-size: 0.75rem;
+      letter-spacing: 0.03em;
+    }
+
+    tbody tr td {
+      padding: 0.625rem 0.75rem;
+      font-size: 0.8125rem;
+      line-height: 1.4;
+    }
+  }
+}
+
+// Extra compact for very narrow areas
+.table-extra-compact {
+  table {
+    font-size: 0.75rem;
+
+    thead tr th {
+      padding: 0.5rem 0.625rem;
+      font-size: 0.6875rem;
+    }
+
+    tbody tr td {
+      padding: 0.5rem 0.625rem;
+      font-size: 0.75rem;
+      line-height: 1.3;
+    }
+  }
+}
+
+// Bordered table (with vertical borders)
+.table-bordered {
+  table {
+    thead tr th,
+    tbody tr td {
+      border-right: 1px solid #e0e0e0;
+
+      &:last-child {
+        border-right: none;
+      }
+    }
+  }
+}
+
+// Striped table (more prominent striping)
+.table-striped {
+  table {
+    tbody tr:nth-child(even) {
+      background-color: #f0f0f0;
+    }
+  }
+}
+
+// Dark header variant
+.table-dark-header {
+  table {
+    thead {
+      background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    }
+  }
+}
+
+// Responsive Table Styles
+// ----------------------------------------------------------------------------
+@media (max-width: 768px) {
+  .saho-article-body,
+  .saho-main-content {
+    table {
+      thead tr th,
+      tbody tr td {
+        padding: 0.75rem 0.875rem;
+        font-size: 0.875rem;
+
+        &:first-child {
+          padding-left: 1rem;
+        }
+
+        &:last-child {
+          padding-right: 1rem;
+        }
+      }
+    }
+  }
+
+  // Stack table on very small screens
+  @media (max-width: 576px) {
+    .table-mobile-stack {
+      table {
+        thead {
+          display: none;
+        }
+
+        tbody tr {
+          display: block;
+          margin-bottom: 1.5rem;
+          border: 1px solid #e0e0e0;
+          border-radius: 4px;
+
+          td {
+            display: block;
+            text-align: right;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #f0f0f0;
+
+            &:last-child {
+              border-bottom: none;
+            }
+
+            &:before {
+              content: attr(data-label);
+              float: left;
+              font-weight: 600;
+              color: #666;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// Print styles
+// ----------------------------------------------------------------------------
+@media print {
+  .saho-article-body,
+  .saho-main-content {
+    table {
+      box-shadow: none;
+      border: 1px solid #000;
+
+      thead {
+        background: #f0f0f0 !important;
+
+        tr th {
+          color: #000 !important;
+          border: 1px solid #000;
+        }
+      }
+
+      tbody tr td {
+        border: 1px solid #000;
+      }
+    }
+  }
+}
+
+// Table with source citation
+// ----------------------------------------------------------------------------
+.table-with-source {
+  margin: 2rem 0;
+
+  .table-source {
+    margin-top: 0.5rem;
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    font-style: italic;
+    color: #666;
+    background: #f8f9fa;
+    border-left: 3px solid #8B0000;
+
+    strong {
+      font-weight: 600;
+      color: #333;
+      font-style: normal;
+    }
+
+    a {
+      color: #8B0000;
+      text-decoration: none;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+}
+
+// Sortable table headers
+// ----------------------------------------------------------------------------
+.table-sortable {
+  table {
+    thead tr th {
+      cursor: pointer;
+      user-select: none;
+      position: relative;
+      padding-right: 2rem;
+
+      &:after {
+        content: '⇅';
+        position: absolute;
+        right: 0.75rem;
+        opacity: 0.5;
+        font-size: 0.875rem;
+      }
+
+      &.sorted-asc:after {
+        content: '↑';
+        opacity: 1;
+      }
+
+      &.sorted-desc:after {
+        content: '↓';
+        opacity: 1;
+      }
+
+      &:hover:after {
+        opacity: 1;
+      }
+    }
+  }
+}

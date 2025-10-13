@@ -375,6 +375,54 @@ function saho_preprocess_node(array &$variables) {
 
     $variables['accordion_views'] = $accordion_views;
   }
+
+  // Process field_feature_parent to group by content type
+  if ($node->hasField('field_feature_parent') && !$node->get('field_feature_parent')->isEmpty()) {
+    $grouped_parents = [
+      'articles' => [],
+      'people' => [],
+      'places' => [],
+      'organisations' => [],
+      'timelines' => [],
+      'archive' => [],
+    ];
+
+    foreach ($node->get('field_feature_parent') as $item) {
+      $referenced_node = $item->entity;
+      if ($referenced_node) {
+        $bundle = $referenced_node->bundle();
+
+        // Map bundle to display category
+        switch ($bundle) {
+          case 'article':
+            $grouped_parents['articles'][] = $referenced_node;
+            break;
+          case 'biography':
+            $grouped_parents['people'][] = $referenced_node;
+            break;
+          case 'place':
+            $grouped_parents['places'][] = $referenced_node;
+            break;
+          case 'organisation':
+            $grouped_parents['organisations'][] = $referenced_node;
+            break;
+          case 'event':
+            $grouped_parents['timelines'][] = $referenced_node;
+            break;
+          case 'archive':
+            $grouped_parents['archive'][] = $referenced_node;
+            break;
+        }
+      }
+    }
+
+    // Remove empty categories
+    $grouped_parents = array_filter($grouped_parents, function($items) {
+      return !empty($items);
+    });
+
+    $variables['grouped_feature_parents'] = $grouped_parents;
+  }
 }
 
 function saho_preprocess_page(array &$variables) {
