@@ -13,17 +13,50 @@ dependencies:
     - node.type.biography
     - taxonomy.vocabulary.field_people_level3_cat
   content:
+    - 'taxonomy_term:field_people_level3_cat:07a50d8d-950d-4473-aeec-62b372a9f26d'
+    - 'taxonomy_term:field_people_level3_cat:0c40592e-ec0c-42d7-af8e-a4904e64581d'
+    - 'taxonomy_term:field_people_level3_cat:12db26d8-29ac-4366-82f2-878991399583'
+    - 'taxonomy_term:field_people_level3_cat:14c19fac-07b2-401e-84ec-d51a403b2cf5'
+    - 'taxonomy_term:field_people_level3_cat:2b77193a-1663-419d-9b89-7ad419e9acfb'
+    - 'taxonomy_term:field_people_level3_cat:3169379b-7bbd-4983-9906-f1ad82d2f556'
+    - 'taxonomy_term:field_people_level3_cat:3934c25a-00af-4663-8725-1166be7c8751'
+    - 'taxonomy_term:field_people_level3_cat:3c2bb924-26f3-4646-88f1-9f367cec4b9c'
+    - 'taxonomy_term:field_people_level3_cat:40ae5429-6e8f-47c8-9776-eca55ad0f40c'
+    - 'taxonomy_term:field_people_level3_cat:41e3fbd7-d8b1-41ee-bad5-9b35389244e8'
+    - 'taxonomy_term:field_people_level3_cat:48eeaef3-09f3-4c5a-a007-a17ab611c97b'
     - 'taxonomy_term:field_people_level3_cat:5a7760ba-2ee6-4ed8-b5b0-bf3162b58789'
+    - 'taxonomy_term:field_people_level3_cat:5ffbc615-bb82-4495-bbaa-7bc274537205'
+    - 'taxonomy_term:field_people_level3_cat:7fdaf4e6-f28b-4e00-b330-bc15ec2036a6'
+    - 'taxonomy_term:field_people_level3_cat:81df613a-d8a3-4c76-a7bd-40dceef71dee'
+    - 'taxonomy_term:field_people_level3_cat:8732830d-89a1-4204-9150-1fe95df079eb'
     - 'taxonomy_term:field_people_level3_cat:878bb5f9-be03-495a-84f3-ee17cd612f47'
+    - 'taxonomy_term:field_people_level3_cat:92797280-3937-451d-b910-bbd45d2602cd'
+    - 'taxonomy_term:field_people_level3_cat:959c7332-b56a-4bbb-9b56-0d77cce9e98c'
+    - 'taxonomy_term:field_people_level3_cat:99f8efcb-e340-410c-a1f1-93e5d1e5e39a'
+    - 'taxonomy_term:field_people_level3_cat:9c9c3c35-10f9-48ca-bc02-056d1c84034d'
+    - 'taxonomy_term:field_people_level3_cat:a9e2feed-b0f9-4b47-a47c-b817d8014612'
+    - 'taxonomy_term:field_people_level3_cat:b48ebf42-bc13-40c3-aeca-21378b119d98'
+    - 'taxonomy_term:field_people_level3_cat:b7d53850-97b5-4c61-b951-4e05dbbe07dd'
+    - 'taxonomy_term:field_people_level3_cat:bc4e1fb7-dfe7-46fd-af25-a84e51dddcc9'
+    - 'taxonomy_term:field_people_level3_cat:c3e63503-e403-41f5-860d-509357df5eb7'
+    - 'taxonomy_term:field_people_level3_cat:c66f04a5-359c-4079-9579-9e1b4391c1a6'
+    - 'taxonomy_term:field_people_level3_cat:c991a5e0-a94b-400d-846a-933ed46e4316'
+    - 'taxonomy_term:field_people_level3_cat:cdd0053d-ced4-47f0-a288-62dc1ab4ed38'
+    - 'taxonomy_term:field_people_level3_cat:d1df938a-dbf3-438c-90c6-6ccafded2a95'
+    - 'taxonomy_term:field_people_level3_cat:dbdfaee9-f8a7-4e9d-96b4-755100491c04'
+    - 'taxonomy_term:field_people_level3_cat:ea2b123f-680d-477f-8732-bd142a005fa3'
+    - 'taxonomy_term:field_people_level3_cat:eed42a3e-2fbf-4371-b191-48ab70a99895'
+    - 'taxonomy_term:field_people_level3_cat:f3569d4b-7f5a-4a55-b8b4-a888c828a8e0'
   module:
+    - better_exposed_filters
     - datetime
     - node
     - taxonomy
     - user
 id: list_of_banned_persons
-label: 'Biographies Level 3'
+label: 'Browse Biographies by Category'
 module: views
-description: ''
+description: 'Explore South African historical figures organized by role, activism, and contributions to the liberation struggle.'
 tag: ''
 base_table: node_field_data
 base_field: nid
@@ -34,7 +67,7 @@ display:
     display_plugin: default
     position: 0
     display_options:
-      title: 'Biographies Level 3'
+      title: 'Browse Biographies by Category'
       fields:
         field_lastnamebio:
           id: field_lastnamebio
@@ -480,15 +513,18 @@ display:
           separator: ', '
           field_api_classes: false
       pager:
-        type: mini
+        type: full
         options:
           offset: 0
+          pagination_heading_level: h4
           items_per_page: 50
           total_pages: null
           id: 0
           tags:
             next: ››
             previous: ‹‹
+            first: '« First'
+            last: 'Last »'
           expose:
             items_per_page: false
             items_per_page_label: 'Items per page'
@@ -497,17 +533,43 @@ display:
             items_per_page_options_all_label: '- All -'
             offset: false
             offset_label: Offset
-          pagination_heading_level: h4
+          quantity: 9
       exposed_form:
-        type: basic
+        type: bef
         options:
           submit_button: Apply
-          reset_button: false
+          reset_button: true
           reset_button_label: Reset
           exposed_sorts_label: 'Sort by'
           expose_sort_order: true
           sort_asc_label: Asc
           sort_desc_label: Desc
+          text_input_required: 'Select any filter and click on Apply to see results'
+          text_input_required_format: full_html
+          bef:
+            general:
+              autosubmit: true
+              autosubmit_exclude_textfield: false
+              autosubmit_textfield_delay: 500
+              autosubmit_textfield_minimum_length: 3
+              autosubmit_hide: false
+              input_required: true
+              allow_secondary: false
+              secondary_label: 'Advanced options'
+              secondary_open: false
+              reset_button_always_show: false
+            filter:
+              field_people_level3_cat_target_id:
+                plugin_id: default
+                advanced:
+                  sort_options: false
+                  rewrite:
+                    filter_rewrite_values: ''
+                    filter_rewrite_values_key: false
+                  collapsible: false
+                  collapsible_disable_automatic_open: false
+                  is_secondary: false
+                  hide_label: false
       access:
         type: perm
         options:
@@ -553,13 +615,45 @@ display:
           plugin_id: taxonomy_index_tid
           operator: or
           value:
+            27361: 27361
+            33302: 33302
+            26318: 26318
+            27965: 27965
             26060: 26060
             28920: 28920
+            29625: 29625
+            23320: 23320
+            21904: 21904
+            21959: 21959
+            29373: 29373
+            22688: 22688
+            29432: 29432
+            23114: 23114
+            27877: 27877
+            35276: 35276
+            27977: 27977
+            22727: 22727
+            26075: 26075
+            35638: 35638
+            28400: 28400
+            28065: 28065
+            28336: 28336
+            23279: 23279
+            27439: 27439
+            23278: 23278
+            27959: 27959
+            24160: 24160
+            35277: 35277
+            23154: 23154
+            27363: 27363
+            23248: 23248
+            27958: 27958
+            25719: 25719
           group: 1
           exposed: true
           expose:
             operator_id: field_people_level3_cat_target_id_op
-            label: 'People level 3 (field_people_level3_cat)'
+            label: 'Filter by Category'
             description: ''
             use_operator: false
             operator: field_people_level3_cat_target_id_op
@@ -571,7 +665,7 @@ display:
             multiple: true
             remember_roles:
               authenticated: authenticated
-            reduce: false
+            reduce: true
           is_grouped: false
           group_info:
             label: ''

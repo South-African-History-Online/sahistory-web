@@ -217,7 +217,7 @@
       {% set sidebar_has_content = true %}
     {% endif %}
     
-    {% if content.field_feature_parent is defined and content.field_feature_parent|render|trim %}
+    {% if node.field_feature_parent and not node.field_feature_parent.isEmpty() %}
       {% set sidebar_has_content = true %}
     {% endif %}
     
@@ -258,27 +258,27 @@
 
       {# Tabbed Content Area #}
       <div class="saho-sidebar-tabs" id="saho-biography-tabs">
-        
+
         {# Simplified Content - No Tabs Needed #}
         <div class="saho-simplified-sidebar">
-          
-          {# Related Content Accordion #}
+
+          {# Custom Accordion for feature_children views - First #}
           {% if accordion_views is not empty %}
-            <div class="saho-accordion">
+            <div class="saho-accordion mb-5" id="sahoFeatureAccordion">
               {% for item in accordion_views %}
                 <div class="saho-accordion-item">
                   <h4 class="saho-accordion-header">
-                    <button class="saho-accordion-button {% if not loop.first %}collapsed{% endif %}" 
-                            type="button" 
-                            aria-expanded="{% if loop.first %}true{% else %}false{% endif %}" 
+                    <button class="saho-accordion-button {% if not loop.first %}collapsed{% endif %}"
+                            type="button"
+                            aria-expanded="{{ loop.first ? 'true' : 'false' }}"
                             aria-controls="collapse-{{ item.id }}"
                             data-target="#collapse-{{ item.id }}">
                       {{ item.title }}
                     </button>
                   </h4>
-                  <div id="collapse-{{ item.id }}" 
-                       class="saho-accordion-collapse {% if loop.first %}show{% endif %}" 
-                       aria-hidden="{% if loop.first %}false{% else %}true{% endif %}">
+                  <div id="collapse-{{ item.id }}"
+                       class="saho-accordion-collapse {% if loop.first %}show{% endif %}"
+                       aria-hidden="{{ loop.first ? 'false' : 'true' }}">
                     <div class="saho-accordion-body">
                       {{ drupal_view(item.view, item.block, node.id()) }}
                     </div>
@@ -288,28 +288,42 @@
             </div>
           {% endif %}
 
-          {# References Accordion #}
+          {# Simple sections for field_feature_parent grouped by content type #}
+          {# Only show categories that don't have an accordion view #}
+          {% if grouped_feature_parents is not empty %}
+            {% set accordion_categories = [] %}
+            {% if accordion_views is not empty %}
+              {% for item in accordion_views %}
+                {% set accordion_categories = accordion_categories|merge([item.id]) %}
+              {% endfor %}
+            {% endif %}
+
+            {% for category, items in grouped_feature_parents %}
+              {% if category not in accordion_categories %}
+                <div class="saho-taxonomy-group">
+                  <h4>{{ category|capitalize }}</h4>
+                  <ul class="saho-related-list">
+                    {% for referenced_node in items %}
+                      <li><a href="{{ path('entity.node.canonical', {'node': referenced_node.id}) }}">{{ referenced_node.label }}</a></li>
+                    {% endfor %}
+                  </ul>
+                </div>
+              {% endif %}
+            {% endfor %}
+          {% endif %}
+
+          {# References section #}
           {% if node.field_ref_str.value %}
             {% set refs = node.field_ref_str.value|split('|') %}
-            <div class="saho-accordion">
-              <div class="saho-accordion-item">
-                <h4 class="saho-accordion-header">
-                  <button class="saho-accordion-button collapsed" type="button" data-target="#references-collapse" aria-expanded="false" aria-controls="references-collapse">
-                    References
-                  </button>
-                </h4>
-                <div id="references-collapse" class="saho-accordion-collapse" aria-labelledby="references-header">
-                  <div class="saho-accordion-body">
-                    <ul class="saho-reference-list">
-                      {% for ref in refs %}
-                        {% if ref|trim %}
-                          <li>{{ ref|trim|raw }}</li>
-                        {% endif %}
-                      {% endfor %}
-                    </ul>
-                  </div>
-                </div>
-              </div>
+            <div class="saho-references">
+              <h4>References</h4>
+              <ul class="saho-reference-list">
+                {% for ref in refs %}
+                  {% if ref|trim %}
+                    <li>{{ ref|trim|raw }}</li>
+                  {% endif %}
+                {% endfor %}
+              </ul>
             </div>
           {% endif %}
 
