@@ -224,36 +224,45 @@
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 1.5rem;
   align-items: start; // Prevent cards from stretching to match tallest
-  
+
   @media (max-width: 1024px) {
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 1.25rem;
   }
-  
+
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
     gap: 1rem;
     padding: 0;
     margin: 0 -1rem; // Extend beyond container
   }
-  
+
   @media (max-width: 480px) {
     grid-template-columns: 1fr;
     gap: 0.875rem;
     padding: 0;
     margin: 0 -1.5rem; // Extend even more on small screens
   }
-  
+
   // Handle potential Drupal Views wrapper divs
   > div {
     display: contents; // Make wrapper divs transparent to CSS Grid
   }
-  
+
   // Ensure cards are properly sized within the grid
   .saho-card-link,
   .saho-card {
     display: block;
     height: 100%;
+    max-width: 100%; // Prevent cards from being too wide
+
+    // Constrain width for single cards on large screens
+    @media (min-width: 769px) {
+      &:only-child,
+      &:first-child:last-child {
+        max-width: 450px; // Maximum width for single card on desktop
+      }
+    }
   }
 }
 
