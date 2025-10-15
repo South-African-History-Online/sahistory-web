@@ -70,3 +70,99 @@ function db_fixes_update_11001() {
 
   return t('Watchdog location column has been updated to text type to handle longer URLs in Drupal 11.');
 }
+
+/**
+ * Fix file_managed URIs for images that were moved to images_new/.
+ *
+ * SAFE UPDATE: Only updates records where file actually exists at new location.
+ *
+ * During Drupal migration, physical files were moved from images/ to images_new/
+ * but file_managed table was not updated. This causes 404s for WebP versions
+ * because WebP files are generated next to the original files.
+ *
+ * Verification showed only ~34% of file_managed entries have corresponding files
+ * at images_new/, so we check file existence before updating each record.
+ */
+function db_fixes_update_11002(&$sandbox) {
+  $database = \Drupal::database();
+  $file_system = \Drupal::service('file_system');
+
+  // Initialize sandbox on first run.
+  if (!isset($sandbox['progress'])) {
+    $sandbox['progress'] = 0;
+    $sandbox['updated'] = 0;
+    $sandbox['skipped'] = 0;
+    $sandbox['current_fid'] = 0;
+
+    // Count total files to process.
+    $sandbox['max'] = $database->query(
+      "SELECT COUNT(*) FROM {file_managed} WHERE uri LIKE :pattern AND uri NOT LIKE :exclude",
+      [
+        ':pattern' => 'public://images/%',
+        ':exclude' => '%images_new%',
+      ]
+    )->fetchField();
+
+    \Drupal::logger('db_fixes')->info('Starting file_managed update: @count records to check', ['@count' => $sandbox['max']]);
+  }
+
+  // Process 50 records per batch to avoid timeouts.
+  $batch_size = 50;
+
+  // Get next batch of files.
+  $files = $database->select('file_managed', 'f')
+    ->fields('f', ['fid', 'uri'])
+    ->condition('uri', 'public://images/%', 'LIKE')
+    ->condition('uri', '%images_new%', 'NOT LIKE')
+    ->condition('fid', $sandbox['current_fid'], '>')
+    ->orderBy('fid')
+    ->range(0, $batch_size)
+    ->execute();
+
+  foreach ($files as $file) {
+    // Build new URI.
+    $new_uri = str_replace('public://images/', 'public://images_new/', $file->uri);
+
+    // Convert to filesystem path and check if file exists.
+    $new_path = $file_system->realpath($new_uri);
+
+    if ($new_path && file_exists($new_path)) {
+      // File exists at new location - safe to update.
+      $database->update('file_managed')
+        ->fields(['uri' => $new_uri])
+        ->condition('fid', $file->fid)
+        ->execute();
+
+      $sandbox['updated']++;
+    }
+    else {
+      // File doesn't exist at new location - skip update.
+      $sandbox['skipped']++;
+
+      // Log first 10 skipped files for investigation.
+      if ($sandbox['skipped'] <= 10) {
+        \Drupal::logger('db_fixes')->warning('Skipped FID @fid: file not found at @path', [
+          '@fid' => $file->fid,
+          '@path' => $new_uri,
+        ]);
+      }
+    }
+
+    $sandbox['progress']++;
+    $sandbox['current_fid'] = $file->fid;
+  }
+
+  // Update progress.
+  $sandbox['#finished'] = ($sandbox['progress'] / $sandbox['max']);
+
+  // Return message when complete.
+  if ($sandbox['#finished'] >= 1) {
+    $message = t('Fixed @updated file_managed URIs (images/ → images_new/). Skipped @skipped files (not found at new location).', [
+      '@updated' => $sandbox['updated'],
+      '@skipped' => $sandbox['skipped'],
+    ]);
+
+    \Drupal::logger('db_fixes')->info($message);
+    return $message;
+  }
+}
