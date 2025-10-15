@@ -290,33 +290,31 @@
       
       {# Further Reading #}
       {% if content.field_further_reading is defined and content.field_further_reading|render|trim %}
-        <div class="saho-further-reading p-3 mb-4 border rounded bg-light">
-          <h3 class="border-bottom pb-2 mb-3">Further Reading</h3>
+        <div class="saho-further-reading">
+          <h4>Further Reading</h4>
           {{ content.field_further_reading }}
         </div>
       {% endif %}
       
       {# References #}
       {% if node.field_ref_str.value or node.field_references_saho_source.value %}
-        <div class="saho-references p-3 mb-4 border rounded bg-light">
-          <h3 class="border-bottom pb-2 mb-3">References</h3>
-          
+        <div class="saho-references">
+          <h4>References</h4>
+
           {% if node.field_ref_str.value %}
             {% set refs = node.field_ref_str.value|split('|') %}
-            <div class="mb-3">
-              <ul class="saho-reference-list ps-3">
-                {% for ref in refs %}
-                  {% if ref|trim %}
-                    <li class="mb-2">{{ ref|trim|raw }}</li>
-                  {% endif %}
-                {% endfor %}
-              </ul>
-            </div>
+            <ul class="saho-reference-list">
+              {% for ref in refs %}
+                {% if ref|trim %}
+                  <li>{{ ref|trim|raw }}</li>
+                {% endif %}
+              {% endfor %}
+            </ul>
           {% endif %}
-          
+
           {% if node.field_references_saho_source.value %}
             <div class="saho-saho-sources">
-              <h4 class="h5 mb-2">SAHO Sources</h4>
+              <h5>SAHO Sources</h5>
               {{ node.field_references_saho_source.value|raw }}
             </div>
           {% endif %}

@@ -216,11 +216,7 @@
     {% if content.field_people_related_tab is defined and content.field_people_related_tab|render|trim %}
       {% set sidebar_has_content = true %}
     {% endif %}
-    
-    {% if node.field_feature_parent and not node.field_feature_parent.isEmpty() %}
-      {% set sidebar_has_content = true %}
-    {% endif %}
-    
+
     {% if content.field_member_of_organisation is defined and content.field_member_of_organisation|render|trim %}
       {% set sidebar_has_content = true %}
     {% endif %}
@@ -256,79 +252,46 @@
         </div>
       {% endif %}
 
-      {# Tabbed Content Area #}
-      <div class="saho-sidebar-tabs" id="saho-biography-tabs">
-
-        {# Simplified Content - No Tabs Needed #}
-        <div class="saho-simplified-sidebar">
-
-          {# Custom Accordion for feature_children views - First #}
-          {% if accordion_views is not empty %}
-            <div class="saho-accordion mb-5" id="sahoFeatureAccordion">
-              {% for item in accordion_views %}
-                <div class="saho-accordion-item">
-                  <h4 class="saho-accordion-header">
-                    <button class="saho-accordion-button {% if not loop.first %}collapsed{% endif %}"
-                            type="button"
-                            aria-expanded="{{ loop.first ? 'true' : 'false' }}"
-                            aria-controls="collapse-{{ item.id }}"
-                            data-target="#collapse-{{ item.id }}">
-                      {{ item.title }}
-                    </button>
-                  </h4>
-                  <div id="collapse-{{ item.id }}"
-                       class="saho-accordion-collapse {% if loop.first %}show{% endif %}"
-                       aria-hidden="{{ loop.first ? 'false' : 'true' }}">
-                    <div class="saho-accordion-body">
-                      {{ drupal_view(item.view, item.block, node.id()) }}
-                    </div>
-                  </div>
+      {# Custom Accordion for feature_children views - First #}
+      {% if accordion_views is not empty %}
+        <div class="saho-accordion mb-5" id="sahoFeatureAccordion">
+          {% for item in accordion_views %}
+            <div class="saho-accordion-item">
+              <h4 class="saho-accordion-header">
+                <button class="saho-accordion-button {% if not loop.first %}collapsed{% endif %}"
+                        type="button"
+                        aria-expanded="{{ loop.first ? 'true' : 'false' }}"
+                        aria-controls="collapse-{{ item.id }}"
+                        data-target="#collapse-{{ item.id }}">
+                  {{ item.title }}
+                </button>
+              </h4>
+              <div id="collapse-{{ item.id }}"
+                   class="saho-accordion-collapse {% if loop.first %}show{% endif %}"
+                   aria-hidden="{{ loop.first ? 'false' : 'true' }}">
+                <div class="saho-accordion-body">
+                  {{ drupal_view(item.view, item.block, node.id()) }}
                 </div>
-              {% endfor %}
+              </div>
             </div>
-          {% endif %}
+          {% endfor %}
+        </div>
+      {% endif %}
 
-          {# Simple sections for field_feature_parent grouped by content type #}
-          {# Only show categories that don't have an accordion view #}
-          {% if grouped_feature_parents is not empty %}
-            {% set accordion_categories = [] %}
-            {% if accordion_views is not empty %}
-              {% for item in accordion_views %}
-                {% set accordion_categories = accordion_categories|merge([item.id]) %}
-              {% endfor %}
-            {% endif %}
-
-            {% for category, items in grouped_feature_parents %}
-              {% if category not in accordion_categories %}
-                <div class="saho-taxonomy-group">
-                  <h4>{{ category|capitalize }}</h4>
-                  <ul class="saho-related-list">
-                    {% for referenced_node in items %}
-                      <li><a href="{{ path('entity.node.canonical', {'node': referenced_node.id}) }}">{{ referenced_node.label }}</a></li>
-                    {% endfor %}
-                  </ul>
-                </div>
+      {# References section #}
+      {% if node.field_ref_str.value %}
+        {% set refs = node.field_ref_str.value|split('|') %}
+        <div class="saho-references">
+          <h4>References</h4>
+          <ul class="saho-reference-list">
+            {% for ref in refs %}
+              {% if ref|trim %}
+                <li>{{ ref|trim|raw }}</li>
               {% endif %}
             {% endfor %}
-          {% endif %}
-
-          {# References section #}
-          {% if node.field_ref_str.value %}
-            {% set refs = node.field_ref_str.value|split('|') %}
-            <div class="saho-references">
-              <h4>References</h4>
-              <ul class="saho-reference-list">
-                {% for ref in refs %}
-                  {% if ref|trim %}
-                    <li>{{ ref|trim|raw }}</li>
-                  {% endif %}
-                {% endfor %}
-              </ul>
-            </div>
-          {% endif %}
-
+          </ul>
         </div>
-      </div>
+      {% endif %}
 
     </aside>
     {% endif %}
@@ -336,6 +299,126 @@
   </div>
 
 </article>
+
+{# Related Content section - Feature Parent Links displayed as cards #}
+{% if grouped_feature_parents is not empty %}
+  {% set accordion_categories = [] %}
+  {% if accordion_views is not empty %}
+    {% for item in accordion_views %}
+      {% set accordion_categories = accordion_categories|merge([item.id]) %}
+    {% endfor %}
+  {% endif %}
+
+  {# Only show categories that don't already appear in accordion views #}
+  {% set has_feature_parents_to_display = false %}
+  {% for category, items in grouped_feature_parents %}
+    {% if category not in accordion_categories %}
+      {% set has_feature_parents_to_display = true %}
+    {% endif %}
+  {% endfor %}
+
+  {% if has_feature_parents_to_display %}
+    <div class="saho-context-sections saho-context-bottom">
+      <h3>Related Content</h3>
+
+      {% for category, items in grouped_feature_parents %}
+        {% if category not in accordion_categories %}
+          <div class="saho-related-content-section">
+            <h4>{{ category|capitalize }}</h4>
+            <div class="saho-cards-grid">
+              {% for referenced_node in items %}
+                {% set bundle = referenced_node.bundle %}
+                {% set image_url = null %}
+                {% set image_alt = '' %}
+
+                {# Get image based on content type #}
+                {% if bundle == 'biography' %}
+                  {% if referenced_node.field_bio_pic.entity %}
+                    {% set image_url = file_url(referenced_node.field_bio_pic.entity.uri.value) %}
+                    {% set image_alt = referenced_node.field_bio_pic.alt %}
+                  {% elseif referenced_node.field_feature_banner.entity %}
+                    {% set image_url = file_url(referenced_node.field_feature_banner.entity.uri.value) %}
+                    {% set image_alt = referenced_node.field_feature_banner.alt %}
+                  {% endif %}
+                {% elseif bundle == 'article' %}
+                  {% if referenced_node.field_article_image.entity %}
+                    {% set image_url = file_url(referenced_node.field_article_image.entity.uri.value) %}
+                    {% set image_alt = referenced_node.field_article_image.alt %}
+                  {% elseif referenced_node.field_feature_banner.entity %}
+                    {% set image_url = file_url(referenced_node.field_feature_banner.entity.uri.value) %}
+                    {% set image_alt = referenced_node.field_feature_banner.alt %}
+                  {% endif %}
+                {% elseif bundle == 'archive' %}
+                  {% if referenced_node.field_archive_image.entity %}
+                    {% set image_url = file_url(referenced_node.field_archive_image.entity.uri.value) %}
+                    {% set image_alt = referenced_node.field_archive_image.alt %}
+                  {% elseif referenced_node.field_image.entity %}
+                    {% set image_url = file_url(referenced_node.field_image.entity.uri.value) %}
+                    {% set image_alt = referenced_node.field_image.alt %}
+                  {% endif %}
+                {% elseif bundle == 'place' %}
+                  {% if referenced_node.field_place_image.entity %}
+                    {% set image_url = file_url(referenced_node.field_place_image.entity.uri.value) %}
+                    {% set image_alt = referenced_node.field_place_image.alt %}
+                  {% elseif referenced_node.field_feature_banner.entity %}
+                    {% set image_url = file_url(referenced_node.field_feature_banner.entity.uri.value) %}
+                    {% set image_alt = referenced_node.field_feature_banner.alt %}
+                  {% endif %}
+                {% elseif bundle == 'event' %}
+                  {% if referenced_node.field_event_image.entity %}
+                    {% set image_url = file_url(referenced_node.field_event_image.entity.uri.value) %}
+                    {% set image_alt = referenced_node.field_event_image.alt %}
+                  {% elseif referenced_node.field_tdih_image.entity %}
+                    {% set image_url = file_url(referenced_node.field_tdih_image.entity.uri.value) %}
+                    {% set image_alt = referenced_node.field_tdih_image.alt %}
+                  {% endif %}
+                {% else %}
+                  {# Fallback for other content types #}
+                  {% if referenced_node.field_image.entity %}
+                    {% set image_url = file_url(referenced_node.field_image.entity.uri.value) %}
+                    {% set image_alt = referenced_node.field_image.alt %}
+                  {% elseif referenced_node.field_article_image.entity %}
+                    {% set image_url = file_url(referenced_node.field_article_image.entity.uri.value) %}
+                    {% set image_alt = referenced_node.field_article_image.alt %}
+                  {% elseif referenced_node.field_feature_banner.entity %}
+                    {% set image_url = file_url(referenced_node.field_feature_banner.entity.uri.value) %}
+                    {% set image_alt = referenced_node.field_feature_banner.alt %}
+                  {% endif %}
+                {% endif %}
+
+                <div class="saho-card">
+                  <a href="{{ path('entity.node.canonical', {'node': referenced_node.id}) }}" class="saho-card-link">
+                    {% if image_url %}
+                      <div class="saho-card-image">
+                        <img src="{{ image_url }}" alt="{{ image_alt }}" loading="lazy">
+                      </div>
+                    {% endif %}
+                    <div class="saho-card-content">
+                      <h5 class="saho-card-title">{{ referenced_node.label }}</h5>
+                      {% if referenced_node.field_synopsis.value %}
+                        <p class="saho-card-description">{{ referenced_node.field_synopsis.value|striptags|truncate(120) }}</p>
+                      {% elseif referenced_node.body.value %}
+                        <p class="saho-card-description">{{ referenced_node.body.value|striptags|truncate(120) }}</p>
+                      {% endif %}
+                      <div class="saho-card-footer">
+                        <span class="saho-card-button">
+                          Read More
+                          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                            <path d="M8.22 2.97a.75.75 0 0 1 1.06 0L14 7.69a.75.75 0 0 1 0 1.06L9.28 13.47a.75.75 0 0 1-1.06-1.06L11.44 9.25H2.75a.75.75 0 0 1 0-1.5h8.69L8.22 4.53a.75.75 0 0 1 0-1.06z"/>
+                          </svg>
+                        </span>
+                      </div>
+                    </div>
+                  </a>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endif %}
 
 {# Context & Related Information Accordion #}
 {% set has_context = content.field_people_related_tab|render|trim or content.field_feature_parent|render|trim or content.field_member_of_organisation|render|trim or content.field_people_category|render|trim or content.field_people_level3_cat|render|trim or content.field_african_country|render|trim or content.field_further_reading|render|trim or content.field_synopsis|render|trim %}
