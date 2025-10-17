@@ -232,7 +232,8 @@ function db_fixes_update_11003(&$sandbox) {
     \Drupal::logger('db_fixes')->info('Starting oldsite_images body content fix: @count records to check', ['@count' => $sandbox['max']]);
   }
 
-  $batch_size = 10;
+  // Use larger batch size since we're just doing string replacements (fast operation).
+  $batch_size = 100;
 
   // Phase 1: Update node__body.
   if ($sandbox['phase'] === 'body') {
@@ -249,12 +250,14 @@ function db_fixes_update_11003(&$sandbox) {
       $found_records = TRUE;
       $updated_body = $record->body_value;
       $changed = FALSE;
+      $had_oldsite_reference = FALSE;
 
       // Try to replace each file in the mapping.
       foreach ($file_mapping as $old_filename => $new_path) {
         $old_path = '/sites/default/files/oldsite_images/' . $old_filename;
 
         if (strpos($updated_body, $old_path) !== FALSE) {
+          $had_oldsite_reference = TRUE;
           $new_full_path = '/sites/default/files/' . $new_path;
 
           // Verify file exists.
@@ -274,7 +277,6 @@ function db_fixes_update_11003(&$sandbox) {
                 '@path' => $new_path,
               ]);
             }
-            $sandbox['skipped']++;
           }
         }
       }
@@ -290,7 +292,13 @@ function db_fixes_update_11003(&$sandbox) {
 
         $sandbox['updated_body']++;
       }
+      elseif ($had_oldsite_reference) {
+        // Had oldsite_images ref but no files in our mapping - count as skipped.
+        $sandbox['skipped']++;
+      }
 
+      // CRITICAL: Always increment progress and current_entity_id.
+      // This ensures we move past records even when we can't update them.
       $sandbox['progress']++;
       $sandbox['current_entity_id'] = $record->entity_id;
     }
@@ -317,12 +325,14 @@ function db_fixes_update_11003(&$sandbox) {
       $found_records = TRUE;
       $updated_body = $record->body_value;
       $changed = FALSE;
+      $had_oldsite_reference = FALSE;
 
       // Try to replace each file in the mapping.
       foreach ($file_mapping as $old_filename => $new_path) {
         $old_path = '/sites/default/files/oldsite_images/' . $old_filename;
 
         if (strpos($updated_body, $old_path) !== FALSE) {
+          $had_oldsite_reference = TRUE;
           $new_full_path = '/sites/default/files/' . $new_path;
 
           // Verify file exists.
@@ -347,7 +357,13 @@ function db_fixes_update_11003(&$sandbox) {
 
         $sandbox['updated_revision']++;
       }
+      elseif ($had_oldsite_reference) {
+        // Had oldsite_images ref but no files in our mapping - count as skipped.
+        $sandbox['skipped']++;
+      }
 
+      // CRITICAL: Always increment progress and current_entity_id.
+      // This ensures we move past records even when we can't update them.
       $sandbox['progress']++;
       $sandbox['current_entity_id'] = $record->entity_id;
     }
@@ -363,7 +379,7 @@ function db_fixes_update_11003(&$sandbox) {
 
   // Return message when complete.
   if ($sandbox['#finished'] >= 1) {
-    $message = t('Fixed oldsite_images references: @body body fields, @revision revision fields updated. Skipped @skipped (files not found).', [
+    $message = t('Fixed oldsite_images references: @body body records, @revision revision records updated. @skipped records skipped (files not in mapping).', [
       '@body' => $sandbox['updated_body'],
       '@revision' => $sandbox['updated_revision'],
       '@skipped' => $sandbox['skipped'],
