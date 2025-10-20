@@ -70,3 +70,322 @@ function db_fixes_update_11001() {
 
   return t('Watchdog location column has been updated to text type to handle longer URLs in Drupal 11.');
 }
+
+/**
+ * Fix file_managed URIs for images that were moved to images_new/.
+ *
+ * SAFE UPDATE: Only updates records where file actually exists at new location.
+ *
+ * During Drupal migration, physical files were moved from images/ to images_new/
+ * but file_managed table was not updated. This causes 404s for WebP versions
+ * because WebP files are generated next to the original files.
+ *
+ * Verification showed only ~34% of file_managed entries have corresponding files
+ * at images_new/, so we check file existence before updating each record.
+ */
+function db_fixes_update_11002(&$sandbox) {
+  $database = \Drupal::database();
+  $file_system = \Drupal::service('file_system');
+
+  // Initialize sandbox on first run.
+  if (!isset($sandbox['progress'])) {
+    $sandbox['progress'] = 0;
+    $sandbox['updated'] = 0;
+    $sandbox['skipped'] = 0;
+    $sandbox['current_fid'] = 0;
+
+    // Count total files to process.
+    $sandbox['max'] = $database->query(
+      "SELECT COUNT(*) FROM {file_managed} WHERE uri LIKE :pattern AND uri NOT LIKE :exclude",
+      [
+        ':pattern' => 'public://images/%',
+        ':exclude' => '%images_new%',
+      ]
+    )->fetchField();
+
+    \Drupal::logger('db_fixes')->info('Starting file_managed update: @count records to check', ['@count' => $sandbox['max']]);
+  }
+
+  // Process 50 records per batch to avoid timeouts.
+  $batch_size = 50;
+
+  // Get next batch of files.
+  $files = $database->select('file_managed', 'f')
+    ->fields('f', ['fid', 'uri'])
+    ->condition('uri', 'public://images/%', 'LIKE')
+    ->condition('uri', '%images_new%', 'NOT LIKE')
+    ->condition('fid', $sandbox['current_fid'], '>')
+    ->orderBy('fid')
+    ->range(0, $batch_size)
+    ->execute();
+
+  foreach ($files as $file) {
+    // Build new URI.
+    $new_uri = str_replace('public://images/', 'public://images_new/', $file->uri);
+
+    // Convert to filesystem path and check if file exists.
+    $new_path = $file_system->realpath($new_uri);
+
+    if ($new_path && file_exists($new_path)) {
+      // File exists at new location - safe to update.
+      $database->update('file_managed')
+        ->fields(['uri' => $new_uri])
+        ->condition('fid', $file->fid)
+        ->execute();
+
+      $sandbox['updated']++;
+    }
+    else {
+      // File doesn't exist at new location - skip update.
+      $sandbox['skipped']++;
+
+      // Log first 10 skipped files for investigation.
+      if ($sandbox['skipped'] <= 10) {
+        \Drupal::logger('db_fixes')->warning('Skipped FID @fid: file not found at @path', [
+          '@fid' => $file->fid,
+          '@path' => $new_uri,
+        ]);
+      }
+    }
+
+    $sandbox['progress']++;
+    $sandbox['current_fid'] = $file->fid;
+  }
+
+  // Update progress.
+  $sandbox['#finished'] = ($sandbox['progress'] / $sandbox['max']);
+
+  // Return message when complete.
+  if ($sandbox['#finished'] >= 1) {
+    $message = t('Fixed @updated file_managed URIs (images/ → images_new/). Skipped @skipped files (not found at new location).', [
+      '@updated' => $sandbox['updated'],
+      '@skipped' => $sandbox['skipped'],
+    ]);
+
+    \Drupal::logger('db_fixes')->info($message);
+    return $message;
+  }
+}
+
+/**
+ * Fix body content references to oldsite_images/ directory.
+ *
+ * SAFE UPDATE: Only updates references where actual file exists.
+ *
+ * During migration, files moved from oldsite_images/ to various directories
+ * (images_new/, article_pics/, etc.) but body content HTML was not updated.
+ * This causes 404s when browsers request WebP versions.
+ *
+ * Uses verified mapping of 20 files found at new locations.
+ */
+function db_fixes_update_11003(&$sandbox) {
+  $database = \Drupal::database();
+  $file_system = \Drupal::service('file_system');
+
+  // Mapping of oldsite_images files to actual locations (verified to exist).
+  $file_mapping = [
+    '1912_sannc_leaders.jpg' => 'imageimports/1912_sannc_leaders.jpg',
+    '1919_mineworkers_pass_strike.jpg' => 'images_new/1919_mineworkers_pass_strike.jpg',
+    '1977_biko_funeral.jpg' => 'images_new/1977_biko_funeral.jpg',
+    '1985_mineworkers.jpg' => 'images_new/1985_mineworkers.jpg',
+    'apartheid_pass.jpg' => 'article_pics/apartheid_pass.jpg',
+    'architects.jpg' => 'imageimports/architects.jpg',
+    'eastcape-map.gif' => 'images_new/eastcape-map.gif',
+    'hertzog.jpg' => 'hertzog.jpg',
+    'hosteldwellers.jpg' => 'images_new/hosteldwellers.jpg',
+    'Lansing_Botha.jpg' => 'images_new/Lansing_Botha.jpg',
+    'maxeke-c.jpg' => 'maxeke-c.jpg',
+    'Oldsa.jpg' => 'images_new/Oldsa.jpg',
+    'pass-check.jpg' => 'article_pics/pass-check.jpg',
+    'pl_passbook.jpg' => 'images_new/pl_passbook.jpg',
+    'RDM_witsandworkers.jpg' => 'images_new/RDM_witsandworkers.jpg',
+    'SADF_patrols.jpg' => 'images_new/SADF_patrols.jpg',
+    'separate_amenities.jpg' => 'images_new/separate_amenities.jpg',
+    'tsafendas-d.jpg' => 'images_new/tsafendas-d.jpg',
+    'za-orange.jpg' => 'images_new/za-orange.jpg',
+    'za-t1857.jpg' => 'images_new/za-t1857.jpg',
+  ];
+
+  // Initialize sandbox on first run.
+  if (!isset($sandbox['progress'])) {
+    $sandbox['progress'] = 0;
+    $sandbox['updated_body'] = 0;
+    $sandbox['updated_revision'] = 0;
+    $sandbox['skipped'] = 0;
+    $sandbox['current_entity_id'] = 0;
+    $sandbox['phase'] = 'body';
+
+    // Count body fields to process.
+    $sandbox['max_body'] = $database->query(
+      "SELECT COUNT(*) FROM {node__body} WHERE body_value LIKE :pattern",
+      [':pattern' => '%/sites/default/files/oldsite_images/%']
+    )->fetchField();
+
+    // Count revision fields to process.
+    $sandbox['max_revision'] = $database->query(
+      "SELECT COUNT(*) FROM {node_revision__body} WHERE body_value LIKE :pattern",
+      [':pattern' => '%/sites/default/files/oldsite_images/%']
+    )->fetchField();
+
+    $sandbox['max'] = $sandbox['max_body'] + $sandbox['max_revision'];
+
+    \Drupal::logger('db_fixes')->info('Starting oldsite_images body content fix: @count records to check', ['@count' => $sandbox['max']]);
+  }
+
+  // Use larger batch size since we're just doing string replacements (fast operation).
+  $batch_size = 100;
+
+  // Phase 1: Update node__body.
+  if ($sandbox['phase'] === 'body') {
+    $records = $database->select('node__body', 'b')
+      ->fields('b', ['entity_id', 'revision_id', 'langcode', 'delta', 'body_value'])
+      ->condition('body_value', '%/sites/default/files/oldsite_images/%', 'LIKE')
+      ->condition('entity_id', $sandbox['current_entity_id'], '>')
+      ->orderBy('entity_id')
+      ->range(0, $batch_size)
+      ->execute();
+
+    $found_records = FALSE;
+    foreach ($records as $record) {
+      $found_records = TRUE;
+      $updated_body = $record->body_value;
+      $changed = FALSE;
+      $had_oldsite_reference = FALSE;
+
+      // Try to replace each file in the mapping.
+      foreach ($file_mapping as $old_filename => $new_path) {
+        $old_path = '/sites/default/files/oldsite_images/' . $old_filename;
+
+        if (strpos($updated_body, $old_path) !== FALSE) {
+          $had_oldsite_reference = TRUE;
+          $new_full_path = '/sites/default/files/' . $new_path;
+
+          // Verify file exists.
+          $uri = str_replace('/sites/default/files/', 'public://', $new_full_path);
+          $real_path = $file_system->realpath($uri);
+
+          if ($real_path && file_exists($real_path)) {
+            $updated_body = str_replace($old_path, $new_full_path, $updated_body);
+            $changed = TRUE;
+          }
+          else {
+            // Log missing file.
+            if ($sandbox['skipped'] < 10) {
+              \Drupal::logger('db_fixes')->warning('Skipped replacement in node @nid: @file not found at @path', [
+                '@nid' => $record->entity_id,
+                '@file' => $old_filename,
+                '@path' => $new_path,
+              ]);
+            }
+          }
+        }
+      }
+
+      if ($changed) {
+        $database->update('node__body')
+          ->fields(['body_value' => $updated_body])
+          ->condition('entity_id', $record->entity_id)
+          ->condition('revision_id', $record->revision_id)
+          ->condition('langcode', $record->langcode)
+          ->condition('delta', $record->delta)
+          ->execute();
+
+        $sandbox['updated_body']++;
+      }
+      elseif ($had_oldsite_reference) {
+        // Had oldsite_images ref but no files in our mapping - count as skipped.
+        $sandbox['skipped']++;
+      }
+
+      // CRITICAL: Always increment progress and current_entity_id.
+      // This ensures we move past records even when we can't update them.
+      $sandbox['progress']++;
+      $sandbox['current_entity_id'] = $record->entity_id;
+    }
+
+    // If no more body records, move to revision phase.
+    if (!$found_records) {
+      $sandbox['phase'] = 'revision';
+      $sandbox['current_entity_id'] = 0;
+    }
+  }
+
+  // Phase 2: Update node_revision__body.
+  if ($sandbox['phase'] === 'revision') {
+    $records = $database->select('node_revision__body', 'b')
+      ->fields('b', ['entity_id', 'revision_id', 'langcode', 'delta', 'body_value'])
+      ->condition('body_value', '%/sites/default/files/oldsite_images/%', 'LIKE')
+      ->condition('entity_id', $sandbox['current_entity_id'], '>')
+      ->orderBy('entity_id')
+      ->range(0, $batch_size)
+      ->execute();
+
+    $found_records = FALSE;
+    foreach ($records as $record) {
+      $found_records = TRUE;
+      $updated_body = $record->body_value;
+      $changed = FALSE;
+      $had_oldsite_reference = FALSE;
+
+      // Try to replace each file in the mapping.
+      foreach ($file_mapping as $old_filename => $new_path) {
+        $old_path = '/sites/default/files/oldsite_images/' . $old_filename;
+
+        if (strpos($updated_body, $old_path) !== FALSE) {
+          $had_oldsite_reference = TRUE;
+          $new_full_path = '/sites/default/files/' . $new_path;
+
+          // Verify file exists.
+          $uri = str_replace('/sites/default/files/', 'public://', $new_full_path);
+          $real_path = $file_system->realpath($uri);
+
+          if ($real_path && file_exists($real_path)) {
+            $updated_body = str_replace($old_path, $new_full_path, $updated_body);
+            $changed = TRUE;
+          }
+        }
+      }
+
+      if ($changed) {
+        $database->update('node_revision__body')
+          ->fields(['body_value' => $updated_body])
+          ->condition('entity_id', $record->entity_id)
+          ->condition('revision_id', $record->revision_id)
+          ->condition('langcode', $record->langcode)
+          ->condition('delta', $record->delta)
+          ->execute();
+
+        $sandbox['updated_revision']++;
+      }
+      elseif ($had_oldsite_reference) {
+        // Had oldsite_images ref but no files in our mapping - count as skipped.
+        $sandbox['skipped']++;
+      }
+
+      // CRITICAL: Always increment progress and current_entity_id.
+      // This ensures we move past records even when we can't update them.
+      $sandbox['progress']++;
+      $sandbox['current_entity_id'] = $record->entity_id;
+    }
+
+    // If no more revision records, we're done.
+    if (!$found_records) {
+      $sandbox['phase'] = 'complete';
+    }
+  }
+
+  // Update progress.
+  $sandbox['#finished'] = $sandbox['max'] > 0 ? ($sandbox['progress'] / $sandbox['max']) : 1;
+
+  // Return message when complete.
+  if ($sandbox['#finished'] >= 1) {
+    $message = t('Fixed oldsite_images references: @body body records, @revision revision records updated. @skipped records skipped (files not in mapping).', [
+      '@body' => $sandbox['updated_body'],
+      '@revision' => $sandbox['updated_revision'],
+      '@skipped' => $sandbox['skipped'],
+    ]);
+
+    \Drupal::logger('db_fixes')->info($message);
+    return $message;
+  }
+}
