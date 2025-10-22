@@ -13,9 +13,13 @@ class WebpCommands extends DrushCommands {
   /**
    * Convert a single image file to WebP by path.
    *
+   * @param string $path
+   *   Relative path from files directory
+   *   (e.g., "bio_pics/ReggieWilliams_1.jpg").
+   *
    * @command saho:webp-file
    * @aliases swf-single
-   * @param string $path Relative path from files directory (e.g., "bio_pics/ReggieWilliams_1.jpg")
+   *
    * @usage saho:webp-file bio_pics/ReggieWilliams_1.jpg
    *   Convert a single file to WebP format.
    */
@@ -32,7 +36,7 @@ class WebpCommands extends DrushCommands {
    *   Convert all existing images to WebP format.
    */
   public function convertAll() {
-    // Convert all files
+    // Convert all files.
     $this->output()->writeln('Converting all images to WebP...');
 
     $files = \Drupal::entityTypeManager()
@@ -195,11 +199,11 @@ class WebpCommands extends DrushCommands {
   private function convertSingleFileByPath($path) {
     $file_system = \Drupal::service('file_system');
 
-    // Normalize the path - remove leading slashes and 'sites/default/files/'
+    // Normalize the path - remove leading slashes and 'sites/default/files/'.
     $path = trim($path, '/');
     $path = preg_replace('#^sites/default/files/#', '', $path);
 
-    // Build the full file path
+    // Build the full file path.
     $source_path = $file_system->realpath('public://') . '/' . $path;
 
     if (!file_exists($source_path)) {
@@ -207,14 +211,14 @@ class WebpCommands extends DrushCommands {
       return;
     }
 
-    // Check if it's an image
+    // Check if it's an image.
     $mime_type = mime_content_type($source_path);
     if (!in_array($mime_type, ['image/jpeg', 'image/png'])) {
       $this->output()->writeln("<error>File is not a JPEG or PNG: $mime_type</error>");
       return;
     }
 
-    // Generate WebP path
+    // Generate WebP path.
     $webp_path = preg_replace('/\.(jpg|jpeg|png)$/i', '.webp', $source_path);
 
     if (file_exists($webp_path)) {
@@ -229,7 +233,7 @@ class WebpCommands extends DrushCommands {
       return;
     }
 
-    // Convert to WebP
+    // Convert to WebP.
     $this->output()->writeln("Converting: $path");
 
     try {
@@ -254,7 +258,7 @@ class WebpCommands extends DrushCommands {
         imagedestroy($source_image);
 
         if ($success) {
-          // Set same permissions as original
+          // Set same permissions as original.
           chmod($webp_path, fileperms($source_path));
 
           $webp_size = filesize($webp_path);
