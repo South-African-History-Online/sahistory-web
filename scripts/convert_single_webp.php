@@ -67,8 +67,39 @@ if (!function_exists('imagewebp')) {
 
 echo "Debug: WebP support available\n";
 
-// Check if it's an image.
-$mime_type = mime_content_type($source_path);
+// Check if it's an image - use multiple methods for compatibility.
+$mime_type = NULL;
+
+// Try mime_content_type if available.
+if (function_exists('mime_content_type')) {
+  $mime_type = mime_content_type($source_path);
+}
+// Fallback to finfo.
+elseif (function_exists('finfo_open')) {
+  $finfo = finfo_open(FILEINFO_MIME_TYPE);
+  $mime_type = finfo_file($finfo, $source_path);
+  finfo_close($finfo);
+}
+// Fallback to exif_imagetype + manual mapping.
+elseif (function_exists('exif_imagetype')) {
+  $image_type = exif_imagetype($source_path);
+  $mime_map = [
+    IMAGETYPE_JPEG => 'image/jpeg',
+    IMAGETYPE_PNG => 'image/png',
+  ];
+  $mime_type = isset($mime_map[$image_type]) ? $mime_map[$image_type] : NULL;
+}
+// Last resort - check file extension.
+else {
+  $ext = strtolower(pathinfo($source_path, PATHINFO_EXTENSION));
+  if (in_array($ext, ['jpg', 'jpeg'])) {
+    $mime_type = 'image/jpeg';
+  }
+  elseif ($ext === 'png') {
+    $mime_type = 'image/png';
+  }
+}
+
 echo "Debug: MIME type: $mime_type\n";
 
 if (!in_array($mime_type, ['image/jpeg', 'image/png'])) {
