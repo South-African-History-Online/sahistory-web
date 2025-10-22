@@ -11,6 +11,19 @@ use Drupal\file\Entity\File;
 class WebpCommands extends DrushCommands {
 
   /**
+   * Convert a single image file to WebP by path.
+   *
+   * @command saho:webp-file
+   * @aliases swf-single
+   * @param string $path Relative path from files directory (e.g., "bio_pics/ReggieWilliams_1.jpg")
+   * @usage saho:webp-file bio_pics/ReggieWilliams_1.jpg
+   *   Convert a single file to WebP format.
+   */
+  public function convertSingleFile($path) {
+    return $this->convertSingleFileByPath($path);
+  }
+
+  /**
    * Convert all existing images to WebP.
    *
    * @command saho:webp-convert-all
@@ -19,6 +32,7 @@ class WebpCommands extends DrushCommands {
    *   Convert all existing images to WebP format.
    */
   public function convertAll() {
+    // Convert all files
     $this->output()->writeln('Converting all images to WebP...');
 
     $files = \Drupal::entityTypeManager()
@@ -32,7 +46,7 @@ class WebpCommands extends DrushCommands {
     $errors = 0;
 
     foreach ($files as $file) {
-      $result = $this->convertFile($file);
+      $result = $this->convertFileEntity($file);
 
       switch ($result) {
         case 'converted':
@@ -101,9 +115,9 @@ class WebpCommands extends DrushCommands {
   }
 
   /**
-   * Convert a single file to WebP.
+   * Convert a single file entity to WebP (internal method).
    */
-  private function convertFile(File $file) {
+  private function convertFileEntity(File $file) {
     $source_path = \Drupal::service('file_system')->realpath($file->getFileUri());
     if (!$source_path || !file_exists($source_path)) {
       return 'missing';
@@ -173,6 +187,109 @@ class WebpCommands extends DrushCommands {
     }
 
     $this->output()->writeln("Module is active and ready for conversions.");
+  }
+
+  /**
+   * Convert a single image file to WebP by path (internal method).
+   */
+  private function convertSingleFileByPath($path) {
+    $file_system = \Drupal::service('file_system');
+
+    // Normalize the path - remove leading slashes and 'sites/default/files/'
+    $path = trim($path, '/');
+    $path = preg_replace('#^sites/default/files/#', '', $path);
+
+    // Build the full file path
+    $source_path = $file_system->realpath('public://') . '/' . $path;
+
+    if (!file_exists($source_path)) {
+      $this->output()->writeln("<error>File not found: $source_path</error>");
+      return;
+    }
+
+    // Check if it's an image
+    $mime_type = mime_content_type($source_path);
+    if (!in_array($mime_type, ['image/jpeg', 'image/png'])) {
+      $this->output()->writeln("<error>File is not a JPEG or PNG: $mime_type</error>");
+      return;
+    }
+
+    // Generate WebP path
+    $webp_path = preg_replace('/\.(jpg|jpeg|png)$/i', '.webp', $source_path);
+
+    if (file_exists($webp_path)) {
+      $webp_size = filesize($webp_path);
+      $original_size = filesize($source_path);
+      $savings = round((1 - $webp_size / $original_size) * 100, 1);
+
+      $this->output()->writeln("<info>WebP already exists:</info>");
+      $this->output()->writeln("  Original: " . $this->formatBytes($original_size));
+      $this->output()->writeln("  WebP: " . $this->formatBytes($webp_size) . " ({$savings}% savings)");
+      $this->output()->writeln("  Path: $webp_path");
+      return;
+    }
+
+    // Convert to WebP
+    $this->output()->writeln("Converting: $path");
+
+    try {
+      $source_image = NULL;
+
+      switch ($mime_type) {
+        case 'image/jpeg':
+          $source_image = @imagecreatefromjpeg($source_path);
+          break;
+
+        case 'image/png':
+          $source_image = @imagecreatefrompng($source_path);
+          if ($source_image !== FALSE) {
+            imagealphablending($source_image, FALSE);
+            imagesavealpha($source_image, TRUE);
+          }
+          break;
+      }
+
+      if ($source_image) {
+        $success = @imagewebp($source_image, $webp_path, 80);
+        imagedestroy($source_image);
+
+        if ($success) {
+          // Set same permissions as original
+          chmod($webp_path, fileperms($source_path));
+
+          $webp_size = filesize($webp_path);
+          $original_size = filesize($source_path);
+          $savings = round((1 - $webp_size / $original_size) * 100, 1);
+
+          $this->output()->writeln("<info>✓ Conversion successful!</info>");
+          $this->output()->writeln("  Original: " . $this->formatBytes($original_size));
+          $this->output()->writeln("  WebP: " . $this->formatBytes($webp_size) . " ({$savings}% savings)");
+          $this->output()->writeln("  Path: $webp_path");
+        }
+        else {
+          $this->output()->writeln("<error>Failed to create WebP file</error>");
+        }
+      }
+      else {
+        $this->output()->writeln("<error>Failed to create image resource from source file</error>");
+      }
+    }
+    catch (\Exception $e) {
+      $this->output()->writeln("<error>Error: " . $e->getMessage() . "</error>");
+    }
+  }
+
+  /**
+   * Format bytes to human-readable format.
+   */
+  private function formatBytes($bytes) {
+    if ($bytes >= 1048576) {
+      return round($bytes / 1048576, 2) . ' MB';
+    }
+    elseif ($bytes >= 1024) {
+      return round($bytes / 1024, 2) . ' KB';
+    }
+    return $bytes . ' B';
   }
 
   /**
