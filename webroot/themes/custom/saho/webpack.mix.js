@@ -118,6 +118,9 @@ const purgeCSSConfig = {
       /^disabled$/,
       /^hidden$/,
       /^visible$/,
+      'page-title',
+      'title',
+      'section-title',
     ],
     // Deep patterns (including children)
     deep: [
