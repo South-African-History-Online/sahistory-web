@@ -1298,11 +1298,9 @@ function saho_page_attachments(array &$attachments) {
     // Determine LCP image based on content type
     switch ($node->bundle()) {
       case 'article':
+        // Only preload feature banner for articles (article_image is always sidebar)
         if ($node->hasField('field_feature_banner') && !$node->get('field_feature_banner')->isEmpty()) {
           $image_entity = $node->get('field_feature_banner')->entity;
-        }
-        elseif ($node->hasField('field_article_image') && !$node->get('field_article_image')->isEmpty()) {
-          $image_entity = $node->get('field_article_image')->entity;
         }
         break;
 
