@@ -286,10 +286,13 @@ function saho_preprocess_node(array &$variables) {
  if ($node->bundle() == 'article') {
    // Hero banner image (eager loading for LCP)
    if ($node->hasField('field_feature_banner') && !$node->get('field_feature_banner')->isEmpty()) {
-     $banner_entity = $node->get('field_feature_banner')->entity;
+     $banner_field = $node->get('field_feature_banner');
+     $banner_entity = $banner_field->entity;
+     $banner_alt = $banner_field->alt ?? '';
+
      $variables['hero_banner_image'] = saho_get_responsive_image(
        $banner_entity,
-       $node->get('field_feature_banner')->alt,
+       $banner_alt,
        ['saho_hero', 'saho_large', 'saho_hero_mobile'],
        '100vw',
        'eager',
@@ -299,13 +302,15 @@ function saho_preprocess_node(array &$variables) {
 
    // Article image (can be hero or sidebar depending on banner presence)
    if ($node->hasField('field_article_image') && !$node->get('field_article_image')->isEmpty()) {
-     $article_entity = $node->get('field_article_image')->entity;
+     $article_field = $node->get('field_article_image');
+     $article_entity = $article_field->entity;
+     $article_alt = $article_field->alt ?? '';
      $has_banner = $node->hasField('field_feature_banner') && !$node->get('field_feature_banner')->isEmpty();
 
      // If no banner, this is the hero (eager), otherwise sidebar (lazy)
      $variables['article_image'] = saho_get_responsive_image(
        $article_entity,
-       $node->get('field_article_image')->alt,
+       $article_alt,
        $has_banner ? ['saho_large', 'saho_medium'] : ['saho_hero', 'saho_large', 'saho_hero_mobile'],
        $has_banner ? '(max-width: 768px) 100vw, 400px' : '100vw',
        $has_banner ? 'lazy' : 'eager',

@@ -19,10 +19,11 @@
     <div class="saho-main-content">
 
       {% if hero_banner_image %}
+        {# Feature banner image (eager loading for LCP) #}
         <div class="saho-feature-banner">
           {{ hero_banner_image }}
         </div>
-      {% elseif article_image and not node.field_feature_banner.entity %}
+      {% elseif article_image and not hero_banner_image %}
         {# Display article image in main content if no feature banner #}
         <div class="saho-feature-banner">
           {{ article_image }}
@@ -170,8 +171,8 @@
     {% if sidebar_has_content %}
     <aside class="saho-article-sidebar">
 
-      {# Article Image Block - Always visible at top #}
-      {% if article_image and node.field_feature_banner.entity %}
+      {# Article Image Block - Only show in sidebar if there's a hero banner #}
+      {% if article_image and hero_banner_image %}
         <div class="saho-image-block mb-4">
           {{ article_image }}
           {% if node.field_node_image_caption.value %}
