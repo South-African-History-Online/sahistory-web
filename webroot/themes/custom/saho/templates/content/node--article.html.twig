@@ -23,16 +23,6 @@
         <div class="saho-feature-banner">
           {{ hero_banner_image }}
         </div>
-      {% elseif article_image and not hero_banner_image %}
-        {# Display article image in main content if no feature banner #}
-        <div class="saho-feature-banner">
-          {{ article_image }}
-          {% if node.field_node_image_caption.value %}
-            <div class="caption">
-              {{ node.field_node_image_caption.value|raw }}
-            </div>
-          {% endif %}
-        </div>
       {% endif %}
 
       <div class="saho-article-meta">
@@ -128,7 +118,7 @@
 
 
     {# RIGHT: Simplified Sidebar #}
-    {% if node.field_article_image.entity and node.field_feature_banner.entity %}
+    {% if node.field_article_image.entity %}
       {% set sidebar_has_content = true %}
     {% endif %}
     
@@ -171,8 +161,8 @@
     {% if sidebar_has_content %}
     <aside class="saho-article-sidebar">
 
-      {# Article Image Block - Only show in sidebar if there's a hero banner #}
-      {% if article_image and hero_banner_image %}
+      {# Article Image Block - Always show in sidebar when present #}
+      {% if article_image %}
         <div class="saho-image-block mb-4">
           {{ article_image }}
           {% if node.field_node_image_caption.value %}
