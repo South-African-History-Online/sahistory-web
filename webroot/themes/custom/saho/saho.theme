@@ -1170,6 +1170,12 @@ function saho_get_responsive_image($file_entity, $alt = '', array $styles = ['sa
   foreach ($styles as $style_name) {
     $style = ImageStyle::load($style_name);
     if ($style) {
+      // Ensure the derivative exists before getting URL
+      $derivative_uri = $style->buildUri($uri);
+      if (!file_exists($derivative_uri)) {
+        $style->createDerivative($uri, $derivative_uri);
+      }
+
       $url = $style->buildUrl($uri);
 
       // Get width from style configuration
@@ -1191,7 +1197,16 @@ function saho_get_responsive_image($file_entity, $alt = '', array $styles = ['sa
 
   // Fallback to first style if available
   $fallback_style = ImageStyle::load($styles[0]);
-  $fallback_url = $fallback_style ? $fallback_style->buildUrl($uri) : file_create_url($uri);
+  if ($fallback_style) {
+    // Ensure fallback derivative exists
+    $derivative_uri = $fallback_style->buildUri($uri);
+    if (!file_exists($derivative_uri)) {
+      $fallback_style->createDerivative($uri, $derivative_uri);
+    }
+    $fallback_url = $fallback_style->buildUrl($uri);
+  } else {
+    $fallback_url = file_create_url($uri);
+  }
 
   // Get original dimensions for proper aspect ratio
   $width = NULL;

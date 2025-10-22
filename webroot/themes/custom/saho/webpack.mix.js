@@ -131,6 +131,7 @@ const purgeCSSConfig = {
       /^navbar/,       // Navbar classes
       /^btn-/,         // Button variants
       /^alert-/,       // Alert variants
+      /^breadcrumb/,   // Breadcrumb navigation
       /^saho-/,        // All custom SAHO classes
       /^drupal-/,      // Drupal-specific classes
       /^js-/,          // JavaScript-added classes
