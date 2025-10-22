@@ -8,7 +8,13 @@
  * Usage:
  *   php scripts/convert_single_webp.php bio_pics/ReggieWilliams_1.jpg
  *   php scripts/convert_single_webp.php /sites/default/files/bio_pics/ReggieWilliams_1.jpg
+ *
+ * @codingStandardsIgnoreFile
  */
+
+// Error reporting.
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
 // Check if path argument is provided.
 if ($argc < 2) {
@@ -23,9 +29,26 @@ $relative_path = $argv[1];
 $relative_path = trim($relative_path, '/');
 $relative_path = preg_replace('#^sites/default/files/#', '', $relative_path);
 
-// Build full path.
-$files_dir = __DIR__ . '/../webroot/sites/default/files/';
+// Determine files directory based on directory structure.
+// Check if we're in project root or public_html.
+if (file_exists(__DIR__ . '/../webroot/sites/default/files/')) {
+  $files_dir = __DIR__ . '/../webroot/sites/default/files/';
+}
+elseif (file_exists(__DIR__ . '/../public_html/sites/default/files/')) {
+  $files_dir = __DIR__ . '/../public_html/sites/default/files/';
+}
+else {
+  echo "ERROR: Cannot locate files directory\n";
+  echo "Tried:\n";
+  echo "  " . __DIR__ . "/../webroot/sites/default/files/\n";
+  echo "  " . __DIR__ . "/../public_html/sites/default/files/\n";
+  exit(1);
+}
+
 $source_path = $files_dir . $relative_path;
+
+echo "Debug: Files directory: $files_dir\n";
+echo "Debug: Looking for: $source_path\n";
 
 // Check if file exists.
 if (!file_exists($source_path)) {
@@ -33,8 +56,21 @@ if (!file_exists($source_path)) {
   exit(1);
 }
 
+echo "Debug: File exists!\n";
+
+// Check WebP support.
+if (!function_exists('imagewebp')) {
+  echo "ERROR: PHP GD library does not have WebP support\n";
+  echo "imagewebp() function is not available\n";
+  exit(1);
+}
+
+echo "Debug: WebP support available\n";
+
 // Check if it's an image.
 $mime_type = mime_content_type($source_path);
+echo "Debug: MIME type: $mime_type\n";
+
 if (!in_array($mime_type, ['image/jpeg', 'image/png'])) {
   echo "ERROR: File is not a JPEG or PNG: $mime_type\n";
   exit(1);
