@@ -67,6 +67,40 @@ if (!function_exists('imagewebp')) {
 
 echo "Debug: WebP support available\n";
 
+// First, check if the file is actually already WebP (misnamed).
+$file_header = file_get_contents($source_path, FALSE, NULL, 0, 16);
+$is_webp = (substr($file_header, 0, 4) === 'RIFF' && substr($file_header, 8, 4) === 'WEBP');
+
+if ($is_webp) {
+  echo "DEBUG: File is already WebP (starts with RIFF...WEBP)\n";
+  echo "The file has a .jpg/.png extension but contains WebP data.\n";
+
+  // Generate WebP path.
+  $webp_path = preg_replace('/\.(jpg|jpeg|png)$/i', '.webp', $source_path);
+
+  if (file_exists($webp_path)) {
+    echo "WebP file already exists at: $webp_path\n";
+    exit(0);
+  }
+
+  // Copy the misnamed WebP to correct .webp extension.
+  if (copy($source_path, $webp_path)) {
+    chmod($webp_path, fileperms($source_path));
+
+    $file_size = filesize($source_path);
+    echo "✓ WebP file created (copied from misnamed source)!\n";
+    echo "  File size: " . formatBytes($file_size) . "\n";
+    echo "  Path: $webp_path\n";
+    echo "\nNote: The original .jpg file is actually WebP format.\n";
+    echo "Consider fixing the source file naming.\n";
+    exit(0);
+  }
+  else {
+    echo "ERROR: Failed to copy file to .webp extension\n";
+    exit(1);
+  }
+}
+
 // Check if it's an image - use multiple methods for compatibility.
 $mime_type = NULL;
 
