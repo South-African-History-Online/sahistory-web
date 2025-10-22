@@ -91,6 +91,10 @@ echo "  - Article images: $ARTICLE_REMAINING"
 echo "  - General images: $IMAGE_REMAINING"
 echo ""
 
+echo "Fixing legacy text format references..."
+$DRUSH sqlq "UPDATE node__field_old_ref_str SET field_old_ref_str_format = 'full_html' WHERE field_old_ref_str_format = '2'"
+$DRUSH sqlq "UPDATE node_revision__field_old_ref_str SET field_old_ref_str_format = 'full_html' WHERE field_old_ref_str_format = '2'"
+
 echo "Clearing cache..."
 $DRUSH cr
 
@@ -100,6 +104,7 @@ echo "Fix Complete!"
 echo "=========================================="
 echo ""
 echo "Fixed $TOTAL images with NULL alt text"
+echo "Fixed text format ID 2 references"
 echo ""
 echo "Benefits:"
 echo "  ✓ Search API errors resolved"
