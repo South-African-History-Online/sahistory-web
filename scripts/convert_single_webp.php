@@ -125,54 +125,100 @@ if (file_exists($webp_path)) {
 
 echo "Converting: $relative_path\n";
 
+// Check memory limit and file size.
+$file_size = filesize($source_path);
+echo "Debug: File size: " . formatBytes($file_size) . "\n";
+
+$memory_limit = ini_get('memory_limit');
+echo "Debug: Memory limit: $memory_limit\n";
+
 // Convert to WebP.
-try {
-  $source_image = NULL;
+echo "Debug: Attempting to create image resource...\n";
 
-  switch ($mime_type) {
-    case 'image/jpeg':
-      $source_image = @imagecreatefromjpeg($source_path);
-      break;
+// Enable error capture.
+$old_error_handler = set_error_handler(function($errno, $errstr) {
+  echo "Debug: PHP Error: $errstr\n";
+});
 
-    case 'image/png':
-      $source_image = @imagecreatefrompng($source_path);
-      if ($source_image !== FALSE) {
-        imagealphablending($source_image, FALSE);
-        imagesavealpha($source_image, TRUE);
+$source_image = NULL;
+
+switch ($mime_type) {
+  case 'image/jpeg':
+    echo "Debug: Loading JPEG...\n";
+    $source_image = imagecreatefromjpeg($source_path);
+    if ($source_image === FALSE) {
+      echo "Debug: imagecreatefromjpeg() returned FALSE\n";
+      $error = error_get_last();
+      if ($error) {
+        echo "Debug: Last error: " . $error['message'] . "\n";
       }
-      break;
-  }
-
-  if ($source_image) {
-    $success = @imagewebp($source_image, $webp_path, 80);
-    imagedestroy($source_image);
-
-    if ($success) {
-      // Set same permissions as original.
-      chmod($webp_path, fileperms($source_path));
-
-      $webp_size = filesize($webp_path);
-      $original_size = filesize($source_path);
-      $savings = round((1 - $webp_size / $original_size) * 100, 1);
-
-      echo "✓ Conversion successful!\n";
-      echo "  Original: " . formatBytes($original_size) . "\n";
-      echo "  WebP: " . formatBytes($webp_size) . " ({$savings}% savings)\n";
-      echo "  Path: $webp_path\n";
-      exit(0);
     }
     else {
-      echo "ERROR: Failed to create WebP file\n";
-      exit(1);
+      echo "Debug: JPEG loaded successfully\n";
+    }
+    break;
+
+  case 'image/png':
+    echo "Debug: Loading PNG...\n";
+    $source_image = imagecreatefrompng($source_path);
+    if ($source_image === FALSE) {
+      echo "Debug: imagecreatefrompng() returned FALSE\n";
+    }
+    else {
+      echo "Debug: PNG loaded successfully\n";
+      imagealphablending($source_image, FALSE);
+      imagesavealpha($source_image, TRUE);
+    }
+    break;
+}
+
+// Restore error handler.
+if ($old_error_handler) {
+  set_error_handler($old_error_handler);
+}
+
+// Check if image was created successfully (PHP 8+ returns GdImage object, PHP 7 returns resource).
+$is_valid_image = $source_image && ($source_image instanceof \GdImage || is_resource($source_image));
+
+if ($is_valid_image) {
+  echo "Debug: Image resource created successfully\n";
+  echo "Debug: Converting to WebP...\n";
+  $success = imagewebp($source_image, $webp_path, 80);
+
+  if ($success === FALSE) {
+    echo "Debug: imagewebp() returned FALSE\n";
+    $error = error_get_last();
+    if ($error) {
+      echo "Debug: Last error: " . $error['message'] . "\n";
     }
   }
+
+  imagedestroy($source_image);
+
+  if ($success) {
+    echo "Debug: WebP file created\n";
+
+    // Set same permissions as original.
+    chmod($webp_path, fileperms($source_path));
+
+    $webp_size = filesize($webp_path);
+    $original_size = filesize($source_path);
+    $savings = round((1 - $webp_size / $original_size) * 100, 1);
+
+    echo "✓ Conversion successful!\n";
+    echo "  Original: " . formatBytes($original_size) . "\n";
+    echo "  WebP: " . formatBytes($webp_size) . " ({$savings}% savings)\n";
+    echo "  Path: $webp_path\n";
+    exit(0);
+  }
   else {
-    echo "ERROR: Failed to create image resource from source file\n";
+    echo "ERROR: Failed to create WebP file\n";
     exit(1);
   }
 }
-catch (Exception $e) {
-  echo "ERROR: " . $e->getMessage() . "\n";
+else {
+  echo "ERROR: Failed to create image resource from source file\n";
+  echo "Debug: source_image = " . var_export($source_image, TRUE) . "\n";
   exit(1);
 }
 
