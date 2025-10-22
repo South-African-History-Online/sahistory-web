@@ -259,7 +259,18 @@ class HeroBannerBlock extends BlockBase implements ContainerFactoryPluginInterfa
         if (!$image_field->isEmpty()) {
           $file = $image_field->entity;
           if ($file && $file instanceof File) {
-            $background_image_url = $this->fileUrlGenerator->generateAbsoluteString($file->getFileUri());
+            $file_uri = $file->getFileUri();
+
+            // Check for WebP version.
+            $webp_uri = preg_replace('/\.(jpe?g|png)$/i', '.webp', $file_uri);
+
+            // Use WebP if it exists, otherwise fall back to original.
+            if ($webp_uri !== $file_uri && file_exists($webp_uri)) {
+              $background_image_url = $this->fileUrlGenerator->generateAbsoluteString($webp_uri);
+            }
+            else {
+              $background_image_url = $this->fileUrlGenerator->generateAbsoluteString($file_uri);
+            }
           }
         }
       }
