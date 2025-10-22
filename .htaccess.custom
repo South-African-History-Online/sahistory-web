@@ -112,27 +112,27 @@ RewriteRule ^(.+)\.(jpe?g|png)$ $1.webp [T=image/webp,E=accept:1,L]
 
   # ===== CUSTOM REDIRECTS - START =====
 
-  # 0. Redirect legacy DC archive paths to archive-files directories BEFORE other redirects
+  # 10. Redirect legacy DC archive paths to archive-files directories
   # Files in /sites/default/files/DC/[folder]/[file].pdf are actually in archive-files* directories
-  # Try each archive-files directory in order until we find the file
-  RewriteCond %{REQUEST_FILENAME} !-f
-  RewriteCond sites/default/files/archive-files4/$1 -f
+  # Try multiple archive-files directories in order
+  RewriteCond %{REQUEST_URI} ^/sites/default/files/[Dd][Cc]/[^/]+/(.+)$ [NC]
+  RewriteCond %{DOCUMENT_ROOT}/sites/default/files/archive-files4/%1 -f
   RewriteRule ^sites/default/files/[Dd][Cc]/[^/]+/(.+)$ /sites/default/files/archive-files4/$1 [R=301,L,NC]
 
-  RewriteCond %{REQUEST_FILENAME} !-f
-  RewriteCond sites/default/files/archive-files/$1 -f
+  RewriteCond %{REQUEST_URI} ^/sites/default/files/[Dd][Cc]/[^/]+/(.+)$ [NC]
+  RewriteCond %{DOCUMENT_ROOT}/sites/default/files/archive-files/%1 -f
   RewriteRule ^sites/default/files/[Dd][Cc]/[^/]+/(.+)$ /sites/default/files/archive-files/$1 [R=301,L,NC]
 
-  RewriteCond %{REQUEST_FILENAME} !-f
-  RewriteCond sites/default/files/archive-files2/$1 -f
+  RewriteCond %{REQUEST_URI} ^/sites/default/files/[Dd][Cc]/[^/]+/(.+)$ [NC]
+  RewriteCond %{DOCUMENT_ROOT}/sites/default/files/archive-files2/%1 -f
   RewriteRule ^sites/default/files/[Dd][Cc]/[^/]+/(.+)$ /sites/default/files/archive-files2/$1 [R=301,L,NC]
 
-  RewriteCond %{REQUEST_FILENAME} !-f
-  RewriteCond sites/default/files/archive-files3/$1 -f
+  RewriteCond %{REQUEST_URI} ^/sites/default/files/[Dd][Cc]/[^/]+/(.+)$ [NC]
+  RewriteCond %{DOCUMENT_ROOT}/sites/default/files/archive-files3/%1 -f
   RewriteRule ^sites/default/files/[Dd][Cc]/[^/]+/(.+)$ /sites/default/files/archive-files3/$1 [R=301,L,NC]
 
-  RewriteCond %{REQUEST_FILENAME} !-f
-  RewriteCond sites/default/files/archive-files5/$1 -f
+  RewriteCond %{REQUEST_URI} ^/sites/default/files/[Dd][Cc]/[^/]+/(.+)$ [NC]
+  RewriteCond %{DOCUMENT_ROOT}/sites/default/files/archive-files5/%1 -f
   RewriteRule ^sites/default/files/[Dd][Cc]/[^/]+/(.+)$ /sites/default/files/archive-files5/$1 [R=301,L,NC]
 
   # 1. Force HTTPS (if not already forced elsewhere)
