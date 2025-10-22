@@ -18,27 +18,10 @@
     {# LEFT: Main content column #}
     <div class="saho-main-content">
 
-      {% if node.field_feature_banner.entity %}
+      {% if hero_banner_image %}
+        {# Feature banner image (eager loading for LCP) #}
         <div class="saho-feature-banner">
-          <img
-            src="{{ file_url(node.field_feature_banner.entity.uri.value) }}"
-            alt="{{ node.field_feature_banner.alt }}"
-            class="saho-feature-banner-image"
-          >
-        </div>
-      {% elseif node.field_article_image.entity %}
-        {# Display article image in main content if no feature banner #}
-        <div class="saho-feature-banner">
-          <img
-            src="{{ file_url(node.field_article_image.entity.uri.value) }}"
-            alt="{{ node.field_article_image.alt }}"
-            class="saho-feature-banner-image"
-          >
-          {% if node.field_node_image_caption.value %}
-            <div class="caption">
-              {{ node.field_node_image_caption.value|raw }}
-            </div>
-          {% endif %}
+          {{ hero_banner_image }}
         </div>
       {% endif %}
 
@@ -135,7 +118,7 @@
 
 
     {# RIGHT: Simplified Sidebar #}
-    {% if node.field_article_image.entity and node.field_feature_banner.entity %}
+    {% if node.field_article_image.entity %}
       {% set sidebar_has_content = true %}
     {% endif %}
     
@@ -178,14 +161,10 @@
     {% if sidebar_has_content %}
     <aside class="saho-article-sidebar">
 
-      {# Article Image Block - Always visible at top #}
-      {% if node.field_article_image.entity and node.field_feature_banner.entity %}
+      {# Article Image Block - Always show in sidebar when present #}
+      {% if article_image %}
         <div class="saho-image-block mb-4">
-          <img
-            src="{{ file_url(node.field_article_image.entity.uri.value) }}"
-            alt="{{ node.field_article_image.alt }}"
-            class="saho-image"
-          >
+          {{ article_image }}
           {% if node.field_node_image_caption.value %}
             <div class="caption">
               {{ node.field_node_image_caption.value|raw }}
@@ -374,9 +353,11 @@
 
             <div class="saho-card">
               <a href="{{ path('entity.node.canonical', {'node': entity.id()}) }}" class="saho-card-link">
+                {% if image_url %}
                 <div class="saho-card-image">
-                  <img src="{{ image_url }}" alt="{{ image_alt }}" loading="lazy">
+                  <img src="{{ image_url }}" alt="{{ image_alt }}" loading="lazy" decoding="async">
                 </div>
+                {% endif %}
                 <div class="saho-card-content">
                   <h5 class="saho-card-title">{{ entity.label }}</h5>
                   {% if entity.field_synopsis.value %}

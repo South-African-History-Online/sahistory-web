@@ -3,11 +3,13 @@
 use Drupal\node\Entity\Node;
 use Drupal\Core\Datetime\DateFormatter;
 use Drupal\image\Entity\ImageStyle;
+use Drupal\file\Entity\File;
 
 /**
  * @file
  * Theme functions.
  */
+
 
 /**
  * Implements hook_page_attachments_alter().
@@ -276,6 +278,45 @@ function saho_preprocess_node(array &$variables) {
  // Make logo available to all templates using page.html.twig.
  $logo = \Drupal::theme()->getActiveTheme()->getLogo();
  $variables['site_logo'] = $logo;
+
+ // Pre-render responsive images for article templates
+ $node = $variables['node'];
+
+ // For articles: pre-render hero images
+ if ($node->bundle() == 'article') {
+   // Hero banner image (eager loading for LCP)
+   if ($node->hasField('field_feature_banner') && !$node->get('field_feature_banner')->isEmpty()) {
+     $banner_field = $node->get('field_feature_banner');
+     $banner_entity = $banner_field->entity;
+     $banner_alt = $banner_field->alt ?? '';
+
+     $variables['hero_banner_image'] = saho_get_responsive_image(
+       $banner_entity,
+       $banner_alt,
+       ['saho_hero', 'saho_large', 'saho_hero_mobile'],
+       '100vw',
+       'eager',
+       'saho-feature-banner-image'
+     );
+   }
+
+   // Article image - ALWAYS for sidebar (lazy loading)
+   if ($node->hasField('field_article_image') && !$node->get('field_article_image')->isEmpty()) {
+     $article_field = $node->get('field_article_image');
+     $article_entity = $article_field->entity;
+     $article_alt = $article_field->alt ?? '';
+
+     // Always sidebar size with lazy loading
+     $variables['article_image'] = saho_get_responsive_image(
+       $article_entity,
+       $article_alt,
+       ['saho_large', 'saho_medium'],
+       '(max-width: 768px) 100vw, 400px',
+       'lazy',
+       'saho-image'
+     );
+   }
+ }
  
   // Add URL truncation, sidebar tabs, context details, and accordion libraries for content types
   $node = $variables['node'];
@@ -1086,4 +1127,243 @@ function saho_preprocess_views_view_featured_content(&$variables) {
       $variables['most_read_count'] = 0;
     }
   }
+}
+
+/**
+ * Generate responsive image markup with multiple sizes and proper dimensions.
+ *
+ * This function creates performance-optimized image markup with:
+ * - Multiple image style derivatives in srcset
+ * - Proper width/height attributes to prevent CLS
+ * - Configurable lazy/eager loading
+ * - WebP support (handled by server)
+ * - Async decoding for non-blocking rendering
+ *
+ * @param \Drupal\file\Entity\File|null $file_entity
+ *   The file entity to render.
+ * @param string $alt
+ *   The alt text for the image.
+ * @param array $styles
+ *   Array of image style machine names to use for srcset (ordered from large to small).
+ * @param string $sizes
+ *   The sizes attribute value (e.g., '100vw', '(max-width: 768px) 100vw, 50vw').
+ * @param string $loading
+ *   Loading strategy: 'lazy' or 'eager' (use 'eager' for LCP images).
+ * @param string $class
+ *   CSS class(es) to add to the image.
+ * @param bool $get_dimensions
+ *   Whether to fetch and include width/height attributes (recommended for CLS prevention).
+ *
+ * @return array
+ *   Render array with responsive image markup.
+ */
+function saho_get_responsive_image($file_entity, $alt = '', array $styles = ['saho_large', 'saho_medium'], $sizes = '100vw', $loading = 'lazy', $class = '', $get_dimensions = TRUE) {
+  if (!$file_entity) {
+    return [];
+  }
+
+  $uri = $file_entity->getFileUri();
+  $srcset = [];
+
+  // Build srcset from image styles
+  foreach ($styles as $style_name) {
+    $style = ImageStyle::load($style_name);
+    if ($style) {
+      // Ensure the derivative exists before getting URL
+      $derivative_uri = $style->buildUri($uri);
+      if (!file_exists($derivative_uri)) {
+        $style->createDerivative($uri, $derivative_uri);
+      }
+
+      $url = $style->buildUrl($uri);
+
+      // Get width from style configuration
+      $config = $style->getEffects()->getConfiguration();
+      $width = 0;
+
+      foreach ($config as $effect) {
+        if (isset($effect['data']['width'])) {
+          $width = $effect['data']['width'];
+          break;
+        }
+      }
+
+      if ($width) {
+        $srcset[] = "$url {$width}w";
+      }
+    }
+  }
+
+  // Fallback to first style if available
+  $fallback_style = ImageStyle::load($styles[0]);
+  if ($fallback_style) {
+    // Ensure fallback derivative exists
+    $derivative_uri = $fallback_style->buildUri($uri);
+    if (!file_exists($derivative_uri)) {
+      $fallback_style->createDerivative($uri, $derivative_uri);
+    }
+    $fallback_url = $fallback_style->buildUrl($uri);
+  } else {
+    $fallback_url = file_create_url($uri);
+  }
+
+  // Get original dimensions for proper aspect ratio
+  $width = NULL;
+  $height = NULL;
+
+  if ($get_dimensions) {
+    $image = \Drupal::service('image.factory')->get($uri);
+    if ($image->isValid()) {
+      $original_width = $image->getWidth();
+      $original_height = $image->getHeight();
+
+      // Calculate aspect ratio and set dimensions based on first style
+      if ($fallback_style && $original_width && $original_height) {
+        $style_config = $fallback_style->getEffects()->getConfiguration();
+        $target_width = NULL;
+        $target_height = NULL;
+
+        foreach ($style_config as $effect) {
+          if (isset($effect['data']['width'])) {
+            $target_width = $effect['data']['width'];
+          }
+          if (isset($effect['data']['height'])) {
+            $target_height = $effect['data']['height'];
+          }
+        }
+
+        if ($target_width) {
+          $width = $target_width;
+          // Calculate proportional height
+          $height = $target_height ?? round(($original_height / $original_width) * $target_width);
+        } else {
+          $width = $original_width;
+          $height = $original_height;
+        }
+      } else {
+        $width = $original_width;
+        $height = $original_height;
+      }
+    }
+  }
+
+  // Build attributes array
+  $attributes = [
+    'src' => $fallback_url,
+    'alt' => $alt,
+    'class' => $class,
+    'loading' => $loading,
+    'decoding' => 'async', // Non-blocking image decode
+  ];
+
+  if (!empty($srcset)) {
+    $attributes['srcset'] = implode(', ', $srcset);
+    $attributes['sizes'] = $sizes;
+  }
+
+  if ($width && $height) {
+    $attributes['width'] = $width;
+    $attributes['height'] = $height;
+  }
+
+  // Build attribute string
+  $attr_string = '';
+  foreach ($attributes as $key => $value) {
+    $attr_string .= ' ' . $key . '="' . htmlspecialchars($value, ENT_QUOTES) . '"';
+  }
+
+  $markup = '<img' . $attr_string . '>';
+
+  return ['#markup' => \Drupal\Core\Render\Markup::create($markup)];
+}
+
+/**
+ * Implements hook_page_attachments().
+ *
+ * Add critical performance optimizations:
+ * - Preload LCP (Largest Contentful Paint) images
+ * - Preload critical fonts
+ * - Add resource hints for external domains
+ */
+function saho_page_attachments(array &$attachments) {
+  $route_match = \Drupal::routeMatch();
+  $node = $route_match->getParameter('node');
+
+  // Preload LCP image for better performance
+  if ($node && $node instanceof \Drupal\node\NodeInterface) {
+    $lcp_image_url = NULL;
+    $image_sizes = NULL;
+    $image_entity = NULL;
+
+    // Determine LCP image based on content type
+    switch ($node->bundle()) {
+      case 'article':
+        // Only preload feature banner for articles (article_image is always sidebar)
+        if ($node->hasField('field_feature_banner') && !$node->get('field_feature_banner')->isEmpty()) {
+          $image_entity = $node->get('field_feature_banner')->entity;
+        }
+        break;
+
+      case 'biography':
+        if ($node->hasField('field_feature_banner') && !$node->get('field_feature_banner')->isEmpty()) {
+          $image_entity = $node->get('field_feature_banner')->entity;
+        }
+        elseif ($node->hasField('field_bio_pic') && !$node->get('field_bio_pic')->isEmpty()) {
+          $image_entity = $node->get('field_bio_pic')->entity;
+        }
+        break;
+
+      case 'archive':
+      case 'place':
+      case 'event':
+        if ($node->hasField('field_feature_banner') && !$node->get('field_feature_banner')->isEmpty()) {
+          $image_entity = $node->get('field_feature_banner')->entity;
+        }
+        break;
+    }
+
+    // Build preload link for LCP image
+    if ($image_entity) {
+      $uri = $image_entity->getFileUri();
+
+      // Use hero styles for feature banners
+      $hero_style = ImageStyle::load('saho_hero');
+      $hero_mobile_style = ImageStyle::load('saho_hero_mobile');
+      $large_style = ImageStyle::load('saho_large');
+
+      if ($hero_style && $hero_mobile_style && $large_style) {
+        $hero_url = $hero_style->buildUrl($uri);
+        $hero_mobile_url = $hero_mobile_style->buildUrl($uri);
+        $large_url = $large_style->buildUrl($uri);
+
+        // Build srcset for preload
+        $srcset_value = sprintf(
+          '%s 1920w, %s 1200w, %s 768w',
+          $hero_url,
+          $large_url,
+          $hero_mobile_url
+        );
+
+        // Add preload link element
+        $attachments['#attached']['html_head_link'][][] = [
+          'rel' => 'preload',
+          'as' => 'image',
+          'href' => $hero_url,
+          'imagesrcset' => $srcset_value,
+          'imagesizes' => '100vw',
+          'fetchpriority' => 'high', // Signal high priority to browser
+        ];
+      }
+    }
+  }
+
+  // Preconnect to external domains for faster resource loading
+  // (Uncomment if using external resources)
+  /*
+  $attachments['#attached']['html_head_link'][][] = [
+    'rel' => 'preconnect',
+    'href' => 'https://fonts.googleapis.com',
+    'crossorigin' => 'anonymous',
+  ];
+  */
 }
