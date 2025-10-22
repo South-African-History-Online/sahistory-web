@@ -163,6 +163,71 @@ ddev drush saho:webp-convert
 3. **Scope**: Fix just oldsite_images or look for more patterns?
 4. **Testing**: How to verify fix on production without breaking content?
 
+### Pattern 4: "file uploads " Directory with Trailing Space
+
+**Problem**: 109 body content records reference `/sites/default/files/file uploads /` (with trailing space)
+
+**Discovery Date**: 2025-10-21
+
+**Analysis Results**:
+- **109 nodes affected** across 3 content types
+  - 70 archive nodes
+  - 35 place nodes
+  - 4 article nodes
+
+**Root Cause**:
+Three similar directories exist:
+- `file upload/` (no 's')
+- `file uploads/` (correct - 90 files)
+- `file uploads /` (with trailing space - only 5 .txt files)
+
+HTML incorrectly references the trailing-space version, but actual files are in:
+- Archive content → `/sites/default/files/archive-files/`
+- Place/Article content → `/sites/default/files/file uploads/` (no trailing space)
+
+**Example Broken References**:
+```html
+<!-- Archive node 124417 -->
+<img src="/sites/default/files/file uploads /fig._3.1a.jpg">
+<!-- Should be: -->
+<img src="/sites/default/files/archive-files/fig._3.1a.jpg">
+
+<!-- Place node 65696 -->
+<img src="/sites/default/files/file uploads /clifton and camps bay beach.png">
+<!-- Should be: -->
+<img src="/sites/default/files/file uploads/clifton and camps bay beach.png">
+```
+
+**Verified File Existence**:
+- ✅ `fig._3.1a.jpg` → exists in `archive-files/`
+- ✅ `clifton and camps bay beach.png` → exists in `file uploads/`
+- ✅ `bo-kaap.jpg` → exists in `file uploads/`
+- ✅ 100% of sampled files verified
+
+**Solution**: Content-type specific path replacement
+- Archive: `file uploads /` → `archive-files/`
+- Place/Article: `file uploads /` → `file uploads/` (remove trailing space)
+
+**Implementation**:
+- Script: `scripts/fix_file_uploads_paths.sh`
+- Documentation: `scripts/fix_file_uploads_paths_README.md`
+- Updates both `node__body` and `node_revision__body` tables
+- Interactive with backup option
+
+**Impact**:
+- 109 nodes will display images/files correctly
+- Affects important archive content (e.g., Kora Language book node 124417)
+- Affects place pages with images
+
+**Status**: **READY TO FIX** - Script created and tested
+
+**Test Nodes**:
+- Archive: Node 124417 - Kora: A Lost Khoisan Language Chapter 3
+- Place: Node 65696 - Clifton/Camps Bay
+- Place: Node 65909 - Bo-Kaap
+
+---
+
 ## Conclusion
 
 We've successfully demonstrated that the verification-based approach used for `file_managed` can be extended to other 404 patterns:
@@ -170,5 +235,6 @@ We've successfully demonstrated that the verification-based approach used for `f
 ✓ **Pattern 1**: Database URI mismatch (images/ → images_new/) - **FIXED**
 🔍 **Pattern 2**: Body content references (oldsite_images/) - **READY TO FIX**
 📋 **Pattern 3**: Missing WebP conversions - **DIFFERENT SOLUTION NEEDED**
+✓ **Pattern 4**: "file uploads " trailing space issue - **READY TO FIX** (Script created)
 
 The methodology works! We can systematically identify, verify, and fix 404 patterns across the site.
