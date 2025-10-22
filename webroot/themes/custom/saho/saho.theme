@@ -3,11 +3,13 @@
 use Drupal\node\Entity\Node;
 use Drupal\Core\Datetime\DateFormatter;
 use Drupal\image\Entity\ImageStyle;
+use Drupal\file\Entity\File;
 
 /**
  * @file
  * Theme functions.
  */
+
 
 /**
  * Implements hook_page_attachments_alter().
@@ -276,6 +278,41 @@ function saho_preprocess_node(array &$variables) {
  // Make logo available to all templates using page.html.twig.
  $logo = \Drupal::theme()->getActiveTheme()->getLogo();
  $variables['site_logo'] = $logo;
+
+ // Pre-render responsive images for article templates
+ $node = $variables['node'];
+
+ // For articles: pre-render hero images
+ if ($node->bundle() == 'article') {
+   // Hero banner image (eager loading for LCP)
+   if ($node->hasField('field_feature_banner') && !$node->get('field_feature_banner')->isEmpty()) {
+     $banner_entity = $node->get('field_feature_banner')->entity;
+     $variables['hero_banner_image'] = saho_get_responsive_image(
+       $banner_entity,
+       $node->get('field_feature_banner')->alt,
+       ['saho_hero', 'saho_large', 'saho_hero_mobile'],
+       '100vw',
+       'eager',
+       'saho-feature-banner-image'
+     );
+   }
+
+   // Article image (can be hero or sidebar depending on banner presence)
+   if ($node->hasField('field_article_image') && !$node->get('field_article_image')->isEmpty()) {
+     $article_entity = $node->get('field_article_image')->entity;
+     $has_banner = $node->hasField('field_feature_banner') && !$node->get('field_feature_banner')->isEmpty();
+
+     // If no banner, this is the hero (eager), otherwise sidebar (lazy)
+     $variables['article_image'] = saho_get_responsive_image(
+       $article_entity,
+       $node->get('field_article_image')->alt,
+       $has_banner ? ['saho_large', 'saho_medium'] : ['saho_hero', 'saho_large', 'saho_hero_mobile'],
+       $has_banner ? '(max-width: 768px) 100vw, 400px' : '100vw',
+       $has_banner ? 'lazy' : 'eager',
+       $has_banner ? 'saho-image' : 'saho-feature-banner-image'
+     );
+   }
+ }
  
   // Add URL truncation, sidebar tabs, context details, and accordion libraries for content types
   $node = $variables['node'];

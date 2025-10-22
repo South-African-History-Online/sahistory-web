@@ -18,28 +18,14 @@
     {# LEFT: Main content column #}
     <div class="saho-main-content">
 
-      {% if node.field_feature_banner.entity %}
+      {% if hero_banner_image %}
         <div class="saho-feature-banner">
-          {{ saho_get_responsive_image(
-            node.field_feature_banner.entity,
-            node.field_feature_banner.alt,
-            ['saho_hero', 'saho_large', 'saho_hero_mobile'],
-            '100vw',
-            'eager',
-            'saho-feature-banner-image'
-          ) }}
+          {{ hero_banner_image }}
         </div>
-      {% elseif node.field_article_image.entity %}
+      {% elseif article_image and not node.field_feature_banner.entity %}
         {# Display article image in main content if no feature banner #}
         <div class="saho-feature-banner">
-          {{ saho_get_responsive_image(
-            node.field_article_image.entity,
-            node.field_article_image.alt,
-            ['saho_hero', 'saho_large', 'saho_hero_mobile'],
-            '100vw',
-            'eager',
-            'saho-feature-banner-image'
-          ) }}
+          {{ article_image }}
           {% if node.field_node_image_caption.value %}
             <div class="caption">
               {{ node.field_node_image_caption.value|raw }}
@@ -185,16 +171,9 @@
     <aside class="saho-article-sidebar">
 
       {# Article Image Block - Always visible at top #}
-      {% if node.field_article_image.entity and node.field_feature_banner.entity %}
+      {% if article_image and node.field_feature_banner.entity %}
         <div class="saho-image-block mb-4">
-          {{ saho_get_responsive_image(
-            node.field_article_image.entity,
-            node.field_article_image.alt,
-            ['saho_large', 'saho_medium'],
-            '(max-width: 768px) 100vw, 400px',
-            'lazy',
-            'saho-image'
-          ) }}
+          {{ article_image }}
           {% if node.field_node_image_caption.value %}
             <div class="caption">
               {{ node.field_node_image_caption.value|raw }}
