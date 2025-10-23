@@ -25,13 +25,6 @@ AddEncoding gzip svgz
 # Add correct encoding for webp.
 AddType image/webp .webp
 
-# WebP Auto-serving - serve WebP if browser supports it and file exists
-RewriteCond %{HTTP_ACCEPT} image/webp
-RewriteCond %{REQUEST_URI} \.(jpe?g|png)$ [NC]
-RewriteCond %{REQUEST_FILENAME} ^(.+)\.(jpe?g|png)$
-RewriteCond %1.webp -f
-RewriteRule ^(.+)\.(jpe?g|png)$ $1.webp [T=image/webp,E=accept:1,L]
-
 # Most of the following PHP settings cannot be changed at runtime. See
 # sites/default/default.settings.php and
 # Drupal\Core\DrupalKernel::bootEnvironment() for settings that can be
@@ -45,37 +38,8 @@ RewriteRule ^(.+)\.(jpe?g|png)$ $1.webp [T=image/webp,E=accept:1,L]
   # Enable expirations.
   ExpiresActive On
 
-  # Cache all files for 1 year after access (default).
+  # Cache all files for 1 year after access.
   ExpiresDefault "access plus 1 year"
-  
-  # Images - 1 month (allows updates while still caching)
-  ExpiresByType image/jpeg "access plus 1 month"
-  ExpiresByType image/jpg "access plus 1 month"
-  ExpiresByType image/gif "access plus 1 month"
-  ExpiresByType image/png "access plus 1 month"
-  ExpiresByType image/webp "access plus 1 month"
-  ExpiresByType image/svg+xml "access plus 1 month"
-  ExpiresByType image/x-icon "access plus 1 month"
-  ExpiresByType image/vnd.microsoft.icon "access plus 1 month"
-  
-  # CSS and JavaScript - 1 month (production optimization)
-  ExpiresByType text/css "access plus 1 month"
-  ExpiresByType text/javascript "access plus 1 month"
-  ExpiresByType application/javascript "access plus 1 month"
-  ExpiresByType application/x-javascript "access plus 1 month"
-  
-  # Fonts - 1 year (rarely change)
-  ExpiresByType font/ttf "access plus 1 year"
-  ExpiresByType font/otf "access plus 1 year"
-  ExpiresByType font/woff "access plus 1 year"
-  ExpiresByType font/woff2 "access plus 1 year"
-  ExpiresByType application/font-woff "access plus 1 year"
-  ExpiresByType application/font-woff2 "access plus 1 year"
-  ExpiresByType application/vnd.ms-fontobject "access plus 1 year"
-  
-  # HTML - no cache (always check for updates)
-  ExpiresByType text/html "access plus 0 seconds"
-  ExpiresByType application/xhtml+xml "access plus 0 seconds"
 
   <FilesMatch \.php$>
     # Do not allow PHP scripts to be cached unless they explicitly send cache
@@ -109,88 +73,6 @@ RewriteRule ^(.+)\.(jpe?g|png)$ $1.webp [T=image/webp,E=accept:1,L]
   # Make sure Authorization HTTP header is available to PHP
   # even when running as CGI or FastCGI.
   RewriteRule ^ - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
-
-  # ===== CUSTOM REDIRECTS - START =====
-
-  # 0. Redirect legacy DC archive paths to archive-files directories BEFORE other redirects
-  # Files in /sites/default/files/DC/[folder]/[file].pdf are actually in archive-files* directories
-  # Try each archive-files directory in order until we find the file
-  RewriteCond %{REQUEST_FILENAME} !-f
-  RewriteCond sites/default/files/archive-files4/$1 -f
-  RewriteRule ^sites/default/files/[Dd][Cc]/[^/]+/(.+)$ /sites/default/files/archive-files4/$1 [R=301,L,NC]
-
-  RewriteCond %{REQUEST_FILENAME} !-f
-  RewriteCond sites/default/files/archive-files/$1 -f
-  RewriteRule ^sites/default/files/[Dd][Cc]/[^/]+/(.+)$ /sites/default/files/archive-files/$1 [R=301,L,NC]
-
-  RewriteCond %{REQUEST_FILENAME} !-f
-  RewriteCond sites/default/files/archive-files2/$1 -f
-  RewriteRule ^sites/default/files/[Dd][Cc]/[^/]+/(.+)$ /sites/default/files/archive-files2/$1 [R=301,L,NC]
-
-  RewriteCond %{REQUEST_FILENAME} !-f
-  RewriteCond sites/default/files/archive-files3/$1 -f
-  RewriteRule ^sites/default/files/[Dd][Cc]/[^/]+/(.+)$ /sites/default/files/archive-files3/$1 [R=301,L,NC]
-
-  RewriteCond %{REQUEST_FILENAME} !-f
-  RewriteCond sites/default/files/archive-files5/$1 -f
-  RewriteRule ^sites/default/files/[Dd][Cc]/[^/]+/(.+)$ /sites/default/files/archive-files5/$1 [R=301,L,NC]
-
-  # 1. Force HTTPS (if not already forced elsewhere)
-  RewriteCond %{HTTPS} off
-  RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
-
-  # 2. Remove www (if you want www to redirect to non-www)
-  RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
-  RewriteRule ^ http%{ENV:protossl}://%1%{REQUEST_URI} [L,R=301]
-
-  # 3. Redirect site-search to search
-  RewriteRule ^site-search$ /search [R=301,L,QSA]
-
-  # 4. Redirect /places/ to /place/ (singular)
-  RewriteRule ^places/(.*)$ /place/$1 [R=301,L]
-
-  # 5. Redirect /topics/ to /article/
-  RewriteRule ^topics/(.*)$ /article/$1 [R=301,L]
-  RewriteRule ^topic/(.*)$ /article/$1 [R=301,L]
-
-  # 6. Redirect old captcha URLs to homepage
-  RewriteRule ^image-captcha-generate/(.*)$ / [R=301,L]
-
-  # 7. Smart redirect for .htm/.html files to search
-
-  # Index files -> redirect to homepage
-  RewriteRule ^index\.(htm|html)$ / [R=301,L]
-
-  # Article content -> extract part after article\d+- (using same pattern as people)
-  RewriteCond %{REQUEST_URI} ^.*article.*?/(article\d+[-_](.+))\.(htm|html)$
-  RewriteRule ^.*article.*?/([^/]+)\.(htm|html)$ /search?search_api_fulltext=%2&type=article&sort_by=search_api_relevance [R=301,L]
-
-  # People/Biography pages -> biography search
-  RewriteRule ^.*people.*?/([^/]+)\.(htm|html)$ /search?search_api_fulltext=$1&search_api_fulltext_searched_fields%5B%5D=title&type=biography&sort_by=search_api_relevance [R=301,L]
-
-  # Places pages -> place search
-  RewriteRule ^.*places.*?/([^/]+)\.(htm|html)$ /search?search_api_fulltext=$1&type=place&sort_by=search_api_relevance [R=301,L]
-
-  # Archive content -> archive search
-  RewriteRule ^.*archive.*?/([^/]+)\.(htm|html)$ /search?search_api_fulltext=$1&type=archive&sort_by=search_api_relevance [R=301,L]
-
-  # Article/Page content -> article search (fallback for other article patterns)
-  RewriteRule ^.*(article|page).*?/([^/]+)\.(htm|html)$ /search?search_api_fulltext=$2&type=article&sort_by=search_api_relevance [R=301,L]
-
-  # Root-level .htm files (likely people) -> biography search  
-  RewriteRule ^([^/]+)\.(htm|html)$ /search?search_api_fulltext=$1&search_api_fulltext_searched_fields%5B%5D=title&type=biography&sort_by=search_api_relevance [R=301,L]
-
-  # Generic fallback for any remaining .htm/.html files (with paths)
-  RewriteRule ^.*?/([^/]+)\.(htm|html)$ /search?search_api_fulltext=$1&sort_by=search_api_relevance [R=301,L]
-
-  # 8. Redirect complex archive filter URLs to main archive
-  RewriteRule ^archive-filter(.*)$ /archive [R=301,L]
-  RewriteRule ^archives-filter(.*)$ /archive [R=301,L]
-
-  # 9. Redirect legacy /webroot/ paths
-  RewriteRule ^webroot/(.*)$ /$1 [R=301,L]
-
-  # ===== CUSTOM REDIRECTS - END =====
 
   # Block access to "hidden" directories whose names begin with a period. This
   # includes directories used by version control systems such as Subversion or
@@ -300,50 +182,4 @@ RewriteRule ^(.+)\.(jpe?g|png)$ $1.webp [T=image/webp,E=accept:1,L]
   Header always set X-Content-Type-Options nosniff
   # Disable Proxy header, since it's an attack vector.
   RequestHeader unset Proxy
-  
-  # Performance: Add Cache-Control headers for static assets
-  <FilesMatch "\.(ico|pdf|flv|jpg|jpeg|png|gif|webp|js|css|swf|woff|woff2|ttf|eot|svg)$">
-    Header set Cache-Control "public, immutable, max-age=2592000"
-  </FilesMatch>
-  
-  # Performance: Remove ETags as they can cause caching issues in clusters
-  Header unset ETag
-  FileETag None
-  
-  # Performance: Add Vary header for better caching with compression
-  <FilesMatch "\.(js|css|xml|gz|html)$">
-    Header append Vary "Accept-Encoding"
-  </FilesMatch>
-</IfModule>
-
-# Enable Gzip compression
-<IfModule mod_deflate.c>
-  # Compress HTML, CSS, JavaScript, Text, XML and fonts
-  AddOutputFilterByType DEFLATE application/javascript
-  AddOutputFilterByType DEFLATE application/rss+xml
-  AddOutputFilterByType DEFLATE application/vnd.ms-fontobject
-  AddOutputFilterByType DEFLATE application/x-font
-  AddOutputFilterByType DEFLATE application/x-font-opentype
-  AddOutputFilterByType DEFLATE application/x-font-otf
-  AddOutputFilterByType DEFLATE application/x-font-truetype
-  AddOutputFilterByType DEFLATE application/x-font-ttf
-  AddOutputFilterByType DEFLATE application/x-javascript
-  AddOutputFilterByType DEFLATE application/xhtml+xml
-  AddOutputFilterByType DEFLATE application/xml
-  AddOutputFilterByType DEFLATE font/opentype
-  AddOutputFilterByType DEFLATE font/otf
-  AddOutputFilterByType DEFLATE font/ttf
-  AddOutputFilterByType DEFLATE image/svg+xml
-  AddOutputFilterByType DEFLATE image/x-icon
-  AddOutputFilterByType DEFLATE text/css
-  AddOutputFilterByType DEFLATE text/html
-  AddOutputFilterByType DEFLATE text/javascript
-  AddOutputFilterByType DEFLATE text/plain
-  AddOutputFilterByType DEFLATE text/xml
-  
-  # Remove browser bugs (only needed for old browsers)
-  BrowserMatch ^Mozilla/4 gzip-only-text/html
-  BrowserMatch ^Mozilla/4\.0[678] no-gzip
-  BrowserMatch \bMSIE !no-gzip !gzip-only-text/html
-  Header append Vary User-Agent
 </IfModule>
