@@ -174,11 +174,16 @@ class DayMonthDateForm extends FormBase {
                 }
               }
 
+              // Parse the date to create a timestamp.
+              $dt = new \DateTime($raw_date);
+              $event_timestamp = $dt->getTimestamp();
+
               $events[] = [
                 'id' => $node->id(),
                 'title' => $node->label(),
                 'url' => $node->toUrl()->toString(),
                 'raw_date' => $raw_date,
+                'event_date' => $event_timestamp,
                 'image' => $image_url,
                 'body' => html_entity_decode(strip_tags($node->get('body')->processed ?? '')),
               ];
@@ -188,6 +193,11 @@ class DayMonthDateForm extends FormBase {
       }
 
       if (!empty($events)) {
+        // Sort events chronologically (oldest first).
+        usort($events, function ($a, $b) {
+          return $a['event_date'] <=> $b['event_date'];
+        });
+
         $form['events_container']['events'] = [
           '#theme' => 'tdih_events',
           '#tdih_nodes' => $events,
@@ -249,11 +259,16 @@ class DayMonthDateForm extends FormBase {
                 }
               }
 
+              // Parse the date to create a timestamp.
+              $dt = new \DateTime($raw_date);
+              $event_timestamp = $dt->getTimestamp();
+
               $events[] = [
                 'id' => $node->id(),
                 'title' => $node->label(),
                 'url' => $node->toUrl()->toString(),
                 'raw_date' => $raw_date,
+                'event_date' => $event_timestamp,
                 'image' => $image_url,
                 'body' => html_entity_decode(strip_tags($node->get('body')->processed ?? '')),
               ];
@@ -264,6 +279,11 @@ class DayMonthDateForm extends FormBase {
 
       // Build the render array.
       if (!empty($events)) {
+        // Sort events chronologically (oldest first).
+        usort($events, function ($a, $b) {
+          return $a['event_date'] <=> $b['event_date'];
+        });
+
         $events_html = [
           '#theme' => 'tdih_events',
           '#tdih_nodes' => $events,
