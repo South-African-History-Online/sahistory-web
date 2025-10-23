@@ -228,6 +228,14 @@ class BirthdayDateForm extends FormBase {
         }
       }
 
+      // Sort both arrays chronologically (oldest first).
+      usort($exact_match_items, function ($a, $b) {
+        return $a['event_date'] <=> $b['event_date'];
+      });
+      usort($same_day_items, function ($a, $b) {
+        return $a['event_date'] <=> $b['event_date'];
+      });
+
       // Combine results with exact matches first, then same day events.
       $all_birthday_events = array_merge($exact_match_items, $same_day_items);
 
