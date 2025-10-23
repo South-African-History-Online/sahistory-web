@@ -275,6 +275,14 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
         }
       }
 
+      // Sort both arrays chronologically (oldest first).
+      usort($exact_match_items, function ($a, $b) {
+        return $a['event_date'] <=> $b['event_date'];
+      });
+      usort($same_day_items, function ($a, $b) {
+        return $a['event_date'] <=> $b['event_date'];
+      });
+
       // Build the render array for the birthday events.
       $events_html = [
         '#theme' => 'tdih_birthday_events',
