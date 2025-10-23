@@ -175,11 +175,8 @@ class DayMonthDateForm extends FormBase {
               }
 
               // Parse the date to create a timestamp.
-              $event_timestamp = 0;
-              if (!empty($raw_date)) {
-                $dt = new \DateTime($raw_date);
-                $event_timestamp = $dt->getTimestamp();
-              }
+              $dt = new \DateTime($raw_date);
+              $event_timestamp = $dt->getTimestamp();
 
               $events[] = [
                 'id' => $node->id(),
@@ -263,11 +260,8 @@ class DayMonthDateForm extends FormBase {
               }
 
               // Parse the date to create a timestamp.
-              $event_timestamp = 0;
-              if (!empty($raw_date)) {
-                $dt = new \DateTime($raw_date);
-                $event_timestamp = $dt->getTimestamp();
-              }
+              $dt = new \DateTime($raw_date);
+              $event_timestamp = $dt->getTimestamp();
 
               $events[] = [
                 'id' => $node->id(),
