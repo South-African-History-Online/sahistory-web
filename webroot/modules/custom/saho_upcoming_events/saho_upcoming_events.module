@@ -44,14 +44,15 @@ function saho_upcoming_events_preprocess_views_view(&$variables) {
     $variables['#attached']['library'][] = 'saho_upcoming_events/upcoming_events';
 
     // Separate events into upcoming and past.
-    $current_date = new \DateTime('now', new \DateTimeZone('Africa/Johannesburg'));
+    // Use start of today in SAST timezone for comparison.
+    $current_date = new \DateTime('today', new \DateTimeZone('Africa/Johannesburg'));
     $upcoming_rows = [];
     $past_rows = [];
 
     $view_builder = \Drupal::entityTypeManager()->getViewBuilder('node');
     $renderer = \Drupal::service('renderer');
 
-    foreach ($view->result as $index => $row) {
+    foreach ($view->result as $row) {
       $node = $row->_entity;
       if ($node && $node->hasField('field_start_date') && !$node->get('field_start_date')->isEmpty()) {
         $start_date = $node->get('field_start_date')->date;
@@ -61,14 +62,19 @@ function saho_upcoming_events_preprocess_views_view(&$variables) {
           $end_date = $node->get('field_end_date')->date;
         }
 
-        // Determine event status.
+        // Determine event status - use end date if available, else start date.
         $comparison_date = $end_date ?? $start_date;
+
+        // Convert to SAST timezone and compare dates only.
+        $comparison_date->setTimezone(new \DateTimeZone('Africa/Johannesburg'));
+        $comparison_date_only = new \DateTime($comparison_date->format('Y-m-d'), new \DateTimeZone('Africa/Johannesburg'));
 
         // Render the node in teaser view mode.
         $build = $view_builder->view($node, 'teaser');
         $rendered = $renderer->render($build);
 
-        if ($comparison_date >= $current_date) {
+        // Event is upcoming if end date is today or in the future.
+        if ($comparison_date_only >= $current_date) {
           $upcoming_rows[] = ['#markup' => $rendered];
         }
         else {
