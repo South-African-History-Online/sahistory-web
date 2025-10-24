@@ -46,8 +46,8 @@ function saho_upcoming_events_preprocess_views_view(&$variables) {
     // Separate events into upcoming and past.
     // Use start of today in SAST timezone for comparison.
     $current_date = new \DateTime('today', new \DateTimeZone('Africa/Johannesburg'));
-    $upcoming_rows = [];
-    $past_rows = [];
+    $upcoming_events = [];
+    $past_events = [];
 
     $view_builder = \Drupal::entityTypeManager()->getViewBuilder('node');
     $renderer = \Drupal::service('renderer');
@@ -56,32 +56,71 @@ function saho_upcoming_events_preprocess_views_view(&$variables) {
       $node = $row->_entity;
       if ($node && $node->hasField('field_start_date') && !$node->get('field_start_date')->isEmpty()) {
         $start_date = $node->get('field_start_date')->date;
-        $end_date = NULL;
 
+        // Skip if start_date is null.
+        if (!$start_date) {
+          continue;
+        }
+
+        $end_date = NULL;
         if ($node->hasField('field_end_date') && !$node->get('field_end_date')->isEmpty()) {
           $end_date = $node->get('field_end_date')->date;
         }
 
-        // Determine event status - use end date if available, else start date.
-        $comparison_date = $end_date ?? $start_date;
+        // Determine the effective end date for categorization.
+        // If end_date exists, use it. Otherwise, use start_date.
+        $effective_end_date = $end_date ? $end_date : $start_date;
+        $effective_end_date->setTimezone(new \DateTimeZone('Africa/Johannesburg'));
+        $effective_end_date_only = new \DateTime($effective_end_date->format('Y-m-d'), new \DateTimeZone('Africa/Johannesburg'));
 
-        // Convert to SAST timezone and compare dates only.
-        $comparison_date->setTimezone(new \DateTimeZone('Africa/Johannesburg'));
-        $comparison_date_only = new \DateTime($comparison_date->format('Y-m-d'), new \DateTimeZone('Africa/Johannesburg'));
+        // Convert start date to date-only for comparison.
+        $start_date_only = new \DateTime($start_date->format('Y-m-d'), new \DateTimeZone('Africa/Johannesburg'));
 
         // Render the node in teaser view mode.
         $build = $view_builder->view($node, 'teaser');
         $rendered = $renderer->render($build);
 
-        // Event is upcoming if end date is today or in the future.
-        if ($comparison_date_only >= $current_date) {
-          $upcoming_rows[] = ['#markup' => $rendered];
+        // Determine if event is happening now or upcoming.
+        $is_happening_now = ($start_date_only <= $current_date && $effective_end_date_only >= $current_date);
+
+        // Store with start date timestamp and status for sorting.
+        $event_data = [
+          'timestamp' => $start_date->getTimestamp(),
+          'is_happening_now' => $is_happening_now,
+          'markup' => ['#markup' => $rendered],
+        ];
+
+        // Event is upcoming/current if end date is today or in the future.
+        if ($effective_end_date_only >= $current_date) {
+          $upcoming_events[] = $event_data;
         }
         else {
-          $past_rows[] = ['#markup' => $rendered];
+          $past_events[] = $event_data;
         }
       }
     }
+
+    // Sort upcoming events: happening now first, then by start date.
+    usort($upcoming_events, function ($a, $b) {
+      // Happening now events come first.
+      if ($a['is_happening_now'] && !$b['is_happening_now']) {
+        return -1;
+      }
+      if (!$a['is_happening_now'] && $b['is_happening_now']) {
+        return 1;
+      }
+      // Within same category, sort by start date.
+      return $a['timestamp'] <=> $b['timestamp'];
+    });
+
+    // Sort past events reverse chronologically (most recent first).
+    usort($past_events, function ($a, $b) {
+      return $b['timestamp'] <=> $a['timestamp'];
+    });
+
+    // Extract just the markup for rendering.
+    $upcoming_rows = array_column($upcoming_events, 'markup');
+    $past_rows = array_column($past_events, 'markup');
 
     $variables['upcoming_events'] = $upcoming_rows;
     $variables['past_events'] = $past_rows;
@@ -98,23 +137,65 @@ function saho_upcoming_events_preprocess_node(&$variables) {
 
   // Add event status for upcoming events.
   if ($node->getType() === 'upcomingevent' && $variables['view_mode'] === 'teaser') {
-    $current_date = new \DateTime('now', new \DateTimeZone('Africa/Johannesburg'));
+    // Use start of today in SAST timezone for comparison.
+    $current_date = new \DateTime('today', new \DateTimeZone('Africa/Johannesburg'));
 
     if ($node->hasField('field_start_date') && !$node->get('field_start_date')->isEmpty()) {
       $start_date = $node->get('field_start_date')->date;
-      $end_date = NULL;
 
+      // Skip if start_date is null.
+      if (!$start_date) {
+        return;
+      }
+
+      // Check if this is a multi-day event.
+      $is_multiday = FALSE;
+      if ($node->hasField('field_is_multiday_event') && !$node->get('field_is_multiday_event')->isEmpty()) {
+        $is_multiday = (bool) $node->get('field_is_multiday_event')->value;
+      }
+      $variables['is_multiday_event'] = $is_multiday;
+
+      $end_date = NULL;
       if ($node->hasField('field_end_date') && !$node->get('field_end_date')->isEmpty()) {
         $end_date = $node->get('field_end_date')->date;
       }
 
-      // Determine event status.
-      if ($start_date > $current_date) {
+      // Convert dates to SAST timezone and compare dates only.
+      $start_date->setTimezone(new \DateTimeZone('Africa/Johannesburg'));
+      $start_date_only = new \DateTime($start_date->format('Y-m-d'), new \DateTimeZone('Africa/Johannesburg'));
+
+      // Format dates based on multi-day flag.
+      if ($is_multiday) {
+        // Multi-day: show only date (e.g., "21 October 2025").
+        $variables['formatted_start_date'] = $start_date->format('j F Y');
+        if ($end_date) {
+          $end_date->setTimezone(new \DateTimeZone('Africa/Johannesburg'));
+          $variables['formatted_end_date'] = $end_date->format('j F Y');
+        }
+      }
+      else {
+        // Single-day: show date and time (e.g., "21 October 2025, 3:00 PM").
+        $variables['formatted_start_date'] = $start_date->format('j F Y, g:i A');
+        if ($end_date) {
+          $end_date->setTimezone(new \DateTimeZone('Africa/Johannesburg'));
+          $variables['formatted_end_date'] = $end_date->format('j F Y, g:i A');
+        }
+      }
+
+      // Determine the effective end date for status calculation.
+      // If end_date exists, use it. Otherwise, use start_date.
+      $effective_end_date = $end_date ? $end_date : $start_date;
+      $effective_end_date->setTimezone(new \DateTimeZone('Africa/Johannesburg'));
+      $effective_end_date_only = new \DateTime($effective_end_date->format('Y-m-d'), new \DateTimeZone('Africa/Johannesburg'));
+
+      // Determine event status using date-only comparison.
+      if ($start_date_only > $current_date) {
+        // Event hasn't started yet.
         $variables['event_status'] = 'upcoming';
         $variables['event_status_label'] = t('Upcoming');
 
         // Calculate days until event.
-        $interval = $current_date->diff($start_date);
+        $interval = $current_date->diff($start_date_only);
         $days = $interval->days;
 
         if ($days === 0) {
@@ -127,11 +208,13 @@ function saho_upcoming_events_preprocess_node(&$variables) {
           $variables['countdown'] = t('In @days days', ['@days' => $days]);
         }
       }
-      elseif ($end_date && $end_date >= $current_date && $start_date <= $current_date) {
+      elseif ($effective_end_date_only >= $current_date) {
+        // Event has started and is still ongoing.
         $variables['event_status'] = 'in-progress';
         $variables['event_status_label'] = t('Happening Now');
       }
       else {
+        // Event has ended.
         $variables['event_status'] = 'past';
         $variables['event_status_label'] = t('Past Event');
       }
