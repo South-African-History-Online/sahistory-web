@@ -1,0 +1,97 @@
+{#
+/**
+ * @file
+ * Theme override for the all upcoming events view.
+ *
+ * Available variables:
+ * - attributes: Remaining HTML attributes for the element.
+ * - css_name: A css-safe version of the view name.
+ * - css_class: The user-specified classes names, if any.
+ * - header: The optional header.
+ * - footer: The optional footer.
+ * - rows: The results of the view query, if any.
+ * - empty: The content to display if there are no rows.
+ * - pager: The optional pager.
+ * - exposed: Exposed widget form/info to display.
+ * - feed_icons: Optional feed icons to display.
+ * - more: An optional link to the next page of results.
+ */
+#}
+{{ attach_library('saho_upcoming_events/upcoming_events') }}
+
+<div class="all-upcoming-events-page">
+  {# Main Content #}
+  <div class="saho-events-container">
+    {% if header %}
+      <div class="view-header">
+        {{ header }}
+      </div>
+    {% endif %}
+
+    {% if exposed %}
+      <div class="view-filters">
+        {{ exposed }}
+      </div>
+    {% endif %}
+
+    {# Upcoming Events Section - Always Show #}
+    <div class="events-section events-section--upcoming">
+      <div class="events-section-header">
+        <div class="section-header-content">
+          <h2 class="events-section-title">Upcoming Events</h2>
+          {% if has_upcoming %}
+            <span class="events-count">{{ upcoming_events|length }}</span>
+          {% endif %}
+        </div>
+      </div>
+      {% if has_upcoming %}
+        <div class="saho-events-grid">
+          {% for row in upcoming_events %}
+            {{ row }}
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="saho-no-events-message">
+          <p><strong>There are currently no upcoming events scheduled.</strong></p>
+          <p>Do you have an event to share? <a href="/contact" class="saho-contact-link">Send us your event details</a> and we'll add it to our calendar.</p>
+        </div>
+      {% endif %}
+    </div>
+
+    {# Past Events Section #}
+    {% if has_past %}
+      <div class="events-section events-section--past">
+        <div class="events-section-header">
+          <div class="section-header-content">
+            <h2 class="events-section-title">Past Events</h2>
+            <span class="events-count">{{ past_events|length }}</span>
+          </div>
+        </div>
+        <div class="saho-events-grid">
+          {% for row in past_events %}
+            {{ row }}
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+
+    {# Empty State #}
+    {% if not has_upcoming and not has_past %}
+      <div class="saho-empty-state">
+        <p>No events available at this time.</p>
+      </div>
+    {% endif %}
+
+    {% if pager %}
+      <div class="saho-pager">
+        {{ pager }}
+      </div>
+    {% endif %}
+
+    {% if footer %}
+      <div class="view-footer">
+        {{ footer }}
+      </div>
+    {% endif %}
+  </div>
+</div>

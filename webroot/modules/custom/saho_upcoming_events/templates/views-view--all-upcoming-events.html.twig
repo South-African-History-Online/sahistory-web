@@ -31,7 +31,7 @@
   </div>
 
   {# Main Content #}
-  <div class="container" style="padding: 2rem 1rem; max-width: 1200px; margin: 0 auto;">
+  <div class="container" style="padding: 2rem 1rem; max-width: 1400px; margin: 0 auto;">
     {% if header %}
       <div class="view-header">
         {{ header }}
@@ -44,15 +44,61 @@
       </div>
     {% endif %}
 
-    {% if rows %}
-      <div class="view-content all-events-grid">
-        {{ rows }}
+    {# Upcoming Events Section #}
+    {% if has_upcoming %}
+      <div class="events-section events-section--upcoming">
+        <div class="events-section-header">
+          <h2 class="events-section-title">
+            <svg class="section-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zM9 14H7v-2h2v2zm4 0h-2v-2h2v2zm4 0h-2v-2h2v2zm-8 4H7v-2h2v2zm4 0h-2v-2h2v2zm4 0h-2v-2h2v2z" fill="currentColor"/>
+            </svg>
+            Upcoming Events
+          </h2>
+          <span class="events-count">{{ upcoming_events|length }} event{{ upcoming_events|length != 1 ? 's' }}</span>
+        </div>
+        <div class="view-content all-events-grid" data-event-type="upcoming">
+          {% for row in upcoming_events %}
+            {{ row }}
+          {% endfor %}
+        </div>
       </div>
-    {% elseif empty %}
+    {% endif %}
+
+    {# Past Events Section #}
+    {% if has_past %}
+      <div class="events-section events-section--past">
+        <div class="events-section-header">
+          <h2 class="events-section-title">
+            <svg class="section-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z" fill="currentColor"/>
+            </svg>
+            Past Events
+          </h2>
+          <span class="events-count">{{ past_events|length }} event{{ past_events|length != 1 ? 's' }}</span>
+          <button class="toggle-past-events" aria-expanded="false" aria-controls="past-events-grid">
+            <span class="toggle-text">Show past events</span>
+            <svg class="toggle-icon" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </div>
+        <div class="view-content all-events-grid all-events-grid--past" id="past-events-grid" data-event-type="past" aria-hidden="true">
+          {% for row in past_events %}
+            {{ row }}
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+
+    {# Empty State #}
+    {% if not has_upcoming and not has_past %}
       <div class="view-empty">
         <div class="empty-events-message">
-          <h3>No Upcoming Events</h3>
-          <p>There are currently no upcoming events scheduled. Please check back soon!</p>
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10z" fill="#ccc"/>
+          </svg>
+          <h3>No Events Available</h3>
+          <p>There are currently no events scheduled. Please check back soon!</p>
         </div>
       </div>
     {% endif %}

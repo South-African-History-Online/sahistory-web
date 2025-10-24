@@ -5,12 +5,10 @@
  * Primary module hooks for SAHO Upcoming Events module.
  */
 
-use Drupal\Core\Routing\RouteMatchInterface;
-
 /**
  * Implements hook_help().
  */
-function saho_upcoming_events_help($route_name, RouteMatchInterface $route_match) {
+function saho_upcoming_events_help($route_name) {
   switch ($route_name) {
     case 'help.page.saho_upcoming_events':
       $output = '';
@@ -40,9 +38,97 @@ function saho_upcoming_events_theme() {
  */
 function saho_upcoming_events_preprocess_views_view(&$variables) {
   $view = $variables['view'];
-  
+
   // Add CSS for all upcoming events view.
   if ($view->id() == 'all_upcoming_events') {
     $variables['#attached']['library'][] = 'saho_upcoming_events/upcoming_events';
+
+    // Separate events into upcoming and past.
+    $current_date = new \DateTime('now', new \DateTimeZone('Africa/Johannesburg'));
+    $upcoming_rows = [];
+    $past_rows = [];
+
+    $view_builder = \Drupal::entityTypeManager()->getViewBuilder('node');
+    $renderer = \Drupal::service('renderer');
+
+    foreach ($view->result as $index => $row) {
+      $node = $row->_entity;
+      if ($node && $node->hasField('field_start_date') && !$node->get('field_start_date')->isEmpty()) {
+        $start_date = $node->get('field_start_date')->date;
+        $end_date = NULL;
+
+        if ($node->hasField('field_end_date') && !$node->get('field_end_date')->isEmpty()) {
+          $end_date = $node->get('field_end_date')->date;
+        }
+
+        // Determine event status.
+        $comparison_date = $end_date ?? $start_date;
+
+        // Render the node in teaser view mode.
+        $build = $view_builder->view($node, 'teaser');
+        $rendered = $renderer->render($build);
+
+        if ($comparison_date >= $current_date) {
+          $upcoming_rows[] = ['#markup' => $rendered];
+        }
+        else {
+          $past_rows[] = ['#markup' => $rendered];
+        }
+      }
+    }
+
+    $variables['upcoming_events'] = $upcoming_rows;
+    $variables['past_events'] = $past_rows;
+    $variables['has_upcoming'] = !empty($upcoming_rows);
+    $variables['has_past'] = !empty($past_rows);
+  }
+}
+
+/**
+ * Implements hook_preprocess_HOOK() for node.
+ */
+function saho_upcoming_events_preprocess_node(&$variables) {
+  $node = $variables['node'];
+
+  // Add event status for upcoming events.
+  if ($node->getType() === 'upcomingevent' && $variables['view_mode'] === 'teaser') {
+    $current_date = new \DateTime('now', new \DateTimeZone('Africa/Johannesburg'));
+
+    if ($node->hasField('field_start_date') && !$node->get('field_start_date')->isEmpty()) {
+      $start_date = $node->get('field_start_date')->date;
+      $end_date = NULL;
+
+      if ($node->hasField('field_end_date') && !$node->get('field_end_date')->isEmpty()) {
+        $end_date = $node->get('field_end_date')->date;
+      }
+
+      // Determine event status.
+      if ($start_date > $current_date) {
+        $variables['event_status'] = 'upcoming';
+        $variables['event_status_label'] = t('Upcoming');
+
+        // Calculate days until event.
+        $interval = $current_date->diff($start_date);
+        $days = $interval->days;
+
+        if ($days === 0) {
+          $variables['countdown'] = t('Today');
+        }
+        elseif ($days === 1) {
+          $variables['countdown'] = t('Tomorrow');
+        }
+        elseif ($days <= 30) {
+          $variables['countdown'] = t('In @days days', ['@days' => $days]);
+        }
+      }
+      elseif ($end_date && $end_date >= $current_date && $start_date <= $current_date) {
+        $variables['event_status'] = 'in-progress';
+        $variables['event_status_label'] = t('Happening Now');
+      }
+      else {
+        $variables['event_status'] = 'past';
+        $variables['event_status_label'] = t('Past Event');
+      }
+    }
   }
 }
