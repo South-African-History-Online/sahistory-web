@@ -4,14 +4,49 @@
  * Theme override to display a teaser view of an upcoming event node.
  */
 #}
-<article{{ attributes.addClass('event-card-clickable') }}>
+{%
+  set classes = [
+    'event-card-clickable',
+    event_status ? 'event-card--' ~ event_status
+  ]
+%}
+<article{{ attributes.addClass(classes) }}>
 
-  {# Event Image #}
-  {% if content.field_upcomingevent_image|render|striptags|trim %}
-    <div class="event-card__image">
-      {{ content.field_upcomingevent_image }}
-    </div>
-  {% endif %}
+  {# Event Image with Badges #}
+  <div class="event-card__image-wrapper">
+    {% if content.field_upcomingevent_image[0] %}
+      <div class="event-card__image">
+        {{ content.field_upcomingevent_image }}
+      </div>
+    {% else %}
+      {# Placeholder if no image #}
+      <div class="event-card__image event-card__image--placeholder">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none">
+          <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10z" fill="#ccc"/>
+        </svg>
+      </div>
+    {% endif %}
+
+    {# Event Status Badge - positioned on image #}
+    {% if event_status %}
+      <div class="event-card__badge event-card__badge--{{ event_status }}">
+        {% if event_status == 'in-progress' %}
+          <span class="badge-pulse"></span>
+        {% endif %}
+        {{ event_status_label }}
+      </div>
+    {% endif %}
+
+    {# Countdown Badge for Upcoming Events #}
+    {% if countdown %}
+      <div class="event-card__countdown">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z" fill="currentColor"/>
+        </svg>
+        {{ countdown }}
+      </div>
+    {% endif %}
+  </div>
 
   <div class="event-card__content">
     {# Event Title #}
