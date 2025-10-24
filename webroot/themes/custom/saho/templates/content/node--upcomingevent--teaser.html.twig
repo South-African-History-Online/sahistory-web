@@ -51,19 +51,12 @@
 
     {# Event Meta Information #}
     <div class="event-card__meta">
-      {# Date/Time - formatted based on multi-day flag #}
-      {% if formatted_start_date %}
+      {# Date/Time - use Drupal's field rendering #}
+      {% if content.field_start_date|render|striptags|trim %}
         <div class="event-card__date">
-          📅
-          {% if is_multiday_event and formatted_end_date %}
-            {# Multi-day event: show date range #}
-            {{ formatted_start_date }} - {{ formatted_end_date }}
-          {% elseif formatted_end_date %}
-            {# Single-day with end time: show time range #}
-            {{ formatted_start_date }} - {{ formatted_end_date }}
-          {% else %}
-            {# Just start date/time #}
-            {{ formatted_start_date }}
+          📅 {{ content.field_start_date }}
+          {% if content.field_end_date|render|striptags|trim %}
+            - {{ content.field_end_date }}
           {% endif %}
         </div>
       {% endif %}

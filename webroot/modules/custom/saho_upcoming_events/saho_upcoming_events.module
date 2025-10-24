@@ -148,39 +148,14 @@ function saho_upcoming_events_preprocess_node(&$variables) {
         return;
       }
 
-      // Check if this is a multi-day event.
-      $is_multiday = FALSE;
-      if ($node->hasField('field_is_multiday_event') && !$node->get('field_is_multiday_event')->isEmpty()) {
-        $is_multiday = (bool) $node->get('field_is_multiday_event')->value;
-      }
-      $variables['is_multiday_event'] = $is_multiday;
-
       $end_date = NULL;
       if ($node->hasField('field_end_date') && !$node->get('field_end_date')->isEmpty()) {
         $end_date = $node->get('field_end_date')->date;
       }
 
-      // Convert dates to SAST timezone and compare dates only.
+      // Convert dates to SAST timezone for date-only comparison.
       $start_date->setTimezone(new \DateTimeZone('Africa/Johannesburg'));
       $start_date_only = new \DateTime($start_date->format('Y-m-d'), new \DateTimeZone('Africa/Johannesburg'));
-
-      // Format dates based on multi-day flag.
-      if ($is_multiday) {
-        // Multi-day: show only date (e.g., "21 October 2025").
-        $variables['formatted_start_date'] = $start_date->format('j F Y');
-        if ($end_date) {
-          $end_date->setTimezone(new \DateTimeZone('Africa/Johannesburg'));
-          $variables['formatted_end_date'] = $end_date->format('j F Y');
-        }
-      }
-      else {
-        // Single-day: show date and time (e.g., "21 October 2025, 3:00 PM").
-        $variables['formatted_start_date'] = $start_date->format('j F Y, g:i A');
-        if ($end_date) {
-          $end_date->setTimezone(new \DateTimeZone('Africa/Johannesburg'));
-          $variables['formatted_end_date'] = $end_date->format('j F Y, g:i A');
-        }
-      }
 
       // Determine the effective end date for status calculation.
       // If end_date exists, use it. Otherwise, use start_date.
