@@ -36,5 +36,5 @@ for img in "${IMAGES_TO_FIX[@]}"; do
 done
 
 echo "Done! Now run:"
-echo "  ddev drush image-flush --all"
-echo "  ddev drush cr"
+echo "  vendor/bin/drush image-flush --all"
+echo "  vendor/bin/drush cr"

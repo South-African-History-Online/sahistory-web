@@ -59,15 +59,11 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# Detect if we're in DDEV or production
-if command -v ddev &> /dev/null && ddev describe &> /dev/null 2>&1; then
-    DRUSH="ddev drush"
-    ENVIRONMENT="DDEV"
-elif command -v drush &> /dev/null; then
-    DRUSH="drush"
-    ENVIRONMENT="production"
-else
-    echo "❌ Error: Neither 'ddev drush' nor 'drush' command found"
+# Use vendor/bin/drush universally (works in all environments)
+DRUSH="vendor/bin/drush"
+if [ ! -f "$DRUSH" ]; then
+    echo "❌ Error: Drush not found at vendor/bin/drush"
+    echo "Run 'composer install' first"
     exit 1
 fi
 
@@ -147,7 +143,6 @@ mkdir -p "$BACKUP_DIR"
 log "========================================="
 log "Place Image Border Removal Script"
 log "========================================="
-log "Environment: $ENVIRONMENT"
 log "Dry Run: $DRY_RUN"
 log "Fuzz Tolerance: $FUZZ_TOLERANCE%"
 log "Backup Directory: $BACKUP_DIR"
