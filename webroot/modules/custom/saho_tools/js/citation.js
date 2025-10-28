@@ -79,8 +79,8 @@
                     if (!self.modal) {
                         try {
                             self.modal = new bootstrap.Modal(modalElement, {
-                                keyboard: true,
-                                backdrop: true
+                                keyboard: TRUE,
+                                backdrop: TRUE
                             });
                         } catch (error) {
                             // Modal might already be initialized
@@ -322,62 +322,63 @@
 
             // Use modern template structure
             const templateHtml = `
-              <div class="citation-formatter-modern">
-                <!-- Format selector tabs -->
-                <div class="citation-format-selector">
-                  <button class="citation-format-btn active" data-format="apa">APA 7th</button>
-                  <button class="citation-format-btn" data-format="harvard">Harvard</button>
-                  <button class="citation-format-btn" data-format="oxford">Oxford</button>
-                  <button class="citation-format-btn" data-format="mla">MLA 9th</button>
-                  <button class="citation-format-btn" data-format="chicago">Chicago</button>
-                </div>
+              < div class = "citation-formatter-modern" >
+                < !-- Format selector tabs -- >
+                < div class = "citation-format-selector" >
+                  < button class = "citation-format-btn active" data - format = "apa" > APA 7th < / button >
+                  < button class = "citation-format-btn" data - format = "harvard" > Harvard < / button >
+                  < button class = "citation-format-btn" data - format = "oxford" > Oxford < / button >
+                  < button class = "citation-format-btn" data - format = "mla" > MLA 9th < / button >
+                  < button class = "citation-format-btn" data - format = "chicago" > Chicago < / button >
+                < / div >
 
-                <!-- Citation display area -->
-                <div class="citation-content-wrapper">
-                  <div class="citation-display" id="citation-text">
-                    <div class="citation-text-content">
+                < !-- Citation display area -- >
+                < div class = "citation-content-wrapper" >
+                  < div class = "citation-display" id = "citation-text" >
+                    < div class = "citation-text-content" >
                       ${citations.apa || 'Citation not available'}
-                    </div>
-                    <button class="copy-citation-btn" id="copy-btn">
-                      <svg class="citation-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
-                      </svg>
-                      <span>Copy</span>
-                    </button>
-                  </div>
-                </div>
+                    < / div >
+                    < button class = "copy-citation-btn" id = "copy-btn" >
+                      < svg class = "citation-icon" fill = "none" stroke = "currentColor" viewBox = "0 0 24 24" >
+                        < path stroke - linecap = "round" stroke - linejoin = "round" stroke - width = "2" d = "M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" / >
+                      < / svg >
+                      < span > Copy < / span >
+                    < / button >
+                  < / div >
+                < / div >
 
-                <!-- Export section -->
-                <div class="citation-export-section">
-                  <div class="export-section-title">Export for Reference Managers</div>
-                  <div class="export-buttons">
-                    <button class="export-btn" data-export="bibtex">
-                      <svg class="citation-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                      </svg>
-                      BibTeX (.bib)
-                    </button>
-                    <button class="export-btn" data-export="ris">
-                      <svg class="citation-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                      </svg>
-                      RIS (.ris)
-                    </button>
-                    <button class="export-btn" data-export="endnote">
-                      <svg class="citation-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                      </svg>
+                < !-- Export section -- >
+                < div class = "citation-export-section" >
+                  < div class = "export-section-title" > Export for Reference Managers < / div >
+                  < div class = "export-buttons" >
+                    < button class = "export-btn" data - export = "bibtex" >
+                      < svg class = "citation-icon" fill = "none" stroke = "currentColor" viewBox = "0 0 24 24" >
+                        < path stroke - linecap = "round" stroke - linejoin = "round" stroke - width = "2" d = "M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" / >
+                      < / svg >
+                      BibTeX(.bib) {
+                    < / button >
+                    < button class = "export-btn" data - export = "ris" >
+                      < svg class = "citation-icon" fill = "none" stroke = "currentColor" viewBox = "0 0 24 24" >
+                        < path stroke - linecap = "round" stroke - linejoin = "round" stroke - width = "2" d = "M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" / >
+                      < / svg >
+                      RIS(.ris)
+                    < / button >
+                    < button class = "export-btn" data - export = "endnote" >
+                      < svg class = "citation-icon" fill = "none" stroke = "currentColor" viewBox = "0 0 24 24" >
+                        < path stroke - linecap = "round" stroke - linejoin = "round" stroke - width = "2" d = "M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" / >
+                      < / svg >
                       EndNote
-                    </button>
-                  </div>
-                </div>
+                    < / button >
+                  < / div >
+                < / div >
 
-                <!-- Help link -->
-                <a href="/content/referencing-resources-historical-research" class="citation-help-link">
+                < !-- Help link -- >
+                < a href = "/content/referencing-resources-historical-research" class = "citation-help-link" >
                   Learn more about citation formats →
-                </a>
-              </div>
+                < / a >
+              < / div >
             `;
+                  }
 
             // Replace the modal body content
             $('#citation-modal .citation-content').html(templateHtml);
@@ -415,10 +416,10 @@
                 if (successful) {
                     this.showIndividualCopyFeedback($button, 'Copied!');
                 } else {
-                    this.showIndividualCopyFeedback($button, 'Failed', true);
+                    this.showIndividualCopyFeedback($button, 'Failed', TRUE);
                 }
             } catch (err) {
-                this.showIndividualCopyFeedback($button, 'Failed', true);
+                this.showIndividualCopyFeedback($button, 'Failed', TRUE);
             }
 
             // Clean up
@@ -583,11 +584,11 @@
             }
 
             // Explicitly set up the close button functionality
-            $closeButton.off('click.citationClose').on('click.citationClose', function(e) {
+            $closeButton.off('click.citationClose').on('click.citationClose', function (e) {
                 e.preventDefault();
                 e.stopPropagation();
                 Drupal.sahoCitation.hideModalWithjQuery($modal);
-                return false;
+                return FALSE;
             });
 
             // Add necessary classes to show the modal
@@ -612,11 +613,11 @@
             $modal.find('.btn-copy-citation').off('click');
 
             // Additional event handler setup for all dismiss elements
-            $modal.find('[data-bs-dismiss="modal"]').off('click.citationDismiss').on('click.citationDismiss', function(e) {
+            $modal.find('[data-bs-dismiss="modal"]').off('click.citationDismiss').on('click.citationDismiss', function (e) {
                 e.preventDefault();
                 e.stopPropagation();
                 Drupal.sahoCitation.hideModalWithjQuery($modal);
-                return false;
+                return FALSE;
             });
 
             // Handle ESC key
@@ -693,7 +694,7 @@
             // Initialize close button functionality
             this.initializeCloseButton($modal);
         },
-        
+
         /**
          * Initialize close button functionality.
          *
@@ -716,7 +717,7 @@
             $closeButton.empty();
 
             // Set up click handler
-            $closeButton.off('click.citationClose').on('click.citationClose', function(e) {
+            $closeButton.off('click.citationClose').on('click.citationClose', function (e) {
                 e.preventDefault();
                 e.stopPropagation();
 
@@ -727,7 +728,7 @@
                     // Fall back to jQuery
                     self.hideModalWithjQuery($modal);
                 }
-                return false;
+                return FALSE;
             });
         },
 
@@ -780,18 +781,23 @@
                     case 'apa':
                         citationText = self.citationData.apa || 'APA citation not available';
                         break;
+
                     case 'harvard':
                         citationText = self.citationData.harvard || 'Harvard citation not available';
                         break;
+
                     case 'oxford':
                         citationText = self.citationData.oxford || 'Oxford citation not available';
                         break;
+
                     case 'mla':
                         citationText = self.generateMLACitation() || 'MLA citation coming soon';
                         break;
+
                     case 'chicago':
                         citationText = self.generateChicagoCitation() || 'Chicago citation coming soon';
                         break;
+
                     default:
                         citationText = 'Citation format not available';
                 }
@@ -926,7 +932,7 @@
                        ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][date.getMonth()] +
                        '. ' + date.getFullYear() + ', ' + window.location.href + '.';
             }
-            return null;
+            return NULL;
         },
 
         /**
@@ -945,7 +951,7 @@
                        ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'][date.getMonth()] +
                        ' ' + date.getDate() + ', ' + date.getFullYear() + '. ' + window.location.href + '.';
             }
-            return null;
+            return NULL;
         },
 
         /**
@@ -972,7 +978,7 @@
                     self.exportCitation(format);
                 }
 
-                return false;
+                return FALSE;
             });
         },
 
@@ -1147,17 +1153,15 @@
             $modal.find('.copy-individual').on('click', function (e) {
                 e.preventDefault();
                 e.stopPropagation();
-                
-                
+
                 // Find the citation text in the same container
                 const $button = $(this);
                 const $citationContainer = $button.closest('.citation-content');
-                
+
                 // Get all text except the button text by cloning and removing button
                 const $clone = $citationContainer.clone();
                 $clone.find('button').remove();
                 const citationText = $clone.text().trim();
-                
 
                 if (citationText) {
                     // Try modern clipboard API first
@@ -1173,9 +1177,9 @@
                         self.fallbackIndividualCopy(citationText, $button);
                     }
                 } else {
-                    self.showIndividualCopyFeedback($button, 'Error: No text found', true);
+                    self.showIndividualCopyFeedback($button, 'Error: No text found', TRUE);
                 }
-                return false;
+                return FALSE;
             });
 
             // Copy all button if it exists
@@ -1251,7 +1255,7 @@
                     this.fallbackCopyAllText(allCitationsText);
                 }
             } else {
-                this.showCopyAllFeedback('No citations available', true);
+                this.showCopyAllFeedback('No citations available', TRUE);
             }
         },
 
@@ -1277,10 +1281,10 @@
                 if (successful) {
                     this.showCopyAllFeedback('All formats copied!');
                 } else {
-                    this.showCopyAllFeedback('Copy failed', true);
+                    this.showCopyAllFeedback('Copy failed', TRUE);
                 }
             } catch (err) {
-                this.showCopyAllFeedback('Copy failed', true);
+                this.showCopyAllFeedback('Copy failed', TRUE);
             }
 
             // Clean up
@@ -1351,7 +1355,7 @@
             allCitationsText = allCitationsText.trim();
 
             // Copy the text and show feedback, auto-close the modal
-            this.copyTextToClipboard(allCitationsText, $('.citation-format'), true);
+            this.copyTextToClipboard(allCitationsText, $('.citation-format'), TRUE);
 
             // Update the button text temporarily
             const $button = $('.copy-citation');
