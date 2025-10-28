@@ -754,11 +754,21 @@ function saho_preprocess_block__page_title_block(array &$variables) {
           }
           break;
           
+        case 'event':
+          // Home > Timelines > This Day In History > Event Title
+          // The landing page (/timelines) is already added above
+          // Add "This Day In History" as the third level
+          $links[] = \Drupal\Core\Link::fromTextAndUrl(
+            'This Day In History',
+            \Drupal\Core\Url::fromUserInput('/this-day-in-history')
+          );
+          break;
+
         case 'upcomingevent':
           // Home > Upcoming Events > Event Title
           // The landing page (/all-upcoming-events) is already added above
           // No additional intermediate breadcrumb levels needed for upcoming events
-          
+
           // Check for feature parent if needed (optional, as upcoming events are usually standalone)
           if (!$used_navigation_parent && $node->hasField('field_feature_parent') && !$node->get('field_feature_parent')->isEmpty()) {
             $parent_id = $node->get('field_feature_parent')->first()->target_id;
@@ -772,7 +782,7 @@ function saho_preprocess_block__page_title_block(array &$variables) {
             }
           }
           break;
-          
+
         default:
           // For other content types, check for feature parent
           if (!$used_navigation_parent && $node->hasField('field_feature_parent') && !$node->get('field_feature_parent')->isEmpty()) {
