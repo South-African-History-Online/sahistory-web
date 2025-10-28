@@ -11,7 +11,7 @@
       once('saho-functionality-check', 'html', context).forEach(function () {
 
         // Give other scripts time to load, then check functionality
-        setTimeout(function() {
+        setTimeout(function () {
 
           // Check if jQuery is available
           if (typeof jQuery === 'undefined') {

@@ -7,8 +7,8 @@
 import Dropdown from 'bootstrap/js/dist/dropdown';
 import Modal from 'bootstrap/js/dist/modal';
 import Offcanvas from 'bootstrap/js/dist/offcanvas';
-import Tooltip from 'bootstrap/js/dist/tooltip';
 import Popover from 'bootstrap/js/dist/popover';
+import Tooltip from 'bootstrap/js/dist/tooltip';
 
 // Uncomment if you use these components (currently not detected in main.script.js):
 // import Alert from 'bootstrap/js/dist/alert';

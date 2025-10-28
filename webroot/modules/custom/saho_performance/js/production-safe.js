@@ -18,17 +18,17 @@
         }
 
         // Production-safe CSS optimization
-        setTimeout(function() {
+        setTimeout(function () {
           optimizeCSSLoading();
         }, 100);
 
         // Production-safe image optimization
-        setTimeout(function() {
+        setTimeout(function () {
           optimizeImages();
         }, 200);
 
         // Production-safe JavaScript deferring
-        setTimeout(function() {
+        setTimeout(function () {
           optimizeJavaScript();
         }, 300);
       });
@@ -43,7 +43,7 @@
       // Only optimize non-critical CSS
       const cssLinks = document.querySelectorAll('link[rel="stylesheet"]:not([data-critical])');
 
-      cssLinks.forEach(function(link) {
+      cssLinks.forEach(function (link) {
         // Skip if already optimized or is critical
         if (link.hasAttribute('data-optimized') ||
             link.href.includes('critical') ||
@@ -67,7 +67,7 @@
     try {
       const images = document.querySelectorAll('img:not([data-optimized])');
 
-      images.forEach(function(img) {
+      images.forEach(function (img) {
         // Skip critical images or those in modals
         if (img.closest('.hero-banner, .modal, .citation-modal, .sharing-modal, .navbar')) {
           return;
@@ -93,7 +93,7 @@
       // Only defer non-critical scripts
       const scripts = document.querySelectorAll('script[src]:not([data-critical]):not([data-optimized])');
 
-      scripts.forEach(function(script) {
+      scripts.forEach(function (script) {
         // Skip jQuery, Drupal core, and module scripts
         if (script.src.includes('jquery') ||
             script.src.includes('drupal') ||

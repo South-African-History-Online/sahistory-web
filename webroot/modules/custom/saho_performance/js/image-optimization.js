@@ -22,7 +22,7 @@
           if (src && !src.includes('.webp')) {
             // Check if WebP version exists.
             const webpSrc = src.replace(/\.(jpg|jpeg|png)$/i, '.webp');
-            testImageExists(webpSrc).then(function(exists) {
+            testImageExists(webpSrc).then(function (exists) {
               if (exists) {
                 img.src = webpSrc;
               } else {
@@ -37,8 +37,8 @@
 
       // Add intersection observer for progressive image loading.
       if ('IntersectionObserver' in window) {
-        const imageObserver = new IntersectionObserver(function(entries) {
-          entries.forEach(function(entry) {
+        const imageObserver = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
             if (entry.isIntersecting) {
               const img = entry.target;
               if (img.getAttribute('data-src')) {
@@ -63,7 +63,7 @@
    * Check if browser supports WebP format.
    */
   function supportsWebP() {
-    return new Promise(function(resolve) {
+    return new Promise(function (resolve) {
       const webP = new Image();
       webP.onload = webP.onerror = function () {
         resolve(webP.height === 2);
@@ -76,10 +76,12 @@
    * Test if an image URL exists.
    */
   function testImageExists(url) {
-    return new Promise(function(resolve) {
+    return new Promise(function (resolve) {
       const img = new Image();
-      img.onload = function() { resolve(true); };
-      img.onerror = function() { resolve(false); };
+      img.onload = function () {
+ resolve(TRUE); };
+      img.onerror = function () {
+ resolve(FALSE); };
       img.src = url;
     });
   }
