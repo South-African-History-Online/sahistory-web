@@ -6,14 +6,12 @@
  * and manages scroll shadow states.
  */
 
-(function (Drupal, once) {
-  'use strict';
-
+((Drupal, once) => {
   Drupal.behaviors.sahoTableScroll = {
-    attach: function (context, settings) {
+    attach: (context, _settings) => {
       // Initialize scroll wrappers with visual indicators
-      once('table-scroll', '.table-scroll-wrapper', context).forEach(function (wrapper) {
-        const updateScrollState = function() {
+      once('table-scroll', '.table-scroll-wrapper', context).forEach((wrapper) => {
+        const updateScrollState = () => {
           const scrollLeft = wrapper.scrollLeft;
           const scrollWidth = wrapper.scrollWidth;
           const clientWidth = wrapper.clientWidth;
@@ -51,16 +49,22 @@
       });
 
       // Auto-wrap tables without explicit wrapper in narrow content areas
-      once('table-auto-scroll', '.saho-article-body table, .saho-main-content table', context).forEach(function (table) {
+      once(
+        'table-auto-scroll',
+        '.saho-article-body table, .saho-main-content table',
+        context
+      ).forEach((table) => {
         // Skip if already in a wrapper or has special class
-        if (table.closest('.table-scroll-wrapper') ||
-            table.closest('.table-full-width') ||
-            table.closest('.table-wide') ||
-            table.classList.contains('no-auto-scroll')) {
+        if (
+          table.closest('.table-scroll-wrapper') ||
+          table.closest('.table-full-width') ||
+          table.closest('.table-wide') ||
+          table.classList.contains('no-auto-scroll')
+        ) {
           return;
         }
 
-        const checkTableWidth = function() {
+        const checkTableWidth = () => {
           const tableWidth = table.scrollWidth;
           const containerWidth = table.parentElement.clientWidth;
 
@@ -80,15 +84,15 @@
       });
 
       // Handle keyboard navigation for scrollable tables
-      once('table-keyboard', '.table-scroll-wrapper', context).forEach(function (wrapper) {
+      once('table-keyboard', '.table-scroll-wrapper', context).forEach((wrapper) => {
         wrapper.setAttribute('tabindex', '0');
         wrapper.setAttribute('role', 'region');
         wrapper.setAttribute('aria-label', 'Scrollable table');
 
-        wrapper.addEventListener('keydown', function(e) {
+        wrapper.addEventListener('keydown', (e) => {
           const scrollAmount = 50;
 
-          switch(e.key) {
+          switch (e.key) {
             case 'ArrowLeft':
               e.preventDefault();
               wrapper.scrollLeft -= scrollAmount;
@@ -114,7 +118,7 @@
       });
 
       // Add mobile touch swipe hint
-      once('table-touch-hint', '.table-scroll-wrapper', context).forEach(function (wrapper) {
+      once('table-touch-hint', '.table-scroll-wrapper', context).forEach((wrapper) => {
         // Only show hint on touch devices
         if (!('ontouchstart' in window)) {
           return;
@@ -144,24 +148,26 @@
         wrapper.appendChild(hint);
 
         // Show hint briefly when wrapper is first visible
-        const observer = new IntersectionObserver(function(entries) {
-          entries.forEach(function(entry) {
-            if (entry.isIntersecting && wrapper.scrollWidth > wrapper.clientWidth) {
-              hint.style.opacity = '1';
-              setTimeout(function() {
-                hint.style.opacity = '0';
-                setTimeout(function() {
-                  hint.remove();
-                }, 300);
-              }, 2000);
-              observer.disconnect();
-            }
-          });
-        }, { threshold: 0.5 });
+        const observer = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting && wrapper.scrollWidth > wrapper.clientWidth) {
+                hint.style.opacity = '1';
+                setTimeout(() => {
+                  hint.style.opacity = '0';
+                  setTimeout(() => {
+                    hint.remove();
+                  }, 300);
+                }, 2000);
+                observer.disconnect();
+              }
+            });
+          },
+          { threshold: 0.5 }
+        );
 
         observer.observe(wrapper);
       });
-    }
+    },
   };
-
 })(Drupal, once);
