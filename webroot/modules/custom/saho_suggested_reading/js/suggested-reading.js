@@ -222,7 +222,7 @@
         const titleElement = link.querySelector('.saho-card-title');
         const title = titleElement ? titleElement.textContent : 'Unknown';
         const sectionContainer = link.closest('.saho-related-content-section');
-        const sectionHeading = sectionContainer ? sectionContainer.querySelector('h4') : null;
+        const sectionHeading = sectionContainer ? sectionContainer.querySelector('h4') : NULL;
         const section = sectionHeading ? sectionHeading.textContent : 'Unknown Section';
 
         // Track engagement

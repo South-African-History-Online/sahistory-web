@@ -16,26 +16,28 @@
           return;
         }
 
-        let analyticsLoaded = false;
+        let analyticsLoaded = FALSE;
 
         // Function to load analytics
         function loadAnalytics() {
-          if (analyticsLoaded) return;
-          analyticsLoaded = true;
+          if (analyticsLoaded) { return;
+          }
+          analyticsLoaded = TRUE;
 
           // Create the GA script tag
           const script = document.createElement('script');
-          script.async = true;
+          script.async = TRUE;
           script.src = 'https://www.googletagmanager.com/gtag/js?id=G-W91HQEGETK';
           document.head.appendChild(script);
 
           // Initialize gtag when script loads
-          script.onload = function() {
+          script.onload = function () {
             window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
+            function gtag() {
+dataLayer.push(arguments);}
             gtag('js', new Date());
             gtag('config', 'G-W91HQEGETK', {
-              send_page_view: true
+              send_page_view: TRUE
             });
             window.gtag = gtag;
           };
@@ -47,18 +49,18 @@
         function triggerAnalytics() {
           loadAnalytics();
           // Remove event listeners after first interaction
-          events.forEach(function(event) {
-            document.removeEventListener(event, triggerAnalytics, {passive: true});
+          events.forEach(function (event) {
+            document.removeEventListener(event, triggerAnalytics, {passive: TRUE});
           });
         }
 
         // Add event listeners for user interaction
-        events.forEach(function(event) {
-          document.addEventListener(event, triggerAnalytics, {passive: true});
+        events.forEach(function (event) {
+          document.addEventListener(event, triggerAnalytics, {passive: TRUE});
         });
 
         // Fallback: load after 10 seconds if no interaction
-        setTimeout(function() {
+        setTimeout(function () {
           if (!analyticsLoaded) {
             loadAnalytics();
           }

@@ -66,7 +66,7 @@
         const webpSrc = originalSrc.replace(/\.(jpe?g|png)$/i, '.webp');
 
         // Test if WebP version exists
-        testImageExists(webpSrc).then(function(exists) {
+        testImageExists(webpSrc).then(function (exists) {
           if (exists && supportsWebP()) {
             img.src = webpSrc;
           }
@@ -89,10 +89,12 @@
    * Test if an image URL exists
    */
   function testImageExists(url) {
-    return new Promise(function(resolve) {
+    return new Promise(function (resolve) {
       const img = new Image();
-      img.onload = function() { resolve(true); };
-      img.onerror = function() { resolve(false); };
+      img.onload = function () {
+ resolve(TRUE); };
+      img.onerror = function () {
+ resolve(FALSE); };
       img.src = url;
     });
   }
@@ -101,7 +103,7 @@
    * Check if browser supports WebP format
    */
   function supportsWebP() {
-    return new Promise(function(resolve) {
+    return new Promise(function (resolve) {
       const webP = new Image();
       webP.onload = webP.onerror = function () {
         resolve(webP.height === 2);
