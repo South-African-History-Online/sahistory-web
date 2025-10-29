@@ -1,0 +1,592 @@
+/**
+ * @file
+ * Modern, mobile-first filter styling for exposed filters (BEF).
+ *
+ * Features:
+ * - All content shown by default
+ * - Collapsible filter panel
+ * - Top categories visible with counts
+ * - "Show more" for additional categories
+ * - Compact, mobile-first design
+ */
+
+// ============================================================================
+// Variables
+// ============================================================================
+
+$filter-bg: #ffffff;
+$filter-bg-hover: #f8f9fa;
+$filter-bg-active: #8B1A1A; // SAHO red
+$filter-border: #dee2e6;
+$filter-border-active: #8B1A1A;
+$filter-text: #212529;
+$filter-text-muted: #6c757d;
+$filter-text-active: #ffffff;
+$filter-radius: 50px; // Pill shape
+$filter-padding-x: 1rem;
+$filter-padding-y: 0.5rem;
+$filter-gap: 0.5rem;
+$filter-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+$filter-shadow-hover: 0 4px 8px rgba(0, 0, 0, 0.12);
+$filter-shadow-active: 0 2px 4px rgba(139, 26, 26, 0.25);
+$filter-transition: all 0.2s ease-in-out;
+
+// Mobile breakpoints
+$mobile-breakpoint: 768px;
+
+// Number of categories to show initially (top categories by count)
+$visible-categories: 5;
+
+// ============================================================================
+// Exposed Form Container - Mobile First
+// ============================================================================
+
+.views-exposed-form {
+  margin-bottom: 2rem;
+  background: $filter-bg;
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+  @media (min-width: $mobile-breakpoint) {
+    padding: 1.5rem;
+  }
+
+  // Filter header with toggle
+  .exposed-filters-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    margin: -1rem -1rem 0 -1rem;
+    border-radius: 12px 12px 0 0;
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.2s ease;
+
+    @media (min-width: $mobile-breakpoint) {
+      padding: 1rem 1.5rem;
+      margin: -1.5rem -1.5rem 0 -1.5rem;
+    }
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.02);
+    }
+
+    h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin: 0;
+      color: $filter-text;
+      display: flex;
+      align-items: baseline;
+      gap: 0.5rem;
+
+      @media (min-width: $mobile-breakpoint) {
+        font-size: 1.125rem;
+      }
+
+      .filter-hint {
+        font-size: 0.875rem;
+        font-weight: 400;
+        color: $filter-text-muted;
+
+        @media (max-width: $mobile-breakpoint) {
+          font-size: 0.8125rem;
+        }
+      }
+    }
+
+    .toggle-icon {
+      font-size: 1.25rem;
+      color: $filter-text-muted;
+      transition: transform 0.2s ease;
+
+      &.expanded {
+        transform: rotate(180deg);
+      }
+    }
+  }
+
+  // Collapsible filter content
+  .exposed-filters-content {
+    overflow: hidden;
+    transition: max-height 0.3s ease, opacity 0.3s ease, margin-top 0.3s ease;
+
+    &.collapsed {
+      max-height: 0;
+      opacity: 0;
+      margin-top: 0;
+    }
+
+    &.expanded {
+      max-height: 2000px;
+      opacity: 1;
+      margin-top: 1rem;
+    }
+  }
+
+  // When filters are collapsed, adjust container padding
+  &:has(.exposed-filters-content.collapsed) {
+    padding-bottom: 1rem;
+
+    @media (min-width: $mobile-breakpoint) {
+      padding-bottom: 1.5rem;
+    }
+  }
+
+  // Filter wrapper
+  .bef-exposed-filters {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  // Form item container
+  .form-item {
+    margin-bottom: 0;
+  }
+
+  // Filter labels
+  .form-item > label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-weight: 600;
+    font-size: 0.9375rem;
+    color: $filter-text;
+    margin-bottom: 0.75rem;
+
+    @media (min-width: $mobile-breakpoint) {
+      font-size: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    // Optional category count in label
+    .filter-count {
+      font-size: 0.875rem;
+      font-weight: 400;
+      color: $filter-text-muted;
+      margin-left: 0.5rem;
+    }
+  }
+}
+
+// ============================================================================
+// Checkbox/Radio Filters (Compact Pill Buttons with Counts)
+// ============================================================================
+
+// Wrapper for checkboxes or radios
+.bef-checkboxes,
+.bef-radios,
+.form-checkboxes,
+.form-radios {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: $filter-gap;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+
+  @media (min-width: $mobile-breakpoint) {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  }
+
+  // Individual filter item
+  .form-item,
+  .bef-checkbox,
+  .bef-radio {
+    margin: 0;
+    padding: 0;
+    display: block;
+
+    // Hide items beyond the visible count by default
+    &:nth-child(n + #{$visible-categories + 1}) {
+      display: none;
+    }
+
+    &.show-more-enabled:nth-child(n + #{$visible-categories + 1}) {
+      display: block;
+    }
+  }
+
+  // When "show all" is active
+  &.show-all {
+    .form-item,
+    .bef-checkbox,
+    .bef-radio {
+      display: block;
+    }
+  }
+
+  // Hide the actual checkbox/radio input
+  input[type="checkbox"],
+  input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+
+    // Keyboard focus styles
+    &:focus + label {
+      outline: 2px solid #4A90E2;
+      outline-offset: 2px;
+      z-index: 1;
+    }
+  }
+
+  // Pill button label styling - more compact
+  label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: $filter-padding-y $filter-padding-x;
+    background: $filter-bg;
+    border: 1.5px solid $filter-border;
+    border-radius: $filter-radius;
+    color: $filter-text;
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.3;
+    cursor: pointer;
+    transition: $filter-transition;
+    box-shadow: $filter-shadow;
+    user-select: none;
+    margin: 0;
+    width: 100%;
+    min-height: 36px;
+
+    @media (min-width: $mobile-breakpoint) {
+      font-size: 0.9375rem;
+      min-height: 40px;
+    }
+
+    // Label text
+    .option-label {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    // Count badge
+    .option-count {
+      flex-shrink: 0;
+      margin-left: 0.5rem;
+      padding: 0.125rem 0.5rem;
+      background: rgba(0, 0, 0, 0.05);
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: $filter-text-muted;
+    }
+
+    // Hover state
+    &:hover {
+      background: $filter-bg-hover;
+      border-color: darken($filter-border, 10%);
+      box-shadow: $filter-shadow-hover;
+      transform: translateY(-1px);
+    }
+
+    // Active/pressed state
+    &:active {
+      transform: translateY(0);
+      box-shadow: $filter-shadow;
+    }
+  }
+
+  // Checked/selected state
+  input[type="checkbox"]:checked + label,
+  input[type="radio"]:checked + label {
+    background: $filter-bg-active;
+    border-color: $filter-border-active;
+    color: $filter-text-active;
+    box-shadow: $filter-shadow-active;
+    font-weight: 600;
+
+    .option-count {
+      background: rgba(255, 255, 255, 0.2);
+      color: $filter-text-active;
+    }
+
+    &:hover {
+      background: darken($filter-bg-active, 5%);
+      border-color: darken($filter-border-active, 5%);
+    }
+  }
+
+  // Disabled state
+  input[type="checkbox"]:disabled + label,
+  input[type="radio"]:disabled + label {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+}
+
+// "Show More" button
+.filter-show-more {
+  display: block;
+  margin-top: 0.75rem;
+  padding: 0.5rem 1rem;
+  background: transparent;
+  border: 1.5px solid $filter-border;
+  border-radius: 8px;
+  color: $filter-text;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: $filter-transition;
+  width: 100%;
+
+  @media (min-width: $mobile-breakpoint) {
+    width: auto;
+    min-width: 180px;
+  }
+
+  &:hover {
+    background: $filter-bg-hover;
+    border-color: darken($filter-border, 10%);
+  }
+
+  &:focus {
+    outline: 2px solid #4A90E2;
+    outline-offset: 2px;
+  }
+
+  .icon {
+    margin-left: 0.5rem;
+    transition: transform 0.2s ease;
+  }
+
+  &.expanded .icon {
+    transform: rotate(180deg);
+  }
+
+  // Hide any duplicate buttons (safety measure)
+  + .filter-show-more {
+    display: none;
+  }
+}
+
+// ============================================================================
+// Select Dropdown Fallback (for non-BEF or legacy)
+// ============================================================================
+
+.views-exposed-form {
+  select {
+    min-width: 200px;
+    padding: $filter-padding-y $filter-padding-x;
+    border: 2px solid $filter-border;
+    border-radius: 8px;
+    font-size: 0.9375rem;
+    transition: $filter-transition;
+
+    &:hover {
+      border-color: darken($filter-border, 10%);
+    }
+
+    &:focus {
+      border-color: $filter-border-active;
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(139, 26, 26, 0.1);
+    }
+
+    @media (max-width: $mobile-breakpoint) {
+      width: 100%;
+      min-width: auto;
+    }
+  }
+}
+
+// ============================================================================
+// Submit/Reset Buttons
+// ============================================================================
+
+.views-exposed-form {
+  .form-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1rem;
+
+    @media (max-width: $mobile-breakpoint) {
+      flex-direction: column;
+    }
+  }
+
+  // Submit button
+  input[type="submit"],
+  button[type="submit"],
+  .form-submit {
+    padding: $filter-padding-y $filter-padding-x * 1.5;
+    background: $filter-bg-active;
+    color: $filter-text-active;
+    border: 2px solid $filter-border-active;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9375rem;
+    cursor: pointer;
+    transition: $filter-transition;
+    box-shadow: $filter-shadow;
+
+    &:hover {
+      background: darken($filter-bg-active, 5%);
+      box-shadow: $filter-shadow-hover;
+      transform: translateY(-1px);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+
+    @media (max-width: $mobile-breakpoint) {
+      width: 100%;
+    }
+  }
+
+  // Reset button
+  input[type="reset"],
+  .form-reset {
+    padding: $filter-padding-y $filter-padding-x * 1.5;
+    background: transparent;
+    color: $filter-text;
+    border: 2px solid $filter-border;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9375rem;
+    cursor: pointer;
+    transition: $filter-transition;
+
+    &:hover {
+      background: $filter-bg-hover;
+      border-color: darken($filter-border, 10%);
+    }
+
+    @media (max-width: $mobile-breakpoint) {
+      width: 100%;
+    }
+  }
+}
+
+// ============================================================================
+// Active Filters Summary
+// ============================================================================
+
+.active-filters-summary {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: rgba(139, 26, 26, 0.05);
+  border-radius: 8px;
+  margin-bottom: 1rem;
+
+  .summary-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: $filter-text;
+    margin-right: 0.5rem;
+  }
+
+  .active-filter-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.75rem;
+    background: $filter-bg-active;
+    color: $filter-text-active;
+    border-radius: 20px;
+    font-size: 0.8125rem;
+    font-weight: 500;
+
+    .remove-filter {
+      margin-left: 0.5rem;
+      cursor: pointer;
+      opacity: 0.8;
+
+      &:hover {
+        opacity: 1;
+      }
+    }
+  }
+
+  .clear-all-filters {
+    margin-left: auto;
+    padding: 0.25rem 0.75rem;
+    background: transparent;
+    border: 1px solid $filter-border;
+    border-radius: 20px;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: $filter-transition;
+
+    &:hover {
+      background: $filter-bg-hover;
+    }
+  }
+}
+
+// ============================================================================
+// Accessibility Enhancements
+// ============================================================================
+
+// Skip to results link
+.exposed-filters-skip {
+  position: absolute;
+  left: -9999px;
+
+  &:focus {
+    position: static;
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    background: $filter-bg-active;
+    color: $filter-text-active;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+  }
+}
+
+// Screen reader only text
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+// ============================================================================
+// Loading State (for AJAX-enabled filters)
+// ============================================================================
+
+.views-exposed-form {
+  &.ajax-progress-throbber {
+    position: relative;
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0.8);
+      z-index: 10;
+    }
+  }
+}
+
+// ============================================================================
+// Print Styles
+// ============================================================================
+
+@media print {
+  .views-exposed-form {
+    display: none;
+  }
+}
