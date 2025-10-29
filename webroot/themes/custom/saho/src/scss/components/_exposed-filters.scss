@@ -57,18 +57,43 @@ $visible-categories: 5;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 1rem;
+    padding: 0.75rem 1rem;
+    margin: -1rem -1rem 0 -1rem;
+    border-radius: 12px 12px 0 0;
     cursor: pointer;
     user-select: none;
+    transition: background-color 0.2s ease;
+
+    @media (min-width: $mobile-breakpoint) {
+      padding: 1rem 1.5rem;
+      margin: -1.5rem -1.5rem 0 -1.5rem;
+    }
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.02);
+    }
 
     h3 {
       font-size: 1rem;
       font-weight: 600;
       margin: 0;
       color: $filter-text;
+      display: flex;
+      align-items: baseline;
+      gap: 0.5rem;
 
       @media (min-width: $mobile-breakpoint) {
         font-size: 1.125rem;
+      }
+
+      .filter-hint {
+        font-size: 0.875rem;
+        font-weight: 400;
+        color: $filter-text-muted;
+
+        @media (max-width: $mobile-breakpoint) {
+          font-size: 0.8125rem;
+        }
       }
     }
 
@@ -86,16 +111,27 @@ $visible-categories: 5;
   // Collapsible filter content
   .exposed-filters-content {
     overflow: hidden;
-    transition: max-height 0.3s ease, opacity 0.3s ease;
+    transition: max-height 0.3s ease, opacity 0.3s ease, margin-top 0.3s ease;
 
     &.collapsed {
       max-height: 0;
       opacity: 0;
+      margin-top: 0;
     }
 
     &.expanded {
       max-height: 2000px;
       opacity: 1;
+      margin-top: 1rem;
+    }
+  }
+
+  // When filters are collapsed, adjust container padding
+  &:has(.exposed-filters-content.collapsed) {
+    padding-bottom: 1rem;
+
+    @media (min-width: $mobile-breakpoint) {
+      padding-bottom: 1.5rem;
     }
   }
 

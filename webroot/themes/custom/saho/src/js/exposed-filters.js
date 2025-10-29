@@ -25,9 +25,8 @@
     const befFilters = form.querySelector('.bef-exposed-filters');
     if (!befFilters) return;
 
-    // On mobile, start collapsed; on desktop, start expanded
-    const isMobile = window.innerWidth < 768;
-    const initiallyCollapsed = isMobile;
+    // Always start collapsed - show all content first, filters are optional
+    const initiallyCollapsed = true;
 
     // Wrap filters in collapsible content
     if (!form.querySelector('.exposed-filters-content')) {
@@ -36,11 +35,14 @@
       befFilters.parentNode.insertBefore(wrapper, befFilters);
       wrapper.appendChild(befFilters);
 
+      // Count total filter options available
+      const totalOptions = form.querySelectorAll('input[type="checkbox"], input[type="radio"]').length;
+
       // Add header with toggle
       const header = document.createElement('div');
       header.className = 'exposed-filters-header';
       header.innerHTML = `
-        <h3>Filter Results</h3>
+        <h3>Filter Results <span class="filter-hint">(${totalOptions} options)</span></h3>
         <span class="toggle-icon ${initiallyCollapsed ? '' : 'expanded'}">▼</span>
       `;
       wrapper.parentNode.insertBefore(header, wrapper);
