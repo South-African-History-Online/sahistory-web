@@ -348,6 +348,41 @@ function saho_preprocess_node(array &$variables) {
   // Add biography-specific styling for biography content type
   if ($node->bundle() == 'biography') {
     $variables['#attached']['library'][] = 'saho/biography.metadata';
+
+    // Add biography portrait with fallback to default SVG.
+    if ($node->hasField('field_bio_pic') && !$node->get('field_bio_pic')->isEmpty()) {
+      // Biography has a portrait - use it.
+      $bio_pic_field = $node->get('field_bio_pic');
+      $bio_pic_entity = $bio_pic_field->entity;
+
+      if ($bio_pic_entity) {
+        // For main content (when no feature banner).
+        $variables['biography_portrait_main'] = saho_get_responsive_image(
+          $bio_pic_entity,
+          $node->getTitle() . ' portrait',
+          ['biography_landing_featured'],
+          '100vw',
+          'eager',
+          'saho-feature-banner-image'
+        );
+
+        // For sidebar (when feature banner exists).
+        $variables['biography_portrait_sidebar'] = saho_get_responsive_image(
+          $bio_pic_entity,
+          $node->getTitle() . ' portrait',
+          ['biography_pic_style'],
+          '(max-width: 768px) 100vw, 400px',
+          'lazy',
+          'saho-image'
+        );
+      }
+    }
+
+    // If no portrait, provide fallback SVG URL.
+    if (empty($variables['biography_portrait_main'])) {
+      $theme_path = \Drupal::service('extension.list.theme')->getPath('saho');
+      $variables['biography_portrait_fallback_url'] = '/' . $theme_path . '/images/default-portrait.svg';
+    }
   }
   
   // For article and biography pages, preload the main image for better LCP

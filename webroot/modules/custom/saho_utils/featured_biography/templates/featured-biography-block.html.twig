@@ -81,13 +81,18 @@
     {# Single biography display #}
     <div class="featured-biography-content">
       <div class="featured-biography-item">
-        {% if biography_item.image %}
-          <div class="featured-biography-image">
-            <a href="{{ biography_item.url }}">
+        <div class="featured-biography-image">
+          <a href="{{ biography_item.url }}">
+            {% if biography_item.image %}
               <img src="{{ biography_item.image }}" alt="{{ biography_item.title|striptags }}" />
-            </a>
-          </div>
-        {% endif %}
+            {% else %}
+              {# Fallback placeholder for single biography #}
+              <div class="saho-card-image--placeholder" style="min-height: 200px; display: flex; align-items: center; justify-content: center; background: #f8f9fa;">
+                <i class="fas fa-user-circle fa-5x text-muted"></i>
+              </div>
+            {% endif %}
+          </a>
+        </div>
         <div class="featured-biography-details">
           {% if biography_item.category %}
             <div class="featured-biography-categories">
