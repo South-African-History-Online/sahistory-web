@@ -88,21 +88,27 @@
       const visibleCount = 5; // Show top 5 categories by count
 
       if (items.length > visibleCount) {
-        // Check if button already exists
-        let showMoreBtn = group.nextElementSibling;
-        if (showMoreBtn && showMoreBtn.classList.contains('filter-show-more')) {
-          // Button already exists, just update its functionality
-          return;
+        // Find the parent form-item container
+        let container = group.closest('.form-item');
+        if (!container) {
+          container = group.parentNode;
         }
 
+        // Remove any existing "show more" buttons in this container
+        const existingButtons = container.querySelectorAll('.filter-show-more');
+        existingButtons.forEach(function(btn) {
+          btn.remove();
+        });
+
         // Create "show more" button
-        showMoreBtn = document.createElement('button');
+        const showMoreBtn = document.createElement('button');
         showMoreBtn.type = 'button';
         showMoreBtn.className = 'filter-show-more';
-        showMoreBtn.innerHTML = 'Show more <span class="icon">▼</span>';
+        showMoreBtn.setAttribute('data-for-group', group.className);
+        showMoreBtn.innerHTML = `Show more (${items.length - visibleCount}) <span class="icon">▼</span>`;
 
-        // Insert after the filter group
-        group.parentNode.insertBefore(showMoreBtn, group.nextSibling);
+        // Append button to container
+        container.appendChild(showMoreBtn);
 
         // Toggle functionality
         showMoreBtn.addEventListener('click', function(e) {
@@ -122,9 +128,6 @@
             showMoreBtn.innerHTML = 'Show less <span class="icon">▼</span>';
           }
         });
-
-        // Update button text with count
-        showMoreBtn.innerHTML = `Show more (${items.length - visibleCount}) <span class="icon">▼</span>`;
       }
     });
   }
