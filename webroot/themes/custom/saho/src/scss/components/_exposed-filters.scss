@@ -1,9 +1,13 @@
 /**
  * @file
- * Modern pill-button styling for exposed filters (BEF).
+ * Modern, mobile-first filter styling for exposed filters (BEF).
  *
- * Provides responsive, mobile-friendly filter buttons that work across
- * all landing pages using Better Exposed Filters.
+ * Features:
+ * - All content shown by default
+ * - Collapsible filter panel
+ * - Top categories visible with counts
+ * - "Show more" for additional categories
+ * - Compact, mobile-first design
  */
 
 // ============================================================================
@@ -16,11 +20,12 @@ $filter-bg-active: #8B1A1A; // SAHO red
 $filter-border: #dee2e6;
 $filter-border-active: #8B1A1A;
 $filter-text: #212529;
+$filter-text-muted: #6c757d;
 $filter-text-active: #ffffff;
 $filter-radius: 50px; // Pill shape
-$filter-padding-x: 1.25rem;
-$filter-padding-y: 0.625rem;
-$filter-gap: 0.75rem;
+$filter-padding-x: 1rem;
+$filter-padding-y: 0.5rem;
+$filter-gap: 0.5rem;
 $filter-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
 $filter-shadow-hover: 0 4px 8px rgba(0, 0, 0, 0.12);
 $filter-shadow-active: 0 2px 4px rgba(139, 26, 26, 0.25);
@@ -29,12 +34,70 @@ $filter-transition: all 0.2s ease-in-out;
 // Mobile breakpoints
 $mobile-breakpoint: 768px;
 
+// Number of categories to show initially
+$visible-categories: 8;
+
 // ============================================================================
-// Exposed Form Container
+// Exposed Form Container - Mobile First
 // ============================================================================
 
 .views-exposed-form {
   margin-bottom: 2rem;
+  background: $filter-bg;
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+  @media (min-width: $mobile-breakpoint) {
+    padding: 1.5rem;
+  }
+
+  // Filter header with toggle
+  .exposed-filters-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+    cursor: pointer;
+    user-select: none;
+
+    h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin: 0;
+      color: $filter-text;
+
+      @media (min-width: $mobile-breakpoint) {
+        font-size: 1.125rem;
+      }
+    }
+
+    .toggle-icon {
+      font-size: 1.25rem;
+      color: $filter-text-muted;
+      transition: transform 0.2s ease;
+
+      &.expanded {
+        transform: rotate(180deg);
+      }
+    }
+  }
+
+  // Collapsible filter content
+  .exposed-filters-content {
+    overflow: hidden;
+    transition: max-height 0.3s ease, opacity 0.3s ease;
+
+    &.collapsed {
+      max-height: 0;
+      opacity: 0;
+    }
+
+    &.expanded {
+      max-height: 2000px;
+      opacity: 1;
+    }
+  }
 
   // Filter wrapper
   .bef-exposed-filters {
@@ -49,21 +112,32 @@ $mobile-breakpoint: 768px;
   }
 
   // Filter labels
-  .form-item label {
-    display: block;
+  .form-item > label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     font-weight: 600;
-    font-size: 1rem;
+    font-size: 0.9375rem;
     color: $filter-text;
-    margin-bottom: 1rem;
+    margin-bottom: 0.75rem;
 
-    @media (max-width: $mobile-breakpoint) {
-      font-size: 0.9375rem;
+    @media (min-width: $mobile-breakpoint) {
+      font-size: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    // Optional category count in label
+    .filter-count {
+      font-size: 0.875rem;
+      font-weight: 400;
+      color: $filter-text-muted;
+      margin-left: 0.5rem;
     }
   }
 }
 
 // ============================================================================
-// Checkbox/Radio Filters (Pill Buttons)
+// Checkbox/Radio Filters (Compact Pill Buttons with Counts)
 // ============================================================================
 
 // Wrapper for checkboxes or radios
@@ -71,12 +145,16 @@ $mobile-breakpoint: 768px;
 .bef-radios,
 .form-checkboxes,
 .form-radios {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   gap: $filter-gap;
   padding: 0;
   margin: 0;
   list-style: none;
+
+  @media (min-width: $mobile-breakpoint) {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  }
 
   // Individual filter item
   .form-item,
@@ -84,7 +162,25 @@ $mobile-breakpoint: 768px;
   .bef-radio {
     margin: 0;
     padding: 0;
-    display: inline-block;
+    display: block;
+
+    // Hide items beyond the visible count by default
+    &:nth-child(n + #{$visible-categories + 1}) {
+      display: none;
+    }
+
+    &.show-more-enabled:nth-child(n + #{$visible-categories + 1}) {
+      display: block;
+    }
+  }
+
+  // When "show all" is active
+  &.show-all {
+    .form-item,
+    .bef-checkbox,
+    .bef-radio {
+      display: block;
+    }
   }
 
   // Hide the actual checkbox/radio input
@@ -98,27 +194,55 @@ $mobile-breakpoint: 768px;
     &:focus + label {
       outline: 2px solid #4A90E2;
       outline-offset: 2px;
+      z-index: 1;
     }
   }
 
-  // Pill button label styling
+  // Pill button label styling - more compact
   label {
-    display: inline-flex;
+    display: flex;
     align-items: center;
+    justify-content: space-between;
     padding: $filter-padding-y $filter-padding-x;
     background: $filter-bg;
-    border: 2px solid $filter-border;
+    border: 1.5px solid $filter-border;
     border-radius: $filter-radius;
     color: $filter-text;
-    font-size: 0.9375rem;
+    font-size: 0.875rem;
     font-weight: 500;
-    line-height: 1.4;
+    line-height: 1.3;
     cursor: pointer;
     transition: $filter-transition;
     box-shadow: $filter-shadow;
-    white-space: nowrap;
     user-select: none;
     margin: 0;
+    width: 100%;
+    min-height: 36px;
+
+    @media (min-width: $mobile-breakpoint) {
+      font-size: 0.9375rem;
+      min-height: 40px;
+    }
+
+    // Label text
+    .option-label {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    // Count badge
+    .option-count {
+      flex-shrink: 0;
+      margin-left: 0.5rem;
+      padding: 0.125rem 0.5rem;
+      background: rgba(0, 0, 0, 0.05);
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: $filter-text-muted;
+    }
 
     // Hover state
     &:hover {
@@ -133,11 +257,6 @@ $mobile-breakpoint: 768px;
       transform: translateY(0);
       box-shadow: $filter-shadow;
     }
-
-    @media (max-width: $mobile-breakpoint) {
-      font-size: 0.875rem;
-      padding: $filter-padding-y * 0.9 $filter-padding-x * 0.9;
-    }
   }
 
   // Checked/selected state
@@ -148,6 +267,11 @@ $mobile-breakpoint: 768px;
     color: $filter-text-active;
     box-shadow: $filter-shadow-active;
     font-weight: 600;
+
+    .option-count {
+      background: rgba(255, 255, 255, 0.2);
+      color: $filter-text-active;
+    }
 
     &:hover {
       background: darken($filter-bg-active, 5%);
@@ -161,6 +285,45 @@ $mobile-breakpoint: 768px;
     opacity: 0.5;
     cursor: not-allowed;
     pointer-events: none;
+  }
+}
+
+// "Show More" button
+.filter-show-more {
+  margin-top: 0.75rem;
+  padding: 0.5rem 1rem;
+  background: transparent;
+  border: 1.5px solid $filter-border;
+  border-radius: 8px;
+  color: $filter-text;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: $filter-transition;
+  width: 100%;
+
+  @media (min-width: $mobile-breakpoint) {
+    width: auto;
+    min-width: 180px;
+  }
+
+  &:hover {
+    background: $filter-bg-hover;
+    border-color: darken($filter-border, 10%);
+  }
+
+  &:focus {
+    outline: 2px solid #4A90E2;
+    outline-offset: 2px;
+  }
+
+  .icon {
+    margin-left: 0.5rem;
+    transition: transform 0.2s ease;
+  }
+
+  &.expanded .icon {
+    transform: rotate(180deg);
   }
 }
 
@@ -264,45 +427,60 @@ $mobile-breakpoint: 768px;
 }
 
 // ============================================================================
-// Mobile Collapsible Filter Panel (Optional Enhancement)
+// Active Filters Summary
 // ============================================================================
 
-.exposed-filters-mobile-toggle {
-  display: none;
+.active-filters-summary {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: rgba(139, 26, 26, 0.05);
+  border-radius: 8px;
+  margin-bottom: 1rem;
 
-  @media (max-width: $mobile-breakpoint) {
-    display: block;
-    width: 100%;
-    padding: 0.75rem 1.25rem;
-    background: $filter-bg;
-    border: 2px solid $filter-border;
-    border-radius: 8px;
+  .summary-label {
+    font-size: 0.875rem;
     font-weight: 600;
-    font-size: 1rem;
+    color: $filter-text;
+    margin-right: 0.5rem;
+  }
+
+  .active-filter-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.75rem;
+    background: $filter-bg-active;
+    color: $filter-text-active;
+    border-radius: 20px;
+    font-size: 0.8125rem;
+    font-weight: 500;
+
+    .remove-filter {
+      margin-left: 0.5rem;
+      cursor: pointer;
+      opacity: 0.8;
+
+      &:hover {
+        opacity: 1;
+      }
+    }
+  }
+
+  .clear-all-filters {
+    margin-left: auto;
+    padding: 0.25rem 0.75rem;
+    background: transparent;
+    border: 1px solid $filter-border;
+    border-radius: 20px;
+    font-size: 0.8125rem;
+    font-weight: 600;
     cursor: pointer;
-    margin-bottom: 1rem;
-    text-align: left;
+    transition: $filter-transition;
 
     &:hover {
       background: $filter-bg-hover;
-    }
-
-    &::after {
-      content: '\25BC'; // Down arrow
-      float: right;
-      transition: transform 0.2s ease;
-    }
-
-    &.active::after {
-      transform: rotate(180deg);
-    }
-  }
-}
-
-.exposed-filters-wrapper {
-  @media (max-width: $mobile-breakpoint) {
-    &.collapsed {
-      display: none;
     }
   }
 }
