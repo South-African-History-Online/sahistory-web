@@ -189,16 +189,30 @@
       `;
 
       // Remove filter on click
-      tag.querySelector('.remove-filter').addEventListener('click', function() {
+      tag.querySelector('.remove-filter').addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+
         const input = form.querySelector(`#${filter.id}`);
         if (input) {
           input.checked = false;
-          input.dispatchEvent(new Event('change'));
 
-          // If autosubmit is enabled, submit the form
-          if (form.querySelector('input[name="autosubmit_hidden"]')) {
-            form.submit();
+          // Try multiple approaches to trigger form submission
+          // 1. Native change event
+          input.dispatchEvent(new Event('change', { bubbles: true, cancelable: true }));
+
+          // 2. jQuery change event (for BEF compatibility)
+          if (typeof jQuery !== 'undefined') {
+            jQuery(input).trigger('change');
           }
+
+          // 3. Click the submit button if autosubmit didn't work
+          setTimeout(function() {
+            const submitBtn = form.querySelector('input[type="submit"], button[type="submit"]');
+            if (submitBtn && !submitBtn.classList.contains('js-hide')) {
+              submitBtn.click();
+            }
+          }, 100);
         }
       });
 
@@ -211,20 +225,38 @@
       clearAll.type = 'button';
       clearAll.className = 'clear-all-filters';
       clearAll.textContent = 'Clear all';
-      clearAll.addEventListener('click', function() {
+      clearAll.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        // Uncheck all active filters
+        let lastInput = null;
         activeFilters.forEach(function(filter) {
           const input = form.querySelector(`#${filter.id}`);
           if (input) {
             input.checked = false;
+            lastInput = input;
           }
         });
 
-        // Submit form if autosubmit is enabled
-        if (form.querySelector('input[name="autosubmit_hidden"]')) {
-          form.submit();
-        }
+        // Try multiple approaches to trigger form submission
+        if (lastInput) {
+          // 1. Native change event
+          lastInput.dispatchEvent(new Event('change', { bubbles: true, cancelable: true }));
 
-        updateActiveFiltersSummary(form);
+          // 2. jQuery change event (for BEF compatibility)
+          if (typeof jQuery !== 'undefined') {
+            jQuery(lastInput).trigger('change');
+          }
+
+          // 3. Click the submit button if autosubmit didn't work
+          setTimeout(function() {
+            const submitBtn = form.querySelector('input[type="submit"], button[type="submit"]');
+            if (submitBtn && !submitBtn.classList.contains('js-hide')) {
+              submitBtn.click();
+            }
+          }, 100);
+        }
       });
       summary.appendChild(clearAll);
     }
