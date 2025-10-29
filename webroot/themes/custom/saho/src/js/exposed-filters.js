@@ -71,7 +71,7 @@
 
     filterGroups.forEach(function(group) {
       const items = group.querySelectorAll('.form-item, .bef-checkbox, .bef-radio');
-      const visibleCount = 8; // Match SCSS variable
+      const visibleCount = 5; // Show top 5 categories by count
 
       if (items.length > visibleCount) {
         // Create "show more" button
