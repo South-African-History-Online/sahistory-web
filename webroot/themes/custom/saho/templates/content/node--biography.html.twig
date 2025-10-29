@@ -26,14 +26,14 @@
             class="saho-feature-banner-image"
           >
         </div>
-      {% elseif node.field_bio_pic.entity %}
-        {# Display bio image in main content if no feature banner #}
+      {% else %}
+        {# Display bio portrait (with fallback to default) if no feature banner #}
         <div class="saho-feature-banner">
-          <img
-            src="{{ file_url(node.field_bio_pic.entity.uri.value) }}"
-            alt="{{ node.field_bio_pic.alt }}"
-            class="saho-feature-banner-image"
-          >
+          {% if biography_portrait_main %}
+            {{ biography_portrait_main }}
+          {% elseif biography_portrait_fallback_url %}
+            <img src="{{ biography_portrait_fallback_url }}" alt="{{ node.title.value }} portrait" class="saho-feature-banner-image" loading="eager" decoding="async" />
+          {% endif %}
           {% if node.field_node_image_caption.value %}
             <div class="caption">
               {{ node.field_node_image_caption.value|raw }}
@@ -237,14 +237,15 @@
     {% if sidebar_has_content %}
     <aside class="saho-article-sidebar">
 
-      {# Profile Image Block - Always visible at top #}
-      {% if node.field_bio_pic.entity and node.field_feature_banner.entity %}
+      {# Profile Image Block - Always visible at top with fallback #}
+      {% if node.field_feature_banner.entity %}
+        {# Only show portrait in sidebar if there's a feature banner in main content #}
         <div class="saho-image-block mb-4">
-          <img
-            src="{{ file_url(node.field_bio_pic.entity.uri.value) }}"
-            alt="{{ node.field_bio_pic.alt }}"
-            class="saho-image"
-          >
+          {% if biography_portrait_sidebar %}
+            {{ biography_portrait_sidebar }}
+          {% elseif biography_portrait_fallback_url %}
+            <img src="{{ biography_portrait_fallback_url }}" alt="{{ node.title.value }} portrait" class="saho-image" loading="lazy" decoding="async" />
+          {% endif %}
           {% if node.field_node_image_caption.value %}
             <div class="caption">
               {{ node.field_node_image_caption.value|raw }}

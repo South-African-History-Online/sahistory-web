@@ -2,6 +2,7 @@
 
 namespace Drupal\saho\TwigExtension;
 
+use Drupal\Core\Render\Markup;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFunction;
 use Drupal\image\Entity\ImageStyle;
@@ -17,6 +18,7 @@ class SahoTwigExtension extends AbstractExtension {
   public function getFunctions() {
     return [
       new TwigFunction('saho_get_responsive_image', [$this, 'getResponsiveImage'], ['is_safe' => ['html']]),
+      new TwigFunction('saho_biography_portrait', [$this, 'getBiographyPortrait'], ['is_safe' => ['html']]),
     ];
   }
 
@@ -49,13 +51,13 @@ class SahoTwigExtension extends AbstractExtension {
     $uri = $file_entity->getFileUri();
     $srcset = [];
 
-    // Build srcset from image styles
+    // Build srcset from image styles.
     foreach ($styles as $style_name) {
       $style = ImageStyle::load($style_name);
       if ($style) {
         $url = $style->buildUrl($uri);
 
-        // Get width from style configuration
+        // Get width from style configuration.
         $config = $style->getEffects()->getConfiguration();
         $width = 0;
 
@@ -72,11 +74,11 @@ class SahoTwigExtension extends AbstractExtension {
       }
     }
 
-    // Fallback to first style if available
+    // Fallback to first style if available.
     $fallback_style = ImageStyle::load($styles[0]);
     $fallback_url = $fallback_style ? $fallback_style->buildUrl($uri) : file_create_url($uri);
 
-    // Get original dimensions for proper aspect ratio
+    // Get original dimensions for proper aspect ratio.
     $width = NULL;
     $height = NULL;
 
@@ -86,7 +88,7 @@ class SahoTwigExtension extends AbstractExtension {
         $original_width = $image->getWidth();
         $original_height = $image->getHeight();
 
-        // Calculate aspect ratio and set dimensions based on first style
+        // Calculate aspect ratio and set dimensions based on first style.
         if ($fallback_style && $original_width && $original_height) {
           $style_config = $fallback_style->getEffects()->getConfiguration();
           $target_width = NULL;
@@ -103,7 +105,7 @@ class SahoTwigExtension extends AbstractExtension {
 
           if ($target_width) {
             $width = $target_width;
-            // Calculate proportional height
+            // Calculate proportional height.
             $height = $target_height ?? round(($original_height / $original_width) * $target_width);
           }
           else {
@@ -118,7 +120,7 @@ class SahoTwigExtension extends AbstractExtension {
       }
     }
 
-    // Build attributes array
+    // Build attributes array.
     $attributes = [
       'src' => $fallback_url,
       'alt' => $alt,
@@ -137,7 +139,7 @@ class SahoTwigExtension extends AbstractExtension {
       $attributes['height'] = $height;
     }
 
-    // Build attribute string
+    // Build attribute string.
     $attr_string = '';
     foreach ($attributes as $key => $value) {
       $attr_string .= ' ' . $key . '="' . htmlspecialchars($value, ENT_QUOTES) . '"';
@@ -145,7 +147,56 @@ class SahoTwigExtension extends AbstractExtension {
 
     $markup = '<img' . $attr_string . '>';
 
-    return ['#markup' => \Drupal\Core\Render\Markup::create($markup)];
+    return ['#markup' => Markup::create($markup)];
+  }
+
+  /**
+   * Get biography portrait with fallback to default placeholder.
+   *
+   * @param \Drupal\node\Entity\Node $node
+   *   The biography node.
+   * @param string $image_style
+   *   Image style machine name (default: 'biography_pic_style').
+   * @param string $class
+   *   CSS classes for the image.
+   * @param string $loading
+   *   Loading strategy: 'lazy' or 'eager'.
+   *
+   * @return array
+   *   Render array with image markup.
+   */
+  public function getBiographyPortrait($node, $image_style = 'biography_pic_style', $class = 'img-fluid', $loading = 'lazy') {
+    // Check if node has a portrait.
+    if ($node && !$node->field_bio_pic->isEmpty()) {
+      $file_entity = $node->field_bio_pic->entity;
+      if ($file_entity) {
+        // Use existing responsive image function.
+        return $this->getResponsiveImage(
+          $file_entity,
+          $node->getTitle() . ' portrait',
+          [$image_style],
+          '100vw',
+          $loading,
+          $class
+        );
+      }
+    }
+
+    // Fallback to default portrait SVG.
+    $theme_path = \Drupal::service('extension.list.theme')->getPath('saho');
+    $default_url = '/' . $theme_path . '/images/default-portrait.svg';
+
+    $alt_text = $node ? htmlspecialchars($node->getTitle(), ENT_QUOTES) . ' portrait' : 'Biography portrait';
+
+    $markup = sprintf(
+      '<img src="%s" alt="%s" class="%s" loading="%s" decoding="async" />',
+      htmlspecialchars($default_url, ENT_QUOTES),
+      $alt_text,
+      htmlspecialchars($class, ENT_QUOTES),
+      htmlspecialchars($loading, ENT_QUOTES)
+    );
+
+    return ['#markup' => Markup::create($markup)];
   }
 
 }

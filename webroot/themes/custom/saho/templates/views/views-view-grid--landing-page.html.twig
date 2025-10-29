@@ -301,21 +301,24 @@
                     <img src="{{ image_url }}" alt="{{ title ?? content_type }}" class="img-fluid w-100 h-100" style="object-fit: cover;">
                   {% endif %}
                 {% else %}
-                  <div class="saho-card-image--placeholder">
-                    {% if content_type == 'Biography' %}
-                      <i class="fas fa-user"></i>
-                    {% elseif content_type == 'Article' %}
-                      <i class="fas fa-newspaper"></i>
-                    {% elseif content_type == 'Event' %}
-                      <i class="fas fa-calendar"></i>
-                    {% elseif content_type == 'Place' %}
-                      <i class="fas fa-map-marker-alt"></i>
-                    {% elseif content_type == 'Archive' %}
-                      <i class="fas fa-archive"></i>
-                    {% else %}
-                      <i class="fas fa-file-alt"></i>
-                    {% endif %}
-                  </div>
+                  {# Biography gets SVG portrait placeholder, others get icons #}
+                  {% if content_type == 'Biography' %}
+                    <img src="/themes/custom/saho/images/default-portrait.svg" alt="{{ title ?? 'Biography' }} portrait" class="img-fluid w-100 h-100" style="object-fit: cover;">
+                  {% else %}
+                    <div class="saho-card-image--placeholder">
+                      {% if content_type == 'Article' %}
+                        <i class="fas fa-newspaper"></i>
+                      {% elseif content_type == 'Event' %}
+                        <i class="fas fa-calendar"></i>
+                      {% elseif content_type == 'Place' %}
+                        <i class="fas fa-map-marker-alt"></i>
+                      {% elseif content_type == 'Archive' %}
+                        <i class="fas fa-archive"></i>
+                      {% else %}
+                        <i class="fas fa-file-alt"></i>
+                      {% endif %}
+                    </div>
+                  {% endif %}
                 {% endif %}
                 
                 {# Card Badge #}
