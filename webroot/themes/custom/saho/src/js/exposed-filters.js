@@ -21,6 +21,12 @@
    * Initialize collapsible filter panel.
    */
   function initializeFilterPanel(form) {
+    // Check if already initialized
+    if (form.hasAttribute('data-filter-panel-initialized')) {
+      return;
+    }
+    form.setAttribute('data-filter-panel-initialized', 'true');
+
     // Check if we need to add a collapsible wrapper
     const befFilters = form.querySelector('.bef-exposed-filters');
     if (!befFilters) return;
@@ -28,7 +34,7 @@
     // Always start collapsed - show all content first, filters are optional
     const initiallyCollapsed = true;
 
-    // Wrap filters in collapsible content
+    // Wrap filters in collapsible content (check if not already wrapped)
     if (!form.querySelector('.exposed-filters-content')) {
       const wrapper = document.createElement('div');
       wrapper.className = 'exposed-filters-content ' + (initiallyCollapsed ? 'collapsed' : 'expanded');
@@ -72,12 +78,25 @@
     const filterGroups = form.querySelectorAll('.bef-checkboxes, .bef-radios, .form-checkboxes, .form-radios');
 
     filterGroups.forEach(function(group) {
+      // Skip if already initialized
+      if (group.hasAttribute('data-show-more-initialized')) {
+        return;
+      }
+      group.setAttribute('data-show-more-initialized', 'true');
+
       const items = group.querySelectorAll('.form-item, .bef-checkbox, .bef-radio');
       const visibleCount = 5; // Show top 5 categories by count
 
       if (items.length > visibleCount) {
+        // Check if button already exists
+        let showMoreBtn = group.nextElementSibling;
+        if (showMoreBtn && showMoreBtn.classList.contains('filter-show-more')) {
+          // Button already exists, just update its functionality
+          return;
+        }
+
         // Create "show more" button
-        const showMoreBtn = document.createElement('button');
+        showMoreBtn = document.createElement('button');
         showMoreBtn.type = 'button';
         showMoreBtn.className = 'filter-show-more';
         showMoreBtn.innerHTML = 'Show more <span class="icon">▼</span>';
@@ -114,6 +133,12 @@
    * Initialize active filters summary.
    */
   function initializeActiveFilters(form) {
+    // Check if already initialized
+    if (form.hasAttribute('data-active-filters-initialized')) {
+      return;
+    }
+    form.setAttribute('data-active-filters-initialized', 'true');
+
     // Listen for changes on filter inputs
     const filterInputs = form.querySelectorAll('input[type="checkbox"], input[type="radio"], select');
 
