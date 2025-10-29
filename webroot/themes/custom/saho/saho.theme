@@ -1412,3 +1412,95 @@ function saho_page_attachments(array &$attachments) {
   ];
   */
 }
+
+/**
+ * Implements hook_preprocess_views_exposed_form().
+ *
+ * Attach modern exposed filter library and add category counts to filter options.
+ */
+function saho_preprocess_views_exposed_form(&$variables) {
+  // Attach the exposed filters library for interactive functionality
+  $variables['#attached']['library'][] = 'saho/exposed.filters';
+
+  // Add counts to taxonomy filter options
+  $form = &$variables['form'];
+
+  // Get the view to access filter configuration
+  $view = $form['#info']['filter'] ?? [];
+
+  // Process each filter element
+  foreach ($form as $key => &$element) {
+    // Skip non-filter elements
+    if (substr($key, 0, 1) === '#' || !is_array($element) || !isset($element['#type'])) {
+      continue;
+    }
+
+    // Only process select/checkboxes/radios with options
+    if (!isset($element['#options']) || !is_array($element['#options'])) {
+      continue;
+    }
+
+    // Get filter info
+    $filter_info = $view[$key] ?? NULL;
+    if (!$filter_info || !isset($filter_info['value'])) {
+      continue;
+    }
+
+    // Get the field name from filter info
+    $field_name = $filter_info['value'];
+
+    // Get term counts and sort
+    $term_counts = [];
+    foreach ($element['#options'] as $option_key => $label) {
+      // Skip 'All' option
+      if ($option_key === 'All' || $option_key === '' || $option_key === '_none') {
+        continue;
+      }
+
+      // Count nodes with this term/value
+      try {
+        $query = \Drupal::entityQuery('node')
+          ->condition('status', 1)
+          ->accessCheck(TRUE);
+
+        // Add the field condition
+        $query->condition($field_name, $option_key);
+
+        $count = $query->count()->execute();
+        $term_counts[$option_key] = (int) $count;
+
+        // Add count to label (only if > 0)
+        if ($count > 0) {
+          // Remove any existing count in parentheses
+          $clean_label = preg_replace('/\s*\(\d+\)\s*$/', '', $label);
+          $element['#options'][$option_key] = $clean_label . ' (' . $count . ')';
+        }
+      }
+      catch (\Exception $e) {
+        // If query fails, leave label as-is
+      }
+    }
+
+    // Sort options by count (descending) if we got counts
+    if (!empty($term_counts)) {
+      arsort($term_counts);
+
+      // Rebuild options array with sorted order
+      $sorted_options = [];
+
+      // Keep 'All' option at the top
+      if (isset($element['#options']['All'])) {
+        $sorted_options['All'] = $element['#options']['All'];
+      }
+
+      // Add sorted options
+      foreach (array_keys($term_counts) as $option_key) {
+        if (isset($element['#options'][$option_key])) {
+          $sorted_options[$option_key] = $element['#options'][$option_key];
+        }
+      }
+
+      $element['#options'] = $sorted_options;
+    }
+  }
+}
