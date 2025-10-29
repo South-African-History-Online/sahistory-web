@@ -1,0 +1,372 @@
+/**
+ * @file
+ * Modern pill-button styling for exposed filters (BEF).
+ *
+ * Provides responsive, mobile-friendly filter buttons that work across
+ * all landing pages using Better Exposed Filters.
+ */
+
+// ============================================================================
+// Variables
+// ============================================================================
+
+$filter-bg: #ffffff;
+$filter-bg-hover: #f8f9fa;
+$filter-bg-active: #8B1A1A; // SAHO red
+$filter-border: #dee2e6;
+$filter-border-active: #8B1A1A;
+$filter-text: #212529;
+$filter-text-active: #ffffff;
+$filter-radius: 50px; // Pill shape
+$filter-padding-x: 1.25rem;
+$filter-padding-y: 0.625rem;
+$filter-gap: 0.75rem;
+$filter-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+$filter-shadow-hover: 0 4px 8px rgba(0, 0, 0, 0.12);
+$filter-shadow-active: 0 2px 4px rgba(139, 26, 26, 0.25);
+$filter-transition: all 0.2s ease-in-out;
+
+// Mobile breakpoints
+$mobile-breakpoint: 768px;
+
+// ============================================================================
+// Exposed Form Container
+// ============================================================================
+
+.views-exposed-form {
+  margin-bottom: 2rem;
+
+  // Filter wrapper
+  .bef-exposed-filters {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  // Form item container
+  .form-item {
+    margin-bottom: 0;
+  }
+
+  // Filter labels
+  .form-item label {
+    display: block;
+    font-weight: 600;
+    font-size: 1rem;
+    color: $filter-text;
+    margin-bottom: 1rem;
+
+    @media (max-width: $mobile-breakpoint) {
+      font-size: 0.9375rem;
+    }
+  }
+}
+
+// ============================================================================
+// Checkbox/Radio Filters (Pill Buttons)
+// ============================================================================
+
+// Wrapper for checkboxes or radios
+.bef-checkboxes,
+.bef-radios,
+.form-checkboxes,
+.form-radios {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $filter-gap;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+
+  // Individual filter item
+  .form-item,
+  .bef-checkbox,
+  .bef-radio {
+    margin: 0;
+    padding: 0;
+    display: inline-block;
+  }
+
+  // Hide the actual checkbox/radio input
+  input[type="checkbox"],
+  input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+
+    // Keyboard focus styles
+    &:focus + label {
+      outline: 2px solid #4A90E2;
+      outline-offset: 2px;
+    }
+  }
+
+  // Pill button label styling
+  label {
+    display: inline-flex;
+    align-items: center;
+    padding: $filter-padding-y $filter-padding-x;
+    background: $filter-bg;
+    border: 2px solid $filter-border;
+    border-radius: $filter-radius;
+    color: $filter-text;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    line-height: 1.4;
+    cursor: pointer;
+    transition: $filter-transition;
+    box-shadow: $filter-shadow;
+    white-space: nowrap;
+    user-select: none;
+    margin: 0;
+
+    // Hover state
+    &:hover {
+      background: $filter-bg-hover;
+      border-color: darken($filter-border, 10%);
+      box-shadow: $filter-shadow-hover;
+      transform: translateY(-1px);
+    }
+
+    // Active/pressed state
+    &:active {
+      transform: translateY(0);
+      box-shadow: $filter-shadow;
+    }
+
+    @media (max-width: $mobile-breakpoint) {
+      font-size: 0.875rem;
+      padding: $filter-padding-y * 0.9 $filter-padding-x * 0.9;
+    }
+  }
+
+  // Checked/selected state
+  input[type="checkbox"]:checked + label,
+  input[type="radio"]:checked + label {
+    background: $filter-bg-active;
+    border-color: $filter-border-active;
+    color: $filter-text-active;
+    box-shadow: $filter-shadow-active;
+    font-weight: 600;
+
+    &:hover {
+      background: darken($filter-bg-active, 5%);
+      border-color: darken($filter-border-active, 5%);
+    }
+  }
+
+  // Disabled state
+  input[type="checkbox"]:disabled + label,
+  input[type="radio"]:disabled + label {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+}
+
+// ============================================================================
+// Select Dropdown Fallback (for non-BEF or legacy)
+// ============================================================================
+
+.views-exposed-form {
+  select {
+    min-width: 200px;
+    padding: $filter-padding-y $filter-padding-x;
+    border: 2px solid $filter-border;
+    border-radius: 8px;
+    font-size: 0.9375rem;
+    transition: $filter-transition;
+
+    &:hover {
+      border-color: darken($filter-border, 10%);
+    }
+
+    &:focus {
+      border-color: $filter-border-active;
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(139, 26, 26, 0.1);
+    }
+
+    @media (max-width: $mobile-breakpoint) {
+      width: 100%;
+      min-width: auto;
+    }
+  }
+}
+
+// ============================================================================
+// Submit/Reset Buttons
+// ============================================================================
+
+.views-exposed-form {
+  .form-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1rem;
+
+    @media (max-width: $mobile-breakpoint) {
+      flex-direction: column;
+    }
+  }
+
+  // Submit button
+  input[type="submit"],
+  button[type="submit"],
+  .form-submit {
+    padding: $filter-padding-y $filter-padding-x * 1.5;
+    background: $filter-bg-active;
+    color: $filter-text-active;
+    border: 2px solid $filter-border-active;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9375rem;
+    cursor: pointer;
+    transition: $filter-transition;
+    box-shadow: $filter-shadow;
+
+    &:hover {
+      background: darken($filter-bg-active, 5%);
+      box-shadow: $filter-shadow-hover;
+      transform: translateY(-1px);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+
+    @media (max-width: $mobile-breakpoint) {
+      width: 100%;
+    }
+  }
+
+  // Reset button
+  input[type="reset"],
+  .form-reset {
+    padding: $filter-padding-y $filter-padding-x * 1.5;
+    background: transparent;
+    color: $filter-text;
+    border: 2px solid $filter-border;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9375rem;
+    cursor: pointer;
+    transition: $filter-transition;
+
+    &:hover {
+      background: $filter-bg-hover;
+      border-color: darken($filter-border, 10%);
+    }
+
+    @media (max-width: $mobile-breakpoint) {
+      width: 100%;
+    }
+  }
+}
+
+// ============================================================================
+// Mobile Collapsible Filter Panel (Optional Enhancement)
+// ============================================================================
+
+.exposed-filters-mobile-toggle {
+  display: none;
+
+  @media (max-width: $mobile-breakpoint) {
+    display: block;
+    width: 100%;
+    padding: 0.75rem 1.25rem;
+    background: $filter-bg;
+    border: 2px solid $filter-border;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    margin-bottom: 1rem;
+    text-align: left;
+
+    &:hover {
+      background: $filter-bg-hover;
+    }
+
+    &::after {
+      content: '\25BC'; // Down arrow
+      float: right;
+      transition: transform 0.2s ease;
+    }
+
+    &.active::after {
+      transform: rotate(180deg);
+    }
+  }
+}
+
+.exposed-filters-wrapper {
+  @media (max-width: $mobile-breakpoint) {
+    &.collapsed {
+      display: none;
+    }
+  }
+}
+
+// ============================================================================
+// Accessibility Enhancements
+// ============================================================================
+
+// Skip to results link
+.exposed-filters-skip {
+  position: absolute;
+  left: -9999px;
+
+  &:focus {
+    position: static;
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    background: $filter-bg-active;
+    color: $filter-text-active;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+  }
+}
+
+// Screen reader only text
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+// ============================================================================
+// Loading State (for AJAX-enabled filters)
+// ============================================================================
+
+.views-exposed-form {
+  &.ajax-progress-throbber {
+    position: relative;
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0.8);
+      z-index: 10;
+    }
+  }
+}
+
+// ============================================================================
+// Print Styles
+// ============================================================================
+
+@media print {
+  .views-exposed-form {
+    display: none;
+  }
+}
