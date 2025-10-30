@@ -8,6 +8,7 @@ dependencies:
     - node.type.place
     - system.menu.main
     - taxonomy.vocabulary.field_place_type_category
+    - taxonomy.vocabulary.field_places_level3
   content:
     - 'taxonomy_term:field_place_type_category:3d16ff9a-ec67-4a15-a0a1-27d2d8710357'
     - 'taxonomy_term:field_place_type_category:5e88dec6-aa95-4d38-8e43-6dc93007e01d'
@@ -213,6 +214,18 @@ display:
                   is_secondary: false
                   hide_label: false
                   sort_options_order: count_desc
+              tid_2:
+                plugin_id: bef
+                advanced:
+                  sort_options: true
+                  rewrite:
+                    filter_rewrite_values: ''
+                    filter_rewrite_values_key: false
+                  collapsible: false
+                  collapsible_disable_automatic_open: false
+                  is_secondary: false
+                  hide_label: false
+                  sort_options_order: count_desc
       access:
         type: perm
         options:
@@ -393,6 +406,51 @@ display:
           hierarchy: false
           limit: true
           error_message: true
+        tid_2:
+          id: tid_2
+          table: taxonomy_index
+          field: tid
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: taxonomy_index_tid
+          operator: or
+          value: {  }
+          group: 1
+          exposed: true
+          expose:
+            operator_id: tid_2_op
+            label: 'Geographic Region'
+            description: ''
+            use_operator: false
+            operator: tid_2_op
+            operator_limit_selection: false
+            operator_list: {  }
+            identifier: tid_2
+            required: false
+            remember: false
+            multiple: true
+            remember_roles:
+              authenticated: authenticated
+            reduce: false
+          is_grouped: false
+          group_info:
+            label: ''
+            description: ''
+            identifier: ''
+            optional: true
+            widget: select
+            multiple: false
+            remember: false
+            default_group: All
+            default_group_multiple: {  }
+            group_items: {  }
+          reduce_duplicates: false
+          vid: field_places_level3
+          type: select
+          hierarchy: false
+          limit: true
+          error_message: false
       style:
         type: grid
         options:
