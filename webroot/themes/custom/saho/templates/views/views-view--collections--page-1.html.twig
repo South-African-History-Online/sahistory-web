@@ -1,0 +1,102 @@
+{#
+/**
+ * @file
+ * Custom override for the "collections" view, display "page_1" (Archive Collections listing).
+ *
+ * Available variables:
+ * - attributes: HTML attributes for the main wrapper
+ * - exposed: The rendered exposed form
+ * - header: The optional header area
+ * - rows: The rendered results
+ * - empty: Content if no results
+ * - pager: Next/prev pagination
+ */
+#}
+
+{# Define section-specific colors and classes #}
+{% set section_name = 'Collections' %}
+{% set section_color = 'saho-dark-charcoal' %}
+{% set section_bg_class = 'saho-bg-dark-charcoal' %}
+{% set section_border_class = 'saho-border-dark-charcoal' %}
+{% set section_text_class = 'saho-text-dark-charcoal' %}
+
+<div{{ attributes.addClass('saho-landing-page', 'saho-archives-page', 'saho-collections-listing-page', 'view-' ~ view.id|clean_class) }}>
+
+  {# Hero Section #}
+  <section class="saho-landing-hero saho-archives-hero mb-5 py-4 bg-light">
+    <div class="container">
+      <div class="row align-items-center">
+        <div class="col-lg-8">
+          {% if header %}
+            <div class="saho-landing-description lead mb-4">
+              {{ header }}
+            </div>
+          {% else %}
+            <div class="saho-landing-description lead mb-4">
+              <p>Browse our extensive archive collections, featuring thousands of historical documents, photographs, and resources from South African history.</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {# Main Content Section #}
+  <section class="saho-archives-content mb-5">
+    <div class="container">
+      {% if exposed %}
+        <div class="row mb-4">
+          <div class="col-12">
+            <div class="saho-archives-filters {{ section_border_class }} border-top border-4 p-3 bg-light rounded">
+              <h2 class="h4 {{ section_text_class }} mb-3">Filter Collections</h2>
+              {{ exposed }}
+            </div>
+          </div>
+        </div>
+      {% endif %}
+
+      <div class="row">
+        <div class="col-12">
+          {% if rows %}
+            <div class="saho-collections-grid">
+              {{ rows }}
+            </div>
+          {% elseif empty %}
+            <div class="saho-archives-empty alert alert-info">
+              {{ empty }}
+            </div>
+          {% endif %}
+
+          {% if pager %}
+            <div class="saho-archives-pager saho-landing-pager mt-5">
+              {{ pager }}
+            </div>
+          {% endif %}
+
+          {% if more %}
+            <div class="saho-archives-more mt-4 text-center">
+              {{ more }}
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {# Call to Action Section #}
+  <section class="saho-archives-cta py-5 {{ section_bg_class }}">
+    <div class="container">
+      <div class="row align-items-center">
+        <div class="col-lg-8 text-white">
+          <h2 class="h3 mb-3">Explore Our Archives</h2>
+          <p class="mb-4">Discover thousands of documents, images, and resources that tell the story of South Africa's rich history.</p>
+        </div>
+        <div class="col-lg-4 text-center text-lg-end">
+          <a href="/archives" class="btn btn-light {{ section_text_class }} px-4 py-2">
+            <span class="me-2">📚</span> Browse Archives
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>

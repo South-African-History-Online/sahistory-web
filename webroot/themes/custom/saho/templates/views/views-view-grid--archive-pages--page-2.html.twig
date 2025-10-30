@@ -26,21 +26,21 @@
         {% set url = false %}
         {% set date = false %}
         {% set content_type = 'Collection' %}
-        
+
         {# Get node entity from various possible sources #}
         {% if column.content['#row'] is defined %}
           {% set node = column.content['#row']._entity %}
         {% elseif column.content['#node'] is defined %}
           {% set node = column.content['#node'] %}
         {% endif %}
-        
+
         {# If we have the node, extract data #}
         {% if node %}
           {% set title = node.label() %}
           {% set content_type = node.bundle()|capitalize %}
           {% set url = path('entity.node.canonical', {'node': node.id()}) %}
           {% set date = node.getChangedTime()|date('j F Y') %}
-          
+
           {# Try to get body/synopsis from node #}
           {% if node.hasField('field_synopsis') and not node.get('field_synopsis').isEmpty() %}
             {% set body = node.get('field_synopsis').value %}
@@ -50,7 +50,7 @@
         {% else %}
           {# Fallback: extract from rendered content #}
           {% set content_html = column.content|render %}
-          
+
           {# Extract title from rendered content #}
           {% if '<h2' in content_html or '<h3' in content_html %}
             {% set title_match = content_html|split('<h2')|last|split('</h2>')|first|split('>') %}
@@ -63,7 +63,7 @@
               {% endif %}
             {% endif %}
           {% endif %}
-          
+
           {# Extract URL from rendered content #}
           {% if '<a' in content_html and 'href="' in content_html %}
             {% set url_match = content_html|split('href="')|last|split('"')|first %}
@@ -76,12 +76,12 @@
         <div class="col">
           <a href="{{ url ? url : '#' }}" class="saho-card-link" aria-label="View {{ content_type|lower }} details">
             <div class="saho-card saho-card--{{ content_type|lower|replace({' ': '-'}) }}">
-              
+
               {# Card Image Area #}
               <div class="saho-card-image">
                 {% set has_image = false %}
                 {% set image_field = false %}
-                
+
                 {# Try to get image from node #}
                 {% if node %}
                   {% if node.hasField('field_image') and not node.get('field_image').isEmpty() %}
@@ -97,7 +97,7 @@
                   {% elseif node.hasField('field_archive_image') and not node.get('field_archive_image').isEmpty() %}
                     {% set image_field = 'field_archive_image' %}
                   {% endif %}
-                  
+
                   {% if image_field %}
                     {% set file_entity = node.get(image_field).entity %}
                     {% if file_entity %}
@@ -106,7 +106,7 @@
                     {% endif %}
                   {% endif %}
                 {% endif %}
-                
+
                 {# Try to extract image from rendered content as fallback #}
                 {% if not has_image %}
                   {% set content_html = column.content|render %}
@@ -123,7 +123,7 @@
                     {% endfor %}
                   {% endif %}
                 {% endif %}
-                
+
                 {# Display placeholder if no image #}
                 {% if not has_image %}
                   <div class="saho-card-image--placeholder">
@@ -142,11 +142,11 @@
                     {% endif %}
                   </div>
                 {% endif %}
-                
+
                 {# Card Badge #}
                 <div class="saho-card-badge">{{ content_type }}</div>
               </div>
-              
+
               {# Card Content #}
               <div class="saho-card-content">
                 {# Title #}
@@ -157,23 +157,23 @@
                     {{ content_type }} Item
                   {% endif %}
                 </div>
-                
+
                 {# Date subtitle #}
                 {% if date %}
                   <div class="saho-card-subtitle">{{ date }}</div>
                 {% endif %}
-                
+
                 {# Description #}
                 {% if body %}
                   <div class="saho-card-description">
                     {{ body|striptags|trim|slice(0, 120) ~ (body|striptags|trim|length > 120 ? '...' : '') }}
                   </div>
                 {% endif %}
-                
+
                 {# Button in footer for proper alignment #}
                 <div class="saho-card-footer">
                   <span class="saho-card-button">
-                    View Collection
+                    View Item
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
                       <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/>
                     </svg>
