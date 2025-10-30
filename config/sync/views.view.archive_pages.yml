@@ -2240,18 +2240,18 @@ display:
         options:
           offset: 0
           pagination_heading_level: h4
-          items_per_page: 27
+          items_per_page: 50
           total_pages: null
           id: 0
           tags:
-            next: ››
-            previous: ‹‹
+            next: 'Next ›'
+            previous: '‹ Previous'
             first: '« First'
             last: 'Last »'
           expose:
-            items_per_page: false
+            items_per_page: true
             items_per_page_label: 'Items per page'
-            items_per_page_options: '5, 10, 25, 50'
+            items_per_page_options: '10, 25, 50, 100'
             items_per_page_options_all: false
             items_per_page_options_all_label: '- All -'
             offset: false
@@ -2290,7 +2290,7 @@ display:
           relationship: none
           group_type: group
           admin_label: ''
-          plugin_id: numeric
+          plugin_id: entity_target_id
           default_action: default
           exception:
             value: all
@@ -2316,12 +2316,13 @@ display:
             type: 'entity:node'
             fail: 'not found'
           validate_options:
+            bundles: {  }
             access: true
             operation: view
-            multiple: false
-            bundles: {  }
+            multiple: 0
           break_phrase: false
           not: false
+          target_entity_type_id: node
       filters:
         status:
           id: status
@@ -2382,17 +2383,6 @@ display:
         operator: AND
         groups:
           1: AND
-      defaults:
-        empty: false
-        pager: false
-        relationships: false
-        fields: false
-        arguments: false
-        filters: false
-        filter_groups: false
-        footer: false
-        query: false
-      relationships: {  }
       query:
         type: views_query
         options:
@@ -2401,6 +2391,17 @@ display:
           distinct: true
           replica: false
           query_tags: {  }
+      defaults:
+        empty: false
+        query: false
+        pager: false
+        relationships: false
+        fields: false
+        arguments: false
+        filters: false
+        filter_groups: false
+        footer: false
+      relationships: {  }
       display_description: ''
       footer: {  }
       display_extenders: {  }
