@@ -3,64 +3,62 @@
  * Commerce-specific JavaScript for SAHO Shop
  */
 
-(function (Drupal, once) {
-  'use strict';
-
+((Drupal, once) => {
   /**
    * Product Gallery
    */
   Drupal.behaviors.sahoShopProductGallery = {
-    attach: function (context, settings) {
-      once('product-gallery', '.commerce-product__gallery', context).forEach(function (gallery) {
+    attach: (context, settings) => {
+      once('product-gallery', '.commerce-product__gallery', context).forEach((gallery) => {
         const mainImage = gallery.querySelector('.main-image img');
         const thumbnails = gallery.querySelectorAll('.thumbnails img');
 
         if (!mainImage || !thumbnails.length) return;
 
-        thumbnails.forEach(function (thumb) {
+        thumbnails.forEach((thumb) => {
           thumb.addEventListener('click', function () {
             // Update main image
             mainImage.src = this.dataset.fullsize || this.src;
             mainImage.alt = this.alt;
 
             // Update active state
-            thumbnails.forEach(t => t.classList.remove('active'));
+            thumbnails.forEach((t) => t.classList.remove('active'));
             this.classList.add('active');
           });
         });
       });
-    }
+    },
   };
 
   /**
    * Add to Cart Animation
    */
   Drupal.behaviors.sahoShopAddToCart = {
-    attach: function (context, settings) {
-      once('add-to-cart', '.commerce-order-item-add-to-cart-form', context).forEach(function (form) {
-        form.addEventListener('submit', function () {
+    attach: (context, settings) => {
+      once('add-to-cart', '.commerce-order-item-add-to-cart-form', context).forEach((form) => {
+        form.addEventListener('submit', () => {
           const button = form.querySelector('.button--primary');
           if (button) {
             button.classList.add('is-loading');
             button.disabled = true;
 
             // Re-enable after 2 seconds (fallback)
-            setTimeout(function () {
+            setTimeout(() => {
               button.classList.remove('is-loading');
               button.disabled = false;
             }, 2000);
           }
         });
       });
-    }
+    },
   };
 
   /**
    * Quantity Increment/Decrement
    */
   Drupal.behaviors.sahoShopQuantity = {
-    attach: function (context, settings) {
-      once('quantity-controls', '.quantity-input', context).forEach(function (input) {
+    attach: (context, settings) => {
+      once('quantity-controls', '.quantity-input', context).forEach((input) => {
         const wrapper = document.createElement('div');
         wrapper.className = 'quantity-controls';
 
@@ -79,33 +77,33 @@
         wrapper.appendChild(input);
         wrapper.appendChild(incrementBtn);
 
-        const min = parseInt(input.min) || 1;
-        const max = parseInt(input.max) || 999;
+        const min = Number.parseInt(input.min) || 1;
+        const max = Number.parseInt(input.max) || 999;
 
-        decrementBtn.addEventListener('click', function () {
-          const currentValue = parseInt(input.value) || min;
+        decrementBtn.addEventListener('click', () => {
+          const currentValue = Number.parseInt(input.value) || min;
           if (currentValue > min) {
             input.value = currentValue - 1;
             input.dispatchEvent(new Event('change'));
           }
         });
 
-        incrementBtn.addEventListener('click', function () {
-          const currentValue = parseInt(input.value) || min;
+        incrementBtn.addEventListener('click', () => {
+          const currentValue = Number.parseInt(input.value) || min;
           if (currentValue < max) {
             input.value = currentValue + 1;
             input.dispatchEvent(new Event('change'));
           }
         });
       });
-    }
+    },
   };
 
   /**
    * Cart Update Handler
    */
   Drupal.behaviors.sahoShopCartUpdate = {
-    attach: function (context, settings) {
+    attach: (context, settings) => {
       // Update cart count in header when cart changes
       if (settings.commerce_cart && typeof settings.commerce_cart.count !== 'undefined') {
         const cartCount = document.querySelector('.commerce-cart-block__count');
@@ -135,15 +133,15 @@
           }
         }
       }
-    }
+    },
   };
 
   /**
    * Product Wishlist Toggle
    */
   Drupal.behaviors.sahoShopWishlist = {
-    attach: function (context, settings) {
-      once('wishlist-toggle', '.product-card__wishlist', context).forEach(function (button) {
+    attach: (context, settings) => {
+      once('wishlist-toggle', '.product-card__wishlist', context).forEach((button) => {
         button.addEventListener('click', function (e) {
           e.preventDefault();
           this.classList.toggle('is-active');
@@ -156,7 +154,6 @@
           }
         });
       });
-    }
+    },
   };
-
 })(Drupal, once);
