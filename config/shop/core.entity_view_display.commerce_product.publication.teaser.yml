@@ -1,0 +1,88 @@
+uuid: 8b0b3d86-7407-4e49-a50c-f520f0908266
+langcode: en
+status: true
+dependencies:
+  config:
+    - commerce_product.commerce_product_type.publication
+    - core.entity_view_mode.commerce_product.teaser
+    - field.field.commerce_product.publication.body
+    - field.field.commerce_product.publication.field_author
+    - field.field.commerce_product.publication.field_categories
+    - field.field.commerce_product.publication.field_editor
+    - field.field.commerce_product.publication.field_featured
+    - field.field.commerce_product.publication.field_format
+    - field.field.commerce_product.publication.field_images
+    - field.field.commerce_product.publication.field_isbn
+    - field.field.commerce_product.publication.field_language
+    - field.field.commerce_product.publication.field_pages
+    - field.field.commerce_product.publication.field_publication_date
+    - field.field.commerce_product.publication.field_publisher
+    - field.field.commerce_product.publication.field_subtitle
+    - field.field.commerce_product.publication.field_year
+    - image.style.product_image_teaser
+  module:
+    - commerce_product
+    - image
+id: commerce_product.publication.teaser
+targetEntityType: commerce_product
+bundle: publication
+mode: teaser
+content:
+  field_author:
+    type: string
+    label: inline
+    settings:
+      link_to_entity: false
+    third_party_settings: {  }
+    weight: 3
+    region: content
+  field_categories:
+    type: entity_reference_label
+    label: inline
+    settings:
+      link: true
+    third_party_settings: {  }
+    weight: 4
+    region: content
+  field_images:
+    type: image
+    label: hidden
+    settings:
+      image_link: content
+      image_style: product_image_teaser
+      image_loading:
+        attribute: lazy
+    third_party_settings: {  }
+    weight: 0
+    region: content
+  title:
+    type: string
+    label: hidden
+    settings:
+      link_to_entity: true
+    third_party_settings: {  }
+    weight: 1
+    region: content
+  variations:
+    type: commerce_add_to_cart
+    label: hidden
+    settings:
+      combine: true
+    third_party_settings: {  }
+    weight: 2
+    region: content
+hidden:
+  body: true
+  created: true
+  field_editor: true
+  field_featured: true
+  field_format: true
+  field_isbn: true
+  field_language: true
+  field_pages: true
+  field_publication_date: true
+  field_publisher: true
+  field_subtitle: true
+  field_year: true
+  stores: true
+  uid: true

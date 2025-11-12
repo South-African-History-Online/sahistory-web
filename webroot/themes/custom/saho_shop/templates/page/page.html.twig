@@ -1,0 +1,141 @@
+{#
+/**
+ * @file
+ * Theme override for standard pages.
+ *
+ * Available variables:
+ * - page: Items for page regions.
+ */
+#}
+<div class="page-wrapper">
+  {# Header #}
+  <header class="site-header" role="banner">
+    <div class="site-header__container">
+      {# Logo/Branding #}
+      <div class="site-header__logo">
+        {% if page.header %}
+          {{ page.header }}
+        {% else %}
+          <a href="{{ front_page }}" title="{{ 'Home'|t }}" class="site-branding__logo">
+            {% if logo %}
+              <img src="{{ logo }}" alt="{{ site_name }}" />
+            {% else %}
+              <span class="site-branding__name">{{ site_name }}</span>
+            {% endif %}
+          </a>
+        {% endif %}
+      </div>
+
+      {# Main Navigation #}
+      <div class="site-header__nav{% if mobile_menu_open %} is-open{% endif %}">
+        {% if page.navigation %}
+          {{ page.navigation }}
+        {% endif %}
+      </div>
+
+      {# Actions: Search, Cart, Account #}
+      <div class="site-header__actions">
+        {% if page.navigation_collapsible %}
+          {{ page.navigation_collapsible }}
+        {% endif %}
+
+        {# Mobile Menu Toggle #}
+        <button type="button" class="mobile-menu-toggle" aria-label="{{ 'Toggle menu'|t }}" aria-expanded="false">
+          <div class="mobile-menu-toggle__icon">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  {# Main Content #}
+  <main class="main-content" role="main">
+    <a id="main-content" tabindex="-1"></a>
+
+    <div class="container">
+      {# Breadcrumbs #}
+      {% if breadcrumb %}
+        <nav class="breadcrumb-wrapper" role="navigation">
+          {{ breadcrumb }}
+        </nav>
+      {% endif %}
+
+      {# Page Title #}
+      {% if page.title %}
+        {{ page.title }}
+      {% endif %}
+
+      {# Highlighted Region #}
+      {% if page.highlighted %}
+        <div class="highlighted">
+          {{ page.highlighted }}
+        </div>
+      {% endif %}
+
+      {# Help Region #}
+      {% if page.help %}
+        <div class="help-region">
+          {{ page.help }}
+        </div>
+      {% endif %}
+
+      {# Content with Sidebars #}
+      <div class="page-content">
+        {% if page.sidebar_first %}
+          <aside class="sidebar sidebar--first" role="complementary">
+            {{ page.sidebar_first }}
+          </aside>
+        {% endif %}
+
+        <div class="main-content-inner">
+          {{ page.content }}
+        </div>
+
+        {% if page.sidebar_second %}
+          <aside class="sidebar sidebar--second" role="complementary">
+            {{ page.sidebar_second }}
+          </aside>
+        {% endif %}
+      </div>
+    </div>
+  </main>
+
+  {# Footer #}
+  <footer class="site-footer">
+    <div class="site-footer__container">
+      {% if page.footer_first or page.footer_second or page.footer_third or page.footer_fourth %}
+        <div class="site-footer__widgets">
+          {% if page.footer_first %}
+            <div class="site-footer__widget">
+              {{ page.footer_first }}
+            </div>
+          {% endif %}
+          {% if page.footer_second %}
+            <div class="site-footer__widget">
+              {{ page.footer_second }}
+            </div>
+          {% endif %}
+          {% if page.footer_third %}
+            <div class="site-footer__widget">
+              {{ page.footer_third }}
+            </div>
+          {% endif %}
+          {% if page.footer_fourth %}
+            <div class="site-footer__widget">
+              {{ page.footer_fourth }}
+            </div>
+          {% endif %}
+        </div>
+      {% endif %}
+
+      {% if page.footer %}
+        <div class="site-footer__bottom">
+          {{ page.footer }}
+        </div>
+      {% endif %}
+    </div>
+  </footer>
+</div>

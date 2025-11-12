@@ -1,0 +1,53 @@
+/**
+ * @file
+ * Browse Categories Component
+ * Subject category listing section
+ */
+
+.browse-categories {
+  padding: $spacing-3xl 0;
+  background: $color-surface-alt;
+}
+
+.subject-categories-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: $spacing-lg;
+
+  @include tablet-up {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.subject-category-item {
+  @include card-base;
+  padding: $spacing-lg;
+  text-align: center;
+  transition: all $transition-normal;
+
+  &:hover {
+    @include card-hover;
+  }
+
+  a {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+  }
+
+  &__name {
+    font-size: $font-size-body;
+    font-weight: $font-weight-semibold;
+    color: $color-text-primary;
+    margin-bottom: $spacing-xs;
+  }
+
+  &__count {
+    font-size: $font-size-body-small;
+    color: $color-text-muted;
+
+    &::after {
+      content: ' items';
+    }
+  }
+}

@@ -1,0 +1,30 @@
+{#
+/**
+ * @file
+ * Theme override for the commerce cart block.
+ *
+ * Available variables:
+ * - content: The cart block content.
+ * - attributes: HTML attributes for the block.
+ */
+#}
+{% set classes = [
+  'block',
+  'commerce-cart-block',
+] %}
+
+<div{{ attributes.addClass(classes) }}>
+  <a href="/cart" class="commerce-cart-block__link">
+    <span class="commerce-cart-block__icon">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="9" cy="21" r="1"></circle>
+        <circle cx="20" cy="21" r="1"></circle>
+        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+      </svg>
+      {% if content.count and content.count > 0 %}
+        <span class="commerce-cart-block__count">{{ content.count }}</span>
+      {% endif %}
+    </span>
+    <span class="commerce-cart-block__label">{{ 'Cart'|t }}</span>
+  </a>
+</div>

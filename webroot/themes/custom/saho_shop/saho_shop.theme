@@ -1,0 +1,89 @@
+<?php
+
+/**
+ * @file
+ * Functions to support theming in the SAHO Shop theme.
+ */
+
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\node\NodeInterface;
+
+/**
+ * Implements hook_preprocess_page() for page templates.
+ */
+function saho_shop_preprocess_page(&$variables) {
+  // Add custom variables for front page.
+  $variables['is_front'] = \Drupal::service('path.matcher')->isFrontPage();
+
+  // Add site name and slogan.
+  $site_config = \Drupal::config('system.site');
+  $variables['site_name'] = $site_config->get('name');
+  $variables['site_slogan'] = $site_config->get('slogan');
+}
+
+/**
+ * Implements hook_preprocess_commerce_product() for product templates.
+ */
+function saho_shop_preprocess_commerce_product(&$variables) {
+  // Add custom classes based on product type.
+  $product = $variables['elements']['#commerce_product'];
+  $variables['attributes']['class'][] = 'product-card';
+  $variables['attributes']['class'][] = 'product-card--' . $product->bundle();
+}
+
+/**
+ * Implements hook_preprocess_commerce_product_variation() for variation templates.
+ */
+function saho_shop_preprocess_commerce_product_variation(&$variables) {
+  // Add custom classes for variations.
+  $variation = $variables['elements']['#commerce_product_variation'];
+  $variables['attributes']['class'][] = 'product-variation';
+}
+
+/**
+ * Implements hook_form_alter().
+ */
+function saho_shop_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  // Add custom classes to commerce forms.
+  if (strpos($form_id, 'commerce_') === 0) {
+    $form['#attributes']['class'][] = 'commerce-form';
+  }
+}
+
+/**
+ * Implements hook_preprocess_block() for block templates.
+ */
+function saho_shop_preprocess_block(&$variables) {
+  // Add custom classes for commerce blocks.
+  if (isset($variables['elements']['#plugin_id'])) {
+    $plugin_id = $variables['elements']['#plugin_id'];
+    if (strpos($plugin_id, 'commerce_cart') === 0) {
+      $variables['attributes']['class'][] = 'commerce-cart-block';
+
+      // Add cart count to the template variables.
+      $cart_provider = \Drupal::service('commerce_cart.cart_provider');
+      $cart_session = \Drupal::service('commerce_cart.cart_session');
+      $store = \Drupal::service('commerce_store.current_store')->getStore();
+
+      if ($store) {
+        $carts = $cart_provider->getCarts();
+        $carts = array_filter($carts, function ($cart) use ($cart_session) {
+          return $cart_session->hasCartId($cart->id());
+        });
+
+        // Calculate total item count across all carts.
+        $count = 0;
+        foreach ($carts as $cart) {
+          foreach ($cart->getItems() as $order_item) {
+            $count += (int) $order_item->getQuantity();
+          }
+        }
+
+        $variables['content']['count'] = $count;
+
+        // Also attach the count to drupalSettings for JavaScript updates.
+        $variables['#attached']['drupalSettings']['commerce_cart']['count'] = $count;
+      }
+    }
+  }
+}

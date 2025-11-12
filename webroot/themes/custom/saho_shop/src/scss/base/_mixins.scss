@@ -1,0 +1,196 @@
+/**
+ * @file
+ * SAHO Shop Mixins
+ * Reusable style patterns for the shop theme
+ */
+
+// ===========================
+// Responsive Breakpoints
+// ===========================
+
+@mixin mobile-only {
+  @media (max-width: #{$breakpoint-tablet - 1px}) {
+    @content;
+  }
+}
+
+@mixin tablet-up {
+  @media (min-width: $breakpoint-tablet) {
+    @content;
+  }
+}
+
+@mixin desktop-up {
+  @media (min-width: $breakpoint-desktop) {
+    @content;
+  }
+}
+
+@mixin large-up {
+  @media (min-width: $breakpoint-large) {
+    @content;
+  }
+}
+
+// ===========================
+// Typography
+// ===========================
+
+@mixin heading-base {
+  font-family: $font-family-headings;
+  font-weight: $font-weight-bold;
+  line-height: $line-height-tight;
+  color: $color-text-primary;
+  margin-bottom: $spacing-md;
+}
+
+@mixin body-text {
+  font-family: $font-family-base;
+  font-size: $font-size-body;
+  font-weight: $font-weight-normal;
+  line-height: $line-height-normal;
+  color: $color-text-secondary;
+}
+
+// ===========================
+// Buttons
+// ===========================
+
+@mixin btn-reset {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+@mixin btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-sm $spacing-lg;
+  background-color: $color-heritage-red;
+  color: $color-surface;
+  font-weight: $font-weight-semibold;
+  border: none;
+  border-radius: $border-radius-sm;
+  transition: all $transition-normal;
+  cursor: pointer;
+  text-decoration: none;
+
+  &:hover,
+  &:focus {
+    background-color: darken($color-heritage-red, 10%);
+    color: $color-surface;
+    transform: translateY(-1px);
+    box-shadow: $shadow-md;
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+@mixin btn-secondary {
+  @include btn-primary;
+  background-color: $color-slate-blue;
+
+  &:hover,
+  &:focus {
+    background-color: darken($color-slate-blue, 10%);
+  }
+}
+
+// ===========================
+// Cards
+// ===========================
+
+@mixin card-base {
+  background: $color-surface;
+  border: $border-width solid $border-color;
+  border-radius: $border-radius-md;
+  padding: $spacing-lg;
+  box-shadow: $shadow-sm;
+  transition: all $transition-normal;
+}
+
+@mixin card-hover {
+  &:hover {
+    box-shadow: $shadow-lg;
+    transform: translateY(-2px);
+  }
+}
+
+// ===========================
+// Utilities
+// ===========================
+
+@mixin clearfix {
+  &::after {
+    content: "";
+    display: table;
+    clear: both;
+  }
+}
+
+@mixin visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@mixin container {
+  width: 100%;
+  max-width: $container-max-width;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: $container-padding;
+  padding-right: $container-padding;
+}
+
+// ===========================
+// Product Specific
+// ===========================
+
+@mixin product-card {
+  @include card-base;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+
+  .product-image {
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    border-radius: $border-radius-sm;
+    margin-bottom: $spacing-md;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform $transition-normal;
+    }
+  }
+
+  &:hover {
+    @include card-hover;
+
+    .product-image img {
+      transform: scale(1.05);
+    }
+  }
+}
+
+@mixin price-display {
+  font-size: $font-size-h3;
+  font-weight: $font-weight-bold;
+  color: $color-price;
+}

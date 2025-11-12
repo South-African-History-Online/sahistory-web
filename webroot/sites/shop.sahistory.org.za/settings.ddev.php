@@ -20,6 +20,15 @@ $databases['default']['default']['port'] = $port;
 $databases['default']['default']['driver'] = $driver;
 $databases['default']['default']['prefix'] = '';
 
+// Old publications database connection for migration
+$databases['old_publications']['default']['database'] = "old_publications";
+$databases['old_publications']['default']['username'] = "db";
+$databases['old_publications']['default']['password'] = "db";
+$databases['old_publications']['default']['host'] = $host;
+$databases['old_publications']['default']['port'] = $port;
+$databases['old_publications']['default']['driver'] = $driver;
+$databases['old_publications']['default']['prefix'] = '';
+
 // Security: hash salt
 $settings['hash_salt'] = '51cb29294a6425bac141bc2a6739f3393dfbb41d5dc1d91b75d07b86906b62cd';
 

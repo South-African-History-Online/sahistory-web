@@ -1,0 +1,159 @@
+/**
+ * @file
+ * Product Card Component
+ * Styled cards for displaying products in grids and lists
+ */
+
+.product-card {
+  @include product-card;
+
+  &__image {
+    position: relative;
+    overflow: hidden;
+    border-radius: $border-radius-sm;
+    margin-bottom: $spacing-md;
+    background: $color-surface-alt;
+
+    img {
+      width: 100%;
+      height: auto;
+      display: block;
+      transition: transform $transition-normal;
+    }
+  }
+
+  &__badge {
+    position: absolute;
+    top: $spacing-sm;
+    right: $spacing-sm;
+    padding: $spacing-xs $spacing-sm;
+    background: $color-heritage-red;
+    color: $color-surface;
+    font-size: $font-size-caption;
+    font-weight: $font-weight-semibold;
+    border-radius: $border-radius-sm;
+    text-transform: uppercase;
+    z-index: 2;
+
+    &--new {
+      background: $color-info;
+    }
+
+    &--sale {
+      background: $color-warning;
+    }
+
+    &--out-of-stock {
+      background: $color-danger;
+    }
+  }
+
+  &__body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  &__category {
+    font-size: $font-size-body-small;
+    color: $color-text-muted;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: $spacing-xs;
+  }
+
+  &__title {
+    font-size: $font-size-h4;
+    font-weight: $font-weight-semibold;
+    color: $color-text-primary;
+    margin-bottom: $spacing-sm;
+    line-height: $line-height-tight;
+
+    a {
+      color: inherit;
+      text-decoration: none;
+      transition: color $transition-fast;
+
+      &:hover {
+        color: $color-heritage-red;
+      }
+    }
+  }
+
+  &__description {
+    font-size: $font-size-body-small;
+    color: $color-text-secondary;
+    margin-bottom: $spacing-md;
+    flex: 1;
+
+    // Truncate to 3 lines
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  &__price {
+    @include price-display;
+    margin-bottom: $spacing-md;
+
+    .price-original {
+      font-size: $font-size-body;
+      color: $color-text-muted;
+      text-decoration: line-through;
+      margin-right: $spacing-sm;
+    }
+  }
+
+  &__actions {
+    display: flex;
+    gap: $spacing-sm;
+    align-items: center;
+  }
+
+  &__add-to-cart {
+    @include btn-primary;
+    flex: 1;
+  }
+
+  &__wishlist {
+    @include btn-reset;
+    padding: $spacing-sm;
+    color: $color-text-muted;
+    transition: color $transition-fast;
+
+    &:hover {
+      color: $color-heritage-red;
+    }
+  }
+
+  // Grid variations
+  &--grid {
+    .product-card__image {
+      aspect-ratio: 1;
+    }
+  }
+
+  &--list {
+    flex-direction: row;
+    gap: $spacing-lg;
+
+    .product-card__image {
+      width: 200px;
+      flex-shrink: 0;
+    }
+  }
+}
+
+// Product Grid Layout
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: $spacing-lg;
+  margin-bottom: $spacing-2xl;
+
+  @include tablet-up {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: $spacing-xl;
+  }
+}

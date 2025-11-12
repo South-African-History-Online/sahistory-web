@@ -1,0 +1,306 @@
+/**
+ * @file
+ * Commerce-specific styles for SAHO Shop
+ */
+
+@import 'base/variables';
+@import 'base/mixins';
+
+// Component imports
+@import 'components/hero';
+@import 'components/product-card';
+@import 'components/product-card-enhancements';
+@import 'components/cart';
+@import 'components/sections';
+@import 'components/category-cards';
+@import 'components/benefits';
+@import 'components/browse-categories';
+
+// ===========================
+// Product Display
+// ===========================
+
+.commerce-product {
+  &--full {
+    @include container;
+    padding-top: $spacing-2xl;
+    padding-bottom: $spacing-3xl;
+
+    .product-main {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: $spacing-2xl;
+
+      @include tablet-up {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+  }
+
+  &__gallery {
+    position: sticky;
+    top: $spacing-2xl;
+    align-self: start;
+
+    .main-image {
+      @include card-base;
+      padding: 0;
+      overflow: hidden;
+      margin-bottom: $spacing-md;
+
+      img {
+        width: 100%;
+        height: auto;
+        display: block;
+      }
+    }
+
+    .thumbnails {
+      display: flex;
+      gap: $spacing-sm;
+      overflow-x: auto;
+
+      img {
+        width: 80px;
+        height: 80px;
+        object-fit: cover;
+        border-radius: $border-radius-sm;
+        cursor: pointer;
+        border: 2px solid transparent;
+        transition: border-color $transition-fast;
+
+        &:hover,
+        &.active {
+          border-color: $color-heritage-red;
+        }
+      }
+    }
+  }
+
+  &__details {
+    .product-title {
+      font-size: $font-size-h1;
+      margin-bottom: $spacing-md;
+    }
+
+    .product-sku {
+      font-size: $font-size-body-small;
+      color: $color-text-muted;
+      margin-bottom: $spacing-md;
+    }
+
+    .product-price {
+      @include price-display;
+      margin-bottom: $spacing-xl;
+    }
+
+    .product-description {
+      @include body-text;
+      margin-bottom: $spacing-xl;
+      padding-bottom: $spacing-xl;
+      border-bottom: $border-width solid $border-color;
+    }
+
+    .product-meta {
+      margin-bottom: $spacing-xl;
+
+      .meta-item {
+        display: flex;
+        gap: $spacing-md;
+        margin-bottom: $spacing-sm;
+        font-size: $font-size-body-small;
+
+        .label {
+          font-weight: $font-weight-semibold;
+          color: $color-text-primary;
+          min-width: 100px;
+        }
+
+        .value {
+          color: $color-text-secondary;
+        }
+      }
+    }
+  }
+}
+
+// Add to Cart Form
+.commerce-order-item-add-to-cart-form {
+  @include card-base;
+
+  .form-item {
+    margin-bottom: $spacing-md;
+
+    label {
+      display: block;
+      font-weight: $font-weight-semibold;
+      margin-bottom: $spacing-sm;
+      color: $color-text-primary;
+    }
+
+    select,
+    input[type="number"] {
+      width: 100%;
+      padding: $spacing-sm $spacing-md;
+      border: $border-width solid $border-color;
+      border-radius: $border-radius-sm;
+      font-size: $font-size-body;
+      transition: border-color $transition-fast;
+
+      &:focus {
+        outline: none;
+        border-color: $color-heritage-red;
+      }
+    }
+  }
+
+  .form-actions {
+    margin-top: $spacing-lg;
+
+    .button--primary {
+      @include btn-primary;
+      width: 100%;
+      font-size: $font-size-body-large;
+      padding: $spacing-md;
+    }
+  }
+}
+
+// ===========================
+// Checkout Pages
+// ===========================
+
+.checkout-page {
+  @include container;
+  padding: $spacing-2xl 0 $spacing-3xl;
+
+  &__title {
+    @include heading-base;
+    font-size: $font-size-h1;
+    margin-bottom: $spacing-xl;
+  }
+
+  &__content {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: $spacing-2xl;
+
+    @include tablet-up {
+      grid-template-columns: 2fr 1fr;
+    }
+  }
+
+  &__main {
+    .checkout-step {
+      @include card-base;
+      margin-bottom: $spacing-lg;
+
+      &__title {
+        font-size: $font-size-h3;
+        margin-bottom: $spacing-md;
+        padding-bottom: $spacing-md;
+        border-bottom: $border-width solid $border-color;
+      }
+    }
+  }
+
+  &__sidebar {
+    .order-summary {
+      @include card-base;
+      position: sticky;
+      top: $spacing-2xl;
+
+      &__title {
+        font-size: $font-size-h4;
+        margin-bottom: $spacing-md;
+      }
+    }
+  }
+}
+
+// ===========================
+// Product Listing Pages
+// ===========================
+
+.product-listing {
+  @include container;
+  padding: $spacing-2xl 0 $spacing-3xl;
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: $spacing-xl;
+
+    @include mobile-only {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: $spacing-md;
+    }
+  }
+
+  &__title {
+    @include heading-base;
+    font-size: $font-size-h1;
+    margin: 0;
+  }
+
+  &__filters {
+    display: flex;
+    gap: $spacing-md;
+    align-items: center;
+  }
+
+  &__content {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: $spacing-2xl;
+
+    @include desktop-up {
+      grid-template-columns: 250px 1fr;
+    }
+  }
+
+  &__sidebar {
+    .filter-group {
+      @include card-base;
+      margin-bottom: $spacing-lg;
+
+      &__title {
+        font-size: $font-size-h4;
+        margin-bottom: $spacing-md;
+      }
+    }
+  }
+}
+
+// ===========================
+// Stock Status
+// ===========================
+
+.stock-status {
+  display: inline-flex;
+  align-items: center;
+  gap: $spacing-xs;
+  font-size: $font-size-body-small;
+  font-weight: $font-weight-semibold;
+
+  &--in-stock {
+    color: $color-in-stock;
+  }
+
+  &--low-stock {
+    color: $color-warning;
+  }
+
+  &--out-of-stock {
+    color: $color-out-of-stock;
+  }
+
+  &__indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+}

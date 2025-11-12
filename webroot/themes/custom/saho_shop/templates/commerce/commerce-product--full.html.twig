@@ -1,0 +1,116 @@
+{#
+/**
+ * @file
+ * Theme override for full product display.
+ *
+ * Available variables:
+ * - product: The product entity.
+ * - attributes: HTML attributes for the wrapper.
+ */
+#}
+{% set classes = [
+  'commerce-product',
+  'commerce-product--full',
+  'commerce-product--' ~ product.bundle|clean_class,
+] %}
+
+<article{{ attributes.addClass(classes) }}>
+  <div class="product-main">
+    {# Product Gallery #}
+    <div class="commerce-product__gallery">
+      {% if product.field_images|render %}
+        <div class="main-image">
+          {{ product.field_images.0 }}
+        </div>
+        {% if product.field_images|length > 1 %}
+          <div class="thumbnails">
+            {% for image in product.field_images %}
+              {{ image }}
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endif %}
+    </div>
+
+    {# Product Details #}
+    <div class="commerce-product__details">
+      <h1 class="product-title">{{ product.title.value }}</h1>
+
+      {% if product.field_sku|render %}
+        <div class="product-sku">
+          {{ 'SKU'|t }}: {{ product.field_sku.value }}
+        </div>
+      {% endif %}
+
+      {% if product.variations|render %}
+        <div class="product-price">
+          {{ product.variations }}
+        </div>
+      {% endif %}
+
+      {% if product.field_stock_status|render %}
+        <div class="stock-status stock-status--{{ product.field_stock_status.value|clean_class }}">
+          <span class="stock-status__indicator"></span>
+          {{ product.field_stock_status }}
+        </div>
+      {% endif %}
+
+      {% if product.body|render %}
+        <div class="product-description">
+          {{ product.body }}
+        </div>
+      {% endif %}
+
+      {# Product Meta Information #}
+      <div class="product-meta">
+        {% if product.field_author|render %}
+          <div class="meta-item">
+            <span class="label">{{ 'Author'|t }}:</span>
+            <span class="value">{{ product.field_author }}</span>
+          </div>
+        {% endif %}
+
+        {% if product.field_publisher|render %}
+          <div class="meta-item">
+            <span class="label">{{ 'Publisher'|t }}:</span>
+            <span class="value">{{ product.field_publisher }}</span>
+          </div>
+        {% endif %}
+
+        {% if product.field_publication_date|render %}
+          <div class="meta-item">
+            <span class="label">{{ 'Published'|t }}:</span>
+            <span class="value">{{ product.field_publication_date }}</span>
+          </div>
+        {% endif %}
+
+        {% if product.field_categories|render %}
+          <div class="meta-item">
+            <span class="label">{{ 'Categories'|t }}:</span>
+            <span class="value">{{ product.field_categories }}</span>
+          </div>
+        {% endif %}
+      </div>
+
+      {# Add to Cart Form #}
+      {% if product.variation_cart_form|render %}
+        {{ product.variation_cart_form }}
+      {% endif %}
+
+      {# Additional Product Information #}
+      {% if product.field_additional_info|render %}
+        <div class="product-additional-info">
+          {{ product.field_additional_info }}
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  {# Related Products #}
+  {% if product.field_related_products|render %}
+    <div class="related-products">
+      <h2>{{ 'You May Also Like'|t }}</h2>
+      {{ product.field_related_products }}
+    </div>
+  {% endif %}
+</article>
