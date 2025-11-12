@@ -1,10 +1,11 @@
 {#
 /**
  * @file
- * Theme override for full product display.
+ * Theme override for full product display (Publication type).
  *
  * Available variables:
- * - product: The product entity.
+ * - product: The product entity with publication fields.
+ * - product_entity: Alias for product.
  * - attributes: HTML attributes for the wrapper.
  */
 #}
@@ -29,35 +30,28 @@
             {% endfor %}
           </div>
         {% endif %}
+      {% else %}
+        <div class="no-image">
+          <div class="placeholder">{{ 'No image available'|t }}</div>
+        </div>
       {% endif %}
     </div>
 
     {# Product Details #}
     <div class="commerce-product__details">
+      {# Title and Subtitle #}
       <h1 class="product-title">{{ product.title.value }}</h1>
 
-      {% if product.field_sku|render %}
-        <div class="product-sku">
-          {{ 'SKU'|t }}: {{ product.field_sku.value }}
+      {% if product.field_subtitle|render %}
+        <div class="product-subtitle">
+          {{ product.field_subtitle }}
         </div>
       {% endif %}
 
+      {# Price and Add to Cart #}
       {% if product.variations|render %}
         <div class="product-price">
           {{ product.variations }}
-        </div>
-      {% endif %}
-
-      {% if product.field_stock_status|render %}
-        <div class="stock-status stock-status--{{ product.field_stock_status.value|clean_class }}">
-          <span class="stock-status__indicator"></span>
-          {{ product.field_stock_status }}
-        </div>
-      {% endif %}
-
-      {% if product.body|render %}
-        <div class="product-description">
-          {{ product.body }}
         </div>
       {% endif %}
 
@@ -66,7 +60,14 @@
         {% if product.field_author|render %}
           <div class="meta-item">
             <span class="label">{{ 'Author'|t }}:</span>
-            <span class="value">{{ product.field_author }}</span>
+            <span class="value">{{ product.field_author.value }}</span>
+          </div>
+        {% endif %}
+
+        {% if product.field_editor|render %}
+          <div class="meta-item">
+            <span class="label">{{ 'Editor'|t }}:</span>
+            <span class="value">{{ product.field_editor.value }}</span>
           </div>
         {% endif %}
 
@@ -84,6 +85,41 @@
           </div>
         {% endif %}
 
+        {% if product.field_year|render %}
+          <div class="meta-item">
+            <span class="label">{{ 'Year'|t }}:</span>
+            <span class="value">{{ product.field_year.value }}</span>
+          </div>
+        {% endif %}
+
+        {% if product.field_isbn|render %}
+          <div class="meta-item">
+            <span class="label">{{ 'ISBN'|t }}:</span>
+            <span class="value">{{ product.field_isbn.value }}</span>
+          </div>
+        {% endif %}
+
+        {% if product.field_pages|render %}
+          <div class="meta-item">
+            <span class="label">{{ 'Pages'|t }}:</span>
+            <span class="value">{{ product.field_pages.value }}</span>
+          </div>
+        {% endif %}
+
+        {% if product.field_format|render %}
+          <div class="meta-item">
+            <span class="label">{{ 'Format'|t }}:</span>
+            <span class="value">{{ product.field_format }}</span>
+          </div>
+        {% endif %}
+
+        {% if product.field_language|render %}
+          <div class="meta-item">
+            <span class="label">{{ 'Language'|t }}:</span>
+            <span class="value">{{ product.field_language }}</span>
+          </div>
+        {% endif %}
+
         {% if product.field_categories|render %}
           <div class="meta-item">
             <span class="label">{{ 'Categories'|t }}:</span>
@@ -92,25 +128,13 @@
         {% endif %}
       </div>
 
-      {# Add to Cart Form #}
-      {% if product.variation_cart_form|render %}
-        {{ product.variation_cart_form }}
-      {% endif %}
-
-      {# Additional Product Information #}
-      {% if product.field_additional_info|render %}
-        <div class="product-additional-info">
-          {{ product.field_additional_info }}
+      {# Product Description #}
+      {% if product.body|render %}
+        <div class="product-description">
+          <h2>{{ 'About this publication'|t }}</h2>
+          {{ product.body }}
         </div>
       {% endif %}
     </div>
   </div>
-
-  {# Related Products #}
-  {% if product.field_related_products|render %}
-    <div class="related-products">
-      <h2>{{ 'You May Also Like'|t }}</h2>
-      {{ product.field_related_products }}
-    </div>
-  {% endif %}
 </article>

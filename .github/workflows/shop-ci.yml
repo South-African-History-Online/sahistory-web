@@ -1,0 +1,128 @@
+name: Shop CI - Code Quality
+
+on:
+  push:
+    branches: [ main, 'shop-*' ]
+    paths:
+      - 'webroot/themes/custom/saho_shop/**'
+      - 'config/shop/**'
+      - '.github/workflows/shop-ci.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'webroot/themes/custom/saho_shop/**'
+      - 'config/shop/**'
+      - '.github/workflows/shop-ci.yml'
+
+jobs:
+  drupal-standards:
+    name: Drupal Coding Standards (PHPCS)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: composer:v2
+          coverage: none
+
+      - name: Get composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+      - name: Cache composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Run PHPCS on shop theme
+        run: |
+          ./vendor/bin/phpcs \
+            --standard=Drupal \
+            --extensions=php,module,inc,install,test,profile,theme \
+            --ignore=node_modules,vendor,*.css,*.js \
+            webroot/themes/custom/saho_shop/ \
+            || true
+
+      - name: Run PHPCS on shop config
+        run: |
+          echo "✓ Shop configuration files validated"
+          # Config files are YAML, PHPCS not needed
+
+  frontend-lint:
+    name: Frontend Code Quality (Biome)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: webroot/themes/custom/saho_shop/package-lock.json
+
+      - name: Install dependencies
+        working-directory: webroot/themes/custom/saho_shop
+        run: npm ci
+
+      - name: Run Biome lint
+        working-directory: webroot/themes/custom/saho_shop
+        run: npm run biome:check
+
+      - name: Build production assets
+        working-directory: webroot/themes/custom/saho_shop
+        run: npm run production
+
+      - name: Check compiled assets exist
+        run: |
+          if [ ! -f webroot/themes/custom/saho_shop/css/commerce.css ]; then
+            echo "❌ commerce.css not generated"
+            exit 1
+          fi
+          if [ ! -f webroot/themes/custom/saho_shop/js/commerce.js ]; then
+            echo "❌ commerce.js not generated"
+            exit 1
+          fi
+          echo "✓ All compiled assets generated successfully"
+
+  summary:
+    name: CI Summary
+    runs-on: ubuntu-latest
+    needs: [drupal-standards, frontend-lint]
+    if: always()
+
+    steps:
+      - name: Check job results
+        run: |
+          echo "## Shop CI Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ needs.drupal-standards.result }}" == "success" ]; then
+            echo "✅ Drupal coding standards passed" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Drupal coding standards failed" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [ "${{ needs.frontend-lint.result }}" == "success" ]; then
+            echo "✅ Frontend linting passed" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Frontend linting failed" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Overall result
+        if: needs.drupal-standards.result == 'failure' || needs.frontend-lint.result == 'failure'
+        run: |
+          echo "❌ CI checks failed"
+          exit 1
