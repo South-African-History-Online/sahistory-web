@@ -30,7 +30,16 @@ $databases['old_publications']['default']['driver'] = $driver;
 $databases['old_publications']['default']['prefix'] = '';
 
 // Security: hash salt
-$settings['hash_salt'] = '51cb29294a6425bac141bc2a6739f3393dfbb41d5dc1d91b75d07b86906b62cd';
+// IMPORTANT: Set this in settings.local.php or environment variable
+// Generate with: drush eval "echo \Drupal\Component\Utility\Crypt::randomBytesBase64(55)"
+// DO NOT commit the actual hash_salt to git!
+if (file_exists($app_root . '/' . $site_path . '/settings.local.php')) {
+  include $app_root . '/' . $site_path . '/settings.local.php';
+}
+// Fallback for DDEV (override in settings.local.php for production)
+if (empty($settings['hash_salt'])) {
+  $settings['hash_salt'] = getenv('DRUPAL_HASH_SALT') ?: 'INSECURE-DEVELOPMENT-ONLY-CHANGE-IN-PRODUCTION';
+}
 
 // Recommended setting for Drupal 11
 $settings['state_cache'] = TRUE;
