@@ -1,0 +1,27 @@
+{#
+/**
+ * @file
+ * Theme override for site branding block.
+ */
+#}
+{% set attributes = attributes.addClass('site-branding') %}
+
+<div{{ attributes }}>
+  {% if site_logo %}
+    <a href="{{ path('<front>') }}" class="site-branding__logo" rel="home">
+      <img src="{{ site_logo }}" alt="{{ 'Home'|t }}" />
+    </a>
+  {% endif %}
+  {% if site_name %}
+    <div class="site-branding__name">
+      <a href="{{ path('<front>') }}" rel="home">
+        {{ site_name }}
+      </a>
+    </div>
+  {% endif %}
+  {% if site_slogan %}
+    <div class="site-branding__slogan">
+      {{ site_slogan }}
+    </div>
+  {% endif %}
+</div>

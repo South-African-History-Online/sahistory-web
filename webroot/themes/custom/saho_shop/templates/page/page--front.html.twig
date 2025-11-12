@@ -1,0 +1,223 @@
+{#
+/**
+ * @file
+ * Theme override for the shop front page.
+ *
+ * Available variables:
+ * - page: Items for page regions.
+ * - is_front: TRUE if this is the front page.
+ * - site_name: The name of the site.
+ * - site_slogan: The slogan of the site.
+ */
+#}
+<div class="page-wrapper">
+  {# Hero Section #}
+  <section class="hero hero--enhanced">
+    <div class="hero__background">
+      {# Background image can be added via CSS or inline #}
+    </div>
+    <div class="hero__container">
+      <div class="hero__content">
+        <div class="hero__eyebrow">South African History Online</div>
+        <h1 class="hero__title">{{ 'Preserve History, Support Education'|t }}</h1>
+        <p class="hero__description">
+          {{ 'Discover books, photographs, and publications that document South Africa\'s rich history. Every purchase supports our mission to make history accessible to all.'|t }}
+        </p>
+
+        {# Integrated Search Bar #}
+        <div class="hero__search">
+          <form action="/shop/search" method="get" class="hero__search-form">
+            <div class="hero__search-wrapper">
+              <input
+                type="search"
+                name="keys"
+                placeholder="{{ 'Search for books, authors, topics...'|t }}"
+                class="hero__search-input"
+                aria-label="{{ 'Search products'|t }}"
+              />
+              <button type="submit" class="hero__search-button">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <path d="m21 21-4.35-4.35"></path>
+                </svg>
+                <span class="visually-hidden">{{ 'Search'|t }}</span>
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <div class="hero__actions">
+          <a href="#new-arrivals" class="hero__cta">
+            {{ 'Browse Collection'|t }}
+            <span aria-hidden="true">→</span>
+          </a>
+          <a href="/shop/all" class="hero__cta hero__cta--secondary">
+            {{ 'View All Products'|t }}
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {# Main Content #}
+  <main class="main-content" role="main">
+    <a id="main-content" tabindex="-1"></a>
+
+    {# Highlighted Region #}
+    {% if page.highlighted %}
+      <div class="container">
+        <div class="highlighted">
+          {{ page.highlighted }}
+        </div>
+      </div>
+    {% endif %}
+
+    {# Featured Categories #}
+    <section class="featured-categories">
+      <div class="container">
+        <div class="section-header">
+          <h2 class="section-title">{{ 'Shop by Category'|t }}</h2>
+        </div>
+        <div class="category-cards">
+          <div class="category-card">
+            <div class="category-card__icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+              </svg>
+            </div>
+            <h3 class="category-card__title">{{ 'Publications'|t }}</h3>
+            <p class="category-card__description">{{ 'Books and academic publications on South African history'|t }}</p>
+            <a href="/shop/publications" class="category-card__link">{{ 'Browse Books'|t }} →</a>
+          </div>
+
+          <div class="category-card">
+            <div class="category-card__icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                <polyline points="21 15 16 10 5 21"></polyline>
+              </svg>
+            </div>
+            <h3 class="category-card__title">{{ 'Photographs'|t }}</h3>
+            <p class="category-card__description">{{ 'Historical photographs and digital archives'|t }}</p>
+            <a href="/shop/photographs" class="category-card__link">{{ 'View Photos'|t }} →</a>
+          </div>
+
+          <div class="category-card">
+            <div class="category-card__icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+              </svg>
+            </div>
+            <h3 class="category-card__title">{{ 'Support SAHO'|t }}</h3>
+            <p class="category-card__description">{{ 'Donations to preserve and share our history'|t }}</p>
+            <a href="/donate" class="category-card__link">{{ 'Donate Now'|t }} →</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    {# New Arrivals Section #}
+    <section id="new-arrivals" class="product-section">
+      <div class="container">
+        {{ page.content }}
+      </div>
+    </section>
+
+    {# Browse by Subject Categories #}
+    {% if page.sidebar_first %}
+      <section class="browse-categories">
+        <div class="container">
+          <div class="section-header">
+            <h2 class="section-title">{{ 'Browse by Subject'|t }}</h2>
+            <p class="section-description">{{ 'Explore our collection by historical themes and topics'|t }}</p>
+          </div>
+          {{ page.sidebar_first }}
+        </div>
+      </section>
+    {% endif %}
+
+    {# Why Shop SAHO Section #}
+    <section class="why-shop">
+      <div class="container">
+        <div class="section-header">
+          <h2 class="section-title">{{ 'Why Shop With SAHO'|t }}</h2>
+          <p class="section-description">{{ 'Every purchase supports our mission'|t }}</p>
+        </div>
+        <div class="benefits-grid">
+          <div class="benefit-card">
+            <div class="benefit-card__icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+              </svg>
+            </div>
+            <h3 class="benefit-card__title">{{ 'Preserve History'|t }}</h3>
+            <p class="benefit-card__text">{{ 'Support the preservation and digitization of South African historical documents'|t }}</p>
+          </div>
+
+          <div class="benefit-card">
+            <div class="benefit-card__icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+              </svg>
+            </div>
+            <h3 class="benefit-card__title">{{ 'Support Education'|t }}</h3>
+            <p class="benefit-card__text">{{ 'Fund educational programs and research initiatives across South Africa'|t }}</p>
+          </div>
+
+          <div class="benefit-card">
+            <div class="benefit-card__icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+            </div>
+            <h3 class="benefit-card__title">{{ 'Accessible Knowledge'|t }}</h3>
+            <p class="benefit-card__text">{{ 'Make South African history accessible to researchers, students, and the public'|t }}</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  {# Footer #}
+  <footer class="site-footer">
+    <div class="site-footer__container">
+      {% if page.footer_first or page.footer_second or page.footer_third or page.footer_fourth %}
+        <div class="site-footer__widgets">
+          {% if page.footer_first %}
+            <div class="site-footer__widget">
+              {{ page.footer_first }}
+            </div>
+          {% endif %}
+          {% if page.footer_second %}
+            <div class="site-footer__widget">
+              {{ page.footer_second }}
+            </div>
+          {% endif %}
+          {% if page.footer_third %}
+            <div class="site-footer__widget">
+              {{ page.footer_third }}
+            </div>
+          {% endif %}
+          {% if page.footer_fourth %}
+            <div class="site-footer__widget">
+              {{ page.footer_fourth }}
+            </div>
+          {% endif %}
+        </div>
+      {% endif %}
+
+      {% if page.footer %}
+        <div class="site-footer__bottom">
+          {{ page.footer }}
+        </div>
+      {% endif %}
+    </div>
+  </footer>
+</div>

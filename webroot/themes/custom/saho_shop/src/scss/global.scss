@@ -1,0 +1,231 @@
+/**
+ * @file
+ * SAHO Shop Global Styles
+ * Modern eCommerce theme following SAHO design system
+ */
+
+// ===========================
+// Base Imports
+// ===========================
+@import 'base/variables';
+@import 'base/mixins';
+
+// ===========================
+// Component Imports
+// ===========================
+@import 'components/navigation';
+
+// ===========================
+// Base Styles
+// ===========================
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  @include body-text;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+// Typography
+h1, h2, h3, h4, h5, h6 {
+  @include heading-base;
+}
+
+h1 {
+  font-size: $font-size-h1;
+}
+
+h2 {
+  font-size: $font-size-h2;
+}
+
+h3 {
+  font-size: $font-size-h3;
+}
+
+h4 {
+  font-size: $font-size-h4;
+}
+
+a {
+  color: $color-heritage-red;
+  text-decoration: none;
+  transition: color $transition-fast;
+
+  &:hover {
+    color: darken($color-heritage-red, 10%);
+  }
+}
+
+// Buttons
+.btn {
+  @include btn-primary;
+
+  &-secondary {
+    @include btn-secondary;
+  }
+
+  &-outline {
+    background: transparent;
+    border: 2px solid $color-heritage-red;
+    color: $color-heritage-red;
+
+    &:hover {
+      background: $color-heritage-red;
+      color: $color-surface;
+    }
+  }
+}
+
+// ===========================
+// Layout
+// ===========================
+
+.container {
+  @include container;
+}
+
+.page-wrapper {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-content {
+  flex: 1;
+  padding: $spacing-2xl 0;
+}
+
+// ===========================
+// Header
+// ===========================
+
+.site-header {
+  background: $color-surface;
+  border-bottom: $border-width solid $border-color;
+  box-shadow: $shadow-sm;
+  position: sticky;
+  top: 0;
+  z-index: $z-index-sticky;
+
+  &__container {
+    @include container;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: $spacing-md;
+    padding-bottom: $spacing-md;
+  }
+
+  &__logo {
+    font-size: $font-size-h3;
+    font-weight: $font-weight-bold;
+    color: $color-heritage-red;
+
+    img {
+      max-height: 50px;
+      width: auto;
+    }
+  }
+
+  &__nav {
+    display: flex;
+    gap: $spacing-lg;
+    align-items: center;
+
+    @include mobile-only {
+      display: none;
+    }
+  }
+
+  &__actions {
+    display: flex;
+    gap: $spacing-md;
+    align-items: center;
+  }
+}
+
+// ===========================
+// Footer
+// ===========================
+
+.site-footer {
+  background: $color-slate-blue;
+  color: $color-surface;
+  padding: $spacing-3xl 0 $spacing-xl;
+  margin-top: $spacing-3xl;
+
+  &__container {
+    @include container;
+  }
+
+  &__widgets {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: $spacing-2xl;
+    margin-bottom: $spacing-2xl;
+  }
+
+  &__widget {
+    h3 {
+      color: $color-muted-gold;
+      font-size: $font-size-h4;
+      margin-bottom: $spacing-md;
+    }
+
+    a {
+      color: rgba(255, 255, 255, 0.8);
+      display: block;
+      margin-bottom: $spacing-sm;
+
+      &:hover {
+        color: $color-surface;
+      }
+    }
+  }
+
+  &__bottom {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: $spacing-lg;
+    text-align: center;
+    font-size: $font-size-body-small;
+    color: rgba(255, 255, 255, 0.7);
+  }
+}
+
+// ===========================
+// Utility Classes
+// ===========================
+
+.visually-hidden {
+  @include visually-hidden;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-muted {
+  color: $color-text-muted;
+}
+
+.mb-sm {
+  margin-bottom: $spacing-sm;
+}
+
+.mb-md {
+  margin-bottom: $spacing-md;
+}
+
+.mb-lg {
+  margin-bottom: $spacing-lg;
+}
+
+.mb-xl {
+  margin-bottom: $spacing-xl;
+}
