@@ -1,0 +1,50 @@
+{#
+/**
+ * @file
+ * Theme override for Products View - New Products Block.
+ *
+ * Available variables:
+ * - rows: The output from the view (rendered items).
+ * - view: The view object.
+ * - title: The title of the view.
+ * - header: The header of the view.
+ * - footer: The footer of the view.
+ * - empty: The empty text to display if no items.
+ */
+#}
+<section class="products-view">
+  {% if title %}
+    <div class="section-header">
+      <h2 class="section-title">{{ title }}</h2>
+      {% if view.result|length > 0 %}
+        <p class="section-description">
+          {{ 'Handpicked publications and photographs from our collection'|t }}
+        </p>
+      {% endif %}
+    </div>
+  {% endif %}
+
+  {% if header %}
+    <div class="view-header">
+      {{ header }}
+    </div>
+  {% endif %}
+
+  {% if rows %}
+    {{ rows }}
+  {% elseif empty %}
+    <div class="view-empty">
+      {{ empty }}
+    </div>
+  {% endif %}
+
+  {% if footer %}
+    <div class="view-footer">
+      {{ footer }}
+    </div>
+  {% endif %}
+
+  {% if pager %}
+    {{ pager }}
+  {% endif %}
+</section>

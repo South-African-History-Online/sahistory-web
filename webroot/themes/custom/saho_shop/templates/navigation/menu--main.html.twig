@@ -1,0 +1,34 @@
+{#
+/**
+ * @file
+ * Theme override for main menu.
+ */
+#}
+{% import _self as menus %}
+
+{% macro menu_links(items, attributes, menu_level) %}
+  {% import _self as menus %}
+  {% if items %}
+    <ul{{ attributes.addClass('menu', 'menu--level-' ~ menu_level) }}>
+      {% for item in items %}
+        {% set item_classes = [
+          'menu__item',
+          'menu__item--level-' ~ menu_level,
+          item.is_expanded ? 'menu__item--expanded',
+          item.is_collapsed ? 'menu__item--collapsed',
+          item.in_active_trail ? 'menu__item--active-trail',
+        ] %}
+        <li{{ item.attributes.addClass(item_classes) }}>
+          {{ link(item.title, item.url, {
+            'class': ['menu__link', 'menu__link--level-' ~ menu_level]
+          }) }}
+          {% if item.below %}
+            {{ menus.menu_links(item.below, attributes.removeClass('menu--level-' ~ menu_level), menu_level + 1) }}
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+{% endmacro %}
+
+{{ menus.menu_links(items, attributes, 0) }}

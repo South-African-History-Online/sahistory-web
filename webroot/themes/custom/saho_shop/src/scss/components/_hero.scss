@@ -1,0 +1,173 @@
+/**
+ * @file
+ * Hero Section Component
+ * Large banner for shop front page
+ */
+
+.hero {
+  position: relative;
+  min-height: 400px;
+  display: flex;
+  align-items: center;
+  background: linear-gradient(135deg, $color-slate-blue 0%, $color-heritage-red 100%);
+  color: $color-surface;
+  margin-bottom: $spacing-3xl;
+  overflow: hidden;
+
+  @include tablet-up {
+    min-height: 500px;
+  }
+
+  @include desktop-up {
+    min-height: 600px;
+  }
+
+  // Enhanced version with background image
+  &--enhanced {
+    min-height: 500px;
+
+    @include tablet-up {
+      min-height: 600px;
+    }
+
+    @include desktop-up {
+      min-height: 700px;
+    }
+  }
+
+  // Background pattern overlay
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    opacity: 0.3;
+  }
+
+  &__container {
+    @include container;
+    position: relative;
+    z-index: 2;
+  }
+
+  &__content {
+    max-width: 600px;
+
+    @include tablet-up {
+      max-width: 700px;
+    }
+  }
+
+  &__eyebrow {
+    font-size: $font-size-body;
+    font-weight: $font-weight-semibold;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: $color-muted-gold;
+    margin-bottom: $spacing-md;
+  }
+
+  &__title {
+    font-size: $font-size-display;
+    font-weight: $font-weight-bold;
+    line-height: $line-height-tight;
+    margin-bottom: $spacing-lg;
+  }
+
+  &__description {
+    font-size: $font-size-body-large;
+    line-height: $line-height-relaxed;
+    margin-bottom: $spacing-xl;
+    opacity: 0.95;
+  }
+
+  &__actions {
+    display: flex;
+    gap: $spacing-md;
+    flex-wrap: wrap;
+  }
+
+  &__search {
+    margin-bottom: $spacing-xl;
+    max-width: 600px;
+  }
+
+  &__search-wrapper {
+    position: relative;
+    display: flex;
+    background: $color-surface;
+    border-radius: $border-radius-md;
+    overflow: hidden;
+    box-shadow: $shadow-xl;
+  }
+
+  &__search-input {
+    flex: 1;
+    padding: $spacing-md $spacing-lg;
+    border: none;
+    font-size: $font-size-body;
+    color: $color-text-primary;
+
+    &::placeholder {
+      color: $color-text-muted;
+    }
+
+    &:focus {
+      outline: none;
+    }
+  }
+
+  &__search-button {
+    @include btn-reset;
+    padding: $spacing-md $spacing-lg;
+    background: $color-heritage-red;
+    color: $color-surface;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color $transition-fast;
+
+    &:hover {
+      background-color: darken($color-heritage-red, 10%);
+    }
+
+    svg {
+      display: block;
+    }
+  }
+
+  &__cta {
+    @include btn-reset;
+    display: inline-flex;
+    align-items: center;
+    gap: $spacing-sm;
+    padding: $spacing-md $spacing-xl;
+    background: $color-surface;
+    color: $color-heritage-red;
+    font-size: $font-size-body;
+    font-weight: $font-weight-semibold;
+    border-radius: $border-radius-sm;
+    transition: all $transition-normal;
+    text-decoration: none;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: $shadow-xl;
+      color: $color-heritage-red;
+    }
+
+    &--secondary {
+      background: transparent;
+      color: $color-surface;
+      border: 2px solid $color-surface;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: $color-surface;
+      }
+    }
+  }
+}

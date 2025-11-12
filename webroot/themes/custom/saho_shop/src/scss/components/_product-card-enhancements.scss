@@ -1,0 +1,64 @@
+/**
+ * @file
+ * Product Card Enhancements
+ * Additional styling for publication-specific product cards
+ */
+
+.product-card {
+  &__author {
+    font-size: $font-size-body-small;
+    color: $color-text-secondary;
+    font-style: italic;
+    margin-bottom: $spacing-sm;
+  }
+
+  &__add-to-cart {
+    @include btn-primary;
+    width: 100%;
+    justify-content: center;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: none;
+    }
+  }
+
+  // Publication specific styling
+  &--publication {
+    .product-card__category {
+      font-size: $font-size-caption;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: $color-slate-blue;
+      font-weight: $font-weight-semibold;
+    }
+
+    .product-card__title {
+      font-size: $font-size-h4;
+      line-height: $line-height-tight;
+      min-height: 2.5em; // Consistent height for grid alignment
+    }
+  }
+
+  // Placeholder image styling
+  .product-card__image {
+    > div {
+      border-radius: $border-radius-sm;
+    }
+  }
+}
+
+// Product grid responsive adjustments
+.product-grid {
+  @include mobile-only {
+    grid-template-columns: 1fr;
+  }
+
+  @include tablet-up {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
+
+  @include desktop-up {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  }
+}
