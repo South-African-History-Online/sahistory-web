@@ -3,16 +3,14 @@
  * SAHO Shop Global JavaScript
  */
 
-(function (Drupal, once) {
-  'use strict';
-
+((Drupal, once) => {
   /**
    * Mobile Menu Toggle
    */
   Drupal.behaviors.sahoShopMobileMenu = {
-    attach: function (context, settings) {
-      once('mobile-menu-toggle', '.mobile-menu-toggle', context).forEach(function (toggle) {
-        toggle.addEventListener('click', function () {
+    attach: (context, settings) => {
+      once('mobile-menu-toggle', '.mobile-menu-toggle', context).forEach((toggle) => {
+        toggle.addEventListener('click', () => {
           const nav = document.querySelector('.site-header__nav');
           if (nav) {
             nav.classList.toggle('is-open');
@@ -20,18 +18,18 @@
           }
         });
       });
-    }
+    },
   };
 
   /**
    * Sticky Header
    */
   Drupal.behaviors.sahoShopStickyHeader = {
-    attach: function (context, settings) {
-      once('sticky-header', '.site-header', context).forEach(function (header) {
+    attach: (context, settings) => {
+      once('sticky-header', '.site-header', context).forEach((header) => {
         let lastScroll = 0;
 
-        window.addEventListener('scroll', function () {
+        window.addEventListener('scroll', () => {
           const currentScroll = window.pageYOffset;
 
           if (currentScroll <= 0) {
@@ -50,15 +48,15 @@
           lastScroll = currentScroll;
         });
       });
-    }
+    },
   };
 
   /**
    * Smooth Scroll for Anchor Links
    */
   Drupal.behaviors.sahoShopSmoothScroll = {
-    attach: function (context, settings) {
-      once('smooth-scroll', 'a[href^="#"]', context).forEach(function (link) {
+    attach: (context, settings) => {
+      once('smooth-scroll', 'a[href^="#"]', context).forEach((link) => {
         link.addEventListener('click', function (e) {
           const href = this.getAttribute('href');
           if (href === '#') return;
@@ -68,12 +66,11 @@
             e.preventDefault();
             target.scrollIntoView({
               behavior: 'smooth',
-              block: 'start'
+              block: 'start',
             });
           }
         });
       });
-    }
+    },
   };
-
 })(Drupal, once);
