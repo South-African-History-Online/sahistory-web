@@ -9,14 +9,22 @@
 SHOP_URI="https://shop.sahistory.org.za"
 PRODUCT_ID=${1:-2}  # Default to product 2 if not specified
 
+# Detect if we're in DDEV
+if command -v ddev &> /dev/null && [ -f .ddev/config.yaml ]; then
+    DRUSH="ddev drush"
+else
+    DRUSH="drush"
+fi
+
 echo "=========================================="
 echo "Product Display Diagnostic"
 echo "Product ID: $PRODUCT_ID"
+echo "Using: $DRUSH"
 echo "=========================================="
 echo ""
 
 echo "Step 1: Check if product exists and loads..."
-drush --uri=$SHOP_URI ev "
+$DRUSH --uri=$SHOP_URI ev "
   \$product = \Drupal::entityTypeManager()->getStorage('commerce_product')->load($PRODUCT_ID);
   if (!\$product) {
     echo 'Product not found!' . PHP_EOL;
@@ -28,11 +36,11 @@ drush --uri=$SHOP_URI ev "
 "
 
 echo "Step 2: Check field display configuration for 'full' view mode..."
-drush --uri=$SHOP_URI config:get core.entity_view_display.commerce_product.publication.full | grep -A 2 "field_"
+$DRUSH --uri=$SHOP_URI config:get core.entity_view_display.commerce_product.publication.full | grep -A 2 "field_"
 
 echo ""
 echo "Step 3: Check what's in the content array when rendering..."
-drush --uri=$SHOP_URI ev "
+$DRUSH --uri=$SHOP_URI ev "
   \$product = \Drupal::entityTypeManager()->getStorage('commerce_product')->load($PRODUCT_ID);
   \$view_builder = \Drupal::entityTypeManager()->getViewBuilder('commerce_product');
   \$build = \$view_builder->view(\$product, 'full');
@@ -75,7 +83,7 @@ drush --uri=$SHOP_URI ev "
 
 echo ""
 echo "Step 4: Check field visibility settings..."
-drush --uri=$SHOP_URI ev "
+$DRUSH --uri=$SHOP_URI ev "
   \$display = \Drupal::entityTypeManager()
     ->getStorage('entity_view_display')
     ->load('commerce_product.publication.full');
@@ -115,7 +123,7 @@ drush --uri=$SHOP_URI ev "
 
 echo ""
 echo "Step 5: Check actual product field data..."
-drush --uri=$SHOP_URI ev "
+$DRUSH --uri=$SHOP_URI ev "
   \$product = \Drupal::entityTypeManager()->getStorage('commerce_product')->load($PRODUCT_ID);
 
   echo 'Product fields with data:' . PHP_EOL;
@@ -152,7 +160,7 @@ drush --uri=$SHOP_URI ev "
 
 echo ""
 echo "Step 6: Check image file accessibility..."
-drush --uri=$SHOP_URI ev "
+$DRUSH --uri=$SHOP_URI ev "
   \$product = \Drupal::entityTypeManager()->getStorage('commerce_product')->load($PRODUCT_ID);
 
   if (\$product->hasField('field_images') && !\$product->get('field_images')->isEmpty()) {
@@ -185,7 +193,7 @@ drush --uri=$SHOP_URI ev "
 
 echo ""
 echo "Step 7: Test rendering with error catching..."
-drush --uri=$SHOP_URI ev "
+$DRUSH --uri=$SHOP_URI ev "
   try {
     \$product = \Drupal::entityTypeManager()->getStorage('commerce_product')->load($PRODUCT_ID);
     \$view_builder = \Drupal::entityTypeManager()->getViewBuilder('commerce_product');
