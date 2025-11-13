@@ -1,12 +1,15 @@
-# Deploy: Full View Mode Configuration Fix
+# Deploy: Product Display Configuration Fix
 
 ## Problem Solved
 This fixes metadata and images not displaying on production product pages.
 
-**Root Cause**: Missing `core.entity_view_display.commerce_product.publication.full.yml` configuration file on production. Without this, Drupal doesn't populate the `content` array in the Twig template, so all fields appear empty even though the data exists.
+**Root Causes** (3 issues):
+1. Missing `core.entity_view_mode.commerce_product.full` view mode configuration
+2. Missing `core.entity_view_display.commerce_product.publication.full` display configuration
+3. Template `commerce-product--publication.html.twig` was using incorrect field access pattern
 
 **Branch**: `bugfix/shop-product-images`
-**Commit**: `12d8092a`
+**Commit**: `23f52ecc`
 
 ---
 
@@ -86,11 +89,15 @@ Visit any product page, e.g.:
 
 ---
 
-## What This Configuration Does
+## What These Fixes Do
 
-The `full.yml` view mode configuration tells Drupal:
+### 1. View Mode Configuration (`core.entity_view_mode.commerce_product.full.yml`)
+Defines the "full" view mode for commerce products. Without this, Drupal can't use "full" as a valid display mode.
 
-### Fields to Display in Content Array:
+### 2. Display Configuration (`core.entity_view_display.commerce_product.publication.full.yml`)
+The `full.yml` view mode display configuration tells Drupal:
+
+#### Fields to Display in Content Array:
 - `field_images` - Image gallery with sc600x600 style, lazy loading
 - `field_subtitle` - Secondary title
 - `body` - Full description
@@ -106,12 +113,41 @@ The `full.yml` view mode configuration tells Drupal:
 - `field_categories` - Category taxonomy terms (as links)
 - `variations` - Add to cart form
 
-### Fields Explicitly Hidden:
+#### Fields Explicitly Hidden:
 - `created` - Creation date
 - `field_featured` - Featured flag
 - `stores` - Store assignment
 - `title` - Handled separately in template
 - `uid` - Author user
+
+### 3. Template Fix (`commerce-product--publication.html.twig`)
+The product-specific template needed two fixes:
+
+**Before (Broken)**:
+```twig
+{{ product.field_images }}
+{{ product.field_author }}
+{{ product.field_publisher }}
+```
+This tried to print entity objects directly, which causes errors or shows nothing.
+
+**After (Fixed)**:
+```twig
+{% if product.field_images|render %}
+  {{ product.field_images }}
+{% endif %}
+{% if product.field_author|render %}
+  <div class="meta-item"><strong>Author:</strong> {{ product.field_author }}</div>
+{% endif %}
+```
+
+The fix:
+- Added conditional checks using `|render` filter to test if field has content
+- Wrapped fields in proper HTML markup with labels
+- Prevents rendering empty fields
+
+**Why This Template Takes Priority**:
+Drupal template precedence means `commerce-product--publication.html.twig` (product type specific) overrides `commerce-product--full.html.twig` (view mode specific), so both needed to be fixed.
 
 ---
 
