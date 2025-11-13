@@ -4,7 +4,15 @@
 ## Usage: local_update
 ## Example: ddev local_update
 
+echo "====================================="
+echo "Installing Composer dependencies..."
+echo "====================================="
 ddev composer install
+
+echo ""
+echo "====================================="
+echo "Updating main site (sahistory.org.za)..."
+echo "====================================="
 ddev drush cr
 ddev drush updb -y
 ddev drush cr
@@ -12,3 +20,20 @@ ddev drush cim -y
 ddev drush cr
 ddev drush deploy:hook -y
 ddev drush cr
+
+echo ""
+echo "====================================="
+echo "Updating shop site (shop.sahistory.org.za)..."
+echo "====================================="
+ddev drush --uri=shop.sahistory.org.za cr
+ddev drush --uri=shop.sahistory.org.za updb -y
+ddev drush --uri=shop.sahistory.org.za cr
+ddev drush --uri=shop.sahistory.org.za cim -y
+ddev drush --uri=shop.sahistory.org.za cr
+ddev drush --uri=shop.sahistory.org.za deploy:hook -y
+ddev drush --uri=shop.sahistory.org.za cr
+
+echo ""
+echo "====================================="
+echo "Update complete for both sites!"
+echo "====================================="
