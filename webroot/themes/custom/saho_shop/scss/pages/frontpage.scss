@@ -1,0 +1,129 @@
+//
+// Frontpage
+// Belgrade-inspired homepage styling for publications shop
+// ----------------------------
+//
+@import "../global";
+
+:root {
+  --footer-margin-top: 0;
+}
+
+// Frontpage wrapper
+.frontpage {
+  position: relative;
+}
+
+// Hero section - contains header and slider
+.frontpage-hero {
+  position: relative;
+  width: 100%;
+}
+
+// Header region - positioned absolutely over slider
+.frontpage .region-header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  padding: 1rem 0;
+  color: $white;
+
+  // Ensure all links in header are white
+  a {
+    color: $white;
+    text-decoration: none;
+
+    &:hover,
+    &:focus {
+      color: rgba($white, 0.85);
+    }
+  }
+
+  .nav-link {
+    color: $white;
+
+    &:hover,
+    &:focus {
+      color: rgba($white, 0.85);
+    }
+  }
+
+  // Container inside header
+  .container,
+  .container-fluid {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+// Navigation region
+.frontpage .region-navigation {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 99;
+}
+
+// Highlighted region - full-width slider container
+.frontpage .region-highlighted {
+  position: relative;
+  width: 100%;
+  z-index: 1;
+
+  // Remove any container constraints for full-bleed slider
+  .block,
+  .block-views-blocksliderhomepage-block {
+    margin: 0;
+    padding: 0;
+
+    > .content {
+      margin: 0;
+      padding: 0;
+    }
+  }
+}
+
+// Hero Carousel - Full-width slider
+.view-slider {
+  margin: 0;
+  padding: 0;
+
+  // Remove default view wrapper padding
+  &.view-display-id-homepage_block {
+    .view-content {
+      margin: 0;
+      padding: 0;
+    }
+  }
+}
+
+// Layout Builder adjustments - when slider is in layout builder
+.cklb-slideshow {
+  .block-layout-builder > .content {
+    margin-top: 2rem;
+  }
+}
+
+// Commerce Demo Carousel (legacy)
+#carouselDemo {
+  img {
+    object-fit: cover;
+    height: 320px;
+    opacity: 0.54;
+
+    @include media-breakpoint-up(md) {
+      height: 640px;
+    }
+  }
+}
+
+// Main content area after slider
+.frontpage main[role="main"] {
+  position: relative;
+  z-index: 2;
+  background: $white;
+}

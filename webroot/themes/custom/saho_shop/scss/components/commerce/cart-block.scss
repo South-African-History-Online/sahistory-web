@@ -1,0 +1,213 @@
+//
+// Cart Block
+// ----------------------------
+//
+
+@import "../../global";
+
+:root {
+  --cart-dropdown-width: 20rem;
+  --cart-dropdown-height: 18.75rem;
+  --cart-dropdown-margin-top: 1.1875rem;
+  --cart-dropdown-padding: 1.5rem;
+  --cart-dropdown-section-spacing: calc(var(--form-item-spacing) / 2);
+  --cart-dropdown-actions-spacing: calc(var(--form-item-spacing) / 2);
+  --cart-dropdown-close-margin: 1rem;
+  --cart-dropdown-close-margin-top: 1.5rem;
+  --cart-item-spacing: var(--form-item-spacing);
+  --cart-item-border: 1px solid currentcolor;
+  --cart-badge-color: var(--beo-white);
+  --cart-badge-bg: var(--beo-black);
+  --cart-badge-size: 1.25rem;
+  --cart-badge-padding: 0.125rem 0.375rem;
+  --cart-badge-font-size: 0.75rem;
+}
+
+.cart-block {
+  position: relative;
+
+  &__trigger {
+    display: block;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    position: relative;
+  }
+
+  &__count {
+    &--badge {
+      --number-badge-size: var(--cart-badge-size);
+      --number-badge-padding: var(--cart-badge-padding);
+      --number-badge-font-size: var(--cart-badge-font-size);
+      --number-badge-color: var(--cart-badge-color);
+      --number-badge-bg: var(--cart-badge-bg);
+
+      @include number-badge;
+
+      // Light badge variant for dark backgrounds
+      .bg-dark & {
+        --cart-badge-color: var(--beo-black);
+        --cart-badge-bg: var(--beo-white);
+      }
+    }
+
+    &--absolute {
+      position: absolute;
+      top: 0;
+      right: 0;
+      transform: translate(50%, -50%);
+    }
+  }
+
+  &__dropdown {
+    position: absolute;
+    top: 100%;
+    width: var(--cart-dropdown-width);
+    margin-top: var(--cart-dropdown-margin-top);
+    z-index: 1000;
+    border-radius: 0 0 var(--beo-border-radius) var(--beo-border-radius);
+    box-shadow: var(--beo-box-shadow);
+
+    &--right {
+      left: 0;
+      right: auto;
+    }
+
+    &--left {
+      right: 0;
+      left: auto;
+    }
+
+    &--center {
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    &-inner {
+      padding: var(--cart-dropdown-padding);
+    }
+
+    // No animation class to disable all transitions
+    &.no-animation {
+      transition: none !important;
+
+      &.collapse,
+      &.collapsing {
+        transition: none !important;
+      }
+    }
+
+    // Override Bootstrap collapse behavior for fade animations
+    &.fade {
+      display: block !important;
+      height: auto !important;
+      opacity: 0;
+      visibility: hidden;
+      transition:
+        opacity 0.3s ease-in-out,
+        visibility 0.3s ease-in-out;
+
+      &.show {
+        opacity: 1;
+        visibility: visible;
+      }
+
+      // Override Bootstrap's collapsing state
+      &.collapsing {
+        height: auto !important;
+        opacity: 0;
+        visibility: hidden;
+        transition:
+          opacity 0.3s ease-in-out,
+          visibility 0.3s ease-in-out;
+      }
+    }
+  }
+
+  &__summary {
+    overflow-y: auto;
+    max-height: var(--cart-dropdown-height);
+  }
+
+  &__actions {
+    margin-top: var(--cart-dropdown-actions-spacing);
+  }
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--cart-dropdown-section-spacing);
+  }
+
+  &__title {
+    font-weight: bold;
+    margin: 0;
+  }
+
+  &__close {
+    background: none;
+    border: none;
+    padding: 0.25rem;
+    cursor: pointer;
+    color: inherit;
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+
+    &:hover {
+      opacity: 1;
+    }
+  }
+
+  // Table styles within cart dropdown
+  .table {
+    --beo-border-color: currentcolor;
+
+    margin-bottom: 0;
+
+    tr:last-child {
+      td {
+        border-bottom: 0;
+      }
+    }
+  }
+
+  // SVG fix for pointer events
+  svg {
+    pointer-events: none;
+  }
+}
+
+// Responsive positioning
+@include media-breakpoint-down(md) {
+  .cart-block,
+  .block-commerce-cart {
+    position: static;
+  }
+
+  .cart-block__dropdown {
+    transform: none;
+    margin-top: 0;
+  }
+
+  // On small mobile, make dropdown full width
+  .cart-block__dropdown {
+    width: 100dvw;
+    left: 0 !important;
+    right: 0 !important;
+    transform: none;
+    border-radius: 0;
+  }
+}
+
+// Cart items styling
+.cart--cart-block li.cart-block__item {
+  margin-bottom: var(--cart-item-spacing);
+  border-bottom: var(--cart-item-border);
+}
+
+// Contextual link improvements
+.block-commerce-cart.contextual-region .contextual {
+  right: .75rem;
+}

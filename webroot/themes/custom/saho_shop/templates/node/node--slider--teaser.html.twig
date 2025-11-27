@@ -1,0 +1,49 @@
+{#
+/**
+ * @file
+ * Modern slider/carousel item template.
+ *
+ * Available variables:
+ * - node: The node entity.
+ * - content: All node items.
+ * - url: Direct URL of the current node.
+ *
+ * The field_link field should have both URL and link text (title) configured.
+ * The link text will be displayed as button text (e.g. "Shop Now", "Learn More").
+ */
+#}
+
+<div{{ attributes.addClass('hero-slide') }}>
+  {# Background Image #}
+  <div class="hero-slide__background">
+    {% if content.field_image %}
+      {{ content.field_image }}
+    {% endif %}
+  </div>
+
+  {# Overlay for better text readability #}
+  <div class="hero-slide__overlay"></div>
+
+  {# Content #}
+  <div class="hero-slide__content">
+    <div class="container">
+      <div class="hero-slide__inner">
+        {% if label %}
+          <h2 class="hero-slide__title">{{ label }}</h2>
+        {% endif %}
+
+        {% if content.body %}
+          <div class="hero-slide__description">
+            {{ content.body }}
+          </div>
+        {% endif %}
+
+        {% if content.field_link[0] %}
+          <div class="hero-slide__cta">
+            {{ content.field_link }}
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>

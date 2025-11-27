@@ -1,0 +1,77 @@
+uuid: 8b756400-7c32-4323-83ab-34d2a2ab2898
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.commerce_product.field_category
+    - search_api.server.database
+  module:
+    - commerce_product
+    - search_api
+id: products
+name: Products
+description: 'Index for commerce products'
+read_only: false
+field_settings:
+  created:
+    label: 'Created date'
+    datasource_id: 'entity:commerce_product'
+    property_path: created
+    type: date
+    dependencies:
+      module:
+        - commerce_product
+  field_category:
+    label: Category
+    datasource_id: 'entity:commerce_product'
+    property_path: field_category
+    type: integer
+    dependencies:
+      config:
+        - field.storage.commerce_product.field_category
+  status:
+    label: Status
+    datasource_id: 'entity:commerce_product'
+    property_path: status
+    type: boolean
+    dependencies:
+      module:
+        - commerce_product
+  title:
+    label: Title
+    datasource_id: 'entity:commerce_product'
+    property_path: title
+    type: text
+    dependencies:
+      module:
+        - commerce_product
+  type:
+    label: 'Product type'
+    datasource_id: 'entity:commerce_product'
+    property_path: type
+    type: string
+    dependencies:
+      module:
+        - commerce_product
+datasource_settings:
+  'entity:commerce_product':
+    bundles:
+      default: false
+      selected:
+        - default
+        - publication
+    languages:
+      default: true
+      selected: {  }
+processor_settings:
+  add_url: {  }
+  aggregated_field: {  }
+  entity_status: {  }
+  language_with_fallback: {  }
+tracker_settings:
+  default: {  }
+options:
+  cron_limit: 50
+  index_directly: true
+  track_changes_in_references: true
+server: database

@@ -1,0 +1,122 @@
+//
+// Payment Information
+// ----------------------------
+//
+
+@import "global";
+
+.checkout-pane-payment-information {
+  .fieldgroup {
+    margin-bottom: 0;
+  }
+
+  .form-radios {
+    display: flex;
+    flex-direction: column;
+  }
+
+  &:has(.form-radios) {
+    .fieldset-pane__content-inner > .fieldgroup + .form-wrapper {
+      border-top-right-radius: 0;
+      border-top-left-radius: 0;
+      margin-bottom: 0;
+    }
+  }
+
+  // Responsive adjustments
+  @include media-breakpoint-down(md) {
+    .form-radios {
+      gap: 0.5rem;
+    }
+  }
+
+  // Billing address form
+  .field--type-address {
+    margin-top: var(--form-item-spacing);
+  }
+
+  // Payment method icon list.
+  .payment-method-icon-list {
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+
+    .payment-method-icon {
+      margin: 0;
+    }
+  }
+
+  // Credit card forms
+  .fieldset-pane__content-inner > .form-wrapper:first-child:has(.credit-card-form),
+  .fieldset-pane__content-inner > .fieldgroup + .form-wrapper {
+    padding: var(--checkout-pane-spacing);
+    background: var(--checkout-pane-neutral-bg);
+    margin-bottom: var(--checkout-pane-spacing);
+    border: 1px solid var(--beo-border-color);
+    border-radius: var(--beo-border-radius);
+
+    .credit-card-form,
+    .braintree-form {
+      margin-bottom: calc(var(--checkout-pane-spacing) / 2);
+    }
+
+    .form-item,
+    .credit-card-form__expiration {
+      margin-bottom: var(--checkout-pane-spacing);
+    }
+
+    .credit-card-form__expiration {
+      .form-item {
+        margin-bottom: 0;
+      }
+    }
+
+    .payment-method-icon-list {
+      margin-bottom: calc(var(--checkout-pane-spacing) / 2);
+    }
+
+    .credit-card-form__divider {
+      margin: 1.6em 0.5em 0;
+    }
+
+    .form-item {
+      flex: 1;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+
+    .form-item-payment-information-add-payment-method-payment-details-expiration-divider {
+      flex: 0;
+    }
+  }
+
+  .fieldset-pane__content-inner > .form-wrapper:first-child:has(.credit-card-form) {
+    margin-bottom: 0;
+  }
+}
+
+// Braintree form
+.braintree-form {
+  .form-item {
+    margin-bottom: calc(var(--checkout-pane-spacing) / 2) !important;
+  }
+
+  .credit-card-form__expiration {
+    margin-bottom: 0 !important;
+  }
+
+  .credit-card-form__divider {
+    margin: 2.4rem 0.5rem 0 !important;
+  }
+
+  #card-number,
+  #expiration-year,
+  #expiration-month,
+  #cvv {
+    width: auto !important;
+    height: 2em !important;
+  }
+}

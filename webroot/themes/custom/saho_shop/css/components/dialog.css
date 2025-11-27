@@ -1,0 +1,218 @@
+@charset "UTF-8";
+:root {
+  --dialog-border-radius: var(--beo-border-radius-lg);
+  --dialog-box-shadow: var(--beo-box-shadow-sm);
+  --dialog-border-width: var(--beo-border-width);
+  --dialog-border-color: var(--beo-border-color-translucent);
+  --dialog-backdrop-bg: #000;
+  --dialog-backdrop-opacity: 0.5;
+  --dialog-header-bg: #fff;
+  --dialog-header-border-color: var(--beo-border-color);
+  --dialog-header-border-width: var(--beo-border-width);
+  --dialog-header-padding: var(--form-item-spacing, 1rem 1rem);
+  --dialog-title-color: #272727;
+  --dialog-title-font-size: 1.5rem;
+  --dialog-title-font-weight: 700;
+  --dialog-body-padding: var(--form-item-spacing, 1.5rem);
+  --dialog-body-color: #272727;
+  --dialog-footer-bg: #f0f1f5;
+  --dialog-footer-border-color: var(--beo-border-color);
+  --dialog-footer-border-width: var(--beo-border-width);
+  --dialog-footer-padding: var(--form-item-spacing, 1.25rem 1.5rem);
+  --dialog-close-color: #6c757d;
+  --dialog-close-hover-color: #6c757d;
+  --dialog-close-focus-color: #6c757d;
+  --dialog-close-opacity: 0.6;
+  --dialog-close-hover-opacity: 0.8;
+  --dialog-close-focus-opacity: 1;
+  --dialog-close-focus-shadow: 0 0 0 0.25rem rgba(65, 68, 159, 0.25);
+  --dialog-close-disabled-opacity: 0.25;
+  --dialog-backdrop-blur: 2px;
+  --dialog-fade-duration: 0.2s;
+  --dialog-scale-duration: 0.15s;
+}
+
+.ui-dialog {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1055;
+  width: 100%;
+  height: 100%;
+  overflow: hidden auto;
+  outline: 0;
+}
+.ui-dialog.ui-widget-content {
+  position: relative;
+  width: auto;
+  max-width: 800px;
+  margin: 0.5rem;
+  pointer-events: auto;
+  background-color: var(--beo-white);
+  background-clip: padding-box;
+  border: var(--dialog-border-width) solid var(--dialog-border-color);
+  border-radius: var(--dialog-border-radius);
+  box-shadow: var(--dialog-box-shadow);
+  outline: 0;
+}
+
+.ui-widget-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1050;
+  width: 100vw;
+  height: 100vh;
+  background-color: var(--dialog-backdrop-bg);
+  opacity: var(--dialog-backdrop-opacity);
+  transition: opacity var(--dialog-fade-duration) linear;
+}
+
+.ui-dialog-titlebar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--dialog-header-padding);
+  background-color: var(--dialog-header-bg);
+  border-bottom: var(--dialog-header-border-width) solid var(--dialog-header-border-color);
+  border-top-left-radius: var(--dialog-border-radius);
+  border-top-right-radius: var(--dialog-border-radius);
+  min-height: 3.5rem;
+}
+.ui-dialog-titlebar .ui-dialog-title {
+  margin: 0;
+  font-size: var(--dialog-title-font-size);
+  font-weight: var(--dialog-title-font-weight);
+  color: var(--dialog-title-color);
+  line-height: 1.5;
+  flex: 1;
+  padding-right: 1rem;
+}
+.ui-dialog-titlebar .ui-dialog-titlebar-close {
+  position: relative;
+  top: auto;
+  right: auto;
+  transform: none;
+  margin: 0;
+  padding: 0.5rem;
+  width: 2.5rem;
+  height: 2.5rem;
+  background: none;
+  border: none;
+  border-radius: 50%;
+  color: var(--dialog-close-color);
+  opacity: var(--dialog-close-opacity);
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1;
+  text-shadow: none;
+  transition: all all 0.2s ease-in-out;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.ui-dialog-titlebar .ui-dialog-titlebar-close:hover, .ui-dialog-titlebar .ui-dialog-titlebar-close:focus {
+  color: var(--dialog-close-hover-color);
+  text-decoration: none;
+  opacity: var(--dialog-close-hover-opacity);
+  background-color: rgba(0, 0, 0, 0.05);
+}
+.ui-dialog-titlebar .ui-dialog-titlebar-close:focus {
+  opacity: var(--dialog-close-focus-opacity);
+  box-shadow: var(--dialog-close-focus-shadow);
+  background-color: rgba(0, 0, 0, 0.1);
+}
+.ui-dialog-titlebar .ui-dialog-titlebar-close .ui-icon.ui-icon-closethick {
+  display: none;
+}
+.ui-dialog-titlebar .ui-dialog-titlebar-close::before {
+  content: "×";
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1;
+  display: block;
+}
+
+.ui-dialog-content {
+  position: relative;
+  padding: var(--dialog-body-padding);
+  color: var(--dialog-body-color);
+  overflow: auto;
+  background-color: var(--beo-white);
+  border: 0;
+}
+.ui-dialog-content .credit-card-form__expiration,
+.ui-dialog-content .container--edit-payment-method-billing-information {
+  margin-bottom: var(--form-item-spacing);
+}
+.ui-dialog-content .container--edit-payment-method {
+  margin-bottom: var(--form-item-spacing);
+}
+.ui-dialog-content .container--edit-payment-method .credit-card-form__expiration {
+  margin-block: var(--form-item-spacing) 0;
+}
+
+.ui-dialog-buttonpane {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: var(--dialog-footer-padding);
+  background-color: var(--dialog-footer-bg);
+  border-top: var(--dialog-footer-border-width) solid var(--dialog-footer-border-color);
+  border-bottom-left-radius: var(--dialog-border-radius);
+  border-bottom-right-radius: var(--dialog-border-radius);
+}
+.ui-dialog-buttonpane .ui-dialog-buttonset {
+  display: flex;
+  gap: var(--form-item-spacing, 2.5rem);
+  margin: 0;
+}
+.ui-dialog-buttonpane .ui-dialog-buttonset > * {
+  margin: 0;
+}
+.ui-dialog-buttonpane .dialog-cancel {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  text-decoration: none;
+  color: var(--beo-danger-color, #ff4141);
+  text-decoration: underline;
+}
+.ui-dialog-buttonpane .button--danger {
+  --beo-btn-color: #fff;
+  --beo-btn-bg: #ff4141;
+  --beo-btn-border-color: #ff4141;
+  --beo-btn-hover-color: #fff;
+  --beo-btn-hover-bg: #d93737;
+  --beo-btn-hover-border-color: #cc3434;
+  --beo-btn-focus-shadow-rgb: 255, 94, 94;
+  --beo-btn-active-color: #fff;
+  --beo-btn-active-bg: #cc3434;
+  --beo-btn-active-border-color: #bf3131;
+  --beo-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+  --beo-btn-disabled-color: #fff;
+  --beo-btn-disabled-bg: #ff4141;
+  --beo-btn-disabled-border-color: #ff4141;
+}
+
+@media (max-width: 575.98px) {
+  .ui-dialog .ui-dialog-content {
+    padding: 1rem;
+  }
+  .ui-dialog .ui-dialog-titlebar {
+    padding: 1rem;
+  }
+  .ui-dialog .ui-dialog-content {
+    padding: 1rem;
+  }
+  .ui-dialog .ui-dialog-content .form-actions {
+    flex-direction: column;
+  }
+  .ui-dialog .ui-dialog-content .form-actions .btn, .ui-dialog .ui-dialog-content .form-actions .ui-dialog-buttonpane .button--danger, .ui-dialog-buttonpane .ui-dialog .ui-dialog-content .form-actions .button--danger {
+    width: 100%;
+  }
+}
+
+/*# sourceMappingURL=dialog.css.map */

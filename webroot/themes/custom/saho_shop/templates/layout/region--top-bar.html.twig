@@ -1,0 +1,32 @@
+{#
+/**
+ * @file
+ * Theme override to display a region.
+ *
+ * Available variables:
+ * - content: The content for this region, typically blocks.
+ * - attributes: HTML attributes for the region <div>.
+ * - region: The name of the region variable as defined in the theme's
+ *   .info.yml file.
+ *
+ * @see template_preprocess_region()
+ */
+#}
+{% import "@saho_shop/macros.twig" as svg %}
+
+{% extends "@saho_shop/layout/region.html.twig" %}
+
+{% do attributes.setAttribute('role', 'navigation') %}
+
+{% block content %}
+  <div class="d-flex align-items-center justify-content-between fw-light">
+    <a class="navigation-toggle me-auto cursor-pointer {{ navigation_toggle_visibility ? 'd-lg-none' }}" data-bs-toggle="offcanvas" data-bs-target="#navigationRegion" aria-controls="navigationRegion">
+      {{ svg.getIcon('list', 32, 32) }}
+      {% if navigation_toggle_text %}
+        <span>{{- navigation_toggle_text -}}</span>
+      {% endif %}
+    </a>
+    {{ content }}
+  </div>
+{% endblock %}
+

@@ -1,0 +1,302 @@
+//
+// Main Menu
+// ---------
+
+@import "global";
+
+.main-nav {
+  // Variables
+  --main-nav-gap: 2rem;
+  --main-nav-link-padding-x: 0;
+  --main-nav-link-padding-y: 1rem;
+  --main-nav-link-font-weight: 300;
+  --main-nav-link-letter-spacing: 0.05em;
+  --main-nav-submenu-min-width: 11.25rem;
+  --main-nav-submenu-link-font-size: 0.875rem;
+  --main-nav-submenu-link-font-weight: 300;
+  --main-nav-submenu-link-color: #{$gray-700};
+  --main-nav-submenu-link-hover-bg: #{$gray-100};
+  --main-nav-submenu-link-hover-color: #{$gray-900};
+
+  // Base
+  display: flex;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  gap: var(--main-nav-gap);
+
+  // Items
+  &__item {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    position: relative;
+  }
+
+  // Links
+  &__link {
+    padding: var(--main-nav-link-padding-y) var(--main-nav-link-padding-x);
+    color: inherit;
+    text-decoration: none;
+    transition: $transition-base;
+
+    &--top-level {
+      text-transform: uppercase;
+      font-weight: var(--main-nav-link-font-weight);
+      letter-spacing: var(--main-nav-link-letter-spacing);
+    }
+
+    &:hover {
+      text-decoration: none;
+    }
+
+    &--active {
+      font-weight: $font-weight-normal;
+    }
+  }
+
+  // Hover rotation on the top level.
+  > .main-nav__item:hover > .main-nav__chevron {
+    transform: rotate(180deg);
+  }
+
+  // Underlines
+  &__link--top-level {
+    &::before {
+      content: "";
+      position: absolute;
+      width: 1.3em;
+      height: 2px;
+      left: 50%;
+      bottom: 0.25rem;
+      background-color: currentcolor;
+      margin-left: -0.65em;
+      transition: $transition-base;
+      transform: scale(0);
+      opacity: 0;
+    }
+
+    &:hover::before,
+    &.is-active::before {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+
+  // Chevrons
+  &__chevron {
+    transition: transform 0.2s ease-in-out;
+    flex-shrink: 0;
+    margin-left: 0.25rem;
+    display: inline-block;
+    vertical-align: middle;
+    color: inherit;
+  }
+
+  // Submenu nested variables
+  &__submenu-nested {
+    --main-nav-submenu-link-font-size: 0.75rem;
+    --main-nav-submenu-link-padding: 0.75rem 1rem;
+  }
+}
+
+// Header region specific styles - hover-based dropdowns
+.region-header .main-nav {
+  // Hover rotation on the top level.
+  > .main-nav__item:hover > .main-nav__chevron {
+    transform: rotate(180deg);
+  }
+
+  // Submenu styles - absolute positioned dropdowns
+  &__submenu,
+  &__submenu-nested {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    min-width: var(--main-nav-submenu-min-width);
+    background: rgb(255 255 255 / 95%);
+    border: 1px solid rgb(0 0 0 / 8%);
+    border-radius: 1rem;
+    box-shadow:
+      0 20px 25px -5px rgb(0 0 0 / 10%),
+      0 10px 10px -5px rgb(0 0 0 / 4%);
+    list-style: none;
+    margin: 0;
+    padding: 0.5rem 0;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.2s ease-in-out;
+  }
+
+  // Hover reveal - parent item hover triggers submenu visibility
+  &__item:hover > .main-nav__submenu,
+  &__item:hover > .main-nav__submenu-nested {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+
+  // Submenu link styles
+  &__submenu,
+  &__submenu-nested {
+    .main-nav__link {
+      display: block;
+      width: 100%;
+      padding: 0.75rem 1.5rem;
+      color: var(--main-nav-submenu-link-color);
+      border-radius: 0.5rem;
+      font-size: var(--main-nav-submenu-link-font-size);
+      font-weight: var(--main-nav-submenu-link-font-weight);
+      text-transform: none;
+      letter-spacing: normal;
+      margin: 0 0.5rem;
+      transition: all 0.2s ease-in-out;
+
+      &:hover {
+        background-color: var(--main-nav-submenu-link-hover-bg);
+        color: var(--main-nav-submenu-link-hover-color);
+      }
+    }
+
+    // Chevron positioning.
+    .main-nav__chevron {
+      color: var(--main-nav-submenu-link-color);
+      position: absolute;
+      right: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      margin-left: 0;
+    }
+  }
+
+  // Aligned left for nested submenus
+  &__submenu .main-nav__item--expanded:has(> .main-nav__submenu-nested--left) {
+    > .main-nav__link {
+      padding-left: 2rem;
+    }
+
+    > .main-nav__chevron {
+      transform: translateY(-50%) rotate(180deg);
+      left: 1rem;
+      right: auto;
+    }
+  }
+
+  // Nested menus positioning
+  &__submenu-nested {
+    top: 0;
+    left: calc(100% + 0.5rem);
+    right: auto;
+
+    &--left {
+      right: calc(100% + 0.5rem);
+      left: auto;
+    }
+  }
+}
+
+// Vertical stacked menus.
+.block-menu--stacked .main-nav,
+.region-navigation .main-nav {
+  --main-nav-gap: 0;
+  --main-nav-link-padding-x: 0;
+
+  // Vertical layout
+  flex-direction: column;
+
+  // Hide chevrons in offcanvas
+  &__chevron {
+    display: none;
+  }
+
+  &__item {
+    flex-wrap: wrap;
+    width: 100%;
+
+    .main-nav__link {
+      font-size: var(--offnav-link-font-size);
+      position: relative;
+
+      &::before {
+        margin-left: 0;
+        left: 0;
+      }
+    }
+
+    &:first-child .main-nav__link {
+      padding-top: 0;
+    }
+  }
+
+  // Submenu styles for vertical navigation - stacked display
+  &__submenu,
+  &__submenu-nested {
+    --main-nav-link-padding-x: 1rem;
+
+    position: static !important;
+    float: none;
+    width: 100%;
+    margin-top: 0;
+    background-color: transparent;
+    border: 0;
+    box-shadow: none;
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    display: block;
+    padding: .5rem var(--main-nav-link-padding-x) var(--main-nav-link-padding-y);
+
+    .main-nav__link {
+      font-size: calc(var(--offnav-link-font-size) * 0.875);
+      padding: 0.5rem 0;
+    }
+  }
+}
+
+// Center navigation in offcanvas top and bottom.
+.block-menu--centered,
+.region-navigation.offcanvas-top,
+.region-navigation.offcanvas-bottom {
+  .main-nav__item {
+    justify-content: center;
+    text-align: center;
+  }
+}
+
+.region-navigation.offcanvas-top {
+  top: var(--beo-region-top-bar-height);
+}
+
+// Responsive
+@include media-breakpoint-down(xl) {
+  .region-header .main-nav {
+    display: none; // Hide on smaller screens, handled by mobile menu
+  }
+}
+
+// Animations
+@keyframes slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}

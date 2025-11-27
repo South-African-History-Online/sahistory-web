@@ -1,27 +1,35 @@
+{% extends "@saho_shop/block/block.html.twig" %}
 {#
 /**
  * @file
- * Theme override for site branding block.
+ * Theme override for a branding block.
+ *
+ * Each branding element variable (logo, name, slogan) is only available if
+ * enabled in the block configuration.
+ *
+ * Available variables:
+ * - site_logo: Logo for site as defined in Appearance or theme settings.
+ * - inline_logo: Theme settings options that inline the SVG logo.
+ * - site_name: Name for site as defined in Site information settings.
+ * - site_slogan: Slogan for site as defined in Site information settings.
  */
 #}
-{% set attributes = attributes.addClass('site-branding') %}
-
-<div{{ attributes }}>
+{% block content %}
   {% if site_logo %}
-    <a href="{{ path('<front>') }}" class="site-branding__logo" rel="home">
-      <img src="{{ site_logo }}" alt="{{ 'Home'|t }}" />
+    <a href="{{ path('<front>') }}" rel="home" class="site-logo text-reset d-inline-block">
+      {% if inline_logo %}
+        {{ source(site_logo, ignore_missing = true) }}
+      {% else %}
+        <img src="{{ site_logo }}" alt="{{ 'Home'|t }}" class="img-fluid" />
+      {% endif %}
     </a>
   {% endif %}
   {% if site_name %}
-    <div class="site-branding__name">
-      <a href="{{ path('<front>') }}" rel="home">
-        {{ site_name }}
-      </a>
+    <div class="site-name">
+      <a href="{{ path('<front>') }}" title="{{ 'Home'|t }}" rel="home">{{ site_name }}</a>
     </div>
   {% endif %}
   {% if site_slogan %}
-    <div class="site-branding__slogan">
-      {{ site_slogan }}
-    </div>
+    <div class="site-slogan">{{ site_slogan }}</div>
   {% endif %}
-</div>
+{% endblock %}

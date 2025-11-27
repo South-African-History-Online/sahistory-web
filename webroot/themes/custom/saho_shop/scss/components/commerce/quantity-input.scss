@@ -1,0 +1,173 @@
+//
+// Quantity Input
+// ----------------------------
+//
+
+@import "../../global";
+
+:root {
+  --quantity-input-max-width: 10rem;
+  --quantity-input-border-radius: var(--beo-border-radius);
+  --quantity-input-border-color: var(--beo-border-color);
+  --quantity-input-border-width: 1px;
+  --quantity-input-bg: var(--beo-white);
+  --quantity-input-color: var(--beo-body-color);
+  --quantity-input-focus-border-color: var(--bs-primary);
+  --quantity-input-focus-shadow: 0 0 0 #{$focus-ring-width} #{$focus-ring-color};
+
+  // Button styles
+  --quantity-btn-bg: var(--beo-light);
+  --quantity-btn-color: var(--beo-body-color);
+  --quantity-btn-hover-bg: var(--beo-primary);
+  --quantity-btn-hover-color: var(--beo-white);
+  --quantity-btn-border-color: var(--beo-border-color);
+  --quantity-btn-transition: all 0.15s ease-in-out;
+}
+
+// Base quantity input wrapper
+.quantity-input-wrapper {
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+  max-width: var(--quantity-input-max-width);
+  border: var(--quantity-input-border-width) solid var(--quantity-input-border-color);
+  border-radius: var(--quantity-input-border-radius);
+  background: var(--quantity-input-bg);
+  overflow: hidden;
+
+  &:focus-within {
+    border-color: var(--quantity-input-focus-border-color);
+    box-shadow: var(--quantity-input-focus-shadow);
+  }
+}
+
+// Quantity input field
+.quantity-input {
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
+  text-align: center;
+  font-weight: 500;
+  color: var(--quantity-input-color);
+
+  &:focus {
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+  }
+
+  // Remove number input spinners
+  &::-webkit-outer-spin-button,
+  &::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  &[type="number"] {
+    -moz-appearance: textfield;
+  }
+}
+
+// Plus/minus buttons style
+.quantity-input-wrapper {
+  .quantity-input {
+    flex: 1;
+    min-width: 0;
+    height: 2.5rem;
+    padding: 0 0.75rem;
+    font-size: 1rem;
+  }
+
+  .quantity-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    background: var(--quantity-btn-bg);
+    border: none;
+    color: var(--quantity-btn-color);
+    cursor: pointer;
+    transition: var(--quantity-btn-transition);
+    flex-shrink: 0;
+
+    &:hover {
+      background: var(--quantity-btn-hover-bg);
+      color: var(--quantity-btn-hover-color);
+    }
+
+    &:active {
+      transform: scale(0.95);
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+
+      &:hover {
+        background: var(--quantity-btn-bg);
+        color: var(--quantity-btn-color);
+      }
+    }
+
+    &__icon {
+      font-size: 1.2em;
+      font-weight: bold;
+      line-height: 1;
+    }
+  }
+
+  .quantity-btn--minus {
+    border-right: var(--quantity-input-border-width) solid var(--quantity-input-border-color);
+  }
+
+  .quantity-btn--plus {
+    border-left: var(--quantity-input-border-width) solid var(--quantity-input-border-color);
+  }
+}
+
+// Responsive adjustments
+@include media-breakpoint-down(sm) {
+  .quantity-input-wrapper {
+    width: 100%;
+    max-width: 120px;
+  }
+
+  .quantity-btn {
+    width: 2rem !important;
+    height: 2rem !important;
+  }
+
+  .quantity-input {
+    height: 2rem !important;
+    font-size: 0.875rem !important;
+    padding: 0 0.5rem !important;
+  }
+}
+
+// Form styles
+.form-style-minimal {
+  .quantity-btn {
+    --quantity-btn-bg: transparent;
+  }
+
+  .quantity-edit-input {
+    margin-top: 0;
+  }
+}
+
+.form-style-floating_labels {
+  .quantity-input-wrapper + label {
+    display: none;
+  }
+}
+
+// Dark theme support
+[data-bs-theme="dark"] {
+  --quantity-input-bg: var(--beo-dark);
+  --quantity-input-color: var(--beo-light);
+  --quantity-input-border-color: var(--beo-border-color);
+  --quantity-btn-bg: var(--beo-secondary);
+  --quantity-btn-color: var(--beo-light);
+}

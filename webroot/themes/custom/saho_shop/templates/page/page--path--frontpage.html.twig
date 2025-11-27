@@ -1,0 +1,122 @@
+{#
+/**
+ * @file
+ * Frontpage template with full-width hero slider.
+ *
+ * This template creates a Belgrade-style homepage with:
+ * - Full-width hero slider in the highlighted region
+ * - Header overlaid on top of the slider
+ * - Main content below the slider
+ *
+ * @see template_preprocess_page()
+ * @see html.html.twig
+ */
+#}
+{% do attach_library('saho_shop/page.front') %}
+
+<div{{ attributes.addClass('frontpage') }}>
+  {% block skip_link %}
+    <a href="#main-content" class="visually-hidden-focusable">
+      {{ 'Skip to main content'|t }}
+    </a>
+  {% endblock %}
+
+  {# Top bar #}
+  {% block top_bar %}
+    {% if page.top_bar %}
+      {{ page.top_bar }}
+    {% endif %}
+  {% endblock %}
+
+  {# Hero Section: Header overlaid on Slider #}
+  <div class="frontpage-hero">
+    {# Header - positioned absolutely over slider #}
+    {% block header %}
+      {% if page.header %}
+        <header role="banner" class="region-header">
+          {{ page.header }}
+        </header>
+      {% endif %}
+    {% endblock %}
+
+    {# Navigation #}
+    {% block navigation %}
+      {% if page.navigation %}
+        <nav role="navigation" aria-label="{{ 'Main navigation'|t }}" class="region-navigation">
+          {{ page.navigation }}
+        </nav>
+      {% endif %}
+    {% endblock %}
+
+    {# Highlighted region - Full-width slider #}
+    {% block highlighted %}
+      {% if page.highlighted %}
+        <div class="region-highlighted">
+          {{ page.highlighted }}
+        </div>
+      {% endif %}
+    {% endblock %}
+  </div>
+
+  {# Messages #}
+  {% block messages %}
+    {% if page_top %}
+      {{ page_top }}
+    {% endif %}
+  {% endblock %}
+
+  {# Help region #}
+  {% block help %}
+    {% if page.help %}
+      {{ page.help }}
+    {% endif %}
+  {% endblock %}
+
+  {# Local tasks/tabs #}
+  {% block tabs %}
+    {% if primary_local_tasks %}
+      {{ primary_local_tasks }}
+    {% endif %}
+
+    {% if secondary_local_tasks %}
+      {{ secondary_local_tasks }}
+    {% endif %}
+  {% endblock %}
+
+  {# Action links #}
+  {% block action_links %}
+    {% if action_links %}
+      {{ action_links }}
+    {% endif %}
+  {% endblock %}
+
+  {# Main content #}
+  {% block main %}
+    <main id="main-content" role="main">
+      {{ page.content }}
+
+      {% if page.sidebar_first %}
+        {{ page.sidebar_first }}
+      {% endif %}
+
+      {% if page.sidebar_second %}
+        {{ page.sidebar_second }}
+      {% endif %}
+    </main>
+  {% endblock %}
+
+  {# Footer #}
+  {% block footer %}
+    {% if page.footer %}
+      <footer role="contentinfo">
+        {{ page.footer }}
+      </footer>
+    {% endif %}
+  {% endblock %}
+
+  {% block page_bottom %}
+    {% if page_bottom %}
+      {{ page_bottom }}
+    {% endif %}
+  {% endblock %}
+</div>

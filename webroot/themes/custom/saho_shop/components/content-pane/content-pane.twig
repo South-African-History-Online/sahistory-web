@@ -1,0 +1,38 @@
+{%
+  set classes = [
+    'content-pane',
+    variant ? 'content-pane--' ~ variant,
+    collapsible ? 'content-pane--collapsible',
+  ]
+%}
+
+{% set content_id = 'content-pane-' ~ random() %}
+
+<div {{ attributes.addClass(classes) }}>
+  {% if title or icon or description %}
+    <div class="content-pane__header">
+      {% if title or icon %}
+        <div class="content-pane__title-row">
+          {% if icon %}
+            <span class="content-pane__icon" aria-hidden="true">
+              {% import "@saho_shop/macros.twig" as svg %}
+              {{ svg.getIcon(icon, 16, 16) }}
+            </span>
+          {% endif %}
+          {% if title %}
+            <h3 class="content-pane__title {{ collapsible ? 'content-pane__title--collapsible' : '' }}" {% if collapsible %}data-bs-toggle="collapse" href="#{{ content_id }}-content" role="button" aria-expanded="{{ collapsed ? 'false' : 'true' }}" aria-controls="{{ content_id }}-content"{% endif %}>{{ title }}</h3>
+          {% endif %}
+        </div>
+      {% endif %}
+      {% if description %}
+        <p class="content-pane__description">{{ description }}</p>
+      {% endif %}
+    </div>
+  {% endif %}
+
+  <div {% if collapsible %}id="{{ content_id }}-content"{% endif %} class="content-pane__content{{ collapsible ? ' collapse' ~ (collapsed ? '' : ' show') }}">
+    <div class="content-pane__content-inner">
+      {{ content }}
+    </div>
+  </div>
+</div>

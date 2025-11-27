@@ -1,0 +1,68 @@
+//
+// Toolbar
+// ----------------------------
+
+@import "../global";
+
+:root {
+  --admin-toolbar-size: 39px;
+  --admin-tray-size: 39px;
+}
+
+// Z-index
+// ----------------------------
+.toolbar-oriented .toolbar-bar {
+  z-index: map-get($z-index, toolbar);
+}
+
+body.toolbar-vertical,
+body.toolbar-horizontal {
+  .gin-secondary-toolbar {
+    z-index: map-get($z-index, toolbar);
+  }
+
+  &:has(.gin-secondary-toolbar) {
+    .region-navigation.offcanvas-start,
+    .region-navigation.offcanvas-end,
+    .region-navigation.offcanvas-top {
+      top: calc(var(--gin-toolbar-secondary-height) + var(--gin-toolbar-height, 0));
+    }
+  }
+}
+
+// Navigation (Offcanvas) Positioning
+// ----------------------------
+
+// Vertical toolbar
+body.toolbar-vertical {
+  .region-navigation.offcanvas-start,
+  .region-navigation.offcanvas-end,
+  .region-navigation.offcanvas-top {
+    top: var(--admin-toolbar-size);
+  }
+}
+
+// Horizontal toolbar
+body.toolbar-horizontal {
+  // Toast positioning
+  .top-0.toast-container {
+    top: calc(var(--admin-toolbar-size) + var(--admin-tray-size)) !important;
+  }
+
+  // Navigation (Offcanvas)
+  .region-navigation.offcanvas-start,
+  .region-navigation.offcanvas-end,
+  .region-navigation.offcanvas-top {
+    top: var(--gin-toolbar-height, var(--admin-toolbar-size));
+  }
+
+  // Adjust toolbar size when tray is open
+  &.toolbar-tray-open {
+    --admin-toolbar-size: 4.875rem;
+  }
+
+  // Offcanvas start positioning
+  .region-navigation.offcanvas-start {
+    left: var(--gin-toolbar-x-offset, 0);
+  }
+}

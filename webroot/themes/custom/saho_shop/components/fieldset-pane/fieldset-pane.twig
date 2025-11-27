@@ -1,0 +1,53 @@
+{%
+  set classes = [
+    'fieldset-pane',
+    variant ? 'fieldset-pane--' ~ variant,
+    collapsible ? 'fieldset-pane--collapsible',
+    disabled ? 'fieldset-pane--disabled',
+  ]
+%}
+
+{% set content_id = 'fieldset-pane-' ~ random() %}
+
+<fieldset {{ attributes.addClass(classes) }}{% if disabled %} disabled{% endif %}>
+  {% if title or icon or description %}
+    <legend {{ legend_attributes.addClass('fieldset-pane__legend') }}>
+      {% if title or icon %}
+        <div class="fieldset-pane__title-row">
+          {% if icon %}
+            <span class="fieldset-pane__icon" aria-hidden="true">
+              {% import "@saho_shop/macros.twig" as svg %}
+              {{ svg.getIcon(icon, 16, 16) }}
+            </span>
+          {% endif %}
+          {% if title %}
+            <span {{ legend_span_attributes.addClass('fieldset-pane__title', collapsible ? 'fieldset-pane__title--collapsible') }} {% if collapsible %}data-bs-toggle="collapse" href="#{{ content_id }}-content" role="button" aria-expanded="{{ collapsed ? 'false' : 'true' }}" aria-controls="{{ content_id }}-content"{% endif %}>{{ title }}</span>
+          {% endif %}
+        </div>
+      {% endif %}
+      {% if description %}
+        <p {{ description_attributes.addClass('fieldset-pane__description') }}>{{ description }}</p>
+      {% endif %}
+    </legend>
+  {% endif %}
+
+  <div {% if collapsible %}id="{{ content_id }}-content"{% endif %} class="fieldset-pane__content{{ collapsible ? ' collapse' ~ (collapsed ? '' : ' show') }}">
+    <div class="fieldset-pane__content-inner">
+      {% if errors %}
+        <div>
+          {{ errors }}
+        </div>
+      {% endif %}
+      {% if prefix %}
+        <span class="field-prefix">{{ prefix }}</span>
+      {% endif %}
+      {{ content }}
+      {% if suffix %}
+        <span class="field-suffix">{{ suffix }}</span>
+      {% endif %}
+      {% if description %}
+        <div{{ description_attributes.addClass('description') }}>{{ description }}</div>
+      {% endif %}
+    </div>
+  </div>
+</fieldset>

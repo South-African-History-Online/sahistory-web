@@ -1,0 +1,33 @@
+{#
+/**
+ * @file
+ * Default order total summary template.
+ *
+ * Available variables:
+ * - attributes: HTML attributes for the wrapper.
+ * - order_entity: The order entity.
+ * - totals: An array of order totals values with the following keys:
+ *   - subtotal: The order subtotal price.
+ *   - adjustments: The adjustments:
+ *     - type: The adjustment type.
+ *     - label: The adjustment label.
+ *     - amount: The adjustment amount.
+ *     - percentage: The decimal adjustment percentage, when available. For example, "0.2" for a 20% adjustment.
+ *   - total: The order total price.
+ *
+ * @ingroup themeable
+ */
+#}
+
+{{ attach_library('saho_shop/order.summary') }}
+
+<div{{ attributes.addClass('order-total-summary') }}>
+  <div class="order-total-summary__inner">
+    <span class="order-total-line-label order-total-line-label__subtotal">{{ 'Subtotal:'|t }} </span><span class="order-total-line-value order-total-line-value__subtotal">{{ totals.subtotal|commerce_price_format }}</span>
+    {% for adjustment in totals.adjustments %}
+      <span class="order-total-line-label order-total-line-label__adjustment">{{ adjustment.label }}: </span><span class="order-total-line-value order-total-line-value__adjustment">{{ adjustment.amount|commerce_price_format }}</span>
+    {% endfor %}
+    <span class="order-total-line-divider"></span>
+    <span class="order-total-line-label order-total-line-label__total">{{ 'Total:'|t }} </span><span class="order-total-line-value order-total-line-value__total">{{ totals.total|commerce_price_format }}</span>
+  </div>
+</div>

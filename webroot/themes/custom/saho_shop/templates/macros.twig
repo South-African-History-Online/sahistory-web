@@ -1,0 +1,37 @@
+{# SVG icons #}
+
+{% macro getIcon(icon, width, height, classes, path, title, desc) %}
+
+  {% set title = title ? title : icon|capitalize %}
+
+  {#
+    SahoShop uses Bootstrap icons.
+    complete list of icons is located here: https://icons.getbootstrap.com/#icons.
+    Other SVG's can be imported by defining a custom path to a sprite or image.
+  #}
+
+  <svg class="beo beo-{{ icon }} {{ classes }}"
+       width="{{ width|default(16) }}"
+       height="{{ height|default(16) }}"
+       fill="currentColor"
+       aria-hidden="true"
+       viewBox="0 0 16 16"
+       role="img">
+    <title>{{ title }}</title>
+
+    {#
+      SahoShop icons:
+    #}
+    <use xlink:href="{{ path|default("/" ~ active_theme_path() ~ "/images/saho_shop-icons.svg#" ~ icon) }}"/>
+
+    {#
+      All Bootstrap icons:
+      <use xlink:href="{{ path|default("/" ~ active_theme_path() ~ "/images/bootstrap-icons.svg#" ~ icon) }}"/>
+    #}
+
+    {% if desc %}
+      <desc>{{ desc }}</desc>
+    {% endif %}
+  </svg>
+
+{% endmacro %}

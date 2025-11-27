@@ -1,0 +1,88 @@
+{#
+/**
+ * @file
+ * Focused page template.
+ *
+ * This template provides a distraction-free focused page experience by removing
+ * header, footer, and navigation elements.
+ *
+ * Available variables:
+ * - page.content: The main content of the current page.
+ * - focused_page_logo: Whether to show the logo.
+ * - focused_page_show_back_button: Whether to show the back button.
+ * - focused_page_back_button_text: The text for the back button.
+ * - focused_page_show_cart_button: Whether to show the cart button.
+ * - focused_page_cart_button_text: The text for the cart button.
+ * - focused_page_show_icons: Whether to show icons.
+ * - site_name: The site name.
+ * - inline_logo: Whether to show inline logo.
+ *
+ * @see template_preprocess_page()
+ */
+#}
+{% import "@saho_shop/macros.twig" as svg %}
+
+{{ attach_library('saho_shop/page.focused') }}
+
+<div{{ attributes.addClass('focused-page') }}>
+
+  {% block skip_link %}
+    <a href="#main-content" class="visually-hidden-focusable">
+      {{ 'Skip to main content'|t }}
+    </a>
+  {% endblock %}
+
+  {% block main %}
+    <main id="main-content" role="main" class="focused-page__main">
+      <header class="focused-page__header" role="banner">
+        <div class="focused-page__header-container container-fluid">
+          <div class="focused-page__logo">
+            <a href="{{ path('<front>') }}" title="{{ 'Home'|t }}" rel="home" class="navbar-brand">
+              {% if focused_page_logo %}
+                {% if inline_logo %}
+                  {{ source(logo_url, ignore_missing = true) }}
+                {% else %}
+                  <img src="{{ logo_url }}" alt="{{ site_name }}" class="img-fluid" style="max-height: 60px;">
+                {% endif %}
+              {% else %}
+                <h1 class="h3">{{ site_name }}</h1>
+              {% endif %}
+            </a>
+          </div>
+          <div class="focused-page__header-actions opacify-links">
+            {% if focused_page_show_back_button %}
+              <a href="{{ path('<front>') }}" class="focused-page__back-btn">
+                {% if focused_page_show_icons %}
+                  {{ svg.getIcon('arrow-left', 18, 18) }}
+                {% endif %}
+                {{ focused_page_back_button_text }}
+              </a>
+            {% endif %}
+            {% if focused_page_show_cart_button %}
+              <a href="{{ path('commerce_cart.page') }}" class="focused-page__cart-btn">
+                {% if focused_page_show_icons %}
+                  {{ svg.getIcon(cart_icon|default('basket'), 18, 18) }}
+                {% endif %}
+                {{ focused_page_cart_button_text }}
+              </a>
+            {% endif %}
+          </div>
+        </div>
+      </header>
+
+      <div class="focused-page__content">
+        <div class="container-fluid focused-page__content-container">
+          {{ page_top }}
+          {{ page.highlighted }}
+          {{ page.content|without(['saho_shop_checkout_progress', 'saho_shop_page_title']) }}
+        </div>
+      </div>
+    </main>
+  {% endblock %}
+
+  {% block page_bottom %}
+    {% if page_bottom %}
+      {{ page_bottom }}
+    {% endif %}
+  {% endblock %}
+</div>

@@ -1,0 +1,378 @@
+//
+// Form Components
+// ----------------------------
+//
+// Comprehensive form styling for the SahoShop theme, including:
+// - Form elements (inputs, selects, textareas)
+// - Form validation and error states
+// - Required field indicators
+// - Form spacing and layout
+// - Checkout-specific form styles
+//
+// CSS VARIABLES:
+// The following CSS variables are used for form styling and can be
+// customized through theme settings:
+//
+// SPACING VARIABLES:
+// - --form-item-spacing: Spacing between form items (default: 2rem)
+// - --fieldset-legend-spacing: Spacing for fieldset legends (default: 1.5rem)
+//
+// SPACING OPTIONS (via theme settings):
+// - compact: 1rem spacing, 0.5rem legend spacing
+// - normal: 2rem spacing, 1.5rem legend spacing
+// - spacious: 3rem spacing, 2rem legend spacing
+//
+// USAGE:
+// Form variables are automatically applied to all form elements.
+// Customization can be done through:
+// 1. Theme settings interface
+// 2. Custom CSS override
+// 3. SCSS variable override
+//
+// @see theme-settings.php for form spacing configuration
+// @see includes/html.inc for variable generation
+
+//
+// Forms
+// ----------------------------
+
+:root {
+  --form-gap-horizontal: 1rem;
+}
+
+// Default required field indicator (icon)
+.form-label,
+.fieldset-legend {
+  &.form-required {
+    display: inline-block;
+    content: "";
+    background-size: $required-mark-size;
+    background-image: $required-mark-icon;
+    background-repeat: no-repeat;
+    background-position: right top 0.3em;
+    padding-right: calc(#{$required-mark-size} + 0.3em);
+  }
+}
+
+.form-datetime {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--form-gap-horizontal);
+
+  > .form-item {
+    flex: 1 1 100%;
+
+    @include media-breakpoint-up(md) {
+      flex: 1 0 auto;
+    }
+  }
+}
+
+// Errors
+.error {
+  &.form-control {
+    border-color: $danger;
+
+    @if $enable-validation-icons {
+      padding-right: $input-height-inner;
+      background-image: escape-svg($form-feedback-icon-invalid);
+      background-repeat: no-repeat;
+      background-position: right $input-height-inner-quarter center;
+      background-size: $input-height-inner-half $input-height-inner-half;
+    }
+
+    &:focus {
+      border-color: $danger;
+      box-shadow: 0 0 0 $input-focus-width rgba($danger, $input-btn-focus-color-opacity);
+    }
+  }
+
+  &.form-select {
+    border-color: $danger;
+
+    @if $enable-validation-icons {
+      padding-right: $form-select-feedback-icon-padding-end;
+      background-image: escape-svg($form-select-indicator), escape-svg($form-feedback-icon-invalid);
+      background-position: $form-select-bg-position, $form-select-feedback-icon-position;
+      background-size: $form-select-bg-size, $form-select-feedback-icon-size;
+    }
+
+    &:focus {
+      border-color: $danger;
+      box-shadow: 0 0 0 $input-focus-width rgba($danger, 0.25);
+    }
+  }
+
+  &.form-check-input {
+    border-color: $danger;
+
+    &:checked {
+      background-color: $danger;
+    }
+
+    &:focus {
+      box-shadow: 0 0 0 $input-focus-width rgba($danger, 0.25);
+    }
+
+    ~ .form-check-label {
+      color: $danger;
+    }
+  }
+
+  &.form-check-inline .form-check-input {
+    ~ .invalid-feedback {
+      margin-left: 0.5em;
+    }
+  }
+}
+
+// stylelint-disable-next-line selector-no-qualifying-type
+textarea.error.form-control {
+  @if $enable-validation-icons {
+    padding-right: $input-height-inner;
+    background-position: top $input-height-inner-quarter right $input-height-inner-quarter;
+  }
+}
+
+fieldset.fieldgroup.error .fieldset-legend {
+  color: $danger;
+}
+
+// Form actions buttons.
+.form-actions {
+  .btn.form-submit + a:not(.btn) {
+    margin-left: 0.5rem;
+    font-size: $font-size-sm;
+  }
+
+  #edit-cancel.button {
+    color: $danger;
+  }
+}
+
+// Form Styles
+// ----------------------------
+
+// Global Form Variables (can be overridden by theme settings)
+:root {
+  // Form Style Variables
+  --form-outlined-border-width: 2px;
+  --form-outlined-bg: var(--beo-white);
+  --form-minimal-border-width: 2px;
+  --form-minimal-padding: 0.5rem 0;
+  --form-minimal-bg: transparent;
+  --form-minimal-border-radius: 0;
+  --form-minimal-input-spacing: 0.5rem;
+  --form-minimal-help-spacing: 0.25rem;
+}
+
+// Floating Labels Style - Uses Bootstrap's built-in floating labels
+.form-style-floating_labels {
+  // Customize floating label appearance for a more subtle look.
+  .form-floating {
+    .form-label {
+      font-size: 0.875rem; // Smaller font size
+      font-weight: 400; // Lighter font weight
+      color: $body-color; // Darker color for better readability
+      opacity: 0.8; // Slightly transparent
+
+      // When floating (focused or has value)
+      &.form-floating-label {
+        font-size: 0.75rem; // Even smaller when floating
+        font-weight: 500; // Slightly bolder when floating
+        color: $primary; // Use primary color when floating
+        opacity: 1; // Full opacity when floating
+      }
+    }
+  }
+
+  // CKEditor fix.
+  .form-floating {
+    .ck.ck-editor__editable_inline {
+      padding: $input-padding-y $input-padding-x;
+    }
+  }
+
+  .form-floating.form-type-textarea:has(.ck-editor) {
+    .form-label {
+      top: 2.25rem;
+
+      // Force the label to stay in the "focused/floated" state.
+      opacity: 1;
+      transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem);
+      font-size: 0.75rem;
+    }
+  }
+
+  // Implementation notes:
+  // - Labels are positioned after inputs via Twig templates for proper Bootstrap structure
+  // - Required indicators are hidden to maintain clean floating label design
+  // - Placeholders are automatically generated from field titles
+  // - Works with text inputs, email, password, tel, url, number, search, textarea, select
+  // - Error states are handled with higher specificity selectors
+}
+
+// Floating Labels Style - Fixes for the required indicator
+.form-floating {
+  .form-label.form-required {
+    background-position: right top 1.3em;
+  }
+
+  > .form-control:focus,
+  > .form-control:not(:placeholder-shown),
+  > .form-control-plaintext,
+  > .form-select {
+    ~ label {
+      &::after {
+        width: auto;
+        margin: 0;
+        right: ($form-floating-padding-x * 0.25);
+      }
+    }
+  }
+}
+
+// Outlined Style
+.form-style-outlined {
+  .form-control,
+  .form-select {
+    border: var(--form-outlined-border-width) solid $input-border-color;
+    background-color: var(--form-outlined-bg);
+  }
+}
+
+// Minimal Style
+.form-style-minimal {
+  .form-control,
+  .form-select {
+    margin-top: var(--form-minimal-input-spacing);
+    border: none;
+    border-bottom: var(--form-minimal-border-width) solid $input-border-color;
+    border-radius: var(--form-minimal-border-radius);
+    background-color: var(--form-minimal-bg);
+    padding: var(--form-minimal-padding);
+    transition: $input-transition;
+
+    &:focus {
+      border-bottom-color: $input-focus-border-color;
+      box-shadow: none;
+      outline: 0;
+    }
+
+    &::placeholder {
+      color: $input-placeholder-color;
+      opacity: 1;
+    }
+  }
+
+  .form-label {
+    font-weight: $form-label-font-weight;
+    color: $form-label-color;
+    margin-bottom: 0;
+  }
+
+  .form-check-input {
+    border: $input-border-width solid $input-border-color;
+
+    &:checked {
+      border-color: $form-check-input-checked-border-color;
+      background-color: $form-check-input-checked-bg-color;
+    }
+
+    &:focus {
+      border-color: $input-focus-border-color;
+      box-shadow: $input-focus-box-shadow;
+    }
+  }
+
+  // Add spacing for descriptions
+  .form-text,
+  .description {
+    margin-top: var(--form-minimal-input-spacing);
+    font-size: $font-size-sm;
+    color: $form-text-color;
+  }
+
+  // Add spacing for help text
+  .help-text {
+    margin-top: var(--form-minimal-help-spacing);
+    font-size: $font-size-sm;
+    color: $form-text-color;
+  }
+}
+
+// Field Spacing Styles
+// ----------------------------
+
+// Apply CSS variables to form elements
+.form-item {
+  margin-bottom: var(--form-item-spacing);
+}
+
+.form-radios,
+.form-checkboxes {
+  .form-item {
+    margin-bottom: calc(var(--form-item-spacing) / 2);
+  }
+}
+
+.form-wrapper {
+  legend {
+    margin-bottom: var(--fieldset-legend-spacing);
+  }
+}
+
+// Required Field Indicator Styles
+// ----------------------------
+
+// Text indicator
+.form-required-text {
+  .form-label.form-required,
+  .fieldset-legend.form-required {
+    background-image: none;
+
+    &::after {
+      content: " (Required)";
+      color: $danger;
+      font-size: 0.875em;
+      font-weight: normal;
+      margin-left: 0.3em;
+      margin-right: 0.3em;
+      vertical-align: baseline;
+    }
+  }
+
+  // Hide required indicators for floating labels
+  .form-floating {
+    .form-label.form-required {
+      &::after {
+        display: none;
+      }
+    }
+  }
+}
+
+// No indicator
+.form-required-none {
+  .form-required {
+    background-image: none;
+  }
+}
+
+// Address container inline alignment
+form {
+  .address-container-inline {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 var(--form-gap-horizontal);
+
+    > .form-item {
+      flex: 1 1 100%;
+      margin-right: 0;
+
+      @include media-breakpoint-up(md) {
+        flex: 1;
+      }
+    }
+  }
+}

@@ -1,0 +1,44 @@
+{% import "@saho_shop/macros.twig" as svg %}
+
+{#
+/**
+ * @file
+ * Default theme implementation for the checkout progress.
+ *
+ * Available variables:
+ * - steps: An array of steps, where each step has the following keys:
+ *   - id: The step ID.
+ *   - label: The step label.
+ *   - position: 'previous', 'current' or 'next'.
+ *
+ * @ingroup themeable
+ */
+#}
+{{ attach_library('saho_shop/checkout.progress') }}
+
+<div class="checkout-progress">
+  {% for step in steps %}
+
+    {% set stepDefaultIcon = 'basket' %}
+
+    {% set stepIcon =
+      step.id == 'login' ? 'info-circle' :
+      step.id == 'order_information' ? 'clipboard-data' :
+      step.id == 'review' ? 'clipboard-check' :
+      step.id == 'complete' ? 'gift' : stepDefaultIcon
+    %}
+
+    <div class="checkout-progress--step checkout-progress--step__{{ step.position }}">
+      <div class="checkout-progress--step__icon">
+        {{ svg.getIcon(stepIcon, 42, 42) }}
+        {% if step.position == 'previous' %}
+          {{ svg.getIcon('check-circle-fill', 16, 16, 'position-absolute bottom-0') }}
+        {% endif %}
+      </div>
+      <div class="checkout-progress--step__label">
+        {{- step.label -}}
+      </div>
+    </div>
+
+  {% endfor %}
+</div>

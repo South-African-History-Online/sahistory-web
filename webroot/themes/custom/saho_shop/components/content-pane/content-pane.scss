@@ -1,0 +1,205 @@
+// Content Pane Component
+// ======================
+//
+// Single Directory Component for content panes with icon, title, and content.
+
+@import "global";
+
+// CSS Variables for content pane component
+:root {
+  // Spacing
+  --content-pane-margin-bottom: var(--form-item-spacing);
+  --content-pane-border-radius: 0.5rem;
+  --content-pane-header-padding: 1rem 1.5rem;
+  --content-pane-content-padding: 1.5rem;
+
+  // Colors
+  --content-pane-bg: var(--beo-white);
+  --content-pane-border: var(--beo-border-color);
+  --content-pane-shadow: var(--beo-box-shadow-sm);
+  --content-pane-header-bg: transparent;
+  --content-pane-header-border: var(--beo-border-color);
+
+  // Typography
+  --content-pane-title-font-size: 1.25rem;
+  --content-pane-title-font-weight: 600;
+  --content-pane-title-color: var(--beo-body-color);
+  --content-pane-description-font-size: 0.875rem;
+  --content-pane-description-color: var(--beo-secondary-color);
+
+  // Icon
+  --content-pane-icon-size: 1.5rem;
+  --content-pane-icon-color: var(--beo-primary);
+
+  // Transitions
+  --content-pane-transition: all 0.2s ease-in-out;
+}
+
+// Base content pane styles
+.content-pane {
+  background: var(--content-pane-bg);
+  border: 1px solid var(--content-pane-border);
+  border-radius: var(--content-pane-border-radius);
+  box-shadow: var(--content-pane-shadow);
+  margin-bottom: var(--content-pane-margin-bottom);
+  transition: var(--content-pane-transition);
+  overflow: hidden;
+
+  // Pane header
+  &__header {
+    background: var(--content-pane-header-bg);
+    border-bottom: 1px solid var(--content-pane-header-border);
+    padding: var(--content-pane-header-padding);
+  }
+
+  // Title row container (for icon + title)
+  &__title-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  // Pane icon
+  &__icon {
+    width: var(--content-pane-icon-size);
+    height: var(--content-pane-icon-size);
+    color: var(--content-pane-icon-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    &::before {
+      font-size: var(--content-pane-icon-size);
+    }
+  }
+
+  // Pane title
+  &__title {
+    font-size: var(--content-pane-title-font-size);
+    font-weight: var(--content-pane-title-font-weight);
+    color: var(--content-pane-title-color);
+    margin: 0;
+    flex: 1;
+  }
+
+  // Pane description
+  &__description {
+    font-size: var(--content-pane-description-font-size);
+    color: var(--content-pane-description-color);
+    margin: 0.75rem 0 0;
+    line-height: 1.4;
+  }
+
+  // Pane content
+  &__content-inner {
+    padding: var(--content-pane-content-padding);
+  }
+}
+
+// Variant styles
+// ==============
+
+// Minimal variant - no borders, no padding
+.content-pane--minimal {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  margin-bottom: 0;
+
+  .content-pane__header {
+    background: transparent;
+    border-bottom: none;
+    padding: 0;
+    margin-bottom: var(--fieldset-legend-spacing);
+  }
+
+  .content-pane__content-inner {
+    padding: 0;
+  }
+}
+
+// Title outside variant - title appears outside the pane border
+.content-pane--title-outside {
+  // Remove all borders from the main pane
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  margin-top: 0;
+
+  .content-pane__header {
+    // Header has no borders or background
+    background: transparent;
+    border: none;
+    padding: 0 0 1rem;
+    margin-bottom: 0;
+  }
+
+  .content-pane__content-inner {
+    // Move the border to the content area
+    border: 1px solid var(--content-pane-border);
+    border-radius: var(--content-pane-border-radius);
+    background: var(--content-pane-bg);
+    box-shadow: var(--content-pane-shadow);
+    padding: var(--content-pane-content-padding);
+  }
+}
+
+// Collapsible functionality
+.content-pane__title--collapsible {
+  cursor: pointer;
+  user-select: none;
+  transition: var(--content-pane-transition);
+  position: relative;
+  padding-right: 2rem;
+
+  // Hover state
+  &:hover {
+    color: var(--beo-primary);
+  }
+
+  // Focus state
+  &:focus {
+    outline: 2px solid var(--beo-primary);
+    outline-offset: 2px;
+  }
+
+  // Add accordion icon
+  &::after {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: $accordion-icon-width;
+    height: $accordion-icon-width;
+    content: "";
+    background-image: escape-svg($accordion-button-icon);
+    background-repeat: no-repeat;
+    background-size: $accordion-icon-width;
+
+    @include transition($accordion-btn-icon-transition);
+  }
+
+  // Expanded state - rotate icon
+  &[aria-expanded="true"]::after {
+    transform: translateY(-50%) $accordion-btn-icon-transform;
+  }
+}
+
+// Responsive adjustments
+@include media-breakpoint-down(md) {
+  :root {
+    --content-pane-margin-bottom: 1.5rem;
+    --content-pane-header-padding: 0.75rem 1rem;
+    --content-pane-content-padding: 1rem;
+  }
+
+  .content-pane {
+    &__header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+  }
+}

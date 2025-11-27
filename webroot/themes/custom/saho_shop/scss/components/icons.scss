@@ -1,0 +1,106 @@
+//
+// SahoShop Icons
+// - Add icons to certain buttons and links
+// ----------------------------
+@import "../global";
+
+$icons: (
+  "add": "plus",
+  "arrow-repeat": "arrow-repeat",
+  "basket": "basket",
+  "heart": "heart-fill",
+  "cart-add": "cart-plus-fill",
+  "card": "credit-card-2-back-fill",
+  "trash": "trash",
+  "edit": "pencil-square",
+  "remove": "dash-circle-fill",
+  "arrow-right": "arrow-right",
+  "arrow-left": "arrow-left",
+);
+$icon-size: 1.2rem;
+
+@function get_icon($key) {
+  @return map-get($icons, $key);
+}
+
+// Icon Classes
+@each $icon, $icon_name in $icons {
+  .bi-btn-#{$icon} {
+    @include btn-icon($icon-size, "../../icons/#{$icon_name}.svg");
+  }
+
+  // Button variants using existing theme-colors map
+  @each $variant, $color in $theme-colors {
+    // Light variants need black icons for contrast
+    $light-variants: ("light", "white", "info", "warning");
+    $needs-black-icon: index($light-variants, $variant);
+
+    // Regular buttons
+    .btn-#{$variant}.bi-btn-#{$icon} {
+      $icon-color: if($needs-black-icon, $black, $white);
+
+      @include btn-icon($icon-size, "../../icons/#{$icon_name}.svg", $icon-color, $icon-color);
+    }
+
+    // Outline buttons
+    .btn-outline-#{$variant}.bi-btn-#{$icon} {
+      $hover-icon-color: if($needs-black-icon, $black, $white);
+
+      @include btn-icon($icon-size, "../../icons/#{$icon_name}.svg", $color, $hover-icon-color);
+    }
+  }
+}
+
+.delete-order-item {
+  @include icon($icon-size, '../../icons/#{get_icon("trash")}.svg');
+}
+
+// Address book
+.address-book__add-link {
+  @include btn-icon($icon-size, '../../icons/#{get_icon("add")}.svg', $white, $white);
+}
+
+.links .edit > a,
+.address-book__edit-link {
+  @include icon($icon-size, '../../icons/#{get_icon("edit")}.svg', $secondary, $success);
+}
+
+.links .delete > a,
+.address-book__delete-link {
+  @include icon($icon-size, '../../icons/#{get_icon("trash")}.svg', $secondary, $danger);
+}
+
+// Wishlist with Icons
+[data-drupal-selector="edit-wishlist"].btn-link {
+  color: $secondary; // move this to wishlist overrides
+
+  @include btn-icon($icon-size, '../../icons/#{get_icon("heart")}.svg', $secondary, $danger);
+}
+
+.wishlist-item__details {
+  display: flex;
+  align-items: center;
+}
+
+.wishlist-item .wishlist-item__details-edit-link {
+  @include icon($icon-size, '../../icons/#{get_icon("edit")}.svg', $secondary, $success);
+}
+
+.wishlist-item__actions {
+  .btn-success {
+    @include btn-icon-only($icon-size, '../../icons/#{get_icon("cart-add")}.svg');
+  }
+
+  .btn-danger {
+    @include btn-icon-only($icon-size, '../../icons/#{get_icon("trash")}.svg');
+  }
+}
+
+// Reusable operation classes
+.operation-edit {
+  @include icon($icon-size, '../../icons/#{get_icon("edit")}.svg', $secondary, $warning);
+}
+
+.operation-delete {
+  @include icon($icon-size, '../../icons/#{get_icon("trash")}.svg', $secondary, $danger);
+}

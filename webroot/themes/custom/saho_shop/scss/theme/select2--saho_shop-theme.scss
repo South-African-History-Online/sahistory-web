@@ -1,0 +1,740 @@
+//
+// Select2.
+// ----------------------------
+@import "../global";
+
+// Height
+$s2bs5-height: $input-height !default;
+$s2bs5-height-inner: $input-line-height * 1rem !default;
+
+// Padding
+$s2bs5-padding-y: $form-select-padding-y !default;
+$s2bs5-padding-x: $form-select-padding-x !default;
+
+// Font
+$s2bs5-font-family: inherit !default;
+$s2bs5-font-size: $form-select-font-size !default;
+$s2bs5-font-weight: $form-select-font-weight !default;
+$s2bs5-line-height: $form-select-line-height !default;
+
+// Color & background
+$s2bs5-color: $form-select-color !default;
+$s2bs5-placeholder-color: $input-placeholder-color !default;
+$s2bs5-bg: $form-select-bg !default;
+$s2bs5-bg-position: $form-select-bg-position !default;
+$s2bs5-bg-size: $form-select-bg-size !default;
+
+// Border & shadow
+$s2bs5-border-width: $form-select-border-width !default;
+$s2bs5-border-color: $form-select-border-color !default;
+$s2bs5-border-radius: $form-select-border-radius !default;
+$s2bs5-box-shadow: $form-select-box-shadow !default;
+$s2bs5-transition: $input-transition !default;
+
+// Indicator
+$s2bs5-indicator-padding: $form-select-indicator-padding !default;
+$s2bs5-indicator: $form-select-indicator !default;
+
+// Focus
+$s2bs5-focus-border-color: $form-select-focus-border-color !default;
+$s2bs5-focus-width: $form-select-focus-width !default;
+$s2bs5-focus-box-shadow: $form-select-focus-box-shadow !default;
+
+// Valid
+$s2bs5-valid-border-color: $form-feedback-valid-color !default;
+$s2bs5-valid-focus-box-shadow: 0 0 0 $s2bs5-focus-width
+  rgba($s2bs5-valid-border-color, $input-btn-focus-color-opacity) !default;
+
+// Invalid
+$s2bs5-invalid-border-color: $form-feedback-invalid-color !default;
+$s2bs5-invalid-focus-box-shadow: 0 0 0 $s2bs5-focus-width
+  rgba($s2bs5-invalid-border-color, $input-btn-focus-color-opacity) !default;
+
+// Disabled
+$s2bs5-disabled-color: $text-muted !default;
+$s2bs5-disabled-bg: $form-select-disabled-bg !default;
+$s2bs5-disabled-border-color: $s2bs5-border-color !default;
+
+// Items
+$s2bs5-item-padding-y: $s2bs5-padding-y !default;
+$s2bs5-item-padding-x: $s2bs5-padding-x !default;
+$s2bs5-item-active-bg: $primary !default;
+$s2bs5-item-hover-bg: $gray-100 !default;
+$s2bs5-item-focus-bg: $gray-200 !default;
+
+// Groups
+$s2bs5-group-padding-y: $s2bs5-padding-y !default;
+$s2bs5-group-padding-x: $s2bs5-padding-x * 0.5 !default;
+$s2bs5-group-color: $secondary !default;
+$s2bs5-group-font-weight: $headings-font-weight !default;
+
+// Multiple items
+$s2bs5-multi-item-padding-y: $badge-padding-y !default;
+$s2bs5-multi-item-padding-x: $badge-padding-x !default;
+$s2bs5-options-max-height: 15rem !default;
+
+// Clear/Remove
+$s2bs5-clear-width: 0.75rem !default;
+$s2bs5-clear-height: 0.75rem !default;
+$s2bs5-clear-padding-y: $btn-close-padding-y !default;
+$s2bs5-clear-padding-x: $btn-close-padding-x !default;
+$s2bs5-clear-icon: str-replace(
+  $btn-close-bg,
+  #{$btn-close-color},
+  #{shade-color($s2bs5-border-color, 50%)}
+) !default;
+$s2bs5-clear-bg: transparent escape-svg($s2bs5-clear-icon) center / $s2bs5-clear-height auto
+  no-repeat !default;
+$s2bs5-clear-hover-bg: transparent escape-svg($btn-close-bg) center / $s2bs5-clear-height auto
+  no-repeat !default;
+
+// Small
+$s2bs5-height-sm: $input-height-sm !default;
+$s2bs5-padding-y-sm: $form-select-padding-y-sm !default;
+$s2bs5-padding-x-sm: $form-select-padding-x-sm !default;
+$s2bs5-font-size-sm: $form-select-font-size-sm !default;
+$s2bs5-item-padding-y-sm: $s2bs5-padding-y-sm !default;
+$s2bs5-item-padding-x-sm: $s2bs5-padding-x-sm !default;
+$s2bs5-group-padding-y-sm: $s2bs5-padding-y-sm !default;
+$s2bs5-group-padding-x-sm: $s2bs5-padding-x-sm * 0.5 !default;
+$s2bs5-clear-width-sm: 0.5rem !default;
+$s2bs5-clear-height-sm: 0.5rem !default;
+$s2bs5-clear-padding-y-sm: 0.125rem !default;
+$s2bs5-clear-padding-x-sm: 0.125rem !default;
+$s2bs5-clear-bg-sm: transparent escape-svg($s2bs5-clear-icon) center / $s2bs5-clear-height-sm auto
+  no-repeat !default;
+$s2bs5-clear-hover-bg-sm: transparent escape-svg($btn-close-bg) center / $s2bs5-clear-height-sm auto
+  no-repeat !default;
+$s2bs5-small: (
+  "height": $s2bs5-height-sm,
+  "padding-y": $s2bs5-padding-y-sm,
+  "padding-x": $s2bs5-padding-x-sm,
+  "font-size": $s2bs5-font-size-sm,
+  "item-padding-y": $s2bs5-item-padding-y-sm,
+  "item-padding-x": $s2bs5-item-padding-x-sm,
+  "group-padding-y": $s2bs5-group-padding-y-sm,
+  "group-padding-x": $s2bs5-group-padding-x-sm,
+  "clear-width": $s2bs5-clear-width-sm,
+  "clear-height": $s2bs5-clear-height-sm,
+  "clear-padding-y": $s2bs5-clear-padding-y-sm,
+  "clear-padding-x": $s2bs5-clear-padding-x-sm,
+  "clear-bg": $s2bs5-clear-bg-sm,
+  "clear-hover-bg": $s2bs5-clear-hover-bg-sm,
+) !default;
+
+// Large
+$s2bs5-height-lg: $input-height-lg !default;
+$s2bs5-padding-y-lg: $form-select-padding-y-lg !default;
+$s2bs5-padding-x-lg: $form-select-padding-x-lg !default;
+$s2bs5-font-size-lg: $form-select-font-size-lg !default;
+$s2bs5-item-padding-y-lg: $s2bs5-padding-y-lg !default;
+$s2bs5-item-padding-x-lg: $s2bs5-padding-x-lg !default;
+$s2bs5-group-padding-y-lg: $s2bs5-padding-y-lg !default;
+$s2bs5-group-padding-x-lg: $s2bs5-padding-x-lg * 0.5 !default;
+$s2bs5-clear-width-lg: 1rem !default;
+$s2bs5-clear-height-lg: 1rem !default;
+$s2bs5-clear-padding-y-lg: 0.5rem !default;
+$s2bs5-clear-padding-x-lg: 0.5rem !default;
+$s2bs5-clear-bg-lg: transparent escape-svg($s2bs5-clear-icon) center / $s2bs5-clear-height-lg auto
+  no-repeat !default;
+$s2bs5-clear-hover-bg-lg: transparent escape-svg($btn-close-bg) center / $s2bs5-clear-height-lg auto
+  no-repeat !default;
+$s2bs5-large: (
+  "height": $s2bs5-height-lg,
+  "padding-y": $s2bs5-padding-y-lg,
+  "padding-x": $s2bs5-padding-x-lg,
+  "font-size": $s2bs5-font-size-lg,
+  "item-padding-y": $s2bs5-item-padding-y-lg,
+  "item-padding-x": $s2bs5-item-padding-x-lg,
+  "group-padding-y": $s2bs5-group-padding-y-lg,
+  "group-padding-x": $s2bs5-group-padding-x-lg,
+  "clear-width": $s2bs5-clear-width-lg,
+  "clear-height": $s2bs5-clear-height-lg,
+  "clear-padding-y": $s2bs5-clear-padding-y-lg,
+  "clear-padding-x": $s2bs5-clear-padding-x-lg,
+  "clear-bg": $s2bs5-clear-bg-lg,
+  "clear-hover-bg": $s2bs5-clear-hover-bg-lg,
+) !default;
+
+// Base layout
+.select2-container--saho_shop {
+  display: block;
+
+  *:focus {
+    outline: 0;
+  }
+
+  // Input
+  .select2-selection {
+    width: 100%;
+    min-height: $s2bs5-height;
+    padding: $s2bs5-padding-y $s2bs5-padding-x;
+    font-family: $s2bs5-font-family;
+
+    @include font-size($s2bs5-font-size);
+
+    font-weight: $s2bs5-font-weight;
+    line-height: $s2bs5-line-height;
+    color: $s2bs5-color;
+    background-color: $s2bs5-bg;
+    border: $s2bs5-border-width solid $s2bs5-border-color;
+
+    @include border-radius($s2bs5-border-radius, 0);
+    @include box-shadow($s2bs5-box-shadow);
+    @include transition($s2bs5-transition);
+
+    appearance: none;
+  }
+
+  // Focused/Open Input
+  &.select2-container--focus,
+  &.select2-container--open {
+    .select2-selection {
+      border-color: $s2bs5-focus-border-color;
+      box-shadow: $s2bs5-focus-box-shadow;
+    }
+  }
+
+  // Hide bottom border when open and below
+  &.select2-container--open.select2-container--below .select2-selection {
+    border-bottom: $s2bs5-border-width solid transparent;
+
+    @include border-bottom-radius(0);
+  }
+
+  // Hide top border when open and above
+  &.select2-container--open.select2-container--above .select2-selection {
+    border-top: $s2bs5-border-width solid transparent;
+
+    @include border-top-radius(0);
+  }
+
+  // Placeholder Width
+  .select2-search {
+    width: 100%;
+  }
+
+  // Clear Button
+  .select2-selection--single,
+  .select2-selection--multiple {
+    .select2-selection__clear {
+      position: absolute;
+      top: 50%;
+      right: $s2bs5-indicator-padding;
+      width: $s2bs5-clear-width;
+      height: $s2bs5-clear-height;
+      padding: $s2bs5-clear-padding-y $s2bs5-clear-padding-x;
+      overflow: hidden;
+      text-indent: 100%;
+      white-space: nowrap;
+      background: $s2bs5-clear-bg;
+      transform: translateY(-50%);
+
+      // Change icon on hover
+      &:hover {
+        background: $s2bs5-clear-hover-bg;
+      }
+
+      // Hide children
+      > span {
+        display: none;
+      }
+    }
+  }
+}
+
+// Dropdown
+.select2-container--saho_shop {
+  .select2-dropdown {
+    z-index: 1056;
+    border-color: $s2bs5-border-color;
+
+    @include border-radius($s2bs5-border-radius);
+
+    // Open Below
+    &.select2-dropdown--below {
+      border-top: 0 solid transparent;
+
+      @include border-top-radius(0);
+    }
+
+    // Open Above
+    &.select2-dropdown--above {
+      @include border-bottom-radius(0);
+    }
+
+    // Search box
+    .select2-search {
+      padding: $s2bs5-padding-y $s2bs5-padding-x;
+
+      // Search field
+      .select2-search__field {
+        display: block;
+        width: 100%;
+        padding: $s2bs5-padding-y $s2bs5-padding-x;
+        font-family: $s2bs5-font-family;
+
+        @include font-size($s2bs5-font-size);
+
+        font-weight: $s2bs5-font-weight;
+        line-height: $s2bs5-line-height;
+        color: $s2bs5-color;
+        background-color: $s2bs5-bg;
+        background-clip: padding-box;
+        border: $s2bs5-border-width solid $s2bs5-border-color;
+        appearance: none;
+
+        @include border-radius($s2bs5-border-radius, 0);
+        @include box-shadow($s2bs5-box-shadow);
+        @include transition($s2bs5-transition);
+
+        &:focus {
+          border-color: $s2bs5-focus-border-color;
+          box-shadow: $s2bs5-focus-box-shadow;
+        }
+      }
+    }
+
+    // Items
+    .select2-results__options {
+      &:not(.select2-results__options--nested) {
+        max-height: $s2bs5-options-max-height;
+        overflow-y: auto;
+      }
+
+      // Item
+      .select2-results__option {
+        padding: $s2bs5-item-padding-y $s2bs5-item-padding-x;
+
+        @include font-size($s2bs5-font-size);
+
+        font-weight: $s2bs5-font-weight;
+        line-height: $s2bs5-line-height;
+
+        // No results message
+        &.select2-results__message {
+          color: $s2bs5-placeholder-color;
+        }
+
+        // Highlighted Item
+        &.select2-results__option--highlighted {
+          color: color-contrast($s2bs5-item-hover-bg);
+          background-color: $s2bs5-item-hover-bg;
+        }
+
+        // Selected Item
+        &.select2-results__option--selected,
+        &[aria-selected="true"] {
+          color: color-contrast($s2bs5-item-active-bg);
+          background-color: $s2bs5-item-active-bg;
+        }
+
+        // Disabled Item
+        &.select2-results__option--disabled,
+        &[aria-disabled="true"] {
+          color: $s2bs5-disabled-color;
+        }
+
+        // Optgroup
+        &[role="group"] {
+          padding: 0;
+
+          // Group Header
+          .select2-results__group {
+            padding: $s2bs5-group-padding-y $s2bs5-group-padding-x;
+            font-weight: $s2bs5-group-font-weight;
+            line-height: $s2bs5-line-height;
+            color: $s2bs5-group-color;
+          }
+
+          // Group Item
+          .select2-results__options--nested {
+            .select2-results__option {
+              padding: $s2bs5-item-padding-y $s2bs5-item-padding-x;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// Single
+.select2-container--saho_shop {
+  .select2-selection--single {
+    padding: $s2bs5-padding-y $s2bs5-indicator-padding $s2bs5-padding-y $s2bs5-padding-x;
+    background-image: escape-svg($s2bs5-indicator);
+    background-repeat: no-repeat;
+    background-position: $s2bs5-bg-position;
+    background-size: $s2bs5-bg-size;
+
+    // Rendered view
+    .select2-selection__rendered {
+      padding: 0;
+      font-weight: $s2bs5-font-weight;
+      line-height: $s2bs5-line-height;
+      color: $s2bs5-color;
+
+      // Placeholder
+      .select2-selection__placeholder {
+        font-weight: $s2bs5-font-weight;
+        line-height: $s2bs5-line-height;
+        color: $s2bs5-placeholder-color;
+      }
+
+      // Disable arrow
+      .select2-selection__arrow {
+        display: none;
+      }
+    }
+  }
+}
+
+// Multiple
+.select2-container--saho_shop {
+  .select2-selection--multiple {
+    // List items
+    .select2-selection__rendered {
+      display: flex;
+      flex-flow: row wrap;
+      padding-left: 0;
+      margin: 0;
+      list-style: none;
+
+      // Items
+      .select2-selection__choice {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        padding: $s2bs5-multi-item-padding-y $s2bs5-multi-item-padding-x;
+        margin-right: 0.375rem;
+        margin-bottom: 0.375rem;
+
+        @include font-size($s2bs5-font-size);
+
+        color: $s2bs5-color;
+        cursor: auto;
+        border: $s2bs5-border-width solid $s2bs5-border-color;
+
+        @include border-radius($s2bs5-border-radius);
+
+        // Removal button
+        .select2-selection__choice__remove {
+          width: $s2bs5-clear-width;
+          height: $s2bs5-clear-height;
+          padding: $s2bs5-clear-padding-y $s2bs5-clear-padding-x;
+          margin-right: 0.25rem;
+          overflow: hidden;
+          text-indent: 100%;
+          white-space: nowrap;
+          background: $s2bs5-clear-bg;
+          border: 0;
+
+          &:hover {
+            background: $s2bs5-clear-hover-bg;
+          }
+
+          // Remove children
+          > span {
+            display: none;
+          }
+        }
+      }
+    }
+
+    // Input area
+    .select2-search {
+      display: block;
+      width: 100%;
+      height: $s2bs5-height-inner;
+
+      // Input field
+      .select2-search__field {
+        width: 100%;
+        height: $s2bs5-height-inner;
+        margin-top: 0;
+        margin-left: 0;
+        font-family: $s2bs5-font-family;
+        line-height: $s2bs5-line-height;
+        background-color: transparent;
+      }
+    }
+
+    // Clear button override
+    .select2-selection__clear {
+      right: $s2bs5-padding-x;
+    }
+  }
+}
+
+// Disabled
+.select2-container--saho_shop {
+  &.select2-container--disabled,
+  &.select2-container--disabled.select2-container--focus {
+    // Base styling
+    .select2-selection {
+      color: $s2bs5-disabled-color;
+      cursor: not-allowed;
+      background-color: $s2bs5-disabled-bg;
+      border-color: $s2bs5-disabled-border-color;
+      box-shadow: none;
+    }
+
+    // Multiple
+    .select2-selection--multiple {
+      .select2-selection__clear {
+        display: none;
+      }
+
+      // Items
+      .select2-selection__choice {
+        cursor: not-allowed;
+
+        .select2-selection__choice__remove {
+          display: none;
+        }
+      }
+
+      // Remove search field if no items selected
+      .select2-selection__rendered:not(:empty) {
+        padding-bottom: 0;
+
+        + .select2-search {
+          display: none;
+        }
+      }
+    }
+  }
+}
+
+// Input group
+// Duplicated & altered from Bootstrap 5
+.input-group {
+  &:not(.has-validation) {
+    > :not(:last-child, .dropdown-toggle, .dropdown-menu) {
+      &.select2-container--saho_shop {
+        .select2-selection {
+          @include border-end-radius(0);
+        }
+      }
+    }
+  }
+
+  &.has-validation {
+    > :nth-last-child(n + 3):not(.dropdown-toggle, .dropdown-menu) {
+      &.select2-container--saho_shop {
+        .select2-selection {
+          @include border-end-radius(0);
+        }
+      }
+    }
+  }
+
+  > .input-group-text ~ .select2-container--saho_shop,
+  > .btn ~ .select2-container--saho_shop,
+  > .dropdown-menu ~ .select2-container--saho_shop {
+    .select2-selection {
+      @include border-start-radius(0);
+    }
+  }
+
+  // Ensure container takes up remaining room
+  .select2-container--saho_shop {
+    flex-grow: 1;
+
+    .select2-selection {
+      height: 100%;
+    }
+  }
+}
+
+// Validation
+.select2-container--saho_shop {
+  // Valid
+  .is-valid + &,
+  form.was-validated select:valid + & {
+    // Set border color
+    .select2-selection {
+      border-color: $s2bs5-valid-border-color;
+    }
+
+    &.select2-container--focus,
+    &.select2-container--open {
+      // Set border color & box shadow
+      .select2-selection {
+        border-color: $s2bs5-valid-border-color;
+        box-shadow: $s2bs5-valid-focus-box-shadow;
+      }
+    }
+
+    &.select2-container--open {
+      // Hide bottom border when open and below
+      &.select2-container--below .select2-selection {
+        border-bottom: $s2bs5-border-width solid transparent;
+      }
+
+      // Hide top border when open and above
+      &.select2-container--above .select2-selection {
+        border-top: $s2bs5-border-width solid transparent;
+
+        @include border-top-radius(0);
+      }
+    }
+  }
+
+  // Invalid
+  .is-invalid + &,
+  form.was-validated select:invalid + & {
+    // Set border color
+    .select2-selection {
+      border-color: $s2bs5-invalid-border-color;
+    }
+
+    &.select2-container--focus,
+    &.select2-container--open {
+      // Set border color & box shadow
+      .select2-selection {
+        border-color: $s2bs5-invalid-border-color;
+        box-shadow: $s2bs5-invalid-focus-box-shadow;
+      }
+    }
+
+    &.select2-container--open {
+      // Hide bottom border when open and below
+      &.select2-container--below .select2-selection {
+        border-bottom: $s2bs5-border-width solid transparent;
+      }
+
+      // Hide top border when open and above
+      &.select2-container--above .select2-selection {
+        border-top: $s2bs5-border-width solid transparent;
+
+        @include border-top-radius(0);
+      }
+    }
+  }
+}
+
+// Sizing
+@mixin s2bs5-sizing($size-list: $s2bs5-small) {
+  // Layout
+  .select2-selection {
+    min-height: map-get($size-list, height);
+    padding: map-get($size-list, padding-y) map-get($size-list, padding-x);
+
+    @include font-size(map-get($size-list, font-size));
+  }
+
+  .select2-selection--single,
+  .select2-selection--multiple {
+    .select2-selection__clear {
+      width: map-get($size-list, clear-width);
+      height: map-get($size-list, clear-height);
+      padding: map-get($size-list, clear-padding-y) map-get($size-list, clear-padding-x);
+      background: map-get($size-list, clear-bg);
+
+      &:hover {
+        background: map-get($size-list, clear-hover-bg);
+      }
+    }
+  }
+
+  // Dropdown
+  .select2-dropdown {
+    .select2-search {
+      .select2-search__field {
+        padding: map-get($size-list, padding-y) map-get($size-list, padding-x);
+
+        @include font-size(map-get($size-list, font-size));
+      }
+    }
+
+    .select2-results__options {
+      .select2-results__option {
+        padding: map-get($size-list, item-padding-y) map-get($size-list, item-padding-x);
+
+        @include font-size(map-get($size-list, font-size));
+
+        &[role="group"] {
+          .select2-results__group {
+            padding: map-get($size-list, group-padding-y) map-get($size-list, group-padding-x);
+          }
+
+          .select2-results__options--nested {
+            .select2-results__option {
+              padding: map-get($size-list, item-padding-y) map-get($size-list, item-padding-x);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Single
+  .select2-selection--single {
+    padding: map-get($size-list, padding-y) $s2bs5-indicator-padding map-get($size-list, padding-y)
+      map-get($size-list, padding-x);
+  }
+
+  // Multiple
+  .select2-selection--multiple {
+    .select2-selection__rendered {
+      &:not(:empty) {
+        padding-bottom: map-get($size-list, padding-y);
+      }
+
+      .select2-selection__choice {
+        padding: $s2bs5-multi-item-padding-y $s2bs5-multi-item-padding-x;
+
+        @include font-size(map-get($size-list, font-size));
+
+        .select2-selection__choice__remove {
+          width: map-get($size-list, clear-width);
+          height: map-get($size-list, clear-height);
+          padding: map-get($size-list, clear-padding-y) map-get($size-list, clear-padding-x);
+          background: map-get($size-list, clear-bg);
+
+          &:hover {
+            background: map-get($size-list, clear-hover-bg);
+          }
+        }
+      }
+    }
+
+    .select2-selection__clear {
+      right: map-get($size-list, padding-x);
+    }
+  }
+}
+
+// Using options
+.select2-container--saho_shop {
+  // Small
+  .select2--small {
+    ~ {
+      @include s2bs5-sizing($s2bs5-small);
+    }
+  }
+
+  // Large
+  .select2--large {
+    ~ {
+      @include s2bs5-sizing($s2bs5-large);
+    }
+  }
+}
+
+// Using bootstrap classes
+// Small
+.form-select-sm {
+  ~ .select2-container--saho_shop {
+    @include s2bs5-sizing($s2bs5-small);
+  }
+}
+
+// Large
+.form-select-lg {
+  ~ .select2-container--saho_shop {
+    @include s2bs5-sizing($s2bs5-large);
+  }
+}

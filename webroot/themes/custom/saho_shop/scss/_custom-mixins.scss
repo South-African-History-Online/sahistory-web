@@ -1,0 +1,180 @@
+//
+// Custom mixins
+//
+
+// Heading
+@mixin heading($size: $h4-font-size) {
+  font-size: $size;
+  font-family: $headings-font-family;
+  font-weight: $headings-font-weight;
+  font-style: $headings-font-style;
+}
+
+// Icons
+@mixin icon($size, $path, $color: false, $hover-color: false) {
+  display: inline-block;
+  border: 0;
+  padding: 0;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  width: $size;
+  height: $size;
+  mask-image: svg-load($path);
+  mask-size: $size;
+  font-size: 0;
+
+  @if $color {
+    background-color: $color;
+  }
+
+  @if $hover-color {
+    &:hover {
+      background-image: svg-load($path, fill=#{$hover-color});
+    }
+  }
+}
+
+@mixin btn-icon($size, $path, $color: $white, $hover-color: false) {
+  padding-left: calc(#{$size} + 1.25rem);
+  background-position: 0.5rem center;
+  background-repeat: no-repeat;
+  background-size: $size;
+  background-image: svg-load($path, fill=#{$color});
+  transition: $transition-base;
+
+  @if $hover-color {
+    &:hover {
+      background-image: svg-load($path, fill=#{$hover-color});
+    }
+  }
+}
+
+@mixin btn-icon-only($size, $path, $color: $white) {
+  width: $size;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: $size;
+  background-image: svg-load($path, fill=#{$color});
+  overflow: hidden;
+  text-indent: 9999px;
+}
+
+// Cover Object - Mostly usable for images.
+@mixin object-cover {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  object-fit: cover;
+}
+
+// Opacify links - Lower link opacity on hover.
+@mixin opacify-links {
+  a:not(.btn) {
+    transition: $transition-fade;
+    color: currentcolor;
+
+    &:hover {
+      opacity: 0.6;
+      color: currentcolor;
+    }
+  }
+}
+
+// Font smoothing.
+@mixin font-smoothing {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+// Underline
+@mixin underline {
+  position: relative;
+
+  &:not(.nav-link) {
+    padding-bottom: $spacer;
+  }
+
+  &::before {
+    content: "";
+    position: absolute;
+    width: $underline-width;
+    height: $underline-height;
+    left: 50%;
+    bottom: $underline-height;
+    background-color: $underline-bg;
+    margin-left: -$underline-width / 2;
+  }
+
+  &.hover {
+    &::before {
+      transition: $transition-base;
+      transform: scale(0);
+    }
+
+    &:hover::before {
+      visibility: visible;
+      background-color: currentcolor;
+      transform: scale(1);
+    }
+  }
+
+  .text-white &::before {
+    background-color: currentcolor;
+  }
+}
+
+// Button reset
+@mixin button-reset {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  text-decoration: none;
+}
+
+// Color
+@mixin bust-out-bg($color) {
+  box-shadow: 0 0 0 100vmax $color;
+  clip-path: inset(0 -100vmax);
+}
+
+// Reusables
+// ----------------------------
+
+// Number badge
+@mixin number-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+  min-width: var(--number-badge-size, 1.25rem);
+  padding: var(--number-badge-padding, 0.125rem 0.375rem);
+  font-size: var(--number-badge-font-size, 0.75rem);
+  line-height: 1;
+  color: var(--number-badge-color, #{$white});
+  background-color: var(--number-badge-bg, #{$secondary});
+  border-radius: 50%;
+  aspect-ratio: 1 / 1;
+}
+
+// Date badge
+@mixin date-badge {
+  font-size: var(--date-badge-font-size, 1.25rem);
+  line-height: 1.2;
+  background-color: var(--date-badge-background-color, var(--beo-primary));
+  color: var(--date-badge-color, var(--beo-white));
+  padding: var(--date-badge-padding, 1rem 1.5rem);
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  text-align: center;
+
+  .day {
+    display: block;
+    font-size: var(--date-badge-day-font-size, 1.5rem);
+    font-weight: $font-weight-bold;
+  }
+}

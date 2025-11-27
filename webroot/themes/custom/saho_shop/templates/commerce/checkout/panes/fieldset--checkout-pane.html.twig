@@ -1,0 +1,57 @@
+{#
+/**
+ * @file
+ * Theme override to display a checkout pane.
+ *
+ * Available variables:
+ * - elements: The form elements.
+ * - pane_title: The pane title.
+ * - pane_description: The pane description.
+ * - pane_variant: The content pane variant (default, minimal, title-outside).
+ * - pane_collapsible: Whether the pane is collapsible.
+ * - pane_collapsed: Whether the pane is initially collapsed.
+ * - pane_show_icons: Whether to show icons.
+ * - pane_icon: The icon name for the pane.
+ *
+ * @ingroup themeable
+ */
+#}
+
+{{ attach_library('saho_shop/checkout.pane') }}
+
+{%
+  set classes = [
+    'form-item',
+    'form-wrapper',
+    'js-form-item',
+    'js-form-wrapper',
+    'checkout-pane',
+  ]
+%}
+
+{%
+  set legend_span_classes = [
+    required ? 'js-form-required',
+    required ? 'form-required',
+  ]
+%}
+
+{%
+  set component_data = {
+    'attributes': attributes.addClass(classes),
+    'legend_attributes': legend.attributes,
+    'legend_span_attributes': legend_span.attributes.addClass(legend_span_classes),
+    'title': legend.title,
+    'description': pane_description|default(''),
+    'content': children,
+    'errors': errors|default(''),
+    'prefix': prefix|default(''),
+    'suffix': suffix|default(''),
+    'icon': pane_icon|default(''),
+    'variant': pane_variant|default('default'),
+    'collapsible': pane_collapsible|default(false),
+    'collapsed': pane_collapsed|default(false),
+  }
+%}
+
+{{ include('saho_shop:fieldset-pane', component_data) }}

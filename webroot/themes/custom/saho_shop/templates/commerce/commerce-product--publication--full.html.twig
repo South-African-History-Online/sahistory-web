@@ -1,0 +1,133 @@
+{#
+/**
+ * @file
+ * Publication product full display template.
+ *
+ * Available variables:
+ * - attributes: HTML attributes for the wrapper.
+ * - product: The rendered product fields.
+ * - product_entity: The product entity.
+ * - product_url: The product URL.
+ */
+#}
+
+{%
+  set classes = [
+    'product-publication',
+    'product-publication--full',
+    'pb-4',
+    'mb-5',
+]
+%}
+
+<article{{ attributes.addClass(classes) }}>
+  <div class="row g-4 g-lg-5">
+    {# Product Image Column #}
+    <div class="col-md-5 col-lg-4">
+      <div class="product-publication__image sticky-top" style="top: 1rem;">
+        {{ product.field_images }}
+      </div>
+    </div>
+
+    {# Product Details Column #}
+    <div class="col-md-7 col-lg-8">
+      {# Category Badge #}
+      {% if product.field_category|render is not empty %}
+        <div class="product-publication__category mb-2">
+          {{ product.field_category }}
+        </div>
+      {% endif %}
+
+      {# Title and Subtitle #}
+      <h1 class="product-publication__title h2 mb-1">
+        {{ product_entity.title.value }}
+      </h1>
+      {% if product.field_subtitle|render is not empty %}
+        <p class="product-publication__subtitle h5 text-muted mb-3">
+          {{ product.field_subtitle }}
+        </p>
+      {% endif %}
+
+      {# Author/Editor #}
+      {% if product.field_author|render is not empty %}
+        <p class="product-publication__author mb-1">
+          <strong>{{ 'Author'|t }}:</strong> {{ product.field_author }}
+        </p>
+      {% endif %}
+      {% if product.field_editor|render is not empty %}
+        <p class="product-publication__editor mb-1">
+          <strong>{{ 'Editor'|t }}:</strong> {{ product.field_editor }}
+        </p>
+      {% endif %}
+
+      {# Price and Add to Cart #}
+      <div class="product-publication__purchase card bg-light border-0 p-3 my-4">
+        <div class="product-publication__price fs-3 fw-bold text-primary mb-3">
+          {{ product.variation_price }}
+        </div>
+        <div class="product-publication__add-to-cart">
+          {{ product.variations }}
+        </div>
+      </div>
+
+      {# Description #}
+      {% if product.body|render is not empty %}
+        <div class="product-publication__description mb-4">
+          <h3 class="h5 mb-3">{{ 'Description'|t }}</h3>
+          {{ product.body }}
+        </div>
+      {% endif %}
+
+      {# Publication Details Table #}
+      <div class="product-publication__details">
+        <h3 class="h5 mb-3">{{ 'Publication Details'|t }}</h3>
+        <table class="table table-striped table-sm">
+          <tbody>
+            {% if product.field_publisher|render is not empty %}
+              <tr>
+                <th scope="row" class="w-25">{{ 'Publisher'|t }}</th>
+                <td>{{ product.field_publisher }}</td>
+              </tr>
+            {% endif %}
+            {% if product.field_publication_date|render is not empty %}
+              <tr>
+                <th scope="row">{{ 'Publication Date'|t }}</th>
+                <td>{{ product.field_publication_date }}</td>
+              </tr>
+            {% endif %}
+            {% if product.field_year|render is not empty %}
+              <tr>
+                <th scope="row">{{ 'Year'|t }}</th>
+                <td>{{ product.field_year }}</td>
+              </tr>
+            {% endif %}
+            {% if product.field_isbn|render is not empty %}
+              <tr>
+                <th scope="row">{{ 'ISBN'|t }}</th>
+                <td>{{ product.field_isbn }}</td>
+              </tr>
+            {% endif %}
+            {% if product.field_pages|render is not empty %}
+              <tr>
+                <th scope="row">{{ 'Pages'|t }}</th>
+                <td>{{ product.field_pages }}</td>
+              </tr>
+            {% endif %}
+            {% if product.field_format|render is not empty %}
+              <tr>
+                <th scope="row">{{ 'Format'|t }}</th>
+                <td>{{ product.field_format }}</td>
+              </tr>
+            {% endif %}
+            {% if product.field_language|render is not empty %}
+              <tr>
+                <th scope="row">{{ 'Language'|t }}</th>
+                <td>{{ product.field_language }}</td>
+              </tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</article>

@@ -1,0 +1,27 @@
+{% import "@saho_shop/macros.twig" as svg %}
+
+<table class="cart-block--offcanvas-cart-table table">
+    <tbody>
+    <% _.each(cart.order_items, function(orderItem, key) { %>
+        <tr>
+            <td class="cart-block--offcanvas-cart-table__title"><%- orderItem.title %></td>
+            <td class="cart-block--offcanvas-cart-table__quantity">
+                <input class="form-control" type="number" data-key="<% print(key) %>" min="1" value="<% print(parseInt(orderItem.quantity)) %>" style="width: 60px" />
+            </td>
+            <td class="cart-block--offcanvas-cart-table__price"><%= orderItem.total_price.formatted %></td>
+            <td class="cart-block--offcanvas-cart-table__remove" style="width: 25px">
+                <button value="<% print(JSON.stringify([cart.order_id, orderItem.order_item_id]))  %>" class="button btn text-white" style="padding: 0">
+                  {{ svg.getIcon('trash', 18, 18) }}
+                </button>
+            </td>
+        </tr>
+    <% }) %>
+    </tbody>
+    <tfoot>
+    <tr>
+      <td colspan="4" class="text-align-right">
+        <button type="submit" class="cart-block--offcanvas-contents__update button bi-btn-arrow-repeat pe-0 text-white">{{ 'Update quantities'|t }}</button>
+      </td>
+    </tr>
+    </tfoot>
+</table>
