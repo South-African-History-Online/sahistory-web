@@ -40,11 +40,11 @@ function saho_shop_preprocess_html(&$variables) {
 
     $all_styles = [
       "--beo-primary: $base_primary_color_hex;",
-      "--beo-primary-rgb:" . _hex2rgb($base_primary_color_hex) . ";",
+      "--beo-primary-rgb:" . _saho_shop_hex2rgb($base_primary_color_hex) . ";",
       "--beo-light: $base_light_color_hex;",
-      "--beo-light-rgb:" . _hex2rgb($base_light_color_hex) . ";",
+      "--beo-light-rgb:" . _saho_shop_hex2rgb($base_light_color_hex) . ";",
       "--beo-dark: $base_dark_color_hex;",
-      "--beo-dark-rgb:" . _hex2rgb($base_dark_color_hex) . ";",
+      "--beo-dark-rgb:" . _saho_shop_hex2rgb($base_dark_color_hex) . ";",
       "--beo-body-bg: $body_background_color_hex;",
       "--beo-body-color: $body_text_color_hex;",
     ];
@@ -101,7 +101,7 @@ function saho_shop_preprocess_html(&$variables) {
  * @return string
  *   The RGB color value as a comma-separated string (e.g., "255, 0, 0").
  */
-function _hex2rgb(string $color): string {
+function _saho_shop_hex2rgb(string $color): string {
   list($r, $g, $b) = sscanf($color, "#%02x%02x%02x");
   $output = "$r, $g, $b";
   return $output;
@@ -118,7 +118,7 @@ function _hex2rgb(string $color): string {
  * @return string
  *   The RGBA color value (e.g., "rgba(255, 0, 0, 0.5)").
  */
-function _hex2rgba(string $color, float $opacity): string {
+function _saho_shop_hex2rgba(string $color, float $opacity): string {
   list($r, $g, $b) = sscanf($color, "#%02x%02x%02x");
   $output = "rgba($r, $g, $b, $opacity)";
   return $output;
@@ -166,8 +166,8 @@ function _saho_shop_generate_focused_checkout_css_variables(): array {
     $primary_color_override = theme_get_setting('focused_page_primary_color_override');
     if ($primary_color_override) {
       $styles[] = "--beo-primary: $primary_color_override;";
-      $styles[] = "--beo-primary-rgb: " . _hex2rgb($primary_color_override) . ";";
-      $styles[] = "--beo-primary-hover: " . _hex2rgba($primary_color_override, 0.8) . ";";
+      $styles[] = "--beo-primary-rgb: " . _saho_shop_hex2rgb($primary_color_override) . ";";
+      $styles[] = "--beo-primary-hover: " . _saho_shop_hex2rgba($primary_color_override, 0.8) . ";";
     }
 
     $styles[] = "--focused-page-bg-color: " . theme_get_setting('focused_page_bg_color') . ";";
