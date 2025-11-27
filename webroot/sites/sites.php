@@ -10,7 +10,7 @@
 // Shop multisite configuration
 $sites['shop.sahistory.org.za'] = 'shop.sahistory.org.za';
 $sites['shop.ddev.site'] = 'shop.sahistory.org.za';
-$sites['shop.ddev.site'] = 'shop-staging.sahistory.org.za';
+$sites['shop-staging.sahistory.org.za'] = 'shop.sahistory.org.za';
 
 // Include local overrides if available
 if (file_exists(__DIR__ . '/sites.local.php')) {
