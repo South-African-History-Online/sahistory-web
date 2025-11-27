@@ -1,30 +1,31 @@
+{% extends "@saho_shop/block/block.html.twig" %}
+
 {#
 /**
  * @file
- * Theme override for the commerce cart block.
+ * Theme override to display a block.
  *
  * Available variables:
- * - content: The cart block content.
- * - attributes: HTML attributes for the block.
+ * - plugin_id: The ID of the block implementation.
+ * - label: The configured label of the block if visible.
+ * - configuration: A list of the block's configuration values.
+ *   - label: The configured label for the block.
+ *   - label_display: The display settings for the label.
+ *   - provider: The module or other provider that provided this block plugin.
+ *   - Block plugin specific settings will also be stored here.
+ * - content: The content of this block.
+ * - attributes: array of HTML attributes populated by modules, intended to
+ *   be added to the main container tag of this template.
+ *   - id: A valid HTML ID and guaranteed unique.
+ * - title_attributes: Same as attributes, except applied to the main title
+ *   tag that appears in the template.
+ * - title_prefix: Additional output populated by modules, intended to be
+ *   displayed in front of the main title tag that appears in the template.
+ * - title_suffix: Additional output populated by modules, intended to be
+ *   displayed after the main title tag that appears in the template.
+ *
+ * @see template_preprocess_block()
  */
 #}
-{% set classes = [
-  'block',
-  'commerce-cart-block',
-] %}
 
-<div{{ attributes.addClass(classes) }}>
-  <a href="/cart" class="commerce-cart-block__link">
-    <span class="commerce-cart-block__icon">
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="9" cy="21" r="1"></circle>
-        <circle cx="20" cy="21" r="1"></circle>
-        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-      </svg>
-      {% if content.count and content.count > 0 %}
-        <span class="commerce-cart-block__count">{{ content.count }}</span>
-      {% endif %}
-    </span>
-    <span class="commerce-cart-block__label">{{ 'Cart'|t }}</span>
-  </a>
-</div>
+{% do attributes.addClass(['ms-auto', 'me-2']) %}

@@ -1,0 +1,105 @@
+//
+// Layout builder admin pages.
+// ----------------------------
+//
+@import "../../global";
+
+$lb-default-color: #277abd;
+
+.page-title {
+  margin-inline: var(--#{$prefix}-gutter-x, 0.75rem);
+}
+
+.layout-builder-block {
+  background: transparent;
+}
+
+.layout-builder-revert-overrides {
+  background-color: var(--#{$prefix}light);
+}
+
+// Offcanvas
+#drupal-off-canvas:not(.drupal-off-canvas-reset),
+#drupal-off-canvas-wrapper {
+  .form-item {
+    width: 100%;
+  }
+
+  .blb_breakpoint_cols {
+    &.form-check-input:checked + label {
+      color: var(--#{$prefix}white) !important;
+      background-color: $lb-default-color !important;
+    }
+  }
+
+  .inline-block-list li {
+    border-bottom: 0;
+  }
+
+  // Lock.
+  .layout-builder-lock-section-settings {
+    .form-checkboxes {
+      label {
+        font-size: $font-size-sm;
+      }
+
+      .form-check {
+        padding-left: $spacer;
+      }
+    }
+  }
+}
+
+// Modal
+#layout-builder-modal {
+  .field--type-text-with-summary {
+    .js-form-type-textarea {
+      margin-bottom: 0;
+    }
+  }
+
+  form > #bs_ui ~ input[type="submit"].button {
+    float: none;
+  }
+
+  .ck-content {
+    color: #000;
+  }
+
+  // Select2 overrides.
+  .select2-search__field {
+    color: inherit;
+    padding: 0;
+    height: 1.5rem;
+    border: 0;
+  }
+}
+
+// Form
+.layout-builder-form {
+  margin-inline: auto;
+
+  @include make-container;
+
+  .vertical-tabs__panes {
+    padding: $spacer;
+  }
+
+  .form-actions {
+    .button {
+      @include button-size(
+        $btn-padding-y-sm,
+        $btn-padding-x-sm,
+        $btn-font-size-sm,
+        $btn-border-radius-sm
+      );
+
+      width: auto;
+    }
+
+    #edit-preview-toggle {
+      padding: $spacer * 2;
+      text-align: left;
+    }
+  }
+}

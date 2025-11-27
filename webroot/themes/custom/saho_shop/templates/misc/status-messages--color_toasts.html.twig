@@ -1,0 +1,80 @@
+{#
+/**
+ * @file
+ * Default theme implementation for status messages.
+ *
+ * Displays status, error, and warning messages, grouped by type.
+ *
+ * An invisible heading identifies the messages for assistive technology.
+ * Sighted users see a colored box. See http://www.w3.org/TR/WCAG-TECHS/H69.html
+ * for info.
+ *
+ * Add an ARIA label to the contentinfo area so that assistive technology
+ * user agents will better describe this landmark.
+ *
+ * Available variables:
+ * - message_list: List of messages to be displayed, grouped by type.
+ * - status_headings: List of all status types.
+ * - display: (optional) May have a value of 'status' or 'error' when only
+ *   displaying messages of that specific type.
+ * - attributes: HTML attributes for the element, including:
+ *   - class: HTML classes.
+ *
+ * @see template_preprocess_status_messages()
+ *
+ * @ingroup themeable
+ */
+#}
+
+{%
+  set wrapper_classes = [
+  'toast-container',
+  'position-fixed',
+  'z-index-modal',
+  'p-4'
+]
+%}
+
+<div {{ wrapper_attributes.addClass(wrapper_classes) }} aria-live="polite" aria-atomic="true" data-drupal-messages>
+
+  {% for type, messages in message_list %}
+    {%
+      set classes = [
+        'toast',
+        'text-white',
+        'current-color',
+        type == 'status' ? 'bg-success',
+        type == 'warning' ? 'bg-warning',
+        type == 'error' ? 'bg-danger',
+        type == 'info' ? 'bg-info',
+      ]
+    %}
+    {%
+      set role = {
+        'status': 'status',
+        'warning': 'alert',
+        'error': 'alert',
+        'info': 'info',
+      }
+    %}
+    {%
+      set autohide = {
+        'status': 'true',
+        'warning': 'false',
+        'error': 'true',
+        'info': 'false',
+      }
+    %}
+    {% for message in messages %}
+      <!-- Then put toasts within -->
+      <div {{ attributes|without('role', 'aria-label').addClass(classes).setAttribute('role', role[type]).setAttribute('data-autohide', autohide[type]) }} aria-live="assertive" aria-atomic="true" data-delay="10000">
+        <div class="d-flex align-items-center">
+          <div class="toast-body">
+            {{ message }}
+          </div>
+          <button type="button" class="btn-close btn-close-white ms-auto me-2" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+      </div>
+    {% endfor %}
+  {% endfor %}
+</div>

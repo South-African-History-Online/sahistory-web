@@ -1,44 +1,71 @@
-name: SAHO Shop
-description: Modern eCommerce theme for South African History Online shop, based on SShop and SAHO design system
+name: 'SAHO Shop'
+description: 'Custom theme for SAHO Shop based on Belgrade'
+screenshot: screenshot.png
+core_version_requirement: ^11
+engine: twig
 type: theme
-core_version_requirement: ^10.3 || ^11
-base theme: sshop
-
-# Libraries
-libraries:
-  - 'saho_shop/global'
-  - 'saho_shop/commerce-styling'
-
-# Regions - inherit from sshop but keep flexibility
+'base theme': false
+starterkit: true
 regions:
-  navigation: 'Navigation'
-  navigation_collapsible: 'Navigation (Collapsible)'
-  header: 'Header'
-  highlighted: 'Highlighted'
-  help: 'Help'
-  content: 'Content'
-  sidebar_first: 'Left Sidebar'
-  sidebar_second: 'Right Sidebar'
-  footer_first: 'Footer Column 1'
-  footer_second: 'Footer Column 2'
-  footer_third: 'Footer Column 3'
-  footer_fourth: 'Footer Column 4'
-  footer: 'Footer Bottom'
-
-# Theme settings defaults
-features:
-  comment_user_picture: false
-  node_user_picture: false
-  favicon: true
-  logo: true
-
-# Dependencies inherited from sshop
-dependencies:
-  - drupal:block
-  - drupal:commerce
-  - drupal:commerce_cart
-  - drupal:commerce_checkout
-  - drupal:commerce_order
-  - drupal:commerce_price
-  - drupal:commerce_product
-  - drupal:commerce_store
+  navigation: Navigation
+  top_bar: 'Top bar'
+  header: Header
+  highlighted: Highlighted
+  help: Help
+  content: Content
+  sidebar_first: Primary
+  sidebar_second: Secondary
+  footer_first: 'Footer first'
+  footer_second: 'Footer second'
+  footer_third: 'Footer third'
+  footer: Footer
+  footer_bottom: 'Footer bottom'
+  page_top: 'Page top'
+  page_bottom: 'Page bottom'
+  hidden: HIDDEN
+libraries:
+  - saho_shop/global
+ckeditor_stylesheets:
+  - css/main.css
+libraries-extend:
+  core/drupal.ajax:
+    - saho_shop/throbber
+  toolbar/toolbar:
+    - saho_shop/toolbar
+  bootstrap_styles/themes-overrides:
+    - saho_shop/layout.builder.theme
+  commerce_kickstart_demo_assets/cklb-slideshow:
+    - saho_shop/cklb.slideshow
+  commerce_kickstart_layout_builder/cklb-slideshow:
+    - saho_shop/cklb.slideshow
+  core/drupal.message:
+    - saho_shop/drupal.message
+libraries-override:
+  commerce_cart/cart_block: saho_shop/cart-block
+  commerce_wishlist/user:
+    css:
+      layout:
+        css/commerce_wishlist.user.css: css/components/commerce/wishlist.css
+  better_exposed_filters/general:
+    css:
+      theme:
+        css/better_exposed_filters.css: css/theme/better-exposed-filters.css
+  commerce_checkout/form:
+    css:
+      theme:
+        css/commerce_checkout.form.css: false
+  core/drupal.dialog:
+    css:
+      component:
+        assets/vendor/jquery.ui/themes/base/dialog.css: false
+      theme:
+        assets/vendor/jquery.ui/themes/base/theme.css: false
+  claro/claro.drupal.dialog: false
+  gin/dialog: false
+  commerce_order/address_book: false
+  commerce_product/rendered-attributes: false
+  commerce_checkout/checkout_progress: false
+version: 1.0.0
+project: saho_shop
+datestamp: 1763737368
+generator: 'belgrade:3.0.2'

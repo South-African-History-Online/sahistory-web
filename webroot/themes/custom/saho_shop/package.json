@@ -1,33 +1,60 @@
 {
-  "name": "saho-shop",
-  "version": "1.0.0",
-  "description": "SAHO Shop - Modern eCommerce theme for South African History Online",
+  "name": "saho_shop",
+  "version": "1.1.0",
+  "description": "Bootstrap Drupal theme built for Centarro Commerce Kickstart",
   "main": "index.js",
   "scripts": {
-    "dev": "mix",
-    "watch": "mix watch",
-    "production": "mix --production",
-    "hot": "mix watch --hot",
-    "biome:check": "biome check src/",
-    "biome:fix": "biome check --write src/"
+    "watch": "nodemon -e scss -x \"npm run build:dev\"",
+    "clean": "rm -rf css/**/*.css css/**/*.css.map components/*/*.css components/*/*.css.map",
+    "css-compile": "echo 'Compiling SCSS...' && sass --load-path=node_modules --load-path=scss --style expanded --source-map --no-error-css scss/:css/ && echo 'SCSS compiled successfully!'",
+    "sdc-compile": "echo 'Compiling SDC components...' && sass --load-path=node_modules --load-path=scss --load-path=components --style expanded --source-map --no-error-css components/:components/ && echo 'SDC components compiled successfully!'",
+    "css-prefix": "echo 'Running PostCSS...' && postcss -u postcss-inline-svg autoprefixer --map --no-map.inline -r 'css/**/*.css' && echo 'PostCSS processing completed!'",
+    "sdc-prefix": "echo 'Running PostCSS on SDC components...' && postcss -u postcss-inline-svg autoprefixer --map --no-map.inline -r 'components/*/*.css' && echo 'SDC PostCSS processing completed!'",
+    "build:dev": "echo 'Starting dev build...' && npm-run-all --silent css-compile sdc-compile css-prefix sdc-prefix && echo 'Dev build completed!'",
+    "build": "echo 'Starting production build...' && npm-run-all --silent lint:scss lint:sdc css-compile sdc-compile css-prefix sdc-prefix && echo 'Production build completed successfully!'",
+    "icons-sprite": "echo 'Generating SVG sprite...' && svg-sprite --svg-namespace-classnames false --symbol --symbol-dest . --symbol-sprite images/saho_shop-icons.svg icons/*.svg && echo 'SVG sprite generated!'",
+    "lint:scss": "echo 'Linting SCSS...' && stylelint \"scss/**/*.scss\" --fix && echo 'SCSS lint completed!'",
+    "lint:sdc": "echo 'Linting SDC SCSS...' && stylelint \"components/**/*.scss\" --fix && echo 'SDC SCSS lint completed!'",
+    "format": "echo 'Formatting files...' && prettier --write \"**/*.{scss,json,md}\" && echo 'Formatting completed!'"
   },
   "keywords": [
     "drupal",
-    "commerce",
-    "saho",
-    "bootstrap"
+    "theme",
+    "bootstrap",
+    "bootstrap icons",
+    "commerce"
   ],
-  "author": "South African History Online",
-  "license": "GPL-2.0-or-later",
-  "devDependencies": {
-    "@biomejs/biome": "^1.9.4",
-    "laravel-mix": "^6.0.49",
-    "postcss": "^8.4.47",
-    "resolve-url-loader": "^5.0.0",
-    "sass": "^1.80.6",
-    "sass-loader": "^12.6.0"
+  "repository": "git@git.drupal.org:project/saho_shop.git",
+  "author": "majmunbog <ivan@centarro.io>",
+  "license": "GPL-2.0",
+  "bugs": {
+    "url": "https://github.com/ibuisic/saho_shop/issues"
   },
-  "dependencies": {
-    "bootstrap": "^5.3.0"
-  }
+  "homepage": "https://github.com/ibuisic/source#readme",
+  "devDependencies": {
+    "@popperjs/core": "^2.11.8",
+    "autoprefixer": "^10.4.17",
+    "bootstrap": "^5.3.8",
+    "bootstrap-icons": "^1.13.1",
+    "nodemon": "^3.1.0",
+    "npm-run-all": "^4.1.5",
+    "postcss-cli": "^11.0.0",
+    "postcss-inline-svg": "^6.0.0",
+    "prettier": "^3.2.5",
+    "sass": "1.32.13",
+    "stylelint": "^16.2.1",
+    "stylelint-config-standard-scss": "^13.0.0",
+    "svg-sprite": "^2.0.2"
+  },
+  "browserslist": [
+    ">= 0.5%",
+    "last 2 major versions",
+    "not dead",
+    "Chrome >= 60",
+    "Firefox >= 60",
+    "Firefox ESR",
+    "iOS >= 12",
+    "Safari >= 12",
+    "not Explorer <= 11"
+  ]
 }

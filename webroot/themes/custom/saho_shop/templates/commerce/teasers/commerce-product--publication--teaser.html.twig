@@ -1,0 +1,52 @@
+{#
+/**
+ * @file
+ * Publication product teaser template for SAHO Shop.
+ *
+ * Available variables:
+ * - attributes: HTML attributes for the wrapper.
+ * - product: The rendered product fields.
+ * - product_entity: The product entity.
+ * - product_url: The product URL.
+ */
+#}
+{{ attach_library('saho_shop/product.teaser.saho_shop') }}
+
+{% import "@saho_shop/macros.twig" as svg %}
+
+{%
+  set classes = [
+    'product-card-modern',
+    'product-card-publication',
+  ]
+%}
+
+<article{{ attributes.addClass(classes) }}>
+  {# Product Image with Link #}
+  <a href="{{ product_url }}" class="product-image-wrapper d-block overflow-hidden">
+    <div class="product-image">
+      {% if product.field_images|render is not empty %}
+        {{ product.field_images }}
+      {% else %}
+        <div class="product-placeholder">
+          {{ svg.getIcon('book', 64, 64) }}
+        </div>
+      {% endif %}
+    </div>
+  </a>
+
+  {# Product Info #}
+  <div class="product-info">
+    <h3 class="product-title">
+      <a href="{{ product_url }}">{{ product_entity.title.value }}</a>
+    </h3>
+
+    {% if product.field_author|render is not empty %}
+      <p class="product-author">{{ product.field_author }}</p>
+    {% endif %}
+
+    <div class="product-price-cart">
+      {{ product.variations }}
+    </div>
+  </div>
+</article>

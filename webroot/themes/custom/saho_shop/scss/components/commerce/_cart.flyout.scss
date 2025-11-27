@@ -1,0 +1,48 @@
+//
+// Cart Flyout
+// ----------------------------
+//
+
+:root {
+  --cart-flyout-table-spacing: 0.4rem;
+  --cart-flyout-zindex: calc({$zindex-modal} + 1);
+}
+
+.cart-offcanvas {
+  z-index: var(--cart-flyout-zindex);
+}
+
+.cart-block--offcanvas-cart-table {
+  .form-control[type="number"] {
+    background-color: rgba($white, 0.1);
+    border-color: transparent;
+    color: currentcolor;
+  }
+
+  td {
+    border-color: rgba($white, 0.1);
+    padding-left: var(--cart-flyout-table-spacing);
+    padding-right: var(--cart-flyout-table-spacing);
+  }
+}
+
+.cart--cart-offcanvas__title {
+  padding-left: var(--cart-flyout-table-spacing);
+}
+
+.cart-block--offcanvas-contents__links {
+  a {
+    @extend .btn, .btn-outline-white, .w-100;
+  }
+}
+
+// Hover effects.
+.cart-block--offcanvas-contents__update,
+.cart-block--offcanvas-cart-table__remove > button {
+  opacity: $btn-close-opacity;
+  transition: $transition-fade;
+
+  &:hover {
+    opacity: 1;
+  }
+}

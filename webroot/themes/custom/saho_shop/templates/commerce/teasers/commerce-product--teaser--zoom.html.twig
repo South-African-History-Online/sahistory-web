@@ -1,0 +1,40 @@
+{#
+/**
+ * @file
+ * Zoom effect product template.
+ *
+ * Available variables:
+ * - attributes: HTML attributes for the wrapper.
+ * - product: The rendered product fields.
+ * - product_entity: The product entity.
+ * - product_url: The product URL.
+ */
+#}
+{{ attach_library('saho_shop/product.teaser.zoom') }}
+
+{%
+  set classes = [
+    'product-card',
+  ]
+%}
+
+<article{{ attributes.addClass(classes) }}>
+  <a href="{{ product_url }}" class="card-image">
+    {% if product.images|render is not empty %}
+      {{ product.images }}
+    {% elseif product.variation_images|render is not empty %}
+      {{ product.variation_images }}
+    {% endif %}
+  </a>
+  <div class="card-body">
+    <h3 class="card-title">
+      <a href="{{ product_url }}">{{ product_entity.title.value }}</a>
+    </h3>
+    {% if product_entity.body.0.value %}
+      <p>{{ product_entity.body.0.value|striptags|slice(0, 100) }}...</p>
+    {% endif %}
+    <div class="card-price">
+      {{ product.variations }}
+    </div>
+  </div>
+</article>

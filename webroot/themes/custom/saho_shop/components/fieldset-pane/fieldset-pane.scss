@@ -1,0 +1,217 @@
+// Fieldset Pane Component
+// =======================
+//
+// Single Directory Component for semantic fieldsets with content-pane styling.
+// Reuses content-pane styles but renders as proper <fieldset> elements.
+
+@import "global";
+
+// CSS Variables for fieldset pane component
+:root {
+  // Spacing
+  --fieldset-pane-margin-bottom: var(--form-item-spacing);
+  --fieldset-pane-border-radius: 0.5rem;
+  --fieldset-pane-legend-padding: 1rem 1.5rem;
+  --fieldset-pane-content-padding: 1.5rem;
+
+  // Colors
+  --fieldset-pane-bg: var(--beo-white);
+  --fieldset-pane-border: var(--beo-border-color);
+  --fieldset-pane-shadow: var(--beo-box-shadow-sm);
+  --fieldset-pane-legend-bg: transparent;
+  --fieldset-pane-legend-border: var(--beo-border-color);
+
+  // Typography
+  --fieldset-pane-title-font-size: 1.25rem;
+  --fieldset-pane-title-font-weight: 600;
+  --fieldset-pane-title-color: var(--beo-body-color);
+  --fieldset-pane-description-font-size: 0.875rem;
+  --fieldset-pane-description-color: var(--beo-secondary-color);
+
+  // Icon
+  --fieldset-pane-icon-size: 1.5rem;
+  --fieldset-pane-icon-color: var(--beo-primary);
+
+  // Transitions
+  --fieldset-pane-transition: all 0.2s ease-in-out;
+}
+
+// Base fieldset pane styles
+.fieldset-pane {
+  background: var(--fieldset-pane-bg);
+  border: 1px solid var(--fieldset-pane-border);
+  border-radius: var(--fieldset-pane-border-radius);
+  box-shadow: var(--fieldset-pane-shadow);
+  margin-bottom: var(--fieldset-pane-margin-bottom);
+  transition: var(--fieldset-pane-transition);
+  overflow: hidden;
+  padding: 0; // Reset default fieldset padding
+
+  // Fieldset legend (replaces header)
+  &__legend {
+    background: var(--fieldset-pane-legend-bg);
+    border-bottom: 1px solid var(--fieldset-pane-legend-border);
+    padding: var(--fieldset-pane-legend-padding);
+    margin: 0; // Reset default legend margin
+    width: 100%; // Make legend span full width
+    display: block; // Make legend behave like a block element
+  }
+
+  // Title row container (for icon + title)
+  &__title-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  // Fieldset icon
+  &__icon {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+
+    svg {
+      width: var(--fieldset-pane-icon-size);
+      height: var(--fieldset-pane-icon-size);
+      color: var(--fieldset-pane-icon-color);
+    }
+  }
+
+  // Fieldset title (in legend)
+  &__title {
+    font-size: var(--fieldset-pane-title-font-size);
+    font-weight: var(--fieldset-pane-title-font-weight);
+    color: var(--fieldset-pane-title-color);
+    margin: 0;
+    flex: 1;
+  }
+
+  // Fieldset description
+  &__description {
+    font-size: var(--fieldset-pane-description-font-size);
+    color: var(--fieldset-pane-description-color);
+    margin: 0.75rem 0 0;
+    line-height: 1.4;
+  }
+
+  // Fieldset content
+  &__content-inner {
+    padding: var(--fieldset-pane-content-padding);
+  }
+
+  // Disabled state
+  &--disabled {
+    opacity: 0.6;
+    pointer-events: none;
+
+    .fieldset-pane__title {
+      color: var(--beo-secondary-color);
+    }
+  }
+}
+
+// Variant styles
+// ==============
+
+// Minimal variant - no borders, no padding
+.fieldset-pane--minimal {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+
+  .fieldset-pane__legend {
+    background: transparent;
+    border-bottom: none;
+    padding: 0;
+    margin-bottom: var(--fieldset-legend-spacing);
+  }
+
+  .fieldset-pane__content-inner {
+    padding: 0;
+  }
+}
+
+// Title outside variant - title appears outside the fieldset border
+.fieldset-pane--title-outside {
+  // Remove all borders from the main fieldset
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  margin-top: 0;
+
+  .fieldset-pane__legend {
+    // Legend has no borders or background
+    background: transparent;
+    border: none;
+    padding: 0 0 1rem;
+    margin-bottom: 0;
+  }
+
+  .fieldset-pane__content-inner {
+    // Move the border to the content area
+    border: 1px solid var(--fieldset-pane-border);
+    border-radius: var(--fieldset-pane-border-radius);
+    background: var(--fieldset-pane-bg);
+    box-shadow: var(--fieldset-pane-shadow);
+    padding: var(--fieldset-pane-content-padding);
+  }
+}
+
+// Collapsible functionality
+.fieldset-pane__title--collapsible {
+  cursor: pointer;
+  user-select: none;
+  transition: var(--fieldset-pane-transition);
+  position: relative;
+  padding-right: 2rem;
+
+  // Hover state
+  &:hover {
+    color: var(--beo-primary);
+  }
+
+  // Focus state
+  &:focus {
+    outline: 2px solid var(--beo-primary);
+    outline-offset: 2px;
+  }
+
+  // Add accordion icon
+  &::after {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: $accordion-icon-width;
+    height: $accordion-icon-width;
+    content: "";
+    background-image: escape-svg($accordion-button-icon);
+    background-repeat: no-repeat;
+    background-size: $accordion-icon-width;
+
+    @include transition($accordion-btn-icon-transition);
+  }
+
+  // Expanded state - rotate icon
+  &[aria-expanded="true"]::after {
+    transform: translateY(-50%) $accordion-btn-icon-transform;
+  }
+}
+
+// Responsive adjustments
+@include media-breakpoint-down(md) {
+  :root {
+    --fieldset-pane-margin-bottom: 1.5rem;
+    --fieldset-pane-legend-padding: 0.75rem 1rem;
+    --fieldset-pane-content-padding: 1rem;
+  }
+
+  .fieldset-pane {
+    &__legend {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+  }
+}

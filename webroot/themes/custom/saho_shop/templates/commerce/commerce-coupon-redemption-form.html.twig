@@ -1,0 +1,34 @@
+{#
+/**
+ * @file
+ * Template for the coupon redemption form.
+ *
+ * Available variables:
+ * - form: The form. Contains the currently applied coupons in form.coupons,
+ *         each containing a code, display_name, remove_button.
+ *         For example: form.coupons.0.code.
+ *
+ * @ingroup themeable
+ */
+#}
+{{ attach_library('saho_shop/checkout.coupon-redemption') }}
+
+<div class="coupon-redemption-form coupon-redemption-form--badge-style">
+  {% if form.coupons|length %}
+    <div class="coupon-list">
+      <h5 class="coupon-list__title">{{ 'Applied coupons'|t }}</h5>
+      <div class="coupon-list__items">
+        {% for key, coupon in form.coupons|filter((coupon, key) => key|first != '#') %}
+          <div class="coupon-list__coupon badge">
+            <span class="coupon-list__coupon-code">{{ coupon.code }}</span>
+            <span class="coupon-list__coupon-remove">{{ coupon.remove_button }}</span>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  {% endif %}
+
+  <div class="coupon-redemption-form__form input-group">
+    {{ form|without('coupons') }}
+  </div>
+</div>

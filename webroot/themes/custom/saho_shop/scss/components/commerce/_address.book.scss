@@ -1,0 +1,158 @@
+//
+// Address Book
+// ----------------------------
+//
+
+// CSS Variables for address book component
+:root {
+  // Spacing
+  --address-book-margin-bottom: var(--form-item-spacing);
+  --address-book-border-radius: 0.5rem;
+  --address-book-padding: 1.5rem;
+  --address-book-header-padding: 1rem 1.5rem;
+  --address-book-actions-gap: 0.75rem;
+
+  // Colors
+  --address-book-bg: var(--beo-white);
+  --address-book-border: var(--beo-border-color);
+  --address-book-shadow: var(--beo-box-shadow-sm);
+  --address-book-header-bg: var(--beo-light);
+  --address-book-header-border: var(--beo-border-color);
+
+  // Typography
+  --address-book-title-font-size: 1.25rem;
+  --address-book-title-font-weight: 600;
+  --address-book-title-color: var(--beo-body-color);
+  --address-book-subtitle-font-size: 0.875rem;
+  --address-book-subtitle-color: var(--beo-secondary-color);
+  --address-book-address-font-size: 0.875rem;
+  --address-book-address-color: var(--beo-body-color);
+
+  // Transitions
+  --address-book-transition: all 0.2s ease-in-out;
+}
+
+// Base address book styles
+.address-book {
+  margin-bottom: var(--address-book-margin-bottom);
+
+  // Add address link (outside profiles)
+  &__add-link {
+    margin-bottom: 1rem;
+
+    @extend .btn;
+    @extend .btn-success;
+  }
+
+  // Address book profiles container
+  &__profiles {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1rem;
+  }
+
+  // Individual address profile
+  &__profile {
+    background: var(--address-book-bg);
+    border: 1px solid var(--address-book-border);
+    border-radius: var(--address-book-border-radius);
+    box-shadow: var(--address-book-shadow);
+    padding: var(--address-book-padding);
+    transition: var(--address-book-transition);
+    position: relative;
+
+    &:hover {
+      box-shadow: var(--beo-box-shadow-md);
+    }
+
+    // Default address indicator
+    &--default {
+      border-color: var(--beo-primary);
+      box-shadow:
+        var(--beo-box-shadow-sm),
+        0 0 0 2px rgba(var(--beo-primary-rgb), 0.1);
+
+      &::before {
+        content: "Default";
+        position: absolute;
+        top: 0.75rem;
+        right: 0.75rem;
+        background: var(--beo-primary);
+        color: var(--beo-white);
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.25rem;
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
+      }
+    }
+  }
+
+  // Profile operations container
+  &__operations {
+    display: flex;
+    align-items: center;
+    gap: var(--address-book-actions-gap);
+    margin-top: 1rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--beo-border-color);
+    flex-wrap: wrap;
+  }
+
+  // Action links
+  &__edit-link,
+  &__delete-link,
+  &__set-default-link {
+    font-size: 0.875rem;
+    text-decoration: none;
+    transition: var(--address-book-transition);
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+// Responsive grid adjustments
+@include media-breakpoint-down(lg) {
+  .address-book {
+    &__profiles {
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.25rem;
+    }
+  }
+}
+
+@include media-breakpoint-down(md) {
+  .address-book {
+    &__profiles {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+
+    &__operations {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+  }
+}
+
+@include media-breakpoint-down(sm) {
+  .address-book {
+    &__profiles {
+      gap: 0.75rem;
+    }
+
+    &__profile {
+      padding: 1rem;
+    }
+
+    &__operations {
+      flex-flow: row wrap;
+      gap: 0.75rem;
+    }
+  }
+}

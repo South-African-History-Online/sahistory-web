@@ -1,0 +1,69 @@
+{#
+/**
+ * @file
+ * Modern Bootstrap 5 Carousel for Slider view.
+ *
+ * Replaces Views Slideshow with a clean, modern Bootstrap carousel.
+ *
+ * Available variables:
+ * - view: The view object
+ * - rows: The rendered rows (as a single block when using entity row style)
+ * - header/footer/empty/pager: Standard view regions
+ *
+ * For Bootstrap carousel, we need individual rows. We use views-view-unformatted
+ * or iterate through view.result to get individual items.
+ */
+#}
+{%
+  set classes = [
+    'view',
+    'view-' ~ id|clean_class,
+    'view-id-' ~ id,
+    'view-display-id-' ~ display_id,
+    dom_id ? 'js-view-dom-id-' ~ dom_id,
+  ]
+%}
+
+{% set result_count = view.result|length %}
+
+<div{{ attributes.addClass(classes) }}>
+  {{ title_prefix }}
+  {% if title %}
+    {{ title }}
+  {% endif %}
+  {{ title_suffix }}
+
+  {% if rows and result_count > 0 %}
+    <div id="heroCarousel" class="carousel slide hero-carousel" data-bs-ride="carousel" data-bs-interval="5000">
+      {# Indicators #}
+      {% if result_count > 1 %}
+        <div class="carousel-indicators">
+          {% for key in 0..(result_count - 1) %}
+            <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="{{ key }}" {% if key == 0 %}class="active" aria-current="true"{% endif %} aria-label="Slide {{ key + 1 }}"></button>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      {# Slides - rendered via views-view-unformatted template #}
+      <div class="carousel-inner">
+        {{ rows }}
+      </div>
+
+      {# Controls - Modern minimal arrows #}
+      {% if result_count > 1 %}
+        <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
+          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">{{ 'Previous'|t }}</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
+          <span class="carousel-control-next-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">{{ 'Next'|t }}</span>
+        </button>
+      {% endif %}
+    </div>
+  {% elseif empty %}
+    <div class="view-empty">
+      {{ empty }}
+    </div>
+  {% endif %}
+</div>

@@ -1,0 +1,103 @@
+{#
+/**
+ * @file
+ * Template for orders in the 'user' view mode.
+ *
+ * Available variables:
+ * - attributes: HTML attributes for the wrapper.
+ * - order: The rendered order fields.
+ *   Use 'order' to print them all, or print a subset such as
+ *   'order.order_number'. Use the following code to exclude the
+ *   printing of a given field:
+ *   @code
+ *   {{ order|without('order_number') }}
+ *   @endcode
+ * - order_entity: The order entity.
+ *
+ * @ingroup themeable
+ */
+#}
+{% import "@saho_shop/macros.twig" as svg %}
+
+<div class="row g-5">
+  <div class="customer-information col-md-3 mb-4 order-last">
+    {{ include('saho_shop:content-pane', {
+      'content': order.mail,
+      'variant': 'title-outside',
+      'collapsible': true,
+      'collapsed': false,
+    }) }}
+
+    {% if order.shipping_information %}
+      {{ include('saho_shop:content-pane', {
+        'title': 'Shipping information'|t,
+        'content': order.shipping_information,
+        'variant': 'title-outside',
+        'collapsible': true,
+        'collapsed': false,
+      }) }}
+    {% endif %}
+
+    {% if order.billing_information %}
+      {{ include('saho_shop:content-pane', {
+        'title': 'Billing information'|t,
+        'content': order.billing_information,
+        'variant': 'title-outside',
+        'collapsible': true,
+        'collapsed': false,
+      }) }}
+    {% endif %}
+  </div>
+
+  <div class="order-information col-md-9">
+    <div class="row row-cols-auto mt-1 mb-4">
+      {% if order.completed|render is not empty %}
+        <div class="col">
+          <div class="d-flex align-items-center">
+            {{ svg.getIcon('check-circle-fill', 22, 22, 'text-success me-2') }}
+            {{ order.completed }}
+          </div>
+        </div>
+      {% endif %}
+      {% if order.placed|render is not empty  %}
+        <div class="col">
+          <div class="d-flex align-items-center">
+            {{ svg.getIcon('calendar', 22, 22, 'text-primary me-2') }}
+            {{ order.placed }}
+          </div>
+        </div>
+      {% endif %}
+      {% if order.state|render is not empty  %}
+        <div class="col">
+          <div class="d-flex align-items-center">
+            {{ svg.getIcon('info-circle', 22, 22, 'text-info me-2') }}
+            {{ order.state }}
+          </div>
+        </div>
+      {% endif %}
+    </div>
+
+    {% set main_content %}
+      {{ order.order_items }}
+      {{ order.total_price }}
+    {% endset %}
+
+    <div class="row">
+      {{ include('saho_shop:content-pane', {
+        'content': main_content,
+        'variant': 'title-outside',
+      }) }}
+    </div>
+
+    {% if additional_order_fields.billing_profile|render is not empty %}
+      <div class="mt-4">
+        {{ include('saho_shop:content-pane', {
+          'content': additional_order_fields.billing_profile,
+          'variant': 'title-outside',
+        }) }}
+      </div>
+    {% endif %}
+
+    {{ additional_order_fields|without('billing_profile') }}
+  </div>
+</div>

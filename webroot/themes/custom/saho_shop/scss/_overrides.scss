@@ -1,0 +1,633 @@
+//
+// Overrides
+// ----------------------------
+
+.main-container {
+  min-height: 500px;
+}
+
+// Button overrides.
+.btn {
+  text-transform: uppercase;
+}
+
+// No gutters
+.no-gutters {
+  @extend .g-0;
+}
+
+// Number badge
+.number-badge {
+  @include number-badge;
+}
+
+.number-badge--light {
+  --number-badge-color: var(--beo-black);
+  --number-badge-bg: var(--beo-light);
+}
+
+// Date badge
+.date-badge {
+  @include date-badge;
+}
+
+.date-badge-small {
+  --date-badge-font-size: 0.875rem;
+  --date-badge-day-font-size: 1rem;
+  --date-badge-padding: 0.75rem 1rem;
+
+  @include date-badge;
+}
+
+// Dropdown overrides.
+
+// Accordion overrides.
+$nested-accordion-bg: $light;
+$accordion-button-fs: $font-size-md;
+
+.accordion {
+  .fieldset-legend.accordion-button {
+    font-size: $accordion-button-fs;
+
+    a {
+      font-weight: bold;
+    }
+  }
+
+  .accordion {
+    background-color: $nested-accordion-bg;
+
+    @extend .mb-4;
+
+    .fieldset-legend.accordion-button {
+      font-size: 1rem;
+    }
+  }
+}
+
+// Toast overrides.
+.toast-body a {
+  font-weight: bold;
+}
+
+// Alert overrides.
+.alert a {
+  color: inherit;
+  font-weight: bold;
+}
+
+// Table overrides.
+.table {
+  .links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+
+    a {
+      vertical-align: middle;
+    }
+  }
+}
+
+td > .form-item:only-child {
+  @extend .mb-0;
+}
+
+// Contextual links overrides.
+.contextual-links a {
+  color: initial !important;
+  text-transform: initial !important;
+  font-weight: normal !important;
+}
+
+// Card divider overrides.
+.credit-card-form__divider {
+  margin: 2.4rem 0.5rem 0;
+}
+
+// Hide sidebar if nothing is there.
+.region-sidebar-first:empty {
+  display: none;
+}
+
+// Custom narrow containers using Bootstrap mixins
+// ----------------------------
+
+// Extra narrow container (600px max-width)
+.container-narrow {
+  @include make-container;
+
+  max-width: $container-narrow-width;
+}
+
+// Very narrow container (500px max-width)
+.container-very-narrow {
+  @include make-container;
+
+  max-width: $container-very-narrow-width;
+}
+
+// Utility classes
+// ----------------------------
+
+// Make child links inherit current color
+.links-inherit-color {
+  a {
+    color: currentcolor;
+  }
+}
+
+// Logo size constraints
+// ----------------------------
+.site-logo {
+  img {
+    max-height: 80px;
+    width: auto;
+  }
+
+  // Handle inline SVG logos
+  svg {
+    height: 80px;
+    width: auto;
+    max-width: 200px;
+  }
+}
+
+// Offcanvas/sidebar menu logo
+.offcanvas .site-logo {
+  img {
+    max-height: 120px;
+  }
+
+  svg {
+    height: 120px;
+  }
+}
+
+@media (width <= 767.98px) {
+  .site-logo {
+    img,
+    svg {
+      max-height: 50px;
+      height: 50px;
+    }
+  }
+}
+
+// Product card improvements
+// ----------------------------
+.product-card {
+  border: 1px solid rgb(0 0 0 / 12.5%);
+  transition: box-shadow 0.2s ease-in-out;
+
+  &:hover {
+    box-shadow: 0 0.5rem 1rem rgb(0 0 0 / 15%);
+  }
+
+  .product-image {
+    min-height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f8f9fa;
+
+    img {
+      max-width: 100%;
+      height: auto;
+      object-fit: contain;
+    }
+  }
+
+  .product-placeholder {
+    width: 100%;
+    min-height: 200px;
+    background-color: #f8f9fa;
+  }
+
+  .card-title {
+    font-size: 1rem;
+    line-height: 1.3;
+    min-height: 2.6em;
+  }
+
+  .product-actions {
+    .field--name-variations {
+      .field__label {
+        display: none;
+      }
+    }
+  }
+}
+
+// Publication Product Full Display
+// ----------------------------
+.product-publication {
+  &--full {
+    .product-publication__image {
+      img {
+        width: 100%;
+        height: auto;
+        border-radius: 4px;
+        box-shadow: 0 4px 12px rgb(0 0 0 / 15%);
+      }
+    }
+
+    .product-publication__category {
+      .field--name-field-category {
+        display: inline-block;
+
+        a {
+          display: inline-block;
+          padding: 0.25rem 0.75rem;
+          font-size: 0.75rem;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          background-color: var(--beo-primary, #c41e3a);
+          color: #fff;
+          text-decoration: none;
+          border-radius: 3px;
+
+          &:hover {
+            background-color: var(--beo-primary-dark, #a01830);
+          }
+        }
+      }
+    }
+
+    .product-publication__title {
+      font-weight: 700;
+      color: var(--beo-dark, #212529);
+    }
+
+    .product-publication__subtitle {
+      font-weight: 400;
+
+      .field--name-field-subtitle {
+        display: inline;
+
+        .field__item {
+          display: inline;
+        }
+      }
+    }
+
+    .product-publication__author,
+    .product-publication__editor {
+      font-size: 1rem;
+      color: var(--beo-secondary, #6c757d);
+
+      .field--name-field-author,
+      .field--name-field-editor {
+        display: inline;
+
+        .field__item {
+          display: inline;
+        }
+      }
+    }
+
+    .product-publication__purchase {
+      border-radius: 8px;
+
+      .product-publication__price {
+        .field--name-variation-price {
+          .field__item {
+            font-size: inherit;
+          }
+        }
+      }
+
+      .product-publication__add-to-cart {
+        .field--name-variations {
+          .field__label {
+            display: none;
+          }
+
+          .add-to-cart {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            align-items: center;
+
+            .form-item-quantity {
+              margin-bottom: 0;
+
+              label {
+                display: none;
+              }
+
+              input {
+                width: 80px;
+                text-align: center;
+              }
+            }
+
+            .form-submit {
+              @extend .btn;
+              @extend .btn-primary;
+              @extend .btn-lg;
+
+              padding: 0.75rem 2rem;
+            }
+          }
+        }
+      }
+    }
+
+    .product-publication__description {
+      line-height: 1.7;
+
+      .field--name-body {
+        p:last-child {
+          margin-bottom: 0;
+        }
+      }
+    }
+
+    .product-publication__details {
+      table {
+        th {
+          font-weight: 600;
+          color: var(--beo-secondary, #6c757d);
+          white-space: nowrap;
+          vertical-align: top;
+        }
+
+        td {
+          // Remove wrapper divs from field output
+          .field {
+            margin-bottom: 0;
+
+            .field__item {
+              display: inline;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// Modern Hero Carousel
+// Belgrade-inspired carousel styling for publications
+// ----------------------------
+.hero-carousel {
+  margin-bottom: 0;
+
+  .carousel-inner {
+    border-radius: 0;
+  }
+
+  .carousel-item {
+    min-height: 450px;
+
+    @media (width >= 768px) {
+      min-height: 550px;
+    }
+
+    @media (width >= 992px) {
+      min-height: 600px;
+    }
+  }
+
+  // Belgrade-style minimal arrow controls
+  .carousel-control-prev,
+  .carousel-control-next {
+    width: 50px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+
+    @media (width >= 768px) {
+      width: 60px;
+    }
+
+    &:hover,
+    &:focus {
+      opacity: 1;
+    }
+  }
+
+  &:hover {
+    .carousel-control-prev,
+    .carousel-control-next {
+      opacity: 0.9;
+    }
+  }
+
+  .carousel-control-prev-icon,
+  .carousel-control-next-icon {
+    width: 36px;
+    height: 36px;
+    background-color: rgb(255 255 255 / 95%);
+    border-radius: 50%;
+    background-size: 40%;
+    filter: invert(1);
+    transition: transform 0.2s ease;
+
+    @media (width >= 768px) {
+      width: 44px;
+      height: 44px;
+    }
+  }
+
+  .carousel-control-prev:hover .carousel-control-prev-icon,
+  .carousel-control-next:hover .carousel-control-next-icon {
+    transform: scale(1.1);
+  }
+
+  // Belgrade-style indicators (dots at bottom)
+  .carousel-indicators {
+    margin-bottom: 1.5rem;
+    gap: 0.5rem;
+
+    @media (width >= 768px) {
+      margin-bottom: 2rem;
+    }
+
+    button {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      margin: 0 4px;
+      opacity: 0.6;
+      transition: all 0.3s ease;
+      border: none;
+      background-color: #fff;
+
+      &.active {
+        opacity: 1;
+        transform: scale(1.3);
+      }
+
+      &:hover:not(.active) {
+        opacity: 0.85;
+      }
+    }
+  }
+}
+
+// Hero Slide Item
+// Inspired by Centarro Belgrade theme - elegant publication-focused design
+.hero-slide {
+  position: relative;
+  min-height: 450px;
+  display: flex;
+  align-items: center;
+
+  @media (width >= 768px) {
+    min-height: 550px;
+  }
+
+  @media (width >= 992px) {
+    min-height: 600px;
+  }
+
+  &__background {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+    }
+
+    .field--name-field-image {
+      height: 100%;
+
+      .field__item {
+        height: 100%;
+      }
+
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+      }
+    }
+  }
+
+  // SAHO signature red overlay - elegant gradient from left
+  &__overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      90deg,
+      rgb(153 0 0 / 85%) 0%,
+      rgb(153 0 0 / 70%) 35%,
+      rgb(153 0 0 / 40%) 60%,
+      rgb(153 0 0 / 10%) 100%
+    );
+    z-index: 1;
+
+    @media (width >= 992px) {
+      background: linear-gradient(
+        90deg,
+        rgb(153 0 0 / 90%) 0%,
+        rgb(153 0 0 / 75%) 30%,
+        rgb(153 0 0 / 35%) 55%,
+        transparent 80%
+      );
+    }
+  }
+
+  &__content {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    padding: 3rem 0;
+
+    @media (width >= 768px) {
+      padding: 4rem 0;
+    }
+  }
+
+  &__inner {
+    max-width: 550px;
+    margin-left: 20px;
+
+    @media (width >= 992px) {
+      max-width: 500px;
+    }
+  }
+
+  &__title {
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 0.75rem;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+
+    @media (width >= 768px) {
+      font-size: 2.25rem;
+      margin-bottom: 1rem;
+    }
+
+    @media (width >= 992px) {
+      font-size: 2.5rem;
+    }
+  }
+
+  &__description {
+    font-size: 1rem;
+    color: rgb(255 255 255 / 90%);
+    margin-bottom: 1.5rem;
+    line-height: 1.7;
+    font-weight: 300;
+
+    @media (width >= 768px) {
+      font-size: 1.125rem;
+      margin-bottom: 2rem;
+    }
+
+    p {
+      margin-bottom: 0;
+    }
+  }
+
+  // Belgrade-style CTA button - clean, minimal, professional
+  &__cta {
+    .field--name-field-link {
+      .field__item {
+        display: inline-block;
+      }
+    }
+
+    a {
+      display: inline-block;
+      padding: 0.75rem 1.75rem;
+      background: #fff;
+      color: #1a1a1a;
+      font-weight: 600;
+      font-size: 0.875rem;
+      text-decoration: none;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border: 2px solid #fff;
+      transition: all 0.25s ease;
+
+      @media (width >= 768px) {
+        padding: 0.875rem 2rem;
+        font-size: 0.9rem;
+      }
+
+      &:hover,
+      &:focus {
+        background: transparent;
+        color: #fff;
+        transform: translateY(-1px);
+      }
+
+      &:focus {
+        outline: 2px solid rgb(255 255 255 / 50%);
+        outline-offset: 2px;
+      }
+    }
+  }
+}

@@ -1,0 +1,293 @@
+//
+// Page
+// ----------------------------
+//
+@import "../global";
+@import "bootstrap/scss/tables";
+
+// Page specific variables
+:root {
+  --page-spacer: #{$basic-page-spacer};
+  --page-font-size: #{$basic-page-font-size};
+  --page-line-height: #{$basic-page-line-height};
+  --page-heading-spacing: #{$basic-page-heading-spacing};
+  --page-paragraph-spacing: #{$basic-page-paragraph-spacing};
+  --page-list-spacing: #{$basic-page-list-spacing};
+  --page-code-padding: #{$basic-page-code-padding};
+  --page-blockquote-mark: #{$basic-page-blockquote-mark};
+  --page-blockquote-mark-size: 2rem;
+
+  // Heading font sizes
+  --page-h1-font-size: #{$basic-page-h1-font-size};
+  --page-h2-font-size: #{$basic-page-h2-font-size};
+  --page-h3-font-size: #{$basic-page-h3-font-size};
+  --page-h4-font-size: #{$basic-page-h4-font-size};
+  --page-h5-font-size: #{$basic-page-h5-font-size};
+  --page-h6-font-size: #{$basic-page-h6-font-size};
+}
+
+// Override default styling for the body field on basic pages.
+.node--view-mode-full {
+  .node__content {
+    .field {
+      margin-bottom: var(--page-spacer);
+    }
+
+    .field--name-body {
+      font-size: var(--page-font-size);
+      line-height: var(--page-line-height);
+      color: var(--#{$prefix}body-color);
+
+      // Headings
+      h1,
+      h2,
+      h3,
+      h4,
+      h5,
+      h6 {
+        margin-top: var(--page-heading-spacing);
+        margin-bottom: var(--page-spacer);
+        font-weight: var(--#{$prefix}headings-font-weight);
+        line-height: var(--#{$prefix}headings-line-height);
+        color: var(--#{$prefix}headings-color, var(--#{$prefix}body-color));
+      }
+
+      h1 {
+        font-size: var(--page-h1-font-size);
+        margin-top: calc(var(--page-heading-spacing) * 1.5);
+      }
+
+      h2 {
+        font-size: var(--page-h2-font-size);
+        margin-top: calc(var(--page-heading-spacing) * 1.25);
+      }
+
+      h3 {
+        font-size: var(--page-h3-font-size);
+        margin-top: var(--page-heading-spacing);
+      }
+
+      h4 {
+        font-size: var(--page-h4-font-size);
+      }
+
+      h5 {
+        font-size: var(--page-h5-font-size);
+      }
+
+      h6 {
+        font-size: var(--page-h6-font-size);
+      }
+
+      // Paragraphs
+      p {
+        margin-bottom: var(--page-paragraph-spacing);
+        text-align: var(--#{$prefix}body-text-align, left);
+      }
+
+      // Links
+      a {
+        color: var(--#{$prefix}link-color);
+        text-decoration: var(--#{$prefix}link-decoration);
+        transition: var(--#{$prefix}transition-base);
+
+        &:hover {
+          color: var(--#{$prefix}link-hover-color);
+          text-decoration: var(--#{$prefix}link-hover-decoration);
+        }
+
+        &:focus {
+          outline: var(--#{$prefix}input-btn-focus-width) solid
+            var(--#{$prefix}input-btn-focus-color);
+          outline-offset: 2px;
+        }
+      }
+
+      // Images
+      img {
+        max-width: 100%;
+        height: auto;
+        margin-bottom: var(--page-spacer);
+        border-radius: var(--#{$prefix}border-radius);
+        box-shadow: var(--#{$prefix}box-shadow-sm);
+      }
+
+      // Lists
+      ul,
+      ol {
+        margin-bottom: var(--page-spacer);
+        padding-left: calc(var(--page-spacer) * 2);
+
+        li {
+          margin-bottom: var(--page-list-spacing);
+          line-height: var(--page-line-height);
+        }
+
+        ul,
+        ol {
+          margin-top: var(--page-list-spacing);
+          margin-bottom: 0;
+        }
+      }
+
+      // Definition lists
+      dl {
+        margin-bottom: var(--page-spacer);
+
+        dt {
+          font-weight: var(--#{$prefix}font-weight-bold);
+          margin-top: var(--page-spacer);
+          margin-bottom: calc(var(--page-spacer) * 0.5);
+        }
+
+        dd {
+          margin-bottom: var(--page-spacer);
+          margin-left: calc(var(--page-spacer) * 2);
+        }
+      }
+
+      // Tables
+      table {
+        @extend .table;
+
+        margin-bottom: calc(var(--page-spacer) * 2);
+      }
+
+      // Code
+      code {
+        font-size: var(--#{$prefix}small-font-size);
+        color: var(--#{$prefix}code-color, var(--#{$prefix}danger));
+        background-color: var(--#{$prefix}code-bg, var(--#{$prefix}light));
+        padding: var(--page-code-padding);
+        border-radius: var(--#{$prefix}border-radius-sm);
+      }
+
+      pre {
+        background-color: var(--#{$prefix}light);
+        border: var(--#{$prefix}border-width) solid var(--#{$prefix}border-color);
+        border-radius: var(--#{$prefix}border-radius);
+        padding: var(--page-spacer);
+        margin-bottom: calc(var(--page-spacer) * 2);
+        overflow-x: auto;
+
+        code {
+          background-color: transparent;
+          padding: 0;
+          border-radius: 0;
+        }
+      }
+
+      // Blockquotes
+      blockquote {
+        margin-bottom: var(--page-paragraph-spacing);
+        font-size: var(--page-font-size);
+        padding: calc(var(--page-spacer) * 1.5) calc(var(--page-spacer) * 2);
+        border-left: 4px solid var(--#{$prefix}primary);
+        background-color: rgba(var(--#{$prefix}primary-rgb), 0.05);
+        border-radius: var(--#{$prefix}border-radius);
+        font-style: italic;
+        position: relative;
+
+        &::before {
+          content: "";
+          display: block;
+          mask-image: var(--page-blockquote-mark);
+          mask-size: var(--page-blockquote-mark-size);
+          mask-repeat: no-repeat;
+          mask-position: left center;
+          width: var(--page-blockquote-mark-size);
+          height: var(--page-blockquote-mark-size);
+          padding-left: var(--page-blockquote-mark-size);
+          background-color: var(--#{$prefix}primary);
+          position: absolute;
+          top: calc(var(--page-spacer) * 0.5);
+          left: calc(var(--page-spacer) * 0.5);
+        }
+
+        p {
+          margin-bottom: calc(var(--page-spacer) * 0.5);
+
+          &:last-child {
+            margin-bottom: 0;
+          }
+        }
+
+        cite {
+          display: block;
+          font-size: var(--#{$prefix}small-font-size);
+          color: var(--#{$prefix}text-muted);
+          font-style: normal;
+          margin-top: var(--page-spacer);
+
+          &::before {
+            content: "— ";
+          }
+        }
+
+        > :last-child {
+          margin-bottom: 0;
+        }
+      }
+
+      // Horizontal rules
+      hr {
+        margin: var(--#{$prefix}hr-margin-y) 0;
+        color: var(--#{$prefix}hr-color);
+        background-color: currentcolor;
+        border: 0;
+        opacity: var(--#{$prefix}hr-opacity);
+        height: var(--#{$prefix}hr-height);
+      }
+
+      // Small text
+      small {
+        font-size: var(--#{$prefix}small-font-size);
+      }
+
+      // Mark/highlight
+      mark {
+        padding: var(--#{$prefix}mark-padding);
+        background-color: var(--#{$prefix}mark-bg);
+      }
+
+      // Abbreviations
+      abbr[title] {
+        text-decoration: underline dotted;
+        cursor: help;
+        text-decoration-skip-ink: none;
+      }
+
+      // Figures
+      figure {
+        margin-bottom: calc(var(--page-spacer) * 2);
+        text-align: center;
+
+        img {
+          margin-bottom: calc(var(--page-spacer) * 0.5);
+        }
+
+        figcaption {
+          font-size: var(--#{$prefix}small-font-size);
+          color: var(--#{$prefix}text-muted);
+          font-style: italic;
+        }
+      }
+
+      // Address
+      address {
+        font-style: normal;
+        line-height: inherit;
+        margin-bottom: var(--page-spacer);
+      }
+
+      // First and last child adjustments
+      > :first-child {
+        margin-top: 0;
+      }
+
+      > :last-child {
+        margin-bottom: 0;
+      }
+    }
+  }
+}

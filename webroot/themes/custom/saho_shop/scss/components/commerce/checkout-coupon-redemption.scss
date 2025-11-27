@@ -1,0 +1,89 @@
+//
+// Commerce Coupon Redemption Form
+//
+
+@import "../../global";
+
+:root {
+  --coupon-redemption-title-font-size: 1rem;
+  --coupon-redemption-title-font-weight: bold;
+  --coupon-redemption-item-gap: 0.5rem;
+  --coupon-redemption-item-border: 1px solid var(--bs-border-color);
+  --coupon-redemption-item-close-icon-size: 1.125rem;
+  --coupon-redemption-item-background: var(--beo-white);
+  --coupon-redemption-item-color: var(--beo-black);
+  --coupon-redemption-item-label-margin-bottom: 1rem;
+  --coupon-redemption-code-font-size: 0.875rem;
+  --coupon-redemption-code-padding: 0.25rem 0.5rem;
+  --coupon-redemption-code-margin: 0.25rem;
+  --coupon-redemption-code-color: var(--beo-black);
+}
+
+.coupon-redemption-form {
+  .coupon-list {
+    margin-bottom: var(--form-item-spacing);
+
+    &__title {
+      margin-bottom: var(--coupon-redemption-item-label-margin-bottom);
+      font-size: var(--coupon-redemption-title-font-size);
+      font-weight: var(--coupon-redemption-title-font-weight);
+    }
+
+    &__items {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--coupon-redemption-item-gap);
+    }
+
+    &__coupon {
+      align-items: center;
+      background-color: var(--coupon-redemption-item-background);
+      color: var(--coupon-redemption-item-color);
+      display: flex;
+      gap: var(--coupon-redemption-item-gap);
+    }
+
+    &__coupon-code {
+      color: var(--coupon-redemption-code-color);
+      font-family: var(--beo-font-monospace);
+      font-size: var(--coupon-redemption-code-font-size);
+      font-weight: 400;
+      padding: var(--coupon-redemption-code-padding);
+    }
+
+    &__coupon-remove input {
+      transition: $transition-fade;
+      opacity: 0.5;
+
+      @include icon(
+        var(--coupon-redemption-item-close-icon-size),
+        "../../../icons/x.svg",
+        var(--coupon-redemption-item-color)
+      );
+
+      &:hover {
+        opacity: 1;
+      }
+    }
+  }
+
+  &__form {
+    flex-wrap: nowrap;
+    align-items: flex-end;
+
+    .form-item {
+      margin-bottom: 0;
+    }
+
+    .form-submit {
+      @include btn-icon-only(1.25rem, "../../../icons/arrow-right.svg");
+    }
+  }
+}
+
+// Styles
+.form-style-floating_labels {
+  .coupon-redemption-form__form {
+    align-items: stretch;
+  }
+}

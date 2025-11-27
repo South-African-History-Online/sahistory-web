@@ -1,34 +1,87 @@
 {#
 /**
  * @file
- * Theme override for main menu.
+ * Theme override for the main menu.
+ *
+ * The menu will automatically receive a region-based class (e.g., menu--region-header
+ * or menu--region-navigation) via preprocessing, allowing CSS to target menus
+ * based on their region placement.
+ *
+ * Available variables:
+ * - menu_name: The machine name of the menu
+ * - items: A nested list of menu items. Each menu item contains:
+ *   - attributes: HTML attributes for the menu item.
+ *   - below: The menu item child items.
+ *   - title: The menu link title.
+ *   - url: The menu link url, instance of \Drupal\Core\Url
+ *   - localized_options: Menu link localized options.
+ *   - is_expanded: TRUE if the link has visible children within the current
+ *     menu tree.
+ *   - is_collapsed: TRUE if the link has children within the current menu tree
+ *     that are not currently visible.
+ *   - in_active_trail: TRUE if the link is in the active trail.
  */
 #}
 {% import _self as menus %}
+{% import "@saho_shop/macros.twig" as macros %}
 
-{% macro menu_links(items, attributes, menu_level) %}
+{# Attach main nav library #}
+{{ attach_library('saho_shop/main-nav') }}
+
+{#
+  We call a macro which calls itself to render the full tree.
+  @see https://twig.symfony.com/doc/1.x/tags/macro.html
+#}
+{{ menus.menu_links(items, attributes, 0, menu_name) }}
+
+{% macro menu_links(items, attributes, menu_level, menu_name) %}
   {% import _self as menus %}
   {% if items %}
-    <ul{{ attributes.addClass('menu', 'menu--level-' ~ menu_level) }}>
-      {% for item in items %}
-        {% set item_classes = [
-          'menu__item',
-          'menu__item--level-' ~ menu_level,
-          item.is_expanded ? 'menu__item--expanded',
-          item.is_collapsed ? 'menu__item--collapsed',
-          item.in_active_trail ? 'menu__item--active-trail',
-        ] %}
-        <li{{ item.attributes.addClass(item_classes) }}>
-          {{ link(item.title, item.url, {
-            'class': ['menu__link', 'menu__link--level-' ~ menu_level]
-          }) }}
-          {% if item.below %}
-            {{ menus.menu_links(item.below, attributes.removeClass('menu--level-' ~ menu_level), menu_level + 1) }}
+    {% if menu_level == 0 %}
+      <ul{{ attributes.addClass(menu_name ~ '-nav') }}>
+    {% elseif menu_level == 1 %}
+      <ul class="{{ menu_name ~ '-nav__submenu' }}">
+    {% else %}
+      <ul class="{{ menu_name ~ '-nav__submenu-nested' }}">
+    {% endif %}
+    {% for item in items %}
+      {%
+        set classes = [
+          menu_name ~ '-nav__item',
+          item.below ? menu_name ~ '-nav__item--has-submenu',
+          item.is_expanded ? menu_name ~ '-nav__item--expanded',
+          item.is_collapsed ? menu_name ~ '-nav__item--collapsed',
+          item.in_active_trail ? menu_name ~ '-nav__item--active-trail',
+        ]
+      %}
+      {%
+        set link_classes = [
+          menu_name ~ '-nav__link',
+          menu_level == 0 ? menu_name ~ '-nav__link--top-level',
+          item.in_active_trail ? menu_name ~ '-nav__link--active',
+        ]
+      %}
+      <li{{ item.attributes.addClass(classes) }}>
+        {% if item.below %}
+          {# Parent link with chevron icon - different directions based on level #}
+          {% set link_options = {
+            'class': link_classes,
+            'aria-expanded': 'false',
+            'aria-haspopup': 'true'
+          } %}
+          {{ link(item.title, item.url, link_options) }}
+          {% if menu_level == 0 %}
+            {{ macros.getIcon('chevron-down', 12, 12, menu_name ~ '-nav__chevron') }}
+          {% else %}
+            {{ macros.getIcon('chevron-right', 10, 10, menu_name ~ '-nav__chevron') }}
           {% endif %}
-        </li>
-      {% endfor %}
+          {{ menus.menu_links(item.below, attributes, menu_level + 1, menu_name) }}
+        {% else %}
+          {# Regular link without children #}
+          {{ link(item.title, item.url, { 'class': link_classes }) }}
+        {% endif %}
+      </li>
+    {% endfor %}
     </ul>
   {% endif %}
 {% endmacro %}
-
-{{ menus.menu_links(items, attributes, 0) }}

@@ -1,0 +1,110 @@
+//
+// Checkout
+// ----------------------------
+//
+@import "../global";
+
+.checkout-form {
+  --checkout-form-sidebar-padding: 1rem;
+  --checkout-form-sidebar-background-color: var(--beo-light);
+  --checkout-form-sidebar-margin-bottom: 1.5rem;
+
+  @include media-breakpoint-up(lg) {
+    --beo-gutter-x: 5rem;
+    --checkout-form-sidebar-padding: 2rem;
+    --checkout-form-sidebar-margin-bottom: 2rem;
+  }
+}
+
+// Sidebar
+.checkout-form__sidebar {
+  margin-bottom: var(--checkout-form-sidebar-margin-bottom);
+
+  @include media-breakpoint-up(lg) {
+    order: 1;
+  }
+}
+
+//
+// Order Summary
+// ----------------------------
+
+.order-summary {
+  background-color: var(--checkout-form-sidebar-background-color);
+
+  @include media-breakpoint-down(lg) {
+    @include bust-out-bg(var(--checkout-form-sidebar-background-color));
+
+    &--mobile-floating {
+      @include media-breakpoint-down(lg) {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: $zindex-fixed;
+        box-shadow: 0 0 10px 0 rgb(0 0 0 / 10%);
+        margin-bottom: 0;
+      }
+    }
+  }
+
+  &__title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    cursor: pointer;
+    margin-bottom: 0;
+    padding: var(--checkout-form-sidebar-padding);
+    font-size: 1.125rem;
+
+    &::after {
+      flex-shrink: 0;
+      width: $accordion-icon-width;
+      height: $accordion-icon-width;
+      content: "";
+      background-image: escape-svg($accordion-button-icon);
+      background-repeat: no-repeat;
+      background-size: $accordion-icon-width;
+
+      @include transition($accordion-icon-transition);
+    }
+
+    &[aria-expanded="true"]::after {
+      transform: $accordion-icon-transform;
+    }
+
+    // Desktop behavior - always expanded, no click functionality
+    @include media-breakpoint-up(lg) {
+      @include heading($h5-font-size);
+
+      cursor: default;
+      pointer-events: none;
+      border-bottom: 1px solid var(--beo-border-color);
+
+      &::after {
+        display: none;
+      }
+    }
+  }
+
+  &__order-total {
+    font-size: $font-size-lg;
+    font-weight: $font-weight-bold;
+    margin-left: auto;
+  }
+
+  &__content {
+    background-color: var(--checkout-form-sidebar-background-color);
+
+    // Desktop behavior - always show content
+    @include media-breakpoint-up(lg) {
+      display: block !important;
+      height: auto !important;
+    }
+  }
+
+  &__content-inner {
+    padding: var(--checkout-form-sidebar-padding);
+  }
+}

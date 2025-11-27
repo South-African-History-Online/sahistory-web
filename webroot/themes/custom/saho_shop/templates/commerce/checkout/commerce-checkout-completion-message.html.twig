@@ -1,0 +1,82 @@
+{% import "@saho_shop/macros.twig" as svg %}
+{#
+/**
+ * @file
+ * Default theme implementation for the completion message.
+ *
+ * Available variables:
+ * - order_entity: The order entity.
+ * - message: The completion message.
+ * - payment_instructions: The payment instructions, if provided.
+ *
+ * @ingroup themeable
+ */
+#}
+
+{{ attach_library('saho_shop/checkout.completion') }}
+
+{%
+  set classes = [
+    'checkout-completion',
+    checkout_completion_minimal ? 'checkout-completion--minimal',
+  ]
+%}
+
+<div{{ attributes.addClass(classes) }}>
+  <div class="checkout-completion__header">
+    <div class="checkout-completion__title-row">
+      <div class="checkout-completion__icon">
+        {{ svg.getIcon('check-circle-fill', 40, 40, 'text-success') }}
+      </div>
+      <h1 class="checkout-completion__title">{{ 'Order Complete!'|t }}</h1>
+    </div>
+    <p class="checkout-completion__subtitle">{{ 'Thank you for your purchase'|t }}</p>
+  </div>
+
+  <div class="checkout-completion__content">
+    <div class="checkout-completion__message">
+      {{ message }}
+    </div>
+
+    {% if order_entity %}
+      <div class="checkout-completion__order-details">
+        <div class="row">
+          <div class="col-md-6">
+            <div class="checkout-completion__detail">
+              <strong>{{ 'Order Number'|t }}</strong>
+              <span class="checkout-completion__order-number">#{{ order_entity.id() }}</span>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="checkout-completion__detail">
+              <strong>{{ 'Order Date'|t }}</strong>
+              <span>{{ order_entity.getPlacedTime()|date('F j, Y') }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+
+    {% if payment_instructions %}
+      <div class="checkout-completion__payment-instructions">
+        <h3>{{ 'Payment Instructions'|t }}</h3>
+        <div class="checkout-completion__payment-content">
+          {{ payment_instructions }}
+        </div>
+      </div>
+    {% endif %}
+
+    {% if user.isAuthenticated %}
+      <div class="checkout-completion__actions">
+        <a href="{{ path('entity.commerce_order.user_view', {'commerce_order': order_entity.id(), 'user': order_entity.getCustomerId()}) }}" class="btn btn-outline-primary">
+          {{ svg.getIcon('eye-fill', 16, 16, 'me-2') }}
+          {{ 'View Order Details'|t }}
+        </a>
+        <a href="{{ path('view.commerce_user_orders.order_page', {'user': order_entity.getCustomerId()}) }}" class="btn btn-primary">
+          {{ svg.getIcon('list', 16, 16, 'me-2') }}
+          {{ 'View All Orders'|t }}
+        </a>
+      </div>
+    {% endif %}
+  </div>
+</div>

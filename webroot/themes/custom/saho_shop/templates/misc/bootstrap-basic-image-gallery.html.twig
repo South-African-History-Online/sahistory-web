@@ -1,0 +1,71 @@
+{#
+/**
+ * @file
+ * Default implementation for bootstrap basic image gallery.
+ *
+ * Available variables:
+ * - main: main image.
+ * - thumbnails: thumbnail images.
+ * - lazyload: the class for lazyloading.
+ * - modal: array containing variables for rendering the modal
+ * - carousel: array containing variables for rendering the carousel
+ *
+ * @ingroup themeable
+ */
+#}
+
+<div class="bootstrap-basic-image-gallery">
+
+  <div class="main-image" data-bs-toggle="modal" data-bs-slide-to="0" data-bs-target="#{{ modal.id }}">{{ main }}</div>
+
+  {% if thumbnails.images|length > 1 %}
+    <div class="thumbnails">
+      {% for key,image in thumbnails.images %}
+        <div class="thumb {{ thumbnails.class }}" style="width:{{ thumbnails.width }}%;" data-bs-toggle="modal" data-bs-slide-to="{{ key }}" data-bs-target="#{{ modal.id }}">
+          {{ image }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <div class="modal fade {{ lazyload }}" id="{{ modal.id }}" tabindex="-1" role="dialog" aria-labelledby="{{ modal.id }}-title" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-body">
+          <div id="{{ carousel.id }}" class="carousel slide {{ lazyload }}" data-bs-interval="{{ carousel.interval }}" data-bs-ride="{{ carousel.autoplay }}">
+
+            <div class="carousel-inner" role="listbox">
+              {% for key,carousel_image in carousel.images %}
+                <div class="carousel-item item slide-{{key}} {% if loop.first %}active{% endif %}">
+                  {{ carousel_image }}
+                  <div class="carousel-caption">{{ attribute(carousel_image, '#caption') }}</div>
+                </div>
+              {% endfor %}
+
+              {% if thumbnails.images|length > 1 %}
+              <a class="carousel-control-prev left carousel-control" href="#{{ carousel.id }}" role="button" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon"></span>
+                <span class="sr-only">{% trans %}Previous{% endtrans %}</span>
+              </a>
+              <a class="carousel-control-next right carousel-control" href="#{{ carousel.id }}" role="button" data-bs-slide="next">
+                <span class="carousel-control-next-icon"></span>
+                <span class="sr-only">{% trans %}Next{% endtrans %}</span>
+              </a>
+              {% endif %}
+            </div>
+
+            {% if thumbnails.images|length > 1 %}
+            <ol class="carousel-indicators">
+              {% for index in 0..(carousel.images|length -1) %}
+                <li data-bs-target="#{{ carousel.id }}" data-bs-slide-to="{{ index }}" class="{% if loop.first %}active{% endif %}"></li>
+              {% endfor %}
+            </ol>
+            {% endif %}
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

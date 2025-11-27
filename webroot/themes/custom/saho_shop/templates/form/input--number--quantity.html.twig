@@ -1,0 +1,31 @@
+{#
+/**
+ * @file
+ * Theme override for quantity number input fields.
+ *
+ * Available variables:
+ * - attributes: A list of HTML attributes for the input element.
+ * - children: Optional additional rendered elements.
+ * - quantity_input_style: The selected quantity input style from theme settings.
+ * - quantity_input_size: The selected quantity input size from theme settings.
+ * - quantity_input_width: The selected quantity input width from theme settings.
+ *
+ * @see template_preprocess_input()
+ */
+#}
+
+{% if quantity_input_plus_minus %}
+  {{ attach_library('saho_shop/commerce.quantity-input') }}
+  <div class="quantity-input-wrapper">
+    <button type="button" class="quantity-btn quantity-btn--minus" aria-label="{{ 'Decrease quantity'|t }}">
+      <span class="quantity-btn__icon">−</span>
+    </button>
+    <input{{ attributes.addClass(['quantity-input', 'form-control', 'text-center']) }} />
+    <button type="button" class="quantity-btn quantity-btn--plus" aria-label="{{ 'Increase quantity'|t }}">
+      <span class="quantity-btn__icon">+</span>
+    </button>
+  </div>
+{% else %}
+  <input{{ attributes.addClass(['quantity-input', 'form-control', 'w-auto']) }} />
+{% endif %}
+{{ children }}
