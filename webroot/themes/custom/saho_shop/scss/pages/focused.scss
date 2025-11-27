@@ -1,0 +1,175 @@
+//
+// Focused Page Styles
+// ----------------------------
+//
+// Provides distraction-free page experience by removing header, footer,
+// and navigation elements for focused user interactions.
+//
+// CSS VARIABLES:
+// All variables use the --focused-page- prefix and can be overridden
+// through theme settings or custom CSS.
+//
+// COLOR VARIABLES:
+// - header-bg: Header background color (defaults to theme dark color)
+// - header-text: Header text color (defaults to theme light color)
+// - header-border: Header border color (defaults to theme primary color)
+// - bg-color: Page background color (defaults to body background)
+// - text-color: Page text color (defaults to body text color)
+// - copyright-text: Copyright text color (defaults to body text color)
+//
+// LAYOUT VARIABLES:
+// - header-height: Fixed header height (5.5rem)
+// - container-width: Main container width (calc(100dvw - 4rem))
+// - header-container-width: Header container width (960px)
+//
+// SPACING VARIABLES:
+// - spacing: Default spacing between elements (2rem)
+// - spacing-mobile: Mobile spacing (1rem)
+// - spacing-small: Small spacing for tight layouts (1.5rem)
+//
+// DESIGN VARIABLES:
+// - breakpoint: Mobile breakpoint (768px)
+// - border-radius: Border radius for elements (8px)
+// - box-shadow: Box shadow for elevated elements
+//
+// USAGE:
+// These variables are automatically applied when focused page is enabled
+// through theme settings. They can be customized via:
+// 1. Theme settings interface
+// 2. Custom CSS override
+// 3. SCSS variable override
+//
+// @see theme-settings.php for configuration options
+// @see includes/html.inc for variable generation
+
+@import "../global";
+
+:root {
+  --focused-page-header-bg: var(--beo-dark); // Header background
+  --focused-page-header-text: var(--beo-light); // Header text color
+  --focused-page-header-border: var(--beo-primary); // Header border
+  --focused-page-bg-color: var(--beo-body-bg); // Page background
+  --focused-page-text-color: var(--beo-body-color); // Page text color
+  --focused-page-copyright-text: var(--beo-body-color); // Copyright text
+  --focused-page-primary: var(--beo-primary); // Primary color
+  --focused-page-primary-rgb: var(--beo-primary-rgb); // Primary color RGB
+  --focused-page-primary-hover: var(--beo-primary-hover); // Primary color hover
+
+  // Layout variables
+  --focused-page-header-height: 5.5rem; // Fixed header height
+  --focused-page-container-width: calc(100dvw - 4rem); // Main container width
+  --focused-page-header-container-width: 960px; // Header container width
+
+  // Spacing variables
+  --focused-page-spacing: 2rem; // Default spacing
+  --focused-page-spacing-mobile: 1rem; // Mobile spacing
+  --focused-page-spacing-small: 1.5rem; // Small spacing
+
+  // Design variables
+  --focused-page-breakpoint: 768px; // Mobile breakpoint
+  --focused-page-border-radius: 8px; // Border radius
+  --focused-page-box-shadow: 0 2px 10px rgb(0 0 0 / 10%); // Box shadow
+}
+
+// Base focused page styles
+.focused-page {
+  background: var(--focused-page-bg-color);
+  color: var(--focused-page-text-color);
+  overflow: hidden;
+
+  // Header
+  &__header {
+    position: relative;
+    border-bottom: 1px solid var(--focused-page-header-border);
+    background: var(--focused-page-header-bg);
+    color: var(--focused-page-header-text);
+    z-index: 2;
+
+    &-container {
+      width: 100%;
+      max-width: var(--focused-page-header-container-width, 960px);
+      margin: 0 auto;
+      display: flex;
+      height: var(--focused-page-header-height);
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1.5rem;
+    }
+  }
+
+  // Logo
+  &__logo {
+    max-width: 12.5rem;
+
+    img,
+    svg {
+      width: 100%;
+      height: auto;
+      max-height: 3.75rem;
+    }
+
+    @include media-breakpoint-up(md) {
+      max-width: none;
+    }
+  }
+
+  // Header buttons
+  &__back-btn,
+  &__cart-btn {
+    white-space: nowrap;
+    color: currentcolor;
+    padding: 0.25rem 0.75rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    svg {
+      margin-right: 0.25rem;
+    }
+
+    @include media-breakpoint-down(md) {
+      &:has(svg) {
+        font-size: 0;
+        gap: 0;
+      }
+    }
+  }
+
+  // Main content
+  &__content {
+    padding-block: var(--focused-page-spacing);
+  }
+
+  // Main content container
+  &__content-container {
+    @include media-breakpoint-up(xl) {
+      max-width: var(--focused-page-container-width);
+    }
+  }
+
+  // Copyright
+  &__copyright {
+    font-size: 0.875rem;
+    color: var(--focused-page-text-color);
+    margin-top: var(--focused-page-spacing);
+  }
+}
+
+// Messages
+[data-drupal-messages] {
+  > div {
+    position: relative;
+    margin-top: 2rem;
+    z-index: $zindex-fixed;
+  }
+
+  .region-highlighted & {
+    max-width: var(--focused-page-container-width);
+    padding-inline: calc(var(--beo-gutter-x) / 2);
+    margin-inline: auto;
+  }
+}
+
+// Specific focused page styles
+// =============================

@@ -1,0 +1,22 @@
+{%
+  set classes = [
+    'bef-links',
+    is_nested ? 'bef-nested'
+  ]
+%}
+{% set is_nested = true %}
+<div{{ attributes.addClass(classes).removeClass('form-select') }}>
+  {% set current_nesting_level = 0 %}
+  {% for child in children %}
+    {% set item = attribute(element, child) %}
+    {% if item in selected %}
+      {% set new_nesting_level = attribute(depth, child) %}
+      {% set item = item|merge({'#attributes': {'class': ['active', 'btn', 'btn-secondary' , 'btn-sm']}}) %}
+    {% else %}
+      {% set item = item|merge({'#attributes': {'class': ['btn', 'btn-outline-secondary' , 'btn-sm']}}) %}
+    {% endif %}
+    {% set new_nesting_level = attribute(depth, child) %}
+    {% include '@saho_shop/form/bef-nested-elements.html.twig' %}
+    {% set current_nesting_level = new_nesting_level %}
+  {% endfor %}
+</div>

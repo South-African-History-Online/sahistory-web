@@ -1,0 +1,66 @@
+{#
+/**
+ * @file
+ * Two column template for the checkout form.
+ *
+ * Available variables:
+ * - form: The form.
+ *
+ * @ingroup themeable
+ */
+#}
+{{ attach_library('saho_shop/checkout.focused') }}
+
+{% set main_column = focused_checkout_main_column|default('col-xl-7') %}
+{% set sidebar_column = main_column|replace({'col-xl-': ''})|number_format %}
+{% set sidebar_column = 'col-xl-' ~ (12 - sidebar_column) %}
+
+<div class="focused-checkout-form focused-checkout-form__container container-fluid">
+  <div class="row">
+    <div class="focused-checkout-form__sidebar col-12 {{ sidebar_column }}">
+      <div class="focused-checkout-form__sidebar-inner">
+
+        {% if form.sidebar.order_summary %}
+          <div class="order-summary{{ checkout_mobile_floating_order_summary ? ' order-summary--mobile-floating' : '' }}">
+            <h5 class="order-summary__title" data-bs-toggle="collapse" href="#order-summary" role="button" aria-expanded="false" aria-controls="order-summary">
+              {{ 'Order summary'|t }}
+              {% if order_total %}
+                <span class="order-summary__order-total d-xl-none">{{ order_total|commerce_price_format }}</span>
+              {% endif %}
+            </h5>
+            <div class="order-summary__content collapse" id="order-summary">
+              <div class="order-summary__content-inner">
+                {{ form.sidebar.order_summary }}
+                {{ form.sidebar.coupon_redemption }}
+              </div>
+            </div>
+          </div>
+          {% endif %}
+
+          {% if form.login %}
+          <div class="focused-checkout-form__login">
+            {{ form.login|without('returning_customer') }}
+          </div>
+          {% endif %}
+          {{ form.sidebar|without('order_summary','coupon_redemption', 'login' ) }}
+      </div>
+    </div>
+    <div class="focused-checkout-form__main col-12 {{ main_column }}">
+      {% if focused_checkout_form_step_title and form_title %}
+        <h1 class="focused-checkout-form__title">{{ form_title }}</h1>
+      {% endif %}
+      {% if focused_checkout_show_progress %}
+      <div class="focused-checkout-form__progress">
+        {{ focused_checkout_progress }}
+      </div>
+      {% endif %}
+      {{ form.login.returning_customer }}
+      <div class="focused-checkout-form__form">
+        {{ form|without('sidebar', 'login') }}
+      </div>
+      {% if focused_checkout_copyright %}
+        <div class="focused-checkout-form__copyright">{{ '&copy; @year @site_name. All rights reserved.'|t({'@site_name': site_name, '@year': 'now'|date('Y') }) }}</div>
+      {% endif %}
+    </div>
+  </div>
+</div>

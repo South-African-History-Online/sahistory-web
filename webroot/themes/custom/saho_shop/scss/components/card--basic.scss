@@ -1,0 +1,126 @@
+//
+// Basic card
+// ----------------------------
+@import "../global";
+
+:root {
+  --card-list-gap: 1.5rem;
+  --card-basic-padding: 1.5rem;
+  --card-basic-border-radius: 0;
+  --card-basic-background-color: var(--beo-light);
+  --card-basic-vertical-image-width: 600px;
+  --card-basic-vertical-min-height: 22rem;
+}
+
+.card--basic {
+  border-radius: var(--card-basic-border-radius);
+  background-color: var(--card-basic-background-color);
+
+  &-content {
+    padding: var(--card-basic-padding);
+  }
+
+  &-image {
+    position: relative;
+
+    img {
+      width: 100%;
+      height: auto;
+    }
+
+    .card--basic-date {
+      font-size: 0.875rem;
+    }
+  }
+
+  &-title {
+    margin-bottom: 1rem;
+
+    a {
+      font-size: 1.5rem;
+      color: $black;
+      font-weight: $font-weight-bold;
+    }
+  }
+
+  &-link {
+    margin-top: 1rem;
+    font-weight: $font-weight-bold;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  // Default links
+  .links {
+    margin-bottom: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+
+    a {
+      font-weight: $font-weight-bold;
+      letter-spacing: 0.05em;
+    }
+  }
+
+  &--vertical {
+    margin-bottom: 2rem;
+
+    @include media-breakpoint-up(md) {
+      --card-basic-padding: 3rem;
+
+      display: flex;
+      flex-direction: row;
+      min-height: var(--card-basic-vertical-min-height);
+
+      .card--basic-image {
+        flex-shrink: 0;
+        width: var(--card-basic-vertical-image-width);
+        max-width: 50%;
+
+        img {
+          @include object-cover;
+
+          height: 100%;
+        }
+      }
+
+      .card--basic-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+      }
+    }
+
+    @include media-breakpoint-up(xl) {
+      --card-basic-padding: 5rem;
+    }
+  }
+}
+
+// Card list
+.card-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--card-list-gap);
+
+  &--masonry {
+    display: block;
+    column-count: 3;
+    column-gap: var(--card-list-gap);
+
+    @include media-breakpoint-down(lg) {
+      column-count: 2;
+    }
+
+    @include media-breakpoint-down(sm) {
+      column-count: 1;
+    }
+
+    .card,
+    .card--basic {
+      break-inside: avoid;
+      margin-bottom: var(--card-list-gap);
+    }
+  }
+}

@@ -1,0 +1,34 @@
+{#
+/**
+ * @file
+ * Two column template for the checkout form.
+ *
+ * Available variables:
+ * - form: The form.
+ *
+ * @ingroup themeable
+ */
+#}
+
+<div class="checkout-form row">
+  <div class="checkout-form__sidebar col-lg-6">
+    <div class="order-summary {% if checkout_mobile_floating_order_summary %}order-summary--mobile-floating{% endif %}">
+      <h5 class="order-summary__title" data-bs-toggle="collapse" href="#order-summary-content" role="button" aria-expanded="false" aria-controls="order-summary-content">
+        {{ 'Order Summary'|t }}
+        {% if order_total %}
+          <span class="order-summary__order-total d-lg-none">{{ order_total|commerce_price_format }}</span>
+        {% endif %}
+      </h5>
+      <div class="order-summary__content collapse" id="order-summary-content">
+        <div class="order-summary__content-inner">
+          {{ form.sidebar.order_summary }}
+          {{ form.sidebar.coupon_redemption }}
+        </div>
+      </div>
+    </div>
+    {{ form.sidebar|without('order_summary', 'coupon_redemption') }}
+  </div>
+  <div class="checkout-form__main col-lg-6">
+    {{ form|without('sidebar') }}
+  </div>
+</div>

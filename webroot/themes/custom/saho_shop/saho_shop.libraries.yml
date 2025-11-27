@@ -1,23 +1,363 @@
+# Global libraries - highest priority
 global:
   version: VERSION
   css:
-    theme:
-      css/global.css: {}
+    base:
+      css/main.css: { weight: -1000 }
   js:
-    js/global.js: {}
+    'https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js':
+      { type: external, minified: true, weight: -1001 }
+    '//cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.min.js':
+      { type: external, minified: true, weight: -1000 }
+    js/main.js: { weight: 0 }
   dependencies:
-    - core/jquery
+    - core/once
+    - core/drupal
+    - core/drupalSettings
+    - saho_shop/color
+    - saho_shop/dialog
+
+# Core theme libraries
+color:
+  css:
+    theme:
+      css/color.css: {}
+
+color.picker:
+  version: VERSION
+  js:
+    js/color-picker.js: {}
+  dependencies:
     - core/drupal
     - core/once
-    - sshop/global-styling
-    - sshop/bootstrap-scripts
+    - core/drupal.announce
 
-commerce-styling:
+color.preview:
   version: VERSION
   css:
     theme:
-      css/commerce.css: {}
+      color/preview.css: {}
   js:
-    js/commerce.js: {}
+    color/preview.js: {}
   dependencies:
-    - saho_shop/global
+    - color/drupal.color
+
+dialog:
+  css:
+    component:
+      css/components/dialog.css: {}
+  dependencies:
+    - core/drupal.dialog
+
+throbber:
+  js:
+    js/throbber.js: {}
+
+mini-pager:
+  css:
+    component:
+      css/components/mini-pager.css: {}
+
+# Main menu library
+main-nav:
+  version: VERSION
+  css:
+    theme:
+      css/components/main-nav.css: {}
+  js:
+    js/main-nav.js: {}
+
+# Layout libraries
+local-tasks.fixed:
+  css:
+    layout:
+      css/theme/local-tasks.fixed.css: {}
+
+local-tasks.vertical:
+  css:
+    layout:
+      css/components/local-tasks.vertical.css: {}
+  js:
+    js/local-tasks-vertical.js: {}
+
+comments:
+  css:
+    component:
+      css/components/comments.css: {}
+
+select2.theme:
+  css:
+    component:
+      css/theme/select2--saho_shop-theme.css: {}
+
+# Layout Builder components
+layout.builder.theme:
+  css:
+    component:
+      css/components/layout-builder/layout-builder.theme.css: {}
+
+cklb:
+  css:
+    component:
+      css/components/layout-builder/cklb.css: {}
+
+cklb.cta:
+  css:
+    component:
+      css/components/layout-builder/cklb.cta.css: {}
+
+cklb.hero:
+  css:
+    component:
+      css/components/layout-builder/cklb.hero.css: {}
+
+cklb.slideshow:
+  css:
+    component:
+      css/components/layout-builder/cklb.slideshow.css: {}
+
+# Icon libraries
+icons:
+  css:
+    base:
+      css/components/icons.css: {}
+
+# Commerce libraries
+commerce.payment-information:
+  css:
+    component:
+      css/components/commerce/payment-information.css: {}
+
+commerce.quantity-input:
+  css:
+    component:
+      css/components/commerce/quantity-input.css: {}
+  js:
+    js/quantity-input.js: {}
+
+order.summary:
+  css:
+    component:
+      css/components/commerce/order-summary.css: {}
+
+cart-block:
+  css:
+    component:
+      css/components/commerce/cart-block.css: {}
+  js:
+    js/cart-dropdown.js: {}
+
+# Checkout components
+checkout.progress:
+  css:
+    component:
+      css/components/commerce/checkout-progress.css: { }
+
+checkout.focused:
+  css:
+    theme:
+      css/components/commerce/checkout-focused.css: {}
+
+checkout.coupon-redemption:
+  css:
+    component:
+      css/components/commerce/checkout-coupon-redemption.css: {}
+
+checkout.pane:
+  css:
+    component:
+      css/components/commerce/checkout-pane.css: {}
+
+checkout.completion:
+  css:
+    component:
+      css/components/commerce/checkout-completion.css: {}
+
+# Product components
+product.images:
+  css:
+    component:
+      css/components/commerce/product-images.css: {}
+  js:
+    js/product.images.js: {}
+
+product.images.fancybox:
+  css:
+    theme:
+      '//cdn.jsdelivr.net/npm/@fancyapps/ui@6.0/dist/fancybox/fancybox.css': { type: external, minified: true }
+      css/components/commerce/product-images-fancybox.css: {}
+  js:
+    '//cdn.jsdelivr.net/npm/@fancyapps/ui@6.0/dist/fancybox/fancybox.umd.js': { type: external, minified: true }
+    js/product.images.fancybox.js: {}
+
+product.images.carousel:
+  css:
+    theme:
+      '//cdn.jsdelivr.net/npm/@fancyapps/ui@6.0/dist/carousel/carousel.css': { type: external, minified: true }
+      '//cdn.jsdelivr.net/npm/@fancyapps/ui@6.0/dist/carousel/carousel.arrows.css': { type: external, minified: true }
+      '//cdn.jsdelivr.net/npm/@fancyapps/ui@6.0/dist/carousel/carousel.dots.css': { type: external, minified: true }
+      '//cdn.jsdelivr.net/npm/@fancyapps/ui@6.0/dist/carousel/carousel.thumbs.css': { type: external, minified: true }
+      '//cdn.jsdelivr.net/npm/@fancyapps/ui@6.0/dist/carousel/carousel.zoomable.css': { type: external, minified: true }
+      '//cdn.jsdelivr.net/npm/@fancyapps/ui@6.0/dist/fancybox/fancybox.css': { type: external, minified: true }
+      css/components/commerce/product-images-carousel.css: {}
+  js:
+    '//cdn.jsdelivr.net/npm/@fancyapps/ui@6.0/dist/carousel/carousel.umd.js': { type: external, minified: true }
+    '//cdn.jsdelivr.net/npm/@fancyapps/ui@6.0/dist/carousel/carousel.arrows.umd.js': { type: external, minified: true }
+    '//cdn.jsdelivr.net/npm/@fancyapps/ui@6.0/dist/carousel/carousel.dots.umd.js': { type: external, minified: true }
+    '//cdn.jsdelivr.net/npm/@fancyapps/ui@6.0/dist/carousel/carousel.thumbs.umd.js': { type: external, minified: true }
+    '//cdn.jsdelivr.net/npm/@fancyapps/ui@6.0/dist/carousel/carousel.zoomable.umd.js': { type: external, minified: true }
+    '//cdn.jsdelivr.net/npm/@fancyapps/ui@6.0/dist/fancybox/fancybox.umd.js': { type: external, minified: true }
+    js/product.images.carousel.js: {}
+  dependencies:
+    - core/drupal
+    - core/once
+
+# Page-specific libraries
+page.front:
+  css:
+    base:
+      css/pages/frontpage.css: {}
+
+page.article:
+  css:
+    base:
+      css/pages/article.css: {}
+  dependencies:
+    - saho_shop/page.basic
+
+page.blog:
+  css:
+    base:
+      css/pages/blog.css: {}
+
+page.basic:
+  css:
+    base:
+      css/pages/basic.css: {}
+
+page.checkout:
+  css:
+    base:
+      css/pages/checkout.css: {}
+
+page.cart:
+  css:
+    base:
+      css/pages/cart.css: {}
+
+page.catalog:
+  css:
+    base:
+      css/pages/catalog.css: {}
+
+page.focused:
+  css:
+    base:
+      css/pages/focused.css: {}
+
+page.account:
+  css:
+    base:
+      css/pages/account.css: {}
+  dependencies:
+    - saho_shop/page.user
+
+page.authenticate:
+  css:
+    base:
+      css/pages/authenticate.css: {}
+  dependencies:
+    - saho_shop/page.user
+
+# Product teaser components
+product.teaser.saho_shop:
+  css:
+    component:
+      css/components/product-teaser/saho_shop.css: {}
+
+product.teaser.zoom:
+  css:
+    component:
+      css/components/product-teaser/zoom.css: {}
+
+card.basic:
+  css:
+    theme:
+      css/components/card--basic.css: {}
+
+# Font libraries
+font.ibm_plex_sans:
+  license:
+    name: OFL web version
+    url: http://scripts.sil.org/cms/scripts/page.php?site_id=nrsi&id=OFL_web
+  css:
+    base:
+      '//fonts.googleapis.com/css?family=IBM+Plex+Sans:300,400,400i,700':
+        { type: external, minified: true }
+      css/fonts/ibm_plex_sans.css: {}
+
+font.lato:
+  license:
+    name: OFL web version
+    url: http://scripts.sil.org/cms/scripts/page.php?site_id=nrsi&id=OFL_web
+  css:
+    base:
+      '//fonts.googleapis.com/css?family=Lato:300,400,400i,700':
+        { type: external, minified: true }
+      css/fonts/lato.css: {}
+
+font.montserrat:
+  license:
+    name: OFL web version
+    url: http://scripts.sil.org/cms/scripts/page.php?site_id=nrsi&id=OFL_web
+  css:
+    base:
+      '//fonts.googleapis.com/css?family=Montserrat:300,400,400i,700':
+        { type: external, minified: true }
+      css/fonts/montserrat.css: {}
+
+font.open_sans:
+  license:
+    name: OFL web version
+    url: http://scripts.sil.org/cms/scripts/page.php?site_id=nrsi&id=OFL_web
+  css:
+    base:
+      '//fonts.googleapis.com/css?family=Open+Sans:300,400,400i,700':
+        { type: external, minified: true }
+      css/fonts/open_sans.css: {}
+
+font.raleway:
+  license:
+    name: OFL web version
+    url: http://scripts.sil.org/cms/scripts/page.php?site_id=nrsi&id=OFL_web
+  css:
+    base:
+      '//fonts.googleapis.com/css?family=Raleway:300,400,400i,700':
+        { type: external, minified: true }
+      css/fonts/raleway.css: {}
+
+font.roboto:
+  license:
+    name: OFL web version
+    url: http://scripts.sil.org/cms/scripts/page.php?site_id=nrsi&id=OFL_web
+  css:
+    base:
+      '//fonts.googleapis.com/css?family=Roboto:300,400,400i,700':
+        { type: external, minified: true }
+      css/fonts/roboto.css: {}
+
+# Address dialog library
+address.dialog:
+  js:
+    js/address-dialog.js: {}
+
+# Utility libraries
+drupal.message:
+  js:
+    js/message.js: {}
+
+toolbar:
+  css:
+    component:
+      css/components/toolbar.css: {}
+

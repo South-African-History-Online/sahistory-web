@@ -1,0 +1,71 @@
+//
+// Checkout Progress
+// ----------------------------
+//
+@import "../../global";
+
+:root {
+  --checkout-progress-step-min-width: 80px;
+  --checkout-progress-gap: 1rem;
+  --checkout-progress-margin-bottom: 3rem;
+  --checkout-progress-max-width: 44rem;
+  --checkout-progress-step-gap: 1rem;
+  --checkout-progress-step-font-weight: bold;
+  --checkout-progress-next-opacity: 0.3;
+}
+
+.checkout-progress {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(var(--checkout-progress-step-min-width), 1fr));
+  gap: var(--checkout-progress-gap);
+  margin-bottom: var(--checkout-progress-margin-bottom);
+  color: var(--checkout-progress-color, var(--beo-primary));
+
+  @include media-breakpoint-up(md) {
+    justify-content: space-between;
+    max-width: var(--checkout-progress-max-width);
+    margin-inline: auto;
+    text-align: center;
+  }
+}
+
+.checkout-progress--step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: var(--checkout-progress-step-gap);
+  font-weight: var(--checkout-progress-step-font-weight);
+  position: relative;
+
+  &__icon {
+    position: relative;
+
+    @include media-breakpoint-up(md) {
+      display: block;
+    }
+  }
+
+  &__label {
+    display: none;
+
+    @include media-breakpoint-up(md) {
+      display: block;
+    }
+  }
+
+  &__next {
+    opacity: var(--checkout-progress-next-opacity);
+  }
+
+  // Stretch the step links
+  a {
+    &::#{$stretched-link-pseudo-element} {
+      position: absolute;
+      inset: 0;
+      z-index: $stretched-link-z-index;
+      content: "";
+    }
+  }
+}

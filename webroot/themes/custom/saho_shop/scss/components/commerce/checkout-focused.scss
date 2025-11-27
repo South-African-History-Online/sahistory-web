@@ -1,0 +1,249 @@
+// Focused Checkout Styles
+// =======================
+//
+// Provides checkout-specific styles for the focused checkout experience.
+// This file extends the general focused page styles with checkout-specific
+// layout and functionality.
+//
+// CSS VARIABLES:
+// Checkout-specific variables that extend the general focused page variables.
+//
+// CHECKOUT-SPECIFIC VARIABLES:
+// - focused-page-sidebar-bg: Sidebar background (defaults to theme light color)
+// - focused-page-sidebar-text: Sidebar text (defaults to body text color)
+// - focused-page-sidebar-width: Sidebar sidebar width (350px)
+//
+// USAGE:
+// These styles are automatically applied when focused checkout is enabled
+// and the checkout form template is used. They work in conjunction with
+// the general focused page styles.
+//
+// @see scss/pages/focused.scss for general focused page styles
+// @see theme-settings.php for configuration options
+// @see includes/html.inc for variable generation
+
+@import "../../global";
+
+:root {
+  // Checkout-specific color variables
+  --focused-page-sidebar-bg: var(--beo-light); // Sidebar background
+  --focused-page-sidebar-text: var(--beo-body-color); // Sidebar text
+
+  // Checkout-specific layout variables
+  --focused-page-sidebar-width: 350px; // Sidebar width
+  --focused-page-sidebar-mobile-height: 4.5rem; // Sidebar mobile height
+
+  // Overrides to default checkout variables
+  --checkout-progress-color: currentcolor;
+}
+
+.focused-page__content {
+  padding-block: 0;
+
+  @include media-breakpoint-up(xl) {
+    &-container {
+      max-width: none;
+    }
+  }
+
+  // Checkout form container
+  .focused-checkout-form__container {
+    @include media-breakpoint-up(xl) {
+      max-width: var(--focused-page-container-width);
+    }
+  }
+
+  // Checkout container with mobile floating sidebar
+  &:has(.focused-checkout-form__sidebar--mobile-floating) {
+    padding-bottom: var(--focused-page-sidebar-mobile-height);
+  }
+}
+
+// Checkout layout
+.focused-checkout-form {
+  @include media-breakpoint-up(xl) {
+    min-height: calc(
+      100dvh - var(--focused-page-header-height) - var(--gin-toolbar-secondary-height, 0px)
+    );
+
+    > .row {
+      --beo-gutter-x: 8rem;
+    }
+  }
+}
+
+// Main checkout region (left side)
+.focused-checkout-form__main {
+  padding-block: var(--focused-page-spacing);
+}
+
+// Progress indicator
+.focused-checkout-form__progress {
+  margin-bottom: var(--focused-page-spacing);
+}
+
+// Checkout title
+.focused-checkout-form__title {
+  font-size: 1.75rem;
+  font-weight: 600;
+  margin-bottom: var(--focused-page-spacing);
+  color: var(--focused-page-text-color);
+}
+
+// Checkout form
+.focused-checkout-form__form {
+  // Form specific styles can be added here
+}
+
+// Copyright
+.focused-checkout-form__copyright {
+  font-size: 0.875rem;
+  color: var(--focused-page-text-color);
+  margin-top: 3rem;
+}
+
+// Secondary checkout region (right side) - full height and width background
+.focused-checkout-form__sidebar {
+  color: var(--focused-page-sidebar-text);
+  position: relative;
+
+  @include media-breakpoint-up(xl) {
+    background: var(--focused-page-sidebar-bg);
+    order: 1;
+    box-shadow: 0 0 0 100vmax var(--focused-page-sidebar-bg);
+    clip-path: inset(-100vmax -100vmax -100vmax 0);
+  }
+}
+
+//
+// Order summary
+// ----------------------------
+
+.order-summary {
+  background-color: var(--focused-page-sidebar-bg);
+
+  @include bust-out-bg(var(--focused-page-sidebar-bg));
+
+  @include media-breakpoint-up(xl) {
+    position: sticky;
+    top: calc(var(--gin-toolbar-secondary-height, 0px) + var(--focused-page-spacing));
+  }
+
+  // Order summary title
+  &__title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--focused-page-spacing-mobile);
+    cursor: pointer;
+    color: var(--focused-page-sidebar-text);
+    font-size: 1.25rem;
+    margin-bottom: 0;
+    padding-block: var(--focused-page-spacing-mobile);
+
+    &::after {
+      flex-shrink: 0;
+      width: $accordion-icon-width;
+      height: $accordion-icon-width;
+      content: "";
+      background-image: escape-svg($accordion-button-icon);
+      background-repeat: no-repeat;
+      background-size: $accordion-icon-width;
+
+      @include transition($accordion-icon-transition);
+    }
+
+    &[aria-expanded="true"]::after {
+      transform: $accordion-icon-transform;
+    }
+
+    // Desktop behavior - always expanded, no click functionality
+    @include media-breakpoint-up(xl) {
+      display: none;
+      padding: var(--focused-page-spacing) 0;
+      cursor: default;
+      pointer-events: none;
+
+      &::after {
+        display: none;
+      }
+    }
+  }
+
+  // Order summary total
+  &__order-total {
+    font-size: $font-size-lg;
+    font-weight: $font-weight-bold;
+    color: var(--focused-page-order-summary-text);
+    margin-left: auto;
+  }
+
+  // Order summary content
+  &__content {
+    // Desktop behavior - always show content
+    @include media-breakpoint-up(xl) {
+      display: block !important;
+      height: auto !important;
+    }
+  }
+
+  // Order summary content inner
+  &__content-inner {
+    padding: var(--focused-page-spacing-mobile);
+
+    @include media-breakpoint-up(xl) {
+      padding: var(--focused-page-spacing) 0 0 0;
+    }
+  }
+
+  // Mobile floating order summary
+  &--mobile-floating {
+    @include media-breakpoint-down(xl) {
+      background-color: var(--focused-page-sidebar-bg);
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: $zindex-fixed;
+      margin-bottom: 0;
+      padding-inline: var(--focused-page-spacing-small);
+
+      .order-summary__title {
+        padding-block: var(--focused-page-spacing-small);
+      }
+    }
+  }
+}
+
+// Login section
+.focused-checkout-form__login {
+  padding-block: var(--focused-page-spacing-mobile);
+
+  @include media-breakpoint-up(xl) {
+    padding: var(--focused-page-spacing);
+  }
+}
+
+// Login form overrides
+.focused-checkout-form {
+  .form-wrapper__login-option,
+  .form-wrapper__guest-checkout {
+    float: none;
+    width: 100%;
+  }
+
+  .form-wrapper__login-option {
+    padding: 0;
+
+    #edit-login {
+      overflow: auto;
+    }
+  }
+}
+
+// Copyright
+.focused-checkout-form__copyright {
+  font-size: 0.875rem;
+  color: var(--focused-page-text-color);
+  margin-top: var(--focused-page-spacing);
+}

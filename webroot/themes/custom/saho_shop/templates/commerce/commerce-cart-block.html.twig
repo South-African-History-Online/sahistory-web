@@ -1,0 +1,55 @@
+{% import "@saho_shop/macros.twig" as svg %}
+
+<div{{ attributes.addClass('cart-block') }}>
+  <div class="cart-block__menu-item">
+    <a
+      class="cart-block__trigger"
+      href="{{ url }}"
+      {% if content %}
+        data-bs-toggle="collapse"
+        data-bs-target="#cart-dropdown"
+        aria-expanded="false"
+        aria-controls="cart-dropdown"
+      {% endif %}
+    >
+      <span class="cart-block__icon">
+        {{ svg.getIcon(cart_icon|default('basket'), 18, 18, 'me-1') }}
+      </span>
+      {% if cart_show_label %}
+        <span class="cart-block__count">
+          {{ count_text|raw }}
+        </span>
+      {% else %}
+        <span class="cart-block__count{{ cart_count_circle ? ' cart-block__count--badge cart-block__count--absolute' : '' }}">
+          {{ count }}
+        </span>
+      {% endif %}
+    </a>
+  </div>
+  {% if content %}
+  <div id="cart-dropdown" class="cart-block__dropdown cart-block__dropdown--{{ cart_dropdown_position }} collapse bg-{{ cart_contents_bg }} text-{{ cart_contents_text }} {{ cart_dropdown_animation }}{{ cart_hover_display ? ' cart-block__dropdown--hover' : '' }}">
+    <div class="cart-block__dropdown-inner">
+      <div class="cart-block__header">
+        <div class="cart-block__title">{{ cart_contents_title|default('Shopping bag'|t) }}</div>
+        <button
+          type="button"
+          class="cart-block__close"
+          data-bs-toggle="collapse"
+          data-bs-target="#cart-dropdown"
+          aria-label="Close"
+        >
+          <span class="cart-block__close-icon">{{ svg.getIcon('x', 20, 20) }}</span>
+        </button>
+      </div>
+      <div class="cart-block__summary">
+        {{ content }}
+      </div>
+      <div class="cart-block__actions">
+        {% for link in links %}
+          {{ link|merge({ '#attributes': { 'class': [ 'btn', 'btn-outline-' ~ cart_contents_text, 'w-100'] } }) }}
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  {% endif %}
+</div>

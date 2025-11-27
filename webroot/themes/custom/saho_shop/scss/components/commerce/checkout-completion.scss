@@ -1,0 +1,230 @@
+//
+// Checkout Completion
+// ----------------------------
+//
+
+@import "global";
+
+// CSS Variables for checkout completion
+:root {
+  // Spacing
+  --checkout-completion-max-width: 45rem;
+  --checkout-completion-margin-bottom: var(--form-item-spacing);
+  --checkout-completion-border-radius: var(--beo-border-radius);
+  --checkout-completion-content-padding: 1.5rem;
+
+  // Colors
+  --checkout-completion-bg: var(--beo-white);
+  --checkout-completion-border: var(--beo-border-color);
+  --checkout-completion-shadow: var(--beo-box-shadow-sm);
+
+  // Typography
+  --checkout-completion-title-font-size: 1.75rem;
+  --checkout-completion-title-font-weight: 600;
+  --checkout-completion-title-color: var(--beo-success-text-emphasis);
+  --checkout-completion-subtitle-font-size: 1rem;
+  --checkout-completion-subtitle-color: var(--beo-success-text-emphasis);
+  --checkout-completion-message-font-size: 1rem;
+  --checkout-completion-message-color: var(--beo-body-color);
+
+  // Icon
+  --checkout-completion-icon-size: 2.5rem;
+  --checkout-completion-icon-color: var(--beo-success-text-emphasis);
+
+  // Transitions
+  --checkout-completion-transition: all 0.2s ease-in-out;
+}
+
+// Base checkout completion styles
+.checkout-completion {
+  background: var(--checkout-completion-bg);
+  padding: var(--checkout-completion-content-padding);
+  border: 1px solid var(--checkout-completion-border);
+  border-radius: var(--checkout-completion-border-radius);
+  box-shadow: var(--checkout-completion-shadow);
+  margin-bottom: var(--checkout-completion-margin-bottom);
+  transition: var(--checkout-completion-transition);
+  overflow: hidden;
+  max-width: var(--checkout-completion-max-width);
+  margin-inline: auto;
+
+  // Header section (similar to content-pane header)
+  &__header {
+    text-align: center;
+    margin-bottom: var(--form-item-spacing);
+  }
+
+  // Title row container (for icon + title)
+  &__title-row {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  // Success icon
+  &__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    svg {
+      width: var(--checkout-completion-icon-size);
+      height: var(--checkout-completion-icon-size);
+    }
+  }
+
+  // Main title
+  &__title {
+    font-size: var(--checkout-completion-title-font-size);
+    font-weight: var(--checkout-completion-title-font-weight);
+    color: var(--checkout-completion-title-color);
+    margin: 0;
+    flex: 1;
+  }
+
+  // Subtitle
+  &__subtitle {
+    font-size: var(--checkout-completion-subtitle-font-size);
+    color: var(--checkout-completion-subtitle-color);
+    margin: 0.5rem 0 0;
+    line-height: 1.4;
+  }
+
+  // Completion message
+  &__message {
+    font-size: var(--checkout-completion-message-font-size);
+    color: var(--checkout-completion-message-color);
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+    text-align: center;
+
+    p {
+      margin: 0;
+    }
+  }
+
+  // Order details section
+  &__order-details {
+    background: var(--beo-light);
+    border-radius: var(--checkout-completion-border-radius);
+    padding: calc(var(--form-item-spacing) / 2);
+    margin: var(--form-item-spacing) 0;
+  }
+
+  &__detail {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+
+    strong {
+      font-weight: 600;
+      font-size: 0.875rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    span {
+      font-size: 1rem;
+      color: var(--beo-body-color);
+      font-weight: 500;
+    }
+  }
+
+  &__order-number {
+    font-family: var(--beo-font-monospace);
+    font-size: 1.125rem !important;
+    font-weight: 700 !important;
+  }
+
+  // Payment instructions
+  &__payment-instructions {
+    background: var(--beo-light);
+    padding: calc(var(--form-item-spacing) / 2);
+    margin: var(--form-item-spacing) 0;
+
+    h3 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin: 0 0 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+  }
+
+  &__payment-content {
+    line-height: 1.6;
+    font-size: 0.875rem;
+
+    p {
+      margin: 0 0 0.75rem;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+  }
+
+  // Action buttons
+  &__actions {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin: var(--form-item-spacing) 0 0;
+  }
+}
+
+// Minimal variant - no borders, no padding, no shadow
+.checkout-completion--minimal {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 0 0 1rem;
+  margin-bottom: var(--form-item-spacing);
+}
+
+// Responsive adjustments
+@include media-breakpoint-down(md) {
+  :root {
+    --checkout-completion-margin-bottom: 1.5rem;
+    --checkout-completion-content-padding: 1rem;
+    --checkout-completion-title-font-size: 1.5rem;
+    --checkout-completion-subtitle-font-size: 0.875rem;
+    --checkout-completion-icon-size: 2rem;
+  }
+
+  .checkout-completion {
+    &__header {
+      flex-direction: column;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    &__actions {
+      flex-direction: column;
+      align-items: center;
+
+      .btn {
+        width: 100%;
+        max-width: 300px;
+        justify-content: center;
+      }
+    }
+
+    &__order-details {
+      .row {
+        > div {
+          margin-bottom: 1rem;
+
+          &:last-child {
+            margin-bottom: 0;
+          }
+        }
+      }
+    }
+  }
+}

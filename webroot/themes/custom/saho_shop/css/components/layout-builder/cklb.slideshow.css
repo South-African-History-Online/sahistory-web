@@ -1,0 +1,112 @@
+:root {
+  --cklb-slideshow-min-height: 500px;
+  --cklb-slideshow-spacer: calc(1rem * 1.5);
+  --cklb-slideshow-arrow-size: 2rem;
+  --cklb-slideshow-dot-size: 0.875rem;
+}
+
+.cklb-slideshow {
+  opacity: 0;
+  transition: opacity 0.15s linear;
+}
+.cklb-slideshow.layout-builder__region, .cklb-slideshow.slick-initialized {
+  opacity: 1;
+}
+.cklb-slideshow.layout-builder__region .cklb-hero .content, .cklb-slideshow.slick-initialized .cklb-hero .content {
+  position: relative;
+  z-index: 2;
+}
+.cklb-slideshow.layout-builder__region .cklb-hero::after, .cklb-slideshow.slick-initialized .cklb-hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  display: block;
+  background-color: rgba(0, 0, 0, 0.3);
+}
+.cklb-slideshow .block-layout-builder > .content {
+  --beo-gutter-x: 1.5rem;
+  --beo-gutter-y: 0;
+  width: 100%;
+  padding-right: calc(var(--beo-gutter-x) * .5);
+  padding-left: calc(var(--beo-gutter-x) * .5);
+  margin-right: auto;
+  margin-left: auto;
+  padding-top: var(--cklb-slideshow-spacer);
+  padding-bottom: var(--cklb-slideshow-spacer);
+}
+@media (min-width: 992px) {
+  .cklb-slideshow .block-layout-builder > .content {
+    display: grid;
+    align-content: center;
+    min-height: var(--cklb-slideshow-min-height);
+    width: 960px;
+  }
+}
+@media (min-width: 1200px) {
+  .cklb-slideshow .block-layout-builder > .content {
+    width: 1140px;
+  }
+}
+@media (min-width: 1400px) {
+  .cklb-slideshow .block-layout-builder > .content {
+    width: 1320px;
+  }
+}
+
+.slick-track {
+  display: flex !important;
+}
+
+.slick-slide {
+  height: inherit;
+}
+.slick-slide > div,
+.slick-slide .cklb-hero {
+  height: 100%;
+}
+
+.slick-dotted.slick-slider {
+  margin-bottom: 0;
+}
+
+.slick-dots {
+  bottom: var(--cklb-slideshow-spacer);
+}
+.slick-dots li button::before {
+  font-size: var(--cklb-slideshow-dot-size);
+}
+
+.slick-arrow {
+  width: var(--cklb-slideshow-arrow-size);
+  height: var(--cklb-slideshow-arrow-size);
+  color: currentcolor;
+  z-index: 55;
+}
+.slick-arrow::before {
+  font-size: var(--cklb-slideshow-arrow-size);
+  color: currentcolor;
+  opacity: 1;
+}
+@media (max-width: 991.98px) {
+  .slick-arrow {
+    top: auto;
+    bottom: calc(var(--cklb-slideshow-spacer) / 2);
+  }
+}
+
+.slick-next {
+  right: 1rem;
+}
+
+.slick-prev {
+  left: 1rem;
+}
+
+.slick-next:focus,
+.slick-next:hover,
+.slick-prev:focus,
+.slick-prev:hover {
+  color: currentcolor;
+}
+
+/*# sourceMappingURL=cklb.slideshow.css.map */

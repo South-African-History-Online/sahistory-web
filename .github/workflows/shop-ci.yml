@@ -59,7 +59,7 @@ jobs:
           # Config files are YAML, PHPCS not needed
 
   frontend-lint:
-    name: Frontend Code Quality (Biome)
+    name: Frontend Code Quality (Stylelint + Build)
     runs-on: ubuntu-latest
 
     steps:
@@ -77,22 +77,28 @@ jobs:
         working-directory: webroot/themes/custom/saho_shop
         run: npm ci
 
-      - name: Run Biome lint
+      - name: Run SCSS linting
         working-directory: webroot/themes/custom/saho_shop
-        run: npm run biome:check
+        run: |
+          npm run lint:scss
+          npm run lint:sdc
 
       - name: Build production assets
         working-directory: webroot/themes/custom/saho_shop
-        run: npm run production
+        run: npm run build
 
       - name: Check compiled assets exist
         run: |
-          if [ ! -f webroot/themes/custom/saho_shop/css/commerce.css ]; then
-            echo "❌ commerce.css not generated"
+          if [ ! -f webroot/themes/custom/saho_shop/css/main.css ]; then
+            echo "❌ css/main.css not generated"
             exit 1
           fi
-          if [ ! -f webroot/themes/custom/saho_shop/js/commerce.js ]; then
-            echo "❌ commerce.js not generated"
+          if [ ! -d webroot/themes/custom/saho_shop/css/components ]; then
+            echo "❌ css/components directory not generated"
+            exit 1
+          fi
+          if [ ! -d webroot/themes/custom/saho_shop/css/pages ]; then
+            echo "❌ css/pages directory not generated"
             exit 1
           fi
           echo "✓ All compiled assets generated successfully"
@@ -116,9 +122,9 @@ jobs:
           fi
 
           if [ "${{ needs.frontend-lint.result }}" == "success" ]; then
-            echo "✅ Frontend linting passed" >> $GITHUB_STEP_SUMMARY
+            echo "✅ Frontend linting and build passed" >> $GITHUB_STEP_SUMMARY
           else
-            echo "❌ Frontend linting failed" >> $GITHUB_STEP_SUMMARY
+            echo "❌ Frontend linting or build failed" >> $GITHUB_STEP_SUMMARY
           fi
 
       - name: Overall result

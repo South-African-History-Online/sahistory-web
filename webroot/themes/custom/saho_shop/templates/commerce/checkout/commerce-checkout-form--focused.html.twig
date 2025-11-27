@@ -1,0 +1,36 @@
+{#
+/**
+ * @file
+ * Focused checkout form.
+ *
+ * Available variables:
+ * - form: The form.
+ *
+ * @ingroup themeable
+ */
+#}
+{{ attach_library('saho_shop/checkout.focused') }}
+
+{% set classes = [
+  'focused-checkout-form',
+  'focused-checkout-form__container',
+  'container-fluid',
+] %}
+
+<div {{ attributes.addClass(classes) }}>
+  <div class="row">
+    <div class="focused-checkout-form__main col-12">
+      {% if focused_checkout_show_progress %}
+      <div class="focused-checkout-form__progress">
+        {{ focused_checkout_progress }}
+      </div>
+      {% endif %}
+      <div class="focused-checkout-form__form">
+        {{ form }}
+      </div>
+      {% if focused_checkout_copyright %}
+        <div class="focused-checkout-form__copyright">{{ '&copy; @year @site_name. All rights reserved.'|t({'@site_name': site_name, '@year': 'now'|date('Y') }) }}</div>
+      {% endif %}
+    </div>
+  </div>
+</div>

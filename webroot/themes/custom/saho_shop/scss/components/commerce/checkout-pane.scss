@@ -1,0 +1,168 @@
+// Checkout Pane
+// ==================================
+//
+
+@import "global";
+
+:root {
+  --checkout-pane-spacing: var(--form-item-spacing);
+  --checkout-pane-neutral-bg: var(--beo-light);
+  --checkout-pane-border-radius: var(--beo-border-radius);
+  --checkout-pane-border-color: var(--beo-border-color);
+  --checkout-pane-active-border-color: var(--beo-primary);
+}
+
+.checkout-pane {
+  margin-bottom: 0;
+
+  // Fieldset pane
+  .fieldset-pane__legend {
+    margin-bottom: 0;
+  }
+
+  // Reset margins.
+  > .form-wrapper {
+    margin-bottom: var(--checkout-pane-spacing);
+  }
+
+  > .fieldgroup:last-child,
+  > .form-wrapper:last-child,
+  > .form-wrapper > .form-item:last-child,
+  .form-wrapper:last-child .form-check:last-child {
+    margin-bottom: 0;
+  }
+
+  // Address.
+  .address {
+    background: var(--checkout-pane-neutral-bg);
+    padding: calc(var(--checkout-pane-spacing) / 2);
+    margin-bottom: calc(var(--checkout-pane-spacing) / 2);
+  }
+
+  // Ajax spinner
+  .ajax-spinner {
+    position: absolute;
+  }
+
+  .form-radios {
+    .form-check {
+      position: relative;
+      display: block;
+      padding: 1.25rem;
+      margin: 0;
+      border: 1px solid var(--checkout-pane-border-color);
+      background: var(--beo-white);
+      cursor: pointer;
+      transition: all 0.15s ease-in-out;
+      box-shadow: 0 1px 2px rgb(0 0 0 / 5%);
+
+      &:hover {
+        border-color: var(--checkout-pane-active-border-color);
+        box-shadow: 0 1px 2px rgb(0 0 0 / 5%);
+      }
+    }
+
+    .form-check-input {
+      margin: 0.125rem 0.75rem 0 0.25rem;
+    }
+
+    .form-check-label {
+      display: flex;
+      align-items: flex-start;
+      margin: 0;
+      padding: 0;
+      font-weight: 500;
+      cursor: pointer;
+
+      // Make the entire container clickable
+      &::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+      }
+    }
+
+    // Description styling within checkout pane radio inputs
+    .description {
+      margin: 0.5rem 0 0 2.125rem; // Align with label text, accounting for radio button
+      font-size: 0.875rem;
+      color: var(--beo-secondary-color);
+      line-height: 1.4;
+      font-weight: 400;
+    }
+
+    // Selected state
+    .form-check-input:checked ~ .form-check-label {
+      color: var(--checkout-pane-active-border-color);
+
+      &::before {
+        border-color: var(--checkout-pane-active-border-color);
+        background: var(--beo-primary);
+        background-image: radial-gradient(circle, var(--beo-white) 30%, transparent 30%);
+      }
+    }
+
+    .form-check-input:checked ~ .description {
+      color: var(--beo-primary);
+      opacity: 0.8;
+    }
+
+    .form-check:has(.form-check-input:checked) {
+      border-color: var(--checkout-pane-active-border-color);
+      background: var(--checkout-pane-neutral-bg);
+      box-shadow: 0 1px 2px rgb(0 0 0 / 5%);
+    }
+
+    // Focus state
+    .form-check:has(.form-check-input:focus) {
+      box-shadow: 0 0 0 0.2rem rgba(var(--beo-primary-rgb), 0.25);
+    }
+
+    // Disabled state
+    .form-check:has(.form-check-input:disabled) {
+      opacity: 0.6;
+      cursor: not-allowed;
+      background: var(--beo-light);
+
+      &:hover {
+        border-color: var(--checkout-pane-border-color);
+        background: var(--beo-light);
+        box-shadow: 0 1px 2px rgb(0 0 0 / 5%);
+      }
+    }
+
+    .form-check-input:disabled ~ .description {
+      opacity: 0.4;
+      color: var(--beo-secondary-color);
+    }
+  }
+}
+
+// Shipping information
+.checkout-pane-shipping-information {
+  .container--edit-shipping-information-shipping-profile {
+    margin-bottom: var(--checkout-pane-spacing);
+  }
+}
+
+// Review links
+.checkout-review-edit-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+
+  a {
+    @include icon(1.2rem, "../../../icons/pencil-square.svg", currentColor);
+
+    margin-left: 0.5rem;
+  }
+}
+
+// Shipping method
+.field--name-shipping-method {
+  .field__label {
+    font-weight: $font-weight-bold;
+    margin-bottom: 0.25rem;
+  }
+}

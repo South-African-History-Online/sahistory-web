@@ -1,140 +1,57 @@
 {#
 /**
  * @file
- * Theme override for full product display (Publication type).
+ *
+ * Default product template.
  *
  * Available variables:
- * - product: The product entity with publication fields.
- * - product_entity: Alias for product.
  * - attributes: HTML attributes for the wrapper.
+ * - product: The rendered product fields.
+ *   Use 'product' to print them all, or print a subset such as
+ *   'product.title'. Use the following code to exclude the
+ *   printing of a given field:
+ *   @code
+ *   {{ product|without('title') }}
+ *   @endcode
+ * - product_entity: The product entity.
+ * - product_url: The product URL.
+ *
+ * @ingroup themeable
  */
 #}
-{% set classes = [
-  'commerce-product',
-  'commerce-product--full',
-  'commerce-product--' ~ product.bundle|clean_class,
-] %}
+
+{%
+  set classes = [
+  'pb-4',
+  'mb-5',
+  'overflow-hidden'
+]
+%}
 
 <article{{ attributes.addClass(classes) }}>
-  <div class="product-main">
-    {# Product Gallery #}
-    <div class="commerce-product__gallery">
-      {% if content.field_images|render %}
-        <div class="main-image">
-          {{ content.field_images.0 }}
-        </div>
-        {% if content.field_images|length > 1 %}
-          <div class="thumbnails">
-            {% for image in content.field_images %}
-              {{ image }}
-            {% endfor %}
-          </div>
-        {% endif %}
-      {% else %}
-        <div class="no-image">
-          <div class="placeholder">{{ 'No image available'|t }}</div>
-        </div>
-      {% endif %}
-    </div>
-
-    {# Product Details #}
-    <div class="commerce-product__details">
-      {# Title and Subtitle #}
-      <h1 class="product-title">{{ product.title.value }}</h1>
-
-      {% if content.field_subtitle|render %}
-        <div class="product-subtitle">
-          {{ content.field_subtitle }}
-        </div>
-      {% endif %}
-
-      {# Price and Add to Cart #}
-      {% if product.variations|render %}
-        <div class="product-price">
-          {{ product.variations }}
-        </div>
-      {% endif %}
-
-      {# Product Meta Information #}
-      <div class="product-meta">
-        {% if content.field_author|render %}
-          <div class="meta-item">
-            <span class="label">{{ 'Author'|t }}:</span>
-            <span class="value">{{ content.field_author }}</span>
-          </div>
-        {% endif %}
-
-        {% if content.field_editor|render %}
-          <div class="meta-item">
-            <span class="label">{{ 'Editor'|t }}:</span>
-            <span class="value">{{ content.field_editor }}</span>
-          </div>
-        {% endif %}
-
-        {% if content.field_publisher|render %}
-          <div class="meta-item">
-            <span class="label">{{ 'Publisher'|t }}:</span>
-            <span class="value">{{ content.field_publisher }}</span>
-          </div>
-        {% endif %}
-
-        {% if content.field_publication_date|render %}
-          <div class="meta-item">
-            <span class="label">{{ 'Published'|t }}:</span>
-            <span class="value">{{ content.field_publication_date }}</span>
-          </div>
-        {% endif %}
-
-        {% if content.field_year|render %}
-          <div class="meta-item">
-            <span class="label">{{ 'Year'|t }}:</span>
-            <span class="value">{{ content.field_year }}</span>
-          </div>
-        {% endif %}
-
-        {% if content.field_isbn|render %}
-          <div class="meta-item">
-            <span class="label">{{ 'ISBN'|t }}:</span>
-            <span class="value">{{ content.field_isbn }}</span>
-          </div>
-        {% endif %}
-
-        {% if content.field_pages|render %}
-          <div class="meta-item">
-            <span class="label">{{ 'Pages'|t }}:</span>
-            <span class="value">{{ content.field_pages }}</span>
-          </div>
-        {% endif %}
-
-        {% if content.field_format|render %}
-          <div class="meta-item">
-            <span class="label">{{ 'Format'|t }}:</span>
-            <span class="value">{{ content.field_format }}</span>
-          </div>
-        {% endif %}
-
-        {% if content.field_language|render %}
-          <div class="meta-item">
-            <span class="label">{{ 'Language'|t }}:</span>
-            <span class="value">{{ content.field_language }}</span>
-          </div>
-        {% endif %}
-
-        {% if content.field_categories|render %}
-          <div class="meta-item">
-            <span class="label">{{ 'Categories'|t }}:</span>
-            <span class="value">{{ content.field_categories }}</span>
-          </div>
-        {% endif %}
+  <div class="row g-5">
+    <div class="col-md-7 order-md-last">
+      <div class="mb-2">
+        {{- product.product_categories -}}
       </div>
-
-      {# Product Description #}
-      {% if content.body|render %}
-        <div class="product-description">
-          <h2>{{ 'About this publication'|t }}</h2>
-          {{ content.body }}
+      {{- product.title -}}
+      {{- product.brand -}}
+      <div class="fs-4">{{- product.variation_price -}}</div>
+      <hr/>
+      {% if product.special_categories|render is not empty %}
+        <div class="mb-3">
+          {{- product.special_categories -}}
         </div>
+      {% endif %}
+      {{- product|without('variation_attributes', 'images', 'variation_images', 'title', 'variation_price', 'product_categories', 'brand', 'special_categories') -}}
+    </div>
+    <div class="col-md-5">
+      {% if product.variation_images|render is not empty %}
+        {{- product.variation_images -}}
+      {% else %}
+        {{- product.images -}}
       {% endif %}
     </div>
   </div>
+
 </article>

@@ -1,0 +1,169 @@
+//
+// Local Tasks Vertical
+// ----------------------------
+@import "../global";
+
+:root {
+  --local-tasks-spacing: var(--form-item-spacing);
+  --local-tasks-gap: 0;
+  --local-tasks-font-size: 1rem;
+  --local-tasks-font-weight: 400;
+  --local-tasks-font-weight-active: #{$font-weight-bold};
+  --local-tasks-color: var(--beo-body-color);
+  --local-tasks-color-hover: currentcolor;
+  --local-tasks-text-decoration-hover: underline;
+  --local-tasks-color-active: var(--beo-black);
+  --local-tasks-icon-btn-size: 2.5rem;
+  --local-tasks-icon-size: 1.125rem;
+  --local-tasks-icon-spacing: 1rem;
+  --local-tasks-icon-active-color: var(--beo-light);
+
+  // Icons
+  --local-task-icon-default: svg-load("../../icons/person.svg");
+  --local-task-icon-address-book: svg-load("../../icons/map.svg");
+  --local-task-icon-payment-methods: svg-load("../../icons/credit-card.svg");
+  --local-task-icon-edit: svg-load("../../icons/pencil-square.svg");
+  --local-task-icon-shortcuts: svg-load("../../icons/star.svg");
+  --local-task-icon-files: svg-load("../../icons/archive.svg");
+  --local-task-icon-orders: svg-load("../../icons/basket.svg");
+}
+
+.local-tasks--vertical {
+  margin-top: calc(var(--form-item-spacing) / 2);
+
+  .nav-tabs {
+    display: flex;
+    flex-direction: column;
+    background: transparent;
+    margin-bottom: var(--local-tasks-spacing);
+    padding: 0;
+    border-bottom: none;
+    gap: var(--local-tasks-gap);
+  }
+
+  .nav-item {
+    margin-bottom: 0;
+    display: block;
+    width: 100%;
+  }
+
+  .nav-link {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 0;
+    color: var(--local-tasks-color);
+    text-decoration: none;
+    background: transparent;
+    border: none;
+    font-weight: var(--local-tasks-font-weight);
+    font-size: var(--local-tasks-font-size);
+    transition: all 0.15s ease-in-out;
+    cursor: pointer;
+    margin-bottom: 0;
+    position: relative;
+
+    &::before {
+      content: "";
+      display: inline-block;
+      width: var(--local-tasks-icon-btn-size);
+      height: var(--local-tasks-icon-btn-size);
+      background-image: var(--icon, var(--local-task-icon-default));
+      background-size: var(--local-tasks-icon-size);
+      background-repeat: no-repeat;
+      background-position: center;
+      border-radius: 50%;
+      margin-right: var(--local-tasks-icon-spacing);
+      flex-shrink: 0;
+    }
+
+    &:hover {
+      color: var(--local-tasks-color-hover);
+      background: transparent;
+      text-decoration: var(--local-tasks-text-decoration-hover);
+      text-underline-offset: 0.25em;
+    }
+
+    &.active {
+      color: var(--local-tasks-color-active);
+      font-weight: var(--local-tasks-font-weight-active);
+      background: transparent;
+
+      &::before {
+        background-color: var(--local-tasks-icon-active-color);
+      }
+
+      &:hover {
+        color: var(--local-tasks-color-hover);
+        background: transparent;
+      }
+    }
+  }
+
+  .local-task--view {
+    --icon: var(--local-task-icon-default);
+  }
+
+  .local-task--address-book {
+    --icon: var(--local-task-icon-address-book);
+  }
+
+  .local-task--payment-methods {
+    --icon: var(--local-task-icon-payment-methods);
+  }
+
+  .local-task--edit {
+    --icon: var(--local-task-icon-edit);
+  }
+
+  .local-task--shortcuts {
+    --icon: var(--local-task-icon-shortcuts);
+  }
+
+  .local-task--files {
+    --icon: var(--local-task-icon-files);
+  }
+
+  .local-task--orders {
+    --icon: var(--local-task-icon-orders);
+  }
+
+  // Mobile styles
+  @include media-breakpoint-down(md) {
+    .nav-tabs {
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    // Hide all nav items except the active one by default
+    .nav-item:not(:has(.nav-link.active)) {
+      display: none;
+    }
+
+    // Add chevron to active item for toggle
+    .nav-item:has(.nav-link.active) {
+      position: relative;
+      order: -1;
+
+      .nav-link {
+        &::after {
+          @include icon(1.2rem, "../../icons/chevron-down.svg", currentcolor);
+
+          content: "";
+          margin-left: 1rem;
+        }
+      }
+    }
+
+    // Expanded
+    .nav-tabs.expanded {
+      .nav-item {
+        display: block;
+
+        &:has(.nav-link.active) .nav-link::after {
+          transform: rotate(180deg);
+        }
+      }
+    }
+  }
+}

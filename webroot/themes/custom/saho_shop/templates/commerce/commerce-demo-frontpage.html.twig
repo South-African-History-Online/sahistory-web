@@ -1,0 +1,95 @@
+{% import "@saho_shop/macros.twig" as svg %}
+
+{{ attach_library('saho_shop/demo.frontpage') }}
+
+{% block carousel %}
+  <div id="carouselDemo" class="carousel slide carousel-fade mb-5" data-bs-ride="carousel">
+    <div class="carousel-indicators">
+      <button type="button" data-bs-target="#carouselDemo" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+      <button type="button" data-bs-target="#carouselDemo" data-bs-slide-to="1" aria-label="Slide 2"></button>
+      <button type="button" data-bs-target="#carouselDemo" data-bs-slide-to="2" aria-label="Slide 3"></button>
+    </div>
+    <div class="carousel-inner">
+      <div class="carousel-item active bg-primary">
+        <img src="{{ base_path ~ directory }}/images/slide-1.jpg" class="d-block w-100" alt="Slide 1">
+        <div class="carousel-caption pb-5">
+          <div class="col-md-6 offset-md-6 text-md-start pb-md-5 mb-md-5">
+            <h5 class="display-2 d-none d-md-block">{{ 'La croix fashion'|t }}</h5>
+            <p>{{ 'Mustache, kinfolk activated charcoal kickstarter ethical street art tumblr typewriter.'|t }}</p>
+            <button class="btn btn-outline-light btn-lg">{{ 'BUY NOW'|t }}</button>
+          </div>
+        </div>
+      </div>
+      <div class="carousel-item bg-primary">
+        <img src="{{ base_path ~ directory }}/images/slide-2.jpg" class="d-block w-100" alt="Slide 2">
+        <div class="carousel-caption pb-5">
+          <div class="row">
+            <div class="col-md-6 offset-md-6 text-md-start pb-md-5 mb-md-5">
+              <h5 class="display-2 d-none d-md-block">{{ 'Godard yellow hexagon'|t }}</h5>
+              <p>{{ 'Wolf activated charcoal pickled disrupt crucifix snackwave.'|t }}</p>
+              <button class="btn btn-outline-light btn-lg">{{ 'BUY NOW'|t }}</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="carousel-item bg-primary">
+        <img src="{{ base_path ~ directory }}/images/slide-3.jpg" class="d-block w-100" alt="Slide 3">
+        <div class="carousel-caption pb-5">
+          <div class="row">
+            <div class="col-md-6 col-lg-5 offset-md-6 text-md-start pb-md-5 mb-md-5">
+              <h5 class="display-2 d-none d-md-block">{{ 'DIY messenger bag'|t }}</h5>
+              <p>{{ 'Flannel truffaut organic try-hard bicycle rights blue bottle, beard skateboard tote bag.'|t }}</p>
+              <button class="btn btn-outline-light btn-lg">{{ 'BUY NOW'|t }}</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <button class="carousel-control-prev" type="button" data-bs-target="#carouselDemo" data-bs-slide="prev">
+      <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+      <span class="visually-hidden">{{ 'Previous'|t }}</span>
+    </button>
+    <button class="carousel-control-next" type="button" data-bs-target="#carouselDemo" data-bs-slide="next">
+      <span class="carousel-control-next-icon" aria-hidden="true"></span>
+      <span class="visually-hidden">{{ 'Next'|t }}</span>
+    </button>
+  </div>
+{% endblock %}
+
+{% block featured %}
+  <div class="container-xl">
+    <div class="featured-products">
+      <h2 class="fs-1 text-center underline pb-3 mb-5">{{ 'Featured products'|t }}</h2>
+      <div class="row g-5">
+        {% for featured_product in featured_products %}
+          <div class="featured-seller col-md-4">
+            {{ render_var(featured_product) }}
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block testimonial %}
+  <div class="testimonial position-relative bg-secondary text-white py-5 mt-5">
+    <div class="container-xl position-relative my-5 z-index-2">
+      <div class="row">
+        <div class="col-10 offset-1 text-center">
+          <div class="fs-2 fst-italic lh-sm">
+            {{ 'Slow-carb paleo bicycle rights bushwick. Tote bag mustache man bun swag, tbh chartreuse synth stumptown portland cray.'|t }}
+          </div>
+          <div class="my-4">
+            {{ svg.getIcon('star-fill', 24, 24, 'mb-2') }}
+            {{ svg.getIcon('star-fill', 24, 24, 'mb-2') }}
+            {{ svg.getIcon('star-fill', 24, 24, 'mb-2') }}
+            {{ svg.getIcon('star-fill', 24, 24, 'mb-2') }}
+            {{ svg.getIcon('star-half', 24, 24, 'mb-2') }}
+          </div>
+          <div class="fs-sm">{{ 'Bojan Zivanovic, customer'|t }}</div>
+        </div>
+      </div>
+    </div>
+    <img class="object-cover" alt="testimonial" src="{{ base_path ~ directory }}/images/testimonial.jpg"/>
+  </div>
+{% endblock %}

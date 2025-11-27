@@ -1,0 +1,123 @@
+//
+// Commerce Kickstart Layout builder - Slideshow.
+// ----------------------------
+//
+@import "../../global";
+
+:root {
+  --cklb-slideshow-min-height: 500px;
+  --cklb-slideshow-spacer: calc(#{$spacer} * 1.5);
+  --cklb-slideshow-arrow-size: 2rem;
+  --cklb-slideshow-dot-size: 0.875rem;
+}
+
+.cklb-slideshow {
+  opacity: 0;
+  transition: $transition-fade;
+
+  // Hero.
+  &.layout-builder__region,
+  &.slick-initialized {
+    opacity: 1;
+
+    .cklb-hero {
+      .content {
+        position: relative;
+        z-index: 2;
+      }
+
+      &::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        display: block;
+        background-color: rgb(0 0 0 / 30%);
+      }
+    }
+  }
+
+  // Slideshow container.
+  .block-layout-builder > .content {
+    @include make-container;
+
+    padding-top: var(--cklb-slideshow-spacer);
+    padding-bottom: var(--cklb-slideshow-spacer);
+
+    @include media-breakpoint-up(lg) {
+      display: grid;
+      align-content: center;
+      min-height: var(--cklb-slideshow-min-height);
+      width: map-get($container-max-widths, "lg");
+    }
+
+    @include media-breakpoint-up(xl) {
+      width: map-get($container-max-widths, "xl");
+    }
+
+    @include media-breakpoint-up(xxl) {
+      width: map-get($container-max-widths, "xxl");
+    }
+  }
+}
+
+// Slick overrides
+// - Same height slides.
+.slick-track {
+  display: flex !important;
+}
+
+.slick-slide {
+  height: inherit;
+
+  > div,
+  .cklb-hero {
+    height: 100%;
+  }
+}
+
+// - dots
+.slick-dotted.slick-slider {
+  margin-bottom: 0;
+}
+
+.slick-dots {
+  bottom: var(--cklb-slideshow-spacer);
+
+  li button::before {
+    font-size: var(--cklb-slideshow-dot-size);
+  }
+}
+
+// - arrows
+.slick-arrow {
+  width: var(--cklb-slideshow-arrow-size);
+  height: var(--cklb-slideshow-arrow-size);
+  color: currentcolor;
+  z-index: 55;
+
+  &::before {
+    font-size: var(--cklb-slideshow-arrow-size);
+    color: currentcolor;
+    opacity: 1;
+  }
+
+  @include media-breakpoint-down(lg) {
+    top: auto;
+    bottom: calc(var(--cklb-slideshow-spacer) / 2);
+  }
+}
+
+.slick-next {
+  right: 1rem;
+}
+
+.slick-prev {
+  left: 1rem;
+}
+
+.slick-next:focus,
+.slick-next:hover,
+.slick-prev:focus,
+.slick-prev:hover {
+  color: currentcolor;
+}

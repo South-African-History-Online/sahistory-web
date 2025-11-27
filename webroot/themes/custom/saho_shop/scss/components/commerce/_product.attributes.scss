@@ -1,0 +1,66 @@
+//
+// Product Attributes
+// ----------------------------
+//
+
+// Attributes widgets
+.attribute-widgets {
+  @include make-row;
+
+  > .form-item,
+  > fieldset {
+    @include make-col-ready;
+    @include make-col-auto;
+    @extend .my-3;
+  }
+
+  > .form-item {
+    .fieldset-legend,
+    > label {
+      font-weight: normal;
+      line-height: 1.2;
+
+      @extend .h5, .border-bottom, .py-2, .mb-3;
+    }
+  }
+}
+
+.product--rendered-attribute {
+  position: relative;
+
+  .form-check {
+    @extend .form-check-inline; // inline the form items
+
+    padding-left: 0; // remove default form check spacing
+    margin-right: 0;
+  }
+
+  label.option {
+    display: inline-block;
+
+    .color_field__swatch {
+      @extend .d-block, .cursor-pointer;
+
+      border: 1px solid $light;
+    }
+  }
+
+  .form-radio {
+    @extend .btn-check;
+  }
+
+  &__selected ~ label.option {
+    .btn {
+      @extend .active;
+    }
+
+    .color_field__swatch {
+      border: 1px solid $dark;
+    }
+  }
+
+  // avoid jumping when spinner is added
+  .ajax-spinner {
+    position: absolute;
+  }
+}

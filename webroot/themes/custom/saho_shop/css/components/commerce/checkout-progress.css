@@ -1,0 +1,63 @@
+:root {
+  --checkout-progress-step-min-width: 80px;
+  --checkout-progress-gap: 1rem;
+  --checkout-progress-margin-bottom: 3rem;
+  --checkout-progress-max-width: 44rem;
+  --checkout-progress-step-gap: 1rem;
+  --checkout-progress-step-font-weight: bold;
+  --checkout-progress-next-opacity: 0.3;
+}
+
+.checkout-progress {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(var(--checkout-progress-step-min-width), 1fr));
+  gap: var(--checkout-progress-gap);
+  margin-bottom: var(--checkout-progress-margin-bottom);
+  color: var(--checkout-progress-color, var(--beo-primary));
+}
+@media (min-width: 768px) {
+  .checkout-progress {
+    justify-content: space-between;
+    max-width: var(--checkout-progress-max-width);
+    margin-inline: auto;
+    text-align: center;
+  }
+}
+
+.checkout-progress--step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: var(--checkout-progress-step-gap);
+  font-weight: var(--checkout-progress-step-font-weight);
+  position: relative;
+}
+.checkout-progress--step__icon {
+  position: relative;
+}
+@media (min-width: 768px) {
+  .checkout-progress--step__icon {
+    display: block;
+  }
+}
+.checkout-progress--step__label {
+  display: none;
+}
+@media (min-width: 768px) {
+  .checkout-progress--step__label {
+    display: block;
+  }
+}
+.checkout-progress--step__next {
+  opacity: var(--checkout-progress-next-opacity);
+}
+.checkout-progress--step a::after {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  content: "";
+}
+
+/*# sourceMappingURL=checkout-progress.css.map */

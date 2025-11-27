@@ -1,0 +1,34 @@
+{#
+/**
+ * @file
+ *
+ * Default template for credit card payment methods.
+ *
+ * Available variables:
+ * - attributes: HTML attributes for the wrapper.
+ * - payment_method: The rendered payment_method fields.
+ *   Use 'payment_method' to print them all, or print a subset such as
+ *   'payment_method.label'. Use the following code to exclude the
+ *   printing of a given field:
+ *   @code
+ *   {{ payment_method|without('label') }}
+ *   @endcode
+ * - payment_method_entity: The payment_method entity.
+ *
+ * @ingroup themeable
+ */
+#}
+{{ attach_library('saho_shop/commerce.payment-method') }}
+
+<div{{ attributes.addClass(['payment-method', 'payment-method--card']) }}>
+  <div class="payment-method__content">
+    <span class="payment-method-icon payment-method-icon--{{ payment_method_entity.card_type.value }}"></span>
+    <strong class="payment-method-name">{{ payment_method.label }}</strong>
+    {% if payment_method_entity.isReusable and payment_method_entity.expiresTime %}
+      <span class="field--name-expires">
+        ({{ 'Expires'|t }} {{ payment_method_entity.expiresTime|format_date('custom', 'n/y') }})
+      </span>
+    {% endif %}
+  </div>
+  {{ payment_method.billing_profile }}
+</div>
