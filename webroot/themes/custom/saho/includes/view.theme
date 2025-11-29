@@ -4,3 +4,249 @@
  * @file
  * Theme and preprocess functions for views.
  */
+
+use Drupal\file\Entity\File;
+use Drupal\image\Entity\ImageStyle;
+use Drupal\media\Entity\Media;
+
+/**
+ * Implements hook_preprocess_views_view_fields() for saho_global_search view.
+ */
+function saho_preprocess_views_view_fields__saho_global_search(&$variables) {
+  $row = $variables['row'];
+
+  // Get the node entity from the search result.
+  // For Search API views, the entity is directly available on the row.
+  $node = NULL;
+  if (isset($row->_entity)) {
+    $node = $row->_entity;
+  }
+  elseif (isset($row->_item) && $row->_item->getOriginalObject()) {
+    $node = $row->_item->getOriginalObject()->getValue();
+  }
+
+  // Default placeholder image.
+  $placeholder = '/' . \Drupal::service('extension.list.theme')->getPath('saho') . '/images/placeholder-card.svg';
+  $variables['search_result_image'] = $placeholder;
+  $variables['search_result_image_alt'] = '';
+
+  if (!$node || !method_exists($node, 'bundle')) {
+    return;
+  }
+
+  $bundle = $node->bundle();
+  $image_url = NULL;
+  $image_alt = '';
+
+  // Define image field mappings per content type (in priority order).
+  $image_field_map = [
+    'article' => ['field_article_image', 'field_image', 'field_main_image'],
+    'biography' => ['field_bio_pic'],
+    'archive' => ['field_archive_image', 'field_image'],
+    'place' => ['field_place_image'],
+    'event' => ['field_event_image', 'field_tdih_image'],
+    'upcomingevent' => ['field_event_image'],
+  ];
+
+  // Get the fields to check for this content type.
+  $fields_to_check = $image_field_map[$bundle] ?? ['field_image'];
+
+  foreach ($fields_to_check as $field_name) {
+    if (!$node->hasField($field_name)) {
+      continue;
+    }
+
+    $field = $node->get($field_name);
+    if ($field->isEmpty()) {
+      continue;
+    }
+
+    $field_type = $field->getFieldDefinition()->getType();
+
+    // Handle media reference fields.
+    if ($field_type === 'entity_reference' && $field->getSetting('target_type') === 'media') {
+      $media_id = $field->target_id;
+      if ($media_id) {
+        $media = Media::load($media_id);
+        if ($media && $media->hasField('field_media_image')) {
+          $media_image = $media->get('field_media_image');
+          if (!$media_image->isEmpty()) {
+            $file = File::load($media_image->target_id);
+            if ($file) {
+              $image_url = _saho_get_styled_image_url($file->getFileUri(), 'large');
+              $image_alt = $media_image->alt ?? $node->label();
+              break;
+            }
+          }
+        }
+      }
+    }
+    // Handle regular image fields.
+    elseif ($field_type === 'image') {
+      $file_id = $field->target_id;
+      if ($file_id) {
+        $file = File::load($file_id);
+        if ($file) {
+          $image_url = _saho_get_styled_image_url($file->getFileUri(), 'large');
+          $image_alt = $field->alt ?? $node->label();
+          break;
+        }
+      }
+    }
+  }
+
+  if ($image_url) {
+    $variables['search_result_image'] = $image_url;
+    $variables['search_result_image_alt'] = $image_alt;
+  }
+
+  // Add the node URL for the "Read more" link.
+  $variables['search_result_url'] = $node->toUrl()->toString();
+}
+
+/**
+ * Implements hook_preprocess_views_view() for featured_content view.
+ *
+ * Provides dynamic category counts and stats for the featured content page.
+ */
+function saho_preprocess_views_view__featured_content(&$variables) {
+  $database = \Drupal::database();
+
+  // Calculate featured content statistics.
+  $stats = [];
+
+  // Total featured stories (home page feature OR staff picks).
+  try {
+    $featured_query = $database->select('node__field_home_page_feature', 'hp');
+    $featured_query->join('node_field_data', 'n', 'hp.entity_id = n.nid');
+    $featured_query->condition('hp.field_home_page_feature_value', 1);
+    $featured_query->condition('hp.deleted', 0);
+    $featured_query->condition('n.status', 1);
+    $stats['featured_stories'] = (int) $featured_query->countQuery()->execute()->fetchField();
+  }
+  catch (\Exception $e) {
+    $stats['featured_stories'] = 0;
+  }
+
+  // Staff picks (Editor's Choices).
+  try {
+    $staff_query = $database->select('node__field_staff_picks', 'sp');
+    $staff_query->join('node_field_data', 'n', 'sp.entity_id = n.nid');
+    $staff_query->condition('sp.field_staff_picks_value', 1);
+    $staff_query->condition('sp.deleted', 0);
+    $staff_query->condition('n.status', 1);
+    $stats['staff_picks'] = (int) $staff_query->countQuery()->execute()->fetchField();
+  }
+  catch (\Exception $e) {
+    $stats['staff_picks'] = 0;
+  }
+
+  // Recent updates (last 30 days).
+  try {
+    $recent_date = strtotime('-30 days');
+    $recent_query = $database->select('node_field_data', 'n');
+    $recent_query->condition('n.status', 1);
+    $recent_query->condition('n.changed', $recent_date, '>');
+    $recent_query->condition('n.type', ['article', 'biography', 'archive', 'place', 'event'], 'IN');
+    $stats['recent_updates'] = (int) $recent_query->countQuery()->execute()->fetchField();
+  }
+  catch (\Exception $e) {
+    $stats['recent_updates'] = 0;
+  }
+
+  // Category counts for sidebar.
+  $categories = [];
+
+  // Africa Section.
+  try {
+    $africa_query = $database->select('node__field_africa_category', 'ac');
+    $africa_query->join('node_field_data', 'n', 'ac.entity_id = n.nid');
+    $africa_query->condition('ac.deleted', 0);
+    $africa_query->condition('n.status', 1);
+    $categories['africa_section'] = (int) $africa_query->countQuery()->execute()->fetchField();
+  }
+  catch (\Exception $e) {
+    $categories['africa_section'] = 0;
+  }
+
+  // Politics & Society.
+  try {
+    $politics_query = $database->select('node__field_politics_society_categorie', 'ps');
+    $politics_query->join('node_field_data', 'n', 'ps.entity_id = n.nid');
+    $politics_query->condition('ps.deleted', 0);
+    $politics_query->condition('n.status', 1);
+    $categories['politics_society'] = (int) $politics_query->countQuery()->execute()->fetchField();
+  }
+  catch (\Exception $e) {
+    $categories['politics_society'] = 0;
+  }
+
+  // Timeline Features (events with featured flag).
+  try {
+    $timeline_query = $database->select('node_field_data', 'n');
+    $timeline_query->leftJoin('node__field_home_page_feature', 'hp', 'hp.entity_id = n.nid AND hp.deleted = 0');
+    $timeline_query->condition('n.type', 'event');
+    $timeline_query->condition('n.status', 1);
+    $timeline_query->condition('hp.field_home_page_feature_value', 1);
+    $categories['timelines'] = (int) $timeline_query->countQuery()->execute()->fetchField();
+  }
+  catch (\Exception $e) {
+    $categories['timelines'] = 0;
+  }
+
+  // Most Read - use statistics if available.
+  try {
+    if (\Drupal::moduleHandler()->moduleExists('statistics')) {
+      $most_read_query = $database->select('node_counter', 'nc');
+      $most_read_query->join('node_field_data', 'n', 'nc.nid = n.nid');
+      $most_read_query->condition('nc.totalcount', 100, '>');
+      $most_read_query->condition('n.status', 1);
+      $categories['most_read'] = (int) $most_read_query->countQuery()->execute()->fetchField();
+    }
+    else {
+      $categories['most_read'] = 0;
+    }
+  }
+  catch (\Exception $e) {
+    $categories['most_read'] = 0;
+  }
+
+  // Pass to template.
+  $variables['featured_stats'] = $stats;
+  $variables['featured_categories'] = $categories;
+}
+
+/**
+ * Helper function to get styled image URL.
+ *
+ * Creates the derivative if it doesn't exist to ensure images display.
+ */
+function _saho_get_styled_image_url($uri, $style_name = 'large') {
+  $file_url_generator = \Drupal::service('file_url_generator');
+  $file_system = \Drupal::service('file_system');
+
+  $style = ImageStyle::load($style_name);
+  if ($style) {
+    // Check if the derivative exists, create it if not.
+    $derivative_uri = $style->buildUri($uri);
+    $derivative_path = $file_system->realpath($derivative_uri);
+
+    if (!$derivative_path || !file_exists($derivative_path)) {
+      // Ensure the source file exists before attempting to create derivative.
+      $source_path = $file_system->realpath($uri);
+      if ($source_path && file_exists($source_path)) {
+        $style->createDerivative($uri, $derivative_uri);
+      }
+      else {
+        // Source file doesn't exist, return NULL to use placeholder.
+        return NULL;
+      }
+    }
+    $url = $style->buildUrl($uri);
+    // Convert to relative URL for consistency across environments.
+    return $file_url_generator->transformRelative($url);
+  }
+  // Fallback to original file URL.
+  $url = $file_url_generator->generateAbsoluteString($uri);
+  return $file_url_generator->transformRelative($url);
+}

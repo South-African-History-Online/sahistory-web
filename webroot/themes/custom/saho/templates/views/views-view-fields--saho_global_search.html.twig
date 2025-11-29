@@ -25,53 +25,54 @@
  *   - element_type: An HTML element for the field content.
  *   - element_attributes: List of attributes for HTML element for field content.
  * - row: The raw result from the query, with all data it fetched.
+ * - search_result_image: URL to the content's image or placeholder.
+ * - search_result_image_alt: Alt text for the image.
  *
  * @see template_preprocess_views_view_fields()
  */
 #}
 
-{# Custom structure for search result fields #}
-<div class="search-result-inner">
-  {# Render all fields in order #}
-  {% for key, field in fields %}
-    {% if not field.empty %}
-      {# Title field gets special treatment #}
-      {% if key == 'title' %}
-        <h3 class="search-result-title">
-          {{ field.content }}
-        </h3>
+{# Custom card structure for search result #}
+<a href="{{ search_result_url }}" class="search-result-card">
+  {# Image section #}
+  <div class="search-result-image">
+    <img src="{{ search_result_image }}" alt="{{ search_result_image_alt }}" loading="lazy">
+  </div>
 
-      {# Excerpt/snippet field #}
-      {% elseif key == 'search_api_excerpt' or key == 'body' %}
-        <div class="search-snippet-info">
-          <div class="search-snippet">
-            {{ field.content }}
-          </div>
-        </div>
-
-      {# Type field #}
-      {% elseif key == 'type' %}
-        <div class="search-result-meta">
-          <span class="search-result-type">{{ field.content }}</span>
-        </div>
-
-      {# Date fields #}
-      {% elseif key == 'created' or key == 'changed' %}
-        <div class="search-result-meta">
-          <span class="search-result-date">{{ field.content }}</span>
-        </div>
-
-      {# All other fields #}
-      {% else %}
-        <div class="search-result-field search-result-field--{{ key|clean_class }}">
-          {% if field.label %}
-            <div class="search-result-field-label">{{ field.label }}:</div>
-          {% endif %}
-          <div class="search-result-field-content">
-            {{ field.content }}
-          </div>
-        </div>
-      {% endif %}
+  {# Content section #}
+  <div class="search-result-content">
+    {# Type badge at top #}
+    {% if fields.type is defined and not fields.type.empty %}
+      <div class="search-result-meta">
+        <span class="search-result-type">{{ fields.type.content|striptags }}</span>
+      </div>
     {% endif %}
-  {% endfor %}
-</div>
+
+    {# Title #}
+    {% if fields.title is defined and not fields.title.empty %}
+      <h3 class="search-result-title">
+        {{ fields.title.content|striptags }}
+      </h3>
+    {% endif %}
+
+    {# Excerpt/snippet #}
+    {% if fields.search_api_excerpt is defined and not fields.search_api_excerpt.empty %}
+      <div class="search-snippet-info">
+        <div class="search-snippet">
+          {{ fields.search_api_excerpt.content|striptags }}
+        </div>
+      </div>
+    {% elseif fields.body is defined and not fields.body.empty %}
+      <div class="search-snippet-info">
+        <div class="search-snippet">
+          {{ fields.body.content|striptags }}
+        </div>
+      </div>
+    {% endif %}
+
+    {# Read more button #}
+    <div class="search-result-action">
+      <span class="search-result-readmore">Read more</span>
+    </div>
+  </div>
+</a>

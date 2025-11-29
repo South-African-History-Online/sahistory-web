@@ -395,196 +395,208 @@
   }
 }
 
-// Modern search results container
-.search-results {
-  background-color: white;
-  border-radius: 10px;
-  overflow: hidden;
-  
-  .item-list {
-    padding: 0;
-  }
-  
-  // List view (default)
-  &.list-view {
-    .item-list {
-      display: block;
-    }
-  }
-  
-  // Grid view
-  &.grid-view {
-    .item-list {
-      display: grid;
-      grid-template-columns: repeat(1, 1fr);
-      gap: 1rem;
-      padding: 1rem;
-      
-      @media (min-width: 576px) {
+// Modern search results container - card grid like landing pages
+// Targets the actual Views grid structure used by SAHO search
+.saho-search-results-wrapper {
+  .search-results {
+    background-color: transparent;
+    border-radius: 0;
+    overflow: visible;
+
+    // Target the Views grid structure
+    .views-view--grid {
+      display: grid !important;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+      padding: 0;
+
+      @media (max-width: 991px) {
         grid-template-columns: repeat(2, 1fr);
       }
-      
-      @media (min-width: 992px) {
-        grid-template-columns: repeat(3, 1fr);
+
+      @media (max-width: 767px) {
+        grid-template-columns: 1fr;
+      }
+
+      // Reset Views default grid behavior
+      &.horizontal {
+        display: grid !important;
+      }
+
+      // Each row becomes a grid item (card)
+      .views-row {
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgb(0, 0, 0, 0.1);
+        overflow: hidden;
+        transition: all 0.3s ease;
+        height: 100%;
+
+        &:hover {
+          transform: translateY(-5px);
+          box-shadow: 0 10px 25px rgb(0, 0, 0, 0.15);
+
+          .search-result-inner::after {
+            border-color: $deep-heritage-red;
+            background-color: $deep-heritage-red;
+            color: #fff;
+          }
+
+          .search-result-title a {
+            color: darken($deep-heritage-red, 10%);
+          }
+        }
+
+        .views-col {
+          width: 100% !important;
+          height: 100%;
+        }
       }
     }
   }
 }
 
-// Individual search result - card style
-.search-result {
-  padding: 1.75rem;
-  border-bottom: 1px solid rgb(0, 0, 0, 0.08);
-  transition: all 0.3s ease;
-  position: relative;
-  
-  &:hover {
-    background-color: #f9f9f9;
-    
-    &::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      top: 0;
-      bottom: 0;
-      width: 4px;
-      background-color: $deep-heritage-red;
-    }
-    
-    h3 a {
-      color: darken($deep-heritage-red, 10%);
+// Search result card - with image (now an <a> tag)
+a.search-result-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  text-decoration: none;
+  color: inherit;
+
+  // Image container
+  .search-result-image {
+    position: relative;
+    width: 100%;
+    height: 160px;
+    overflow: hidden;
+    background-color: #f5f5f5;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.3s ease;
     }
   }
-  
-  &:last-child {
-    border-bottom: none;
-  }
-  
-  // Grid view styles for search result items
-  .grid-view & {
-    border: 1px solid rgb(0, 0, 0, 0.08);
-    border-radius: 8px;
-    height: 100%;
-    margin-bottom: 0;
+
+  // Content section
+  .search-result-content {
+    padding: 1.25rem;
     display: flex;
     flex-direction: column;
-    box-shadow: 0 2px 8px rgb(0, 0, 0, 0.05);
-    
-    &:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 10px 20px rgb(0, 0, 0, 0.1);
-      
-      &::before {
-        left: 0;
-        top: 0;
-        bottom: auto;
-        width: 100%;
-        height: 4px;
-        border-radius: 8px 8px 0 0;
-      }
-    }
-    
-    h3 {
-      font-size: 1.25rem;
-    }
-    
-    .search-result-meta {
-      margin-top: auto;
-    }
-    
-    .search-snippet-info {
-      flex: 1;
-    }
+    flex-grow: 1;
   }
-  
-  h3 {
-    margin-top: 0;
-    margin-bottom: 0.75rem;
-    font-size: 1.5rem;
-    font-weight: 700;
-    line-height: 1.3;
-    
-    a {
-      color: $deep-heritage-red;
-      text-decoration: none;
-      transition: color 0.2s ease;
-      
-      &:hover {
-        color: darken($deep-heritage-red, 15%);
-        text-decoration: underline;
-      }
-    }
-  }
-  
-  // Search result metadata
+
+  // Type badge
   .search-result-meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-    margin-bottom: 0.75rem;
-    font-size: 0.9rem;
-    color: #666;
-    
+    margin-bottom: 0.5rem;
+
     .search-result-type {
-      background-color: rgba($deep-heritage-red, 0.1);
-      color: $deep-heritage-red;
-      padding: 0.2rem 0.6rem;
-      border-radius: 20px;
-      font-weight: 500;
-      display: inline-flex;
-      align-items: center;
-      
-      &::before {
-        content: '';
-        display: inline-block;
-        width: 10px;
-        height: 10px;
-        background-color: rgba($deep-heritage-red, 0.5);
-        border-radius: 50%;
-        margin-right: 6px;
+      background-color: $deep-heritage-red;
+      color: #fff !important;
+      padding: 0.3rem 0.75rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      display: inline-block;
+    }
+  }
+
+  // Title
+  .search-result-title {
+    margin: 0 0 0.5rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+    line-height: 1.4;
+    color: $deep-heritage-red;
+    transition: color 0.2s ease;
+  }
+
+  // Snippet
+  .search-snippet-info {
+    flex-grow: 1;
+    margin-bottom: 1rem;
+
+    .search-snippet {
+      font-size: 0.85rem;
+      line-height: 1.5;
+      color: #666;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+
+      a {
+        color: inherit;
+        text-decoration: none;
       }
     }
-    
-    .search-result-date {
-      display: inline-flex;
-      align-items: center;
-      
-      &::before {
-        content: '';
-        display: inline-block;
-        width: 12px;
-        height: 12px;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23666' class='bi bi-calendar3' viewBox='0 0 16 16'%3E%3Cpath d='M14 0H2a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2zM1 3.857C1 3.384 1.448 3 2 3h12c.552 0 1 .384 1 .857v10.286c0 .473-.448.857-1 .857H2c-.552 0-1-.384-1-.857V3.857z'/%3E%3Cpath d='M6.5 7a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm-9 3a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm-9 3a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2z'/%3E%3C/svg%3E");
-        background-size: contain;
-        background-repeat: no-repeat;
-        margin-right: 4px;
-      }
+  }
+
+  // Read more button
+  .search-result-action {
+    margin-top: auto;
+
+    .search-result-readmore {
+      display: inline-block;
+      padding: 0.4rem 1rem;
+      border: 2px solid $deep-heritage-red;
+      border-radius: 20px;
+      color: $deep-heritage-red;
+      font-size: 0.8rem;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+  }
+
+  // Hover effects
+  &:hover {
+    .search-result-image img {
+      transform: scale(1.05);
+    }
+
+    .search-result-readmore {
+      background-color: $deep-heritage-red;
+      color: #fff;
     }
   }
 }
 
-// Search result excerpt with improvements
+// Legacy support for old inner structure
+.search-result-inner {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+// Search result excerpt with improvements - matching landing page description
 .search-snippet-info {
-  margin-top: 0.75rem;
-  
+  margin-top: 0.5rem;
+  margin-bottom: 1rem;
+  flex-grow: 1;
+
   .search-snippet {
-    font-size: 1rem;
-    line-height: 1.7;
-    color: #4a4a4a;
-    margin-bottom: 0.75rem;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: #666;
+    margin-bottom: 0;
     position: relative;
-    padding-left: 1rem;
-    
+    padding-left: 0;
+
+    // Remove the left border
     &::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      top: 0.5rem;
-      bottom: 0.5rem;
-      width: 3px;
-      background-color: #eee;
-      border-radius: 3px;
+      display: none;
     }
+
+    // Limit to 3 lines with ellipsis
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
   
   // Read more link
@@ -676,39 +688,71 @@
 
 // Enhanced pager for search results
 .saho-search-pager {
-  .pager {
-    margin: 2rem 0 0;
+  margin-top: 2rem;
+
+  .pagination-wrapper {
     display: flex;
     justify-content: center;
-    
-    li {
-      margin: 0 0.25rem;
-      
-      a {
+  }
+
+  .pagination {
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    .page-item {
+      .page-link {
         display: flex;
         align-items: center;
         justify-content: center;
-        width: 40px;
+        min-width: 40px;
         height: 40px;
-        border-radius: 50%;
+        padding: 0 0.75rem;
+        border-radius: 8px;
         text-decoration: none;
         background-color: #f5f5f5;
         color: #333;
+        border: none;
         transition: all 0.25s ease;
         font-weight: 500;
-        
-        &:hover, &:focus {
-          background-color: #eee;
+
+        &:hover,
+        &:focus {
+          background-color: rgba($deep-heritage-red, 0.1);
           color: $deep-heritage-red;
           transform: translateY(-2px);
           box-shadow: 0 3px 8px rgb(0, 0, 0, 0.1);
         }
       }
-      
-      &.is-active a {
+
+      // Active/current page
+      &.is-active .page-link,
+      &.active .page-link {
         background-color: $deep-heritage-red;
         color: white;
-        box-shadow: 0 3px 8px rgba($deep-heritage-red, 0.2);
+        box-shadow: 0 3px 8px rgba($deep-heritage-red, 0.3);
+
+        &:hover {
+          background-color: darken($deep-heritage-red, 10%);
+          color: white;
+        }
+      }
+
+      // Next/Previous/Last links
+      &.pager__item--next,
+      &.pager__item--previous,
+      &.pager__item--last,
+      &.pager__item--first {
+        .page-link {
+          background-color: transparent;
+          color: $deep-heritage-red;
+          font-weight: 600;
+
+          &:hover {
+            background-color: rgba($deep-heritage-red, 0.1);
+          }
+        }
       }
     }
   }
