@@ -94,9 +94,8 @@ class TimelineEventService {
 
     // Add date range conditions if we have date fields.
     if ($start_date && $end_date) {
-      // Use the actual TDIH field that exists.
-      $query->condition('field_this_day_in_history_3', $start_date, '>=');
-      $query->condition('field_this_day_in_history_3', $end_date, '<=');
+      $query->condition('field_event_date', $start_date, '>=');
+      $query->condition('field_event_date', $end_date, '<=');
     }
 
     // Apply additional filters.
@@ -107,7 +106,7 @@ class TimelineEventService {
     }
 
     // Sort by date.
-    $query->sort('field_this_day_in_history_3', 'ASC');
+    $query->sort('field_event_date', 'ASC');
 
     $nids = $query->execute();
     return $storage->loadMultiple($nids);
@@ -347,10 +346,8 @@ class TimelineEventService {
     if ($event instanceof NodeInterface) {
       // Check multiple date fields in order of preference.
       $date_fields = [
-      // Primary TDIH field.
-        'field_this_day_in_history_3',
-      // Secondary TDIH field.
-        'field_this_day_in_history_date_2',
+      // Primary event date field.
+        'field_event_date',
       // Event start date.
         'field_start_date',
       // Event end date.
@@ -363,8 +360,6 @@ class TimelineEventService {
         'field_publication_date_archive',
       // Archive dates.
         'field_archive_publication_date',
-      // Generic event date.
-        'field_event_date',
       // Fallback to creation date.
         'created',
       ];
@@ -454,7 +449,7 @@ class TimelineEventService {
       }
     }
 
-    $query->sort('field_this_day_in_history_3', 'ASC');
+    $query->sort('field_event_date', 'ASC');
     $nids = $query->execute();
 
     return $storage->loadMultiple($nids);
@@ -491,40 +486,19 @@ class TimelineEventService {
         ->accessCheck(TRUE);
 
       // Add date conditions for this period.
-      $date_condition_group = $query->orConditionGroup();
-
-      // Handle field_this_day_in_history_3.
       if ($period['start'] && $period['end']) {
-        $and_group1 = $query->andConditionGroup();
-        $and_group1->condition('field_this_day_in_history_3', $period['start'], '>=');
-        $and_group1->condition('field_this_day_in_history_3', $period['end'], '<=');
-        $date_condition_group->condition($and_group1);
+        $query->condition('field_event_date', $period['start'], '>=');
+        $query->condition('field_event_date', $period['end'], '<=');
       }
       elseif ($period['start']) {
-        $date_condition_group->condition('field_this_day_in_history_3', $period['start'], '>=');
+        $query->condition('field_event_date', $period['start'], '>=');
       }
       elseif ($period['end']) {
-        $date_condition_group->condition('field_this_day_in_history_3', $period['end'], '<=');
+        $query->condition('field_event_date', $period['end'], '<=');
       }
-
-      // Handle field_this_day_in_history_date_2.
-      if ($period['start'] && $period['end']) {
-        $and_group2 = $query->andConditionGroup();
-        $and_group2->condition('field_this_day_in_history_date_2', $period['start'], '>=');
-        $and_group2->condition('field_this_day_in_history_date_2', $period['end'], '<=');
-        $date_condition_group->condition($and_group2);
-      }
-      elseif ($period['start']) {
-        $date_condition_group->condition('field_this_day_in_history_date_2', $period['start'], '>=');
-      }
-      elseif ($period['end']) {
-        $date_condition_group->condition('field_this_day_in_history_date_2', $period['end'], '<=');
-      }
-
-      $query->condition($date_condition_group);
 
       $query->range(0, $period['target']);
-      $query->sort('field_this_day_in_history_3', 'ASC');
+      $query->sort('field_event_date', 'ASC');
 
       $nids = $query->execute();
       if (!empty($nids)) {
@@ -679,17 +653,15 @@ class TimelineEventService {
       return FALSE;
     }
 
-    // Check historical date fields (excluding creation date)
+    // Check historical date fields (excluding creation date).
     $historical_date_fields = [
-      'field_this_day_in_history_3',
-      'field_this_day_in_history_date_2',
+      'field_event_date',
       'field_start_date',
       'field_end_date',
       'field_drupal_birth_date',
       'field_drupal_death_date',
       'field_publication_date_archive',
       'field_archive_publication_date',
-      'field_event_date',
     ];
 
     foreach ($historical_date_fields as $field_name) {
@@ -707,6 +679,8 @@ class TimelineEventService {
   /**
    * Get timeline events separated into dated and dateless categories.
    *
+   * Uses optimized database queries to avoid loading all nodes into memory.
+   *
    * @param bool $include_tdih
    *   Whether to include TDIH events.
    * @param bool $use_cache
@@ -716,37 +690,57 @@ class TimelineEventService {
    *   Array with 'events' (with historical dates) and 'dateless_events' keys.
    */
   public function getAllTimelineEventsSegregated($include_tdih = TRUE, $use_cache = TRUE) {
-    $all_events = $this->getAllTimelineEvents($include_tdih, $use_cache);
+    $cache_id = 'saho_timeline:segregated_events';
 
-    $events_with_dates = [];
-    $dateless_events = [];
-
-    foreach ($all_events as $event) {
-      if ($this->hasHistoricalDate($event)) {
-        $events_with_dates[] = $event;
-      }
-      else {
-        // For dateless events, include metadata for admin review.
-        $dateless_events[] = [
-          'node' => $event,
-          'id' => $event->id(),
-          'title' => $event->getTitle(),
-          'created' => $event->getCreatedTime(),
-          'status' => 'needs_date_review',
-          'reason' => 'No historical date fields populated',
-        ];
-      }
+    // Try cache first.
+    if ($use_cache && $cached = $this->cache->get($cache_id)) {
+      return $cached->data;
     }
 
-    return [
-      'events' => $events_with_dates,
-      'dateless_events' => $dateless_events,
+    // Use optimized database query to get only events WITH dates.
+    // This avoids loading 17k+ nodes into memory.
+    $storage = $this->entityTypeManager->getStorage('node');
+
+    // Query for events that have field_event_date populated.
+    $query = $storage->getQuery()
+      ->condition('type', 'event')
+      ->condition('status', NodeInterface::PUBLISHED)
+      ->condition('field_event_date', NULL, 'IS NOT NULL')
+      ->accessCheck(TRUE)
+      ->sort('field_event_date', 'ASC');
+
+    $dated_nids = $query->execute();
+
+    // Load only the events with dates.
+    $events_with_dates = [];
+    if (!empty($dated_nids)) {
+      $events_with_dates = $storage->loadMultiple($dated_nids);
+    }
+
+    // Get count of dateless events without loading them.
+    $dateless_query = $this->database->select('node_field_data', 'n');
+    $dateless_query->condition('n.type', 'event');
+    $dateless_query->condition('n.status', 1);
+    $dateless_query->leftJoin('node__field_event_date', 'fed', 'n.nid = fed.entity_id');
+    $dateless_query->isNull('fed.field_event_date_value');
+    $dateless_count = $dateless_query->countQuery()->execute()->fetchField();
+
+    $result = [
+      'events' => array_values($events_with_dates),
+      'dateless_events' => [],
       'stats' => [
-        'total_events' => count($all_events),
+        'total_events' => count($events_with_dates) + (int) $dateless_count,
         'events_with_dates' => count($events_with_dates),
-        'dateless_events' => count($dateless_events),
+        'dateless_events' => (int) $dateless_count,
       ],
     ];
+
+    // Cache for 1 hour.
+    if ($use_cache) {
+      $this->cache->set($cache_id, $result, $this->time->getRequestTime() + 3600, ['node_list:event']);
+    }
+
+    return $result;
   }
 
 }

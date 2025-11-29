@@ -220,8 +220,8 @@ class TdihBlock extends BlockBase implements ContainerFactoryPluginInterface {
         foreach ($nodes as $node) {
           // Only process nodes that are featured on front page.
           if ($node->hasField('field_home_page_feature') && $node->get('field_home_page_feature')->value) {
-            if ($node->hasField('field_this_day_in_history_3') && !$node->get('field_this_day_in_history_3')->isEmpty()) {
-              $raw_date = $node->get('field_this_day_in_history_3')->value;
+            if ($node->hasField('field_event_date') && !$node->get('field_event_date')->isEmpty()) {
+              $raw_date = $node->get('field_event_date')->value;
               if (!empty($raw_date)) {
                 // Extract MM-DD from YYYY-MM-DD format.
                 if (preg_match('/\d{4}-(\d{2})-(\d{2})/', $raw_date, $matches)) {
@@ -355,10 +355,10 @@ class TdihBlock extends BlockBase implements ContainerFactoryPluginInterface {
   protected function buildNodeItem($node) {
     try {
       // Fetch the value from your event date field, e.g.
-      // "field_this_day_in_history_3".
+      // "field_event_date".
       $event_date = NULL;
-      if ($node->hasField('field_this_day_in_history_3') && !$node->get('field_this_day_in_history_3')->isEmpty()) {
-        $raw_date = $node->get('field_this_day_in_history_3')->value;
+      if ($node->hasField('field_event_date') && !$node->get('field_event_date')->isEmpty()) {
+        $raw_date = $node->get('field_event_date')->value;
 
         if (!empty($raw_date)) {
           // Create DateTime at noon to avoid timezone boundary issues.

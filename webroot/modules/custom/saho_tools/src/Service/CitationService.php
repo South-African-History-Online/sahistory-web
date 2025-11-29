@@ -249,9 +249,9 @@ class CitationService {
         break;
 
       case 'event':
-        if ($node->hasField('field_this_day_in_history_date_2')
-            && !$node->get('field_this_day_in_history_date_2')->isEmpty()) {
-          $info['event_date'] = $node->get('field_this_day_in_history_date_2')->value;
+        if ($node->hasField('field_event_date')
+            && !$node->get('field_event_date')->isEmpty()) {
+          $info['event_date'] = $node->get('field_event_date')->value;
         }
         break;
 

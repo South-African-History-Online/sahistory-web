@@ -317,7 +317,7 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
 
     foreach ($nodes as $node) {
       // Get the event date.
-      $raw_date = $node->get('field_this_day_in_history_3')->value;
+      $raw_date = $node->get('field_event_date')->value;
       $event_timestamp = 0;
       if (!empty($raw_date)) {
         // Parse date as-is without timezone conversion to avoid shifting.
@@ -443,7 +443,7 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
    */
   protected function buildNodeItem($node) {
     // Fetch the value from your event date field.
-    $raw_date = $node->get('field_this_day_in_history_3')->value;
+    $raw_date = $node->get('field_event_date')->value;
     $event_timestamp = 0;
     if (!empty($raw_date)) {
       // Parse date as-is without timezone conversion to avoid shifting.
