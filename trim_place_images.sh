@@ -102,7 +102,11 @@ touch "$LOCK_FILE"
 # Setup logging
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 LOG_DIR="../image_processing_logs"
-mkdir -p "$LOG_DIR"
+if ! mkdir -p "$LOG_DIR" 2>/dev/null; then
+    # Fall back to /tmp if we can't create the preferred directory
+    LOG_DIR="/tmp/image_processing_logs"
+    mkdir -p "$LOG_DIR"
+fi
 LOG_FILE="$LOG_DIR/trim_places_$TIMESTAMP.log"
 
 # Function to log with timestamp
@@ -145,7 +149,11 @@ fi
 
 # Regular processing mode
 BACKUP_DIR="../image_backups/$TIMESTAMP"
-mkdir -p "$BACKUP_DIR"
+if ! mkdir -p "$BACKUP_DIR" 2>/dev/null; then
+    # Fall back to /tmp if we can't create the preferred directory
+    BACKUP_DIR="/tmp/image_backups/$TIMESTAMP"
+    mkdir -p "$BACKUP_DIR"
+fi
 
 log "========================================="
 log "Place Image Border Removal Script"
