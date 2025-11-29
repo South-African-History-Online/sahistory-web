@@ -137,13 +137,14 @@ is_red_pixel() {
 }
 
 # Function to detect red border thickness on one edge
-# Returns the number of pixels of red border (0-10)
+# Returns the number of pixels of red border (0-20)
+# Max depth of 20px should cover most screenshot borders
 detect_border_thickness() {
     local image="$1"
     local edge="$2"  # top, bottom, left, right
     local width="$3"
     local height="$4"
-    local max_depth=10
+    local max_depth=20
 
     for depth in $(seq 0 $((max_depth - 1))); do
         local red_count=0
