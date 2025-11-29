@@ -130,8 +130,7 @@ class TimelineController extends ControllerBase {
    */
   protected function getEventDate($event) {
     $date_fields = [
-      'field_this_day_in_history_3',
-      'field_this_day_in_history_date_2',
+      'field_event_date',
       'field_start_date',
       'field_end_date',
     ];

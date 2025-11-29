@@ -285,7 +285,7 @@ class TimelineFilterService {
       }
 
       // Count time periods based on date.
-      if ($result instanceof ContentEntityInterface && $result->hasField('field_this_day_in_history_3') && !$result->get('field_this_day_in_history_3')->isEmpty()) {
+      if ($result instanceof ContentEntityInterface && $result->hasField('field_event_date') && !$result->get('field_event_date')->isEmpty()) {
         $period = $this->calculateTimePeriod($result);
         if ($period && !isset($facets['time_period'][$period])) {
           $facets['time_period'][$period] = 0;
@@ -337,8 +337,8 @@ class TimelineFilterService {
   protected function calculateTimePeriod($result) {
     $date = NULL;
 
-    if ($result instanceof ContentEntityInterface && $result->hasField('field_this_day_in_history_3') && !$result->get('field_this_day_in_history_3')->isEmpty()) {
-      $date = $result->get('field_this_day_in_history_3')->value;
+    if ($result instanceof ContentEntityInterface && $result->hasField('field_event_date') && !$result->get('field_event_date')->isEmpty()) {
+      $date = $result->get('field_event_date')->value;
     }
 
     if (!$date) {
@@ -424,19 +424,13 @@ class TimelineFilterService {
 
         case 'start_date':
           if (!empty($value)) {
-            $or_group = $query->orConditionGroup();
-            $or_group->condition('field_event_date', $value, '>=');
-            $or_group->condition('field_this_day_in_history_3', $value, '>=');
-            $query->condition($or_group);
+            $query->condition('field_event_date', $value, '>=');
           }
           break;
 
         case 'end_date':
           if (!empty($value)) {
-            $or_group = $query->orConditionGroup();
-            $or_group->condition('field_event_date', $value, '<=');
-            $or_group->condition('field_this_day_in_history_3', $value, '<=');
-            $query->condition($or_group);
+            $query->condition('field_event_date', $value, '<=');
           }
           break;
       }
@@ -465,30 +459,16 @@ class TimelineFilterService {
     if (isset($date_ranges[$period])) {
       [$start, $end] = $date_ranges[$period];
 
-      $or_group = $query->orConditionGroup();
-
-      // Apply to both date fields.
       if ($start && $end) {
-        $and_group1 = $query->andConditionGroup();
-        $and_group1->condition('field_event_date', $start, '>=');
-        $and_group1->condition('field_event_date', $end, '<=');
-        $or_group->condition($and_group1);
-
-        $and_group2 = $query->andConditionGroup();
-        $and_group2->condition('field_this_day_in_history_3', $start, '>=');
-        $and_group2->condition('field_this_day_in_history_3', $end, '<=');
-        $or_group->condition($and_group2);
+        $query->condition('field_event_date', $start, '>=');
+        $query->condition('field_event_date', $end, '<=');
       }
       elseif ($start) {
-        $or_group->condition('field_event_date', $start, '>=');
-        $or_group->condition('field_this_day_in_history_3', $start, '>=');
+        $query->condition('field_event_date', $start, '>=');
       }
       elseif ($end) {
-        $or_group->condition('field_event_date', $end, '<=');
-        $or_group->condition('field_this_day_in_history_3', $end, '<=');
+        $query->condition('field_event_date', $end, '<=');
       }
-
-      $query->condition($or_group);
     }
   }
 

@@ -113,11 +113,15 @@ class TimelineApiController extends ControllerBase {
     // Validate sort parameter.
     $sort = $this->validateSort($request->query->get('sort', 'date_asc'));
 
+    // Check if dateless events are requested (for admin review).
+    $include_dateless = $request->query->get('include_dateless', 'summary');
+
     // Search for events.
     if (!empty($filters['keywords'])) {
       $events = $this->timelineEventService->searchEvents($filters['keywords'], $filters);
       // No dateless events for search results.
       $dateless_events = [];
+      $dateless_count = 0;
     }
     elseif (!empty($filters['start_date']) && !empty($filters['end_date'])) {
       $events = $this->timelineEventService->getEventsByDateRange(
@@ -127,14 +131,22 @@ class TimelineApiController extends ControllerBase {
       );
       // No dateless events for date range queries.
       $dateless_events = [];
+      $dateless_count = 0;
     }
     else {
       // Get all events segregated by date availability.
       $segregated = $this->timelineEventService->getAllTimelineEventsSegregated();
       // Events with proper historical dates.
       $events = $segregated['events'];
-      // Events needing date review.
-      $dateless_events = $segregated['dateless_events'];
+      // Only include full dateless events if explicitly requested.
+      if ($include_dateless === 'full') {
+        $dateless_events = $segregated['dateless_events'];
+      }
+      else {
+        // Only keep the count for performance.
+        $dateless_events = [];
+      }
+      $dateless_count = $segregated['stats']['dateless_events'] ?? count($segregated['dateless_events']);
     }
 
     // Apply sorting.
@@ -163,6 +175,7 @@ class TimelineApiController extends ControllerBase {
     $response_data = [
       'events' => [],
       'dateless_events' => [],
+      'dateless_count' => $dateless_count ?? 0,
       'facets' => $facets,
       'total' => $total,
       'limit' => $limit,
@@ -279,10 +292,8 @@ class TimelineApiController extends ControllerBase {
     if ($event instanceof ContentEntityInterface) {
       // Check multiple date fields in order of preference.
       $date_fields = [
-      // Primary TDIH field.
-        'field_this_day_in_history_3',
-      // Secondary TDIH field (likely newer events)
-        'field_this_day_in_history_date_2',
+      // Primary event date field.
+        'field_event_date',
       // Event start date.
         'field_start_date',
       // Event end date.
@@ -291,8 +302,6 @@ class TimelineApiController extends ControllerBase {
         'field_drupal_birth_date',
       // Death dates.
         'field_drupal_death_date',
-      // Generic event date.
-        'field_event_date',
       ];
 
       foreach ($date_fields as $field_name) {
@@ -367,10 +376,8 @@ class TimelineApiController extends ControllerBase {
       $data['url'] = $event->toUrl('canonical', ['absolute' => TRUE])->toString();
       $data['type'] = $event->bundle();
 
-      // Get date from multiple possible fields.
+      // Get date from the event date field.
       $date_fields = [
-        'field_this_day_in_history_3',
-        'field_this_day_in_history_date_2',
         'field_event_date',
       ];
 

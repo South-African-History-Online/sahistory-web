@@ -159,8 +159,8 @@ class DayMonthDateForm extends FormBase {
 
       foreach ($nodes as $node) {
         // Build node item.
-        if ($node->hasField('field_this_day_in_history_3') && !$node->get('field_this_day_in_history_3')->isEmpty()) {
-          $raw_date = $node->get('field_this_day_in_history_3')->value;
+        if ($node->hasField('field_event_date') && !$node->get('field_event_date')->isEmpty()) {
+          $raw_date = $node->get('field_event_date')->value;
           if (!empty($raw_date) && preg_match('/\d{4}-(\d{2})-(\d{2})/', $raw_date, $matches)) {
             $item_month_day = $matches[1] . '-' . $matches[2];
             if ($item_month_day === $month_day_pattern) {
@@ -244,8 +244,8 @@ class DayMonthDateForm extends FormBase {
       $events = [];
 
       foreach ($nodes as $node) {
-        if ($node->hasField('field_this_day_in_history_3') && !$node->get('field_this_day_in_history_3')->isEmpty()) {
-          $raw_date = $node->get('field_this_day_in_history_3')->value;
+        if ($node->hasField('field_event_date') && !$node->get('field_event_date')->isEmpty()) {
+          $raw_date = $node->get('field_event_date')->value;
           if (!empty($raw_date) && preg_match('/\d{4}-(\d{2})-(\d{2})/', $raw_date, $matches)) {
             $item_month_day = $matches[1] . '-' . $matches[2];
             if ($item_month_day === $month_day_pattern) {

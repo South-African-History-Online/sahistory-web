@@ -48,16 +48,17 @@ export async function fetchTimelineEvents(limit = 5000) {
     
     const events = response.data.events || [];
     const datelessEvents = response.data.dateless_events || response.data.datelessEvents || [];
-    console.log(`Fetched ${events.length} events with dates, ${datelessEvents.length} dateless events from API`);
-    
+    const datelessCount = response.data.dateless_count || datelessEvents.length || 0;
+    console.log(`Fetched ${events.length} events with dates, ${datelessCount} dateless events from API`);
+
     // Return both categories
     const result = {
       events,
       datelessEvents,
       stats: {
         eventsWithDates: events.length,
-        datelessEvents: datelessEvents.length,
-        total: events.length + datelessEvents.length
+        datelessEvents: datelessCount,
+        total: events.length + datelessCount
       }
     };
     

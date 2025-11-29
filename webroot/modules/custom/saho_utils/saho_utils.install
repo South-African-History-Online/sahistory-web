@@ -1,0 +1,200 @@
+<?php
+
+/**
+ * @file
+ * Install, update, and uninstall functions for the SAHO Utilities module.
+ */
+
+/**
+ * Migrate event date fields to new consolidated field_event_date.
+ *
+ * This consolidates field_this_day_in_history_3 and
+ * field_this_day_in_history_date_2 into a single field_event_date.
+ *
+ * IMPORTANT: This update hook must run BEFORE config import deletes the old
+ * field storage configs. Run: drush updb -y && drush cim -y
+ */
+function saho_utils_update_10001(&$sandbox) {
+  $database = \Drupal::database();
+
+  // Check if source tables exist - if not, migration cannot proceed.
+  $source_table_exists = $database->schema()->tableExists('node__field_this_day_in_history_3');
+  if (!$source_table_exists) {
+    return t('Source table node__field_this_day_in_history_3 does not exist. Migration skipped - data may have already been migrated or config was imported before running updates.');
+  }
+
+  // Check if target table exists.
+  $target_table_exists = $database->schema()->tableExists('node__field_event_date');
+  if (!$target_table_exists) {
+    return t('Target table node__field_event_date does not exist. Please import the field_event_date field config first.');
+  }
+
+  // Initialize batch if first run.
+  if (!isset($sandbox['progress'])) {
+    $sandbox['progress'] = 0;
+    $sandbox['max'] = (int) $database->query("SELECT COUNT(DISTINCT nid) FROM {node} WHERE type = 'event'")->fetchField();
+    $sandbox['current_nid'] = 0;
+    $sandbox['migrated'] = 0;
+    $sandbox['skipped'] = 0;
+  }
+
+  // Process 100 nodes per batch.
+  $batch_size = 100;
+
+  // Get next batch of event nodes using query builder for proper LIMIT handling.
+  $query = $database->select('node', 'n')
+    ->fields('n', ['nid'])
+    ->condition('type', 'event')
+    ->condition('nid', $sandbox['current_nid'], '>')
+    ->orderBy('nid')
+    ->range(0, $batch_size);
+  $nids = $query->execute()->fetchCol();
+
+  foreach ($nids as $nid) {
+    $sandbox['current_nid'] = $nid;
+    $sandbox['progress']++;
+
+    // Check if field_event_date already has a value.
+    $existing = $database->query(
+      "SELECT entity_id FROM {node__field_event_date} WHERE entity_id = :nid",
+      [':nid' => $nid]
+    )->fetchField();
+
+    if ($existing) {
+      $sandbox['skipped']++;
+      continue;
+    }
+
+    // Get date from field_this_day_in_history_3 (primary source).
+    $date_value = $database->query(
+      "SELECT field_this_day_in_history_3_value FROM {node__field_this_day_in_history_3} WHERE entity_id = :nid",
+      [':nid' => $nid]
+    )->fetchField();
+
+    // Fallback to field_this_day_in_history_date_2 if no value in primary.
+    if (!$date_value) {
+      $secondary_table_exists = $database->schema()->tableExists('node__field_this_day_in_history_date_2');
+      if ($secondary_table_exists) {
+        $datetime_value = $database->query(
+          "SELECT field_this_day_in_history_date_2_value FROM {node__field_this_day_in_history_date_2} WHERE entity_id = :nid",
+          [':nid' => $nid]
+        )->fetchField();
+
+        if ($datetime_value) {
+          // Extract just the date portion (YYYY-MM-DD) from datetime.
+          $date_value = substr($datetime_value, 0, 10);
+        }
+      }
+    }
+
+    // Skip if no date in either field.
+    if (!$date_value) {
+      continue;
+    }
+
+    // Get revision ID.
+    $revision_id = $database->query(
+      "SELECT vid FROM {node_field_data} WHERE nid = :nid",
+      [':nid' => $nid]
+    )->fetchField();
+
+    // Get langcode.
+    $langcode = $database->query(
+      "SELECT langcode FROM {node_field_data} WHERE nid = :nid",
+      [':nid' => $nid]
+    )->fetchField() ?: 'en';
+
+    // Insert into new field table.
+    $database->insert('node__field_event_date')
+      ->fields([
+        'bundle' => 'event',
+        'deleted' => 0,
+        'entity_id' => $nid,
+        'revision_id' => $revision_id,
+        'langcode' => $langcode,
+        'delta' => 0,
+        'field_event_date_value' => $date_value,
+      ])
+      ->execute();
+
+    // Also insert into revision table.
+    $database->insert('node_revision__field_event_date')
+      ->fields([
+        'bundle' => 'event',
+        'deleted' => 0,
+        'entity_id' => $nid,
+        'revision_id' => $revision_id,
+        'langcode' => $langcode,
+        'delta' => 0,
+        'field_event_date_value' => $date_value,
+      ])
+      ->execute();
+
+    $sandbox['migrated']++;
+  }
+
+  // Calculate progress.
+  $sandbox['#finished'] = empty($sandbox['max']) ? 1 : ($sandbox['progress'] / $sandbox['max']);
+
+  // Return status message.
+  if ($sandbox['#finished'] >= 1) {
+    return t('Migrated @migrated event dates to field_event_date. Skipped @skipped (already had values).', [
+      '@migrated' => $sandbox['migrated'],
+      '@skipped' => $sandbox['skipped'],
+    ]);
+  }
+}
+
+/**
+ * Fix the 5 known events with incorrect dates and migrate orphan record.
+ */
+function saho_utils_update_10002() {
+  $database = \Drupal::database();
+
+  // Known corrections based on investigation:
+  // - NID 11418: Benjamin Magson Kies - use 1917-12-12 (field_3 is correct)
+  // - NID 11888: SA Native mineworker - use 1960-03-07 (field_3 is correct)
+  // - NID 93949: Ian Smith emergency - use 1965-11-05 (field_3 is correct)
+  // - NID 12176: SAA hijacking - use 1972-05-24 (field_3 is correct)
+  // - NID 124768: Jack Parow - use 1982-02-22 (field_3 is correct)
+  // These should already be correct from update_10001, but let's ensure.
+  $corrections = [
+    11418 => '1917-12-12',
+    11888 => '1960-03-07',
+    93949 => '1965-11-05',
+    12176 => '1972-05-24',
+    124768 => '1982-02-22',
+    // The orphan record that only had field_date_2.
+    13474 => '2000-01-29',
+  ];
+
+  $updated = 0;
+  foreach ($corrections as $nid => $correct_date) {
+    // Check if already correct.
+    $current = $database->query(
+      "SELECT field_event_date_value FROM {node__field_event_date} WHERE entity_id = :nid",
+      [':nid' => $nid]
+    )->fetchField();
+
+    if ($current === $correct_date) {
+      continue;
+    }
+
+    // Update if exists, otherwise the main migration should have handled it.
+    if ($current) {
+      $database->update('node__field_event_date')
+        ->fields(['field_event_date_value' => $correct_date])
+        ->condition('entity_id', $nid)
+        ->execute();
+
+      $database->update('node_revision__field_event_date')
+        ->fields(['field_event_date_value' => $correct_date])
+        ->condition('entity_id', $nid)
+        ->execute();
+
+      $updated++;
+    }
+  }
+
+  return t('Verified/corrected @count event dates.', ['@count' => $updated]);
+}

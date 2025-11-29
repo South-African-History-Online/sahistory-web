@@ -125,29 +125,29 @@ function saho_timeline_requirements($phase) {
       ];
     }
     
-    // Check if TDIH field exists.
+    // Check if event date field exists.
     $field_storage = \Drupal::entityTypeManager()
       ->getStorage('field_storage_config')
-      ->load('node.field_this_day_in_history_3');
-    
+      ->load('node.field_event_date');
+
     if (!$field_storage) {
-      $requirements['saho_timeline_tdih_field'] = [
-        'title' => t('SAHO Timeline: TDIH Field'),
+      $requirements['saho_timeline_event_date_field'] = [
+        'title' => t('SAHO Timeline: Event Date Field'),
         'value' => t('Missing'),
         'severity' => REQUIREMENT_WARNING,
-        'description' => t('The field_this_day_in_history_3 field is missing. Timeline functionality will be limited.'),
+        'description' => t('The field_event_date field is missing. Timeline functionality will be limited.'),
       ];
     }
     else {
-      // Count events with TDIH data.
-      $query = \Drupal::database()->select('node__field_this_day_in_history_3', 'f');
+      // Count events with date data.
+      $query = \Drupal::database()->select('node__field_event_date', 'f');
       $query->join('node_field_data', 'n', 'n.nid = f.entity_id');
       $query->condition('n.type', 'event');
       $query->condition('n.status', 1);
       $count = $query->countQuery()->execute()->fetchField();
-      
-      $requirements['saho_timeline_tdih_field'] = [
-        'title' => t('SAHO Timeline: TDIH Events'),
+
+      $requirements['saho_timeline_event_date_field'] = [
+        'title' => t('SAHO Timeline: Events with Dates'),
         'value' => t('@count events', ['@count' => $count]),
         'severity' => REQUIREMENT_OK,
         'description' => t('Timeline has @count events with date information.', ['@count' => $count]),
