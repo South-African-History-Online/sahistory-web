@@ -100,14 +100,34 @@ if (extension_loaded('redis') && !empty(getenv('REDIS_HOST'))) {
   $settings['cache_prefix'] = 'd10_redis_';
 }
 
-$config['search_api.index.saho_global_ddev']['status'] = TRUE;
+// ============================================
+// SEARCH API / SOLR CONFIGURATION
+// ============================================
+// Enable local Solr server for DDEV.
 $config['search_api.server.local_solr']['status'] = TRUE;
-$config['search_api.server.local_solr']['backend_config'] = [
+$config['search_api.server.local_solr']['backend_config']['connector'] = 'solr_cloud_basic_auth';
+$config['search_api.server.local_solr']['backend_config']['connector_config'] = [
   'scheme' => 'http',
-  'host' => 'localhost',
+  'host' => 'solr',
   'port' => 8983,
-  'path' => '/solr',
+  'path' => '/',
   'core' => 'sahistory_content',
+  'timeout' => 5,
+  'index_timeout' => 5,
+  'optimize_timeout' => 10,
+  'finalize_timeout' => 30,
+  'commit_within' => 1000,
   'username' => 'solr',
   'password' => 'SolrRocks',
 ];
+
+// Disable production Solr server in DDEV.
+$config['search_api.server.saho_prod']['status'] = FALSE;
+
+// Enable and configure the main search index for local development.
+// The view uses saho_content, so we point it to local_solr for DDEV.
+$config['search_api.index.saho_content']['status'] = TRUE;
+$config['search_api.index.saho_content']['server'] = 'local_solr';
+
+// Also enable the DDEV-specific index (optional, for testing).
+$config['search_api.index.saho_global_ddev']['status'] = TRUE;
