@@ -7,14 +7,34 @@
   import ResearchTools from './ResearchTools.svelte';
   import Analytics from './Analytics.svelte';
   import Icon from './Icon.svelte';
-  
-  // SAHO site base URL for links
-  const SAHO_BASE_URL = 'https://sahistory-web.ddev.site';
-  
+  import { fetchDatelessEvents } from './api.js';
+
+  // SAHO site base URL - use relative paths for same-origin, detect for dev
+  function getSahoBaseUrl() {
+    // In production, use relative paths (empty string)
+    // In development, detect based on hostname
+    const currentHost = window.location.hostname;
+
+    if (currentHost.includes('ddev.site') || currentHost.includes('localhost')) {
+      return 'https://sahistory-web.ddev.site';
+    } else if (currentHost.includes('sahistory.org.za')) {
+      return 'https://sahistory.org.za';
+    }
+    // Default to relative paths (same origin)
+    return '';
+  }
+
+  const SAHO_BASE_URL = getSahoBaseUrl();
+
   export let events = [];
-  export let datelessEvents = [];
+  export let datelessCount = 0;
   export let minYear = 1300;
   export let maxYear = 2024;
+
+  // Dateless events are loaded lazily when the tab is clicked
+  let datelessEvents = [];
+  let datelessLoading = false;
+  let datelessError = null;
   
   const dispatch = createEventDispatcher();
   
@@ -246,7 +266,40 @@
       document.body.removeChild(textArea);
     }
   }
-  
+
+  /**
+   * Load dateless events when the Dateless Review tab is clicked.
+   * This is called lazily to avoid loading 500+ events on initial page load.
+   */
+  async function loadDatelessEvents() {
+    if (datelessEvents.length > 0 || datelessLoading) {
+      // Already loaded or loading
+      return;
+    }
+
+    datelessLoading = true;
+    datelessError = null;
+
+    try {
+      datelessEvents = await fetchDatelessEvents();
+      console.log(`Loaded ${datelessEvents.length} dateless events for review`);
+    } catch (err) {
+      console.error('Failed to load dateless events:', err);
+      datelessError = err.message;
+    } finally {
+      datelessLoading = false;
+    }
+  }
+
+  /**
+   * Handle clicking the Dateless Review tab.
+   * Switches to the view and triggers lazy loading of dateless events.
+   */
+  function handleDatelessReviewClick() {
+    viewMode = 'dateless_review';
+    loadDatelessEvents();
+  }
+
 </script>
 
 <svelte:window on:keydown={handleKeydown} />
@@ -278,56 +331,56 @@
             <span class="stat-value">{years.length}</span>
             <span class="stat-label">years covered</span>
           </div>
-          {#if datelessEvents.length > 0}
+          {#if datelessCount > 0}
             <div class="stat-divider">•</div>
             <div class="stat-item alert">
-              <span class="stat-value">{datelessEvents.length}</span>
+              <span class="stat-value">{datelessCount}</span>
               <span class="stat-label">need review</span>
             </div>
           {/if}
         </div>
       </div>
-      
+
       <div class="header-controls">
         <div class="search-section">
-          <input 
-            type="text" 
+          <input
+            type="text"
             placeholder="Search events, people, places, themes..."
             bind:value={searchQuery}
             class="search-input"
           />
         </div>
-        
+
         <div class="view-tabs">
-          <button 
+          <button
             class:active={viewMode === 'research'}
             on:click={() => viewMode = 'research'}
           >
             <Icon name="research" size="16" color="currentColor" />
             Research View
           </button>
-          <button 
+          <button
             class:active={viewMode === 'timeline'}
             on:click={() => viewMode = 'timeline'}
           >
             <Icon name="timeline" size="16" color="currentColor" />
             Timeline Visualisation
           </button>
-          <button 
+          <button
             class:active={viewMode === 'analytical'}
             on:click={() => viewMode = 'analytical'}
           >
             <Icon name="analytics" size="16" color="currentColor" />
             Data Analytics
           </button>
-          {#if datelessEvents.length > 0}
-            <button 
+          {#if datelessCount > 0}
+            <button
               class="dateless-review-tab"
               class:active={viewMode === 'dateless_review'}
-              on:click={() => viewMode = 'dateless_review'}
+              on:click={handleDatelessReviewClick}
             >
               <Icon name="alert" size="16" color="currentColor" />
-              Dateless Review ({datelessEvents.length})
+              Dateless Review ({datelessCount})
             </button>
           {/if}
         </div>
@@ -466,16 +519,20 @@
               {showCitations ? 'Hide' : 'Show'} Citations
             </button>
             
-            {#if datelessEvents.length > 0}
-              <button 
+            {#if datelessCount > 0}
+              <button
                 class="research-action admin-action"
-                on:click={() => { 
-                  viewMode = viewMode === 'dateless_review' ? 'research' : 'dateless_review';
+                on:click={() => {
+                  if (viewMode === 'dateless_review') {
+                    viewMode = 'research';
+                  } else {
+                    handleDatelessReviewClick();
+                  }
                   mobileMenuOpen = false;
                 }}
               >
                 <Icon name="alert" size="16" color="currentColor" />
-                {viewMode === 'dateless_review' ? 'Back to Timeline' : `Review Dateless (${datelessEvents.length})`}
+                {viewMode === 'dateless_review' ? 'Back to Timeline' : `Review Dateless (${datelessCount})`}
               </button>
             {/if}
             
@@ -630,45 +687,57 @@
           <header class="review-header">
             <h3>Dateless Events Review</h3>
             <p class="review-description">
-              {datelessEvents.length} events found without proper historical dates. 
+              {datelessCount} events found without proper historical dates.
               These events need date review before appearing in the timeline.
             </p>
-            <button 
+            <button
               class="back-btn"
               on:click={() => viewMode = 'research'}
             >
               ← Back to Timeline
             </button>
           </header>
-          
-          <div class="dateless-list">
-            {#each datelessEvents as event (event.id)}
-              <div class="dateless-event">
-                <div class="event-header">
-                  <h4>{event.title}</h4>
-                  <span class="event-id">ID: {event.id}</span>
+
+          {#if datelessLoading}
+            <div class="dateless-loading">
+              <div class="loading-spinner"></div>
+              <p>Loading dateless events for review...</p>
+            </div>
+          {:else if datelessError}
+            <div class="dateless-error">
+              <p>Failed to load dateless events: {datelessError}</p>
+              <button on:click={loadDatelessEvents}>Retry</button>
+            </div>
+          {:else}
+            <div class="dateless-list">
+              {#each datelessEvents as event (event.id)}
+                <div class="dateless-event">
+                  <div class="event-header">
+                    <h4>{event.title}</h4>
+                    <span class="event-id">ID: {event.id}</span>
+                  </div>
+                  <p class="event-status">
+                    <strong>Status:</strong> {event.status}
+                  </p>
+                  <p class="event-reason">
+                    <strong>Reason:</strong> {event.reason}
+                  </p>
+                  <p class="event-created">
+                    <strong>Created:</strong> {event.created}
+                  </p>
+                  <div class="event-actions">
+                    <a
+                      href="{SAHO_BASE_URL}{event.edit_url}"
+                      target="_blank"
+                      class="edit-btn"
+                    >
+                      Edit in Drupal
+                    </a>
+                  </div>
                 </div>
-                <p class="event-status">
-                  <strong>Status:</strong> {event.status}
-                </p>
-                <p class="event-reason">
-                  <strong>Reason:</strong> {event.reason}
-                </p>
-                <p class="event-created">
-                  <strong>Created:</strong> {event.created}
-                </p>
-                <div class="event-actions">
-                  <a 
-                    href="{SAHO_BASE_URL}{event.edit_url}" 
-                    target="_blank" 
-                    class="edit-btn"
-                  >
-                    Edit in Drupal
-                  </a>
-                </div>
-              </div>
-            {/each}
-          </div>
+              {/each}
+            </div>
+          {/if}
         </div>
       {/if}
     </main>
@@ -1964,6 +2033,57 @@
   }
 
   .back-btn:hover {
+    background: #7a1b24;
+  }
+
+  .dateless-loading {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem;
+    color: #666;
+  }
+
+  .dateless-loading .loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid #e9ecef;
+    border-top: 3px solid #97212d;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 1rem;
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  .dateless-error {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem;
+    color: #d32f2f;
+    text-align: center;
+  }
+
+  .dateless-error button {
+    margin-top: 1rem;
+    background: #97212d;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+  }
+
+  .dateless-error button:hover {
     background: #7a1b24;
   }
 

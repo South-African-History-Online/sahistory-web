@@ -685,12 +685,14 @@ class TimelineEventService {
    *   Whether to include TDIH events.
    * @param bool $use_cache
    *   Whether to use caching.
+   * @param bool $include_dateless_full
+   *   Whether to include full dateless event data for admin review.
    *
    * @return array
    *   Array with 'events' (with historical dates) and 'dateless_events' keys.
    */
-  public function getAllTimelineEventsSegregated($include_tdih = TRUE, $use_cache = TRUE) {
-    $cache_id = 'saho_timeline:segregated_events';
+  public function getAllTimelineEventsSegregated($include_tdih = TRUE, $use_cache = TRUE, $include_dateless_full = FALSE) {
+    $cache_id = 'saho_timeline:segregated_events:' . ($include_dateless_full ? 'full' : 'count');
 
     // Try cache first.
     if ($use_cache && $cached = $this->cache->get($cache_id)) {
@@ -717,21 +719,55 @@ class TimelineEventService {
       $events_with_dates = $storage->loadMultiple($dated_nids);
     }
 
-    // Get count of dateless events without loading them.
+    // Get dateless events - either count only or full data for admin review.
+    $dateless_events = [];
+    $dateless_count = 0;
+
     $dateless_query = $this->database->select('node_field_data', 'n');
     $dateless_query->condition('n.type', 'event');
     $dateless_query->condition('n.status', 1);
     $dateless_query->leftJoin('node__field_event_date', 'fed', 'n.nid = fed.entity_id');
     $dateless_query->isNull('fed.field_event_date_value');
-    $dateless_count = $dateless_query->countQuery()->execute()->fetchField();
+
+    if ($include_dateless_full) {
+      // Get full dateless event info for admin review.
+      // Limited to 500 for performance.
+      $dateless_query->fields('n', ['nid', 'title', 'created', 'status']);
+      $dateless_query->range(0, 500);
+      $dateless_query->orderBy('n.created', 'DESC');
+      $dateless_results = $dateless_query->execute()->fetchAll();
+
+      foreach ($dateless_results as $row) {
+        $dateless_events[] = [
+          'id' => $row->nid,
+          'title' => $row->title,
+          'created' => $row->created,
+          'status' => $row->status ? 'Published' : 'Unpublished',
+          'reason' => 'Missing field_event_date value',
+        ];
+      }
+      $dateless_count = count($dateless_results);
+
+      // Get total count if more than limit.
+      $total_dateless_query = $this->database->select('node_field_data', 'n');
+      $total_dateless_query->condition('n.type', 'event');
+      $total_dateless_query->condition('n.status', 1);
+      $total_dateless_query->leftJoin('node__field_event_date', 'fed', 'n.nid = fed.entity_id');
+      $total_dateless_query->isNull('fed.field_event_date_value');
+      $dateless_count = (int) $total_dateless_query->countQuery()->execute()->fetchField();
+    }
+    else {
+      // Just get the count for performance.
+      $dateless_count = (int) $dateless_query->countQuery()->execute()->fetchField();
+    }
 
     $result = [
       'events' => array_values($events_with_dates),
-      'dateless_events' => [],
+      'dateless_events' => $dateless_events,
       'stats' => [
-        'total_events' => count($events_with_dates) + (int) $dateless_count,
+        'total_events' => count($events_with_dates) + $dateless_count,
         'events_with_dates' => count($events_with_dates),
-        'dateless_events' => (int) $dateless_count,
+        'dateless_events' => $dateless_count,
       ],
     ];
 

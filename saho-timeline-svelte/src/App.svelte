@@ -3,29 +3,29 @@
   import ResearchTimeline from './lib/ResearchTimeline.svelte';
   import { fetchTimelineEvents, processEvents } from './lib/api.js';
   import Icon from './lib/Icon.svelte';
-  
+
   let events = [];
-  let datelessEvents = [];
+  let datelessCount = 0;
   let processedData = null;
   let loading = true;
   let error = null;
-  
+
   onMount(async () => {
     try {
       console.log('Loading SAHO Research Timeline...');
       const apiData = await fetchTimelineEvents(5000);
-      
+
       if (apiData && apiData.events && apiData.events.length > 0) {
         processedData = processEvents(apiData.events);
         events = processedData.all;
-        datelessEvents = apiData.datelessEvents || apiData.dateless_events || [];
+        datelessCount = apiData.stats?.datelessEvents || 0;
         console.log(`✅ Loaded ${events.length} events with dates spanning ${processedData.minYear}-${processedData.maxYear}`);
-        console.log(`📋 Found ${datelessEvents.length} dateless events for review`);
+        console.log(`📋 ${datelessCount} dateless events available for review`);
         console.log('🔬 Research Timeline ready for scholarly exploration');
       } else if (apiData && apiData.events) {
         // Handle case where events array exists but is empty
         events = [];
-        datelessEvents = apiData.datelessEvents || apiData.dateless_events || [];
+        datelessCount = apiData.stats?.datelessEvents || 0;
         processedData = { all: [], byYear: {}, minYear: 1300, maxYear: 2024, totalEvents: 0 };
         console.log('⚠️ No events with dates found, but API responded');
       } else {
@@ -38,7 +38,7 @@
       loading = false;
     }
   });
-  
+
   function handleEventSelect(event) {
     console.log('Selected event for research:', event.detail);
   }
@@ -74,9 +74,9 @@
       </div>
     </div>
   {:else}
-    <ResearchTimeline 
+    <ResearchTimeline
       {events}
-      {datelessEvents}
+      {datelessCount}
       minYear={processedData.minYear}
       maxYear={processedData.maxYear}
       on:select={handleEventSelect}

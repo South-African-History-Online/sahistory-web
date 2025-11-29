@@ -30,12 +30,12 @@ const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 export async function fetchTimelineEvents(limit = 5000) {
   const cacheKey = `events_${limit}`;
   const cached = cache.get(cacheKey);
-  
+
   if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
     console.log('Using cached events');
     return cached.data;
   }
-  
+
   try {
     console.log(`Fetching events from ${API_BASE}${API_ENDPOINT}`);
     const response = await axios.get(`${API_BASE}${API_ENDPOINT}`, {
@@ -123,4 +123,46 @@ export function filterEventsByDateRange(events, startYear, endYear) {
     const year = new Date(event.date).getFullYear();
     return year >= startYear && year <= endYear;
   });
+}
+
+/**
+ * Fetch dateless events on demand for admin review.
+ * This is called lazily when the user clicks the Dateless Review tab.
+ */
+export async function fetchDatelessEvents() {
+  const cacheKey = 'dateless_events';
+  const cached = cache.get(cacheKey);
+
+  if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+    console.log('Using cached dateless events');
+    return cached.data;
+  }
+
+  try {
+    console.log(`Fetching dateless events from ${API_BASE}${API_ENDPOINT}`);
+    const response = await axios.get(`${API_BASE}${API_ENDPOINT}`, {
+      params: {
+        limit: 1,
+        include_dateless: 'full'
+      },
+      headers: {
+        'Accept': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest'
+      }
+    });
+
+    const datelessEvents = response.data.dateless_events || [];
+    console.log(`Fetched ${datelessEvents.length} dateless events for review`);
+
+    // Cache the response
+    cache.set(cacheKey, {
+      data: datelessEvents,
+      timestamp: Date.now()
+    });
+
+    return datelessEvents;
+  } catch (error) {
+    console.error('Failed to fetch dateless events:', error);
+    throw error;
+  }
 }

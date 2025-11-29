@@ -3,18 +3,16 @@
  * Modern exposed filters with collapsible panels and show more functionality.
  */
 
-(function (Drupal, once) {
-  'use strict';
-
+((Drupal, once) => {
   Drupal.behaviors.sahoExposedFilters = {
-    attach: function (context, settings) {
+    attach: (context, _settings) => {
       // Initialize each exposed form
-      once('saho-exposed-filters', '.views-exposed-form', context).forEach(function (form) {
+      once('saho-exposed-filters', '.views-exposed-form', context).forEach((form) => {
         initializeFilterPanel(form);
         initializeShowMore(form);
         initializeActiveFilters(form);
       });
-    }
+    },
   };
 
   /**
@@ -37,12 +35,14 @@
     // Wrap filters in collapsible content (check if not already wrapped)
     if (!form.querySelector('.exposed-filters-content')) {
       const wrapper = document.createElement('div');
-      wrapper.className = 'exposed-filters-content ' + (initiallyCollapsed ? 'collapsed' : 'expanded');
+      wrapper.className = `exposed-filters-content ${initiallyCollapsed ? 'collapsed' : 'expanded'}`;
       befFilters.parentNode.insertBefore(wrapper, befFilters);
       wrapper.appendChild(befFilters);
 
       // Count total filter options available
-      const totalOptions = form.querySelectorAll('input[type="checkbox"], input[type="radio"]').length;
+      const totalOptions = form.querySelectorAll(
+        'input[type="checkbox"], input[type="radio"]'
+      ).length;
 
       // Add header with toggle
       const header = document.createElement('div');
@@ -54,7 +54,7 @@
       wrapper.parentNode.insertBefore(header, wrapper);
 
       // Toggle functionality
-      header.addEventListener('click', function() {
+      header.addEventListener('click', () => {
         const isExpanded = wrapper.classList.contains('expanded');
         const icon = header.querySelector('.toggle-icon');
 
@@ -75,9 +75,11 @@
    * Initialize "show more" functionality for filter options.
    */
   function initializeShowMore(form) {
-    const filterGroups = form.querySelectorAll('.bef-checkboxes, .bef-radios, .form-checkboxes, .form-radios');
+    const filterGroups = form.querySelectorAll(
+      '.bef-checkboxes, .bef-radios, .form-checkboxes, .form-radios'
+    );
 
-    filterGroups.forEach(function(group) {
+    filterGroups.forEach((group) => {
       // Skip if already initialized
       if (group.hasAttribute('data-show-more-initialized')) {
         return;
@@ -96,7 +98,7 @@
 
         // Remove any existing "show more" buttons in this container
         const existingButtons = container.querySelectorAll('.filter-show-more');
-        existingButtons.forEach(function(btn) {
+        existingButtons.forEach((btn) => {
           btn.remove();
         });
 
@@ -111,7 +113,7 @@
         container.appendChild(showMoreBtn);
 
         // Toggle functionality
-        showMoreBtn.addEventListener('click', function(e) {
+        showMoreBtn.addEventListener('click', (e) => {
           e.preventDefault();
           const isExpanded = group.classList.contains('show-all');
 
@@ -143,10 +145,12 @@
     form.setAttribute('data-active-filters-initialized', 'true');
 
     // Listen for changes on filter inputs
-    const filterInputs = form.querySelectorAll('input[type="checkbox"], input[type="radio"], select');
+    const filterInputs = form.querySelectorAll(
+      'input[type="checkbox"], input[type="radio"], select'
+    );
 
-    filterInputs.forEach(function(input) {
-      input.addEventListener('change', function() {
+    filterInputs.forEach((input) => {
+      input.addEventListener('change', () => {
         updateActiveFiltersSummary(form);
       });
     });
@@ -180,7 +184,7 @@
     summary.appendChild(label);
 
     // Add tag for each active filter
-    activeFilters.forEach(function(filter) {
+    activeFilters.forEach((filter) => {
       const tag = document.createElement('span');
       tag.className = 'active-filter-tag';
       tag.innerHTML = `
@@ -189,7 +193,7 @@
       `;
 
       // Remove filter on click
-      tag.querySelector('.remove-filter').addEventListener('click', function(e) {
+      tag.querySelector('.remove-filter').addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
 
@@ -207,7 +211,7 @@
           }
 
           // 3. Click the submit button if autosubmit didn't work
-          setTimeout(function() {
+          setTimeout(() => {
             const submitBtn = form.querySelector('input[type="submit"], button[type="submit"]');
             if (submitBtn && !submitBtn.classList.contains('js-hide')) {
               submitBtn.click();
@@ -225,13 +229,13 @@
       clearAll.type = 'button';
       clearAll.className = 'clear-all-filters';
       clearAll.textContent = 'Clear all';
-      clearAll.addEventListener('click', function(e) {
+      clearAll.addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
 
         // Uncheck all active filters
         let lastInput = null;
-        activeFilters.forEach(function(filter) {
+        activeFilters.forEach((filter) => {
           const input = form.querySelector(`#${filter.id}`);
           if (input) {
             input.checked = false;
@@ -250,7 +254,7 @@
           }
 
           // 3. Click the submit button if autosubmit didn't work
-          setTimeout(function() {
+          setTimeout(() => {
             const submitBtn = form.querySelector('input[type="submit"], button[type="submit"]');
             if (submitBtn && !submitBtn.classList.contains('js-hide')) {
               submitBtn.click();
@@ -270,9 +274,11 @@
    */
   function getActiveFilters(form) {
     const active = [];
-    const checkedInputs = form.querySelectorAll('input[type="checkbox"]:checked, input[type="radio"]:checked');
+    const checkedInputs = form.querySelectorAll(
+      'input[type="checkbox"]:checked, input[type="radio"]:checked'
+    );
 
-    checkedInputs.forEach(function(input) {
+    checkedInputs.forEach((input) => {
       // Skip if this is a hidden or system input
       if (input.name.includes('autosubmit') || input.classList.contains('visually-hidden')) {
         return;
@@ -284,12 +290,11 @@
           id: input.id,
           name: input.name,
           value: input.value,
-          label: label.textContent.trim()
+          label: label.textContent.trim(),
         });
       }
     });
 
     return active;
   }
-
 })(Drupal, once);
