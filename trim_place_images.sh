@@ -5,7 +5,7 @@
 #
 # BACKGROUND:
 #   Editor uses Snipping Tool which adds red borders to screenshots.
-#   This script automatically removes those borders using ImageMagick.
+#   This script detects red pixels along edges and crops them precisely.
 #
 # USAGE:
 #   Dry-run (recommended first):
@@ -20,13 +20,11 @@
 # OPTIONS:
 #   --dry-run      Test run without making changes
 #   --restore DIR  Restore files from backup directory
-#   --fuzz N       Set fuzz tolerance (default: 5)
 #   --help         Show this help message
 
 set -euo pipefail
 
 # Default configuration
-FUZZ_TOLERANCE=5
 DRY_RUN=false
 RESTORE_MODE=false
 RESTORE_DIR=""
@@ -41,10 +39,6 @@ while [[ $# -gt 0 ]]; do
         --restore)
             RESTORE_MODE=true
             RESTORE_DIR="$2"
-            shift 2
-            ;;
-        --fuzz)
-            FUZZ_TOLERANCE="$2"
             shift 2
             ;;
         --help)
@@ -65,24 +59,22 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # Use vendor/bin/drush with absolute path (works after cd to files directory)
 DRUSH="$SCRIPT_DIR/vendor/bin/drush"
 if [ ! -f "$DRUSH" ]; then
-    echo "❌ Error: Drush not found at $DRUSH"
+    echo "Error: Drush not found at $DRUSH"
     echo "Run 'composer install' first"
     exit 1
 fi
 
 # Check for ImageMagick (try 'magick' first, fall back to 'convert')
 if command -v magick &> /dev/null; then
-    IMAGEMAGICK_CMD="magick"
-    IDENTIFY_CMD="magick identify"
+    MAGICK_CMD="magick"
 elif command -v convert &> /dev/null; then
-    IMAGEMAGICK_CMD="convert"
-    IDENTIFY_CMD="identify"
+    MAGICK_CMD="convert"
 else
-    echo "❌ Error: ImageMagick not found (neither 'magick' nor 'convert')"
+    echo "Error: ImageMagick not found (neither 'magick' nor 'convert')"
     echo "Install with: sudo apt-get install imagemagick (or equivalent)"
     exit 1
 fi
-echo "Using ImageMagick command: $IMAGEMAGICK_CMD"
+echo "Using ImageMagick command: $MAGICK_CMD"
 
 # Get the Drupal root and files directory
 DRUPAL_ROOT="$SCRIPT_DIR/webroot"
@@ -94,7 +86,7 @@ cd "$FILES_DIR"
 # Create lock file to prevent concurrent runs
 LOCK_FILE="/tmp/trim_place_images.lock"
 if [ -f "$LOCK_FILE" ]; then
-    echo "❌ Error: Another instance is already running (lock file exists)"
+    echo "Error: Another instance is already running (lock file exists)"
     echo "If you're sure no other instance is running, remove: $LOCK_FILE"
     exit 1
 fi
@@ -105,7 +97,6 @@ touch "$LOCK_FILE"
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 LOG_DIR="../image_processing_logs"
 if ! mkdir -p "$LOG_DIR" 2>/dev/null; then
-    # Fall back to /tmp if we can't create the preferred directory
     LOG_DIR="/tmp/image_processing_logs"
     mkdir -p "$LOG_DIR"
 fi
@@ -116,10 +107,99 @@ log() {
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" | tee -a "$LOG_FILE"
 }
 
+# Function to check if a pixel is "Snipping Tool red" (R > 200, G < 80, B < 80)
+# Returns 0 (true) if red, 1 (false) if not
+is_red_pixel() {
+    local image="$1"
+    local x="$2"
+    local y="$3"
+
+    local pixel
+    if [ "$MAGICK_CMD" = "magick" ]; then
+        pixel=$($MAGICK_CMD "$image" -format "%[pixel:p{$x,$y}]" info: 2>/dev/null)
+    else
+        pixel=$($MAGICK_CMD "$image" -format "%[pixel:p{$x,$y}]" info: 2>/dev/null)
+    fi
+
+    # Extract RGB values from srgb(r,g,b) or srgba(r,g,b,a) format
+    local r g b
+    r=$(echo "$pixel" | sed -n 's/.*(\([0-9]*\),.*/\1/p')
+    g=$(echo "$pixel" | sed -n 's/.*,\([0-9]*\),.*/\1/p')
+    b=$(echo "$pixel" | sed -n 's/.*,\([0-9]*\)[,)].*/\1/p')
+
+    # Check for pure red: R > 200, G < 80, B < 80
+    if [ -n "$r" ] && [ -n "$g" ] && [ -n "$b" ]; then
+        if [ "$r" -gt 200 ] && [ "$g" -lt 80 ] && [ "$b" -lt 80 ]; then
+            return 0  # Is red
+        fi
+    fi
+    return 1  # Not red
+}
+
+# Function to detect red border thickness on one edge
+# Returns the number of pixels of red border (0-10)
+detect_border_thickness() {
+    local image="$1"
+    local edge="$2"  # top, bottom, left, right
+    local width="$3"
+    local height="$4"
+    local max_depth=10
+
+    for depth in $(seq 0 $((max_depth - 1))); do
+        local red_count=0
+        local total_samples=5
+
+        case $edge in
+            top)
+                for i in $(seq 1 $total_samples); do
+                    local x=$((width * i / (total_samples + 1)))
+                    if is_red_pixel "$image" "$x" "$depth"; then
+                        red_count=$((red_count + 1))
+                    fi
+                done
+                ;;
+            bottom)
+                for i in $(seq 1 $total_samples); do
+                    local x=$((width * i / (total_samples + 1)))
+                    local y=$((height - 1 - depth))
+                    if is_red_pixel "$image" "$x" "$y"; then
+                        red_count=$((red_count + 1))
+                    fi
+                done
+                ;;
+            left)
+                for i in $(seq 1 $total_samples); do
+                    local y=$((height * i / (total_samples + 1)))
+                    if is_red_pixel "$image" "$depth" "$y"; then
+                        red_count=$((red_count + 1))
+                    fi
+                done
+                ;;
+            right)
+                for i in $(seq 1 $total_samples); do
+                    local y=$((height * i / (total_samples + 1)))
+                    local x=$((width - 1 - depth))
+                    if is_red_pixel "$image" "$x" "$y"; then
+                        red_count=$((red_count + 1))
+                    fi
+                done
+                ;;
+        esac
+
+        # If less than 3 out of 5 samples are red at this depth, border ends here
+        if [ $red_count -lt 3 ]; then
+            echo $depth
+            return
+        fi
+    done
+
+    echo $max_depth
+}
+
 # Restore mode
 if [ "$RESTORE_MODE" = true ]; then
     if [ ! -d "$RESTORE_DIR" ]; then
-        echo "❌ Error: Restore directory not found: $RESTORE_DIR"
+        echo "Error: Restore directory not found: $RESTORE_DIR"
         exit 1
     fi
 
@@ -130,15 +210,14 @@ if [ "$RESTORE_MODE" = true ]; then
 
     RESTORED=0
     find "$RESTORE_DIR" -type f | while read -r backup_file; do
-        # Get relative path
         rel_path="${backup_file#$RESTORE_DIR/}"
         target_file="$FILES_DIR/$rel_path"
 
         if cp "$backup_file" "$target_file"; then
-            log "✓ Restored: $rel_path"
+            log "Restored: $rel_path"
             RESTORED=$((RESTORED + 1))
         else
-            log "✗ Failed to restore: $rel_path"
+            log "Failed to restore: $rel_path"
         fi
     done
 
@@ -152,16 +231,14 @@ fi
 # Regular processing mode
 BACKUP_DIR="../image_backups/$TIMESTAMP"
 if ! mkdir -p "$BACKUP_DIR" 2>/dev/null; then
-    # Fall back to /tmp if we can't create the preferred directory
     BACKUP_DIR="/tmp/image_backups/$TIMESTAMP"
     mkdir -p "$BACKUP_DIR"
 fi
 
 log "========================================="
-log "Place Image Border Removal Script"
+log "Place Image Red Border Removal Script"
 log "========================================="
 log "Dry Run: $DRY_RUN"
-log "Fuzz Tolerance: $FUZZ_TOLERANCE%"
 log "Backup Directory: $BACKUP_DIR"
 log "Log File: $LOG_FILE"
 log "========================================="
@@ -206,98 +283,72 @@ while IFS=$'\t' read -r uri filename filesize; do
     log "[$CURRENT/$TOTAL_IMAGES] Processing: $filename"
 
     if [ ! -f "$file_path" ]; then
-        log "  ✗ File not found: $file_path"
+        log "  File not found: $file_path"
         SKIPPED=$((SKIPPED + 1))
         continue
     fi
 
-    # Get original file size
-    original_size=$(stat -f%z "$file_path" 2>/dev/null || stat -c%s "$file_path" 2>/dev/null)
-
     # Get original dimensions
-    original_dims=$($IDENTIFY_CMD -format "%wx%h" "$file_path" 2>/dev/null)
-    original_width=$(echo "$original_dims" | cut -d'x' -f1)
-    original_height=$(echo "$original_dims" | cut -d'x' -f2)
+    if [ "$MAGICK_CMD" = "magick" ]; then
+        read width height <<< $($MAGICK_CMD identify -format "%w %h" "$file_path" 2>/dev/null)
+    else
+        read width height <<< $(identify -format "%w %h" "$file_path" 2>/dev/null)
+    fi
+
+    if [ -z "$width" ] || [ -z "$height" ]; then
+        log "  Error reading image dimensions"
+        ERRORS=$((ERRORS + 1))
+        continue
+    fi
+
+    # Detect red border on each edge
+    top_border=$(detect_border_thickness "$file_path" "top" "$width" "$height")
+    bottom_border=$(detect_border_thickness "$file_path" "bottom" "$width" "$height")
+    left_border=$(detect_border_thickness "$file_path" "left" "$width" "$height")
+    right_border=$(detect_border_thickness "$file_path" "right" "$width" "$height")
+
+    # Check if any border was detected
+    if [ "$top_border" -eq 0 ] && [ "$bottom_border" -eq 0 ] && [ "$left_border" -eq 0 ] && [ "$right_border" -eq 0 ]; then
+        log "  No red border detected"
+        NO_CHANGE=$((NO_CHANGE + 1))
+        continue
+    fi
+
+    # Calculate new dimensions
+    new_width=$((width - left_border - right_border))
+    new_height=$((height - top_border - bottom_border))
+
+    # Safety check: don't make image too small
+    if [ "$new_width" -lt 50 ] || [ "$new_height" -lt 50 ]; then
+        log "  Skipped: result would be too small (${new_width}x${new_height})"
+        NO_CHANGE=$((NO_CHANGE + 1))
+        continue
+    fi
+
+    log "  Detected border: top=${top_border}px, bottom=${bottom_border}px, left=${left_border}px, right=${right_border}px"
 
     if [ "$DRY_RUN" = true ]; then
-        # In dry-run, just check what would be trimmed
-        test_output="/tmp/trim_test_$$_${CURRENT}.tmp"
-        if $IMAGEMAGICK_CMD "$file_path" -fuzz ${FUZZ_TOLERANCE}% -trim +repage "$test_output" 2>/dev/null; then
-            # Get new dimensions
-            new_dims=$($IDENTIFY_CMD -format "%wx%h" "$test_output" 2>/dev/null)
-            new_width=$(echo "$new_dims" | cut -d'x' -f1)
-            new_height=$(echo "$new_dims" | cut -d'x' -f2)
-
-            width_diff=$((original_width - new_width))
-            height_diff=$((original_height - new_height))
-
-            # Only count as border removal if BOTH dimensions changed (real border trim)
-            # AND the result isn't too small (min 50px) AND we're not removing too much (max 20px per side)
-            if [ $width_diff -gt 0 ] && [ $height_diff -gt 0 ]; then
-                if [ "$new_width" -lt 50 ] || [ "$new_height" -lt 50 ]; then
-                    log "  ⚠ Skipped: result too small (${new_dims})"
-                    NO_CHANGE=$((NO_CHANGE + 1))
-                elif [ $width_diff -gt 40 ] || [ $height_diff -gt 40 ]; then
-                    log "  ⚠ Skipped: trim too large (-${width_diff}x${height_diff}px) - may remove content"
-                    NO_CHANGE=$((NO_CHANGE + 1))
-                else
-                    log "  ℹ Would trim: ${original_dims} -> ${new_dims} (-${width_diff}x${height_diff}px)"
-                    PROCESSED=$((PROCESSED + 1))
-                fi
-            else
-                log "  ℹ No border detected"
-                NO_CHANGE=$((NO_CHANGE + 1))
-            fi
-            rm -f "$test_output"
-        else
-            log "  ✗ Error testing image"
-            ERRORS=$((ERRORS + 1))
-        fi
+        log "  Would crop: ${width}x${height} -> ${new_width}x${new_height}"
+        PROCESSED=$((PROCESSED + 1))
     else
         # Backup original
         backup_path="$BACKUP_DIR/$file_path"
         mkdir -p "$(dirname "$backup_path")"
         if ! cp "$file_path" "$backup_path"; then
-            log "  ✗ Backup failed, skipping"
+            log "  Backup failed, skipping"
             ERRORS=$((ERRORS + 1))
             continue
         fi
 
-        # Trim the border
+        # Crop the image
         temp_output="${file_path}.tmp"
-        if $IMAGEMAGICK_CMD "$file_path" -fuzz ${FUZZ_TOLERANCE}% -trim +repage "$temp_output" 2>/dev/null; then
-            # Get new dimensions
-            new_dims=$($IDENTIFY_CMD -format "%wx%h" "$temp_output" 2>/dev/null)
-            new_width=$(echo "$new_dims" | cut -d'x' -f1)
-            new_height=$(echo "$new_dims" | cut -d'x' -f2)
-
-            width_diff=$((original_width - new_width))
-            height_diff=$((original_height - new_height))
-
-            # Only apply if BOTH dimensions changed (real border trim)
-            # AND the result isn't too small (min 50px) AND we're not removing too much (max 20px per side)
-            if [ $width_diff -gt 0 ] && [ $height_diff -gt 0 ]; then
-                if [ "$new_width" -lt 50 ] || [ "$new_height" -lt 50 ]; then
-                    rm -f "$temp_output"
-                    log "  ⚠ Skipped: result too small (${new_dims})"
-                    NO_CHANGE=$((NO_CHANGE + 1))
-                elif [ $width_diff -gt 40 ] || [ $height_diff -gt 40 ]; then
-                    rm -f "$temp_output"
-                    log "  ⚠ Skipped: trim too large (-${width_diff}x${height_diff}px) - may remove content"
-                    NO_CHANGE=$((NO_CHANGE + 1))
-                else
-                    mv "$temp_output" "$file_path"
-                    log "  ✓ Trimmed: ${original_dims} -> ${new_dims} (-${width_diff}x${height_diff}px)"
-                    PROCESSED=$((PROCESSED + 1))
-                fi
-            else
-                rm -f "$temp_output"
-                log "  ○ No border detected, left unchanged"
-                NO_CHANGE=$((NO_CHANGE + 1))
-            fi
+        if $MAGICK_CMD "$file_path" -crop "${new_width}x${new_height}+${left_border}+${top_border}" +repage "$temp_output" 2>/dev/null; then
+            mv "$temp_output" "$file_path"
+            log "  Cropped: ${width}x${height} -> ${new_width}x${new_height}"
+            PROCESSED=$((PROCESSED + 1))
         else
             rm -f "$temp_output"
-            log "  ✗ Error processing image"
+            log "  Error cropping image"
             ERRORS=$((ERRORS + 1))
         fi
     fi
