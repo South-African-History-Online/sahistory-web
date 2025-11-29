@@ -46,11 +46,11 @@ class NodeFetcher {
         ->condition('status', 1)
         ->condition('field_home_page_feature', 1)
         ->accessCheck(TRUE)
-        ->sort('field_this_day_in_history_3', 'DESC');
+        ->sort('field_event_date', 'DESC');
 
       // If a specific month-day is provided, use LIKE to get potential matches.
       if ($month_day) {
-        $query->condition('field_this_day_in_history_3', "%-$month_day", 'LIKE');
+        $query->condition('field_event_date', "%-$month_day", 'LIKE');
       }
 
       // Limit to reasonable number for performance.
@@ -86,11 +86,11 @@ class NodeFetcher {
       $query->condition('type', 'event')
         ->condition('status', 1)
         ->accessCheck(TRUE)
-        ->sort('field_this_day_in_history_3', 'DESC');
+        ->sort('field_event_date', 'DESC');
 
       // If a specific month-day is provided, use LIKE to get potential matches.
       if ($month_day) {
-        $query->condition('field_this_day_in_history_3', "%-$month_day", 'LIKE');
+        $query->condition('field_event_date', "%-$month_day", 'LIKE');
       }
 
       // Limit to reasonable number for performance.
@@ -127,9 +127,9 @@ class NodeFetcher {
 
       // Query to extract month and day from the date field.
       $query = $database->select('node_field_data', 'n');
-      $query->join('node__field_this_day_in_history_3', 'f', 'n.nid = f.entity_id');
+      $query->join('node__field_event_date', 'f', 'n.nid = f.entity_id');
       $query->join('node__field_home_page_feature', 'h', 'n.nid = h.entity_id');
-      $query->fields('f', ['field_this_day_in_history_3_value']);
+      $query->fields('f', ['field_event_date_value']);
       $query->condition('n.type', 'event')
         ->condition('n.status', 1)
         ->condition('h.field_home_page_feature_value', 1)
