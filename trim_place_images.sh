@@ -73,8 +73,10 @@ fi
 # Check for ImageMagick (try 'magick' first, fall back to 'convert')
 if command -v magick &> /dev/null; then
     IMAGEMAGICK_CMD="magick"
+    IDENTIFY_CMD="magick identify"
 elif command -v convert &> /dev/null; then
     IMAGEMAGICK_CMD="convert"
+    IDENTIFY_CMD="identify"
 else
     echo "❌ Error: ImageMagick not found (neither 'magick' nor 'convert')"
     echo "Install with: sudo apt-get install imagemagick (or equivalent)"
@@ -212,19 +214,38 @@ while IFS=$'\t' read -r uri filename filesize; do
     # Get original file size
     original_size=$(stat -f%z "$file_path" 2>/dev/null || stat -c%s "$file_path" 2>/dev/null)
 
+    # Get original dimensions
+    original_dims=$($IDENTIFY_CMD -format "%wx%h" "$file_path" 2>/dev/null)
+    original_width=$(echo "$original_dims" | cut -d'x' -f1)
+    original_height=$(echo "$original_dims" | cut -d'x' -f2)
+
     if [ "$DRY_RUN" = true ]; then
         # In dry-run, just check what would be trimmed
         test_output="/tmp/trim_test_$$_${CURRENT}.tmp"
         if $IMAGEMAGICK_CMD "$file_path" -fuzz ${FUZZ_TOLERANCE}% -trim +repage "$test_output" 2>/dev/null; then
-            new_size=$(stat -f%z "$test_output" 2>/dev/null || stat -c%s "$test_output" 2>/dev/null)
-            size_diff=$((original_size - new_size))
+            # Get new dimensions
+            new_dims=$($IDENTIFY_CMD -format "%wx%h" "$test_output" 2>/dev/null)
+            new_width=$(echo "$new_dims" | cut -d'x' -f1)
+            new_height=$(echo "$new_dims" | cut -d'x' -f2)
 
-            if [ $size_diff -gt 100 ]; then
-                percentage=$((size_diff * 100 / original_size))
-                log "  ℹ Would trim: -${size_diff} bytes (-${percentage}%)"
-                PROCESSED=$((PROCESSED + 1))
+            width_diff=$((original_width - new_width))
+            height_diff=$((original_height - new_height))
+
+            # Only count as border removal if BOTH dimensions changed (real border trim)
+            # AND the result isn't too small (min 50px) AND we're not removing too much (max 20px per side)
+            if [ $width_diff -gt 0 ] && [ $height_diff -gt 0 ]; then
+                if [ "$new_width" -lt 50 ] || [ "$new_height" -lt 50 ]; then
+                    log "  ⚠ Skipped: result too small (${new_dims})"
+                    NO_CHANGE=$((NO_CHANGE + 1))
+                elif [ $width_diff -gt 40 ] || [ $height_diff -gt 40 ]; then
+                    log "  ⚠ Skipped: trim too large (-${width_diff}x${height_diff}px) - may remove content"
+                    NO_CHANGE=$((NO_CHANGE + 1))
+                else
+                    log "  ℹ Would trim: ${original_dims} -> ${new_dims} (-${width_diff}x${height_diff}px)"
+                    PROCESSED=$((PROCESSED + 1))
+                fi
             else
-                log "  ℹ No significant border detected"
+                log "  ℹ No border detected"
                 NO_CHANGE=$((NO_CHANGE + 1))
             fi
             rm -f "$test_output"
@@ -245,17 +266,33 @@ while IFS=$'\t' read -r uri filename filesize; do
         # Trim the border
         temp_output="${file_path}.tmp"
         if $IMAGEMAGICK_CMD "$file_path" -fuzz ${FUZZ_TOLERANCE}% -trim +repage "$temp_output" 2>/dev/null; then
-            new_size=$(stat -f%z "$temp_output" 2>/dev/null || stat -c%s "$temp_output" 2>/dev/null)
-            size_diff=$((original_size - new_size))
+            # Get new dimensions
+            new_dims=$($IDENTIFY_CMD -format "%wx%h" "$temp_output" 2>/dev/null)
+            new_width=$(echo "$new_dims" | cut -d'x' -f1)
+            new_height=$(echo "$new_dims" | cut -d'x' -f2)
 
-            if [ $size_diff -gt 100 ]; then
-                mv "$temp_output" "$file_path"
-                percentage=$((size_diff * 100 / original_size))
-                log "  ✓ Trimmed: -${size_diff} bytes (-${percentage}%)"
-                PROCESSED=$((PROCESSED + 1))
+            width_diff=$((original_width - new_width))
+            height_diff=$((original_height - new_height))
+
+            # Only apply if BOTH dimensions changed (real border trim)
+            # AND the result isn't too small (min 50px) AND we're not removing too much (max 20px per side)
+            if [ $width_diff -gt 0 ] && [ $height_diff -gt 0 ]; then
+                if [ "$new_width" -lt 50 ] || [ "$new_height" -lt 50 ]; then
+                    rm -f "$temp_output"
+                    log "  ⚠ Skipped: result too small (${new_dims})"
+                    NO_CHANGE=$((NO_CHANGE + 1))
+                elif [ $width_diff -gt 40 ] || [ $height_diff -gt 40 ]; then
+                    rm -f "$temp_output"
+                    log "  ⚠ Skipped: trim too large (-${width_diff}x${height_diff}px) - may remove content"
+                    NO_CHANGE=$((NO_CHANGE + 1))
+                else
+                    mv "$temp_output" "$file_path"
+                    log "  ✓ Trimmed: ${original_dims} -> ${new_dims} (-${width_diff}x${height_diff}px)"
+                    PROCESSED=$((PROCESSED + 1))
+                fi
             else
                 rm -f "$temp_output"
-                log "  ○ No significant border detected, left unchanged"
+                log "  ○ No border detected, left unchanged"
                 NO_CHANGE=$((NO_CHANGE + 1))
             fi
         else
