@@ -74,12 +74,9 @@ class FeaturedArticlesController extends ControllerBase {
    *   A render array for the featured articles page.
    */
   public function page() {
-    // Set a breakpoint here for Xdebug debugging.
-    $debug_point = "Featured page controller entry";
-
     try {
-      // Load all featured content.
-      $nodes = $this->featuredContentService->getAllFeaturedContent(50);
+      // Load all featured content (no limit).
+      $nodes = $this->featuredContentService->getAllFeaturedContent();
 
       // Build the render array.
       $build = [
@@ -124,12 +121,9 @@ class FeaturedArticlesController extends ControllerBase {
    *   JSON response with rendered section content.
    */
   public function sectionAjax($section) {
-    // Set breakpoint for Xdebug debugging.
-    $debug_section = $section;
-
     try {
-      // Load section content using the service.
-      $nodes = $this->featuredContentService->getSectionContent($section, 8);
+      // Load section content using the service (no limit - show all).
+      $nodes = $this->featuredContentService->getSectionContent($section);
 
       if (empty($nodes)) {
         return new JsonResponse([
@@ -168,9 +162,6 @@ class FeaturedArticlesController extends ControllerBase {
    *   JSON response with rendered most read content.
    */
   public function mostReadAjax() {
-    // Set breakpoint for Xdebug debugging.
-    $debug_point = "Most read AJAX endpoint";
-
     try {
       // Get all featured content first.
       $all_featured = $this->featuredContentService->getAllFeaturedContent(100);
@@ -183,11 +174,11 @@ class FeaturedArticlesController extends ControllerBase {
         ]);
       }
 
-      // Get most read from statistics.
-      $most_read_nids = $this->statisticsService->getMostReadFeatured($featured_nids, 8);
+      // Get most read from statistics (no limit - show all).
+      $most_read_nids = $this->statisticsService->getMostReadFeatured($featured_nids, 0);
 
       if (empty($most_read_nids)) {
-        $most_read_nids = array_slice($featured_nids, 0, 8);
+        $most_read_nids = $featured_nids;
       }
 
       // Load the nodes.
@@ -226,7 +217,7 @@ class FeaturedArticlesController extends ControllerBase {
    *   Debug information render array.
    */
   public function debugServices() {
-    if (!\Drupal::config('system.logging')->get('error_level') === 'verbose') {
+    if (!$this->config('system.logging')->get('error_level') === 'verbose') {
       throw new AccessDeniedHttpException();
     }
 

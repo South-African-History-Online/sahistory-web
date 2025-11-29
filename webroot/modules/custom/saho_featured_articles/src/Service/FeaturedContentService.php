@@ -76,7 +76,7 @@ class FeaturedContentService {
    * @return \Drupal\node\Entity\Node[]
    *   Array of loaded node entities.
    */
-  public function getAllFeaturedContent($limit = 50) {
+  public function getAllFeaturedContent($limit = 0) {
 
     try {
       $query = $this->entityTypeManager->getStorage('node')->getQuery();
@@ -91,7 +91,11 @@ class FeaturedContentService {
       $query->condition('status', 1);
       $query->accessCheck(TRUE);
       $query->sort('changed', 'DESC');
-      $query->range(0, $limit);
+
+      // Only apply limit if specified.
+      if ($limit > 0) {
+        $query->range(0, $limit);
+      }
 
       $nids = $query->execute();
 
@@ -113,7 +117,7 @@ class FeaturedContentService {
    * @return \Drupal\node\Entity\Node[]
    *   Array of loaded node entities for the section.
    */
-  public function getSectionContent($section, $limit = 8) {
+  public function getSectionContent($section, $limit = 0) {
 
     if (!isset($this->fieldMappings[$section])) {
       return [];
@@ -127,7 +131,11 @@ class FeaturedContentService {
       $query->condition('status', 1);
       $query->accessCheck(TRUE);
       $query->sort('changed', 'DESC');
-      $query->range(0, $limit);
+
+      // Only apply limit if specified.
+      if ($limit > 0) {
+        $query->range(0, $limit);
+      }
 
       $nids = $query->execute();
 

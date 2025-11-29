@@ -186,21 +186,97 @@
   };
 
   /**
-   * Render category content (placeholder - integrate with Drupal Views/AJAX)
+   * Render category content by filtering existing items or showing info
    */
-  SahoFeaturedGrid.prototype.renderCategoryContent = (categoryId, container) => {
-    // This would typically be replaced with actual Drupal AJAX response
-    const placeholderContent = `
-      <div class="col-12 text-center py-5">
-        <div class="alert alert-info">
-          <i class="fas fa-info-circle me-2"></i>
-          ${categoryId.replace('-', ' ').toUpperCase()} content would be loaded here via AJAX.
-          <br><small>Integrate with Drupal Views REST API or custom endpoint.</small>
-        </div>
-      </div>
-    `;
+  SahoFeaturedGrid.prototype.renderCategoryContent = function (categoryId, container) {
+    const self = this;
+    const allItemsGrid = this.grid.querySelector('#all-featured-grid');
 
-    container.innerHTML = placeholderContent;
+    if (!allItemsGrid) {
+      container.innerHTML = `
+        <div class="col-12 text-center py-5">
+          <div class="alert alert-warning">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            Unable to load content for this category.
+          </div>
+        </div>
+      `;
+      container.setAttribute('data-loaded', 'true');
+      return;
+    }
+
+    // Filter items based on category
+    const allItems = Array.from(allItemsGrid.children);
+    let filteredItems = [];
+    let categoryUrl = null;
+
+    switch (categoryId) {
+      case 'staff-picks':
+        // Filter items with staff-pick data attribute
+        filteredItems = allItems.filter(
+          (item) => item.getAttribute('data-staff-pick') === '1'
+        );
+        break;
+
+      case 'most-read':
+        // Link to a separate page or show message
+        categoryUrl = '/search?sort=views';
+        break;
+
+      case 'africa-section':
+        categoryUrl = '/africa';
+        break;
+
+      case 'politics-society':
+        categoryUrl = '/politics-society';
+        break;
+
+      case 'timelines':
+        categoryUrl = '/timelines';
+        break;
+
+      default:
+        filteredItems = allItems;
+    }
+
+    // If we have a URL, show link to the section
+    if (categoryUrl) {
+      const categoryName = categoryId.replace(/-/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+      container.innerHTML = `
+        <div class="col-12 text-center py-5">
+          <div class="saho-category-redirect p-4 rounded shadow-sm bg-white">
+            <i class="fas fa-external-link-alt fa-2x mb-3 saho-text-primary"></i>
+            <h4>Explore ${categoryName}</h4>
+            <p class="text-muted mb-3">Visit our dedicated ${categoryName} section for more content.</p>
+            <a href="${categoryUrl}" class="btn saho-bg-primary text-white px-4 py-2">
+              <i class="fas fa-arrow-right me-2"></i>Go to ${categoryName}
+            </a>
+          </div>
+        </div>
+      `;
+      container.setAttribute('data-loaded', 'true');
+      return;
+    }
+
+    // Render filtered items
+    if (filteredItems.length > 0) {
+      container.innerHTML = '';
+      filteredItems.forEach((item) => {
+        const clone = item.cloneNode(true);
+        container.appendChild(clone);
+      });
+    } else {
+      const categoryName = categoryId.replace(/-/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+      container.innerHTML = `
+        <div class="col-12 text-center py-5">
+          <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>
+            No ${categoryName} items found in the current featured content.
+          </div>
+        </div>
+      `;
+    }
+
     container.setAttribute('data-loaded', 'true');
   };
 
