@@ -67,12 +67,17 @@ if [ ! -f "$DRUSH" ]; then
     exit 1
 fi
 
-# Check for ImageMagick
-if ! command -v magick &> /dev/null; then
-    echo "❌ Error: ImageMagick 'magick' command not found"
+# Check for ImageMagick (try 'magick' first, fall back to 'convert')
+if command -v magick &> /dev/null; then
+    IMAGEMAGICK_CMD="magick"
+elif command -v convert &> /dev/null; then
+    IMAGEMAGICK_CMD="convert"
+else
+    echo "❌ Error: ImageMagick not found (neither 'magick' nor 'convert')"
     echo "Install with: sudo apt-get install imagemagick (or equivalent)"
     exit 1
 fi
+echo "Using ImageMagick command: $IMAGEMAGICK_CMD"
 
 # Get the Drupal root and files directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -200,7 +205,7 @@ while IFS=$'\t' read -r uri filename filesize; do
     if [ "$DRY_RUN" = true ]; then
         # In dry-run, just check what would be trimmed
         test_output="/tmp/trim_test_$$_${CURRENT}.tmp"
-        if magick "$file_path" -fuzz ${FUZZ_TOLERANCE}% -trim +repage "$test_output" 2>/dev/null; then
+        if $IMAGEMAGICK_CMD "$file_path" -fuzz ${FUZZ_TOLERANCE}% -trim +repage "$test_output" 2>/dev/null; then
             new_size=$(stat -f%z "$test_output" 2>/dev/null || stat -c%s "$test_output" 2>/dev/null)
             size_diff=$((original_size - new_size))
 
@@ -229,7 +234,7 @@ while IFS=$'\t' read -r uri filename filesize; do
 
         # Trim the border
         temp_output="${file_path}.tmp"
-        if magick "$file_path" -fuzz ${FUZZ_TOLERANCE}% -trim +repage "$temp_output" 2>/dev/null; then
+        if $IMAGEMAGICK_CMD "$file_path" -fuzz ${FUZZ_TOLERANCE}% -trim +repage "$temp_output" 2>/dev/null; then
             new_size=$(stat -f%z "$temp_output" 2>/dev/null || stat -c%s "$temp_output" 2>/dev/null)
             size_diff=$((original_size - new_size))
 
