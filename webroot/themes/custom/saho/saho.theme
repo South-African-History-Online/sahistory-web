@@ -356,21 +356,21 @@ function saho_preprocess_node(array &$variables) {
       $bio_pic_entity = $bio_pic_field->entity;
 
       if ($bio_pic_entity) {
-        // For main content (when no feature banner).
+        // For main content (when no feature banner) - use larger image styles.
         $variables['biography_portrait_main'] = saho_get_responsive_image(
           $bio_pic_entity,
           $node->getTitle() . ' portrait',
-          ['biography_landing_featured'],
-          '100vw',
+          ['full_main_content_width', 'large'],
+          '(max-width: 768px) 100vw, 740px',
           'eager',
           'saho-feature-banner-image'
         );
 
-        // For sidebar (when feature banner exists).
+        // For sidebar (when feature banner exists) - use larger styles for sharper display.
         $variables['biography_portrait_sidebar'] = saho_get_responsive_image(
           $bio_pic_entity,
           $node->getTitle() . ' portrait',
-          ['biography_pic_style'],
+          ['large', 'biography_pic_style'],
           '(max-width: 768px) 100vw, 400px',
           'lazy',
           'saho-image'

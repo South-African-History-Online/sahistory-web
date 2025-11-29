@@ -1,4 +1,4 @@
-(function ($, Drupal) {
+(function ($, Drupal, once) {
   'use strict';
 
   /**
@@ -6,9 +6,9 @@
    */
   Drupal.behaviors.featuredContentNavigation = {
     attach: function (context, settings) {
-      // Initialize category navigation once per context
-      $('.saho-category-item', context).once('featured-navigation').each(function () {
-        $(this).on('click', function (e) {
+      // Initialize category navigation using Drupal 10+ once()
+      once('featured-navigation', '.saho-category-item', context).forEach(function (element) {
+        $(element).on('click', function (e) {
           e.preventDefault();
 
           // Update active states and ARIA attributes
@@ -30,17 +30,18 @@
         });
       });
 
-      // Initialize sort dropdown functionality once per context
-      $('#sort-all', context).once('sort-functionality').on('change', function () {
-        const sortType = $(this).val();
-        sortFeaturedContent(sortType);
+      // Initialize sort dropdown functionality using Drupal 10+ once()
+      once('sort-functionality', '#sort-all', context).forEach(function (element) {
+        $(element).on('change', function () {
+          const sortType = $(this).val();
+          sortFeaturedContent(sortType);
+        });
       });
 
       // Load initial counts on first attach
-      if (!$('.saho-category-item', context).hasClass('counts-loaded')) {
+      once('counts-loaded', '.saho-featured-articles', context).forEach(function () {
         loadCategoryCounts();
-        $('.saho-category-item', context).addClass('counts-loaded');
-      }
+      });
     }
   };
 
@@ -190,4 +191,4 @@
     $('#' + category + '-count').text(count);
   }
 
-})(jQuery, Drupal);
+})(jQuery, Drupal, once);

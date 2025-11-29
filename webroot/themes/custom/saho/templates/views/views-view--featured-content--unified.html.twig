@@ -76,6 +76,7 @@
       'content_type': node_type,
       'metadata': {
         'date': updated_date,
+        'updated': node.getChangedTime(),
         'category': node_type|replace({'_': ' '})|title,
         'featured': is_featured,
         'staff_pick': is_staff_pick
@@ -86,37 +87,37 @@
   {% endif %}
 {% endfor %}
 
-{# Define categories for filtering #}
+{# Define categories for filtering - using dynamic counts from preprocess #}
 {% set categories = [
   {
     'id': 'staff-picks',
-    'name': 'Staff Picks', 
+    'name': 'Staff Picks',
     'icon': 'fas fa-medal',
-    'count': processed_items|filter(item => item.metadata.staff_pick)|length
+    'count': featured_categories.staff_picks ?? processed_items|filter(item => item.metadata.staff_pick)|length
   },
   {
     'id': 'most-read',
     'name': 'Most Read',
     'icon': 'fas fa-fire',
-    'count': 0
+    'count': featured_categories.most_read ?? 0
   },
   {
     'id': 'africa-section',
     'name': 'Africa Section',
-    'icon': 'fas fa-globe-africa', 
-    'count': 0
+    'icon': 'fas fa-globe-africa',
+    'count': featured_categories.africa_section ?? 0
   },
   {
     'id': 'politics-society',
     'name': 'Politics & Society',
     'icon': 'fas fa-users',
-    'count': 0
+    'count': featured_categories.politics_society ?? 0
   },
   {
     'id': 'timelines',
     'name': 'Timeline Features',
     'icon': 'fas fa-clock',
-    'count': 0
+    'count': featured_categories.timelines ?? 0
   }
 ] %}
 
@@ -131,13 +132,18 @@
   {% if processed_items %}
     {% include 'saho:saho-featured-grid' with {
       'title': 'Featured Articles',
-      'description': 'Explore featured content from South African History Online, showcasing important articles, biographies, and places.',
+      'description': 'Discover the stories that shaped South Africa. From struggle heroes and liberation movements to cultural heritage and social transformation, these featured articles illuminate the rich tapestry of South African history and the ongoing journey toward unity and progress.',
       'items': processed_items,
       'layout': 'default',
-      'columns': '2', 
+      'columns': '3',
       'show_sidebar': true,
       'categories': categories,
-      'variant': 'primary'
+      'variant': 'primary',
+      'stats': {
+        'featured_stories': featured_stats.featured_stories ?? processed_items|length,
+        'editors_choices': featured_stats.staff_picks ?? 0,
+        'recent_updates': featured_stats.recent_updates ?? 0
+      }
     } %}
   {% else %}
     {# Empty state #}

@@ -176,9 +176,9 @@
                     {% set summary = node.get('body').value|striptags|trim %}
                   {% endif %}
                   
-                  {# Get image #}
+                  {# Get image - check all possible image fields in priority order #}
                   {% set image_url = null %}
-                  {% set image_fields = ['field_article_image', 'field_image', 'field_bio_pic', 'field_place_image', 'field_event_image'] %}
+                  {% set image_fields = ['field_article_image', 'field_bio_pic', 'field_place_image', 'field_event_image', 'field_upcomingevent_image', 'field_archive_image', 'field_tdih_image', 'field_feature_banner', 'field_image', 'field_spotlights'] %}
                   {% for field_name in image_fields %}
                     {% if not image_url and node.hasField(field_name) and not node.get(field_name).isEmpty() %}
                       {% set file_entity = node.get(field_name).entity %}
