@@ -39,7 +39,7 @@ class StatisticsService {
    * @return array
    *   Array of node IDs sorted by view count.
    */
-  public function getMostReadFeatured(array $featured_nids, $limit = 10) {
+  public function getMostReadFeatured(array $featured_nids, $limit = 0) {
 
     if (empty($featured_nids)) {
       return [];
@@ -48,14 +48,18 @@ class StatisticsService {
     try {
       // Check if statistics module is enabled and table exists.
       if (!$this->database->schema()->tableExists('node_counter')) {
-        return array_slice($featured_nids, 0, $limit);
+        return $limit > 0 ? array_slice($featured_nids, 0, $limit) : $featured_nids;
       }
 
       $query = $this->database->select('node_counter', 'nc');
       $query->fields('nc', ['nid', 'totalcount']);
       $query->condition('nc.nid', $featured_nids, 'IN');
       $query->orderBy('nc.totalcount', 'DESC');
-      $query->range(0, $limit);
+
+      // Only apply limit if specified.
+      if ($limit > 0) {
+        $query->range(0, $limit);
+      }
 
       $results = $query->execute();
       $most_read_nids = [];
@@ -72,8 +76,8 @@ class StatisticsService {
       return $most_read_nids;
     }
     catch (\Exception $e) {
-      // Fallback to returning first N featured items.
-      return array_slice($featured_nids, 0, $limit);
+      // Fallback to returning featured items.
+      return $limit > 0 ? array_slice($featured_nids, 0, $limit) : $featured_nids;
     }
   }
 

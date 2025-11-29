@@ -157,6 +157,14 @@ const purgeCSSConfig = {
       /^flex-/,        // Flexbox utilities
       /^align-/,       // Alignment utilities
       /^justify-/,     // Justification utilities
+      /^search-/,      // Search results and related classes
+      /^item-list/,    // Views item list container
+      /^clearfix/,     // Clearfix utility
+      /^path-/,        // Drupal path-based body classes
+      /^views-/,       // Drupal Views classes
+      /^pager/,        // Pager/pagination classes
+      /^page-/,        // Bootstrap page/pagination classes
+      /^pagination/,   // Pagination wrapper
     ],
     // Greedy patterns (matches class and all variants)
     greedy: [

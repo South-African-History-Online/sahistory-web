@@ -93,33 +93,33 @@
     </div>
   {% endif %}
 
-  {# Stats Section - if we have items data #}
+  {# Stats Section - using dynamic stats or fallback to calculated values #}
   {% if items %}
     <div class="saho-featured-grid__stats py-4 mb-5 bg-light">
       <div class="container">
         <div class="row text-center">
           <div class="col-md-4 mb-3 mb-md-0">
             <div class="saho-stat-card">
-              <div class="saho-stat-number {{ current_variant.text }}">{{ items|length }}</div>
-              <div class="saho-stat-label">Featured Items</div>
+              <div class="saho-stat-number {{ current_variant.text }}">
+                {{ stats.featured_stories ?? items|length }}
+              </div>
+              <div class="saho-stat-label">FEATURED STORIES</div>
             </div>
           </div>
           <div class="col-md-4 mb-3 mb-md-0">
             <div class="saho-stat-card">
               <div class="saho-stat-number {{ current_variant.text }}">
-                {% set staff_picks = items|filter(item => item.metadata.staff_pick)|length %}
-                {{ staff_picks }}
+                {{ stats.editors_choices ?? items|filter(item => item.metadata.staff_pick)|length }}
               </div>
-              <div class="saho-stat-label">Staff Picks</div>
+              <div class="saho-stat-label">EDITOR'S CHOICES</div>
             </div>
           </div>
           <div class="col-md-4">
             <div class="saho-stat-card">
               <div class="saho-stat-number {{ current_variant.text }}">
-                {% set featured_count = items|filter(item => item.metadata.featured)|length %}
-                {{ featured_count }}
+                {{ stats.recent_updates ?? items|filter(item => item.metadata.featured)|length }}
               </div>
-              <div class="saho-stat-label">Featured</div>
+              <div class="saho-stat-label">RECENT UPDATES</div>
             </div>
           </div>
         </div>
@@ -214,11 +214,12 @@
                   
                   {% set grid_column_class = 'col-lg-' ~ (12 / (columns|default('2')|number_format(0, '', ''))) %}
                   
-                  <div class="{{ grid_column_class }} mb-4" 
-                       data-node-type="{{ item.content_type|default('article') }}" 
-                       data-title="{{ item.title|lower }}" 
+                  <div class="{{ grid_column_class }} mb-4"
+                       data-node-type="{{ item.content_type|default('article') }}"
+                       data-title="{{ item.title|lower }}"
                        data-featured="{{ item.metadata.featured ? '1' : '0' }}"
-                       data-staff-pick="{{ item.metadata.staff_pick ? '1' : '0' }}">
+                       data-staff-pick="{{ item.metadata.staff_pick ? '1' : '0' }}"
+                       data-updated="{{ item.metadata.updated ?? item.metadata.date|date('U') }}">
                     
                     {# Use the saho-card SDC component #}
                     {% include 'saho:saho-card' with {
