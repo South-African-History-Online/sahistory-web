@@ -59,10 +59,13 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# Use vendor/bin/drush universally (works in all environments)
-DRUSH="vendor/bin/drush"
+# Get the script directory first (needed for absolute paths)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Use vendor/bin/drush with absolute path (works after cd to files directory)
+DRUSH="$SCRIPT_DIR/vendor/bin/drush"
 if [ ! -f "$DRUSH" ]; then
-    echo "❌ Error: Drush not found at vendor/bin/drush"
+    echo "❌ Error: Drush not found at $DRUSH"
     echo "Run 'composer install' first"
     exit 1
 fi
@@ -80,7 +83,6 @@ fi
 echo "Using ImageMagick command: $IMAGEMAGICK_CMD"
 
 # Get the Drupal root and files directory
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DRUPAL_ROOT="$SCRIPT_DIR/webroot"
 FILES_DIR="$DRUPAL_ROOT/sites/default/files"
 
