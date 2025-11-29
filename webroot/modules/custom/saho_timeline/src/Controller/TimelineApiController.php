@@ -175,7 +175,7 @@ class TimelineApiController extends ControllerBase {
     $response_data = [
       'events' => [],
       'dateless_events' => [],
-      'dateless_count' => $dateless_count ?? 0,
+      'dateless_count' => $dateless_count,
       'facets' => $facets,
       'total' => $total,
       'limit' => $limit,
