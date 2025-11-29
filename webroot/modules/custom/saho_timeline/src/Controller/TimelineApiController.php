@@ -135,18 +135,14 @@ class TimelineApiController extends ControllerBase {
     }
     else {
       // Get all events segregated by date availability.
-      $segregated = $this->timelineEventService->getAllTimelineEventsSegregated();
+      // Pass include_dateless_full=true when full dateless data is requested.
+      $include_dateless_full = ($include_dateless === 'full');
+      $segregated = $this->timelineEventService->getAllTimelineEventsSegregated(TRUE, TRUE, $include_dateless_full);
       // Events with proper historical dates.
       $events = $segregated['events'];
-      // Only include full dateless events if explicitly requested.
-      if ($include_dateless === 'full') {
-        $dateless_events = $segregated['dateless_events'];
-      }
-      else {
-        // Only keep the count for performance.
-        $dateless_events = [];
-      }
-      $dateless_count = $segregated['stats']['dateless_events'] ?? count($segregated['dateless_events']);
+      // Include dateless events if requested.
+      $dateless_events = $segregated['dateless_events'];
+      $dateless_count = $segregated['stats']['dateless_events'] ?? count($dateless_events);
     }
 
     // Apply sorting.
