@@ -1069,8 +1069,11 @@
     padding: 1rem 2rem;
     border-bottom: 1px solid #e9ecef;
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    touch-action: pan-x;
   }
-  
+
   .year-scroll {
     display: flex;
     gap: 0.5rem;

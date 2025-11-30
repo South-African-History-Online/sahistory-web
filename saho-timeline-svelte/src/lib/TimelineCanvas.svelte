@@ -620,20 +620,29 @@
   let isDragging = false;
   let lastMouseX = 0;
   let dragStartViewport = { start: 0, end: 0 };
-  
+
+  // Touch handling for mobile
+  let touchStartX = 0;
+  let touchStartY = 0;
+  let lastTouchX = 0;
+  let isTouching = false;
+  let touchMoved = false;
+  let pinchStartDistance = 0;
+  let pinchStartRange = 0;
+
   function handleMouseMove(e) {
     const rect = canvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-    
+
     // Handle dragging for pan
     if (isDragging) {
       const deltaX = e.clientX - lastMouseX;
       const yearDelta = (deltaX / timelineWidth) * yearRange;
-      
+
       const newStart = Math.max(minYear, dragStartViewport.start - yearDelta);
       const newEnd = Math.min(maxYear, dragStartViewport.end - yearDelta);
-      
+
       if (newEnd - newStart === yearRange) {
         viewportStart.set(newStart, { duration: 0 });
         viewportEnd.set(newEnd, { duration: 0 });
@@ -641,17 +650,17 @@
       }
       return;
     }
-    
+
     // Find hovered event with better detection
     const hovered = processedEvents.find(event => {
       const dx = x - event.x;
       const dy = y - event.y;
       return Math.sqrt(dx * dx + dy * dy) < (event.radius || baseEventRadius) + 8;
     });
-    
+
     if (hovered !== hoveredEvent) {
       hoveredEvent = hovered;
-      
+
       if (hoveredEvent) {
         tooltip = {
           x: e.clientX,
@@ -661,18 +670,18 @@
       } else {
         tooltip.visible = false;
       }
-      
+
       requestAnimationFrame(draw);
     }
   }
-  
+
   function handleMouseDown(e) {
     isDragging = true;
     lastMouseX = e.clientX;
     dragStartViewport = { start: $viewportStart, end: $viewportEnd };
     canvas.style.cursor = 'grabbing';
   }
-  
+
   function handleMouseUp(e) {
     if (isDragging) {
       isDragging = false;
@@ -681,18 +690,18 @@
       dispatch('select', hoveredEvent);
     }
   }
-  
+
   function handleWheel(e) {
     e.preventDefault();
-    
+
     const rect = canvas.getBoundingClientRect();
     const mouseX = e.clientX - rect.left;
     const mouseRatio = (mouseX - padding) / timelineWidth;
-    
+
     // Zoom factor
     const zoomFactor = e.deltaY > 0 ? 1.2 : 0.8;
     const newRange = yearRange * zoomFactor;
-    
+
     // Constrain zoom
     if (newRange < 50) return; // Minimum zoom
     if (newRange > (maxYear - minYear)) {
@@ -701,14 +710,114 @@
       viewportEnd.set(maxYear);
       return;
     }
-    
+
     // Calculate new viewport centered on mouse position
     const centerYear = $viewportStart + mouseRatio * yearRange;
     const newStart = Math.max(minYear, centerYear - newRange / 2);
     const newEnd = Math.min(maxYear, newStart + newRange);
-    
+
     viewportStart.set(newStart);
     viewportEnd.set(newEnd);
+  }
+
+  // Touch event handlers for smooth mobile scrolling
+  function handleTouchStart(e) {
+    if (e.touches.length === 1) {
+      // Single finger - pan
+      isTouching = true;
+      touchMoved = false;
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+      lastTouchX = touchStartX;
+      dragStartViewport = { start: $viewportStart, end: $viewportEnd };
+    } else if (e.touches.length === 2) {
+      // Two fingers - pinch zoom
+      const dx = e.touches[1].clientX - e.touches[0].clientX;
+      const dy = e.touches[1].clientY - e.touches[0].clientY;
+      pinchStartDistance = Math.sqrt(dx * dx + dy * dy);
+      pinchStartRange = yearRange;
+    }
+  }
+
+  function handleTouchMove(e) {
+    if (e.touches.length === 1 && isTouching) {
+      // Single finger pan
+      const touchX = e.touches[0].clientX;
+      const touchY = e.touches[0].clientY;
+      const deltaX = touchX - lastTouchX;
+      const deltaY = Math.abs(touchY - touchStartY);
+
+      // Only prevent default if horizontal movement is dominant
+      // This allows vertical page scroll when user swipes vertically
+      if (Math.abs(touchX - touchStartX) > deltaY || touchMoved) {
+        e.preventDefault();
+        touchMoved = true;
+
+        const yearDelta = (deltaX / timelineWidth) * yearRange;
+        const newStart = Math.max(minYear, dragStartViewport.start - (touchX - touchStartX) / timelineWidth * yearRange);
+        const newEnd = Math.min(maxYear, dragStartViewport.end - (touchX - touchStartX) / timelineWidth * yearRange);
+
+        if (newEnd - newStart === yearRange) {
+          viewportStart.set(newStart, { duration: 0 });
+          viewportEnd.set(newEnd, { duration: 0 });
+          requestAnimationFrame(draw);
+        }
+
+        lastTouchX = touchX;
+      }
+    } else if (e.touches.length === 2) {
+      // Pinch zoom
+      e.preventDefault();
+      const dx = e.touches[1].clientX - e.touches[0].clientX;
+      const dy = e.touches[1].clientY - e.touches[0].clientY;
+      const currentDistance = Math.sqrt(dx * dx + dy * dy);
+
+      if (pinchStartDistance > 0) {
+        const scale = pinchStartDistance / currentDistance;
+        const newRange = pinchStartRange * scale;
+
+        // Constrain zoom
+        if (newRange >= 50 && newRange <= (maxYear - minYear)) {
+          const centerX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+          const rect = canvas.getBoundingClientRect();
+          const mouseRatio = (centerX - rect.left - padding) / timelineWidth;
+          const centerYear = $viewportStart + mouseRatio * yearRange;
+
+          const newStart = Math.max(minYear, centerYear - newRange / 2);
+          const newEnd = Math.min(maxYear, newStart + newRange);
+
+          viewportStart.set(newStart, { duration: 0 });
+          viewportEnd.set(newEnd, { duration: 0 });
+          requestAnimationFrame(draw);
+        }
+      }
+    }
+  }
+
+  function handleTouchEnd(e) {
+    if (e.touches.length === 0) {
+      // Check if it was a tap (no movement)
+      if (isTouching && !touchMoved) {
+        // Find tapped event
+        const rect = canvas.getBoundingClientRect();
+        const x = touchStartX - rect.left;
+        const y = touchStartY - rect.top;
+
+        const tapped = processedEvents.find(event => {
+          const dx = x - event.x;
+          const dy = y - event.y;
+          return Math.sqrt(dx * dx + dy * dy) < (event.radius || baseEventRadius) + 15;
+        });
+
+        if (tapped) {
+          dispatch('select', tapped);
+        }
+      }
+
+      isTouching = false;
+      touchMoved = false;
+      pinchStartDistance = 0;
+    }
   }
   
   function zoomToTimeRange(startYear, endYear) {
@@ -778,7 +887,10 @@
       on:mousedown={handleMouseDown}
       on:mouseup={handleMouseUp}
       on:wheel={handleWheel}
-      style="cursor: {isDragging ? 'grabbing' : hoveredEvent ? 'pointer' : 'grab'}"
+      on:touchstart={handleTouchStart}
+      on:touchmove={handleTouchMove}
+      on:touchend={handleTouchEnd}
+      style="cursor: {isDragging ? 'grabbing' : hoveredEvent ? 'pointer' : 'grab'}; touch-action: pan-y pinch-zoom;"
     ></canvas>
     
     <!-- Enhanced Tooltip for Different Event Types -->
@@ -956,13 +1068,16 @@
     position: relative;
     height: 500px;
     background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 50%, #f8f9fa 100%);
+    overflow: hidden;
   }
-  
+
   canvas {
     display: block;
     width: 100%;
     height: 100%;
     user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
   }
   
   .modern-tooltip {
