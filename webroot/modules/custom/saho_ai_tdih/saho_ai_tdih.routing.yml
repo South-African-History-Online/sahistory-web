@@ -1,0 +1,50 @@
+saho_ai_tdih.settings:
+  path: '/admin/config/saho/ai-tdih'
+  defaults:
+    _form: '\Drupal\saho_ai_tdih\Form\TdihSettingsForm'
+    _title: 'TDIH AI Processing Settings'
+  requirements:
+    _permission: 'administer saho ai tdih'
+
+saho_ai_tdih.dashboard:
+  path: '/admin/content/tdih-ai'
+  defaults:
+    _controller: '\Drupal\saho_ai_tdih\Controller\TdihDashboardController::dashboard'
+    _title: 'TDIH AI Processing Dashboard'
+  requirements:
+    _permission: 'administer saho ai tdih'
+
+saho_ai_tdih.process_batch:
+  path: '/admin/content/tdih-ai/process'
+  defaults:
+    _form: '\Drupal\saho_ai_tdih\Form\ProcessBatchForm'
+    _title: 'Process Dateless Events'
+  requirements:
+    _permission: 'administer saho ai tdih'
+
+saho_ai_tdih.review:
+  path: '/admin/content/tdih-ai/review'
+  defaults:
+    _controller: '\Drupal\saho_ai_tdih\Controller\TdihDashboardController::review'
+    _title: 'Review AI Results'
+  requirements:
+    _permission: 'administer saho ai tdih'
+
+saho_ai_tdih.apply:
+  path: '/admin/content/tdih-ai/apply/{nid}'
+  defaults:
+    _controller: '\Drupal\saho_ai_tdih\Controller\TdihDashboardController::apply'
+    _title: 'Apply AI Result'
+  requirements:
+    _permission: 'administer saho ai tdih'
+    nid: \d+
+
+saho_ai_tdih.apply_all:
+  path: '/admin/content/tdih-ai/apply-all/{type}'
+  defaults:
+    _controller: '\Drupal\saho_ai_tdih\Controller\TdihDashboardController::applyAll'
+    _title: 'Apply All AI Results'
+    type: 'verified'
+  requirements:
+    _permission: 'administer saho ai tdih'
+    type: 'verified|all'

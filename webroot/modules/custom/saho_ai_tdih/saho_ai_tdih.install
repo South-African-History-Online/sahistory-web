@@ -1,0 +1,98 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the SAHO AI TDIH module.
+ */
+
+/**
+ * Implements hook_schema().
+ */
+function saho_ai_tdih_schema() {
+  $schema['saho_ai_tdih_results'] = [
+    'description' => 'Stores AI processing results for TDIH events',
+    'fields' => [
+      'id' => [
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => 'Primary key',
+      ],
+      'nid' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => 'Node ID of the event',
+      ],
+      'original_title' => [
+        'type' => 'text',
+        'size' => 'medium',
+        'not null' => TRUE,
+        'description' => 'Original event title',
+      ],
+      'researched_date' => [
+        'type' => 'varchar',
+        'length' => 10,
+        'description' => 'Researched date in YYYY-MM-DD format',
+      ],
+      'date_verified' => [
+        'type' => 'int',
+        'size' => 'tiny',
+        'default' => 0,
+        'description' => 'Whether the date was verified (0=no, 1=yes, 2=partial)',
+      ],
+      'suggested_body' => [
+        'type' => 'text',
+        'size' => 'big',
+        'description' => 'AI-generated body text',
+      ],
+      'references' => [
+        'type' => 'text',
+        'size' => 'medium',
+        'description' => 'JSON array of reference URLs',
+      ],
+      'manual_review' => [
+        'type' => 'int',
+        'size' => 'tiny',
+        'default' => 0,
+        'description' => 'Whether manual review is required',
+      ],
+      'review_reason' => [
+        'type' => 'varchar',
+        'length' => 255,
+        'description' => 'Reason for manual review if required',
+      ],
+      'status' => [
+        'type' => 'varchar',
+        'length' => 20,
+        'default' => 'pending',
+        'description' => 'Processing status: pending, processed, applied, rejected',
+      ],
+      'processed' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'default' => 0,
+        'description' => 'Unix timestamp when processed',
+      ],
+      'applied' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'default' => 0,
+        'description' => 'Unix timestamp when applied to node',
+      ],
+      'raw_response' => [
+        'type' => 'text',
+        'size' => 'big',
+        'description' => 'Raw AI response for debugging',
+      ],
+    ],
+    'primary key' => ['id'],
+    'indexes' => [
+      'nid' => ['nid'],
+      'status' => ['status'],
+      'manual_review' => ['manual_review'],
+    ],
+  ];
+
+  return $schema;
+}

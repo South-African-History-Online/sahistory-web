@@ -1,0 +1,16 @@
+services:
+  saho_ai_tdih.wikidata:
+    class: Drupal\saho_ai_tdih\Service\WikidataLookup
+    arguments:
+      - '@http_client'
+      - '@logger.factory'
+
+  saho_ai_tdih.processor:
+    class: Drupal\saho_ai_tdih\Service\TdihEventProcessor
+    arguments:
+      - '@entity_type.manager'
+      - '@database'
+      - '@ai.provider'
+      - '@logger.factory'
+      - '@config.factory'
+      - '@saho_ai_tdih.wikidata'
