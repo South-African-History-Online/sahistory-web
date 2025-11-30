@@ -175,179 +175,16 @@
 
   /**
    * Fixes Tools dropdown functionality on all devices.
-   * Enhanced to handle any dropdown with data-bs-toggle="dropdown".
+   *
+   * Bootstrap 5 handles dropdowns natively via data-bs-toggle="dropdown".
+   * This function is now a no-op - let Bootstrap do its job.
    */
   function fixToolsDropdown() {
-    // Target both specific Tools dropdown and any dropdown toggles
-    const dropdownToggles = document.querySelectorAll(
-      '.tools-dropdown, [data-bs-toggle="dropdown"]'
-    );
-
-    dropdownToggles.forEach((toggle) => {
-      // Skip toggles we've already processed
-      if (toggle.hasAttribute('data-enhanced')) {
-        return;
-      }
-
-      // Find the dropdown menu
-      let dropdownMenu;
-
-      // Check if the toggle itself is the dropdown button
-      if (
-        toggle.hasAttribute('data-bs-toggle') &&
-        toggle.getAttribute('data-bs-toggle') === 'dropdown'
-      ) {
-        // Find menu by aria-labelledby if available
-        if (toggle.id) {
-          dropdownMenu = document.querySelector(`[aria-labelledby="${toggle.id}"]`);
-        }
-
-        // If not found, try to find the next sibling that's a dropdown menu
-        if (!dropdownMenu) {
-          let sibling = toggle.nextElementSibling;
-          while (sibling) {
-            if (sibling.classList.contains('dropdown-menu')) {
-              dropdownMenu = sibling;
-              break;
-            }
-            sibling = sibling.nextElementSibling;
-          }
-        }
-
-        // If still not found, look for parent's dropdown menu
-        if (!dropdownMenu && toggle.parentElement) {
-          dropdownMenu = toggle.parentElement.querySelector('.dropdown-menu');
-        }
-      } else {
-        // The toggle might be a container with the button inside
-        const nestedToggle = toggle.querySelector('[data-bs-toggle="dropdown"]');
-        if (nestedToggle) {
-          dropdownMenu = toggle.querySelector('.dropdown-menu');
-        }
-      }
-
-      if (dropdownMenu) {
-        // On touch devices, we need a custom implementation
-        if (isTouchDevice) {
-          // Create a manual toggle system for reliable mobile operation
-          const toggleDropdown = (e) => {
-            // On mobile, prevent default to avoid double-triggering
-            e.preventDefault();
-            e.stopPropagation();
-
-            const isExpanded = toggle.getAttribute('aria-expanded') === 'true';
-
-            // Close all other open dropdowns first
-            document
-              .querySelectorAll('[data-bs-toggle="dropdown"][aria-expanded="true"]')
-              .forEach((otherToggle) => {
-                if (otherToggle !== toggle) {
-                  otherToggle.setAttribute('aria-expanded', 'false');
-                  const otherMenu = document.querySelector(`[aria-labelledby="${otherToggle.id}"]`);
-                  if (otherMenu) {
-                    otherMenu.classList.remove('show');
-                  }
-                }
-              });
-
-            if (isExpanded) {
-              // Close dropdown
-              toggle.setAttribute('aria-expanded', 'false');
-              dropdownMenu.classList.remove('show');
-            } else {
-              // Open dropdown
-              toggle.setAttribute('aria-expanded', 'true');
-              dropdownMenu.classList.add('show');
-
-              // Position the dropdown correctly
-              const btnRect = toggle.getBoundingClientRect();
-              dropdownMenu.style.top = `${btnRect.bottom}px`;
-
-              // Check if right-aligned or left-aligned
-              if (
-                dropdownMenu.classList.contains('dropdown-menu-end') ||
-                dropdownMenu.classList.contains('dropdown-menu-right')
-              ) {
-                dropdownMenu.style.right = `${window.innerWidth - btnRect.right}px`;
-                dropdownMenu.style.left = 'auto';
-              } else {
-                dropdownMenu.style.left = `${btnRect.left}px`;
-                dropdownMenu.style.right = 'auto';
-              }
-            }
-          };
-
-          // Add touch event for mobile
-          toggle.addEventListener('touchend', toggleDropdown, { passive: false });
-
-          // Also handle click for hybrid devices
-          toggle.addEventListener('click', (e) => {
-            // Only apply our custom handling on touch devices
-            if (isTouchDevice) {
-              toggleDropdown(e);
-            }
-            // On desktop, let Bootstrap handle it
-          });
-
-          // Prevent dropdown items from closing the dropdown unexpectedly on touch
-          dropdownMenu.querySelectorAll('.dropdown-item').forEach((item) => {
-            item.addEventListener('touchend', (e) => {
-              e.stopPropagation();
-            });
-          });
-        } else {
-          // For desktop, ensure Bootstrap dropdown is initialized if available
-          if (typeof bootstrap !== 'undefined' && bootstrap.Dropdown) {
-            try {
-              new bootstrap.Dropdown(toggle);
-            } catch (_e) {
-              // Bootstrap might already have initialized this dropdown
-            }
-          }
-
-          // Add backup click handler for desktop if bootstrap isn't available
-          toggle.addEventListener('click', (e) => {
-            // Only apply if Bootstrap isn't handling it
-            if (typeof bootstrap === 'undefined') {
-              e.preventDefault();
-
-              const isExpanded = toggle.getAttribute('aria-expanded') === 'true';
-
-              if (isExpanded) {
-                // Close dropdown
-                toggle.setAttribute('aria-expanded', 'false');
-                dropdownMenu.classList.remove('show');
-              } else {
-                // Open dropdown
-                toggle.setAttribute('aria-expanded', 'true');
-                dropdownMenu.classList.add('show');
-              }
-            }
-          });
-        }
-      }
-
-      // Mark toggle as processed
-      toggle.setAttribute('data-enhanced', 'true');
-    });
-
-    // Document-level handler to close dropdowns when clicking outside (all devices)
-    document.addEventListener('click', (e) => {
-      const openDropdowns = document.querySelectorAll('.dropdown-menu.show');
-      openDropdowns.forEach((menu) => {
-        // Find the associated toggle
-        let toggle = null;
-        if (menu.hasAttribute('aria-labelledby')) {
-          toggle = document.getElementById(menu.getAttribute('aria-labelledby'));
-        }
-
-        // Close if clicking outside
-        if (toggle && !menu.contains(e.target) && !toggle.contains(e.target)) {
-          toggle.setAttribute('aria-expanded', 'false');
-          menu.classList.remove('show');
-        }
-      });
-    });
+    // Bootstrap 5 dropdowns work correctly out of the box.
+    // The dropdown is initialized in main.script.js with:
+    //   new bootstrap.Dropdown(dropdownToggleEl, { autoClose: 'outside' })
+    //
+    // No custom handling needed - this was causing positioning issues.
   }
 
   /**
@@ -500,10 +337,9 @@
    * Sets up a mutation observer to handle dynamically loaded content.
    */
   function setupMutationObserver() {
-    // Create a mutation observer to watch for dynamically added search forms or dropdowns
+    // Create a mutation observer to watch for dynamically added search forms or offcanvas
     const observer = new MutationObserver((mutations) => {
       let needsSearchFormFix = false;
-      let needsDropdownFix = false;
       let needsOffcanvasFix = false;
 
       mutations.forEach((mutation) => {
@@ -517,14 +353,6 @@
                 node.querySelector('form[role="search"], .saho-search, .saho-mobile-search')
               ) {
                 needsSearchFormFix = true;
-              }
-
-              // Check for dropdowns
-              if (
-                node.hasAttribute('data-bs-toggle') ||
-                node.querySelector('[data-bs-toggle="dropdown"]')
-              ) {
-                needsDropdownFix = true;
               }
 
               // Check for offcanvas
@@ -542,10 +370,6 @@
       // Apply fixes if needed
       if (needsSearchFormFix) {
         fixSearchForms();
-      }
-
-      if (needsDropdownFix) {
-        fixToolsDropdown();
       }
 
       if (needsOffcanvasFix) {
