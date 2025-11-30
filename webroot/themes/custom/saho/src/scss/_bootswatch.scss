@@ -2343,6 +2343,120 @@ body.offcanvas-open {
   }
 }
 
+// ==================================================
+// PRINT STYLES
+// ==================================================
+// Hide non-essential elements when printing for a clean output
+// suitable for researchers, teachers, and students
+
+@media print {
+  // Hide the entire header navigation and actions
+  .saho-header {
+    position: relative !important; // Remove sticky positioning
+    box-shadow: none !important;
+    border-bottom: 2px solid #000 !important;
+
+    // Hide desktop navigation
+    .saho-desktop-nav {
+      display: none !important;
+    }
+
+    // Hide all action buttons (search, tools dropdown, contribute)
+    .saho-actions {
+      display: none !important;
+    }
+
+    // Hide the accent bar
+    .saho-accent-bar {
+      display: none !important;
+    }
+  }
+
+  // Hide mobile menu
+  .saho-mobile-menu,
+  .offcanvas,
+  .offcanvas-backdrop {
+    display: none !important;
+  }
+
+  // Hide Tools dropdown specifically (in case it appears elsewhere)
+  #toolsDropdown,
+  [aria-labelledby="toolsDropdown"] {
+    display: none !important;
+  }
+
+  // Hide any open dropdown menus
+  .dropdown-menu {
+    display: none !important;
+  }
+
+  // Hide footer navigation and social links (keep copyright)
+  footer .footer-links,
+  footer .social-links,
+  footer nav {
+    display: none !important;
+  }
+
+  // Hide share and citation buttons
+  .share-button,
+  .cite-button,
+  [data-citation-trigger],
+  [data-sharing-trigger] {
+    display: none !important;
+  }
+
+  // Hide modals
+  .modal,
+  .modal-backdrop,
+  #citation-modal,
+  #sharing-modal {
+    display: none !important;
+  }
+
+  // Hide contribute CTAs
+  .saho-contribute-btn,
+  .saho-landing-cta {
+    display: none !important;
+  }
+
+  // Ensure content prints well
+  body {
+    font-size: 12pt;
+    line-height: 1.5;
+    color: #000 !important;
+    background: #fff !important;
+  }
+
+  // Ensure links are visible in print
+  a[href]::after {
+    content: " (" attr(href) ")";
+    font-size: 0.8em;
+    color: #666;
+  }
+
+  // But not for internal/anchor links or javascript
+  a[href^="#"]::after,
+  a[href^="javascript:"]::after,
+  a[href^="/"]::after {
+    content: "";
+  }
+
+  // Make images print friendly
+  img {
+    max-width: 100% !important;
+    page-break-inside: avoid;
+  }
+
+  // Avoid breaking inside important elements
+  h1, h2, h3, h4, h5, h6 {
+    page-break-after: avoid;
+  }
+
+  p, blockquote, ul, ol {
+    page-break-inside: avoid;
+  }
+}
+
 /* Standard SAHO Collection Cards */
 .collection-card.saho-card {
   display: flex;

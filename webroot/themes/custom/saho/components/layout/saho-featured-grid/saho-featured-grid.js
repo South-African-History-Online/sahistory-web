@@ -189,7 +189,6 @@
    * Render category content by filtering existing items or showing info
    */
   SahoFeaturedGrid.prototype.renderCategoryContent = function (categoryId, container) {
-    const self = this;
     const allItemsGrid = this.grid.querySelector('#all-featured-grid');
 
     if (!allItemsGrid) {
@@ -213,9 +212,7 @@
     switch (categoryId) {
       case 'staff-picks':
         // Filter items with staff-pick data attribute
-        filteredItems = allItems.filter(
-          (item) => item.getAttribute('data-staff-pick') === '1'
-        );
+        filteredItems = allItems.filter((item) => item.getAttribute('data-staff-pick') === '1');
         break;
 
       case 'most-read':
