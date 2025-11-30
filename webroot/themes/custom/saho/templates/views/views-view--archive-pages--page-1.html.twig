@@ -291,7 +291,7 @@
     position: relative;
     margin-bottom: 2rem;
   }
-  
+
   .archives-page-header::after {
     content: '';
     position: absolute;
@@ -301,6 +301,98 @@
     height: 3px;
     background-color: #c00;
     border-radius: 2px;
+  }
+
+  /* Mobile filter improvements */
+  @media (max-width: 991.98px) {
+    .saho-mobile-filter-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      padding: 0.75rem 1rem;
+      background-color: #f8f9fa;
+      border: 1px solid #dee2e6;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-bottom: 1rem;
+    }
+
+    .saho-mobile-filter-toggle .filter-icon {
+      transition: transform 0.3s ease;
+    }
+
+    .saho-mobile-filter-toggle.active .filter-icon {
+      transform: rotate(180deg);
+    }
+
+    .saho-landing-sidebar {
+      position: relative;
+    }
+
+    .saho-filter-collapse {
+      display: none;
+    }
+
+    .saho-filter-collapse.show {
+      display: block;
+    }
+
+    .saho-landing-filters {
+      background: #fff;
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+  }
+
+  @media (min-width: 992px) {
+    .saho-mobile-filter-toggle {
+      display: none;
+    }
+
+    .saho-filter-collapse {
+      display: block !important;
+    }
+  }
+
+  /* Better search input styling */
+  .saho-landing-filters input[type="text"],
+  .saho-landing-filters input[type="search"] {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .saho-landing-filters input[type="text"]:focus,
+  .saho-landing-filters input[type="search"]:focus {
+    border-color: #c00;
+    box-shadow: 0 0 0 3px rgba(204, 0, 0, 0.1);
+    outline: none;
+  }
+
+  /* Results count styling */
+  .saho-results-summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #dee2e6;
+  }
+
+  .saho-results-count {
+    font-size: 0.95rem;
+    color: #6c757d;
+  }
+
+  .saho-results-count strong {
+    color: #212529;
   }
 </style>
 
@@ -335,32 +427,52 @@
         {# Sidebar with modernized filters #}
         <div class="col-lg-3 mb-4 mb-lg-0">
           <div class="saho-landing-sidebar p-3 rounded shadow-sm">
-            
-            {% if exposed %}
-              <div class="saho-landing-filters mb-4">
-                {{ exposed }}
-                
-                {% if feed_icons %}
-                  <div class="saho-landing-feeds mt-3 text-end">
-                    {{ feed_icons }}
-                  </div>
-                {% endif %}
+
+            {# Mobile filter toggle button #}
+            <button class="saho-mobile-filter-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#archiveFilters" aria-expanded="false" aria-controls="archiveFilters">
+              <span><i class="fas fa-filter me-2"></i>Filter & Search</span>
+              <span class="filter-icon"><i class="fas fa-chevron-down"></i></span>
+            </button>
+
+            <div class="saho-filter-collapse collapse show" id="archiveFilters">
+              {% if exposed %}
+                <div class="saho-landing-filters mb-4">
+                  {{ exposed }}
+
+                  {% if feed_icons %}
+                    <div class="saho-landing-feeds mt-3 text-end">
+                      {{ feed_icons }}
+                    </div>
+                  {% endif %}
+                </div>
+              {% endif %}
+
+              <div class="sidebar-header {{ section_bg_class }} text-white p-3 rounded-top mb-3 mt-4">
+                <h2 class="h5 m-0">Research Tools</h2>
               </div>
-            {% endif %}
-            
-            <div class="sidebar-header {{ section_bg_class }} text-white p-3 rounded-top mb-3 mt-4">
-              <h2 class="h5 m-0">Research Tools</h2>
-            </div>
-            
-            <div class="saho-landing-categories">
-              <ul class="list-unstyled">
-                <li class="mb-3">
-                  <a href="/archive/collections" class="d-flex align-items-center text-decoration-none text-dark">
-                    <span class="me-2 {{ section_text_class }}"><i class="fas fa-folder"></i></span>
-                    <span>Browse Collections</span>
-                  </a>
-                </li>
-              </ul>
+
+              <div class="saho-landing-categories">
+                <ul class="list-unstyled">
+                  <li class="mb-3">
+                    <a href="/archive/collections" class="d-flex align-items-center text-decoration-none text-dark">
+                      <span class="me-2 {{ section_text_class }}"><i class="fas fa-folder"></i></span>
+                      <span>Browse Collections</span>
+                    </a>
+                  </li>
+                  <li class="mb-3">
+                    <a href="/archives-by-type" class="d-flex align-items-center text-decoration-none text-dark">
+                      <span class="me-2 {{ section_text_class }}"><i class="fas fa-tags"></i></span>
+                      <span>Browse by Type</span>
+                    </a>
+                  </li>
+                  <li class="mb-3">
+                    <a href="/archives-alpha-pagination" class="d-flex align-items-center text-decoration-none text-dark">
+                      <span class="me-2 {{ section_text_class }}"><i class="fas fa-sort-alpha-down"></i></span>
+                      <span>A-Z Index</span>
+                    </a>
+                  </li>
+                </ul>
+              </div>
             </div>
           </div>
         </div>
@@ -371,18 +483,34 @@
           {% if title and 'Latest in the archive' not in title %}
             <h2 class="h3 mb-4 {{ section_text_class }}">{{ title }}</h2>
           {% endif %}
-          
-          {% if rows_total is defined and rows_total > 0 %}
-            <p class="text-muted mb-4">Showing {{ rows_total }} results</p>
-          {% endif %}
-          
+
+          {# Results summary with count #}
           {% if rows %}
+            <div class="saho-results-summary">
+              <div class="saho-results-count">
+                {% if view.total_rows is defined %}
+                  Showing <strong>{{ view.total_rows|number_format }}</strong> archive items
+                {% endif %}
+              </div>
+            </div>
             <div class="saho-cards-grid">
               {{ rows }}
             </div>
           {% elseif empty %}
-            <div class="saho-landing-empty alert alert-info">
-              {{ empty }}
+            <div class="saho-landing-empty">
+              <div class="alert alert-info">
+                <h4 class="alert-heading"><i class="fas fa-search me-2"></i>No results found</h4>
+                <p class="mb-0">Try adjusting your search terms or filters to find what you're looking for.</p>
+              </div>
+              <div class="mt-4">
+                <h5>Suggestions:</h5>
+                <ul>
+                  <li>Check your spelling</li>
+                  <li>Try more general keywords</li>
+                  <li>Remove some filters</li>
+                  <li><a href="/archives">Browse all archives</a></li>
+                </ul>
+              </div>
             </div>
           {% endif %}
           
