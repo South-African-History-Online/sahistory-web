@@ -5,6 +5,7 @@ namespace Drupal\saho_ai_tdih\Service;
 use Drupal\ai\AiProviderPluginManager;
 use Drupal\ai\OperationType\Chat\ChatInput;
 use Drupal\ai\OperationType\Chat\ChatMessage;
+use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -58,7 +59,29 @@ class TdihEventProcessor {
   protected $wikidataLookup;
 
   /**
+   * The time service.
+   *
+   * @var \Drupal\Component\Datetime\TimeInterface
+   */
+  protected $time;
+
+  /**
    * Constructs a TdihEventProcessor.
+   *
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager.
+   * @param \Drupal\Core\Database\Connection $database
+   *   The database connection.
+   * @param \Drupal\ai\AiProviderPluginManager $ai_provider
+   *   The AI provider plugin manager.
+   * @param \Drupal\Core\Logger\LoggerChannelFactoryInterface $logger_factory
+   *   The logger channel factory.
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   *   The config factory.
+   * @param \Drupal\saho_ai_tdih\Service\WikidataLookup $wikidata_lookup
+   *   The Wikidata lookup service.
+   * @param \Drupal\Component\Datetime\TimeInterface $time
+   *   The time service.
    */
   public function __construct(
     EntityTypeManagerInterface $entity_type_manager,
@@ -67,6 +90,7 @@ class TdihEventProcessor {
     LoggerChannelFactoryInterface $logger_factory,
     ConfigFactoryInterface $config_factory,
     WikidataLookup $wikidata_lookup,
+    TimeInterface $time,
   ) {
     $this->entityTypeManager = $entity_type_manager;
     $this->database = $database;
@@ -74,6 +98,7 @@ class TdihEventProcessor {
     $this->logger = $logger_factory->get('saho_ai_tdih');
     $this->configFactory = $config_factory;
     $this->wikidataLookup = $wikidata_lookup;
+    $this->time = $time;
   }
 
   /**
@@ -275,6 +300,14 @@ class TdihEventProcessor {
 
   /**
    * Builds the prompt for Claude.
+   *
+   * @param string $title
+   *   The event title.
+   * @param string $body
+   *   The event body.
+   *
+   * @return string
+   *   The constructed prompt for Claude AI.
    */
   protected function buildPrompt(string $title, string $body): string {
     $prompt = <<<PROMPT
@@ -326,6 +359,18 @@ PROMPT;
 
   /**
    * Parses the AI response into structured data.
+   *
+   * @param string $content
+   *   The AI response content to parse.
+   * @param int $nid
+   *   The node ID associated with the event.
+   * @param string $title
+   *   The title of the event.
+   *
+   * @return array
+   *   An associative array containing parsed data including nid,
+   *   original_title, researched_date, date_verified, suggested_body,
+   *   references, manual_review, review_reason, status, and raw_response.
    */
   protected function parseResponse(string $content, int $nid, string $title): array {
     $result = [
@@ -401,6 +446,11 @@ PROMPT;
 
   /**
    * Stores the processing result in the database.
+   *
+   * @param array $result
+   *   An associative array containing the processing result with keys: nid,
+   *   original_title, researched_date, date_verified, suggested_body,
+   *   references, manual_review, review_reason, status, and raw_response.
    */
   protected function storeResult(array $result): void {
     $this->database->insert('saho_ai_tdih_results')
@@ -414,7 +464,7 @@ PROMPT;
         'manual_review' => $result['manual_review'],
         'review_reason' => $result['review_reason'],
         'status' => $result['status'],
-        'processed' => \Drupal::time()->getRequestTime(),
+        'processed' => $this->time->getRequestTime(),
         'raw_response' => $result['raw_response'],
       ])
       ->execute();
@@ -459,7 +509,7 @@ PROMPT;
       $this->database->update('saho_ai_tdih_results')
         ->fields([
           'status' => 'applied',
-          'applied' => \Drupal::time()->getRequestTime(),
+          'applied' => $this->time->getRequestTime(),
         ])
         ->condition('id', $result_id)
         ->execute();
@@ -477,6 +527,10 @@ PROMPT;
 
   /**
    * Gets processing statistics.
+   *
+   * @return array
+   *   An associative array containing statistics: total_dateless,
+   *   births_dateless, deaths_dateless, processed, applied, and manual_review.
    */
   public function getStatistics(): array {
     $stats = [];

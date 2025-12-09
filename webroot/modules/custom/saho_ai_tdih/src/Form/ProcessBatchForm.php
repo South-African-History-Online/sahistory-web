@@ -22,6 +22,9 @@ class ProcessBatchForm extends FormBase {
 
   /**
    * Constructs a ProcessBatchForm.
+   *
+   * @param \Drupal\saho_ai_tdih\Service\TdihEventProcessor $processor
+   *   The event processor service.
    */
   public function __construct(TdihEventProcessor $processor) {
     $this->processor = $processor;
@@ -167,8 +170,16 @@ class ProcessBatchForm extends FormBase {
 
   /**
    * AJAX callback to update the preview.
+   *
+   * @param array $form
+   *   The form array.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state.
+   *
+   * @return array
+   *   The preview render array for the form.
    */
-  public function updatePreview(array &$form, FormStateInterface $form_state) {
+  public function updatePreview(array &$form, FormStateInterface $form_state): array {
     return $form['preview'];
   }
 
@@ -210,8 +221,18 @@ class ProcessBatchForm extends FormBase {
 
   /**
    * Batch callback to process a single event.
+   *
+   * Note: Static batch callbacks cannot use dependency injection, so we must
+   * use \Drupal::service() here. This is a Drupal batch API limitation.
+   *
+   * @param int $nid
+   *   The node ID of the event to process.
+   * @param int $delay
+   *   The delay in seconds between processing events (1-30).
+   * @param array $context
+   *   Reference to the batch context array.
    */
-  public static function processEventBatch(int $nid, int $delay, array &$context) {
+  public static function processEventBatch(int $nid, int $delay, array &$context): void {
     $processor = \Drupal::service('saho_ai_tdih.processor');
 
     $result = $processor->processEvent($nid);
@@ -236,8 +257,18 @@ class ProcessBatchForm extends FormBase {
 
   /**
    * Batch finished callback.
+   *
+   * Note: Static batch callbacks cannot use dependency injection, so we must
+   * use \Drupal::messenger() here. This is a Drupal batch API limitation.
+   *
+   * @param bool $success
+   *   Whether the batch completed successfully.
+   * @param array $results
+   *   The results collected during batch processing.
+   * @param array $operations
+   *   Any remaining operations that were not processed.
    */
-  public static function batchFinished(bool $success, array $results, array $operations) {
+  public static function batchFinished(bool $success, array $results, array $operations): void {
     $messenger = \Drupal::messenger();
 
     if ($success) {

@@ -31,6 +31,11 @@ class WikidataLookup {
 
   /**
    * Constructs a WikidataLookup service.
+   *
+   * @param \GuzzleHttp\ClientInterface $http_client
+   *   The HTTP client service.
+   * @param \Drupal\Core\Logger\LoggerChannelFactoryInterface $logger_factory
+   *   The logger channel factory.
    */
   public function __construct(
     ClientInterface $http_client,
@@ -55,16 +60,16 @@ class WikidataLookup {
 
     // Common patterns for birth/death events.
     $patterns = [
-      // "Name is born" or "Name, description, is born"
+      // "Name is born" or "Name, description, is born".
       '/^(.+?),?\s+(?:is born|born)/i',
-      // "Name dies" or "Name, description, dies"
+      // "Name dies" or "Name, description, dies".
       '/^(.+?),?\s+(?:dies|died|passes away)/i',
     ];
 
     foreach ($patterns as $pattern) {
       if (preg_match($pattern, $title, $matches)) {
         $name = trim($matches[1]);
-        // Remove parenthetical info like "(d.2002)"
+        // Remove parenthetical info like "(d.2002)".
         $name = preg_replace('/\s*\([^)]+\)\s*/', ' ', $name);
         // Remove descriptive text after comma (e.g., "SA painter, author").
         if (strpos($name, ',') !== FALSE) {
@@ -154,6 +159,19 @@ class WikidataLookup {
   }
 
   /**
+   * Validates a Wikidata entity ID format.
+   *
+   * @param string $entity_id
+   *   The Wikidata entity ID to validate.
+   *
+   * @return bool
+   *   TRUE if the entity ID is valid (matches Q followed by digits).
+   */
+  protected function isValidEntityId(string $entity_id): bool {
+    return (bool) preg_match('/^Q\d+$/', $entity_id);
+  }
+
+  /**
    * Checks if a Wikidata entity is a human (instance of Q5).
    *
    * @param string $entity_id
@@ -163,6 +181,12 @@ class WikidataLookup {
    *   TRUE if the entity is a human.
    */
   protected function isHuman(string $entity_id): bool {
+    // Validate entity ID to prevent SPARQL injection.
+    if (!$this->isValidEntityId($entity_id)) {
+      $this->logger->warning('Invalid Wikidata entity ID format: @id', ['@id' => $entity_id]);
+      return FALSE;
+    }
+
     $sparql = <<<SPARQL
 ASK {
   wd:{$entity_id} wdt:P31 wd:Q5 .
@@ -185,6 +209,10 @@ SPARQL;
       return $data['boolean'] ?? FALSE;
     }
     catch (\Exception $e) {
+      $this->logger->error('Wikidata isHuman check failed for @id: @message', [
+        '@id' => $entity_id,
+        '@message' => $e->getMessage(),
+      ]);
       return FALSE;
     }
   }
@@ -201,6 +229,12 @@ SPARQL;
    *   Array with date information or NULL.
    */
   protected function getPersonDates(string $entity_id, string $label): ?array {
+    // Validate entity ID to prevent SPARQL injection.
+    if (!$this->isValidEntityId($entity_id)) {
+      $this->logger->warning('Invalid Wikidata entity ID format: @id', ['@id' => $entity_id]);
+      return NULL;
+    }
+
     $sparql = <<<SPARQL
 SELECT ?birthDate ?deathDate ?article WHERE {
   OPTIONAL { wd:{$entity_id} wdt:P569 ?birthDate . }

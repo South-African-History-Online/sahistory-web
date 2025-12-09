@@ -3,6 +3,8 @@
 namespace Drupal\saho_ai_tdih\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
+use Drupal\Core\Database\Connection;
+use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\Link;
 use Drupal\Core\Url;
 use Drupal\saho_ai_tdih\Service\TdihEventProcessor;
@@ -23,10 +25,37 @@ class TdihDashboardController extends ControllerBase {
   protected $processor;
 
   /**
-   * Constructs a TdihDashboardController.
+   * The database connection.
+   *
+   * @var \Drupal\Core\Database\Connection
    */
-  public function __construct(TdihEventProcessor $processor) {
+  protected $database;
+
+  /**
+   * The date formatter service.
+   *
+   * @var \Drupal\Core\Datetime\DateFormatterInterface
+   */
+  protected $dateFormatter;
+
+  /**
+   * Constructs a TdihDashboardController.
+   *
+   * @param \Drupal\saho_ai_tdih\Service\TdihEventProcessor $processor
+   *   The event processor service.
+   * @param \Drupal\Core\Database\Connection $database
+   *   The database connection.
+   * @param \Drupal\Core\Datetime\DateFormatterInterface $date_formatter
+   *   The date formatter service.
+   */
+  public function __construct(
+    TdihEventProcessor $processor,
+    Connection $database,
+    DateFormatterInterface $date_formatter,
+  ) {
     $this->processor = $processor;
+    $this->database = $database;
+    $this->dateFormatter = $date_formatter;
   }
 
   /**
@@ -34,14 +63,19 @@ class TdihDashboardController extends ControllerBase {
    */
   public static function create(ContainerInterface $container) {
     return new static(
-      $container->get('saho_ai_tdih.processor')
+      $container->get('saho_ai_tdih.processor'),
+      $container->get('database'),
+      $container->get('date.formatter')
     );
   }
 
   /**
    * Displays the main dashboard.
+   *
+   * @return array
+   *   A render array representing the dashboard page.
    */
-  public function dashboard() {
+  public function dashboard(): array {
     $stats = $this->processor->getStatistics();
 
     $build = [];
@@ -156,8 +190,14 @@ class TdihDashboardController extends ControllerBase {
 
   /**
    * Review page for AI results.
+   *
+   * @param \Symfony\Component\HttpFoundation\Request $request
+   *   The current request object.
+   *
+   * @return array
+   *   A render array representing the review page.
    */
-  public function review(Request $request) {
+  public function review(Request $request): array {
     $filter = $request->query->get('filter', 'all');
     $page = $request->query->get('page', 0);
     $per_page = 25;
@@ -320,10 +360,16 @@ class TdihDashboardController extends ControllerBase {
 
   /**
    * Apply a result to the node.
+   *
+   * @param int $nid
+   *   The node ID to which the result should be applied.
+   *
+   * @return \Symfony\Component\HttpFoundation\RedirectResponse
+   *   Redirects back to the review page.
    */
-  public function apply(int $nid) {
+  public function apply(int $nid): RedirectResponse {
     // Get the result ID for this nid.
-    $result = \Drupal::database()->select('saho_ai_tdih_results', 'r')
+    $result = $this->database->select('saho_ai_tdih_results', 'r')
       ->fields('r', ['id'])
       ->condition('nid', $nid)
       ->condition('status', 'processed')
@@ -342,9 +388,15 @@ class TdihDashboardController extends ControllerBase {
 
   /**
    * Apply all results of a given type.
+   *
+   * @param string $type
+   *   The type of results to apply. Defaults to 'verified'.
+   *
+   * @return \Symfony\Component\HttpFoundation\RedirectResponse
+   *   Redirects to the review page after applying results.
    */
-  public function applyAll(string $type = 'verified') {
-    $query = \Drupal::database()->select('saho_ai_tdih_results', 'r')
+  public function applyAll(string $type = 'verified'): RedirectResponse {
+    $query = $this->database->select('saho_ai_tdih_results', 'r')
       ->fields('r', ['id', 'nid'])
       ->condition('status', 'processed')
       ->isNotNull('researched_date');
@@ -383,9 +435,15 @@ class TdihDashboardController extends ControllerBase {
 
   /**
    * Gets recent processing results.
+   *
+   * @param int $limit
+   *   The maximum number of results to return.
+   *
+   * @return array
+   *   An array of recent processing result records from the database.
    */
   protected function getRecentResults(int $limit): array {
-    return \Drupal::database()->select('saho_ai_tdih_results', 'r')
+    return $this->database->select('saho_ai_tdih_results', 'r')
       ->fields('r')
       ->orderBy('processed', 'DESC')
       ->range(0, $limit)
@@ -395,9 +453,19 @@ class TdihDashboardController extends ControllerBase {
 
   /**
    * Gets filtered results for review.
+   *
+   * @param string $filter
+   *   The filter type to apply.
+   * @param int $limit
+   *   The maximum number of results to return.
+   * @param int $offset
+   *   The offset for pagination.
+   *
+   * @return array
+   *   An array of filtered processing result records from the database.
    */
   protected function getFilteredResults(string $filter, int $limit, int $offset): array {
-    $query = \Drupal::database()->select('saho_ai_tdih_results', 'r')
+    $query = $this->database->select('saho_ai_tdih_results', 'r')
       ->fields('r');
 
     switch ($filter) {
@@ -427,12 +495,18 @@ class TdihDashboardController extends ControllerBase {
 
   /**
    * Formats a timestamp for display.
+   *
+   * @param int $timestamp
+   *   The timestamp to format.
+   *
+   * @return string
+   *   The formatted date string, or '-' if the timestamp is 0.
    */
   protected function formatTimestamp(int $timestamp): string {
     if ($timestamp === 0) {
       return '-';
     }
-    return \Drupal::service('date.formatter')->format($timestamp, 'short');
+    return $this->dateFormatter->format($timestamp, 'short');
   }
 
 }
