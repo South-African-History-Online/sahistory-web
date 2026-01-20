@@ -195,8 +195,9 @@ class NodeFetcher {
     $month_int = (int) $month;
     $day_int = (int) $day;
 
-    // Month must be 01-12, day must be 01-31.
-    return $month_int >= 1 && $month_int <= 12 && $day_int >= 1 && $day_int <= 31;
+    // Use checkdate() for proper month-specific day validation.
+    // Use year 2000 (a leap year) to allow Feb 29.
+    return checkdate($month_int, $day_int, 2000);
   }
 
   /**
