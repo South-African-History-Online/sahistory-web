@@ -18,6 +18,27 @@
     {# LEFT: Main content column #}
     <div class="saho-main-content">
 
+      <div class="saho-article-meta">
+        {% if node.getCreatedTime() %}
+          <span>Published {{ node.getCreatedTime()|date("j F Y") }}</span>
+        {% endif %}
+        {% if node.getChangedTime() != node.getCreatedTime() %}
+          <span>Updated {{ node.getChangedTime()|date("j F Y") }}</span>
+        {% endif %}
+        <div class="saho-tools-wrapper">
+          {% if citation_button %}
+            <div class="saho-citation-wrapper">
+              {{ citation_button }}
+            </div>
+          {% endif %}
+          {% if sharing_button %}
+            <div class="saho-sharing-wrapper">
+              {{ sharing_button }}
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
       {# PDF File Display - Enhanced for better readability #}
       {% if node.field_file_upload.entity %}
         {% set file_uri = node.field_file_upload.entity.uri.value %}
