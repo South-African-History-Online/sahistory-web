@@ -2,12 +2,15 @@
 
 namespace Drupal\entity_overview\Plugin\Block;
 
-use Drupal\file\FileInterface;
 use Drupal\Core\Block\BlockBase;
+use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\File\FileUrlGeneratorInterface;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\node\Entity\Node;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\file\FileInterface;
+use Drupal\node\NodeInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Provides an "Entity Overview" block.
@@ -19,6 +22,57 @@ use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
  * )
  */
 class EntityOverviewBlock extends BlockBase implements ContainerFactoryPluginInterface {
+
+  /**
+   * The entity type bundle info service.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeBundleInfoInterface
+   */
+  protected $entityTypeBundleInfo;
+
+  /**
+   * The entity type manager.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  protected $entityTypeManager;
+
+  /**
+   * The file URL generator.
+   *
+   * @var \Drupal\Core\File\FileUrlGeneratorInterface
+   */
+  protected $fileUrlGenerator;
+
+  /**
+   * Constructs an EntityOverviewBlock object.
+   *
+   * @param array $configuration
+   *   A configuration array containing information about the plugin instance.
+   * @param string $plugin_id
+   *   The plugin_id for the block.
+   * @param mixed $plugin_definition
+   *   The plugin implementation definition.
+   * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entity_type_bundle_info
+   *   The entity type bundle info service.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager.
+   * @param \Drupal\Core\File\FileUrlGeneratorInterface $file_url_generator
+   *   The file URL generator.
+   */
+  public function __construct(
+    array $configuration,
+    $plugin_id,
+    $plugin_definition,
+    EntityTypeBundleInfoInterface $entity_type_bundle_info,
+    EntityTypeManagerInterface $entity_type_manager,
+    FileUrlGeneratorInterface $file_url_generator,
+  ) {
+    parent::__construct($configuration, $plugin_id, $plugin_definition);
+    $this->entityTypeBundleInfo = $entity_type_bundle_info;
+    $this->entityTypeManager = $entity_type_manager;
+    $this->fileUrlGenerator = $file_url_generator;
+  }
 
   /**
    * {@inheritdoc}
@@ -58,7 +112,7 @@ class EntityOverviewBlock extends BlockBase implements ContainerFactoryPluginInt
     ];
 
     // Get available content types for the dropdown.
-    $content_types = \Drupal::service('entity_type.bundle.info')->getBundleInfo('node');
+    $content_types = $this->entityTypeBundleInfo->getBundleInfo('node');
     $allowed_types = ['place', 'event', 'upcomingevent', 'archive', 'article', 'biography'];
     $content_type_options = [];
     foreach ($content_types as $machine_name => $content_type) {
@@ -132,7 +186,7 @@ class EntityOverviewBlock extends BlockBase implements ContainerFactoryPluginInt
     $custom_header = $this->configuration['custom_header'];
     if (!empty($custom_header)) {
       // Get content type label for token replacement.
-      $content_types = \Drupal::service('entity_type.bundle.info')->getBundleInfo('node');
+      $content_types = $this->entityTypeBundleInfo->getBundleInfo('node');
       $content_type_label = $content_types[$content_type]['label'] ?? $content_type;
 
       $block_title = str_replace('%content_type', $content_type_label, $custom_header);
@@ -146,7 +200,7 @@ class EntityOverviewBlock extends BlockBase implements ContainerFactoryPluginInt
     $block_id = 'entity-overview-' . substr(hash('sha256', $this->getPluginId() . serialize($this->configuration)), 0, 8);
 
     // Build the query to fetch entities.
-    $query = \Drupal::entityQuery('node')
+    $query = $this->entityTypeManager->getStorage('node')->getQuery()
       ->condition('type', $content_type)
       ->condition('status', 1)
       ->range(0, $limit)
@@ -166,7 +220,7 @@ class EntityOverviewBlock extends BlockBase implements ContainerFactoryPluginInt
 
     // Execute the query and load the entities.
     $nids = $query->execute();
-    $nodes = !empty($nids) ? Node::loadMultiple($nids) : [];
+    $nodes = !empty($nids) ? $this->entityTypeManager->getStorage('node')->loadMultiple($nids) : [];
     $items = [];
     foreach ($nodes as $node) {
       $items[] = $this->buildEntityItem($node);
@@ -216,7 +270,7 @@ class EntityOverviewBlock extends BlockBase implements ContainerFactoryPluginInt
    *   The total count.
    */
   protected function getEntityCount($content_type) {
-    $query = \Drupal::entityQuery('node')
+    $query = $this->entityTypeManager->getStorage('node')->getQuery()
       ->condition('type', $content_type)
       ->condition('status', 1)
       ->accessCheck(TRUE);
@@ -227,13 +281,13 @@ class EntityOverviewBlock extends BlockBase implements ContainerFactoryPluginInt
   /**
    * Builds a data array from the node.
    *
-   * @param \Drupal\node\Entity\Node $node
+   * @param \Drupal\node\NodeInterface $node
    *   The node entity.
    *
    * @return array
    *   The entity item data.
    */
-  protected function buildEntityItem(Node $node) {
+  protected function buildEntityItem(NodeInterface $node) {
     $image_url = '';
 
     // Define image field names for different content types.
@@ -262,7 +316,7 @@ class EntityOverviewBlock extends BlockBase implements ContainerFactoryPluginInt
             (method_exists($file, 'getFileUri') &&
              $file->getEntityTypeId() === 'file')
         ) {
-          $image_url = \Drupal::service('file_url_generator')->generateAbsoluteString($file->getFileUri());
+          $image_url = $this->fileUrlGenerator->generateAbsoluteString($file->getFileUri());
         }
       }
     }
@@ -319,7 +373,14 @@ class EntityOverviewBlock extends BlockBase implements ContainerFactoryPluginInt
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
-    return new static($configuration, $plugin_id, $plugin_definition);
+    return new static(
+      $configuration,
+      $plugin_id,
+      $plugin_definition,
+      $container->get('entity_type.bundle.info'),
+      $container->get('entity_type.manager'),
+      $container->get('file_url_generator'),
+    );
   }
 
 }

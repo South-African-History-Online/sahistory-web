@@ -2,13 +2,54 @@
 
 namespace Drupal\saho_performance\Form;
 
+use Drupal\Core\Asset\AssetCollectionOptimizerInterface;
+use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Config\TypedConfigManagerInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Configuration form for SAHO Performance settings.
  */
 class PerformanceSettingsForm extends ConfigFormBase {
+
+  /**
+   * The CSS collection optimizer.
+   *
+   * @var \Drupal\Core\Asset\AssetCollectionOptimizerInterface
+   */
+  protected $cssCollectionOptimizer;
+
+  /**
+   * Constructs a PerformanceSettingsForm object.
+   *
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   *   The config factory.
+   * @param \Drupal\Core\Config\TypedConfigManagerInterface $typed_config_manager
+   *   The typed config manager.
+   * @param \Drupal\Core\Asset\AssetCollectionOptimizerInterface $css_collection_optimizer
+   *   The CSS collection optimizer.
+   */
+  public function __construct(
+    ConfigFactoryInterface $config_factory,
+    TypedConfigManagerInterface $typed_config_manager,
+    AssetCollectionOptimizerInterface $css_collection_optimizer,
+  ) {
+    parent::__construct($config_factory, $typed_config_manager);
+    $this->cssCollectionOptimizer = $css_collection_optimizer;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static(
+      $container->get('config.factory'),
+      $container->get('config.typed'),
+      $container->get('asset.css.collection_optimizer'),
+    );
+  }
 
   /**
    * {@inheritdoc}
@@ -98,7 +139,7 @@ class PerformanceSettingsForm extends ConfigFormBase {
       ->save();
 
     // Clear CSS cache to apply changes.
-    \Drupal::service('asset.css.collection_optimizer')->deleteAll();
+    $this->cssCollectionOptimizer->deleteAll();
     drupal_flush_all_caches();
 
     parent::submitForm($form, $form_state);

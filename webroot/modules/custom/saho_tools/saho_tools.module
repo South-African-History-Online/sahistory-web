@@ -5,12 +5,9 @@
  * Contains hook implementations for the SAHO Tools module.
  */
 
-use Drupal\Core\Entity\EntityInterface;
 use Drupal\file\Entity\File;
-use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
 use Drupal\node\NodeInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
-use Drupal\Core\Url;
 use Drupal\Core\Entity\FieldableEntityInterface;
 
 /**
@@ -68,11 +65,11 @@ function saho_tools_page_attachments_alter(array &$attachments) {
 
   // Only attach the citation and sharing libraries on non-admin routes.
   if (!$is_admin) {
-    // Attach modal libraries - these depend on Bootstrap which loads via saho/style
+    // Attach modal libraries - these depend on Bootstrap which loads via saho/style.
     $attachments['#attached']['library'][] = 'saho_tools/citation';
     $attachments['#attached']['library'][] = 'saho_tools/sharing';
 
-    // Attach mobile enhancements for dropdown/offcanvas support
+    // Attach mobile enhancements for dropdown/offcanvas support.
     $attachments['#attached']['library'][] = 'saho/mobile.enhancements';
 
     // Add debugging information to check if the library is loaded.
@@ -94,7 +91,7 @@ function saho_tools_page_attachments_alter(array &$attachments) {
         'changed' => $node->getChangedTime(),
         'url' => $node->toUrl()->setAbsolute()->toString(),
       ];
-      
+
       // Add author information if available.
       if ($node->hasField('field_article_author') && !$node->get('field_article_author')->isEmpty()) {
         $node_data['author'] = $node->get('field_article_author')->value;
@@ -102,24 +99,24 @@ function saho_tools_page_attachments_alter(array &$attachments) {
       elseif ($node->getOwner()) {
         $node_data['author'] = $node->getOwner()->getDisplayName();
       }
-      
+
       $attachments['#attached']['drupalSettings']['sahoTools']['nodeData'] = $node_data;
     }
     else {
-      // For non-node pages, add basic page data
+      // For non-node pages, add basic page data.
       $current_url = \Drupal::request()->getUri();
       $site_name = \Drupal::config('system.site')->get('name');
       $page_title = \Drupal::service('title_resolver')->getTitle(
         \Drupal::request(),
         \Drupal::routeMatch()->getRouteObject()
       );
-      
+
       $page_data = [
         'title' => $page_title ?: 'Page',
         'url' => $current_url,
         'site_name' => $site_name,
       ];
-      
+
       $attachments['#attached']['drupalSettings']['sahoTools']['pageData'] = $page_data;
     }
   }
@@ -131,16 +128,16 @@ function saho_tools_page_attachments_alter(array &$attachments) {
 function saho_tools_preprocess_html(&$variables) {
   // Check if we're on an admin route.
   $is_admin = \Drupal::service('router.admin_context')->isAdminRoute();
-  
-  // Only add the citation modal container on non-admin routes
+
+  // Only add the citation modal container on non-admin routes.
   if (!$is_admin) {
-    
-    // For nodes, use the canonical URL
+
+    // For nodes, use the canonical URL.
     $node = \Drupal::routeMatch()->getParameter('node');
     if ($node instanceof NodeInterface) {
       $canonical_url = $node->toUrl('canonical')->setAbsolute()->toString();
-      
-      // Add canonical link to head
+
+      // Add canonical link to head.
       $variables['#attached']['html_head'][] = [
         [
           '#type' => 'html_tag',
@@ -153,8 +150,8 @@ function saho_tools_preprocess_html(&$variables) {
         'canonical_url',
       ];
     }
-    
-    // Add streamlined citation modal - minimal structure, content loaded via template/JS
+
+    // Add streamlined citation modal - minimal structure, content loaded via template/JS.
     $variables['page_bottom']['citation_modal'] = [
       '#type' => 'html_tag',
       '#tag' => 'div',
@@ -189,41 +186,43 @@ function saho_tools_preprocess_html(&$variables) {
         </div>
       </div>',
     ];
-    
+
     // Add sharing modal
-    // Get the current node for description if available
+    // Get the current node for description if available.
     $node = \Drupal::routeMatch()->getParameter('node');
     $description = '';
     if ($node instanceof NodeInterface && $node->hasField('body') && !$node->get('body')->isEmpty()) {
-      // Get a short excerpt from the body for the description
+      // Get a short excerpt from the body for the description.
       $body_value = $node->get('body')->value;
       $description = strip_tags($body_value);
-      // Limit to 150 characters
+      // Limit to 150 characters.
       if (strlen($description) > 150) {
         $description = substr($description, 0, 150) . '...';
       }
     }
-    
-    // Create a modern sharing modal
+
+    // Create a modern sharing modal.
     $current_url = \Drupal::request()->getUri();
-    
-    // Ensure current URL is a string
+
+    // Ensure current URL is a string.
     if (!is_string($current_url) || empty($current_url)) {
       $current_url = \Drupal::request()->getSchemeAndHttpHost();
     }
     $page_title = \Drupal::service('title_resolver')->getTitle(\Drupal::request(), \Drupal::routeMatch()->getRouteObject());
-    
-    // Ensure page title is a string
+
+    // Ensure page title is a string.
     if (is_array($page_title)) {
-      // Handle nested arrays or render arrays
+      // Handle nested arrays or render arrays.
       if (isset($page_title['#markup'])) {
         $page_title = $page_title['#markup'];
-      } elseif (isset($page_title['#plain_text'])) {
+      }
+      elseif (isset($page_title['#plain_text'])) {
         $page_title = $page_title['#plain_text'];
-      } else {
-        // Flatten array, filtering out non-scalar values
+      }
+      else {
+        // Flatten array, filtering out non-scalar values.
         $flat_title = [];
-        array_walk_recursive($page_title, function($value) use (&$flat_title) {
+        array_walk_recursive($page_title, function ($value) use (&$flat_title) {
           if (is_scalar($value)) {
             $flat_title[] = $value;
           }
@@ -237,12 +236,12 @@ function saho_tools_preprocess_html(&$variables) {
     if (empty($page_title) || !is_string($page_title)) {
       $page_title = \Drupal::config('system.site')->get('name') ?: 'South African History Online';
     }
-    
-    // Additional safety - ensure both are strings before using in URLs
+
+    // Additional safety - ensure both are strings before using in URLs.
     $current_url = (string) $current_url;
     $page_title = (string) $page_title;
-    
-    // Add streamlined sharing modal - minimal structure, content populated by JavaScript
+
+    // Add streamlined sharing modal - minimal structure, content populated by JavaScript.
     $variables['page_bottom']['sharing_modal'] = [
       '#type' => 'html_tag',
       '#tag' => 'div',
@@ -316,8 +315,8 @@ function saho_tools_preprocess_html(&$variables) {
 function saho_tools_page_attachments(array &$attachments) {
   // Check if we're on an admin route.
   $is_admin = \Drupal::service('router.admin_context')->isAdminRoute();
-  
-  // Only add the script to modify the Cite This Page link on non-admin routes
+
+  // Only add the script to modify the Cite This Page link on non-admin routes.
   if (!$is_admin) {
     // Add inline script to modify the Cite This Page link to use data attribute only.
     $attachments['#attached']['html_head'][] = [
@@ -345,14 +344,14 @@ function saho_tools_page_attachments(array &$attachments) {
 function saho_tools_preprocess_node(&$variables) {
   // Add citation data to the node template.
   $node = $variables['node'];
-  
+
   // Only proceed if we're viewing a full node.
   if ($variables['view_mode'] == 'full') {
     // Add citation data as attributes for potential use in templates.
     $variables['attributes']['data-citation-title'] = $node->getTitle();
     $variables['attributes']['data-citation-url'] = $node->toUrl()->setAbsolute()->toString();
     $variables['attributes']['data-citation-date'] = date('Y-m-d', $node->getChangedTime());
-    
+
     // Add author information if available.
     if ($node->hasField('field_article_author') && !$node->get('field_article_author')->isEmpty()) {
       $variables['attributes']['data-citation-author'] = $node->get('field_article_author')->value;
@@ -363,7 +362,7 @@ function saho_tools_preprocess_node(&$variables) {
     else {
       $variables['attributes']['data-citation-author'] = 'South African History Online';
     }
-    
+
     // Add the citation button to the node template.
     $variables['citation_button'] = [
       '#theme' => 'citation_button',
@@ -376,7 +375,7 @@ function saho_tools_preprocess_node(&$variables) {
         'library' => ['saho_tools/citation'],
       ],
     ];
-    
+
     // Add the sharing button to the node template.
     $variables['sharing_button'] = [
       '#theme' => 'sharing_button',
@@ -399,7 +398,7 @@ function saho_tools_theme_suggestions_node_alter(array &$suggestions, array $var
   // Add a theme suggestion for each content type.
   $node = $variables['elements']['#node'];
   $sanitized_view_mode = strtr($variables['elements']['#view_mode'], '.', '_');
-  
+
   // Add a suggestion for the view mode and content type.
   $suggestions[] = 'node__' . $sanitized_view_mode . '__' . $node->bundle();
 }
@@ -408,18 +407,18 @@ function saho_tools_theme_suggestions_node_alter(array &$suggestions, array $var
  * Implements hook_metatag_tags_alter().
  */
 function saho_tools_metatag_tags_alter(array &$metatags, $context) {
-  // Check if context is an array and contains an entity
+  // Check if context is an array and contains an entity.
   if (!is_array($context) || empty($context['entity'])) {
     return;
   }
-  
-  // Only proceed if we have a node entity
+
+  // Only proceed if we have a node entity.
   if ($context['entity'] instanceof NodeInterface) {
     $node = $context['entity'];
     $node_type = $node->getType();
     $image_url = '';
-    
-    // Define a mapping of content types to their image fields in priority order
+
+    // Define a mapping of content types to their image fields in priority order.
     $type_field_map = [
       'article' => ['field_main_image', 'field_article_image', 'field_image'],
       'biography' => ['field_bio_pic'],
@@ -433,29 +432,30 @@ function saho_tools_metatag_tags_alter(array &$metatags, $context) {
       'upcomingevent' => ['field_upcomingevent_image'],
       'page' => ['field_image'],
     ];
-    
-    // Get the appropriate image field based on content type
+
+    // Get the appropriate image field based on content type.
     if (isset($type_field_map[$node_type])) {
-      // Try each field in priority order
+      // Try each field in priority order.
       foreach ($type_field_map[$node_type] as $field_name) {
         if ($node->hasField($field_name) && !$node->get($field_name)->isEmpty()) {
           $image_url = _saho_tools_get_image_url($node, $field_name);
           if (!empty($image_url)) {
-            break; // Stop once we find a valid image
+            // Stop once we find a valid image.
+            break;
           }
         }
       }
     }
-    
-    // If we found an image URL, set it for all Open Graph image tags
+
+    // If we found an image URL, set it for all Open Graph image tags.
     if (!empty($image_url)) {
-      // Set the main og:image tag
+      // Set the main og:image tag.
       $metatags['og_image'] = $image_url;
-      
-      // Also set the alternative og:image:url tag
+
+      // Also set the alternative og:image:url tag.
       $metatags['og_image_url'] = $image_url;
-      
-      // If the URL is https, also set the secure URL tag
+
+      // If the URL is https, also set the secure URL tag.
       if (strpos($image_url, 'https://') === 0) {
         $metatags['og_image_secure_url'] = $image_url;
       }
@@ -466,7 +466,7 @@ function saho_tools_metatag_tags_alter(array &$metatags, $context) {
 /**
  * Helper function to get the absolute URL of an image from a node field.
  *
- * @param NodeInterface $node
+ * @param \Drupal\node\NodeInterface $node
  *   The node entity.
  * @param string $field_name
  *   The name of the image field.
@@ -476,30 +476,30 @@ function saho_tools_metatag_tags_alter(array &$metatags, $context) {
  */
 function _saho_tools_get_image_url(NodeInterface $node, string $field_name) {
   $image_url = '';
-  
-  // Get the file entity from the field
+
+  // Get the file entity from the field.
   $file_entity = NULL;
-  
-  // Cache the field value to avoid repeated method calls
+
+  // Cache the field value to avoid repeated method calls.
   $field_value = $node->get($field_name);
-  
-  // Handle both entity reference fields and file fields
+
+  // Handle both entity reference fields and file fields.
   if ($field_value->entity instanceof File) {
     $file_entity = $field_value->entity;
   }
   elseif ($field_value->entity instanceof FieldableEntityInterface && $field_value->entity->hasField('field_media_image')) {
-    // For media entity reference fields, get the file from the media entity
+    // For media entity reference fields, get the file from the media entity.
     $media_entity = $field_value->entity;
     if (!$media_entity->get('field_media_image')->isEmpty()) {
       $file_entity = $media_entity->get('field_media_image')->entity;
     }
   }
-  
-  // Generate the absolute URL if we have a file entity
+
+  // Generate the absolute URL if we have a file entity.
   if ($file_entity instanceof File) {
     $image_url = \Drupal::service('file_url_generator')->generateAbsoluteString($file_entity->getFileUri());
   }
-  
+
   return $image_url;
 }
 

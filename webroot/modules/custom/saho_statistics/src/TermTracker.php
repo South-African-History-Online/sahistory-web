@@ -2,10 +2,11 @@
 
 namespace Drupal\saho_statistics;
 
+use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\entity_usage\EntityUsageInterface;
-use Drupal\Core\Cache\CacheBackendInterface;
 
 /**
  * Service for tracking popular taxonomy terms based on entity usage.
@@ -41,6 +42,13 @@ class TermTracker {
   protected $cacheBackend;
 
   /**
+   * The module handler.
+   *
+   * @var \Drupal\Core\Extension\ModuleHandlerInterface
+   */
+  protected $moduleHandler;
+
+  /**
    * Constructs a TermTracker object.
    *
    * @param \Drupal\Core\Database\Connection $database
@@ -51,17 +59,21 @@ class TermTracker {
    *   The entity usage service.
    * @param \Drupal\Core\Cache\CacheBackendInterface $cache_backend
    *   The cache backend.
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+   *   The module handler.
    */
   public function __construct(
     Connection $database,
     EntityTypeManagerInterface $entity_type_manager,
     EntityUsageInterface $entity_usage,
     CacheBackendInterface $cache_backend,
+    ModuleHandlerInterface $module_handler,
   ) {
     $this->database = $database;
     $this->entityTypeManager = $entity_type_manager;
     $this->entityUsage = $entity_usage;
     $this->cacheBackend = $cache_backend;
+    $this->moduleHandler = $module_handler;
   }
 
   /**
@@ -144,7 +156,7 @@ class TermTracker {
    */
   public function getTotalPageViews() {
     // This would likely use the statistics module if installed.
-    if (\Drupal::moduleHandler()->moduleExists('statistics')) {
+    if ($this->moduleHandler->moduleExists('statistics')) {
       $query = $this->database->select('node_counter', 'nc');
       $query->addExpression('SUM(totalcount)', 'total_views');
       return $query->execute()->fetchField() ?: 0;
@@ -164,7 +176,7 @@ class TermTracker {
    */
   public function getMostViewedContent($limit = 10) {
     // This would use the statistics module if installed.
-    if (\Drupal::moduleHandler()->moduleExists('statistics')) {
+    if ($this->moduleHandler->moduleExists('statistics')) {
       $query = $this->database->select('node_counter', 'nc');
       $query->fields('nc', ['nid', 'totalcount']);
       $query->orderBy('totalcount', 'DESC');

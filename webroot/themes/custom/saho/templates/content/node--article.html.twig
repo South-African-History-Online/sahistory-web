@@ -167,7 +167,7 @@
           {{ article_image }}
           {% if node.field_node_image_caption.value %}
             <div class="caption">
-              {{ node.field_node_image_caption.value|raw }}
+              {{ node.field_node_image_caption.value|striptags('<a><em><strong><i><b><br>')|raw }}
             </div>
           {% endif %}
         </div>
@@ -258,7 +258,7 @@
           <ul class="saho-reference-list">
             {% for ref in refs %}
               {% if ref|trim %}
-                <li>{{ ref|trim|raw }}</li>
+                <li>{{ ref|trim|striptags('<a><em><strong><i><b>')|raw }}</li>
               {% endif %}
             {% endfor %}
           </ul>

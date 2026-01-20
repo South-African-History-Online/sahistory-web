@@ -5,6 +5,7 @@ namespace Drupal\saho_tools\Service;
 use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\Datetime\DrupalDateTime;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\File\FileUrlGeneratorInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\node\NodeInterface;
 
@@ -35,19 +36,30 @@ class CitationService {
   protected $dateFormatter;
 
   /**
+   * The file URL generator.
+   *
+   * @var \Drupal\Core\File\FileUrlGeneratorInterface
+   */
+  protected $fileUrlGenerator;
+
+  /**
    * Constructs a CitationService object.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
    * @param \Drupal\Core\Datetime\DateFormatterInterface $date_formatter
    *   The date formatter.
+   * @param \Drupal\Core\File\FileUrlGeneratorInterface $file_url_generator
+   *   The file URL generator.
    */
   public function __construct(
     EntityTypeManagerInterface $entity_type_manager,
     DateFormatterInterface $date_formatter,
+    FileUrlGeneratorInterface $file_url_generator,
   ) {
     $this->entityTypeManager = $entity_type_manager;
     $this->dateFormatter = $date_formatter;
+    $this->fileUrlGenerator = $file_url_generator;
   }
 
   /**
@@ -193,7 +205,7 @@ class CitationService {
             }
             // Fallback to using file URL if createFileUrl is not available.
             elseif (method_exists($image_entity, 'getFileUri')) {
-              $image_info['image_url'] = \Drupal::service('file_url_generator')->generateAbsoluteString($image_entity->getFileUri());
+              $image_info['image_url'] = $this->fileUrlGenerator->generateAbsoluteString($image_entity->getFileUri());
             }
 
             // Get alt and title if available on the field.

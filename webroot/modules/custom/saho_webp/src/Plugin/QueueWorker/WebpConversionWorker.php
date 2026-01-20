@@ -2,8 +2,12 @@
 
 namespace Drupal\saho_webp\Plugin\QueueWorker;
 
+use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\File\FileSystemInterface;
+use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Queue\QueueWorkerBase;
-use Drupal\file\Entity\File;
+use Drupal\file\FileInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Processes WebP conversion queue items.
@@ -14,7 +18,60 @@ use Drupal\file\Entity\File;
  *   cron = {"time" = 60}
  * )
  */
-class WebpConversionWorker extends QueueWorkerBase {
+class WebpConversionWorker extends QueueWorkerBase implements ContainerFactoryPluginInterface {
+
+  /**
+   * The entity type manager.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  protected $entityTypeManager;
+
+  /**
+   * The file system service.
+   *
+   * @var \Drupal\Core\File\FileSystemInterface
+   */
+  protected $fileSystem;
+
+  /**
+   * Constructs a WebpConversionWorker object.
+   *
+   * @param array $configuration
+   *   A configuration array containing information about the plugin instance.
+   * @param string $plugin_id
+   *   The plugin_id for the plugin instance.
+   * @param mixed $plugin_definition
+   *   The plugin implementation definition.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager.
+   * @param \Drupal\Core\File\FileSystemInterface $file_system
+   *   The file system service.
+   */
+  public function __construct(
+    array $configuration,
+    $plugin_id,
+    $plugin_definition,
+    EntityTypeManagerInterface $entity_type_manager,
+    FileSystemInterface $file_system,
+  ) {
+    parent::__construct($configuration, $plugin_id, $plugin_definition);
+    $this->entityTypeManager = $entity_type_manager;
+    $this->fileSystem = $file_system;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+    return new static(
+      $configuration,
+      $plugin_id,
+      $plugin_definition,
+      $container->get('entity_type.manager'),
+      $container->get('file_system'),
+    );
+  }
 
   /**
    * {@inheritdoc}
@@ -24,7 +81,7 @@ class WebpConversionWorker extends QueueWorkerBase {
       return;
     }
 
-    $file = File::load($data['file_id']);
+    $file = $this->entityTypeManager->getStorage('file')->load($data['file_id']);
     if (!$file) {
       return;
     }
@@ -35,10 +92,10 @@ class WebpConversionWorker extends QueueWorkerBase {
   /**
    * Convert a file to WebP format safely.
    *
-   * @param \Drupal\file\Entity\File $file
+   * @param \Drupal\file\FileInterface $file
    *   The file entity to convert.
    */
-  protected function convertFileToWebp(File $file) {
+  protected function convertFileToWebp(FileInterface $file) {
     // Only process image files.
     $mime_type = $file->getMimeType();
     if (!in_array($mime_type, ['image/jpeg', 'image/png'])) {
@@ -46,7 +103,7 @@ class WebpConversionWorker extends QueueWorkerBase {
     }
 
     // Get file path.
-    $source_path = \Drupal::service('file_system')->realpath($file->getFileUri());
+    $source_path = $this->fileSystem->realpath($file->getFileUri());
     if (!$source_path || !file_exists($source_path)) {
       return;
     }

@@ -427,6 +427,9 @@ class FileMappingService {
 
   /**
    * Store file mapping in database for performance.
+   *
+   * Uses a transaction to prevent race conditions where concurrent processes
+   * could see empty results between truncate and insert operations.
    */
   private function storeMappingInDatabase(array $mapping): void {
     // Create table if it doesn't exist.
@@ -435,29 +438,39 @@ class FileMappingService {
       $this->createMappingTable();
     }
 
-    // Clear existing mappings.
-    $this->database->truncate('saho_file_mapping')->execute();
+    // Use transaction to ensure atomic truncate + insert operation.
+    $transaction = $this->database->startTransaction();
 
-    $insert = $this->database->insert('saho_file_mapping')
-      ->fields(['filename', 'actual_path', 'archive_dir', 'relative_path', 'filesize', 'modified', 'created']);
+    try {
+      // Clear existing mappings.
+      $this->database->truncate('saho_file_mapping')->execute();
 
-    $timestamp = time();
+      $insert = $this->database->insert('saho_file_mapping')
+        ->fields(['filename', 'actual_path', 'archive_dir', 'relative_path', 'filesize', 'modified', 'created']);
 
-    foreach ($mapping as $filename => $locations) {
-      foreach ($locations as $location) {
-        $insert->values([
-          'filename' => $filename,
-          'actual_path' => $location['actual_path'],
-          'archive_dir' => $location['archive_dir'],
-          'relative_path' => $location['relative_path'],
-          'filesize' => $location['filesize'] ?? 0,
-          'modified' => $location['modified'] ?? 0,
-          'created' => $timestamp,
-        ]);
+      $timestamp = time();
+
+      foreach ($mapping as $filename => $locations) {
+        foreach ($locations as $location) {
+          $insert->values([
+            'filename' => $filename,
+            'actual_path' => $location['actual_path'],
+            'archive_dir' => $location['archive_dir'],
+            'relative_path' => $location['relative_path'],
+            'filesize' => $location['filesize'] ?? 0,
+            'modified' => $location['modified'] ?? 0,
+            'created' => $timestamp,
+          ]);
+        }
       }
-    }
 
-    $insert->execute();
+      $insert->execute();
+      // Transaction commits when $transaction goes out of scope.
+    }
+    catch (\Exception $e) {
+      $transaction->rollBack();
+      throw $e;
+    }
   }
 
   /**

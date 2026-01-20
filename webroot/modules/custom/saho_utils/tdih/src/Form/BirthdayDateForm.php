@@ -5,11 +5,39 @@ namespace Drupal\tdih\Form;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\tdih\Plugin\Block\TdihInteractiveBlock;
+use Drupal\tdih\Service\NodeFetcher;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Provides a form for selecting a birthday date to see historical events.
  */
 class BirthdayDateForm extends FormBase {
+
+  /**
+   * The node fetcher service.
+   *
+   * @var \Drupal\tdih\Service\NodeFetcher
+   */
+  protected $nodeFetcher;
+
+  /**
+   * Constructs a BirthdayDateForm object.
+   *
+   * @param \Drupal\tdih\Service\NodeFetcher $node_fetcher
+   *   The node fetcher service.
+   */
+  public function __construct(NodeFetcher $node_fetcher) {
+    $this->nodeFetcher = $node_fetcher;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static(
+      $container->get('tdih.node_fetcher'),
+    );
+  }
 
   /**
    * {@inheritdoc}
@@ -197,15 +225,12 @@ class BirthdayDateForm extends FormBase {
     }
 
     if (!empty($selected_month) && !empty($selected_day) && !empty($selected_year)) {
-      // Get the NodeFetcher service.
-      $node_fetcher = \Drupal::service('tdih.node_fetcher');
-
       // Create the full birth date and month-day pattern.
       $birth_date = sprintf('%04d-%02d-%02d', $selected_year, $selected_month, $selected_day);
       $month_day_pattern = sprintf('%02d-%02d', $selected_month, $selected_day);
 
       // Load all events for this month-day combination.
-      $nodes = $node_fetcher->loadPotentialEvents($month_day_pattern);
+      $nodes = $this->nodeFetcher->loadPotentialEvents($month_day_pattern);
       $exact_match_items = [];
       $same_day_items = [];
 

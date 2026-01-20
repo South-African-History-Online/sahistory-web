@@ -18,6 +18,27 @@
     {# LEFT: Main content column #}
     <div class="saho-main-content">
 
+      <div class="saho-article-meta">
+        {% if node.getCreatedTime() %}
+          <span>Published {{ node.getCreatedTime()|date("j F Y") }}</span>
+        {% endif %}
+        {% if node.getChangedTime() != node.getCreatedTime() %}
+          <span>Updated {{ node.getChangedTime()|date("j F Y") }}</span>
+        {% endif %}
+        <div class="saho-tools-wrapper">
+          {% if citation_button %}
+            <div class="saho-citation-wrapper">
+              {{ citation_button }}
+            </div>
+          {% endif %}
+          {% if sharing_button %}
+            <div class="saho-sharing-wrapper">
+              {{ sharing_button }}
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
       {# PDF File Display - Enhanced for better readability #}
       {% if node.field_file_upload.entity %}
         {% set file_uri = node.field_file_upload.entity.uri.value %}
@@ -98,7 +119,7 @@
           >
           {% if node.field_node_image_caption.value %}
             <div class="caption mt-2 text-center">
-              {{ node.field_node_image_caption.value|raw }}
+              {{ node.field_node_image_caption.value|striptags('<a><em><strong><i><b><br>')|raw }}
             </div>
           {% endif %}
         </div>
@@ -111,7 +132,7 @@
           >
           {% if node.field_node_image_caption.value %}
             <div class="caption mt-2 text-center">
-              {{ node.field_node_image_caption.value|raw }}
+              {{ node.field_node_image_caption.value|striptags('<a><em><strong><i><b><br>')|raw }}
             </div>
           {% endif %}
         </div>
@@ -124,7 +145,7 @@
           >
           {% if node.field_node_image_caption.value %}
             <div class="caption mt-2 text-center">
-              {{ node.field_node_image_caption.value|raw }}
+              {{ node.field_node_image_caption.value|striptags('<a><em><strong><i><b><br>')|raw }}
             </div>
           {% endif %}
         </div>
@@ -144,7 +165,7 @@
             {% endif %}
             {% if node.field_subtitle.value %}
               <div class="saho-metadata-item mb-1">
-                <strong>Subtitle:</strong> {{ node.field_subtitle.value|raw }}
+                <strong>Subtitle:</strong> {{ node.field_subtitle.value|striptags('<a><em><strong><i><b>')|raw }}
               </div>
             {% endif %}
             {% if node.field_publication_place.value %}
@@ -206,7 +227,7 @@
           {% endif %}
           {% if node.field_source.value %}
             <div class="saho-metadata-item mb-1">
-              <strong>Source:</strong> {{ node.field_source.value|raw }}
+              <strong>Source:</strong> {{ node.field_source.value|striptags('<a><em><strong><i><b>')|raw }}
             </div>
           {% endif %}
           {% if node.field_copyright.value %}
@@ -306,7 +327,7 @@
             <ul class="saho-reference-list">
               {% for ref in refs %}
                 {% if ref|trim %}
-                  <li>{{ ref|trim|raw }}</li>
+                  <li>{{ ref|trim|striptags('<a><em><strong><i><b>')|raw }}</li>
                 {% endif %}
               {% endfor %}
             </ul>
@@ -315,7 +336,7 @@
           {% if node.field_references_saho_source.value %}
             <div class="saho-saho-sources">
               <h5>SAHO Sources</h5>
-              {{ node.field_references_saho_source.value|raw }}
+              {{ node.field_references_saho_source.value|striptags('<a><em><strong><i><b><br><p>')|raw }}
             </div>
           {% endif %}
         </div>
