@@ -5,8 +5,6 @@
  * Install, update and uninstall functions for the saho_cleanup module.
  */
 
-use Drupal\Core\Entity\EntityDefinitionUpdateManagerInterface;
-
 /**
  * Post-update: Remove leftover add_to_cart fields that reference missing plugins.
  */
@@ -39,9 +37,9 @@ function saho_cleanup_update_10001() {
 
   foreach ($block_types_to_delete as $block_type) {
     $ids = \Drupal::entityQuery('block_content')
-    ->condition('type', $block_type)
-    ->accessCheck(FALSE)
-    ->execute();  
+      ->condition('type', $block_type)
+      ->accessCheck(FALSE)
+      ->execute();
 
     if (!empty($ids)) {
       $blocks = $storage->loadMultiple($ids);

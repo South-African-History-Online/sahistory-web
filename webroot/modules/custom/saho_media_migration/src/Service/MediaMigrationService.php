@@ -308,9 +308,42 @@ class MediaMigrationService {
 
   /**
    * Check if file has media entity.
+   *
+   * Uses direct single-record lookup for O(1) performance instead of
+   * loading all files with media entities into memory.
+   *
+   * @param int $fid
+   *   The file ID to check.
+   *
+   * @return bool
+   *   TRUE if a media entity exists for this file, FALSE otherwise.
    */
   public function hasMediaEntity($fid) {
-    return in_array($fid, $this->getFilesWithMediaEntities());
+    $media_tables = [
+      'media__field_media_image' => 'field_media_image_target_id',
+      'media__field_media_file' => 'field_media_file_target_id',
+      'media__field_media_audio_file' => 'field_media_audio_file_target_id',
+      'media__field_media_video_file' => 'field_media_video_file_target_id',
+    ];
+
+    foreach ($media_tables as $table => $field) {
+      if (!$this->database->schema()->tableExists($table)) {
+        continue;
+      }
+
+      $result = $this->database->select($table, 't')
+        ->fields('t', ['entity_id'])
+        ->condition($field, $fid)
+        ->range(0, 1)
+        ->execute()
+        ->fetchField();
+
+      if ($result) {
+        return TRUE;
+      }
+    }
+
+    return FALSE;
   }
 
   /**

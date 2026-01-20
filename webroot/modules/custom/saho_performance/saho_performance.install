@@ -9,14 +9,14 @@
  * Implements hook_install().
  */
 function saho_performance_install() {
-  // Set performance configurations
+  // Set performance configurations.
   $config = \Drupal::configFactory()->getEditable('system.performance');
 
-  // Enable CSS and JS aggregation
+  // Enable CSS and JS aggregation.
   $config->set('css.preprocess', TRUE);
   $config->set('js.preprocess', TRUE);
 
-  // Enable fast 404 pages
+  // Enable fast 404 pages.
   $config->set('fast_404.enabled', TRUE);
   $config->set('fast_404.paths', '/\.(?:txt|png|gif|jpe?g|css|js|ico|swf|flv|cgi|bat|pl|dll|exe|asp)$/i');
   $config->set('fast_404.html', '<!DOCTYPE html><html><head><title>404 Not Found</title></head><body><h1>Not Found</h1></body></html>');
@@ -30,6 +30,6 @@ function saho_performance_install() {
  * Implements hook_uninstall().
  */
 function saho_performance_uninstall() {
-  // Clean up any module-specific configurations if needed
+  // Clean up any module-specific configurations if needed.
   \Drupal::messenger()->addStatus(t('SAHO Performance module has been uninstalled.'));
 }

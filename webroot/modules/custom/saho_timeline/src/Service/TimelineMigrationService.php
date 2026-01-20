@@ -190,27 +190,19 @@ class TimelineMigrationService {
    *   The new event ID.
    */
   protected function storeMigrationMapping($article_id, $event_id) {
-    try {
-      $this->database->insert('saho_timeline_migration')
-        ->fields([
-          'article_id' => $article_id,
-          'event_id' => $event_id,
-          'migrated' => time(),
-        ])
-        ->execute();
-    }
-    catch (\Exception $e) {
-      // Table might not exist, create it.
-      $this->createMigrationTable();
-      // Try again.
-      $this->database->insert('saho_timeline_migration')
-        ->fields([
-          'article_id' => $article_id,
-          'event_id' => $event_id,
-          'migrated' => time(),
-        ])
-        ->execute();
-    }
+    // Ensure table exists before attempting to write.
+    $this->createMigrationTable();
+
+    // Use merge (upsert) to handle concurrent batch operations safely.
+    // This prevents duplicate key errors if multiple workers process
+    // the same article simultaneously.
+    $this->database->merge('saho_timeline_migration')
+      ->key(['article_id' => $article_id])
+      ->fields([
+        'event_id' => $event_id,
+        'migrated' => time(),
+      ])
+      ->execute();
   }
 
   /**

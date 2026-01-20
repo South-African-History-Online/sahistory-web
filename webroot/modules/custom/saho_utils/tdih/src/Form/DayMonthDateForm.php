@@ -2,15 +2,71 @@
 
 namespace Drupal\tdih\Form;
 
-use Drupal\Core\Form\FormBase;
-use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\ReplaceCommand;
+use Drupal\Core\File\FileUrlGeneratorInterface;
+use Drupal\Core\Form\FormBase;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Render\RendererInterface;
+use Drupal\tdih\Service\NodeFetcher;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Provides a form for selecting day and month to see historical events.
  */
 class DayMonthDateForm extends FormBase {
+
+  /**
+   * The node fetcher service.
+   *
+   * @var \Drupal\tdih\Service\NodeFetcher
+   */
+  protected $nodeFetcher;
+
+  /**
+   * The file URL generator.
+   *
+   * @var \Drupal\Core\File\FileUrlGeneratorInterface
+   */
+  protected $fileUrlGenerator;
+
+  /**
+   * The renderer service.
+   *
+   * @var \Drupal\Core\Render\RendererInterface
+   */
+  protected $renderer;
+
+  /**
+   * Constructs a DayMonthDateForm object.
+   *
+   * @param \Drupal\tdih\Service\NodeFetcher $node_fetcher
+   *   The node fetcher service.
+   * @param \Drupal\Core\File\FileUrlGeneratorInterface $file_url_generator
+   *   The file URL generator.
+   * @param \Drupal\Core\Render\RendererInterface $renderer
+   *   The renderer service.
+   */
+  public function __construct(
+    NodeFetcher $node_fetcher,
+    FileUrlGeneratorInterface $file_url_generator,
+    RendererInterface $renderer,
+  ) {
+    $this->nodeFetcher = $node_fetcher;
+    $this->fileUrlGenerator = $file_url_generator;
+    $this->renderer = $renderer;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static(
+      $container->get('tdih.node_fetcher'),
+      $container->get('file_url_generator'),
+      $container->get('renderer'),
+    );
+  }
 
   /**
    * {@inheritdoc}
@@ -150,11 +206,8 @@ class DayMonthDateForm extends FormBase {
       $month = sprintf('%02d', (int) $selected_month);
       $month_day_pattern = sprintf('%02d-%02d', $month, $day);
 
-      // Get the NodeFetcher service.
-      $node_fetcher = \Drupal::service('tdih.node_fetcher');
-
       // Load all events for this month-day combination.
-      $nodes = $node_fetcher->loadAllBirthdayEvents($month_day_pattern);
+      $nodes = $this->nodeFetcher->loadAllBirthdayEvents($month_day_pattern);
       $events = [];
 
       foreach ($nodes as $node) {
@@ -169,8 +222,7 @@ class DayMonthDateForm extends FormBase {
               if ($node->hasField('field_event_image') && !$node->get('field_event_image')->isEmpty()) {
                 $file = $node->get('field_event_image')->entity;
                 if ($file) {
-                  $file_url_generator = \Drupal::service('file_url_generator');
-                  $image_url = $file_url_generator->generateAbsoluteString($file->getFileUri());
+                  $image_url = $this->fileUrlGenerator->generateAbsoluteString($file->getFileUri());
                 }
               }
 
@@ -236,11 +288,8 @@ class DayMonthDateForm extends FormBase {
       $month = sprintf('%02d', (int) $selected_month);
       $month_day_pattern = sprintf('%02d-%02d', $month, $day);
 
-      // Get the NodeFetcher service.
-      $node_fetcher = \Drupal::service('tdih.node_fetcher');
-
       // Load all events for this month-day combination.
-      $nodes = $node_fetcher->loadAllBirthdayEvents($month_day_pattern);
+      $nodes = $this->nodeFetcher->loadAllBirthdayEvents($month_day_pattern);
       $events = [];
 
       foreach ($nodes as $node) {
@@ -254,8 +303,7 @@ class DayMonthDateForm extends FormBase {
               if ($node->hasField('field_event_image') && !$node->get('field_event_image')->isEmpty()) {
                 $file = $node->get('field_event_image')->entity;
                 if ($file) {
-                  $file_url_generator = \Drupal::service('file_url_generator');
-                  $image_url = $file_url_generator->generateAbsoluteString($file->getFileUri());
+                  $image_url = $this->fileUrlGenerator->generateAbsoluteString($file->getFileUri());
                 }
               }
 
@@ -305,7 +353,7 @@ class DayMonthDateForm extends FormBase {
       // Replace the events container.
       $response->addCommand(new ReplaceCommand('.tdih-events-container',
         '<div class="tdih-events-container mt-4">' .
-        \Drupal::service('renderer')->render($events_html) .
+        $this->renderer->render($events_html) .
         '</div>'));
     }
 

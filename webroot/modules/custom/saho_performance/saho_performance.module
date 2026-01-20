@@ -15,7 +15,7 @@ function saho_performance_page_attachments_alter(array &$page) {
   $route_match = \Drupal::routeMatch();
   $route_name = $route_match->getRouteName();
 
-  // Don't add performance optimizations for admin users or admin routes
+  // Don't add performance optimizations for admin users or admin routes.
   if ($current_user->hasPermission('access toolbar') ||
       strpos($route_name, 'system.admin') === 0 ||
       strpos($route_name, 'entity.') !== FALSE && strpos($route_name, '.edit') !== FALSE ||
@@ -51,12 +51,12 @@ function saho_performance_page_attachments_alter(array &$page) {
  * Implements hook_css_alter().
  */
 function saho_performance_css_alter(&$css, AttachedAssetsInterface $assets) {
-  // COMPLETELY DISABLE CSS OPTIMIZATION TO PRESERVE HERO BANNER STYLING
+  // COMPLETELY DISABLE CSS OPTIMIZATION TO PRESERVE HERO BANNER STYLING.
   return;
 
-  // Defer non-critical CSS files based on page type
+  // Defer non-critical CSS files based on page type.
   foreach ($css as $key => &$item) {
-    // Always keep critical CSS files for layout
+    // Always keep critical CSS files for layout.
     $critical_files = [
       'core/themes/stable9/css/system/components/ajax-progress.module.css',
       'core/themes/stable9/css/system/components/align.module.css',
@@ -67,7 +67,7 @@ function saho_performance_css_alter(&$css, AttachedAssetsInterface $assets) {
       'modules/custom/saho_tools/css/citation-modern.css',
       'modules/custom/saho_tools/css/sharing-modern.css',
       'modules/custom/saho_utils/hero_banner/css/hero-banner-modern.css',
-      // Keep all admin and toolbar related CSS
+      // Keep all admin and toolbar related CSS.
       'core/themes/stable9/css/system/components/tablesort.module.css',
       'core/themes/stable9/css/system/components/tabledrag.module.css',
       'core/themes/stable9/css/system/components/tabs.module.css',
@@ -84,11 +84,11 @@ function saho_performance_css_alter(&$css, AttachedAssetsInterface $assets) {
       // 'modules/custom/saho_tools/css/citation.css' => ['entity.node.canonical'],
       // 'modules/custom/saho_tools/css/citation-modern.css' => ['entity.node.canonical'],
       // 'modules/custom/saho_tools/css/sharing-modern.css' => ['entity.node.canonical'],
-      // Hero banner CSS deferred since it's in critical CSS
+      // Hero banner CSS deferred since it's in critical CSS.
       'modules/custom/saho_utils/hero_banner/css/hero-banner-modern.css' => [],
     ];
 
-    // Check if this CSS is critical for current page
+    // Check if this CSS is critical for current page.
     $is_critical = FALSE;
     foreach ($critical_files as $critical) {
       if (strpos($key, $critical) !== FALSE) {
@@ -97,7 +97,7 @@ function saho_performance_css_alter(&$css, AttachedAssetsInterface $assets) {
       }
     }
 
-    // Always keep admin/toolbar related CSS
+    // Always keep admin/toolbar related CSS.
     if (strpos($key, 'toolbar') !== FALSE ||
         strpos($key, 'admin') !== FALSE ||
         strpos($key, 'contextual') !== FALSE ||
@@ -107,7 +107,7 @@ function saho_performance_css_alter(&$css, AttachedAssetsInterface $assets) {
       $is_critical = TRUE;
     }
 
-    // Check if this CSS is needed for current route
+    // Check if this CSS is needed for current route.
     $is_needed = TRUE;
     foreach ($conditional_css as $css_file => $routes) {
       if (strpos($key, $css_file) !== FALSE && !in_array($route_name, $routes)) {
@@ -137,7 +137,7 @@ function saho_performance_css_alter(&$css, AttachedAssetsInterface $assets) {
  * Implements hook_js_alter().
  */
 function saho_performance_js_alter(&$javascript, AttachedAssetsInterface $assets) {
-  // COMPLETELY DISABLE JS OPTIMIZATION TO PRESERVE FUNCTIONALITY
+  // COMPLETELY DISABLE JS OPTIMIZATION TO PRESERVE FUNCTIONALITY.
   return;
 }
 
@@ -145,11 +145,11 @@ function saho_performance_js_alter(&$javascript, AttachedAssetsInterface $assets
  * Get critical CSS for inline insertion.
  */
 function _saho_performance_get_critical_css() {
-  // Get current route to customize critical CSS
+  // Get current route to customize critical CSS.
   $route_match = \Drupal::routeMatch();
   $route_name = $route_match->getRouteName();
 
-  // Base critical CSS for all pages
+  // Base critical CSS for all pages.
   $critical_css = '
     /* Critical CSS for SAHO - Above the fold styles */
     * {
@@ -234,7 +234,7 @@ function _saho_performance_get_critical_css() {
     img { max-width: 100%; height: auto; }
   ';
 
-  // Add page-specific critical CSS
+  // Add page-specific critical CSS.
   if ($route_name === 'system.front_page') {
     $critical_css .= '
       .hero-banner {
@@ -398,7 +398,7 @@ function _saho_performance_get_critical_css() {
     ';
   }
 
-  // Add common inline block styles for rich text content
+  // Add common inline block styles for rich text content.
   $critical_css .= '
     .text-formatted, .field--type-text-long, .field--type-text-with-summary {
       line-height: 1.6;
@@ -436,7 +436,7 @@ function _saho_performance_get_critical_css() {
     }
   ';
 
-  // Add critical modal/dropdown/offcanvas styles to prevent FOUC and enable first-load functionality
+  // Add critical modal/dropdown/offcanvas styles to prevent FOUC and enable first-load functionality.
   $critical_css .= '
     .modal{display:none;position:fixed;z-index:1050;left:0;top:0;width:100%;height:100%;overflow:hidden;outline:0}
     .modal.show{display:block!important}
@@ -470,7 +470,7 @@ function _saho_performance_get_critical_css() {
       h2 { font-size: 1.5rem; }
       .container { padding: 0 10px; }';
 
-  // Add mobile hero banner styles if on front page
+  // Add mobile hero banner styles if on front page.
   if ($route_name === 'system.front_page') {
     $critical_css .= '
       .hero-banner {
@@ -502,7 +502,7 @@ function _saho_performance_get_critical_css() {
     }
   ';
 
-  // Minify the CSS aggressively
+  // Minify the CSS aggressively.
   $critical_css = preg_replace('/\s+/', ' ', $critical_css);
   $critical_css = preg_replace('/\/\*.*?\*\//', '', $critical_css);
   $critical_css = preg_replace('/\s*([{}:;,])\s*/', '$1', $critical_css);
@@ -515,7 +515,7 @@ function _saho_performance_get_critical_css() {
  * Add preload hints for critical resources.
  */
 function _saho_performance_add_preload_hints(array &$page) {
-  // Preload self-hosted Inter fonts
+  // Preload self-hosted Inter fonts.
   $fonts = [
     '/themes/custom/saho/fonts/inter/Inter-Regular.woff2',
     '/themes/custom/saho/fonts/inter/Inter-Medium.woff2',
@@ -539,7 +539,7 @@ function _saho_performance_add_preload_hints(array &$page) {
     ];
   }
 
-  // Preload critical CSS files
+  // Preload critical CSS files.
   $critical_css_files = [
     '/themes/custom/saho/build/css/main.style.css',
   ];
@@ -564,7 +564,7 @@ function _saho_performance_add_preload_hints(array &$page) {
  * Add resource hints for faster connections.
  */
 function _saho_performance_add_resource_hints(array &$page) {
-  // Remove any external font preconnects that might be added by other modules
+  // Remove any external font preconnects that might be added by other modules.
   if (isset($page['#attached']['html_head'])) {
     foreach ($page['#attached']['html_head'] as $key => $item) {
       if (isset($item[1]) && (
@@ -577,7 +577,7 @@ function _saho_performance_add_resource_hints(array &$page) {
   }
 
   // Only add preconnect for actually needed domains
-  // Currently no external domains needed since fonts are self-hosted
+  // Currently no external domains needed since fonts are self-hosted.
 }
 
 /**
@@ -587,55 +587,49 @@ function saho_performance_preprocess_html(&$variables) {
   $config = \Drupal::config('saho_performance.settings');
   $current_user = \Drupal::currentUser();
 
-  // Skip all optimizations for admin users to preserve full functionality
+  // Skip all optimizations for admin users to preserve full functionality.
   if ($current_user && $current_user->hasPermission('access toolbar')) {
     return;
   }
 
-  // Also skip optimizations for authenticated users to preserve functionality
+  // Also skip optimizations for authenticated users to preserve functionality.
   if ($current_user && !$current_user->isAnonymous()) {
     return;
   }
 
   // Temporarily disable CSS loading strategy to prevent errors
-  // $variables['#attached']['library'][] = 'saho_performance/css_loading';
-
+  // $variables['#attached']['library'][] = 'saho_performance/css_loading';.
   // Temporarily disable dynamic CSS loader to preserve functionality
   // if ($config->get('enable_css_removal') !== FALSE) {
   //   $variables['#attached']['library'][] = 'saho_performance/dynamic_css_loader';
-  // }
-
+  // }.
   // Temporarily disable performance monitoring to prevent errors
   // if ($config->get('enable_monitoring') !== FALSE) {
   //   $variables['#attached']['library'][] = 'saho_performance/performance_monitoring';
-  // }
-
+  // }.
   // Temporarily disable aggressive optimizations to preserve functionality
-  // $variables['#attached']['library'][] = 'saho_performance/production_safe';
-
+  // $variables['#attached']['library'][] = 'saho_performance/production_safe';.
   // Temporarily disable image optimizations that might interfere with modals
   // $variables['#attached']['library'][] = 'saho_performance/image_optimization';
-  // $variables['#attached']['library'][] = 'saho_performance/responsive_images';
-
+  // $variables['#attached']['library'][] = 'saho_performance/responsive_images';.
   // Temporarily disable analytics optimization to preserve functionality
   // if ($current_user->isAnonymous()) {
   //   $variables['#attached']['library'][] = 'saho_performance/analytics_optimization';
-  // }
-
+  // }.
   // Temporarily disable functionality check to prevent errors
   // if (\Drupal::config('system.logging')->get('error_level') == 'verbose' ||
   //     (isset($_SERVER['HTTP_HOST']) && strpos($_SERVER['HTTP_HOST'], 'ddev.site') !== FALSE)) {
   //   $variables['#attached']['library'][] = 'saho_performance/functionality_check';
-  // }
+  // }.
 }
 
 /**
  * Implements hook_preprocess_block().
  */
 function saho_performance_preprocess_block(&$variables) {
-  // Optimize hero banner for LCP
+  // Optimize hero banner for LCP.
   if (isset($variables['plugin_id']) && strpos($variables['plugin_id'], 'hero_banner') !== FALSE) {
-    // Add preload for hero banner background image if exists
+    // Add preload for hero banner background image if exists.
     if (!empty($variables['content']['#background_image'])) {
       $image_url = $variables['content']['#background_image'];
       $variables['#attached']['html_head'][] = [

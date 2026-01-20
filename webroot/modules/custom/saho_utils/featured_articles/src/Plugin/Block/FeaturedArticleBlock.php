@@ -2,11 +2,13 @@
 
 namespace Drupal\featured_articles\Plugin\Block;
 
-use Drupal\file\FileInterface;
 use Drupal\Core\Block\BlockBase;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\File\FileUrlGeneratorInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Drupal\node\Entity\Node;
+use Drupal\file\FileInterface;
+use Drupal\node\NodeInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -19,6 +21,46 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * )
  */
 class FeaturedArticleBlock extends BlockBase implements ContainerFactoryPluginInterface {
+
+  /**
+   * The entity type manager.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  protected $entityTypeManager;
+
+  /**
+   * The file URL generator.
+   *
+   * @var \Drupal\Core\File\FileUrlGeneratorInterface
+   */
+  protected $fileUrlGenerator;
+
+  /**
+   * Constructs a FeaturedArticleBlock object.
+   *
+   * @param array $configuration
+   *   A configuration array containing information about the plugin instance.
+   * @param string $plugin_id
+   *   The plugin_id for the block.
+   * @param mixed $plugin_definition
+   *   The plugin implementation definition.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager.
+   * @param \Drupal\Core\File\FileUrlGeneratorInterface $file_url_generator
+   *   The file URL generator.
+   */
+  public function __construct(
+    array $configuration,
+    $plugin_id,
+    $plugin_definition,
+    EntityTypeManagerInterface $entity_type_manager,
+    FileUrlGeneratorInterface $file_url_generator,
+  ) {
+    parent::__construct($configuration, $plugin_id, $plugin_definition);
+    $this->entityTypeManager = $entity_type_manager;
+    $this->fileUrlGenerator = $file_url_generator;
+  }
 
   /**
    * {@inheritdoc}
@@ -43,6 +85,14 @@ class FeaturedArticleBlock extends BlockBase implements ContainerFactoryPluginIn
       '#default_value' => $this->configuration['use_manual_override'],
     ];
 
+    // Validate entity ID before loading to prevent errors from
+    // invalid/deleted nodes.
+    $default_node = NULL;
+    $manual_id = $this->configuration['manual_entity_id'];
+    if ($manual_id && is_numeric($manual_id) && (int) $manual_id > 0) {
+      $default_node = $this->entityTypeManager->getStorage('node')->load($manual_id);
+    }
+
     $form['manual_entity_id'] = [
       '#type' => 'entity_autocomplete',
       '#title' => $this->t('Manual Article'),
@@ -52,9 +102,7 @@ class FeaturedArticleBlock extends BlockBase implements ContainerFactoryPluginIn
       '#selection_settings' => [
         'target_bundles' => ['article'],
       ],
-      '#default_value' => $this->configuration['manual_entity_id']
-        ? Node::load($this->configuration['manual_entity_id'])
-        : NULL,
+      '#default_value' => $default_node,
       '#states' => [
         'visible' => [
           ':input[name="use_manual_override"]' => ['checked' => TRUE],
@@ -83,8 +131,9 @@ class FeaturedArticleBlock extends BlockBase implements ContainerFactoryPluginIn
     $manual_entity_id = $this->configuration['manual_entity_id'];
 
     // If manual override is set, display that specific article.
-    if ($manual_override && $manual_entity_id) {
-      $node = Node::load($manual_entity_id);
+    // Validate entity ID is a positive integer before loading for security.
+    if ($manual_override && $manual_entity_id && is_numeric($manual_entity_id) && (int) $manual_entity_id > 0) {
+      $node = $this->entityTypeManager->getStorage('node')->load((int) $manual_entity_id);
       if ($node) {
         return [
           '#theme' => 'featured_article_block',
@@ -95,8 +144,8 @@ class FeaturedArticleBlock extends BlockBase implements ContainerFactoryPluginIn
 
     // Otherwise, pick a random article that has BOTH field_home_page_feature=1
     // AND field_staff_picks=1.
-    $query = \Drupal::entityQuery('node');
-    $nids = $query->condition('type', 'article')
+    $nids = $this->entityTypeManager->getStorage('node')->getQuery()
+      ->condition('type', 'article')
       ->condition('status', 1)
       ->condition('field_home_page_feature', 1)
       ->condition('field_staff_picks', 1)
@@ -114,7 +163,7 @@ class FeaturedArticleBlock extends BlockBase implements ContainerFactoryPluginIn
     $nids_array = array_values($nids);
     shuffle($nids_array);
     $nid = reset($nids_array);
-    $node = Node::load($nid);
+    $node = $this->entityTypeManager->getStorage('node')->load($nid);
 
     return [
       '#theme' => 'featured_article_block',
@@ -125,7 +174,7 @@ class FeaturedArticleBlock extends BlockBase implements ContainerFactoryPluginIn
   /**
    * Builds a data array from the article node.
    *
-   * @param \Drupal\node\Entity\Node $node
+   * @param \Drupal\node\NodeInterface $node
    *   The node entity to build the article item from.
    *
    * @return array
@@ -135,21 +184,19 @@ class FeaturedArticleBlock extends BlockBase implements ContainerFactoryPluginIn
    *   - url: The node URL
    *   - image: The image URL if available
    */
-  protected function buildArticleItem(Node $node) {
+  protected function buildArticleItem(NodeInterface $node) {
     $image_url = '';
     if ($node->hasField('field_article_image') && !$node->get('field_article_image')->isEmpty()) {
       $file = $node->get('field_article_image')->entity;
       if ($file) {
         // Check if the entity implements FileInterface or is a File entity.
         if ($file instanceof FileInterface) {
-          $file_url_generator = \Drupal::service('file_url_generator');
-          $image_url = $file_url_generator->generateAbsoluteString($file->getFileUri());
+          $image_url = $this->fileUrlGenerator->generateAbsoluteString($file->getFileUri());
         }
         // Fallback: check if the entity has a getFileUri method
         // and is a file entity.
         elseif ($file->getEntityTypeId() === 'file' && method_exists($file, 'getFileUri')) {
-          $file_url_generator = \Drupal::service('file_url_generator');
-          $image_url = $file_url_generator->generateAbsoluteString($file->getFileUri());
+          $image_url = $this->fileUrlGenerator->generateAbsoluteString($file->getFileUri());
         }
         // Last resort: try to load it as a media entity and
         // get the source file.
@@ -161,8 +208,7 @@ class FeaturedArticleBlock extends BlockBase implements ContainerFactoryPluginIn
             if (method_exists($file, 'get') && !empty($file->get($source_field)->entity)) {
               $source_file = $file->get($source_field)->entity;
               if ($source_file instanceof FileInterface) {
-                $file_url_generator = \Drupal::service('file_url_generator');
-                $image_url = $file_url_generator->generateAbsoluteString($source_file->getFileUri());
+                $image_url = $this->fileUrlGenerator->generateAbsoluteString($source_file->getFileUri());
               }
             }
           }
@@ -182,11 +228,12 @@ class FeaturedArticleBlock extends BlockBase implements ContainerFactoryPluginIn
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
-    // If you need to inject services, do so here:
     return new static(
       $configuration,
       $plugin_id,
-      $plugin_definition
+      $plugin_definition,
+      $container->get('entity_type.manager'),
+      $container->get('file_url_generator'),
     );
   }
 

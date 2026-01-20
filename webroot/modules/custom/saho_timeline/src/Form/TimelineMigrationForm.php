@@ -2,12 +2,14 @@
 
 namespace Drupal\saho_timeline\Form;
 
+use Drupal\Core\Batch\BatchBuilder;
+use Drupal\Core\Database\Connection;
+use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\saho_timeline\Service\TimelineMigrationService;
 use Drupal\Core\Messenger\MessengerInterface;
-use Drupal\Core\Batch\BatchBuilder;
+use Drupal\saho_timeline\Service\TimelineMigrationService;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Form for migrating timeline articles to events.
@@ -29,16 +31,41 @@ class TimelineMigrationForm extends FormBase {
   protected $messenger;
 
   /**
+   * The database connection.
+   *
+   * @var \Drupal\Core\Database\Connection
+   */
+  protected $database;
+
+  /**
+   * The date formatter service.
+   *
+   * @var \Drupal\Core\Datetime\DateFormatterInterface
+   */
+  protected $dateFormatter;
+
+  /**
    * Constructs a new TimelineMigrationForm object.
    *
    * @param \Drupal\saho_timeline\Service\TimelineMigrationService $migration_service
    *   The timeline migration service.
    * @param \Drupal\Core\Messenger\MessengerInterface $messenger
    *   The messenger service.
+   * @param \Drupal\Core\Database\Connection $database
+   *   The database connection.
+   * @param \Drupal\Core\Datetime\DateFormatterInterface $date_formatter
+   *   The date formatter service.
    */
-  public function __construct(TimelineMigrationService $migration_service, MessengerInterface $messenger) {
+  public function __construct(
+    TimelineMigrationService $migration_service,
+    MessengerInterface $messenger,
+    Connection $database,
+    DateFormatterInterface $date_formatter,
+  ) {
     $this->migrationService = $migration_service;
     $this->messenger = $messenger;
+    $this->database = $database;
+    $this->dateFormatter = $date_formatter;
   }
 
   /**
@@ -47,7 +74,9 @@ class TimelineMigrationForm extends FormBase {
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('saho_timeline.migration_service'),
-      $container->get('messenger')
+      $container->get('messenger'),
+      $container->get('database'),
+      $container->get('date.formatter'),
     );
   }
 
@@ -290,7 +319,7 @@ class TimelineMigrationForm extends FormBase {
   public function clearHistory(array &$form, FormStateInterface $form_state) {
     // Clear the migration tracking table.
     try {
-      \Drupal::database()->truncate('saho_timeline_migration')->execute();
+      $this->database->truncate('saho_timeline_migration')->execute();
       $this->messenger->addStatus($this->t('Migration history cleared.'));
     }
     catch (\Exception $e) {
@@ -341,7 +370,6 @@ class TimelineMigrationForm extends FormBase {
    * Get migration statistics.
    */
   protected function getMigrationStatistics() {
-    $database = \Drupal::database();
     $stats = [
       'total' => 0,
       'failed' => 0,
@@ -350,13 +378,13 @@ class TimelineMigrationForm extends FormBase {
 
     try {
       // Check if migration table exists.
-      if ($database->schema()->tableExists('saho_timeline_migration')) {
-        $stats['total'] = $database->select('saho_timeline_migration', 'm')
+      if ($this->database->schema()->tableExists('saho_timeline_migration')) {
+        $stats['total'] = $this->database->select('saho_timeline_migration', 'm')
           ->countQuery()
           ->execute()
           ->fetchField();
 
-        $last = $database->select('saho_timeline_migration', 'm')
+        $last = $this->database->select('saho_timeline_migration', 'm')
           ->fields('m', ['migrated'])
           ->orderBy('migrated', 'DESC')
           ->range(0, 1)
@@ -364,8 +392,7 @@ class TimelineMigrationForm extends FormBase {
           ->fetchField();
 
         if ($last) {
-          $stats['last_migration'] = \Drupal::service('date.formatter')
-            ->format($last, 'medium');
+          $stats['last_migration'] = $this->dateFormatter->format($last, 'medium');
         }
       }
     }
