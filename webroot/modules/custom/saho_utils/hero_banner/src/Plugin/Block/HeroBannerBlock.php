@@ -8,6 +8,7 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\File\FileUrlGeneratorInterface;
+use Drupal\Core\Render\Markup;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -305,12 +306,26 @@ class HeroBannerBlock extends BlockBase implements ContainerFactoryPluginInterfa
       }
     }
 
+    // Process body through the administrator-configured text format
+    // for XSS protection.
+    $body_value = '';
+    if (!empty($config['body']['value'])) {
+      // Use the format selected by the administrator in the block config
+      // form. The format is stored when the block is saved via text_format.
+      // Fallback to 'basic_html' only if format is missing (e.g., legacy data).
+      $format = !empty($config['body']['format']) ? $config['body']['format'] : 'basic_html';
+      // Use check_markup to apply text format filtering, then wrap in Markup
+      // so Twig knows it's already sanitized and won't double-escape.
+      $filtered_body = check_markup($config['body']['value'], $format);
+      $body_value = Markup::create($filtered_body);
+    }
+
     $build = [
       '#theme' => 'hero_banner_block',
       '#title' => (string) ($config['title'] ?? ''),
       '#title_color' => (string) ($config['title_color'] ?? 'white'),
       '#subtitle' => (string) ($config['subtitle'] ?? ''),
-      '#body' => !empty($config['body']['value']) ? (string) $config['body']['value'] : '',
+      '#body' => $body_value,
       '#background_image' => (string) ($background_image_url ?? ''),
       '#button_text' => (string) ($config['call_to_action']['title'] ?? ''),
       '#button_url' => (string) ($button_url ?? ''),

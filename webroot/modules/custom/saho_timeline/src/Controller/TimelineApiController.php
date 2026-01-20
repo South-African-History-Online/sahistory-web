@@ -2,16 +2,18 @@
 
 namespace Drupal\saho_timeline\Controller;
 
+use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Controller\ControllerBase;
+use Drupal\Core\Entity\ContentEntityInterface;
+use Drupal\Core\File\FileUrlGeneratorInterface;
+use Drupal\Core\Render\RendererInterface;
+use Drupal\file\FileInterface;
+use Drupal\node\NodeInterface;
+use Drupal\saho_timeline\Service\TimelineEventService;
+use Drupal\saho_timeline\Service\TimelineFilterService;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Drupal\saho_timeline\Service\TimelineEventService;
-use Drupal\saho_timeline\Service\TimelineFilterService;
-use Drupal\Core\Render\RendererInterface;
-use Drupal\Core\Entity\ContentEntityInterface;
-use Drupal\node\NodeInterface;
-use Drupal\file\FileInterface;
 
 /**
  * Controller for timeline API endpoints.
@@ -40,6 +42,20 @@ class TimelineApiController extends ControllerBase {
   protected $renderer;
 
   /**
+   * The cache backend.
+   *
+   * @var \Drupal\Core\Cache\CacheBackendInterface
+   */
+  protected $cache;
+
+  /**
+   * The file URL generator.
+   *
+   * @var \Drupal\Core\File\FileUrlGeneratorInterface
+   */
+  protected $fileUrlGenerator;
+
+  /**
    * Constructs a TimelineApiController object.
    *
    * @param \Drupal\saho_timeline\Service\TimelineEventService $timeline_event_service
@@ -48,11 +64,23 @@ class TimelineApiController extends ControllerBase {
    *   The timeline filter service.
    * @param \Drupal\Core\Render\RendererInterface $renderer
    *   The renderer service.
+   * @param \Drupal\Core\Cache\CacheBackendInterface $cache
+   *   The cache backend.
+   * @param \Drupal\Core\File\FileUrlGeneratorInterface $file_url_generator
+   *   The file URL generator.
    */
-  public function __construct(TimelineEventService $timeline_event_service, TimelineFilterService $timeline_filter_service, RendererInterface $renderer) {
+  public function __construct(
+    TimelineEventService $timeline_event_service,
+    TimelineFilterService $timeline_filter_service,
+    RendererInterface $renderer,
+    CacheBackendInterface $cache,
+    FileUrlGeneratorInterface $file_url_generator,
+  ) {
     $this->timelineEventService = $timeline_event_service;
     $this->timelineFilterService = $timeline_filter_service;
     $this->renderer = $renderer;
+    $this->cache = $cache;
+    $this->fileUrlGenerator = $file_url_generator;
   }
 
   /**
@@ -62,7 +90,9 @@ class TimelineApiController extends ControllerBase {
     return new static(
       $container->get('saho_timeline.event_service'),
       $container->get('saho_timeline.filter_service'),
-      $container->get('renderer')
+      $container->get('renderer'),
+      $container->get('cache.default'),
+      $container->get('file_url_generator'),
     );
   }
 
@@ -83,8 +113,7 @@ class TimelineApiController extends ControllerBase {
 
     // TEMPORARILY DISABLE API CACHE for debugging
     // Try to get from cache first (1 hour cache)
-    $cache = \Drupal::cache();
-    // $cache->get($cache_id);
+    // $this->cache->get($cache_id);
     $cached = FALSE;
     if ($cached && $cached->valid) {
       // Add cache headers.
@@ -415,8 +444,7 @@ class TimelineApiController extends ControllerBase {
         if ($event->hasField($field_name) && !$event->get($field_name)->isEmpty()) {
           $image = $event->get($field_name)->entity;
           if ($image && $image instanceof FileInterface) {
-            $file_url_generator = \Drupal::service('file_url_generator');
-            $data['image'] = $file_url_generator->generateAbsoluteString($image->getFileUri());
+            $data['image'] = $this->fileUrlGenerator->generateAbsoluteString($image->getFileUri());
             // Use the first image found.
             break;
           }

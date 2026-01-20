@@ -3,10 +3,12 @@
 namespace Drupal\featured_biography\Plugin\Block;
 
 use Drupal\Core\Block\BlockBase;
+use Drupal\Core\Entity\EntityFieldManagerInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\File\FileUrlGeneratorInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Drupal\Core\File\FileUrlGeneratorInterface;
+use Drupal\Core\Session\AccountProxyInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -35,6 +37,20 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
   protected $fileUrlGenerator;
 
   /**
+   * The current user.
+   *
+   * @var \Drupal\Core\Session\AccountProxyInterface
+   */
+  protected $currentUser;
+
+  /**
+   * The entity field manager.
+   *
+   * @var \Drupal\Core\Entity\EntityFieldManagerInterface
+   */
+  protected $entityFieldManager;
+
+  /**
    * Constructs a new FeaturedBiographyBlock instance.
    *
    * @param array $configuration
@@ -47,11 +63,25 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
    *   The entity type manager.
    * @param \Drupal\Core\File\FileUrlGeneratorInterface $file_url_generator
    *   The file URL generator.
+   * @param \Drupal\Core\Session\AccountProxyInterface $current_user
+   *   The current user.
+   * @param \Drupal\Core\Entity\EntityFieldManagerInterface $entity_field_manager
+   *   The entity field manager.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, FileUrlGeneratorInterface $file_url_generator) {
+  public function __construct(
+    array $configuration,
+    $plugin_id,
+    $plugin_definition,
+    EntityTypeManagerInterface $entity_type_manager,
+    FileUrlGeneratorInterface $file_url_generator,
+    AccountProxyInterface $current_user,
+    EntityFieldManagerInterface $entity_field_manager,
+  ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->entityTypeManager = $entity_type_manager;
     $this->fileUrlGenerator = $file_url_generator;
+    $this->currentUser = $current_user;
+    $this->entityFieldManager = $entity_field_manager;
   }
 
   /**
@@ -63,7 +93,9 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
       $plugin_id,
       $plugin_definition,
       $container->get('entity_type.manager'),
-      $container->get('file_url_generator')
+      $container->get('file_url_generator'),
+      $container->get('current_user'),
+      $container->get('entity_field.manager'),
     );
   }
 
@@ -333,8 +365,7 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
       ];
 
       // Provide helpful error message for admins.
-      $current_user = \Drupal::currentUser();
-      $show_admin_info = $current_user->hasPermission('administer blocks');
+      $show_admin_info = $this->currentUser->hasPermission('administer blocks');
 
       return [
         '#theme' => 'featured_biography_block',
@@ -426,12 +457,23 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
           // Handle specific node IDs for all entity counts (1-9).
           if (!empty($this->configuration['specific_nids'])) {
             $nids_string = str_replace([' ', "\n", "\r"], '', $this->configuration['specific_nids']);
-            $nids_array = array_filter(explode(',', $nids_string));
-            $nids_to_load = array_slice($nids_array, 0, $entity_count);
+            $nids_array = explode(',', $nids_string);
+            // Validate each NID is a positive integer to prevent injection.
+            // Use is_numeric() instead of ctype_digit() to handle both
+            // string and int types.
+            $nids_array = array_filter($nids_array, function ($nid) {
+              return is_numeric($nid) && (int) $nid > 0;
+            });
+            // Convert to integers and limit to requested count.
+            $nids_to_load = array_map('intval', array_slice($nids_array, 0, $entity_count));
           }
           // Fallback to specific_nid for backward compatibility.
           elseif (!empty($this->configuration['specific_nid'])) {
-            $nids_to_load[] = $this->configuration['specific_nid'];
+            $nid = $this->configuration['specific_nid'];
+            // Validate the single NID as well.
+            if (is_numeric($nid) && (int) $nid > 0) {
+              $nids_to_load[] = (int) $nid;
+            }
           }
 
           if (!empty($nids_to_load)) {
@@ -450,8 +492,7 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
             $node_type = $node_type_storage->load($content_type);
 
             if ($node_type) {
-              $entity_field_manager = \Drupal::service('entity_field.manager');
-              $field_definitions = $entity_field_manager->getFieldDefinitions('node', $content_type);
+              $field_definitions = $this->entityFieldManager->getFieldDefinitions('node', $content_type);
 
               // Check which field actually exists.
               foreach ($possible_field_names as $field_name) {

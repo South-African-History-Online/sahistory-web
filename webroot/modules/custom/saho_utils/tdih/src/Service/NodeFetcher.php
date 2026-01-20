@@ -2,6 +2,7 @@
 
 namespace Drupal\tdih\Service;
 
+use Drupal\Core\Database\Connection;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 
 /**
@@ -17,15 +18,26 @@ class NodeFetcher {
   protected $entityTypeManager;
 
   /**
+   * The database connection.
+   *
+   * @var \Drupal\Core\Database\Connection
+   */
+  protected $database;
+
+  /**
    * Constructs a new NodeFetcher object.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
+   * @param \Drupal\Core\Database\Connection $database
+   *   The database connection.
    */
   public function __construct(
     EntityTypeManagerInterface $entity_type_manager,
+    Connection $database,
   ) {
     $this->entityTypeManager = $entity_type_manager;
+    $this->database = $database;
   }
 
   /**
@@ -49,8 +61,11 @@ class NodeFetcher {
         ->sort('field_event_date', 'DESC');
 
       // If a specific month-day is provided, use LIKE to get potential matches.
-      if ($month_day) {
-        $query->condition('field_event_date', "%-$month_day", 'LIKE');
+      // Validate format (MM-DD) to prevent LIKE injection attacks.
+      if ($month_day && $this->isValidMonthDay($month_day)) {
+        // Escape LIKE wildcards to prevent injection.
+        $safe_month_day = $this->escapeLikeWildcards($month_day);
+        $query->condition('field_event_date', "%-$safe_month_day", 'LIKE');
       }
 
       // Limit to reasonable number for performance.
@@ -89,8 +104,11 @@ class NodeFetcher {
         ->sort('field_event_date', 'DESC');
 
       // If a specific month-day is provided, use LIKE to get potential matches.
-      if ($month_day) {
-        $query->condition('field_event_date', "%-$month_day", 'LIKE');
+      // Validate format (MM-DD) to prevent LIKE injection attacks.
+      if ($month_day && $this->isValidMonthDay($month_day)) {
+        // Escape LIKE wildcards to prevent injection.
+        $safe_month_day = $this->escapeLikeWildcards($month_day);
+        $query->condition('field_event_date', "%-$safe_month_day", 'LIKE');
       }
 
       // Limit to reasonable number for performance.
@@ -122,11 +140,8 @@ class NodeFetcher {
     $dates = [];
 
     try {
-      // Use database connection directly for better performance.
-      $database = \Drupal::database();
-
       // Query to extract month and day from the date field.
-      $query = $database->select('node_field_data', 'n');
+      $query = $this->database->select('node_field_data', 'n');
       $query->join('node__field_event_date', 'f', 'n.nid = f.entity_id');
       $query->join('node__field_home_page_feature', 'h', 'n.nid = h.entity_id');
       $query->fields('f', ['field_event_date_value']);
@@ -158,6 +173,44 @@ class NodeFetcher {
     }
 
     return $dates;
+  }
+
+  /**
+   * Validate that a month-day string matches the expected format.
+   *
+   * @param string $month_day
+   *   The string to validate.
+   *
+   * @return bool
+   *   TRUE if valid MM-DD format, FALSE otherwise.
+   */
+  protected function isValidMonthDay($month_day) {
+    // Must match exactly MM-DD format (two digits, hyphen, two digits).
+    if (!preg_match('/^\d{2}-\d{2}$/', $month_day)) {
+      return FALSE;
+    }
+
+    // Extract and validate month/day values.
+    [$month, $day] = explode('-', $month_day);
+    $month_int = (int) $month;
+    $day_int = (int) $day;
+
+    // Month must be 01-12, day must be 01-31.
+    return $month_int >= 1 && $month_int <= 12 && $day_int >= 1 && $day_int <= 31;
+  }
+
+  /**
+   * Escape LIKE wildcards in a string.
+   *
+   * @param string $value
+   *   The value to escape.
+   *
+   * @return string
+   *   The escaped value safe for use in LIKE queries.
+   */
+  protected function escapeLikeWildcards($value) {
+    // Use Drupal's database abstraction for cross-database compatibility.
+    return $this->database->escapeLike($value);
   }
 
 }

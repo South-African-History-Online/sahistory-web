@@ -5,8 +5,6 @@
  * Install, update and uninstall functions for the SAHO Timeline module.
  */
 
-use Drupal\Core\Database\Database;
-
 /**
  * Implements hook_schema().
  */
@@ -57,7 +55,7 @@ function saho_timeline_schema() {
 function saho_timeline_install() {
   // Set default configuration values.
   $config = \Drupal::configFactory()->getEditable('saho_timeline.settings');
-  
+
   $config->set('default_display_mode', 'default')
     ->set('items_per_page', 20)
     ->set('default_grouping', 'decade')
@@ -77,7 +75,7 @@ function saho_timeline_install() {
     ->set('parse_html_timelines', FALSE)
     ->set('enable_solr', FALSE)
     ->save();
-  
+
   // Log installation.
   \Drupal::logger('saho_timeline')->info('SAHO Timeline module installed successfully.');
 }
@@ -88,11 +86,11 @@ function saho_timeline_install() {
 function saho_timeline_uninstall() {
   // Remove configuration.
   \Drupal::configFactory()->getEditable('saho_timeline.settings')->delete();
-  
+
   // Clean up any cached data.
   \Drupal::cache('data')->deleteAll();
   \Drupal::cache('render')->deleteAll();
-  
+
   // Log uninstallation.
   \Drupal::logger('saho_timeline')->info('SAHO Timeline module uninstalled.');
 }
@@ -102,13 +100,13 @@ function saho_timeline_uninstall() {
  */
 function saho_timeline_requirements($phase) {
   $requirements = [];
-  
+
   if ($phase == 'runtime') {
     // Check if event content type exists.
     $node_type = \Drupal::entityTypeManager()
       ->getStorage('node_type')
       ->load('event');
-    
+
     if (!$node_type) {
       $requirements['saho_timeline_event_type'] = [
         'title' => t('SAHO Timeline: Event Content Type'),
@@ -124,7 +122,7 @@ function saho_timeline_requirements($phase) {
         'severity' => REQUIREMENT_OK,
       ];
     }
-    
+
     // Check if event date field exists.
     $field_storage = \Drupal::entityTypeManager()
       ->getStorage('field_storage_config')
@@ -154,6 +152,6 @@ function saho_timeline_requirements($phase) {
       ];
     }
   }
-  
+
   return $requirements;
 }

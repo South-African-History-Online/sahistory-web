@@ -131,6 +131,13 @@ class TdihBlock extends BlockBase implements ContainerFactoryPluginInterface {
       '#default_value' => $this->configuration['use_manual_override'],
     ];
 
+    // Validate manual_entity_id before loading.
+    $manual_entity_default = NULL;
+    $manual_id = $this->configuration['manual_entity_id'] ?? NULL;
+    if ($manual_id !== NULL && is_numeric($manual_id) && (int) $manual_id > 0) {
+      $manual_entity_default = $this->entityTypeManager->getStorage('node')->load((int) $manual_id);
+    }
+
     $form['manual_entity_id'] = [
       '#type' => 'entity_autocomplete',
       '#title' => $this->t('Manual Entity'),
@@ -142,15 +149,20 @@ class TdihBlock extends BlockBase implements ContainerFactoryPluginInterface {
       '#selection_settings' => [
         'target_bundles' => ['event'],
       ],
-      '#default_value' => ($this->configuration['manual_entity_id'])
-        ? $this->entityTypeManager->getStorage('node')->load($this->configuration['manual_entity_id'])
-        : NULL,
+      '#default_value' => $manual_entity_default,
       '#states' => [
         'visible' => [
           ':input[name="use_manual_override"]' => ['checked' => TRUE],
         ],
       ],
     ];
+
+    // Validate button_block_id before loading.
+    $button_block_default = NULL;
+    $button_id = $this->configuration['button_block_id'] ?? NULL;
+    if ($button_id !== NULL && is_numeric($button_id) && (int) $button_id > 0) {
+      $button_block_default = $this->entityTypeManager->getStorage('block_content')->load((int) $button_id);
+    }
 
     $form['button_block_id'] = [
       '#type' => 'entity_autocomplete',
@@ -161,9 +173,7 @@ class TdihBlock extends BlockBase implements ContainerFactoryPluginInterface {
       '#selection_settings' => [
         'target_bundles' => ['button'],
       ],
-      '#default_value' => ($this->configuration['button_block_id'])
-        ? $this->entityTypeManager->getStorage('block_content')->load($this->configuration['button_block_id'])
-        : NULL,
+      '#default_value' => $button_block_default,
     ];
 
     return $form;
@@ -189,15 +199,16 @@ class TdihBlock extends BlockBase implements ContainerFactoryPluginInterface {
    */
   public function build() {
     $manual_override = $this->configuration['use_manual_override'];
-    $manual_entity_id = $this->configuration['manual_entity_id'];
+    $manual_entity_id = $this->configuration['manual_entity_id'] ?? NULL;
 
     $tdih_nodes = [];
 
     try {
       // 1) If "use manual override" is enabled and an entity is chosen,
-      // load that node.
-      if ($manual_override && $manual_entity_id) {
-        $node = $this->entityTypeManager->getStorage('node')->load($manual_entity_id);
+      // load that node. Validate entity ID is a positive integer.
+      if ($manual_override && $manual_entity_id !== NULL
+          && is_numeric($manual_entity_id) && (int) $manual_entity_id > 0) {
+        $node = $this->entityTypeManager->getStorage('node')->load((int) $manual_entity_id);
         if ($node) {
           $tdih_nodes[] = $this->buildNodeItem($node);
         }
@@ -263,11 +274,12 @@ class TdihBlock extends BlockBase implements ContainerFactoryPluginInterface {
       ],
     ];
 
-    // Add the button block if configured.
-    if (!empty($this->configuration['button_block_id'])) {
+    // Add the button block if configured. Validate ID is a positive integer.
+    $button_block_id = $this->configuration['button_block_id'] ?? NULL;
+    if ($button_block_id !== NULL && is_numeric($button_block_id) && (int) $button_block_id > 0) {
       try {
         $button_block = $this->entityTypeManager->getStorage('block_content')
-          ->load($this->configuration['button_block_id']);
+          ->load((int) $button_block_id);
         if ($button_block) {
           $view_builder = $this->entityTypeManager->getViewBuilder('block_content');
           $build['#button_block'] = $view_builder->view($button_block);
@@ -287,8 +299,10 @@ class TdihBlock extends BlockBase implements ContainerFactoryPluginInterface {
    * {@inheritdoc}
    */
   public function getCacheMaxAge() {
-    if ($this->configuration['use_manual_override'] && $this->configuration['manual_entity_id']) {
-      // If using manual override, use default cache max age.
+    $manual_id = $this->configuration['manual_entity_id'] ?? NULL;
+    if ($this->configuration['use_manual_override']
+        && $manual_id !== NULL && is_numeric($manual_id) && (int) $manual_id > 0) {
+      // If using manual override with valid ID, use default cache max age.
       return Cache::PERMANENT;
     }
 
@@ -317,9 +331,11 @@ class TdihBlock extends BlockBase implements ContainerFactoryPluginInterface {
     // Add cache tags for the block itself.
     $tags[] = 'tdih_block';
 
-    // If using manual override, add the node's cache tag.
-    if ($this->configuration['use_manual_override'] && $this->configuration['manual_entity_id']) {
-      $tags[] = 'node:' . $this->configuration['manual_entity_id'];
+    // If using manual override with valid ID, add the node's cache tag.
+    $manual_id = $this->configuration['manual_entity_id'] ?? NULL;
+    if ($this->configuration['use_manual_override']
+        && $manual_id !== NULL && is_numeric($manual_id) && (int) $manual_id > 0) {
+      $tags[] = 'node:' . (int) $manual_id;
     }
     else {
       // Add node_list:event tag to invalidate when event nodes are updated.
