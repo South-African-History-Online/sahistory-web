@@ -465,10 +465,7 @@ class FileMappingService {
       }
 
       $insert->execute();
-
-      // Explicitly commit by destroying the transaction object.
-      // Drupal's Transaction commits when the object goes out of scope.
-      unset($transaction);
+      // Transaction commits when $transaction goes out of scope.
     }
     catch (\Exception $e) {
       $transaction->rollBack();
