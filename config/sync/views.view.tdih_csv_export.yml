@@ -1,0 +1,987 @@
+uuid: e1df1556-a227-4e32-9fbd-3e9b2fcdd7d9
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_event_date
+    - field.storage.node.field_event_type
+    - node.type.event
+  module:
+    - csv_serialization
+    - datetime
+    - node
+    - taxonomy
+    - user
+    - views_data_export
+id: tdih_csv_export
+label: 'TDIH CSV Export'
+module: views
+description: 'Export This Day in History events by month and day for social media planning'
+tag: ''
+base_table: node_field_data
+base_field: nid
+display:
+  default:
+    id: default
+    display_title: Default
+    display_plugin: default
+    position: 0
+    display_options:
+      title: 'TDIH Events Export'
+      fields:
+        field_event_date:
+          id: field_event_date
+          table: node__field_event_date
+          field: field_event_date
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: field
+          label: Date
+          exclude: false
+          alter:
+            alter_text: false
+            text: ''
+            make_link: false
+            path: ''
+            absolute: false
+            external: false
+            replace_spaces: false
+            path_case: none
+            trim_whitespace: false
+            alt: ''
+            rel: ''
+            link_class: ''
+            prefix: ''
+            suffix: ''
+            target: ''
+            nl2br: false
+            max_length: 0
+            word_boundary: true
+            ellipsis: true
+            more_link: false
+            more_link_text: ''
+            more_link_path: ''
+            strip_tags: false
+            trim: false
+            preserve_tags: ''
+            html: false
+          element_type: ''
+          element_class: ''
+          element_label_type: ''
+          element_label_class: ''
+          element_label_colon: true
+          element_wrapper_type: ''
+          element_wrapper_class: ''
+          element_default_classes: true
+          empty: ''
+          hide_empty: false
+          empty_zero: false
+          hide_alter_empty: true
+          click_sort_column: value
+          type: datetime_custom
+          settings:
+            timezone_override: ''
+            date_format: 'Y-m-d'
+          group_column: value
+          group_columns: {  }
+          group_rows: true
+          delta_limit: 0
+          delta_offset: 0
+          delta_reversed: false
+          delta_first_last: false
+          multi_type: separator
+          separator: ', '
+          field_api_classes: false
+        field_event_type:
+          id: field_event_type
+          table: node__field_event_type
+          field: field_event_type
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: field
+          label: 'Content Type'
+          exclude: false
+          alter:
+            alter_text: false
+            text: ''
+            make_link: false
+            path: ''
+            absolute: false
+            external: false
+            replace_spaces: false
+            path_case: none
+            trim_whitespace: false
+            alt: ''
+            rel: ''
+            link_class: ''
+            prefix: ''
+            suffix: ''
+            target: ''
+            nl2br: false
+            max_length: 0
+            word_boundary: true
+            ellipsis: true
+            more_link: false
+            more_link_text: ''
+            more_link_path: ''
+            strip_tags: false
+            trim: false
+            preserve_tags: ''
+            html: false
+          element_type: ''
+          element_class: ''
+          element_label_type: ''
+          element_label_class: ''
+          element_label_colon: true
+          element_wrapper_type: ''
+          element_wrapper_class: ''
+          element_default_classes: true
+          empty: ''
+          hide_empty: false
+          empty_zero: false
+          hide_alter_empty: true
+          click_sort_column: target_id
+          type: entity_reference_label
+          settings:
+            link: false
+          group_column: target_id
+          group_columns: {  }
+          group_rows: true
+          delta_limit: 0
+          delta_offset: 0
+          delta_reversed: false
+          delta_first_last: false
+          multi_type: separator
+          separator: ', '
+          field_api_classes: false
+        title:
+          id: title
+          table: node_field_data
+          field: title
+          relationship: none
+          group_type: group
+          admin_label: ''
+          entity_type: node
+          entity_field: title
+          plugin_id: field
+          label: Topic
+          exclude: false
+          alter:
+            alter_text: false
+            text: ''
+            make_link: false
+            path: ''
+            absolute: false
+            external: false
+            replace_spaces: false
+            path_case: none
+            trim_whitespace: false
+            alt: ''
+            rel: ''
+            link_class: ''
+            prefix: ''
+            suffix: ''
+            target: ''
+            nl2br: false
+            max_length: 0
+            word_boundary: true
+            ellipsis: true
+            more_link: false
+            more_link_text: ''
+            more_link_path: ''
+            strip_tags: false
+            trim: false
+            preserve_tags: ''
+            html: false
+          element_type: ''
+          element_class: ''
+          element_label_type: ''
+          element_label_class: ''
+          element_label_colon: true
+          element_wrapper_type: ''
+          element_wrapper_class: ''
+          element_default_classes: true
+          empty: ''
+          hide_empty: false
+          empty_zero: false
+          hide_alter_empty: true
+          click_sort_column: value
+          type: string
+          settings:
+            link_to_entity: false
+          group_column: value
+          group_columns: {  }
+          group_rows: true
+          delta_limit: 0
+          delta_offset: 0
+          delta_reversed: false
+          delta_first_last: false
+          multi_type: separator
+          separator: ', '
+          field_api_classes: false
+        view_node:
+          id: view_node
+          table: node
+          field: view_node
+          relationship: none
+          group_type: group
+          admin_label: ''
+          entity_type: node
+          plugin_id: entity_link
+          label: Link
+          exclude: false
+          alter:
+            alter_text: false
+            text: ''
+            make_link: false
+            path: ''
+            absolute: false
+            external: false
+            replace_spaces: false
+            path_case: none
+            trim_whitespace: false
+            alt: ''
+            rel: ''
+            link_class: ''
+            prefix: ''
+            suffix: ''
+            target: ''
+            nl2br: false
+            max_length: 0
+            word_boundary: true
+            ellipsis: true
+            more_link: false
+            more_link_text: ''
+            more_link_path: ''
+            strip_tags: false
+            trim: false
+            preserve_tags: ''
+            html: false
+          element_type: ''
+          element_class: ''
+          element_label_type: ''
+          element_label_class: ''
+          element_label_colon: true
+          element_wrapper_type: ''
+          element_wrapper_class: ''
+          element_default_classes: true
+          empty: ''
+          hide_empty: false
+          empty_zero: false
+          hide_alter_empty: true
+          text: ''
+          output_url_as_text: true
+          absolute: true
+      pager:
+        type: none
+        options:
+          offset: 0
+      exposed_form:
+        type: basic
+        options:
+          submit_button: Filter
+          reset_button: true
+          reset_button_label: Reset
+          exposed_sorts_label: 'Sort by'
+          expose_sort_order: true
+          sort_asc_label: Asc
+          sort_desc_label: Desc
+      access:
+        type: perm
+        options:
+          perm: 'access content'
+      cache:
+        type: tag
+        options: {  }
+      empty: {  }
+      sorts:
+        field_event_date_value:
+          id: field_event_date_value
+          table: node__field_event_date
+          field: field_event_date_value
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: datetime
+          order: ASC
+          expose:
+            label: ''
+            field_identifier: ''
+          exposed: false
+          granularity: second
+      arguments: {  }
+      filters:
+        status:
+          id: status
+          table: node_field_data
+          field: status
+          entity_type: node
+          entity_field: status
+          plugin_id: boolean
+          value: '1'
+          group: 1
+          expose:
+            operator: ''
+            operator_limit_selection: false
+            operator_list: {  }
+        type:
+          id: type
+          table: node_field_data
+          field: type
+          entity_type: node
+          entity_field: type
+          plugin_id: bundle
+          value:
+            event: event
+          group: 1
+          expose:
+            operator_limit_selection: false
+            operator_list: {  }
+        field_event_date_value:
+          id: field_event_date_value
+          table: node__field_event_date
+          field: field_event_date_value
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: datetime
+          operator: 'not empty'
+          value:
+            min: ''
+            max: ''
+            value: ''
+            type: date
+          group: 1
+          exposed: false
+          expose:
+            operator_id: ''
+            label: ''
+            description: ''
+            use_operator: false
+            operator: ''
+            operator_limit_selection: false
+            operator_list: {  }
+            identifier: ''
+            required: false
+            remember: false
+            multiple: false
+            remember_roles:
+              authenticated: authenticated
+            min_placeholder: ''
+            max_placeholder: ''
+            placeholder: ''
+          is_grouped: false
+          group_info:
+            label: ''
+            description: ''
+            identifier: ''
+            optional: true
+            widget: select
+            multiple: false
+            remember: false
+            default_group: All
+            default_group_multiple: {  }
+            group_items: {  }
+        field_event_date_value_month:
+          id: field_event_date_value_month
+          table: node__field_event_date
+          field: field_event_date_value
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: datetime
+          operator: '='
+          value:
+            min: ''
+            max: ''
+            value: ''
+            type: date
+          group: 1
+          exposed: true
+          expose:
+            operator_id: field_event_date_value_month_op
+            label: Month
+            description: 'Select a month (1-12)'
+            use_operator: false
+            operator: field_event_date_value_month_op
+            operator_limit_selection: false
+            operator_list: {  }
+            identifier: month
+            required: false
+            remember: false
+            multiple: false
+            remember_roles:
+              authenticated: authenticated
+            min_placeholder: ''
+            max_placeholder: ''
+            placeholder: ''
+          is_grouped: true
+          group_info:
+            label: Month
+            description: 'Filter by month'
+            identifier: month
+            optional: true
+            widget: select
+            multiple: false
+            remember: false
+            default_group: All
+            default_group_multiple: {  }
+            group_items:
+              1:
+                title: 'January (01)'
+                operator: regular_expression
+                value:
+                  min: ''
+                  max: ''
+                  value: '-01-'
+                  type: date
+              2:
+                title: 'February (02)'
+                operator: regular_expression
+                value:
+                  min: ''
+                  max: ''
+                  value: '-02-'
+                  type: date
+              3:
+                title: 'March (03)'
+                operator: regular_expression
+                value:
+                  min: ''
+                  max: ''
+                  value: '-03-'
+                  type: date
+              4:
+                title: 'April (04)'
+                operator: regular_expression
+                value:
+                  min: ''
+                  max: ''
+                  value: '-04-'
+                  type: date
+              5:
+                title: 'May (05)'
+                operator: regular_expression
+                value:
+                  min: ''
+                  max: ''
+                  value: '-05-'
+                  type: date
+              6:
+                title: 'June (06)'
+                operator: regular_expression
+                value:
+                  min: ''
+                  max: ''
+                  value: '-06-'
+                  type: date
+              7:
+                title: 'July (07)'
+                operator: regular_expression
+                value:
+                  min: ''
+                  max: ''
+                  value: '-07-'
+                  type: date
+              8:
+                title: 'August (08)'
+                operator: regular_expression
+                value:
+                  min: ''
+                  max: ''
+                  value: '-08-'
+                  type: date
+              9:
+                title: 'September (09)'
+                operator: regular_expression
+                value:
+                  min: ''
+                  max: ''
+                  value: '-09-'
+                  type: date
+              10:
+                title: 'October (10)'
+                operator: regular_expression
+                value:
+                  min: ''
+                  max: ''
+                  value: '-10-'
+                  type: date
+              11:
+                title: 'November (11)'
+                operator: regular_expression
+                value:
+                  min: ''
+                  max: ''
+                  value: '-11-'
+                  type: date
+              12:
+                title: 'December (12)'
+                operator: regular_expression
+                value:
+                  min: ''
+                  max: ''
+                  value: '-12-'
+                  type: date
+        field_event_date_value_day:
+          id: field_event_date_value_day
+          table: node__field_event_date
+          field: field_event_date_value
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: datetime
+          operator: '='
+          value:
+            min: ''
+            max: ''
+            value: ''
+            type: date
+          group: 1
+          exposed: true
+          expose:
+            operator_id: field_event_date_value_day_op
+            label: Day
+            description: 'Select a day (1-31)'
+            use_operator: false
+            operator: field_event_date_value_day_op
+            operator_limit_selection: false
+            operator_list: {  }
+            identifier: day
+            required: false
+            remember: false
+            multiple: false
+            remember_roles:
+              authenticated: authenticated
+            min_placeholder: ''
+            max_placeholder: ''
+            placeholder: ''
+          is_grouped: true
+          group_info:
+            label: Day
+            description: 'Filter by day'
+            identifier: day
+            optional: true
+            widget: select
+            multiple: false
+            remember: false
+            default_group: All
+            default_group_multiple: {  }
+            group_items:
+              1:
+                title: '1'
+                operator: regular_expression
+                value:
+                  min: ''
+                  max: ''
+                  value: '-01$'
+                  type: date
+              2:
+                title: '2'
+                operator: regular_expression
+                value:
+                  min: ''
+                  max: ''
+                  value: '-02$'
+                  type: date
+              3:
+                title: '3'
+                operator: regular_expression
+                value:
+                  min: ''
+                  max: ''
+                  value: '-03$'
+                  type: date
+              4:
+                title: '4'
+                operator: regular_expression
+                value:
+                  min: ''
+                  max: ''
+                  value: '-04$'
+                  type: date
+              5:
+                title: '5'
+                operator: regular_expression
+                value:
+                  min: ''
+                  max: ''
+                  value: '-05$'
+                  type: date
+              6:
+                title: '6'
+                operator: regular_expression
+                value:
+                  min: ''
+                  max: ''
+                  value: '-06$'
+                  type: date
+              7:
+                title: '7'
+                operator: regular_expression
+                value:
+                  min: ''
+                  max: ''
+                  value: '-07$'
+                  type: date
+              8:
+                title: '8'
+                operator: regular_expression
+                value:
+                  min: ''
+                  max: ''
+                  value: '-08$'
+                  type: date
+              9:
+                title: '9'
+                operator: regular_expression
+                value:
+                  min: ''
+                  max: ''
+                  value: '-09$'
+                  type: date
+              10:
+                title: '10'
+                operator: regular_expression
+                value:
+                  min: ''
+                  max: ''
+                  value: '-10$'
+                  type: date
+              11:
+                title: '11'
+                operator: regular_expression
+                value:
+                  min: ''
+                  max: ''
+                  value: '-11$'
+                  type: date
+              12:
+                title: '12'
+                operator: regular_expression
+                value:
+                  min: ''
+                  max: ''
+                  value: '-12$'
+                  type: date
+              13:
+                title: '13'
+                operator: regular_expression
+                value:
+                  min: ''
+                  max: ''
+                  value: '-13$'
+                  type: date
+              14:
+                title: '14'
+                operator: regular_expression
+                value:
+                  min: ''
+                  max: ''
+                  value: '-14$'
+                  type: date
+              15:
+                title: '15'
+                operator: regular_expression
+                value:
+                  min: ''
+                  max: ''
+                  value: '-15$'
+                  type: date
+              16:
+                title: '16'
+                operator: regular_expression
+                value:
+                  min: ''
+                  max: ''
+                  value: '-16$'
+                  type: date
+              17:
+                title: '17'
+                operator: regular_expression
+                value:
+                  min: ''
+                  max: ''
+                  value: '-17$'
+                  type: date
+              18:
+                title: '18'
+                operator: regular_expression
+                value:
+                  min: ''
+                  max: ''
+                  value: '-18$'
+                  type: date
+              19:
+                title: '19'
+                operator: regular_expression
+                value:
+                  min: ''
+                  max: ''
+                  value: '-19$'
+                  type: date
+              20:
+                title: '20'
+                operator: regular_expression
+                value:
+                  min: ''
+                  max: ''
+                  value: '-20$'
+                  type: date
+              21:
+                title: '21'
+                operator: regular_expression
+                value:
+                  min: ''
+                  max: ''
+                  value: '-21$'
+                  type: date
+              22:
+                title: '22'
+                operator: regular_expression
+                value:
+                  min: ''
+                  max: ''
+                  value: '-22$'
+                  type: date
+              23:
+                title: '23'
+                operator: regular_expression
+                value:
+                  min: ''
+                  max: ''
+                  value: '-23$'
+                  type: date
+              24:
+                title: '24'
+                operator: regular_expression
+                value:
+                  min: ''
+                  max: ''
+                  value: '-24$'
+                  type: date
+              25:
+                title: '25'
+                operator: regular_expression
+                value:
+                  min: ''
+                  max: ''
+                  value: '-25$'
+                  type: date
+              26:
+                title: '26'
+                operator: regular_expression
+                value:
+                  min: ''
+                  max: ''
+                  value: '-26$'
+                  type: date
+              27:
+                title: '27'
+                operator: regular_expression
+                value:
+                  min: ''
+                  max: ''
+                  value: '-27$'
+                  type: date
+              28:
+                title: '28'
+                operator: regular_expression
+                value:
+                  min: ''
+                  max: ''
+                  value: '-28$'
+                  type: date
+              29:
+                title: '29'
+                operator: regular_expression
+                value:
+                  min: ''
+                  max: ''
+                  value: '-29$'
+                  type: date
+              30:
+                title: '30'
+                operator: regular_expression
+                value:
+                  min: ''
+                  max: ''
+                  value: '-30$'
+                  type: date
+              31:
+                title: '31'
+                operator: regular_expression
+                value:
+                  min: ''
+                  max: ''
+                  value: '-31$'
+                  type: date
+      style:
+        type: table
+        options:
+          grouping: {  }
+          row_class: ''
+          default_row_class: true
+          columns:
+            field_event_date: field_event_date
+            field_event_type: field_event_type
+            title: title
+            view_node: view_node
+          default: field_event_date
+          info:
+            field_event_date:
+              sortable: true
+              default_sort_order: asc
+              align: ''
+              separator: ''
+              empty_column: false
+              responsive: ''
+            field_event_type:
+              sortable: true
+              default_sort_order: asc
+              align: ''
+              separator: ''
+              empty_column: false
+              responsive: ''
+            title:
+              sortable: true
+              default_sort_order: asc
+              align: ''
+              separator: ''
+              empty_column: false
+              responsive: ''
+            view_node:
+              sortable: false
+              default_sort_order: asc
+              align: ''
+              separator: ''
+              empty_column: false
+              responsive: ''
+          override: true
+          sticky: false
+          summary: ''
+          empty_table: false
+          caption: ''
+          description: ''
+      row:
+        type: fields
+      query:
+        type: views_query
+        options:
+          query_comment: ''
+          disable_sql_rewrite: false
+          distinct: false
+          replica: false
+          query_tags: {  }
+      relationships: {  }
+      header: {  }
+      footer: {  }
+      display_extenders: {  }
+    cache_metadata:
+      max-age: -1
+      contexts:
+        - 'languages:language_content'
+        - 'languages:language_interface'
+        - url.query_args
+        - 'user.node_grants:view'
+        - user.permissions
+      tags:
+        - 'config:field.storage.node.field_event_date'
+        - 'config:field.storage.node.field_event_type'
+  data_export_1:
+    id: data_export_1
+    display_title: 'CSV Export'
+    display_plugin: data_export
+    position: 1
+    display_options:
+      display_extenders: {  }
+      path: admin/tdih-export.csv
+      displays:
+        default: default
+        page_1: page_1
+      style:
+        type: data_export
+        options:
+          formats:
+            csv: csv
+          csv_settings:
+            delimiter: ','
+            enclosure: '"'
+            escape_char: \
+            strip_tags: true
+            trim: true
+            encoding: utf8
+            utf8_bom: '0'
+            use_serializer_encode_only: false
+      pager:
+        type: none
+        options:
+          offset: 0
+      export_method: standard
+      export_batch_size: 200
+      automatic_download: true
+    cache_metadata:
+      max-age: -1
+      contexts:
+        - 'languages:language_content'
+        - 'languages:language_interface'
+        - request_format
+        - url.query_args
+        - 'user.node_grants:view'
+        - user.permissions
+      tags:
+        - 'config:field.storage.node.field_event_date'
+        - 'config:field.storage.node.field_event_type'
+  page_1:
+    id: page_1
+    display_title: 'Preview Page'
+    display_plugin: page
+    position: 2
+    display_options:
+      display_description: 'Preview and filter TDIH events before exporting to CSV'
+      display_extenders: {  }
+      path: admin/content/tdih-export
+      pager:
+        type: full
+        options:
+          offset: 0
+          items_per_page: 50
+          total_pages: null
+          id: 0
+          tags:
+            next: 'Next ›'
+            previous: '‹ Previous'
+            first: '« First'
+            last: 'Last »'
+          expose:
+            items_per_page: true
+            items_per_page_label: 'Items per page'
+            items_per_page_options: '50, 100, 200, 500'
+            items_per_page_options_all: true
+            items_per_page_options_all_label: '- All -'
+            offset: false
+            offset_label: Offset
+          quantity: 9
+      defaults:
+        pager: false
+      menu:
+        type: normal
+        title: 'TDIH Export'
+        description: 'Export This Day in History events for social media planning'
+        weight: 10
+        expanded: false
+        menu_name: admin
+        parent: system.admin_content
+    cache_metadata:
+      max-age: -1
+      contexts:
+        - 'languages:language_content'
+        - 'languages:language_interface'
+        - url.query_args
+        - 'user.node_grants:view'
+        - user.permissions
+      tags:
+        - 'config:field.storage.node.field_event_date'
+        - 'config:field.storage.node.field_event_type'
