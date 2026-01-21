@@ -7,10 +7,12 @@ dependencies:
     - field.storage.node.field_event_type
     - node.type.event
   module:
+    - better_exposed_filters
     - csv_serialization
     - datetime
     - node
     - taxonomy
+    - tdih
     - user
     - views_data_export
 id: tdih_csv_export
@@ -82,7 +84,7 @@ display:
           type: datetime_custom
           settings:
             timezone_override: ''
-            date_format: 'Y-m-d'
+            date_format: 'j F Y'
           group_column: value
           group_columns: {  }
           group_rows: true
@@ -279,7 +281,7 @@ display:
         options:
           offset: 0
       exposed_form:
-        type: basic
+        type: bef
         options:
           submit_button: Filter
           reset_button: true
@@ -288,6 +290,27 @@ display:
           expose_sort_order: true
           sort_asc_label: Asc
           sort_desc_label: Desc
+          bef:
+            general:
+              autosubmit: false
+              autosubmit_exclude_textfield: false
+              autosubmit_textfield_delay: 500
+              autosubmit_hide: false
+              input_required: false
+              allow_secondary: false
+              secondary_label: 'Advanced options'
+              secondary_open: false
+            filter:
+              tdih_date_range:
+                plugin_id: default
+                advanced:
+                  placeholder_text: ''
+                  rewrite:
+                    filter_rewrite_values: ''
+                  collapsible: false
+                  is_secondary: false
+            sort: {  }
+            pager: {  }
       access:
         type: perm
         options:
@@ -297,20 +320,19 @@ display:
         options: {  }
       empty: {  }
       sorts:
-        field_event_date_value:
-          id: field_event_date_value
+        tdih_date_sort:
+          id: tdih_date_sort
           table: node__field_event_date
-          field: field_event_date_value
+          field: tdih_date_sort
           relationship: none
           group_type: group
           admin_label: ''
-          plugin_id: datetime
+          plugin_id: tdih_date_sort
           order: ASC
           expose:
             label: ''
             field_identifier: ''
           exposed: false
-          granularity: second
       arguments: {  }
       filters:
         status:
@@ -384,440 +406,32 @@ display:
             default_group: All
             default_group_multiple: {  }
             group_items: {  }
-        field_event_date_value_month:
-          id: field_event_date_value_month
+        tdih_date_range:
+          id: tdih_date_range
           table: node__field_event_date
-          field: field_event_date_value
+          field: tdih_date_range
           relationship: none
           group_type: group
           admin_label: ''
-          plugin_id: datetime
-          operator: '='
-          value:
-            min: ''
-            max: ''
-            value: ''
-            type: date
+          plugin_id: tdih_date_range
+          value: {  }
           group: 1
           exposed: true
           expose:
-            operator_id: field_event_date_value_month_op
-            label: Month
-            description: 'Select a month (1-12)'
+            operator_id: ''
+            label: 'Date Range'
+            description: 'Filter by month and day range (year is ignored)'
             use_operator: false
-            operator: field_event_date_value_month_op
+            operator: ''
             operator_limit_selection: false
             operator_list: {  }
-            identifier: month
+            identifier: tdih_range
             required: false
             remember: false
             multiple: false
             remember_roles:
               authenticated: authenticated
-            min_placeholder: ''
-            max_placeholder: ''
-            placeholder: ''
-          is_grouped: true
-          group_info:
-            label: Month
-            description: 'Filter by month'
-            identifier: month
-            optional: true
-            widget: select
-            multiple: false
-            remember: false
-            default_group: All
-            default_group_multiple: {  }
-            group_items:
-              1:
-                title: 'January (01)'
-                operator: regular_expression
-                value:
-                  min: ''
-                  max: ''
-                  value: '-01-'
-                  type: date
-              2:
-                title: 'February (02)'
-                operator: regular_expression
-                value:
-                  min: ''
-                  max: ''
-                  value: '-02-'
-                  type: date
-              3:
-                title: 'March (03)'
-                operator: regular_expression
-                value:
-                  min: ''
-                  max: ''
-                  value: '-03-'
-                  type: date
-              4:
-                title: 'April (04)'
-                operator: regular_expression
-                value:
-                  min: ''
-                  max: ''
-                  value: '-04-'
-                  type: date
-              5:
-                title: 'May (05)'
-                operator: regular_expression
-                value:
-                  min: ''
-                  max: ''
-                  value: '-05-'
-                  type: date
-              6:
-                title: 'June (06)'
-                operator: regular_expression
-                value:
-                  min: ''
-                  max: ''
-                  value: '-06-'
-                  type: date
-              7:
-                title: 'July (07)'
-                operator: regular_expression
-                value:
-                  min: ''
-                  max: ''
-                  value: '-07-'
-                  type: date
-              8:
-                title: 'August (08)'
-                operator: regular_expression
-                value:
-                  min: ''
-                  max: ''
-                  value: '-08-'
-                  type: date
-              9:
-                title: 'September (09)'
-                operator: regular_expression
-                value:
-                  min: ''
-                  max: ''
-                  value: '-09-'
-                  type: date
-              10:
-                title: 'October (10)'
-                operator: regular_expression
-                value:
-                  min: ''
-                  max: ''
-                  value: '-10-'
-                  type: date
-              11:
-                title: 'November (11)'
-                operator: regular_expression
-                value:
-                  min: ''
-                  max: ''
-                  value: '-11-'
-                  type: date
-              12:
-                title: 'December (12)'
-                operator: regular_expression
-                value:
-                  min: ''
-                  max: ''
-                  value: '-12-'
-                  type: date
-        field_event_date_value_day:
-          id: field_event_date_value_day
-          table: node__field_event_date
-          field: field_event_date_value
-          relationship: none
-          group_type: group
-          admin_label: ''
-          plugin_id: datetime
-          operator: '='
-          value:
-            min: ''
-            max: ''
-            value: ''
-            type: date
-          group: 1
-          exposed: true
-          expose:
-            operator_id: field_event_date_value_day_op
-            label: Day
-            description: 'Select a day (1-31)'
-            use_operator: false
-            operator: field_event_date_value_day_op
-            operator_limit_selection: false
-            operator_list: {  }
-            identifier: day
-            required: false
-            remember: false
-            multiple: false
-            remember_roles:
-              authenticated: authenticated
-            min_placeholder: ''
-            max_placeholder: ''
-            placeholder: ''
-          is_grouped: true
-          group_info:
-            label: Day
-            description: 'Filter by day'
-            identifier: day
-            optional: true
-            widget: select
-            multiple: false
-            remember: false
-            default_group: All
-            default_group_multiple: {  }
-            group_items:
-              1:
-                title: '1'
-                operator: regular_expression
-                value:
-                  min: ''
-                  max: ''
-                  value: '-01$'
-                  type: date
-              2:
-                title: '2'
-                operator: regular_expression
-                value:
-                  min: ''
-                  max: ''
-                  value: '-02$'
-                  type: date
-              3:
-                title: '3'
-                operator: regular_expression
-                value:
-                  min: ''
-                  max: ''
-                  value: '-03$'
-                  type: date
-              4:
-                title: '4'
-                operator: regular_expression
-                value:
-                  min: ''
-                  max: ''
-                  value: '-04$'
-                  type: date
-              5:
-                title: '5'
-                operator: regular_expression
-                value:
-                  min: ''
-                  max: ''
-                  value: '-05$'
-                  type: date
-              6:
-                title: '6'
-                operator: regular_expression
-                value:
-                  min: ''
-                  max: ''
-                  value: '-06$'
-                  type: date
-              7:
-                title: '7'
-                operator: regular_expression
-                value:
-                  min: ''
-                  max: ''
-                  value: '-07$'
-                  type: date
-              8:
-                title: '8'
-                operator: regular_expression
-                value:
-                  min: ''
-                  max: ''
-                  value: '-08$'
-                  type: date
-              9:
-                title: '9'
-                operator: regular_expression
-                value:
-                  min: ''
-                  max: ''
-                  value: '-09$'
-                  type: date
-              10:
-                title: '10'
-                operator: regular_expression
-                value:
-                  min: ''
-                  max: ''
-                  value: '-10$'
-                  type: date
-              11:
-                title: '11'
-                operator: regular_expression
-                value:
-                  min: ''
-                  max: ''
-                  value: '-11$'
-                  type: date
-              12:
-                title: '12'
-                operator: regular_expression
-                value:
-                  min: ''
-                  max: ''
-                  value: '-12$'
-                  type: date
-              13:
-                title: '13'
-                operator: regular_expression
-                value:
-                  min: ''
-                  max: ''
-                  value: '-13$'
-                  type: date
-              14:
-                title: '14'
-                operator: regular_expression
-                value:
-                  min: ''
-                  max: ''
-                  value: '-14$'
-                  type: date
-              15:
-                title: '15'
-                operator: regular_expression
-                value:
-                  min: ''
-                  max: ''
-                  value: '-15$'
-                  type: date
-              16:
-                title: '16'
-                operator: regular_expression
-                value:
-                  min: ''
-                  max: ''
-                  value: '-16$'
-                  type: date
-              17:
-                title: '17'
-                operator: regular_expression
-                value:
-                  min: ''
-                  max: ''
-                  value: '-17$'
-                  type: date
-              18:
-                title: '18'
-                operator: regular_expression
-                value:
-                  min: ''
-                  max: ''
-                  value: '-18$'
-                  type: date
-              19:
-                title: '19'
-                operator: regular_expression
-                value:
-                  min: ''
-                  max: ''
-                  value: '-19$'
-                  type: date
-              20:
-                title: '20'
-                operator: regular_expression
-                value:
-                  min: ''
-                  max: ''
-                  value: '-20$'
-                  type: date
-              21:
-                title: '21'
-                operator: regular_expression
-                value:
-                  min: ''
-                  max: ''
-                  value: '-21$'
-                  type: date
-              22:
-                title: '22'
-                operator: regular_expression
-                value:
-                  min: ''
-                  max: ''
-                  value: '-22$'
-                  type: date
-              23:
-                title: '23'
-                operator: regular_expression
-                value:
-                  min: ''
-                  max: ''
-                  value: '-23$'
-                  type: date
-              24:
-                title: '24'
-                operator: regular_expression
-                value:
-                  min: ''
-                  max: ''
-                  value: '-24$'
-                  type: date
-              25:
-                title: '25'
-                operator: regular_expression
-                value:
-                  min: ''
-                  max: ''
-                  value: '-25$'
-                  type: date
-              26:
-                title: '26'
-                operator: regular_expression
-                value:
-                  min: ''
-                  max: ''
-                  value: '-26$'
-                  type: date
-              27:
-                title: '27'
-                operator: regular_expression
-                value:
-                  min: ''
-                  max: ''
-                  value: '-27$'
-                  type: date
-              28:
-                title: '28'
-                operator: regular_expression
-                value:
-                  min: ''
-                  max: ''
-                  value: '-28$'
-                  type: date
-              29:
-                title: '29'
-                operator: regular_expression
-                value:
-                  min: ''
-                  max: ''
-                  value: '-29$'
-                  type: date
-              30:
-                title: '30'
-                operator: regular_expression
-                value:
-                  min: ''
-                  max: ''
-                  value: '-30$'
-                  type: date
-              31:
-                title: '31'
-                operator: regular_expression
-                value:
-                  min: ''
-                  max: ''
-                  value: '-31$'
-                  type: date
+          is_grouped: false
       style:
         type: table
         options:
@@ -832,7 +446,7 @@ display:
           default: field_event_date
           info:
             field_event_date:
-              sortable: true
+              sortable: false
               default_sort_order: asc
               align: ''
               separator: ''
@@ -947,7 +561,7 @@ display:
         type: full
         options:
           offset: 0
-          items_per_page: 50
+          items_per_page: 10
           total_pages: null
           id: 0
           tags:
@@ -958,7 +572,7 @@ display:
           expose:
             items_per_page: true
             items_per_page_label: 'Items per page'
-            items_per_page_options: '50, 100, 200, 500'
+            items_per_page_options: '5, 10, 20'
             items_per_page_options_all: true
             items_per_page_options_all_label: '- All -'
             offset: false
