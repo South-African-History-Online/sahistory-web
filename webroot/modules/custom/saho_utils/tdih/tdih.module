@@ -100,3 +100,35 @@ function tdih_page_attachments(array &$attachments) {
     $attachments['#attached']['library'][] = 'tdih/tdih-page';
   }
 }
+
+/**
+ * Implements hook_views_query_alter().
+ *
+ * Alters the TDIH CSV export view to sort by month/day instead of full date.
+ */
+function tdih_views_query_alter($view, $query) {
+  if ($view->id() == 'tdih_csv_export') {
+    // Clear existing orderby to replace with our custom sort.
+    $query->orderby = [];
+
+    // Sort by month, then day, then year.
+    $query->addOrderBy(
+      NULL,
+      'MONTH(node__field_event_date.field_event_date_value)',
+      'ASC',
+      'tdih_month'
+    );
+    $query->addOrderBy(
+      NULL,
+      'DAY(node__field_event_date.field_event_date_value)',
+      'ASC',
+      'tdih_day'
+    );
+    $query->addOrderBy(
+      NULL,
+      'YEAR(node__field_event_date.field_event_date_value)',
+      'ASC',
+      'tdih_year'
+    );
+  }
+}
