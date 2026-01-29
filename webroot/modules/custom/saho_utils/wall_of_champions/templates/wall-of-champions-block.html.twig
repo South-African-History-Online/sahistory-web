@@ -1,0 +1,53 @@
+{#
+/**
+ * @file
+ * Template for Wall of Champions block.
+ *
+ * Available variables:
+ * - champions: Array of champion data with display_name, testimonial, member_since.
+ * - total_count: Total number of champions.
+ * - view_all_url: URL to the full Wall of Champions page.
+ */
+#}
+
+<div class="wall-of-champions-block">
+  {% if champions is not empty %}
+    <div class="row g-3">
+      {% for champion in champions %}
+        <div class="col-12 col-sm-6 col-lg-4">
+          <div class="card h-100 wall-of-champions-block__card">
+            <div class="card-body">
+              <h4 class="card-title h6 wall-of-champions-block__name">
+                {{ champion.display_name }}
+              </h4>
+              {% if champion.testimonial %}
+                <blockquote class="wall-of-champions-block__testimonial mb-0">
+                  <p class="text-muted small fst-italic mb-0">
+                    "{{ champion.testimonial }}"
+                  </p>
+                </blockquote>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+
+    {% if view_all_url %}
+      <div class="wall-of-champions-block__footer mt-3 text-center">
+        <a href="{{ view_all_url }}" class="btn btn-outline-primary">
+          {{ 'View All Champions'|t }} ({{ total_count }})
+        </a>
+      </div>
+    {% endif %}
+  {% else %}
+    <div class="wall-of-champions-block__empty alert alert-light">
+      <p class="mb-2">
+        {{ 'Be the first SAHO Champion! Support South African history education.'|t }}
+      </p>
+      <a href="/product/champion-subscription" class="btn btn-sm btn-primary">
+        {{ 'Become a Champion'|t }}
+      </a>
+    </div>
+  {% endif %}
+</div>

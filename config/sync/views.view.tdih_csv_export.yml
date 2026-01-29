@@ -300,6 +300,8 @@ display:
               allow_secondary: false
               secondary_label: 'Advanced options'
               secondary_open: false
+            sort: {  }
+            pager: {  }
             filter:
               tdih_date_range:
                 plugin_id: default
@@ -309,8 +311,6 @@ display:
                     filter_rewrite_values: ''
                   collapsible: false
                   is_secondary: false
-            sort: {  }
-            pager: {  }
       access:
         type: perm
         options:
@@ -510,11 +510,10 @@ display:
     display_plugin: data_export
     position: 1
     display_options:
-      display_extenders: {  }
-      path: admin/tdih-export.csv
-      displays:
-        default: default
-        page_1: page_1
+      pager:
+        type: none
+        options:
+          offset: 0
       style:
         type: data_export
         options:
@@ -529,13 +528,14 @@ display:
             encoding: utf8
             utf8_bom: '0'
             use_serializer_encode_only: false
-      pager:
-        type: none
-        options:
-          offset: 0
+      display_extenders: {  }
+      path: admin/tdih-export.csv
+      displays:
+        default: default
+        page_1: page_1
+      automatic_download: true
       export_method: standard
       export_batch_size: 200
-      automatic_download: true
     cache_metadata:
       max-age: -1
       contexts:
@@ -554,9 +554,6 @@ display:
     display_plugin: page
     position: 2
     display_options:
-      display_description: 'Preview and filter TDIH events before exporting to CSV'
-      display_extenders: {  }
-      path: admin/content/tdih-export
       pager:
         type: full
         options:
@@ -580,6 +577,9 @@ display:
           quantity: 9
       defaults:
         pager: false
+      display_description: 'Preview and filter TDIH events before exporting to CSV'
+      display_extenders: {  }
+      path: admin/content/tdih-export
       menu:
         type: normal
         title: 'TDIH Export'

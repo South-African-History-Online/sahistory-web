@@ -1,0 +1,69 @@
+{#
+/**
+ * @file
+ * Template for Wall of Champions page.
+ *
+ * Available variables:
+ * - champions: Array of champion data with display_name, testimonial, member_since.
+ * - total_count: Total number of champions.
+ */
+#}
+
+<div class="wall-of-champions">
+  <div class="wall-of-champions__intro">
+    <p class="lead">
+      {{ 'Thank you to our SAHO Champions who support South African history education and research!'|t }}
+    </p>
+    {% if total_count > 0 %}
+      <p>
+        {{ 'We currently have @count champion(s) supporting our mission.'|t({'@count': total_count}) }}
+      </p>
+    {% endif %}
+  </div>
+
+  {% if champions is not empty %}
+    <div class="row g-4 wall-of-champions__grid">
+      {% for champion in champions %}
+        <div class="col-12 col-md-6 col-lg-4">
+          <div class="card h-100 wall-of-champions__card">
+            <div class="card-body">
+              <h3 class="card-title h5 wall-of-champions__name">
+                {{ champion.display_name }}
+              </h3>
+              {% if champion.testimonial %}
+                <blockquote class="wall-of-champions__testimonial">
+                  <p class="text-muted fst-italic">
+                    "{{ champion.testimonial }}"
+                  </p>
+                </blockquote>
+              {% endif %}
+              <p class="card-text text-muted small wall-of-champions__member-since">
+                {{ 'Champion since'|t }} {{ champion.member_since|format_date('custom', 'F Y') }}
+              </p>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="wall-of-champions__empty alert alert-info">
+      <h3>{{ 'No Champions Yet'|t }}</h3>
+      <p>
+        {{ 'Be the first to join our Wall of Champions! SAHO Champions receive exclusive benefits while supporting the preservation and sharing of South African history.'|t }}
+      </p>
+      <a href="/product/champion-subscription" class="btn btn-primary">
+        {{ 'Become a Champion'|t }}
+      </a>
+    </div>
+  {% endif %}
+
+  <div class="wall-of-champions__cta mt-5 p-4 bg-light rounded">
+    <h3>{{ 'Join Our Champions'|t }}</h3>
+    <p>
+      {{ 'Become a SAHO Champion and support our mission to make South African history accessible to all. Your contribution helps us continue our important work.'|t }}
+    </p>
+    <a href="/product/champion-subscription" class="btn btn-primary">
+      {{ 'Learn More About Champion Membership'|t }}
+    </a>
+  </div>
+</div>
