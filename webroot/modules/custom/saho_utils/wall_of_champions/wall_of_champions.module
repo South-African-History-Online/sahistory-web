@@ -1,0 +1,67 @@
+<?php
+
+/**
+ * @file
+ * Wall of Champions module.
+ */
+
+use Drupal\Core\Form\FormStateInterface;
+
+/**
+ * Implements hook_form_FORM_ID_alter() for user_form.
+ */
+function wall_of_champions_form_user_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  // Group champion fields in a collapsible fieldset.
+  $form['champion_section'] = [
+    '#type' => 'details',
+    '#title' => t('Wall of Champions'),
+    '#description' => t('As a SAHO Champion subscriber, you can choose to be featured on our Wall of Champions page.'),
+    '#open' => FALSE,
+    '#weight' => 50,
+  ];
+
+  // Move champion fields into the fieldset.
+  if (isset($form['field_champion_wall_opt_in'])) {
+    $form['champion_section']['field_champion_wall_opt_in'] = $form['field_champion_wall_opt_in'];
+    unset($form['field_champion_wall_opt_in']);
+  }
+
+  if (isset($form['field_champion_testimonial'])) {
+    $form['champion_section']['field_champion_testimonial'] = $form['field_champion_testimonial'];
+    unset($form['field_champion_testimonial']);
+
+    // Add character counter description.
+    $form['champion_section']['field_champion_testimonial']['widget'][0]['value']['#maxlength'] = 250;
+    $form['champion_section']['field_champion_testimonial']['widget'][0]['#description'] = t('Maximum 250 characters. Share why you support SAHO and South African history.');
+
+    // Make testimonial field conditional on opt-in.
+    $form['champion_section']['field_champion_testimonial']['#states'] = [
+      'visible' => [
+        ':input[name="field_champion_wall_opt_in[value]"]' => ['checked' => TRUE],
+      ],
+    ];
+  }
+}
+
+/**
+ * Implements hook_theme().
+ */
+function wall_of_champions_theme($existing, $type, $theme, $path) {
+  return [
+    'wall_of_champions_page' => [
+      'variables' => [
+        'champions' => [],
+        'total_count' => 0,
+      ],
+      'template' => 'wall-of-champions-page',
+    ],
+    'wall_of_champions_block' => [
+      'variables' => [
+        'champions' => [],
+        'total_count' => 0,
+        'view_all_url' => NULL,
+      ],
+      'template' => 'wall-of-champions-block',
+    ],
+  ];
+}

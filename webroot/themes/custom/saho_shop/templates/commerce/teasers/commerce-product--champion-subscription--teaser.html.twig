@@ -1,0 +1,68 @@
+{#
+/**
+ * @file
+ * SAHO Champion Subscription product teaser template.
+ *
+ * Available variables:
+ * - attributes: HTML attributes for the wrapper.
+ * - product: The rendered product fields.
+ * - product_entity: The product entity.
+ * - product_url: The product URL.
+ */
+#}
+
+{%
+  set classes = [
+    'product-champion-subscription',
+    'product--type-champion-subscription',
+    'product--view-mode-teaser',
+    'card',
+    'h-100',
+]
+%}
+
+<article{{ attributes.addClass(classes) }}>
+  <div class="card-body d-flex flex-column p-4">
+    {# Champion Badge #}
+    <div class="text-center mb-3">
+      <span class="badge bg-warning text-dark">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-award me-1" viewBox="0 0 16 16">
+          <path d="M9.669.864 8 0 6.331.864l-1.858.282-.842 1.68-1.337 1.32L2.6 6l-.306 1.854 1.337 1.32.842 1.68 1.858.282L8 12l1.669-.864 1.858-.282.842-1.68 1.337-1.32L13.4 6l.306-1.854-1.337-1.32-.842-1.68L9.669.864zm1.196 1.193.684 1.365 1.086 1.072L12.387 6l.248 1.506-1.086 1.072-.684 1.365-1.51.229L8 10.874l-1.355-.702-1.51-.229-.684-1.365-1.086-1.072L3.614 6l-.25-1.506 1.087-1.072.684-1.365 1.51-.229L8 1.126l1.356.702 1.509.229z"/>
+          <path d="M4 11.794V16l4-1 4 1v-4.206l-2.018.306L8 13.126 6.018 12.1 4 11.794z"/>
+        </svg>
+        {{ 'SAHO Champion'|t }}
+      </span>
+    </div>
+
+    {# Title #}
+    <h3 class="product__title h5 mb-3 text-center">
+      <a href="{{ product_url }}" class="text-decoration-none">
+        {{ product_entity.title.value }}
+      </a>
+    </h3>
+
+    {# Price #}
+    <div class="product__variation-price text-center mb-3 fs-4 fw-bold">
+      {{ product.variation_price }}
+    </div>
+
+    {# Billing Period #}
+    <div class="text-center text-muted small mb-3">
+      {{ 'Recurring donation'|t }}
+    </div>
+
+    {# Short Description #}
+    {% if product.body|render is not empty %}
+      <div class="product__summary text-center small mb-3 flex-grow-1">
+        {{ product.body|render|striptags|truncate(120) }}
+      </div>
+    {% endif %}
+
+    {# Add to Cart #}
+    <div class="product__add-to-cart text-center mt-auto">
+      <a href="{{ product_url }}" class="btn btn-warning text-dark fw-semibold">
+        {{ 'Become a Champion'|t }}
+      </a>
+    </div>
+  </div>
+</article>

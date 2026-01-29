@@ -4,8 +4,8 @@ status: true
 dependencies: {  }
 _core:
   default_config_hash: 50QUbDL5hfMj6JF3n2JcOsPZtzq8PyU9UR0iXIpVThA
-id: default
 label: Default
+id: default
 plugin: multistep_default
 configuration:
   display_checkout_progress: true
@@ -16,28 +16,35 @@ configuration:
   guest_new_account_notify: false
   panes:
     login:
-      allow_guest_checkout: true
-      allow_registration: false
       step: login
       weight: 0
+      allow_guest_checkout: true
+      allow_registration: false
     contact_information:
-      double_entry: true
       step: order_information
       weight: 1
+      double_entry: true
     billing_information:
       step: order_information
       weight: 2
+    shipping_information:
+      step: order_information
+      weight: 3
+      require_shipping_profile: false
+    payment_information:
+      step: review
+      weight: 1
     review:
       step: review
-      weight: 3
+      weight: 2
     completion_message:
-      message:
-        value: "Your order number is [commerce_order:order_number].\r\nYou can view your order on your account page when logged in."
-        format: plain_text
-      display_pane_summaries: true
       step: complete
-      weight: 4
+      weight: 3
+      message:
+        value: "<h2>Thank you for your order!</h2>\r\n<p>Your order number is [commerce_order:order_number].</p>\r\n<p>You will receive a confirmation email at [commerce_order:mail] shortly.</p>\r\n<p>You can view your order on your <a href=\"/user\">account page</a> when logged in.</p>"
+        format: basic_html
+      display_pane_summaries: true
     order_summary:
-      view: commerce_checkout_order_summary
       step: _sidebar
       weight: 5
+      view: commerce_checkout_order_summary

@@ -1,0 +1,56 @@
+uuid: 2e2979a1-7ffa-43ab-9488-de9c396903b3
+langcode: en
+status: true
+dependencies:
+  config:
+    - commerce_order.commerce_order_type.recurring
+    - field.field.commerce_order.recurring.billing_period
+    - field.field.commerce_order.recurring.billing_schedule
+    - field.field.commerce_order.recurring.commerce_recurring_queued
+  module:
+    - commerce_order
+    - inline_entity_form
+_core:
+  default_config_hash: ibrF59xcLsrwwM-VNFXbwPaMAfHD0ZYgRk3m2y7jjKw
+id: commerce_order.recurring.default
+targetEntityType: commerce_order
+bundle: recurring
+mode: default
+content:
+  adjustments:
+    type: commerce_adjustment_default
+    weight: 2
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+  billing_profile:
+    type: commerce_billing_profile
+    weight: 0
+    settings: {  }
+    region: content
+    third_party_settings: {  }
+  order_items:
+    type: inline_entity_form_complex
+    weight: 1
+    region: content
+    settings:
+      form_mode: default
+      override_labels: true
+      label_singular: 'order item'
+      label_plural: 'order items'
+      allow_new: true
+      match_operator: CONTAINS
+      allow_existing: false
+    third_party_settings: {  }
+hidden:
+  billing_period: true
+  billing_schedule: true
+  cart: true
+  commerce_recurring_queued: true
+  customer_comments: true
+  ip_address: true
+  mail: true
+  order_number: true
+  state: true
+  store_id: true
+  uid: true
