@@ -1,0 +1,112 @@
+'$schema': 'https://git.drupalcode.org/project/drupal/-/raw/HEAD/core/modules/sdc/src/metadata.schema.json'
+name: 'SAHO Metadata'
+description: 'Content metadata display component for date, author, category, and other meta information. Used on cards, article headers, and content displays.'
+group: 'Content'
+props:
+  type: object
+  properties:
+    items:
+      type: array
+      title: 'Metadata Items'
+      description: 'Array of metadata items to display'
+      items:
+        type: object
+        properties:
+          icon:
+            type: string
+            title: 'Icon Name'
+            description: 'Font Awesome icon name (without fa- prefix)'
+          label:
+            type: string
+            title: 'Label Text'
+            description: 'Optional label (e.g., "By", "Category")'
+          value:
+            type: string
+            title: 'Value'
+            description: 'The metadata value to display'
+          url:
+            type: string
+            title: 'Link URL'
+            description: 'Optional URL to make value clickable'
+      examples:
+        - icon: 'calendar'
+          value: 'January 31, 2026'
+        - icon: 'user'
+          label: 'By'
+          value: 'John Doe'
+          url: '/author/john-doe'
+
+    separator:
+      type: string
+      title: 'Separator'
+      description: 'Separator between metadata items'
+      default: '•'
+      enum:
+        - '•'
+        - '|'
+        - '·'
+        - '-'
+        - ','
+        - ''
+      examples:
+        - '•'
+        - '|'
+
+    layout:
+      type: string
+      title: 'Layout Variant'
+      description: 'Display layout for metadata items'
+      default: 'inline'
+      enum:
+        - inline
+        - stacked
+        - pills
+      examples:
+        - 'inline'
+        - 'pills'
+
+    size:
+      type: string
+      title: 'Size Variant'
+      description: 'Size of metadata text'
+      default: 'medium'
+      enum:
+        - small
+        - medium
+        - large
+      examples:
+        - 'small'
+        - 'medium'
+
+    color:
+      type: string
+      title: 'Color Variant'
+      description: 'Text color variant'
+      default: 'muted'
+      enum:
+        - muted
+        - primary
+        - dark
+      examples:
+        - 'muted'
+        - 'primary'
+
+    icon_position:
+      type: string
+      title: 'Icon Position'
+      description: 'Position of icons relative to text'
+      default: 'before'
+      enum:
+        - before
+        - after
+        - none
+      examples:
+        - 'before'
+
+    attributes:
+      type: Drupal\Core\Template\Attribute
+      title: 'HTML Attributes'
+      description: 'Additional HTML attributes for the wrapper element'
+
+  required:
+    - items
