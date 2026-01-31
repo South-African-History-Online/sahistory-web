@@ -58,7 +58,7 @@ export const storage = {
       localStorage.setItem(test, test);
       localStorage.removeItem(test);
       return true;
-    } catch (e) {
+    } catch (_e) {
       return false;
     }
   },
@@ -216,7 +216,9 @@ export const events = {
       if (!inThrottle) {
         func(...args);
         inThrottle = true;
-        setTimeout(() => (inThrottle = false), limit);
+        setTimeout(() => {
+          inThrottle = false;
+        }, limit);
       }
     };
   },
@@ -263,12 +265,12 @@ export const animate = {
    */
   fadeOut(element, duration = 300) {
     let start = null;
-    const initialOpacity = parseFloat(getComputedStyle(element).opacity);
+    const initialOpacity = Number.parseFloat(getComputedStyle(element).opacity);
 
     const step = (timestamp) => {
       if (!start) start = timestamp;
       const progress = timestamp - start;
-      element.style.opacity = Math.max(initialOpacity - (progress / duration), 0);
+      element.style.opacity = Math.max(initialOpacity - progress / duration, 0);
 
       if (progress < duration) {
         requestAnimationFrame(step);
