@@ -1,7 +1,18 @@
 {#
 /**
  * @file
- * Modern unified grid template for archives page.
+ * Unified grid template for all card-based views (DRY approach).
+ *
+ * This template consolidates card rendering for:
+ * - Landing pages (Politics & Society, Art & Culture, etc.)
+ * - Archive pages
+ * - Taxonomy term pages
+ * - Biography browse pages
+ *
+ * Replaces duplicate code in:
+ * - views-view-grid--landing-page.html.twig (366 lines)
+ * - views-view-grid--archives.html.twig (184 lines)
+ * - views-view-grid--archive-pages--page-*.html.twig
  *
  * Available variables:
  * - attributes: HTML attributes for the wrapping element.
@@ -14,159 +25,130 @@
  */
 #}
 
+{# Detect view context for theming #}
+{% set view_id = view.id() %}
+{% set display_id = view.current_display %}
+{% set is_landing_page = view_id starts with 'landing_page_' %}
+{% set is_archive = view_id starts with 'archive' or 'archive' in view_id %}
+
+{# Section-specific theming for landing pages #}
+{% set section_name = view_id|replace({'landing_page_': '', '_': ' '})|title %}
+{% set section_colors = {
+  'Politics Society': 'deep-heritage-red',
+  'Art Culture': 'muted-gold',
+  'Biographies': 'slate-blue',
+  'Africa': 'faded-brick-red',
+  'Classroom': 'deep-heritage-red',
+  'Places': 'slate-blue',
+  'Timelines': 'muted-gold',
+  'Archives': 'dark-charcoal'
+} %}
+{% set section_color = section_colors[section_name] ?? 'deep-heritage-red' %}
+
+{# Default content type for fallback #}
+{% set default_content_type = is_archive ? 'Archive' : section_name %}
+
+{# Placeholder icon mapping #}
+{% set placeholder_icons = {
+  'Biography': 'fa-user',
+  'Article': 'fa-newspaper',
+  'Event': 'fa-calendar',
+  'Place': 'fa-map-marker-alt',
+  'Archive': 'fa-archive',
+  'Collection': 'fa-folder',
+  'default': 'fa-file-alt'
+} %}
+
 {# Use unified cards grid system #}
 <div{{ attributes.addClass('saho-cards-grid') }}>
   {% for row in items %}
     {% for column in row.content %}
       {% if column.content %}
-        {# Try to access the node entity #}
+        {# Extract node entity from various possible sources #}
         {% set node = false %}
-        {% set title = false %}
-        {% set body = false %}
-        {% set url = false %}
-        {% set date = false %}
-        {% set content_type = 'Archive' %}
-        
-        {# Get node entity from various possible sources #}
-        {% if column.content['#row'] is defined %}
+        {% if column.content['#row'] is defined and column.content['#row']._entity is defined %}
           {% set node = column.content['#row']._entity %}
         {% elseif column.content['#node'] is defined %}
           {% set node = column.content['#node'] %}
         {% endif %}
-        
-        {# If we have the node, extract data #}
+
+        {# Build card data from node #}
+        {% set card_data = {
+          title: false,
+          body: false,
+          url: false,
+          date: false,
+          image_url: false,
+          content_type: default_content_type
+        } %}
+
         {% if node %}
-          {% set title = node.label() %}
-          {% set content_type = node.bundle()|capitalize %}
-          {% set url = path('entity.node.canonical', {'node': node.id()}) %}
-          {% set date = node.getChangedTime()|date('j F Y') %}
-          
-          {# Try to get body/synopsis from node #}
+          {% set card_data = card_data|merge({
+            title: node.label(),
+            content_type: node.bundle()|capitalize,
+            url: path('entity.node.canonical', {'node': node.id()}),
+            date: node.getChangedTime()|date('j F Y')
+          }) %}
+
+          {# Get body/synopsis #}
           {% if node.hasField('field_synopsis') and not node.get('field_synopsis').isEmpty() %}
-            {% set body = node.get('field_synopsis').value %}
+            {% set card_data = card_data|merge({body: node.get('field_synopsis').value}) %}
           {% elseif node.hasField('body') and not node.get('body').isEmpty() %}
-            {% set body = node.get('body').value %}
+            {% set card_data = card_data|merge({body: node.get('body').value}) %}
           {% endif %}
-        {% else %}
-          {# Fallback: extract from rendered content #}
-          {% set content_html = column.content|render %}
-          
-          {# Extract title from rendered content #}
-          {% if '<h2' in content_html or '<h3' in content_html %}
-            {% set title_match = content_html|split('<h2')|last|split('</h2>')|first|split('>') %}
-            {% if title_match|length > 1 %}
-              {% set title = title_match[1]|striptags|trim %}
-            {% else %}
-              {% set title_match = content_html|split('<h3')|last|split('</h3>')|first|split('>') %}
-              {% if title_match|length > 1 %}
-                {% set title = title_match[1]|striptags|trim %}
+
+          {# Get image from various possible field names #}
+          {% set image_fields = ['field_image', 'field_article_image', 'field_bio_pic', 'field_place_image', 'field_event_image', 'field_archive_image'] %}
+          {% for image_field in image_fields %}
+            {% if not card_data.image_url and node.hasField(image_field) and not node.get(image_field).isEmpty() %}
+              {% set file_entity = node.get(image_field).entity %}
+              {% if file_entity %}
+                {% set card_data = card_data|merge({image_url: file_url(file_entity.uri.value)}) %}
               {% endif %}
             {% endif %}
-          {% endif %}
-          
-          {# Extract URL from rendered content #}
-          {% if '<a' in content_html and 'href="' in content_html %}
-            {% set url_match = content_html|split('href="')|last|split('"')|first %}
-            {% if url_match %}
-              {% set url = url_match %}
-            {% endif %}
-          {% endif %}
-          
-          {# Extract content type from rendered content #}
-          {% if 'biography' in content_html %}
-            {% set content_type = 'Biography' %}
-          {% elseif 'article' in content_html %}
-            {% set content_type = 'Article' %}
-          {% elseif 'event' in content_html %}
-            {% set content_type = 'Event' %}
-          {% elseif 'place' in content_html %}
-            {% set content_type = 'Place' %}
-          {% elseif 'archive' in content_html %}
-            {% set content_type = 'Archive' %}
-          {% endif %}
+          {% endfor %}
         {% endif %}
 
+        {# Render unified card #}
         <div class="col">
-          <a href="{{ url ? url : '#' }}" class="saho-card-link" aria-label="View {{ content_type|lower }} details">
-            <div class="saho-card saho-card--{{ content_type|lower|replace({' ': '-'}) }}">
-              
+          <a href="{{ card_data.url ? card_data.url : '#' }}" class="saho-card-link" aria-label="View {{ card_data.content_type|lower }} details">
+            <div class="saho-card saho-card--{{ card_data.content_type|lower|replace({' ': '-'}) }}">
+
               {# Card Image Area #}
               <div class="saho-card-image">
-                {% set has_image = false %}
-                {% set image_field = false %}
-                
-                {# Try to get image from node #}
-                {% if node %}
-                  {% if node.hasField('field_image') and not node.get('field_image').isEmpty() %}
-                    {% set image_field = 'field_image' %}
-                  {% elseif node.hasField('field_article_image') and not node.get('field_article_image').isEmpty() %}
-                    {% set image_field = 'field_article_image' %}
-                  {% elseif node.hasField('field_bio_pic') and not node.get('field_bio_pic').isEmpty() %}
-                    {% set image_field = 'field_bio_pic' %}
-                  {% elseif node.hasField('field_place_image') and not node.get('field_place_image').isEmpty() %}
-                    {% set image_field = 'field_place_image' %}
-                  {% elseif node.hasField('field_event_image') and not node.get('field_event_image').isEmpty() %}
-                    {% set image_field = 'field_event_image' %}
-                  {% elseif node.hasField('field_archive_image') and not node.get('field_archive_image').isEmpty() %}
-                    {% set image_field = 'field_archive_image' %}
-                  {% endif %}
-                  
-                  {% if image_field %}
-                    {% set file_entity = node.get(image_field).entity %}
-                    {% if file_entity %}
-                      <img src="{{ file_url(file_entity.uri.value) }}" alt="{{ title }}" class="img-fluid w-100 h-100" style="object-fit: cover;">
-                      {% set has_image = true %}
-                    {% endif %}
-                  {% endif %}
-                {% endif %}
-                
-                {# Display placeholder if no image #}
-                {% if not has_image %}
+                {% if card_data.image_url %}
+                  <img src="{{ card_data.image_url }}" alt="{{ card_data.title }}" class="saho-card-image__img">
+                {% else %}
                   <div class="saho-card-image--placeholder">
-                    {% if content_type == 'Biography' %}
-                      <i class="fas fa-user"></i>
-                    {% elseif content_type == 'Article' %}
-                      <i class="fas fa-newspaper"></i>
-                    {% elseif content_type == 'Event' %}
-                      <i class="fas fa-calendar"></i>
-                    {% elseif content_type == 'Place' %}
-                      <i class="fas fa-map-marker-alt"></i>
-                    {% elseif content_type == 'Archive' %}
-                      <i class="fas fa-archive"></i>
-                    {% else %}
-                      <i class="fas fa-file-alt"></i>
-                    {% endif %}
+                    {% set icon = placeholder_icons[card_data.content_type] ?? placeholder_icons.default %}
+                    <i class="fas {{ icon }}"></i>
                   </div>
                 {% endif %}
-                
+
                 {# Card Badge #}
-                <div class="saho-card-badge">{{ content_type }}</div>
+                <div class="saho-card-badge">{{ card_data.content_type }}</div>
               </div>
-              
+
               {# Card Content #}
               <div class="saho-card-content">
                 {# Title #}
                 <div class="saho-card-title">
-                  {% if title %}
-                    {{ title }}
-                  {% else %}
-                    {{ content_type }} Item
-                  {% endif %}
+                  {{ card_data.title ? card_data.title : (card_data.content_type ~ ' Item') }}
                 </div>
-                
+
                 {# Date subtitle #}
-                {% if date %}
-                  <div class="saho-card-subtitle">{{ date }}</div>
+                {% if card_data.date %}
+                  <div class="saho-card-subtitle">{{ card_data.date }}</div>
                 {% endif %}
-                
+
                 {# Description #}
-                {% if body %}
+                {% if card_data.body %}
                   <div class="saho-card-description">
-                    {{ body|striptags|trim|slice(0, 120) ~ (body|striptags|trim|length > 120 ? '...' : '') }}
+                    {{ card_data.body|striptags|trim|slice(0, 150) ~ (card_data.body|striptags|trim|length > 150 ? '...' : '') }}
                   </div>
                 {% endif %}
-                
-                {# Button in footer for proper alignment #}
+
+                {# Button in footer #}
                 <div class="saho-card-footer">
                   <span class="saho-card-button">
                     Read more
