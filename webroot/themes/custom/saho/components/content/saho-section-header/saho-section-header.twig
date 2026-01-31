@@ -1,0 +1,84 @@
+{#
+/**
+ * @file
+ * SAHO Section Header Component
+ *
+ * Reusable section header with title, optional subtitle, and accent bar.
+ *
+ * Available variables:
+ * - title: The section heading text (required)
+ * - heading_level: HTML heading tag (h1-h6, default: h2)
+ * - subtitle: Optional subtitle or description
+ * - accent_bar: Show colored accent bar below title (default: true)
+ * - accent_color: Color variant for accent bar (default: primary)
+ * - alignment: Text alignment (left, center, right, default: left)
+ * - size: Size variant (small, medium, large, xlarge, default: medium)
+ * - margin_bottom: Bottom spacing (none, small, medium, large, default: medium)
+ * - attributes: HTML attributes for wrapper
+ * - actions: Slot for action buttons or links
+ *
+ * Usage:
+ * {% include 'saho:saho-section-header' with {
+ *   title: 'Featured Articles',
+ *   heading_level: 'h1',
+ *   subtitle: 'Explore our curated content',
+ *   accent_bar: true,
+ *   accent_color: 'heritage-red'
+ * } %}
+ */
+#}
+
+{# Set defaults #}
+{% set heading_level = heading_level|default('h2') %}
+{% set accent_bar = accent_bar ?? true %}
+{% set accent_color = accent_color|default('primary') %}
+{% set alignment = alignment|default('left') %}
+{% set size = size|default('medium') %}
+{% set margin_bottom = margin_bottom|default('medium') %}
+
+{# Build classes #}
+{% set header_classes = [
+  'saho-section-header',
+  'saho-section-header--' ~ alignment,
+  'saho-section-header--' ~ size,
+  'saho-section-header--mb-' ~ margin_bottom,
+  actions ? 'saho-section-header--with-actions',
+] %}
+
+<div{{ attributes.addClass(header_classes) }}>
+  <div class="saho-section-header__content">
+    <div class="saho-section-header__text">
+      {# Dynamic heading level #}
+      {% if heading_level == 'h1' %}
+        <h1 class="saho-section-header__title">{{ title }}</h1>
+      {% elseif heading_level == 'h2' %}
+        <h2 class="saho-section-header__title">{{ title }}</h2>
+      {% elseif heading_level == 'h3' %}
+        <h3 class="saho-section-header__title">{{ title }}</h3>
+      {% elseif heading_level == 'h4' %}
+        <h4 class="saho-section-header__title">{{ title }}</h4>
+      {% elseif heading_level == 'h5' %}
+        <h5 class="saho-section-header__title">{{ title }}</h5>
+      {% else %}
+        <h6 class="saho-section-header__title">{{ title }}</h6>
+      {% endif %}
+
+      {# Accent bar #}
+      {% if accent_bar %}
+        <div class="saho-section-header__accent saho-section-header__accent--{{ accent_color }}"></div>
+      {% endif %}
+
+      {# Subtitle #}
+      {% if subtitle %}
+        <p class="saho-section-header__subtitle">{{ subtitle }}</p>
+      {% endif %}
+    </div>
+
+    {# Actions slot #}
+    {% if actions %}
+      <div class="saho-section-header__actions">
+        {{ actions }}
+      </div>
+    {% endif %}
+  </div>
+</div>
