@@ -93,7 +93,7 @@ mix.browserSync({
   | SASS with PurgeCSS (Production only)
   |--------------------------------------------------------------------------
 */
-const purgecss = require('@fullhuman/postcss-purgecss').default;
+const purgecss = require('@fullhuman/postcss-purgecss');
 
 // Configure PurgeCSS
 const purgeCSSConfig = {
