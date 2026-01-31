@@ -1,0 +1,119 @@
+{#
+/**
+ * @file
+ * SAHO Image Component
+ *
+ * Responsive image component with lazy loading, WebP support, and accessibility.
+ *
+ * Available variables:
+ * - src: Image source URL (required)
+ * - alt: Alt text for accessibility
+ * - srcset: Responsive image sources
+ * - sizes: Media queries for srcset
+ * - aspect_ratio: Image aspect ratio (auto, 16/9, 4/3, 3/2, 1/1, etc.)
+ * - lazy: Enable lazy loading (default: true)
+ * - caption: Optional caption text
+ * - caption_position: Caption position (bottom, overlay)
+ * - placeholder: Show loading placeholder (default: true)
+ * - placeholder_color: Placeholder background color
+ * - object_fit: How image fills container (cover, contain, fill, none)
+ * - object_position: Image alignment (center, top, bottom, etc.)
+ * - border_radius: Rounded corners (none, small, medium, large, full)
+ * - width: Explicit width (CSS value)
+ * - height: Explicit height (CSS value)
+ * - link: Optional URL to make image clickable
+ * - link_title: Title for image link
+ * - decorative: Mark as decorative (empty alt, aria-hidden)
+ * - attributes: HTML attributes
+ *
+ * Usage:
+ * {% include 'saho:saho-image' with {
+ *   src: '/path/to/image.jpg',
+ *   alt: 'Description of image',
+ *   aspect_ratio: '16/9',
+ *   lazy: true
+ * } %}
+ */
+#}
+
+{# Set defaults #}
+{% set lazy = lazy is defined ? lazy : true %}
+{% set aspect_ratio = aspect_ratio|default('auto') %}
+{% set caption_position = caption_position|default('bottom') %}
+{% set placeholder = placeholder is defined ? placeholder : true %}
+{% set placeholder_color = placeholder_color|default('#f5f5f5') %}
+{% set object_fit = object_fit|default('cover') %}
+{% set object_position = object_position|default('center') %}
+{% set border_radius = border_radius|default('none') %}
+{% set sizes = sizes|default('100vw') %}
+{% set decorative = decorative is defined ? decorative : false %}
+
+{# Build wrapper classes #}
+{% set wrapper_classes = [
+  'saho-image',
+  'saho-image--aspect-' ~ aspect_ratio|replace({'/': '-'}),
+  'saho-image--fit-' ~ object_fit,
+  'saho-image--radius-' ~ border_radius,
+  caption and caption_position == 'overlay' ? 'saho-image--caption-overlay',
+  placeholder ? 'saho-image--placeholder',
+] %}
+
+{# Build image classes #}
+{% set image_classes = [
+  'saho-image__img',
+  lazy ? 'saho-image__img--lazy',
+] %}
+
+{# Determine alt text #}
+{% set image_alt = decorative ? '' : (alt|default('')) %}
+
+{# Custom inline styles #}
+{% set custom_styles = [] %}
+{% if width %}
+  {% set custom_styles = custom_styles|merge(['--saho-image-width: ' ~ width]) %}
+{% endif %}
+{% if height %}
+  {% set custom_styles = custom_styles|merge(['--saho-image-height: ' ~ height]) %}
+{% endif %}
+{% if placeholder_color %}
+  {% set custom_styles = custom_styles|merge(['--saho-image-placeholder-color: ' ~ placeholder_color]) %}
+{% endif %}
+{% if object_position != 'center' %}
+  {% set custom_styles = custom_styles|merge(['--saho-image-object-position: ' ~ object_position]) %}
+{% endif %}
+
+<div{{ attributes.addClass(wrapper_classes).setAttribute('style', custom_styles|join('; ')) }}>
+  <div class="saho-image__container">
+    {% if link %}
+      <a href="{{ link }}" class="saho-image__link"{% if link_title %} title="{{ link_title }}"{% endif %}>
+    {% endif %}
+
+    <img
+      src="{{ src }}"
+      {% if srcset %}srcset="{{ srcset }}"{% endif %}
+      {% if sizes and srcset %}sizes="{{ sizes }}"{% endif %}
+      alt="{{ image_alt }}"
+      class="{{ image_classes|join(' ') }}"
+      {% if lazy %}loading="lazy"{% endif %}
+      {% if decorative %}aria-hidden="true"{% endif %}
+    >
+
+    {% if link %}
+      </a>
+    {% endif %}
+
+    {# Overlay caption #}
+    {% if caption and caption_position == 'overlay' %}
+      <div class="saho-image__caption saho-image__caption--overlay">
+        {{ caption }}
+      </div>
+    {% endif %}
+  </div>
+
+  {# Bottom caption #}
+  {% if caption and caption_position == 'bottom' %}
+    <div class="saho-image__caption saho-image__caption--bottom">
+      {{ caption }}
+    </div>
+  {% endif %}
+</div>
