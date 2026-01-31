@@ -1,0 +1,96 @@
+{#
+/**
+ * @file
+ * SAHO Button Component Template
+ *
+ * Unified button component that replaces three separate button systems:
+ * - Bootstrap buttons (btn btn-primary, btn btn-outline-*)
+ * - Card buttons (.saho-card-button)
+ * - Block buttons (.block-button)
+ *
+ * Available variables:
+ * - text: (string) Button text (required)
+ * - url: (string) Button URL
+ * - variant: (string) Visual variant (primary|secondary|outline|card-action|block-action|link)
+ * - size: (string) Size variant (small|medium|large)
+ * - icon: (string) Icon name (arrow-right, external, download)
+ * - icon_position: (string) Icon position (before|after)
+ * - attributes: (object) Additional HTML attributes
+ * - element: (string) HTML element to use (a|button)
+ */
+#}
+{%
+  set classes = [
+    'saho-button',
+    'saho-button--' ~ (variant|default('primary')),
+    'saho-button--' ~ (size|default('medium')),
+    icon ? 'saho-button--with-icon',
+    icon and icon_position == 'before' ? 'saho-button--icon-before',
+  ]
+%}
+
+{# Merge additional classes from attributes #}
+{% if attributes.class %}
+  {% set classes = classes|merge(attributes.class) %}
+{% endif %}
+
+{# Build attributes object #}
+{% set button_attributes = create_attribute() %}
+{% set button_attributes = button_attributes.addClass(classes) %}
+
+{# Add standard attributes #}
+{% if attributes.id %}
+  {% set button_attributes = button_attributes.setAttribute('id', attributes.id) %}
+{% endif %}
+{% if attributes['aria-label'] %}
+  {% set button_attributes = button_attributes.setAttribute('aria-label', attributes['aria-label']) %}
+{% endif %}
+
+{# Render as link or button element #}
+{% if element == 'button' %}
+  <button{{ button_attributes }} type="button">
+    {% if icon and icon_position == 'before' %}
+      {% include 'saho:saho-button' ~ '--icon' with {icon: icon} only ignore missing %}
+    {% endif %}
+    <span class="saho-button__text">{{ text }}</span>
+    {% if icon and icon_position == 'after' %}
+      {% include 'saho:saho-button' ~ '--icon' with {icon: icon} only ignore missing %}
+    {% endif %}
+  </button>
+{% else %}
+  {# Default: render as link #}
+  {% set button_attributes = button_attributes.setAttribute('href', url|default('#')) %}
+  {% if attributes.target %}
+    {% set button_attributes = button_attributes.setAttribute('target', attributes.target) %}
+  {% endif %}
+  {% if attributes.rel %}
+    {% set button_attributes = button_attributes.setAttribute('rel', attributes.rel) %}
+  {% elseif attributes.target == '_blank' %}
+    {# Auto-add security attributes for external links #}
+    {% set button_attributes = button_attributes.setAttribute('rel', 'noopener noreferrer') %}
+  {% endif %}
+
+  <a{{ button_attributes }}>
+    {% if icon and icon_position == 'before' %}
+      {% include 'saho:saho-button' ~ '--icon' with {icon: icon} only ignore missing %}
+    {% endif %}
+    <span class="saho-button__text">{{ text }}</span>
+    {% if icon and icon_position == 'after' %}
+      {% if icon == 'arrow-right' %}
+        <svg class="saho-button__icon saho-button__icon--arrow-right" width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+          <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/>
+        </svg>
+      {% elseif icon == 'external' %}
+        <svg class="saho-button__icon saho-button__icon--external" width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+          <path fill-rule="evenodd" d="M8.636 3.5a.5.5 0 0 0-.5-.5H1.5A1.5 1.5 0 0 0 0 4.5v10A1.5 1.5 0 0 0 1.5 16h10a1.5 1.5 0 0 0 1.5-1.5V7.864a.5.5 0 0 0-1 0V14.5a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-10a.5.5 0 0 1 .5-.5h6.636a.5.5 0 0 0 .5-.5z"/>
+          <path fill-rule="evenodd" d="M16 .5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0 0 1h3.793L6.146 9.146a.5.5 0 1 0 .708.708L15 1.707V5.5a.5.5 0 0 0 1 0v-5z"/>
+        </svg>
+      {% elseif icon == 'download' %}
+        <svg class="saho-button__icon saho-button__icon--download" width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+          <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+          <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
+        </svg>
+      {% endif %}
+    {% endif %}
+  </a>
+{% endif %}
