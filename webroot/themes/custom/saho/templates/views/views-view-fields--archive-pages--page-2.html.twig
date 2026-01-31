@@ -1,8 +1,8 @@
 {#
 /**
  * @file
- * Modern unified card template for archive items display (page 2).
- * 
+ * Archive pages card display using saho-card component (page 2).
+ *
  * Available variables:
  * - fields: Field objects for the current row
  * - attributes: HTML attributes for the field container
@@ -10,7 +10,7 @@
  */
 #}
 
-{# Get URL from the title field which has link_to_entity: true #}
+{# Extract URL from title field #}
 {% set entity_url = '#' %}
 {% if fields.title is defined %}
   {% set content = fields.title.content %}
@@ -22,13 +22,13 @@
   {% endif %}
 {% endif %}
 
-{# Get title from title field #}
+{# Extract title text #}
 {% set title_text = '' %}
 {% if fields.title is defined %}
   {% set title_text = fields.title.content|striptags|trim %}
 {% endif %}
 
-{# Get resource type from various type fields #}
+{# Determine resource type for badge #}
 {% set resource_type = 'Document' %}
 {% if fields.field_media_library_type is defined %}
   {% set type_text = fields.field_media_library_type.content|striptags|trim|lower %}
@@ -43,23 +43,38 @@
   {% endif %}
 {% endif %}
 
-{# Get metadata for subtitle #}
-{% set subtitle_parts = [] %}
+{# Build metadata for card #}
+{% set card_metadata = {} %}
 {% if fields.field_author is defined and fields.field_author.content|striptags|trim is not empty %}
-  {% set subtitle_parts = subtitle_parts|merge(['By ' ~ fields.field_author.content|striptags|trim]) %}
+  {% set card_metadata = card_metadata|merge({author: fields.field_author.content|striptags|trim}) %}
 {% endif %}
 {% if fields.field_publication_date_archive is defined and fields.field_publication_date_archive.content|striptags|trim is not empty %}
-  {% set subtitle_parts = subtitle_parts|merge([fields.field_publication_date_archive.content|striptags|trim]) %}
+  {% set card_metadata = card_metadata|merge({date: fields.field_publication_date_archive.content|striptags|trim}) %}
 {% elseif fields.created is defined and fields.created.content|striptags|trim is not empty %}
-  {% set subtitle_parts = subtitle_parts|merge([fields.created.content|striptags|trim]) %}
+  {% set card_metadata = card_metadata|merge({date: fields.created.content|striptags|trim}) %}
 {% endif %}
+{% set card_metadata = card_metadata|merge({category: resource_type}) %}
 
-{# Get description from body or synopsis #}
+{# Extract description #}
 {% set description = '' %}
 {% if fields.field_synopsis is defined and fields.field_synopsis.content|striptags|trim is not empty %}
   {% set description = fields.field_synopsis.content|striptags|trim %}
 {% elseif fields.body is defined and fields.body.content|striptags|trim is not empty %}
   {% set description = fields.body.content|striptags|trim %}
+{% endif %}
+
+{# Get image URL from various possible fields #}
+{% set image_url = '' %}
+{% if fields.field_archive_image is defined and fields.field_archive_image.content %}
+  {% set image_url = 'has_image' %}
+{% elseif fields.field_article_image is defined and fields.field_article_image.content %}
+  {% set image_url = 'has_image' %}
+{% elseif fields.field_bio_pic is defined and fields.field_bio_pic.content %}
+  {% set image_url = 'has_image' %}
+{% elseif fields.field_image is defined and fields.field_image.content %}
+  {% set image_url = 'has_image' %}
+{% elseif fields.field_thumbnail is defined and fields.field_thumbnail.content %}
+  {% set image_url = 'has_image' %}
 {% endif %}
 
 {# Get content type for styling #}
@@ -68,63 +83,78 @@
   {% set content_type = row._entity.bundle() %}
 {% endif %}
 
-<a href="{{ entity_url }}" class="saho-card-link content-type-{{ content_type }}" aria-label="View resource details">
-  <div class="saho-card saho-card--{{ content_type }}">
-    {# Card Image Area #}
-    <div class="saho-card-image">
-      {% set has_image = false %}
-      {# Check for all possible image fields in order of priority #}
-      {% if fields.field_archive_image is defined and fields.field_archive_image.content %}
-        {{ fields.field_archive_image.content }}
-        {% set has_image = true %}
-      {% elseif fields.field_article_image is defined and fields.field_article_image.content %}
-        {{ fields.field_article_image.content }}
-        {% set has_image = true %}
-      {% elseif fields.field_bio_pic is defined and fields.field_bio_pic.content %}
-        {{ fields.field_bio_pic.content }}
-        {% set has_image = true %}
-      {% elseif fields.field_image is defined and fields.field_image.content %}
-        {{ fields.field_image.content }}
-        {% set has_image = true %}
-      {% elseif fields.field_thumbnail is defined and fields.field_thumbnail.content %}
-        {{ fields.field_thumbnail.content }}
-        {% set has_image = true %}
-      {% endif %}
-      
-      {% if not has_image %}
-        <div class="saho-card-image--placeholder">
-          <i class="fas fa-file-alt"></i>
+{# Render using saho-card component #}
+{% if image_url %}
+  <a href="{{ entity_url }}" class="saho-card-link" aria-label="View resource details">
+    <article class="saho-card saho-card--primary saho-card--medium saho-card--type-{{ content_type|replace({'_': '-'}) }} card h-100">
+      <div class="card-img-top-wrapper position-relative overflow-hidden saho-card__image">
+        {% if fields.field_archive_image is defined and fields.field_archive_image.content %}
+          {{ fields.field_archive_image.content }}
+        {% elseif fields.field_article_image is defined and fields.field_article_image.content %}
+          {{ fields.field_article_image.content }}
+        {% elseif fields.field_bio_pic is defined and fields.field_bio_pic.content %}
+          {{ fields.field_bio_pic.content }}
+        {% elseif fields.field_image is defined and fields.field_image.content %}
+          {{ fields.field_image.content }}
+        {% elseif fields.field_thumbnail is defined and fields.field_thumbnail.content %}
+          {{ fields.field_thumbnail.content }}
+        {% endif %}
+
+        <div class="position-absolute top-0 end-0 m-2">
+          <span class="badge saho-card__type-badge">{{ resource_type }}</span>
         </div>
-      {% endif %}
-      
-      {# Card Badge #}
-      <div class="saho-card-badge content-type-badge">{{ resource_type }}</div>
-    </div>
-    
-    {# Card Content #}
-    <div class="saho-card-content">
-      {# Title #}
-      <div class="saho-card-title">{{ title_text }}</div>
-      
-      {# Subtitle with author and date #}
-      {% if subtitle_parts|length > 0 %}
-        <div class="saho-card-subtitle">{{ subtitle_parts|join(' • ') }}</div>
-      {% endif %}
-      
-      {# Description #}
-      {% if description %}
-        <div class="saho-card-description">{{ description|length > 120 ? description|slice(0, 120) ~ '...' : description }}</div>
-      {% endif %}
-      
-      {# Button in footer for proper alignment #}
-      <div class="saho-card-footer">
-        <span class="saho-card-button">
-          View Resource
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
-            <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/>
-          </svg>
-        </span>
       </div>
-    </div>
-  </div>
-</a>
+
+      <div class="card-body d-flex flex-column saho-card__body">
+        <h3 class="card-title saho-card__title">{{ title_text }}</h3>
+
+        {% if card_metadata %}
+          <div class="saho-card__meta text-muted small mb-2">
+            {% if card_metadata.author %}
+              <span class="saho-card__author">
+                <i class="fas fa-user me-1" aria-hidden="true"></i>
+                {{ card_metadata.author }}
+              </span>
+            {% endif %}
+            {% if card_metadata.date %}
+              <span class="saho-card__date {% if card_metadata.author %}ms-2{% endif %}">
+                <i class="fas fa-clock me-1" aria-hidden="true"></i>
+                {{ card_metadata.date }}
+              </span>
+            {% endif %}
+          </div>
+        {% endif %}
+
+        {% if description %}
+          <div class="card-text saho-card__content text-muted mb-3">
+            {{ description|length > 120 ? description|slice(0, 120) ~ '...' : description }}
+          </div>
+        {% endif %}
+
+        <div class="mt-auto saho-card__footer-section">
+          <div class="saho-card__action mb-2">
+            <span class="saho-card-button-wrapper" style="position: relative; z-index: 2;">
+              <span class="saho-button saho-button--card-action saho-button--small">
+                <span class="saho-button__text">View Resource</span>
+                <svg class="saho-button__icon saho-button__icon--arrow-right" width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                  <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/>
+                </svg>
+              </span>
+            </span>
+          </div>
+        </div>
+      </div>
+    </article>
+  </a>
+{% else %}
+  {% include 'saho:saho-card' with {
+    title: title_text,
+    content: description,
+    url: entity_url,
+    content_type: content_type,
+    metadata: card_metadata,
+    button_text: 'View Resource',
+    button_variant: 'card-action',
+    button_icon: 'arrow-right'
+  } %}
+{% endif %}
