@@ -145,14 +145,37 @@
       
       {# Footer Section #}
       <div class="mt-auto saho-card__footer-section">
-        
+
+        {# Card Action Button - uses saho-button component #}
+        {% if button_text and url %}
+          <div class="saho-card__action mb-2">
+            {# Button is visual only since stretched-link makes entire card clickable #}
+            {# Using span wrapper to avoid nested links (invalid HTML) #}
+            <span class="saho-card-button-wrapper" style="position: relative; z-index: 2;">
+              <span class="saho-button saho-button--{{ button_variant|default('card-action') }} saho-button--{{ button_size|default('small') }}">
+                <span class="saho-button__text">{{ button_text }}</span>
+                {% if button_icon|default('arrow-right') == 'arrow-right' %}
+                  <svg class="saho-button__icon saho-button__icon--arrow-right" width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                    <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/>
+                  </svg>
+                {% elseif button_icon == 'external' %}
+                  <svg class="saho-button__icon saho-button__icon--external" width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                    <path fill-rule="evenodd" d="M8.636 3.5a.5.5 0 0 0-.5-.5H1.5A1.5 1.5 0 0 0 0 4.5v10A1.5 1.5 0 0 0 1.5 16h10a1.5 1.5 0 0 0 1.5-1.5V7.864a.5.5 0 0 0-1 0V14.5a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-10a.5.5 0 0 1 .5-.5h6.636a.5.5 0 0 0 .5-.5z"/>
+                    <path fill-rule="evenodd" d="M16 .5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0 0 1h3.793L6.146 9.146a.5.5 0 1 0 .708.708L15 1.707V5.5a.5.5 0 0 0 1 0v-5z"/>
+                  </svg>
+                {% endif %}
+              </span>
+            </span>
+          </div>
+        {% endif %}
+
         {# Card Footer Slot #}
         {% if slots.card_footer %}
           <div class="saho-card__footer mb-2">
             {{ slots.card_footer }}
           </div>
         {% endif %}
-        
+
         {# Status Badges and Category #}
         <div class="d-flex justify-content-between align-items-center">
           {% if metadata and metadata.category %}
@@ -160,7 +183,7 @@
               {{ metadata.category }}
             </small>
           {% endif %}
-          
+
           <div class="btn-group saho-card__badges">
             {% if metadata and metadata.staff_pick %}
               <span class="badge bg-warning text-dark saho-card__staff-pick">

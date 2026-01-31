@@ -1,0 +1,47 @@
+{#
+/**
+ * @file
+ * SAHO Card Grid Component Template
+ *
+ * Responsive grid layout for displaying card collections.
+ *
+ * Available variables:
+ * - columns: (string) Grid column configuration (auto|one|two|three|four)
+ * - gap: (string) Spacing between cards (compact|normal|relaxed)
+ * - min_card_width: (string) Minimum card width for auto-fill
+ * - align: (string) Grid alignment (start|center|end)
+ * - attributes: (object) Additional HTML attributes
+ * - slots.default: Card components content
+ */
+#}
+{%
+  set classes = [
+    'saho-card-grid',
+    'saho-card-grid--columns-' ~ (columns|default('auto')),
+    'saho-card-grid--gap-' ~ (gap|default('normal')),
+    'saho-card-grid--align-' ~ (align|default('start'))
+  ]
+%}
+
+{# Merge additional classes from attributes #}
+{% if attributes.class %}
+  {% set classes = classes|merge(attributes.class) %}
+{% endif %}
+
+{# Build attributes object #}
+{% set grid_attributes = create_attribute() %}
+{% set grid_attributes = grid_attributes.addClass(classes) %}
+
+{# Add ID if provided #}
+{% if attributes.id %}
+  {% set grid_attributes = grid_attributes.setAttribute('id', attributes.id) %}
+{% endif %}
+
+{# Add custom property for min card width #}
+{% if columns == 'auto' and min_card_width %}
+  {% set grid_attributes = grid_attributes.setAttribute('style', '--saho-card-min-width: ' ~ min_card_width) %}
+{% endif %}
+
+<div{{ grid_attributes }}>
+  {{ slots.default }}
+</div>
