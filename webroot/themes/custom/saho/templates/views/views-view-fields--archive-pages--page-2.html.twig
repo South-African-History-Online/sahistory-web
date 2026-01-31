@@ -83,78 +83,69 @@
   {% set content_type = row._entity.bundle() %}
 {% endif %}
 
-{# Render using saho-card component #}
+{# Build image data for component #}
+{% set image_data = null %}
 {% if image_url %}
-  <a href="{{ entity_url }}" class="saho-card-link" aria-label="View resource details">
-    <article class="saho-card saho-card--primary saho-card--medium saho-card--type-{{ content_type|replace({'_': '-'}) }} card h-100">
+  {% set image_data = {
+    content: fields.field_archive_image.content is defined and fields.field_archive_image.content ? fields.field_archive_image.content :
+             fields.field_article_image.content is defined and fields.field_article_image.content ? fields.field_article_image.content :
+             fields.field_bio_pic.content is defined and fields.field_bio_pic.content ? fields.field_bio_pic.content :
+             fields.field_image.content is defined and fields.field_image.content ? fields.field_image.content :
+             fields.field_thumbnail.content is defined and fields.field_thumbnail.content ? fields.field_thumbnail.content : null
+  } %}
+{% endif %}
+
+{# Render using saho-card component for all cards #}
+<a href="{{ entity_url }}" class="saho-card-link" aria-label="View resource details">
+  <article class="saho-card saho-card--primary saho-card--medium saho-card--type-{{ content_type|replace({'_': '-'}) }} card h-100">
+    {% if image_data and image_data.content %}
       <div class="card-img-top-wrapper position-relative overflow-hidden saho-card__image">
-        {% if fields.field_archive_image is defined and fields.field_archive_image.content %}
-          {{ fields.field_archive_image.content }}
-        {% elseif fields.field_article_image is defined and fields.field_article_image.content %}
-          {{ fields.field_article_image.content }}
-        {% elseif fields.field_bio_pic is defined and fields.field_bio_pic.content %}
-          {{ fields.field_bio_pic.content }}
-        {% elseif fields.field_image is defined and fields.field_image.content %}
-          {{ fields.field_image.content }}
-        {% elseif fields.field_thumbnail is defined and fields.field_thumbnail.content %}
-          {{ fields.field_thumbnail.content }}
-        {% endif %}
+        {{ image_data.content }}
 
         <div class="position-absolute top-0 end-0 m-2">
           <span class="badge saho-card__type-badge">{{ resource_type }}</span>
         </div>
       </div>
+    {% endif %}
 
-      <div class="card-body d-flex flex-column saho-card__body">
-        <h3 class="card-title saho-card__title">{{ title_text }}</h3>
+    <div class="card-body d-flex flex-column saho-card__body">
+      <h3 class="card-title saho-card__title">{{ title_text }}</h3>
 
-        {% if card_metadata %}
-          <div class="saho-card__meta text-muted small mb-2">
-            {% if card_metadata.author %}
-              <span class="saho-card__author">
-                <i class="fas fa-user me-1" aria-hidden="true"></i>
-                {{ card_metadata.author }}
-              </span>
-            {% endif %}
-            {% if card_metadata.date %}
-              <span class="saho-card__date {% if card_metadata.author %}ms-2{% endif %}">
-                <i class="fas fa-clock me-1" aria-hidden="true"></i>
-                {{ card_metadata.date }}
-              </span>
-            {% endif %}
-          </div>
-        {% endif %}
-
-        {% if description %}
-          <div class="card-text saho-card__content text-muted mb-3">
-            {{ description|length > 120 ? description|slice(0, 120) ~ '...' : description }}
-          </div>
-        {% endif %}
-
-        <div class="mt-auto saho-card__footer-section">
-          <div class="saho-card__action mb-2">
-            <span class="saho-card-button-wrapper" style="position: relative; z-index: 2;">
-              <span class="saho-button saho-button--card-action saho-button--small">
-                <span class="saho-button__text">View Resource</span>
-                <svg class="saho-button__icon saho-button__icon--arrow-right" width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-                  <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/>
-                </svg>
-              </span>
+      {% if card_metadata %}
+        <div class="saho-card__meta text-muted small mb-2">
+          {% if card_metadata.author %}
+            <span class="saho-card__author">
+              <i class="fas fa-user me-1" aria-hidden="true"></i>
+              {{ card_metadata.author }}
             </span>
-          </div>
+          {% endif %}
+          {% if card_metadata.date %}
+            <span class="saho-card__date {% if card_metadata.author %}ms-2{% endif %}">
+              <i class="fas fa-clock me-1" aria-hidden="true"></i>
+              {{ card_metadata.date }}
+            </span>
+          {% endif %}
+        </div>
+      {% endif %}
+
+      {% if description %}
+        <div class="card-text saho-card__content text-muted mb-3">
+          {{ description|length > 120 ? description|slice(0, 120) ~ '...' : description }}
+        </div>
+      {% endif %}
+
+      <div class="mt-auto saho-card__footer-section">
+        <div class="saho-card__action mb-2">
+          <span class="saho-card-button-wrapper" style="position: relative; z-index: 2;">
+            <span class="saho-button saho-button--card-action saho-button--small">
+              <span class="saho-button__text">View Resource</span>
+              <svg class="saho-button__icon saho-button__icon--arrow-right" width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/>
+              </svg>
+            </span>
+          </span>
         </div>
       </div>
-    </article>
-  </a>
-{% else %}
-  {% include 'saho:saho-card' with {
-    title: title_text,
-    content: description,
-    url: entity_url,
-    content_type: content_type,
-    metadata: card_metadata,
-    button_text: 'View Resource',
-    button_variant: 'card-action',
-    button_icon: 'arrow-right'
-  } %}
-{% endif %}
+    </div>
+  </article>
+</a>
