@@ -17,3 +17,37 @@ saho_tools.llm_txt:
     _title: 'LLM.txt - AI/LLM Discovery'
   requirements:
     _permission: 'access content'
+
+saho_tools.schema_api:
+  path: '/api/schema/{node}'
+  defaults:
+    _controller: '\Drupal\saho_tools\Controller\SchemaApiController::getNodeSchema'
+    _title: 'Schema.org API'
+  requirements:
+    _permission: 'access content'
+    _entity_access: 'node.view'
+  options:
+    parameters:
+      node:
+        type: entity:node
+
+saho_tools.schema_api_type:
+  path: '/api/schema/{node}/type'
+  defaults:
+    _controller: '\Drupal\saho_tools\Controller\SchemaApiController::getNodeSchemaType'
+    _title: 'Schema.org Type'
+  requirements:
+    _permission: 'access content'
+    _entity_access: 'node.view'
+  options:
+    parameters:
+      node:
+        type: entity:node
+
+saho_tools.schema_api_types:
+  path: '/api/schema/types'
+  defaults:
+    _controller: '\Drupal\saho_tools\Controller\SchemaApiController::listSchemaTypes'
+    _title: 'Schema.org Types List'
+  requirements:
+    _permission: 'access content'

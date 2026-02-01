@@ -135,6 +135,31 @@ function saho_tools_preprocess_html(&$variables) {
     // Schema.org JSON-LD injection.
     $schema_service = \Drupal::service('saho_tools.schema_org_service');
 
+    // Add meta tag for AI/LLM discovery.
+    $variables['#attached']['html_head'][] = [
+      [
+        '#type' => 'html_tag',
+        '#tag' => 'meta',
+        '#attributes' => [
+          'name' => 'structured-data',
+          'content' => 'Schema.org JSON-LD available. See /llm.txt and /api/schema for programmatic access.',
+        ],
+      ],
+      'saho_structured_data',
+    ];
+
+    // Add link to llm.txt for AI discovery.
+    $base_url = \Drupal::request()->getSchemeAndHttpHost();
+    $variables['#attached']['html_head_link'][] = [
+      [
+        'rel' => 'alternate',
+        'type' => 'text/plain',
+        'href' => $base_url . '/llm.txt',
+        'title' => 'LLM Discovery File',
+      ],
+      TRUE,
+    ];
+
     // 1. Organization schema (site-wide).
     $org_schema = $schema_service->generateOrganizationSchema();
     if (!empty($org_schema)) {
@@ -546,6 +571,102 @@ function _saho_tools_get_image_url(NodeInterface $node, string $field_name) {
   }
 
   return $image_url;
+}
+
+/**
+ * Implements hook_robotstxt().
+ *
+ * Add directives for AI/LLM crawlers and search engines to optimize
+ * discovery and indexing of SAHO content.
+ */
+function saho_tools_robotstxt() {
+  $lines = [];
+
+  // Allow all major search engines full access.
+  $lines[] = '# SAHO - Optimized for Search Engines and AI Discovery';
+  $lines[] = '';
+
+  // AI/LLM Crawlers - Explicitly allow with crawl-delay.
+  $lines[] = '# AI and LLM Crawlers';
+  $lines[] = 'User-agent: GPTBot';
+  $lines[] = 'Allow: /';
+  $lines[] = 'Crawl-delay: 1';
+  $lines[] = '';
+
+  $lines[] = 'User-agent: ClaudeBot';
+  $lines[] = 'Allow: /';
+  $lines[] = 'Crawl-delay: 1';
+  $lines[] = '';
+
+  $lines[] = 'User-agent: Claude-Web';
+  $lines[] = 'Allow: /';
+  $lines[] = 'Crawl-delay: 1';
+  $lines[] = '';
+
+  $lines[] = 'User-agent: anthropic-ai';
+  $lines[] = 'Allow: /';
+  $lines[] = 'Crawl-delay: 1';
+  $lines[] = '';
+
+  $lines[] = 'User-agent: PerplexityBot';
+  $lines[] = 'Allow: /';
+  $lines[] = 'Crawl-delay: 1';
+  $lines[] = '';
+
+  $lines[] = 'User-agent: Google-Extended';
+  $lines[] = 'Allow: /';
+  $lines[] = 'Crawl-delay: 1';
+  $lines[] = '';
+
+  $lines[] = 'User-agent: CCBot';
+  $lines[] = 'Allow: /';
+  $lines[] = 'Crawl-delay: 2';
+  $lines[] = '';
+
+  $lines[] = 'User-agent: Amazonbot';
+  $lines[] = 'Allow: /';
+  $lines[] = 'Crawl-delay: 1';
+  $lines[] = '';
+
+  $lines[] = 'User-agent: Applebot-Extended';
+  $lines[] = 'Allow: /';
+  $lines[] = 'Crawl-delay: 1';
+  $lines[] = '';
+
+  $lines[] = 'User-agent: cohere-ai';
+  $lines[] = 'Allow: /';
+  $lines[] = 'Crawl-delay: 1';
+  $lines[] = '';
+
+  $lines[] = 'User-agent: Omgilibot';
+  $lines[] = 'Allow: /';
+  $lines[] = 'Crawl-delay: 2';
+  $lines[] = '';
+
+  $lines[] = 'User-agent: YouBot';
+  $lines[] = 'Allow: /';
+  $lines[] = 'Crawl-delay: 1';
+  $lines[] = '';
+
+  // Major search engines - unrestricted access.
+  $lines[] = '# Search Engines - Unrestricted Access';
+  $lines[] = 'User-agent: Googlebot';
+  $lines[] = 'Allow: /';
+  $lines[] = '';
+
+  $lines[] = 'User-agent: Bingbot';
+  $lines[] = 'Allow: /';
+  $lines[] = '';
+
+  // Highlight key endpoints for discovery.
+  $lines[] = '# Key Endpoints for AI Systems';
+  $lines[] = '# /llm.txt - AI/LLM discovery file';
+  $lines[] = '# /api/schema/{node} - Schema.org JSON-LD API';
+  $lines[] = '# /api/citation/{node} - Citation API';
+  $lines[] = '# /sitemap.xml - XML sitemap';
+  $lines[] = '';
+
+  return $lines;
 }
 
 /**
