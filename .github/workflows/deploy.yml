@@ -30,12 +30,12 @@ jobs:
           mkdir -p ~/.ssh
           echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -H ${{ secrets.DEPLOY_HOST }} >> ~/.ssh/known_hosts
+          ssh-keyscan -p 2278 -H ${{ secrets.DEPLOY_HOST }} >> ~/.ssh/known_hosts
 
       - name: Deploy to Production
         if: github.event.inputs.environment == 'production' || github.event_name == 'push'
         run: |
-          ssh -i ~/.ssh/deploy_key ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} << 'ENDSSH'
+          ssh -i ~/.ssh/deploy_key -p 2278 ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} << 'ENDSSH'
             set -e
             cd ${{ secrets.DEPLOY_PATH_PROD }}
             echo "========================================="
@@ -51,7 +51,7 @@ jobs:
       - name: Deploy to Staging
         if: github.event.inputs.environment == 'staging'
         run: |
-          ssh -i ~/.ssh/deploy_key ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} << 'ENDSSH'
+          ssh -i ~/.ssh/deploy_key -p 2278 ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} << 'ENDSSH'
             set -e
             cd ${{ secrets.DEPLOY_PATH_STAGING }}
             echo "========================================="

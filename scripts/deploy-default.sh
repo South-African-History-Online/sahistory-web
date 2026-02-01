@@ -41,6 +41,17 @@ error_exit() {
 
 log "Starting deployment for default site"
 
+# Increment deploy version
+if [ -f "${PROJECT_ROOT}/DEPLOY_VERSION" ]; then
+    CURRENT_VERSION=$(cat "${PROJECT_ROOT}/DEPLOY_VERSION")
+    NEW_VERSION=$((CURRENT_VERSION + 1))
+else
+    NEW_VERSION=1
+fi
+echo "$NEW_VERSION" > "${PROJECT_ROOT}/DEPLOY_VERSION"
+log "Deploy version: ${NEW_VERSION}"
+echo -e "${GREEN}Deploy #${NEW_VERSION}${NC}"
+
 # Git pull
 echo -e "${YELLOW}[1/4] Pulling code...${NC}"
 CURRENT_COMMIT=$(git rev-parse HEAD)
@@ -84,5 +95,6 @@ vendor/bin/drush cr -l "${SITE_URI}" >> "${LOG_FILE}" 2>&1
 
 echo ""
 echo -e "${GREEN}✓ DEPLOYMENT SUCCESSFUL${NC}"
+echo -e "Deploy version: #${NEW_VERSION}"
 echo -e "Log: ${LOG_FILE}"
 echo ""
