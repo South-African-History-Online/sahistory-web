@@ -1,0 +1,80 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - production
+          - staging
+
+jobs:
+  deploy:
+    name: Deploy to ${{ github.event.inputs.environment || 'production' }}
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment || 'production' }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H ${{ secrets.DEPLOY_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy to Production
+        if: github.event.inputs.environment == 'production' || github.event_name == 'push'
+        run: |
+          ssh -i ~/.ssh/deploy_key ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} << 'ENDSSH'
+            set -e
+            cd ${{ secrets.DEPLOY_PATH_PROD }}
+            echo "========================================="
+            echo "Deploying to PRODUCTION"
+            echo "========================================="
+            git fetch origin
+            git reset --hard origin/main
+            scripts/deploy-all.sh production
+            echo ""
+            echo "✓ Production deployment complete"
+          ENDSSH
+
+      - name: Deploy to Staging
+        if: github.event.inputs.environment == 'staging'
+        run: |
+          ssh -i ~/.ssh/deploy_key ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} << 'ENDSSH'
+            set -e
+            cd ${{ secrets.DEPLOY_PATH_STAGING }}
+            echo "========================================="
+            echo "Deploying to STAGING"
+            echo "========================================="
+            git fetch origin
+            git reset --hard origin/main
+            scripts/deploy-all.sh staging
+            echo ""
+            echo "✓ Staging deployment complete"
+          ENDSSH
+
+      - name: Cleanup
+        if: always()
+        run: |
+          rm -f ~/.ssh/deploy_key
+
+      - name: Notify on Success
+        if: success()
+        run: |
+          echo "::notice::Deployment to ${{ github.event.inputs.environment || 'production' }} completed successfully"
+
+      - name: Notify on Failure
+        if: failure()
+        run: |
+          echo "::error::Deployment to ${{ github.event.inputs.environment || 'production' }} failed"
