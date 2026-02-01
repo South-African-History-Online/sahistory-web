@@ -72,7 +72,7 @@ echo -e "${GREEN}✓ Deploy 2/2${NC}"
 # Cleanup
 vendor/bin/drush state:set system.maintenance_mode 0 --uri="${SITE_URI}" >> "${LOG_FILE}" 2>&1
 vendor/bin/drush cr --uri="${SITE_URI}" >> "${LOG_FILE}" 2>&1
-ls -t "${BACKUP_DIR}"/db-shop-*.sql | tail -n +11 | xargs -r rm
+ls -t "${BACKUP_DIR}"/db-shop-*.sql | tail -n +3 | xargs -r rm
 
 echo ""
 echo -e "${GREEN}✓ DEPLOYMENT SUCCESSFUL${NC}"
