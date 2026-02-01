@@ -132,6 +132,23 @@ function saho_tools_preprocess_html(&$variables) {
   // Only add the citation modal container on non-admin routes.
   if (!$is_admin) {
 
+    // Schema.org JSON-LD injection.
+    $schema_service = \Drupal::service('saho_tools.schema_org_service');
+
+    // 1. Organization schema (site-wide).
+    $org_schema = $schema_service->generateOrganizationSchema();
+    if (!empty($org_schema)) {
+      $variables['#attached']['html_head'][] = [
+        [
+          '#type' => 'html_tag',
+          '#tag' => 'script',
+          '#attributes' => ['type' => 'application/ld+json'],
+          '#value' => json_encode($org_schema, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT),
+        ],
+        'schema_org_organization',
+      ];
+    }
+
     // For nodes, use the canonical URL.
     $node = \Drupal::routeMatch()->getParameter('node');
     if ($node instanceof NodeInterface) {
@@ -148,6 +165,34 @@ function saho_tools_preprocess_html(&$variables) {
           ],
         ],
         'canonical_url',
+      ];
+
+      // 2. Node-specific schema.
+      $node_schema = $schema_service->generateSchemaForNode($node);
+      if (!empty($node_schema)) {
+        $variables['#attached']['html_head'][] = [
+          [
+            '#type' => 'html_tag',
+            '#tag' => 'script',
+            '#attributes' => ['type' => 'application/ld+json'],
+            '#value' => json_encode($node_schema, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT),
+          ],
+          'schema_org_node_' . $node->id(),
+        ];
+      }
+    }
+
+    // 3. Breadcrumb schema.
+    $breadcrumb_schema = $schema_service->generateBreadcrumbSchema();
+    if (!empty($breadcrumb_schema)) {
+      $variables['#attached']['html_head'][] = [
+        [
+          '#type' => 'html_tag',
+          '#tag' => 'script',
+          '#attributes' => ['type' => 'application/ld+json'],
+          '#value' => json_encode($breadcrumb_schema, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT),
+        ],
+        'schema_org_breadcrumb',
       ];
     }
 

@@ -2,3 +2,29 @@ services:
   saho_tools.citation_service:
     class: Drupal\saho_tools\Service\CitationService
     arguments: ['@entity_type.manager', '@date.formatter', '@file_url_generator']
+
+  # Schema.org Service and Builders.
+  saho_tools.schema_org_service:
+    class: Drupal\saho_tools\Service\SchemaOrgService
+    arguments: ['@entity_type.manager', '@file_url_generator', '@renderer', '@cache.default']
+    calls:
+      - [registerBuilder, ['article', '@saho_tools.schema_builder.article']]
+      - [registerBuilder, ['biography', '@saho_tools.schema_builder.biography']]
+      - [registerBuilder, ['organization', '@saho_tools.schema_builder.organization']]
+      - [registerBuilder, ['breadcrumb', '@saho_tools.schema_builder.breadcrumb']]
+
+  saho_tools.schema_builder.article:
+    class: Drupal\saho_tools\Service\Builder\ArticleSchemaBuilder
+    arguments: ['@entity_type.manager', '@file_url_generator']
+
+  saho_tools.schema_builder.biography:
+    class: Drupal\saho_tools\Service\Builder\BiographySchemaBuilder
+    arguments: ['@entity_type.manager', '@file_url_generator']
+
+  saho_tools.schema_builder.organization:
+    class: Drupal\saho_tools\Service\Builder\OrganizationSchemaBuilder
+    arguments: ['@entity_type.manager', '@file_url_generator']
+
+  saho_tools.schema_builder.breadcrumb:
+    class: Drupal\saho_tools\Service\Builder\BreadcrumbSchemaBuilder
+    arguments: ['@entity_type.manager', '@file_url_generator']
