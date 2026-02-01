@@ -69,8 +69,17 @@ vendor/bin/drush deploy -y -v -l "${SITE_URI}" 2>&1 | tee -a "${LOG_FILE}" || er
 echo ""
 echo -e "${GREEN}✓ Deploy 2/2 complete${NC}"
 
-# Cleanup
-vendor/bin/drush state:set system.maintenance_mode 0 -l "${SITE_URI}" >> "${LOG_FILE}" 2>&1
+# Disable maintenance mode (production only, staging stays in maintenance)
+if [ "${ENVIRONMENT}" = "production" ]; then
+    echo -e "${YELLOW}Disabling maintenance mode (production)...${NC}"
+    vendor/bin/drush state:set system.maintenance_mode 0 -l "${SITE_URI}" >> "${LOG_FILE}" 2>&1
+    echo -e "${GREEN}✓ Site is LIVE${NC}"
+else
+    echo -e "${YELLOW}Keeping maintenance mode enabled (staging)...${NC}"
+    echo -e "${YELLOW}⚠ Site remains in MAINTENANCE MODE${NC}"
+fi
+
+# Final cache clear
 vendor/bin/drush cr -l "${SITE_URI}" >> "${LOG_FILE}" 2>&1
 
 echo ""
