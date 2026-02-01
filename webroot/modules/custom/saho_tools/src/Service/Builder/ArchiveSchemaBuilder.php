@@ -120,8 +120,11 @@ class ArchiveSchemaBuilder implements SchemaOrgBuilderInterface {
     if ($node->hasField('field_language') && !$node->get('field_language')->isEmpty()) {
       $languages = [];
       foreach ($node->get('field_language') as $language) {
-        if ($language->entity) {
-          $languages[] = $language->entity->getName();
+        /** @var \Drupal\taxonomy\Entity\Term|null $term */
+        // @phpstan-ignore-next-line
+        $term = $language->entity;
+        if ($term) {
+          $languages[] = $term->getName();
         }
       }
       if (!empty($languages)) {
@@ -152,13 +155,16 @@ class ArchiveSchemaBuilder implements SchemaOrgBuilderInterface {
     if ($node->hasField('field_file_upload') && !$node->get('field_file_upload')->isEmpty()) {
       $files = [];
       foreach ($node->get('field_file_upload') as $file_ref) {
-        if ($file_ref->entity instanceof File) {
-          $file_url = $this->fileUrlGenerator->generateAbsoluteString($file_ref->entity->getFileUri());
+        /** @var \Drupal\file\Entity\File|null $file */
+        // @phpstan-ignore-next-line
+        $file = $file_ref->entity;
+        if ($file instanceof File) {
+          $file_url = $this->fileUrlGenerator->generateAbsoluteString($file->getFileUri());
           $files[] = [
             '@type' => 'MediaObject',
             'contentUrl' => $file_url,
-            'encodingFormat' => $file_ref->entity->getMimeType(),
-            'name' => $file_ref->entity->getFilename(),
+            'encodingFormat' => $file->getMimeType(),
+            'name' => $file->getFilename(),
           ];
         }
       }

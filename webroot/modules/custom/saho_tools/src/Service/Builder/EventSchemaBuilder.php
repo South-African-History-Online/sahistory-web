@@ -2,6 +2,7 @@
 
 namespace Drupal\saho_tools\Service\Builder;
 
+use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\File\FileUrlGeneratorInterface;
 use Drupal\file\Entity\File;
@@ -85,8 +86,11 @@ class EventSchemaBuilder implements SchemaOrgBuilderInterface {
     if ($node->hasField('field_event_type') && !$node->get('field_event_type')->isEmpty()) {
       $event_types = [];
       foreach ($node->get('field_event_type') as $event_type) {
-        if ($event_type->entity) {
-          $event_types[] = $event_type->entity->getName();
+        /** @var \Drupal\taxonomy\Entity\Term|null $term */
+        // @phpstan-ignore-next-line
+        $term = $event_type->entity;
+        if ($term) {
+          $event_types[] = $term->getName();
         }
       }
       if (!empty($event_types)) {
@@ -98,10 +102,13 @@ class EventSchemaBuilder implements SchemaOrgBuilderInterface {
     if ($node->hasField('field_african_country') && !$node->get('field_african_country')->isEmpty()) {
       $countries = [];
       foreach ($node->get('field_african_country') as $country) {
-        if ($country->entity) {
+        /** @var \Drupal\taxonomy\Entity\Term|null $term */
+        // @phpstan-ignore-next-line
+        $term = $country->entity;
+        if ($term) {
           $countries[] = [
             '@type' => 'Place',
-            'name' => $country->entity->getName(),
+            'name' => $term->getName(),
           ];
         }
       }
@@ -160,7 +167,7 @@ class EventSchemaBuilder implements SchemaOrgBuilderInterface {
         }
 
         // Handle media entity reference fields.
-        if ($field_value->entity && $field_value->entity->hasField('field_media_image')) {
+        if ($field_value->entity instanceof ContentEntityInterface && $field_value->entity->hasField('field_media_image')) {
           $media_entity = $field_value->entity;
           if (!$media_entity->get('field_media_image')->isEmpty()) {
             $file_entity = $media_entity->get('field_media_image')->entity;

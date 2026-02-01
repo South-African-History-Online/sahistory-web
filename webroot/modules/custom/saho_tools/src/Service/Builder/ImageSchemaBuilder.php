@@ -55,9 +55,11 @@ class ImageSchemaBuilder implements SchemaOrgBuilderInterface {
     $image_field = $node->getType() === 'gallery_image' ? 'field_gallery_image' : 'field_image';
 
     if ($node->hasField($image_field) && !$node->get($image_field)->isEmpty()) {
-      $field_value = $node->get($image_field);
-      if ($field_value->entity instanceof File) {
-        $file = $field_value->entity;
+      $field_item = $node->get($image_field)->first();
+      // @phpstan-ignore-next-line
+      if ($field_item && $field_item->entity instanceof File) {
+        // @phpstan-ignore-next-line
+        $file = $field_item->entity;
         $image_url = $this->fileUrlGenerator->generateAbsoluteString($file->getFileUri());
 
         $schema['contentUrl'] = $image_url;
@@ -65,16 +67,19 @@ class ImageSchemaBuilder implements SchemaOrgBuilderInterface {
         $schema['fileFormat'] = $file->getMimeType();
 
         // Add width and height if available.
-        if ($field_value->width) {
-          $schema['width'] = $field_value->width;
+        $width = $field_item->get('width')->getValue();
+        if ($width) {
+          $schema['width'] = (int) $width;
         }
-        if ($field_value->height) {
-          $schema['height'] = $field_value->height;
+        $height = $field_item->get('height')->getValue();
+        if ($height) {
+          $schema['height'] = (int) $height;
         }
 
         // Add alt text as caption.
-        if ($field_value->alt) {
-          $schema['caption'] = $field_value->alt;
+        $alt = $field_item->get('alt')->getValue();
+        if ($alt) {
+          $schema['caption'] = $alt;
         }
       }
     }

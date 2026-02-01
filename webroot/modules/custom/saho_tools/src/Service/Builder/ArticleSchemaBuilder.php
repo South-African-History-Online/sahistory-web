@@ -2,6 +2,7 @@
 
 namespace Drupal\saho_tools\Service\Builder;
 
+use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\File\FileUrlGeneratorInterface;
 use Drupal\file\Entity\File;
@@ -111,8 +112,11 @@ class ArticleSchemaBuilder implements SchemaOrgBuilderInterface {
     if ($node->hasField('field_tags') && !$node->get('field_tags')->isEmpty()) {
       $keywords = [];
       foreach ($node->get('field_tags') as $tag) {
-        if ($tag->entity) {
-          $keywords[] = $tag->entity->getName();
+        /** @var \Drupal\taxonomy\Entity\Term|null $term */
+        // @phpstan-ignore-next-line
+        $term = $tag->entity;
+        if ($term) {
+          $keywords[] = $term->getName();
         }
       }
       if (!empty($keywords)) {
@@ -124,10 +128,13 @@ class ArticleSchemaBuilder implements SchemaOrgBuilderInterface {
     if ($node->hasField('field_african_country') && !$node->get('field_african_country')->isEmpty()) {
       $places = [];
       foreach ($node->get('field_african_country') as $country) {
-        if ($country->entity) {
+        /** @var \Drupal\taxonomy\Entity\Term|null $term */
+        // @phpstan-ignore-next-line
+        $term = $country->entity;
+        if ($term) {
           $places[] = [
             '@type' => 'Place',
-            'name' => $country->entity->getName(),
+            'name' => $term->getName(),
           ];
         }
       }
@@ -183,7 +190,7 @@ class ArticleSchemaBuilder implements SchemaOrgBuilderInterface {
         }
 
         // Handle media entity reference fields.
-        if ($field_value->entity && $field_value->entity->hasField('field_media_image')) {
+        if ($field_value->entity instanceof ContentEntityInterface && $field_value->entity->hasField('field_media_image')) {
           $media_entity = $field_value->entity;
           if (!$media_entity->get('field_media_image')->isEmpty()) {
             $file_entity = $media_entity->get('field_media_image')->entity;

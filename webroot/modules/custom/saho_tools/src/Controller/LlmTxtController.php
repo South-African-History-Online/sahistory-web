@@ -35,7 +35,7 @@ class LlmTxtController extends ControllerBase {
     ];
 
     $renderer = \Drupal::service('renderer');
-    $content = $renderer->renderPlain($build);
+    $content = $renderer->renderInIsolation($build);
 
     // Return as plain text response.
     $response = new Response($content);

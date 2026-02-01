@@ -153,10 +153,13 @@ class BiographySchemaBuilder implements SchemaOrgBuilderInterface {
     if ($node->hasField('field_african_country') && !$node->get('field_african_country')->isEmpty()) {
       $countries = [];
       foreach ($node->get('field_african_country') as $country) {
-        if ($country->entity) {
+        /** @var \Drupal\taxonomy\Entity\Term|null $term */
+        // @phpstan-ignore-next-line
+        $term = $country->entity;
+        if ($term) {
           $countries[] = [
             '@type' => 'Country',
-            'name' => $country->entity->getName(),
+            'name' => $term->getName(),
           ];
         }
       }

@@ -101,6 +101,7 @@ class PlaceSchemaBuilder implements SchemaOrgBuilderInterface {
 
     // Add address information.
     if ($node->hasField('field_african_country') && !$node->get('field_african_country')->isEmpty()) {
+      /** @var \Drupal\taxonomy\Entity\Term|null $country */
       $country = $node->get('field_african_country')->entity;
       if ($country) {
         $schema['address'] = [
