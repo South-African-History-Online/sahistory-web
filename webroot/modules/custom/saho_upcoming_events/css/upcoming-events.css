@@ -1,20 +1,155 @@
 /**
  * SAHO Upcoming Events - Modern, Clean, Functional Design
- * Using solid SAHO colors, no gradients
+ * Component-scoped inline CSS custom properties with --events-* prefix
+ * NO external dependencies - all design tokens defined inline
  */
+
+/* ========================================
+   ROOT CONTAINER & DESIGN TOKENS
+   ======================================== */
+
+.all-upcoming-events-page {
+  /* Inline design tokens - NO external dependencies */
+
+  /* SAHO Brand Colors */
+  --events-color-primary: #97212d;
+  --events-color-primary-dark: #7a1b24;
+  --events-color-white: #fff;
+  --events-color-black: #000;
+  --events-color-text-dark: #1a1a1a;
+  --events-color-text-medium: #333;
+  --events-color-text-light: #555;
+  --events-color-text-muted: #666;
+  --events-color-text-subtle: #999;
+
+  /* Status Colors */
+  --events-color-success: #28a745;
+  --events-color-danger: #dc3545;
+  --events-color-past: #666;
+
+  /* Neutral Colors */
+  --events-color-bg-page: #fff;
+  --events-color-bg-light: #f8f9fa;
+  --events-color-bg-subtle: #f5f5f5;
+  --events-color-bg-placeholder: #f0f0f0;
+  --events-color-bg-muted: #e9ecef;
+  --events-color-bg-gray: #f3f4f6;
+
+  /* Border Colors */
+  --events-color-border-light: #e0e0e0;
+  --events-color-border-medium: #ddd;
+  --events-color-border-subtle: #e5e7eb;
+
+  /* Gradient Colors */
+  --events-color-gradient-start: #2c3e50;
+  --events-color-gradient-end: #3498db;
+
+  /* Spacing Scale */
+  --events-spacing-0-25: 0.25rem;
+  --events-spacing-0-35: 0.35rem;
+  --events-spacing-0-4: 0.4rem;
+  --events-spacing-0-5: 0.5rem;
+  --events-spacing-0-6: 0.6rem;
+  --events-spacing-0-75: 0.75rem;
+  --events-spacing-1: 1rem;
+  --events-spacing-1-25: 1.25rem;
+  --events-spacing-1-5: 1.5rem;
+  --events-spacing-2: 2rem;
+  --events-spacing-2-5: 2.5rem;
+  --events-spacing-3: 3rem;
+
+  /* Typography Scale */
+  --events-font-size-xs: 0.7rem;
+  --events-font-size-sm: 0.813rem;
+  --events-font-size-base: 0.875rem;
+  --events-font-size-md: 0.9rem;
+  --events-font-size-normal: 0.95rem;
+  --events-font-size-lg: 1rem;
+  --events-font-size-xl: 1.1rem;
+  --events-font-size-title-sm: 1.125rem;
+  --events-font-size-title-md: 1.2rem;
+  --events-font-size-title-lg: 1.25rem;
+  --events-font-size-title-xl: 1.5rem;
+  --events-font-size-section: 1.75rem;
+  --events-font-size-header-sm: 2rem;
+  --events-font-size-header: 2.5rem;
+
+  /* Line Heights */
+  --events-line-height-tight: 1.3;
+  --events-line-height-normal: 1.4;
+  --events-line-height-relaxed: 1.5;
+  --events-line-height-loose: 1.6;
+
+  /* Font Weights */
+  --events-font-weight-normal: 600;
+  --events-font-weight-bold: 700;
+
+  /* Border Radius */
+  --events-radius-sm: 3px;
+  --events-radius-md: 4px;
+  --events-radius-lg: 8px;
+  --events-radius-xl: 12px;
+  --events-radius-round: 50%;
+
+  /* Shadows */
+  --events-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --events-shadow-md: 0 2px 8px rgba(0, 0, 0, 0.1);
+  --events-shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.15);
+  --events-shadow-hover: 0 6px 16px rgba(0, 0, 0, 0.12);
+  --events-shadow-card: 0 4px 12px rgba(0, 0, 0, 0.15);
+  --events-shadow-text: 0 2px 4px rgba(0, 0, 0, 0.3);
+
+  /* Dimensions */
+  --events-container-max: 1400px;
+  --events-card-min: 300px;
+  --events-card-min-sm: 280px;
+  --events-card-min-xs: 320px;
+  --events-image-height: 200px;
+  --events-image-height-tablet: 220px;
+  --events-image-height-mobile: 180px;
+  --events-image-height-sm: 160px;
+  --events-image-height-portrait: 288px;
+  --events-image-width-portrait: 230px;
+  --events-image-width-mobile: 200px;
+  --events-badge-size: 2.5rem;
+  --events-badge-size-sm: 2rem;
+  --events-icon-size: 16px;
+  --events-icon-size-sm: 12px;
+
+  /* Transitions */
+  --events-transition-fast: 0.2s;
+  --events-transition-normal: 0.3s;
+  --events-transition-pulse: 1.5s;
+
+  /* Border Widths */
+  --events-border-thin: 1px;
+  --events-border-medium: 2px;
+  --events-border-thick: 3px;
+
+  /* Opacity */
+  --events-opacity-past: 0.7;
+  --events-opacity-past-hover: 0.85;
+  --events-opacity-header: 0.9;
+
+  /* Z-index */
+  --events-z-index-overlay: 10;
+
+  /* Grid Gaps */
+  --events-gap-sm: 1rem;
+  --events-gap-md: 1.5rem;
+  --events-gap-lg: 2rem;
+
+  background: var(--events-color-bg-page);
+}
 
 /* ========================================
    PAGE CONTAINER
    ======================================== */
 
-.all-upcoming-events-page {
-  background: #fff;
-}
-
 .saho-events-container {
-  max-width: 1400px;
+  max-width: var(--events-container-max);
   margin: 0 auto;
-  padding: 2rem 1rem;
+  padding: var(--events-spacing-2) var(--events-spacing-1);
 }
 
 /* ========================================
@@ -22,28 +157,28 @@
    ======================================== */
 
 .events-section {
-  margin-bottom: 3rem;
+  margin-bottom: var(--events-spacing-3);
 }
 
 .events-section-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 1.5rem;
-  padding-bottom: 1rem;
-  border-bottom: 3px solid #97212d;
+  margin-bottom: var(--events-spacing-1-5);
+  padding-bottom: var(--events-spacing-1);
+  border-bottom: var(--events-border-thick) solid var(--events-color-primary);
 }
 
 .section-header-content {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: var(--events-spacing-1);
 }
 
 .events-section-title {
-  font-size: 1.75rem;
-  font-weight: 700;
-  color: #1a1a1a;
+  font-size: var(--events-font-size-section);
+  font-weight: var(--events-font-weight-bold);
+  color: var(--events-color-text-dark);
   margin: 0;
 }
 
@@ -51,22 +186,22 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 2.5rem;
-  height: 2.5rem;
-  padding: 0 0.75rem;
-  background: #97212d;
-  color: #fff;
-  border-radius: 4px;
-  font-size: 1rem;
-  font-weight: 700;
+  min-width: var(--events-badge-size);
+  height: var(--events-badge-size);
+  padding: 0 var(--events-spacing-0-75);
+  background: var(--events-color-primary);
+  color: var(--events-color-white);
+  border-radius: var(--events-radius-md);
+  font-size: var(--events-font-size-lg);
+  font-weight: var(--events-font-weight-bold);
 }
 
 .events-section--past .events-section-header {
-  border-bottom-color: #999;
+  border-bottom-color: var(--events-color-text-subtle);
 }
 
 .events-section--past .events-count {
-  background: #666;
+  background: var(--events-color-past);
 }
 
 /* ========================================
@@ -76,30 +211,30 @@
 .toggle-past-events {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.6rem 1.25rem;
-  background: #fff;
-  border: 2px solid #ddd;
-  border-radius: 4px;
-  color: #333;
-  font-size: 0.9rem;
-  font-weight: 600;
+  gap: var(--events-spacing-0-5);
+  padding: var(--events-spacing-0-6) var(--events-spacing-1-25);
+  background: var(--events-color-white);
+  border: var(--events-border-medium) solid var(--events-color-border-medium);
+  border-radius: var(--events-radius-md);
+  color: var(--events-color-text-medium);
+  font-size: var(--events-font-size-md);
+  font-weight: var(--events-font-weight-normal);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all var(--events-transition-fast);
 }
 
 .toggle-past-events:hover {
-  background: #f5f5f5;
-  border-color: #999;
+  background: var(--events-color-bg-subtle);
+  border-color: var(--events-color-text-subtle);
 }
 
 .toggle-past-events:focus {
-  outline: 2px solid #97212d;
-  outline-offset: 2px;
+  outline: var(--events-border-medium) solid var(--events-color-primary);
+  outline-offset: var(--events-border-medium);
 }
 
 .toggle-icon {
-  transition: transform 0.3s;
+  transition: transform var(--events-transition-normal);
 }
 
 .toggle-past-events[aria-expanded="true"] .toggle-icon {
@@ -112,18 +247,16 @@
 
 .saho-events-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(var(--events-card-min), 1fr));
+  gap: var(--events-gap-md);
 }
 
-/* Past events grid - collapsed by default */
 .saho-events-grid--past {
   max-height: 0;
   overflow: hidden;
-  transition: max-height 0.3s ease;
+  transition: max-height var(--events-transition-normal) ease;
 }
 
-/* Past events grid - expanded when no upcoming events */
 .saho-events-grid--expanded {
   max-height: none;
   overflow: visible;
@@ -141,19 +274,19 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  background: #fff;
-  border: 1px solid #e0e0e0;
-  border-radius: 4px;
+  background: var(--events-color-white);
+  border: var(--events-border-thin) solid var(--events-color-border-light);
+  border-radius: var(--events-radius-md);
   overflow: hidden;
-  transition: all 0.2s;
+  transition: all var(--events-transition-fast);
   cursor: pointer;
   height: 100%;
 }
 
 .event-card-clickable:hover {
   transform: translateY(-4px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
-  border-color: #97212d;
+  box-shadow: var(--events-shadow-hover);
+  border-color: var(--events-color-primary);
 }
 
 .event-card__image-wrapper {
@@ -163,9 +296,9 @@
 
 .event-card__image {
   width: 100%;
-  height: 200px;
+  height: var(--events-image-height);
   overflow: hidden;
-  background: #f5f5f5;
+  background: var(--events-color-bg-subtle);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -175,11 +308,11 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.3s;
+  transition: transform var(--events-transition-normal);
 }
 
 .event-card__image--placeholder {
-  background: #e9ecef;
+  background: var(--events-color-bg-muted);
 }
 
 .event-card-clickable:hover .event-card__image img {
@@ -190,47 +323,47 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 1.25rem;
+  padding: var(--events-spacing-1-25);
 }
 
 .event-card__title {
-  font-size: 1.125rem;
-  font-weight: 700;
-  line-height: 1.4;
-  margin: 0 0 0.75rem;
+  font-size: var(--events-font-size-title-sm);
+  font-weight: var(--events-font-weight-bold);
+  line-height: var(--events-line-height-normal);
+  margin: 0 0 var(--events-spacing-0-75);
 }
 
 .event-card__title a {
-  color: #1a1a1a;
+  color: var(--events-color-text-dark);
   text-decoration: none;
 }
 
 .event-card__title a:hover {
-  color: #97212d;
+  color: var(--events-color-primary);
 }
 
 .event-card__meta {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-  font-size: 0.875rem;
-  color: #666;
+  gap: var(--events-spacing-0-5);
+  margin-bottom: var(--events-spacing-1);
+  font-size: var(--events-font-size-base);
+  color: var(--events-color-text-muted);
 }
 
 .event-card__date,
 .event-card__venue {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--events-spacing-0-5);
 }
 
 .event-card__excerpt {
   flex: 1;
-  font-size: 0.9rem;
-  line-height: 1.6;
-  color: #555;
-  margin-bottom: 1rem;
+  font-size: var(--events-font-size-md);
+  line-height: var(--events-line-height-loose);
+  color: var(--events-color-text-light);
+  margin-bottom: var(--events-spacing-1);
 }
 
 .event-card__action {
@@ -245,40 +378,40 @@
 
 .event-card__badge {
   position: absolute;
-  top: 0.75rem;
-  left: 0.75rem;
-  z-index: 10;
-  padding: 0.4rem 0.75rem;
-  border-radius: 3px;
-  font-size: 0.7rem;
-  font-weight: 700;
+  top: var(--events-spacing-0-75);
+  left: var(--events-spacing-0-75);
+  z-index: var(--events-z-index-overlay);
+  padding: var(--events-spacing-0-4) var(--events-spacing-0-75);
+  border-radius: var(--events-radius-sm);
+  font-size: var(--events-font-size-xs);
+  font-weight: var(--events-font-weight-bold);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .event-card__badge--upcoming {
-  background: #28a745;
-  color: #fff;
+  background: var(--events-color-success);
+  color: var(--events-color-white);
 }
 
 .event-card__badge--in-progress {
-  background: #dc3545;
-  color: #fff;
+  background: var(--events-color-danger);
+  color: var(--events-color-white);
 }
 
 .event-card__badge--past {
-  background: #666;
-  color: #fff;
+  background: var(--events-color-past);
+  color: var(--events-color-white);
 }
 
 .badge-pulse {
   display: inline-block;
   width: 6px;
   height: 6px;
-  background: #fff;
-  border-radius: 50%;
-  margin-right: 0.25rem;
-  animation: pulse 1.5s ease-in-out infinite;
+  background: var(--events-color-white);
+  border-radius: var(--events-radius-round);
+  margin-right: var(--events-spacing-0-25);
+  animation: pulse var(--events-transition-pulse) ease-in-out infinite;
 }
 
 @keyframes pulse {
@@ -288,24 +421,24 @@
 
 .event-card__countdown {
   position: absolute;
-  top: 0.75rem;
-  right: 0.75rem;
-  z-index: 10;
+  top: var(--events-spacing-0-75);
+  right: var(--events-spacing-0-75);
+  z-index: var(--events-z-index-overlay);
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
-  padding: 0.4rem 0.75rem;
-  background: #fff;
-  border: 1px solid #e0e0e0;
-  border-radius: 3px;
-  font-size: 0.7rem;
-  font-weight: 600;
-  color: #97212d;
+  gap: var(--events-spacing-0-35);
+  padding: var(--events-spacing-0-4) var(--events-spacing-0-75);
+  background: var(--events-color-white);
+  border: var(--events-border-thin) solid var(--events-color-border-light);
+  border-radius: var(--events-radius-sm);
+  font-size: var(--events-font-size-xs);
+  font-weight: var(--events-font-weight-normal);
+  color: var(--events-color-primary);
 }
 
 .event-card__countdown svg {
-  width: 12px;
-  height: 12px;
+  width: var(--events-icon-size-sm);
+  height: var(--events-icon-size-sm);
 }
 
 /* ========================================
@@ -313,11 +446,11 @@
    ======================================== */
 
 .event-card--past {
-  opacity: 0.7;
+  opacity: var(--events-opacity-past);
 }
 
 .event-card--past:hover {
-  opacity: 0.85;
+  opacity: var(--events-opacity-past-hover);
 }
 
 .event-card--past .event-card__image::after {
@@ -328,18 +461,16 @@
 }
 
 .event-card--past .event-card__title a {
-  color: #666 !important;
+  color: var(--events-color-text-muted) !important;
 }
-
-/* Past event button styling overridden if needed */
 
 /* ========================================
    IN-PROGRESS EVENTS
    ======================================== */
 
 .event-card--in-progress {
-  border-color: #dc3545;
-  border-width: 2px;
+  border-color: var(--events-color-danger);
+  border-width: var(--events-border-medium);
 }
 
 /* ========================================
@@ -348,24 +479,24 @@
 
 .saho-empty-state {
   text-align: center;
-  padding: 3rem 1rem;
-  color: #666;
-  font-size: 1rem;
+  padding: var(--events-spacing-3) var(--events-spacing-1);
+  color: var(--events-color-text-muted);
+  font-size: var(--events-font-size-lg);
 }
 
 .saho-no-events-message {
-  padding: 2rem;
-  background: #f8f9fa;
-  border: 1px solid #e0e0e0;
-  border-radius: 4px;
+  padding: var(--events-spacing-2);
+  background: var(--events-color-bg-light);
+  border: var(--events-border-thin) solid var(--events-color-border-light);
+  border-radius: var(--events-radius-md);
   text-align: center;
 }
 
 .saho-no-events-message p {
-  margin: 0 0 1rem;
-  font-size: 1rem;
-  line-height: 1.6;
-  color: #555;
+  margin: 0 0 var(--events-spacing-1);
+  font-size: var(--events-font-size-lg);
+  line-height: var(--events-line-height-loose);
+  color: var(--events-color-text-light);
 }
 
 .saho-no-events-message p:last-child {
@@ -373,15 +504,15 @@
 }
 
 .saho-contact-link {
-  color: #97212d;
-  font-weight: 600;
+  color: var(--events-color-primary);
+  font-weight: var(--events-font-weight-normal);
   text-decoration: none;
-  border-bottom: 2px solid transparent;
-  transition: border-color 0.2s;
+  border-bottom: var(--events-border-medium) solid transparent;
+  transition: border-color var(--events-transition-fast);
 }
 
 .saho-contact-link:hover {
-  border-bottom-color: #97212d;
+  border-bottom-color: var(--events-color-primary);
 }
 
 /* ========================================
@@ -390,23 +521,23 @@
 
 @media (max-width: 1024px) {
   .saho-events-grid {
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(var(--events-card-min-sm), 1fr));
   }
 }
 
 @media (max-width: 768px) {
   .saho-events-container {
-    padding: 1.5rem 1rem;
+    padding: var(--events-spacing-1-5) var(--events-spacing-1);
   }
 
   .events-section-header {
     flex-direction: column;
     align-items: flex-start;
-    gap: 1rem;
+    gap: var(--events-spacing-1);
   }
 
   .events-section-title {
-    font-size: 1.5rem;
+    font-size: var(--events-font-size-title-xl);
   }
 
   .toggle-past-events {
@@ -416,83 +547,87 @@
 
   .saho-events-grid {
     grid-template-columns: 1fr;
-    gap: 1rem;
+    gap: var(--events-gap-sm);
   }
 
   .event-card__image {
-    height: 180px;
+    height: var(--events-image-height-mobile);
   }
 }
 
 @media (max-width: 480px) {
   .events-section-title {
-    font-size: 1.25rem;
+    font-size: var(--events-font-size-title-lg);
   }
 
   .events-count {
-    min-width: 2rem;
-    height: 2rem;
-    font-size: 0.875rem;
+    min-width: var(--events-badge-size-sm);
+    height: var(--events-badge-size-sm);
+    font-size: var(--events-font-size-base);
   }
 
   .event-card__image {
-    height: 160px;
+    height: var(--events-image-height-sm);
   }
 
   .event-card__content {
-    padding: 1rem;
+    padding: var(--events-spacing-1);
   }
 
   .event-card__title {
-    font-size: 1rem;
+    font-size: var(--events-font-size-lg);
   }
 }
 
+/* ========================================
+   UPCOMING EVENTS BLOCK
+   ======================================== */
+
 .saho-upcoming-events-block {
-  margin: 2rem 0;
+  margin: var(--events-spacing-2) 0;
 }
 
 .upcoming-events-header {
   text-align: center;
-  margin-bottom: 2rem;
+  margin-bottom: var(--events-spacing-2);
 }
 
 .upcoming-events-header h2 {
-  color: #97212d;
-  font-size: 2.5rem;
-  font-weight: 700;
-  margin-bottom: 0.5rem;
+  color: var(--events-color-primary);
+  font-size: var(--events-font-size-header);
+  font-weight: var(--events-font-weight-bold);
+  margin-bottom: var(--events-spacing-0-5);
 }
 
 .upcoming-events-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 2rem;
-  margin-top: 2rem;
+  grid-template-columns: repeat(auto-fill, minmax(var(--events-card-min-sm), 1fr));
+  gap: var(--events-gap-lg);
+  margin-top: var(--events-spacing-2);
 }
 
 .upcoming-event-card {
-  background: white;
-  border-radius: 8px;
+  background: var(--events-color-white);
+  border-radius: var(--events-radius-lg);
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: var(--events-shadow-md);
+  transition: transform var(--events-transition-normal) ease, box-shadow var(--events-transition-normal) ease;
   display: flex;
   flex-direction: column;
 }
 
 .upcoming-event-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--events-shadow-lg);
 }
 
 .upcoming-event-card .event-image {
-  width: 230px;
-  height: 288px; /* Exact dimensions requested */
+  width: var(--events-image-width-portrait);
+  height: var(--events-image-height-portrait);
   overflow: hidden;
-  background: #f0f0f0;
+  background: var(--events-color-bg-placeholder);
   position: relative;
-  margin: 0 auto; /* Center the image */
+  margin: 0 auto;
 }
 
 .upcoming-event-card .event-image a {
@@ -505,8 +640,8 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center top; /* Focus on top of portrait images */
-  transition: transform 0.3s ease;
+  object-position: center top;
+  transition: transform var(--events-transition-normal) ease;
 }
 
 .upcoming-event-card:hover .event-image img {
@@ -514,17 +649,16 @@
 }
 
 .upcoming-event-card .event-content {
-  padding: 1.5rem;
+  padding: var(--events-spacing-1-5);
   flex: 1;
   display: flex;
   flex-direction: column;
 }
 
 .upcoming-event-card .event-title {
-  margin: 0 0 1rem;
-  font-size: 1.2rem;
-  line-height: 1.3;
-  /* Limit to 2 lines with ellipses */
+  margin: 0 0 var(--events-spacing-1);
+  font-size: var(--events-font-size-title-md);
+  line-height: var(--events-line-height-tight);
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -533,61 +667,60 @@
 }
 
 .upcoming-event-card .event-title a {
-  color: #333;
+  color: var(--events-color-text-medium);
   text-decoration: none;
-  transition: color 0.3s ease;
+  transition: color var(--events-transition-normal) ease;
 }
 
 .upcoming-event-card .event-title a:hover {
-  color: #97212d;
+  color: var(--events-color-primary);
 }
 
 .event-meta {
-  margin-bottom: 1rem;
+  margin-bottom: var(--events-spacing-1);
 }
 
 .event-date {
-  color: #97212d;
-  font-weight: 600;
-  font-size: 0.95rem;
-  margin-bottom: 0.5rem;
+  color: var(--events-color-primary);
+  font-weight: var(--events-font-weight-normal);
+  font-size: var(--events-font-size-normal);
+  margin-bottom: var(--events-spacing-0-5);
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--events-spacing-0-5);
 }
 
 .event-venue {
-  color: #666;
-  font-size: 0.9rem;
-  margin-bottom: 1rem;
+  color: var(--events-color-text-muted);
+  font-size: var(--events-font-size-md);
+  margin-bottom: var(--events-spacing-1);
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--events-spacing-0-5);
 }
 
 /* SVG Icon Styles */
 .icon-calendar,
 .icon-location {
-  width: 16px;
-  height: 16px;
+  width: var(--events-icon-size);
+  height: var(--events-icon-size);
   flex-shrink: 0;
 }
 
 .icon-calendar {
-  color: #97212d;
+  color: var(--events-color-primary);
 }
 
 .icon-location {
-  color: #666;
+  color: var(--events-color-text-muted);
 }
 
 .event-excerpt {
-  color: #555;
-  line-height: 1.5;
-  font-size: 0.9rem;
+  color: var(--events-color-text-light);
+  line-height: var(--events-line-height-relaxed);
+  font-size: var(--events-font-size-md);
   flex: 1;
-  margin-bottom: 1rem;
-  /* Limit to 3 lines with ellipses */
+  margin-bottom: var(--events-spacing-1);
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
@@ -601,117 +734,100 @@
 
 .read-more-link {
   display: inline-block;
-  padding: 0.5rem 1rem;
-  background: #97212d;
-  color: white;
+  padding: var(--events-spacing-0-5) var(--events-spacing-1);
+  background: var(--events-color-primary);
+  color: var(--events-color-white);
   text-decoration: none;
-  border-radius: 4px;
-  font-size: 0.9rem;
-  transition: background 0.3s ease;
+  border-radius: var(--events-radius-md);
+  font-size: var(--events-font-size-md);
+  transition: background var(--events-transition-normal) ease;
   align-self: flex-start;
-  border: 2px solid transparent;
+  border: var(--events-border-medium) solid transparent;
 }
 
 .read-more-link:hover,
 .read-more-link:focus {
-  background: #7a1b24;
-  color: white !important;
+  background: var(--events-color-primary-dark);
+  color: var(--events-color-white) !important;
   text-decoration: none;
 }
 
 .read-more-link:focus {
-  outline: 2px solid #ffd700;
-  outline-offset: 2px;
+  outline: var(--events-border-medium) solid #ffd700;
+  outline-offset: var(--events-border-medium);
 }
 
-/* View All Events Link */
+/* ========================================
+   VIEW ALL EVENTS LINK
+   ======================================== */
+
 .view-all-events {
   text-align: center;
-  margin-top: 2rem;
+  margin-top: var(--events-spacing-2);
 }
 
 .view-all-link {
   display: inline-block;
-  padding: 0.75rem 2rem;
-  background: #97212d;
-  color: white;
+  padding: var(--events-spacing-0-75) var(--events-spacing-2);
+  background: var(--events-color-primary);
+  color: var(--events-color-white);
   text-decoration: none;
-  border-radius: 4px;
-  font-size: 1.1rem;
-  font-weight: 600;
-  transition: background 0.3s ease;
-  border: 2px solid transparent;
+  border-radius: var(--events-radius-md);
+  font-size: var(--events-font-size-xl);
+  font-weight: var(--events-font-weight-normal);
+  transition: background var(--events-transition-normal) ease;
+  border: var(--events-border-medium) solid transparent;
 }
 
 .view-all-link:hover,
 .view-all-link:focus {
-  background: #7a1b24;
-  color: white !important;
+  background: var(--events-color-primary-dark);
+  color: var(--events-color-white) !important;
   text-decoration: none;
 }
 
 .view-all-link:focus {
-  outline: 2px solid #ffd700;
-  outline-offset: 2px;
+  outline: var(--events-border-medium) solid #ffd700;
+  outline-offset: var(--events-border-medium);
 }
 
-/* No events message */
+/* ========================================
+   NO EVENTS MESSAGE
+   ======================================== */
+
 .no-events-message {
   text-align: center;
-  padding: 2rem;
-  color: #666;
+  padding: var(--events-spacing-2);
+  color: var(--events-color-text-muted);
   font-style: italic;
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
-  .upcoming-events-header h2 {
-    font-size: 2rem;
-  }
-
-  .upcoming-events-grid {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
-  }
-
-  .upcoming-event-card .event-image {
-    width: 200px; /* Slightly smaller on mobile */
-    height: 288px; /* Maintain portrait ratio */
-  }
-
-  .upcoming-event-card .event-content {
-    padding: 1.25rem;
-  }
-}
-
-/* All Upcoming Events Page Styles */
-.all-upcoming-events-page {
-  background: #f8f9fa;
-  min-height: 100vh;
-}
+/* ========================================
+   ALL EVENTS PAGE
+   ======================================== */
 
 .all-events-header {
-  background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
-  color: white;
-  padding: 3rem 0 2rem;
+  background: linear-gradient(135deg, var(--events-color-gradient-start) 0%, var(--events-color-gradient-end) 100%);
+  color: var(--events-color-white);
+  padding: var(--events-spacing-3) 0 var(--events-spacing-2);
   position: relative;
 }
 
 .all-events-header .page-title {
-  font-size: 2.5rem;
-  font-weight: 700;
-  margin: 0 0 1rem;
+  font-size: var(--events-font-size-header);
+  font-weight: var(--events-font-weight-bold);
+  margin: 0 0 var(--events-spacing-1);
   text-align: center;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  text-shadow: var(--events-shadow-text);
 }
 
 .all-events-header .page-description {
   max-width: 700px;
   margin: 0 auto;
   text-align: center;
-  font-size: 1.1rem;
-  line-height: 1.5;
-  opacity: 0.9;
+  font-size: var(--events-font-size-xl);
+  line-height: var(--events-line-height-relaxed);
+  opacity: var(--events-opacity-header);
 }
 
 .all-events-header .page-description p {
@@ -722,9 +838,12 @@
   margin-bottom: 0;
 }
 
-/* Force Grid Layout - Override any default view styles */
+/* ========================================
+   GRID LAYOUT OVERRIDES
+   ======================================== */
+
 .view-content .container {
-  padding: 2rem 1rem !important;
+  padding: var(--events-spacing-2) var(--events-spacing-1) !important;
   max-width: 1200px !important;
   margin: 0 auto !important;
 }
@@ -733,15 +852,14 @@
 .view-content .all-events-grid,
 .views-view-unformatted {
   display: grid !important;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)) !important;
-  gap: 1.5rem !important;
+  grid-template-columns: repeat(auto-fit, minmax(var(--events-card-min-xs), 1fr)) !important;
+  gap: var(--events-gap-md) !important;
   max-width: 1200px !important;
   margin: 0 auto !important;
   padding: 0 !important;
   list-style: none !important;
 }
 
-/* Override default Drupal view styles */
 .view-all-upcoming-events .view-content {
   display: block !important;
 }
@@ -753,42 +871,46 @@
   list-style: none !important;
 }
 
-/* ALL EVENTS GRID - Mobile First */
+/* ========================================
+   ALL EVENTS GRID - MOBILE FIRST
+   ======================================== */
+
 .all-events-grid {
   display: grid !important;
   grid-template-columns: 1fr !important;
-  gap: 1.5rem !important;
-  margin: 2rem 0 !important;
+  gap: var(--events-gap-md) !important;
+  margin: var(--events-spacing-2) 0 !important;
   padding: 0 !important;
   list-style: none !important;
 }
 
-/* Tablet: 2 columns */
 @media (min-width: 768px) {
   .all-events-grid {
     grid-template-columns: repeat(2, 1fr) !important;
-    gap: 2rem !important;
+    gap: var(--events-gap-lg) !important;
   }
 }
 
-/* Desktop: 3 columns */
 @media (min-width: 1024px) {
   .all-events-grid {
     grid-template-columns: repeat(3, 1fr) !important;
-    gap: 2rem !important;
+    gap: var(--events-gap-lg) !important;
   }
 }
 
-/* EVENT CARD - Mobile First */
+/* ========================================
+   EVENT CARD - MOBILE FIRST
+   ======================================== */
+
 .all-events-grid .event-card-clickable,
 .views-row .event-card-clickable,
 .event-card-clickable {
-  background: white !important;
-  border-radius: 8px !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+  background: var(--events-color-white) !important;
+  border-radius: var(--events-radius-lg) !important;
+  box-shadow: var(--events-shadow-sm) !important;
   overflow: hidden !important;
-  transition: all 0.3s ease !important;
-  border: 1px solid #e5e7eb !important;
+  transition: all var(--events-transition-normal) ease !important;
+  border: var(--events-border-thin) solid var(--events-color-border-subtle) !important;
   height: 100% !important;
   display: flex !important;
   flex-direction: column !important;
@@ -798,25 +920,27 @@
 }
 
 .event-card-clickable:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+  box-shadow: var(--events-shadow-card) !important;
   transform: translateY(-2px) !important;
-  border-color: #97212d !important;
+  border-color: var(--events-color-primary) !important;
 }
 
-/* Event Image - Mobile First */
+/* ========================================
+   EVENT IMAGE - MOBILE FIRST
+   ======================================== */
+
 .event-card__image,
 .event-card-clickable .event-card__image {
   position: relative !important;
   width: 100% !important;
-  height: 200px !important;
+  height: var(--events-image-height) !important;
   overflow: hidden !important;
-  background: #f3f4f6 !important;
+  background: var(--events-color-bg-gray) !important;
   margin: 0 !important;
   padding: 0 !important;
   flex-shrink: 0 !important;
 }
 
-/* Ensure nested field wrapper doesn't break layout */
 .event-card__image > div,
 .event-card__image .field,
 .event-card__image .field__item {
@@ -833,7 +957,7 @@
   height: 100% !important;
   object-fit: cover !important;
   object-position: center !important;
-  transition: transform 0.3s ease !important;
+  transition: transform var(--events-transition-normal) ease !important;
   display: block !important;
   margin: 0 !important;
   padding: 0 !important;
@@ -843,39 +967,44 @@
   transform: scale(1.05) !important;
 }
 
-/* Tablet and up - taller images */
 @media (min-width: 768px) {
   .event-card__image,
   .event-card-clickable .event-card__image {
-    height: 220px !important;
+    height: var(--events-image-height-tablet) !important;
   }
 }
 
-/* Card Content Area - Mobile First */
+/* ========================================
+   CARD CONTENT - MOBILE FIRST
+   ======================================== */
+
 .event-card__content,
 .event-card-clickable .event-card__content {
-  padding: 1rem !important;
+  padding: var(--events-spacing-1) !important;
   flex-grow: 1 !important;
   display: flex !important;
   flex-direction: column !important;
-  gap: 0.75rem !important;
+  gap: var(--events-spacing-0-75) !important;
 }
 
 @media (min-width: 768px) {
   .event-card__content,
   .event-card-clickable .event-card__content {
-    padding: 1.25rem !important;
+    padding: var(--events-spacing-1-25) !important;
   }
 }
 
-/* Event Title - Mobile First */
+/* ========================================
+   EVENT TITLE - MOBILE FIRST
+   ======================================== */
+
 .event-card__title,
 .event-card-clickable .event-card__title {
-  font-size: 1.125rem !important;
-  font-weight: 700 !important;
+  font-size: var(--events-font-size-title-sm) !important;
+  font-weight: var(--events-font-weight-bold) !important;
   color: #1f2937 !important;
-  margin: 0 0 0.5rem 0 !important;
-  line-height: 1.4 !important;
+  margin: 0 0 var(--events-spacing-0-5) 0 !important;
+  line-height: var(--events-line-height-normal) !important;
   display: -webkit-box !important;
   -webkit-line-clamp: 2 !important;
   -webkit-box-orient: vertical !important;
@@ -885,7 +1014,7 @@
 @media (min-width: 768px) {
   .event-card__title,
   .event-card-clickable .event-card__title {
-    font-size: 1.25rem !important;
+    font-size: var(--events-font-size-title-lg) !important;
   }
 }
 
@@ -893,57 +1022,61 @@
 .event-card-clickable .event-card__title a {
   color: inherit !important;
   text-decoration: none !important;
-  transition: color 0.2s ease !important;
+  transition: color var(--events-transition-fast) ease !important;
 }
 
 .event-card__title a:hover,
 .event-card-clickable .event-card__title a:hover {
-  color: #97212d !important;
+  color: var(--events-color-primary) !important;
 }
 
-/* Event Meta */
+/* ========================================
+   EVENT META
+   ======================================== */
+
 .event-card__meta,
 .event-card-clickable .event-card__meta {
   display: flex !important;
   flex-direction: column !important;
-  gap: 0.5rem !important;
-  margin: 0 0 0.75rem 0 !important;
+  gap: var(--events-spacing-0-5) !important;
+  margin: 0 0 var(--events-spacing-0-75) 0 !important;
 }
 
-/* Date Badge - SAHO Red */
 .event-card__date,
 .event-card-clickable .event-card__date {
-  background: #97212d !important;
-  color: white !important;
-  padding: 0.375rem 0.75rem !important;
-  border-radius: 4px !important;
-  font-size: 0.813rem !important;
-  font-weight: 600 !important;
+  background: var(--events-color-primary) !important;
+  color: var(--events-color-white) !important;
+  padding: var(--events-spacing-0-375) var(--events-spacing-0-75) !important;
+  border-radius: var(--events-radius-md) !important;
+  font-size: var(--events-font-size-sm) !important;
+  font-weight: var(--events-font-weight-normal) !important;
   display: inline-flex !important;
   align-items: center !important;
-  gap: 0.25rem !important;
+  gap: var(--events-spacing-0-25) !important;
   width: fit-content !important;
   margin: 0 !important;
 }
 
-/* Venue */
 .event-card__venue,
 .event-card-clickable .event-card__venue {
   color: #6b7280 !important;
-  font-size: 0.875rem !important;
+  font-size: var(--events-font-size-base) !important;
   display: flex !important;
   align-items: flex-start !important;
-  gap: 0.25rem !important;
+  gap: var(--events-spacing-0-25) !important;
   margin: 0 !important;
-  line-height: 1.4 !important;
+  line-height: var(--events-line-height-normal) !important;
 }
 
-/* Excerpt/Description */
+/* ========================================
+   EXCERPT
+   ======================================== */
+
 .event-card__excerpt,
 .event-card-clickable .event-card__excerpt {
   color: #4b5563 !important;
-  font-size: 0.875rem !important;
-  line-height: 1.6 !important;
+  font-size: var(--events-font-size-base) !important;
+  line-height: var(--events-line-height-loose) !important;
   display: -webkit-box !important;
   -webkit-line-clamp: 3 !important;
   -webkit-box-orient: vertical !important;
@@ -952,29 +1085,35 @@
   margin: 0 !important;
 }
 
-/* Call to Action Button */
+/* ========================================
+   ACTION BUTTON
+   ======================================== */
+
 .event-card__action {
   margin-top: auto !important;
-  padding-top: 1rem !important;
+  padding-top: var(--events-spacing-1) !important;
 }
 
 /* Button styling now handled by saho-button component */
 
-/* Empty State */
+/* ========================================
+   EMPTY STATE
+   ======================================== */
+
 .view-empty .empty-events-message {
   text-align: center;
-  padding: 3rem 2rem;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  margin: 2rem auto;
+  padding: var(--events-spacing-3) var(--events-spacing-2);
+  background: var(--events-color-white);
+  border-radius: var(--events-radius-xl);
+  box-shadow: var(--events-shadow-md);
+  margin: var(--events-spacing-2) auto;
   max-width: 500px;
 }
 
 .view-empty .empty-events-message h3 {
-  font-size: 1.5rem;
-  color: #2c3e50;
-  margin: 0 0 1rem;
+  font-size: var(--events-font-size-title-xl);
+  color: var(--events-color-gradient-start);
+  margin: 0 0 var(--events-spacing-1);
 }
 
 .view-empty .empty-events-message p {
@@ -982,22 +1121,43 @@
   margin: 0;
 }
 
-/* Mobile Responsive */
+/* ========================================
+   MOBILE RESPONSIVE
+   ======================================== */
+
 @media (max-width: 768px) {
   .all-events-header .page-title {
-    font-size: 2rem;
+    font-size: var(--events-font-size-header-sm);
   }
 
   .all-events-grid {
     grid-template-columns: 1fr;
-    gap: 1rem;
+    gap: var(--events-gap-sm);
   }
 
   .node--type-upcomingevent .field--name-field-featured-image {
-    height: 160px;
+    height: var(--events-image-height-sm);
   }
 
   .node--type-upcomingevent .node__content {
-    padding: 1rem;
+    padding: var(--events-spacing-1);
+  }
+
+  .upcoming-events-header h2 {
+    font-size: var(--events-font-size-header-sm);
+  }
+
+  .upcoming-events-grid {
+    grid-template-columns: 1fr;
+    gap: var(--events-gap-md);
+  }
+
+  .upcoming-event-card .event-image {
+    width: var(--events-image-width-mobile);
+    height: var(--events-image-height-portrait);
+  }
+
+  .upcoming-event-card .event-content {
+    padding: var(--events-spacing-1-25);
   }
 }

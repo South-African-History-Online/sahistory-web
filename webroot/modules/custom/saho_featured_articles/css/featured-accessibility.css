@@ -1,7 +1,24 @@
-/* Accessibility improvements for featured content navigation */
+/**
+ * Accessibility improvements for featured content navigation
+ *
+ * Inline design tokens - NO external dependencies
+ * Ensures accessible focus states and keyboard navigation
+ */
 
-/* Make category buttons look like the original links */
 .saho-category-item {
+  /* === Inline Design Tokens for Accessibility === */
+
+  /* Info/Focus Color */
+  --featured-a11y-color-info: #17a2b8;          /* Info blue for focus */
+  --featured-a11y-color-info-dark: #117a8b;     /* Darker info blue for enhanced focus */
+
+  /* Focus States */
+  --featured-a11y-focus-width: 2px;
+  --featured-a11y-focus-width-enhanced: 3px;
+  --featured-a11y-focus-offset: 2px;
+  --featured-a11y-focus-radius: 2px;
+
+  /* Base styles - make category buttons look like the original links */
   background: transparent;
   border: none;
   width: 100%;
@@ -15,8 +32,8 @@
 .saho-category-item:hover,
 .saho-category-item:focus {
   text-decoration: none;
-  outline: 2px solid var(--color-info);
-  outline-offset: 2px;
+  outline: var(--featured-a11y-focus-width) solid var(--featured-a11y-color-info);
+  outline-offset: var(--featured-a11y-focus-offset);
 }
 
 .saho-category-item:active {
@@ -31,15 +48,15 @@
 
 /* Focus indicators for better keyboard navigation */
 .saho-category-item:focus-visible {
-  outline: 3px solid darken(var(--color-info), 10%);
-  outline-offset: 2px;
-  border-radius: 2px;
+  outline: var(--featured-a11y-focus-width-enhanced) solid var(--featured-a11y-color-info-dark);
+  outline-offset: var(--featured-a11y-focus-offset);
+  border-radius: var(--featured-a11y-focus-radius);
 }
 
 /* High contrast focus for accessibility */
 @media (prefers-contrast: high) {
   .saho-category-item:focus-visible {
-    outline: 3px solid currentColor;
+    outline: var(--featured-a11y-focus-width-enhanced) solid currentColor;
   }
 }
 

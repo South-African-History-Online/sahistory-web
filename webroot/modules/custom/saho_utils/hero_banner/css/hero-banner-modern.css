@@ -1,9 +1,42 @@
 /**
  * Hero Banner - SAHO Site Style
  * Matching the exact design from the screenshot
+ *
+ * Uses component-scoped inline CSS custom properties for complete independence.
+ * No external SCSS variables or dependencies.
  */
 
 .hero-banner {
+  /* Inline design tokens - NO external dependencies */
+  --hero-color-primary: #990000;          /* SAHO Deep Heritage Red */
+  --hero-color-primary-dark: #8b0000;     /* Darker red for interactions */
+  --hero-color-white: #ffffff;             /* White */
+  --hero-color-accent: #d4af37;            /* Gold accent */
+  --hero-color-green-renewal: #2d5016;     /* Green renewal */
+
+  /* Spacing */
+  --hero-spacing-xs: 0.375rem;
+  --hero-spacing-sm: 1rem;
+  --hero-spacing-md: 1.5rem;
+  --hero-spacing-lg: 2rem;
+
+  /* Typography */
+  --hero-font-size-base: 1rem;
+  --hero-font-size-md: 1.125rem;
+  --hero-font-size-4xl: 2.5rem;
+
+  /* Button */
+  --hero-button-padding-md: 0.625rem 1.875rem;
+  --hero-button-font-size-sm: 0.875rem;
+  --hero-button-radius-pill: 25px;
+
+  /* Shadows */
+  --hero-shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+  --hero-shadow-hover: 0 4px 8px rgba(0, 0, 0, 0.15);
+  --hero-text-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --hero-text-shadow-md: 0 2px 4px rgba(0, 0, 0, 0.5);
+
+  /* Layout */
   position: relative;
   width: 100%;
   min-height: 320px;
@@ -16,7 +49,7 @@
   overflow: hidden;
   margin: 0;
   border-radius: 0;
-  padding: 2rem 0;
+  padding: var(--hero-spacing-lg) 0;
 }
 
 /* Dark overlay matching the site example */
@@ -35,7 +68,7 @@
   position: relative;
   z-index: 2;
   text-align: center;
-  padding: 2rem;
+  padding: var(--hero-spacing-lg);
   max-width: 700px;
   margin: 0 auto;
 }
@@ -51,54 +84,54 @@
 /* Title styling - bright eye-catching white */
 .hero-banner__title {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-  font-size: var(--font-size-4xl);
+  font-size: var(--hero-font-size-4xl);
   font-weight: 600;
-  color: var(--color-white) !important;
-  margin: 0 0 var(--spacing-xs) 0;
+  color: var(--hero-color-white) !important;
+  margin: 0 0 var(--hero-spacing-xs) 0;
   line-height: 1.2;
   letter-spacing: -0.5px;
-  text-shadow: var(--text-shadow-md);
+  text-shadow: var(--hero-text-shadow-md);
 }
 
 /* Title color variations - SAHO brand colors */
 .hero-banner__title--white,
 .hero-banner h1.hero-banner__title--white,
 .hero-banner .hero-banner__title--white {
-  color: var(--color-white) !important;
+  color: var(--hero-color-white) !important;
   font-weight: 600 !important;
-  text-shadow: var(--text-shadow-md) !important;
+  text-shadow: var(--hero-text-shadow-md) !important;
 }
 
 .hero-banner__title--red,
 .hero-banner h1.hero-banner__title--red,
 .hero-banner .hero-banner__title--red {
-  color: var(--color-primary) !important;
+  color: var(--hero-color-primary) !important;
   font-weight: 600 !important;
-  text-shadow: var(--text-shadow-sm) !important;
+  text-shadow: var(--hero-text-shadow-sm) !important;
 }
 
 .hero-banner__title--gold,
 .hero-banner h1.hero-banner__title--gold,
 .hero-banner .hero-banner__title--gold {
-  color: var(--color-accent) !important;
+  color: var(--hero-color-accent) !important;
   font-weight: 600 !important;
-  text-shadow: var(--text-shadow-sm) !important;
+  text-shadow: var(--hero-text-shadow-sm) !important;
 }
 
 .hero-banner__title--green,
 .hero-banner h1.hero-banner__title--green,
 .hero-banner .hero-banner__title--green {
-  color: var(--color-green-renewal) !important;
+  color: var(--hero-color-green-renewal) !important;
   font-weight: 600 !important;
-  text-shadow: var(--text-shadow-sm) !important;
+  text-shadow: var(--hero-text-shadow-sm) !important;
 }
 
 /* Subtitle styling */
 .hero-banner__subtitle {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-  font-size: var(--font-size-md);
-  color: var(--color-white) !important;
-  margin: 0 0 var(--spacing-xs) 0;
+  font-size: var(--hero-font-size-md);
+  color: var(--hero-color-white) !important;
+  margin: 0 0 var(--hero-spacing-xs) 0;
   font-weight: 400;
   line-height: 1.5;
   text-shadow: none;
@@ -108,9 +141,9 @@
 /* Body text */
 .hero-banner__body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-  font-size: var(--font-size-base);
+  font-size: var(--hero-font-size-base);
   color: rgba(255, 255, 255, 0.9) !important;
-  margin: 0 0 var(--spacing-sm) 0;
+  margin: 0 0 var(--hero-spacing-sm) 0;
   line-height: 1.6;
   text-shadow: none;
   max-width: 500px;
@@ -122,7 +155,7 @@
 }
 
 .hero-banner__body p {
-  margin: 0 0 var(--spacing-xs) 0;
+  margin: 0 0 var(--hero-spacing-xs) 0;
   color: rgba(255, 255, 255, 0.9) !important;
 }
 
@@ -132,26 +165,26 @@
 
 /* CTA Button - SAHO standard button style */
 .hero-banner__cta {
-  margin-top: var(--spacing-sm);
+  margin-top: var(--hero-spacing-sm);
 }
 
 .hero-banner__button,
 .hero-banner__button.btn,
 .hero-banner__button.btn-primary {
   display: inline-block;
-  padding: var(--button-padding-md);
-  background: var(--color-primary);
-  color: var(--color-white) !important;
+  padding: var(--hero-button-padding-md);
+  background: var(--hero-color-primary);
+  color: var(--hero-color-white) !important;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-  font-size: var(--button-font-size-sm);
+  font-size: var(--hero-button-font-size-sm);
   font-weight: 600;
   text-decoration: none;
-  border: 2px solid var(--color-primary);
-  border-radius: var(--button-radius-pill);
+  border: 2px solid var(--hero-color-primary);
+  border-radius: var(--hero-button-radius-pill);
   transition: all 0.3s ease;
   letter-spacing: 0.025em;
   text-transform: none;
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--hero-shadow-sm);
   cursor: pointer;
 }
 
@@ -160,11 +193,11 @@
 .hero-banner__button.btn-primary:hover,
 a.hero-banner__button:hover,
 .hero-banner__cta a:hover {
-  background: var(--color-white) !important;
-  color: var(--color-primary) !important;
-  border-color: var(--color-primary) !important;
+  background: var(--hero-color-white) !important;
+  color: var(--hero-color-primary) !important;
+  border-color: var(--hero-color-primary) !important;
   text-decoration: none !important;
-  box-shadow: var(--shadow-hover);
+  box-shadow: var(--hero-shadow-hover);
   transform: translateY(-1px);
 }
 
@@ -172,7 +205,7 @@ a.hero-banner__button:hover,
 .hero-banner__button.btn:active,
 .hero-banner__button.btn-primary:active {
   transform: translateY(0);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--hero-shadow-sm);
 }
 
 .hero-banner__button:focus,
@@ -186,26 +219,26 @@ a.hero-banner__button:hover,
 @media (max-width: 768px) {
   .hero-banner {
     min-height: 280px;
-    padding: 1.5rem 0;
+    padding: var(--hero-spacing-md) 0;
   }
 
   .hero-banner__content {
-    padding: 1.5rem;
+    padding: var(--hero-spacing-md);
   }
 
   .hero-banner__title {
     font-size: 1.875rem;
-    margin-bottom: 0.375rem;
+    margin-bottom: var(--hero-spacing-xs);
   }
 
   .hero-banner__subtitle {
     font-size: 1rem;
-    margin-bottom: 0.375rem;
+    margin-bottom: var(--hero-spacing-xs);
   }
 
   .hero-banner__body {
     font-size: 0.875rem;
-    margin-bottom: 1rem;
+    margin-bottom: var(--hero-spacing-sm);
   }
 
   .hero-banner__button,
@@ -219,21 +252,21 @@ a.hero-banner__button:hover,
 @media (max-width: 480px) {
   .hero-banner {
     min-height: 300px;
-    padding: 2rem 0;
+    padding: var(--hero-spacing-lg) 0;
   }
 
   .hero-banner__content {
-    padding: 1rem;
+    padding: var(--hero-spacing-sm);
   }
 
   .hero-banner__title {
     font-size: 1.625rem;
-    margin-bottom: 0.5rem;
+    margin-bottom: var(--hero-spacing-xs);
   }
 
   .hero-banner__subtitle {
     font-size: 0.9375rem;
-    margin-bottom: 0.5rem;
+    margin-bottom: var(--hero-spacing-xs);
   }
 
   .hero-banner__body {
@@ -254,7 +287,7 @@ a.hero-banner__button:hover,
 @media (max-width: 360px) {
   .hero-banner {
     min-height: 320px;
-    padding: 1.5rem 0;
+    padding: var(--hero-spacing-md) 0;
   }
 
   .hero-banner__content {
@@ -278,7 +311,7 @@ a.hero-banner__button:hover,
 
   .hero-banner__body {
     font-size: 0.75rem;
-    margin-bottom: 1rem;
+    margin-bottom: var(--hero-spacing-sm);
   }
 
   .hero-banner__button,
@@ -294,13 +327,13 @@ a.hero-banner__button:hover,
 .hero-banner__cta .field--name-field-call-to-action-button a {
   display: inline-block;
   padding: 0.625rem 1.875rem !important;
-  background: var(--color-primary) !important;
-  color: var(--color-white) !important;
+  background: var(--hero-color-primary) !important;
+  color: var(--hero-color-white) !important;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
   font-size: 0.875rem;
   font-weight: 600;
   text-decoration: none !important;
-  border: 2px solid var(--color-primary) !important;
+  border: 2px solid var(--hero-color-primary) !important;
   border-radius: 25px !important;
   transition: all 0.3s ease;
   letter-spacing: 0.025em;
@@ -311,9 +344,9 @@ a.hero-banner__button:hover,
 
 .hero-banner__cta a:hover,
 .hero-banner__cta .field--name-field-call-to-action-button a:hover {
-  background: var(--color-white) !important;
-  color: var(--color-primary) !important;
-  border-color: var(--color-primary) !important;
+  background: var(--hero-color-white) !important;
+  color: var(--hero-color-primary) !important;
+  border-color: var(--hero-color-primary) !important;
   text-decoration: none !important;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
   transform: translateY(-1px);
@@ -329,16 +362,16 @@ a.hero-banner__button:hover,
 .hero-banner__button--ghost,
 .hero-banner__cta .hero-banner__button--ghost {
   background: transparent !important;
-  color: var(--color-white) !important;
-  border: 2px solid var(--color-white) !important;
+  color: var(--hero-color-white) !important;
+  border: 2px solid var(--hero-color-white) !important;
 }
 
 .hero-banner__button--ghost:hover,
 .hero-banner__cta .hero-banner__button--ghost:hover,
 a.hero-banner__button--ghost:hover {
-  background: var(--color-white) !important;
-  color: var(--color-primary) !important;
-  border-color: var(--color-white) !important;
+  background: var(--hero-color-white) !important;
+  color: var(--hero-color-primary) !important;
+  border-color: var(--hero-color-white) !important;
   text-decoration: none !important;
   box-shadow: 0 4px 8px rgba(255, 255, 255, 0.2);
   transform: translateY(-1px);
@@ -354,5 +387,5 @@ a.hero-banner__button--ghost:hover {
 a.hero-banner__button,
 a.hero-banner__button:visited,
 a.hero-banner__button:link {
-  color: var(--color-white) !important;
+  color: var(--hero-color-white) !important;
 }

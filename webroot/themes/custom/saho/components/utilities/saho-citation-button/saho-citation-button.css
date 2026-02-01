@@ -1,19 +1,26 @@
 /**
- * SAHO Citation Button Component Styles
+ * SAHO Citation Button Component - Modern Self-Contained CSS
  *
- * Extends saho-button component with citation-specific features:
+ * Extends saho-button with citation-specific features.
+ * Pure CSS, NO external dependencies.
+ *
+ * Features:
  * - Modal integration for citation display
- * - Loading states for citation generation
- * - Success states for copy-to-clipboard feedback
- *
- * Inherits all base button styling from saho-button component.
- * Only citation-specific styles are defined here.
+ * - Loading spinner animation
+ * - Success state for copy feedback
+ * - Toolbar and floating position variants
  */
 
-/* Base Citation Button - inherits from .saho-button */
+/* Base Citation Button - inherits from .saho-button via template */
 .saho-citation-button {
-  /* Inherit all base button styles by using .saho-button in template */
-  /* Only add citation-specific overrides here */
+  /* Citation-specific design tokens */
+  --cite-color-success: #22c55e;           /* Green for success state */
+  --cite-radius-toolbar: 8px;              /* Smaller radius for toolbar */
+  --cite-shadow-floating: 0 6px 20px rgba(153, 0, 0, 0.3);
+  --cite-shadow-floating-hover: 0 8px 25px rgba(153, 0, 0, 0.4);
+
+  /* Component inherits all base button styles from .saho-button class */
+  /* Only citation-specific overrides below */
 }
 
 /* Icon Styling - citation-specific icon behavior */
@@ -65,46 +72,55 @@
 
 /* Success State - shown after successful copy */
 .saho-citation-button--success {
-  background: var(--color-success);
-  border-color: var(--color-success);
+  background: var(--cite-color-success);
+  border-color: var(--cite-color-success);
   color: white;
 }
 
 .saho-citation-button--success:hover {
-  background: #22c55e;
-  border-color: #22c55e;
+  background: #1ea34f; /* Darker green on hover */
+  border-color: #1ea34f;
 }
 
-/* Position Variants - for toolbar and floating placements */
+/* Position Variants */
+
+/* Toolbar placement - smaller radius for compact UI */
 .saho-citation-button--toolbar {
-  border-radius: var(--button-radius-sm);
+  border-radius: var(--cite-radius-toolbar);
 }
 
+/* Floating placement - fixed position with enhanced shadow */
 .saho-citation-button--floating {
   position: fixed;
   bottom: 20px;
   right: 20px;
   z-index: 1000;
-  box-shadow: 0 6px 20px rgba(153, 0, 0, 0.3);
-  border-radius: var(--button-radius-pill);
+  box-shadow: var(--cite-shadow-floating);
+  border-radius: 25px; /* Pill shape */
 }
 
 .saho-citation-button--floating:hover {
-  box-shadow: 0 8px 25px rgba(153, 0, 0, 0.4);
+  box-shadow: var(--cite-shadow-floating-hover);
 }
 
-/* Reduced Motion */
+/* Accessibility - Reduced Motion */
 @media (prefers-reduced-motion: reduce) {
   .saho-citation-button__icon svg {
     transition: none;
   }
 
+  .saho-citation-button:hover .saho-citation-button__icon svg {
+    transform: none;
+  }
+
   .saho-citation-button--loading::after {
     animation: none;
+    /* Show static indicator instead */
+    opacity: 0.6;
   }
 }
 
-/* Print Styles - hide citation buttons in print */
+/* Print Styles - hide citation buttons when printing */
 @media print {
   .saho-citation-button {
     display: none;
@@ -116,5 +132,6 @@
   .saho-citation-button--floating {
     bottom: 16px;
     right: 16px;
+    padding: 0.625rem 1rem; /* Slightly smaller on mobile */
   }
 }
