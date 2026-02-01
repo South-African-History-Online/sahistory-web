@@ -1,18 +1,37 @@
 /**
  * Layout Builder Overrides
- * Ensures blocks fill their allocated width in Bootstrap grid two-column sections
+ * Ensures blocks fill their allocated width in Bootstrap grid layouts
+ *
+ * GENERAL FIX: Blocks inside ANY Bootstrap column should fill that column,
+ * not be constrained by the default max-width: 1200px setting.
  */
 
-/* Bootstrap Grid: Allow blocks to fill their column width */
-.layout-builder__layout.row > .col-lg-6 .block-section,
-.layout-builder__layout.row > [class*="col-"] .block-section {
+/* Bootstrap Grid: Allow blocks to fill their column width in ALL grid contexts */
+.layout-builder__layout.row > [class*="col-"] .block-section,
+.row > [class*="col-"] .block-section {
   max-width: none !important;
   width: 100% !important;
 }
 
 /* Ensure proper spacing between columns */
-.layout-builder__layout.row > .col-lg-6,
 .layout-builder__layout.row > [class*="col-"] {
   padding-left: 15px;
   padding-right: 15px;
+}
+
+/* Also handle nested grids and specific breakpoints */
+.row > .col-sm-6 .block-section,
+.row > .col-md-6 .block-section,
+.row > .col-lg-6 .block-section,
+.row > .col-xl-6 .block-section,
+.row > .col-sm-4 .block-section,
+.row > .col-md-4 .block-section,
+.row > .col-lg-4 .block-section,
+.row > .col-xl-4 .block-section,
+.row > .col-sm-3 .block-section,
+.row > .col-md-3 .block-section,
+.row > .col-lg-3 .block-section,
+.row > .col-xl-3 .block-section {
+  max-width: none !important;
+  width: 100% !important;
 }
