@@ -2,14 +2,13 @@
 /**
  * @file
  * SAHO Citation Button Component Template
- * 
- * Drupal 11 Single Directory Component (SDC)
- * Academic citation button with SAHO heritage branding
+ *
+ * Extends saho-button component with citation-specific features.
+ * Inherits base button styling and adds modal integration.
  *
  * Props:
  * - title (string): Button text
- * - variant (string): primary|secondary|outline|minimal
- * - size (string): small|medium|large
+ * - size (string): small|medium|large (inherits from saho-button)
  * - show_icon (boolean): Display citation icon
  * - position (string): inline|toolbar|floating
  * - modal_target (string): Target modal ID
@@ -19,11 +18,11 @@
 
 {%
   set classes = [
+    'saho-button',
+    'saho-button--primary',
     'saho-citation-button',
-    'btn',
-    variant ? 'saho-citation-button--' ~ variant : 'saho-citation-button--primary',
-    size ? 'saho-citation-button--' ~ size : 'saho-citation-button--medium',
-    position ? 'saho-citation-button--' ~ position : 'saho-citation-button--inline'
+    size ? 'saho-button--' ~ size : 'saho-button--medium',
+    position ? 'saho-citation-button--' ~ position : ''
   ]
 %}
 
@@ -43,7 +42,7 @@
   {% for attr_name, attr_value in button_attributes %}
     {{ attr_name }}="{{ attr_value }}"
   {% endfor %}>
-  
+
   {% if show_icon|default(true) %}
     <span class="saho-citation-button__icon" aria-hidden="true">
       <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" role="img">
@@ -52,9 +51,9 @@
       </svg>
     </span>
   {% endif %}
-  
-  <span class="saho-citation-button__text">
+
+  <span class="saho-button__text saho-citation-button__text">
     {{ title|default('Cite This Page') }}
   </span>
-  
+
 </button>

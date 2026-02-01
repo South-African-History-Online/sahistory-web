@@ -5,7 +5,7 @@
 
 name: SAHO Sharing Button
 machine_name: saho_sharing_button
-description: 'Social sharing button with SAHO heritage styling for content distribution.'
+description: 'Social sharing button extending saho-button component with platform-specific hover colors and modal integration.'
 status: stable
 group: Utilities
 category: Social
@@ -22,17 +22,6 @@ props:
         - "Share"
         - "Share This Article"
         - "Social Share"
-    
-    variant:
-      type: string
-      title: Button Variant
-      description: Visual style variant
-      enum:
-        - primary
-        - secondary
-        - outline
-        - minimal
-      default: secondary
     
     size:
       type: string
@@ -59,7 +48,20 @@ props:
         - toolbar
         - floating
       default: inline
-    
+
+    platform:
+      type: string
+      title: Social Platform
+      description: Social platform for platform-specific hover colors
+      enum:
+        - twitter
+        - facebook
+        - linkedin
+        - whatsapp
+        - email
+        - reddit
+        - pinterest
+
     modal_target:
       type: string
       title: Modal Target ID
@@ -96,5 +98,5 @@ props:
           description: Additional context for screen readers
 
 libraryDependencies:
+  - saho/saho-button
   - saho/saho-sharing-button
-  - saho/saho.colors
