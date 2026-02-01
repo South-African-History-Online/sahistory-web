@@ -132,6 +132,48 @@ function saho_tools_preprocess_html(&$variables) {
   // Only add the citation modal container on non-admin routes.
   if (!$is_admin) {
 
+    // Schema.org JSON-LD injection.
+    $schema_service = \Drupal::service('saho_tools.schema_org_service');
+
+    // Add meta tag for AI/LLM discovery.
+    $variables['#attached']['html_head'][] = [
+      [
+        '#type' => 'html_tag',
+        '#tag' => 'meta',
+        '#attributes' => [
+          'name' => 'structured-data',
+          'content' => 'Schema.org JSON-LD available. See /llm.txt and /api/schema for programmatic access.',
+        ],
+      ],
+      'saho_structured_data',
+    ];
+
+    // Add link to llm.txt for AI discovery.
+    $base_url = \Drupal::request()->getSchemeAndHttpHost();
+    $variables['#attached']['html_head_link'][] = [
+      [
+        'rel' => 'alternate',
+        'type' => 'text/plain',
+        'href' => $base_url . '/llm.txt',
+        'title' => 'LLM Discovery File',
+      ],
+      TRUE,
+    ];
+
+    // 1. Organization schema (site-wide).
+    $org_schema = $schema_service->generateOrganizationSchema();
+    if (!empty($org_schema)) {
+      $variables['#attached']['html_head'][] = [
+        [
+          '#type' => 'html_tag',
+          '#tag' => 'script',
+          '#attributes' => ['type' => 'application/ld+json'],
+          '#value' => json_encode($org_schema, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT),
+        ],
+        'schema_org_organization',
+      ];
+    }
+
     // For nodes, use the canonical URL.
     $node = \Drupal::routeMatch()->getParameter('node');
     if ($node instanceof NodeInterface) {
@@ -148,6 +190,34 @@ function saho_tools_preprocess_html(&$variables) {
           ],
         ],
         'canonical_url',
+      ];
+
+      // 2. Node-specific schema.
+      $node_schema = $schema_service->generateSchemaForNode($node);
+      if (!empty($node_schema)) {
+        $variables['#attached']['html_head'][] = [
+          [
+            '#type' => 'html_tag',
+            '#tag' => 'script',
+            '#attributes' => ['type' => 'application/ld+json'],
+            '#value' => json_encode($node_schema, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT),
+          ],
+          'schema_org_node_' . $node->id(),
+        ];
+      }
+    }
+
+    // 3. Breadcrumb schema.
+    $breadcrumb_schema = $schema_service->generateBreadcrumbSchema();
+    if (!empty($breadcrumb_schema)) {
+      $variables['#attached']['html_head'][] = [
+        [
+          '#type' => 'html_tag',
+          '#tag' => 'script',
+          '#attributes' => ['type' => 'application/ld+json'],
+          '#value' => json_encode($breadcrumb_schema, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT),
+        ],
+        'schema_org_breadcrumb',
       ];
     }
 
@@ -504,6 +574,102 @@ function _saho_tools_get_image_url(NodeInterface $node, string $field_name) {
 }
 
 /**
+ * Implements hook_robotstxt().
+ *
+ * Add directives for AI/LLM crawlers and search engines to optimize
+ * discovery and indexing of SAHO content.
+ */
+function saho_tools_robotstxt() {
+  $lines = [];
+
+  // Allow all major search engines full access.
+  $lines[] = '# SAHO - Optimized for Search Engines and AI Discovery';
+  $lines[] = '';
+
+  // AI/LLM Crawlers - Explicitly allow with crawl-delay.
+  $lines[] = '# AI and LLM Crawlers';
+  $lines[] = 'User-agent: GPTBot';
+  $lines[] = 'Allow: /';
+  $lines[] = 'Crawl-delay: 1';
+  $lines[] = '';
+
+  $lines[] = 'User-agent: ClaudeBot';
+  $lines[] = 'Allow: /';
+  $lines[] = 'Crawl-delay: 1';
+  $lines[] = '';
+
+  $lines[] = 'User-agent: Claude-Web';
+  $lines[] = 'Allow: /';
+  $lines[] = 'Crawl-delay: 1';
+  $lines[] = '';
+
+  $lines[] = 'User-agent: anthropic-ai';
+  $lines[] = 'Allow: /';
+  $lines[] = 'Crawl-delay: 1';
+  $lines[] = '';
+
+  $lines[] = 'User-agent: PerplexityBot';
+  $lines[] = 'Allow: /';
+  $lines[] = 'Crawl-delay: 1';
+  $lines[] = '';
+
+  $lines[] = 'User-agent: Google-Extended';
+  $lines[] = 'Allow: /';
+  $lines[] = 'Crawl-delay: 1';
+  $lines[] = '';
+
+  $lines[] = 'User-agent: CCBot';
+  $lines[] = 'Allow: /';
+  $lines[] = 'Crawl-delay: 2';
+  $lines[] = '';
+
+  $lines[] = 'User-agent: Amazonbot';
+  $lines[] = 'Allow: /';
+  $lines[] = 'Crawl-delay: 1';
+  $lines[] = '';
+
+  $lines[] = 'User-agent: Applebot-Extended';
+  $lines[] = 'Allow: /';
+  $lines[] = 'Crawl-delay: 1';
+  $lines[] = '';
+
+  $lines[] = 'User-agent: cohere-ai';
+  $lines[] = 'Allow: /';
+  $lines[] = 'Crawl-delay: 1';
+  $lines[] = '';
+
+  $lines[] = 'User-agent: Omgilibot';
+  $lines[] = 'Allow: /';
+  $lines[] = 'Crawl-delay: 2';
+  $lines[] = '';
+
+  $lines[] = 'User-agent: YouBot';
+  $lines[] = 'Allow: /';
+  $lines[] = 'Crawl-delay: 1';
+  $lines[] = '';
+
+  // Major search engines - unrestricted access.
+  $lines[] = '# Search Engines - Unrestricted Access';
+  $lines[] = 'User-agent: Googlebot';
+  $lines[] = 'Allow: /';
+  $lines[] = '';
+
+  $lines[] = 'User-agent: Bingbot';
+  $lines[] = 'Allow: /';
+  $lines[] = '';
+
+  // Highlight key endpoints for discovery.
+  $lines[] = '# Key Endpoints for AI Systems';
+  $lines[] = '# /llm.txt - AI/LLM discovery file';
+  $lines[] = '# /api/schema/{node} - Schema.org JSON-LD API';
+  $lines[] = '# /api/citation/{node} - Citation API';
+  $lines[] = '# /sitemap.xml - XML sitemap';
+  $lines[] = '';
+
+  return $lines;
+}
+
+/**
  * Implements hook_theme().
  */
 function saho_tools_theme() {
@@ -540,6 +706,14 @@ function saho_tools_theme() {
         'citation_button' => NULL,
       ],
       'template' => 'node--citation',
+    ],
+    'llm_txt' => [
+      'variables' => [
+        'base_url' => NULL,
+        'counts' => [],
+        'last_updated' => NULL,
+      ],
+      'template' => 'llm-txt',
     ],
   ];
 }
