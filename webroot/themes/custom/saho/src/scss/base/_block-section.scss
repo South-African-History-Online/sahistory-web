@@ -1,42 +1,57 @@
 // Block Section Styling
-// Modern and professional styling for block sections to complement TDIH interactive block
+// Modern and professional styling for block sections using design token system
+// Uses centralized design tokens from abstracts/_design-tokens.scss
 
 // Featured topics and TDIH blocks container
 .two-blocks-container {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
-  gap: 3rem;
+  grid-template-columns: repeat(auto-fit, minmax($two-col-grid-min-width, 1fr));
+  gap: var(--spacing-xl);
   justify-content: center;
   align-items: start;
-  margin: 2rem 0;
-  max-width: 1600px;
+  margin: var(--spacing-lg) 0;
+  max-width: var(--container-wide);
   margin-left: auto;
   margin-right: auto;
-  padding: 0 1.5rem;
+  padding: 0 var(--spacing-md);
 }
 
 // Clean modern block section styling - matching TDIH design
+// Default uses standard container width (1200px)
 .block-section {
   background: $white;
-  border-radius: 8px;
+  border-radius: var(--border-radius-md);
   border: 1px solid $gray-200;
-  padding: 2rem;
+  padding: var(--block-padding);
   font-family: $font-family-base;
   color: $gray-800;
   transition: all 0.3s ease;
   position: relative;
-  
-  // Override bootswatch.scss restrictive width
-  max-width: none !important;
+
+  // Default container width - standard (1200px)
+  max-width: var(--container-standard);
   width: 100%;
-  margin: 0;
+  margin: 0 auto;
   text-align: left;
-  
+
   // Clean hover effect
   &:hover {
-    box-shadow: 0 2px 8px rgba($gray-900, 0.1);
+    box-shadow: var(--shadow-hover);
     border-color: $gray-300;
   }
+}
+
+// Container width modifiers using design token system
+.block-section--narrow {
+  max-width: var(--container-narrow); // 700px - Single column content
+}
+
+.block-section--wide {
+  max-width: var(--container-wide); // 1600px - Multi-column grids
+}
+
+.block-section--full {
+  max-width: var(--container-full); // 100% - Full-width sections
 }
 
 /* Clean heading with left accent bar - TDIH style */
@@ -44,8 +59,8 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  margin-bottom: 1.5rem;
-  padding-bottom: 1rem;
+  margin-bottom: var(--spacing-md);
+  padding-bottom: var(--spacing-sm);
   border-bottom: 1px solid $gray-200;
   
   .block-title-wrapper {
@@ -86,28 +101,28 @@
   font-size: 0.9rem;
   color: $gray-600;
   line-height: 1.5;
-  margin-bottom: 1.5rem;
+  margin-bottom: var(--spacing-md);
   font-weight: 400;
 }
 
 /* Clean content area */
 .block-section .block-content {
-  margin-bottom: 1.5rem;
+  margin-bottom: var(--spacing-md);
 }
 
 /* Clean image styling - TDIH style */
 .block-section .block-image {
   width: 100%;
-  height: 250px;
-  border-radius: 8px;
-  margin-bottom: 1rem;
+  height: var(--block-image-height);
+  border-radius: var(--border-radius-md);
+  margin-bottom: var(--spacing-sm);
   position: relative;
   overflow: hidden;
-  
+
   img {
     width: 100%;
     height: 100%;
-    border-radius: 8px;
+    border-radius: var(--border-radius-md);
     display: block;
     object-fit: cover;
     object-position: center;
@@ -117,10 +132,10 @@
 /* Clean overlay label - TDIH style */
 .block-section .block-image-wrapper {
   position: relative;
-  margin-bottom: 1rem;
+  margin-bottom: var(--spacing-sm);
   width: 100%;
-  height: 250px;
-  border-radius: 8px;
+  height: var(--block-image-height);
+  border-radius: var(--border-radius-md);
   overflow: hidden;
   
   img {
@@ -134,14 +149,14 @@
   
   .block-label {
     position: absolute;
-    top: 0.75rem;
-    right: 0.75rem;
+    top: var(--spacing-xs);
+    right: var(--spacing-xs);
     background: $saho-deep-heritage-red;
     color: $white;
     font-size: 0.75rem;
     font-weight: 600;
-    padding: 0.25rem 0.5rem;
-    border-radius: 4px;
+    padding: 0.25rem var(--spacing-xs);
+    border-radius: var(--border-radius-sm);
     text-transform: uppercase;
     letter-spacing: 0.5px;
     z-index: 2;
@@ -213,12 +228,12 @@
 
 /* Entity overview block */
 .entity-overview-block {
-  margin: 2rem 0;
+  margin: var(--block-section-margin) 0;
   text-align: center;
-  padding: 1.5rem;
+  padding: var(--spacing-md);
   background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 3px 10px rgb(0, 0, 0, 0.05);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-md);
 }
 
 .entity-overview-block .block-title {
@@ -242,7 +257,7 @@
 .entity-overview-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 1.5rem;
+  gap: var(--spacing-md);
   justify-content: center;
 }
 
@@ -315,9 +330,9 @@
   .two-blocks-container {
     grid-template-columns: 1fr;
     max-width: 1000px;
-    gap: 2.5rem;
+    gap: var(--spacing-lg);
   }
-  
+
   .block-section {
     max-width: none;
     width: 100%;
@@ -326,14 +341,14 @@
 
 @include media-breakpoint-down(md) {
   .two-blocks-container {
-    gap: 2rem;
-    padding: 0 1rem;
-    margin: 1.5rem auto;
+    gap: var(--spacing-lg);
+    padding: 0 var(--spacing-sm);
+    margin: var(--spacing-md) auto;
     max-width: 90%;
   }
-  
+
   .block-section {
-    padding: 1.75rem;
+    padding: var(--block-padding);
     
     h2 {
       font-size: 1.5rem;
@@ -343,10 +358,10 @@
       font-size: 0.95rem;
       max-width: none;
     }
-    
+
     .block-image,
     .block-image-wrapper {
-      height: 200px;
+      height: var(--block-image-height);
     }
     
     .block-button {
@@ -358,20 +373,20 @@
 
 @include media-breakpoint-down(sm) {
   .block-section {
-    padding: 1.25rem;
-    
+    padding: var(--block-padding);
+
     h2 {
       font-size: 1.4rem;
-      
+
       &::after {
         width: 50px;
       }
     }
-    
+
     .block-image,
     .block-image-wrapper {
-      height: 180px;
-      border-radius: 8px;
+      height: var(--block-image-height);
+      border-radius: var(--border-radius-md);
     }
     
     .block-button {

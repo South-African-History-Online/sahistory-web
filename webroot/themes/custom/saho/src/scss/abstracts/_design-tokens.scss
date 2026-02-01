@@ -1,0 +1,219 @@
+/**
+ * Design Tokens
+ * SAHO Layout Builder Block System
+ *
+ * Centralized design tokens for consistent spacing, sizing, and layout.
+ * These tokens are used across all custom blocks and layout builder sections.
+ */
+
+// =============================================================================
+// Container Width Tokens
+// =============================================================================
+
+/**
+ * Container width hierarchy for different content types:
+ * - Narrow: Single column content, hero banner text, focused content
+ * - Standard: Default content blocks, articles, general content
+ * - Wide: Multi-column grids, card layouts, galleries
+ * - Full: Full-width sections, hero banners, special layouts
+ */
+
+$container-narrow: 700px;    // Single column, hero content
+$container-standard: 1200px; // Default blocks, most content
+$container-wide: 1600px;     // Card grids, multi-column
+$container-full: 100%;       // Full-width sections
+
+// CSS Custom Properties for runtime flexibility
+:root {
+  --container-narrow: #{$container-narrow};
+  --container-standard: #{$container-standard};
+  --container-wide: #{$container-wide};
+  --container-full: #{$container-full};
+}
+
+// =============================================================================
+// Spacing Scale Tokens
+// =============================================================================
+
+/**
+ * Standardized spacing scale based on 8px baseline grid:
+ * - xs: 8px   - Tight spacing, inline elements
+ * - sm: 16px  - Close elements, compact layouts
+ * - md: 24px  - Related content, default spacing
+ * - lg: 32px  - Section separation, card grids (STANDARD)
+ * - xl: 48px  - Major sections, large gaps
+ * - xxl: 64px - Page sections, dramatic spacing
+ */
+
+$spacing-xs: 0.5rem;   // 8px
+$spacing-sm: 1rem;     // 16px
+$spacing-md: 1.5rem;   // 24px
+$spacing-lg: 2rem;     // 32px  - STANDARD gap for card grids
+$spacing-xl: 3rem;     // 48px
+$spacing-xxl: 4rem;    // 64px
+
+// CSS Custom Properties
+:root {
+  --spacing-xs: #{$spacing-xs};
+  --spacing-sm: #{$spacing-sm};
+  --spacing-md: #{$spacing-md};
+  --spacing-lg: #{$spacing-lg};
+  --spacing-xl: #{$spacing-xl};
+  --spacing-xxl: #{$spacing-xxl};
+}
+
+// =============================================================================
+// Grid System Tokens
+// =============================================================================
+
+/**
+ * Standardized grid configurations:
+ * - Card grid: Standard 3-column responsive grid for cards
+ * - Two column: 50/50 split for features
+ * - Auto-fit: Flexible grid that adapts to content
+ */
+
+// Card grid minimum width (responsive breakpoint)
+$card-grid-min-width: 300px;  // Minimum card width before wrapping
+
+// Two-column grid minimum width
+$two-col-grid-min-width: 500px;
+
+// Grid gap (use spacing-lg by default)
+$grid-gap-default: $spacing-lg;  // 32px
+
+// CSS Custom Properties
+:root {
+  --card-grid-min-width: #{$card-grid-min-width};
+  --two-col-grid-min-width: #{$two-col-grid-min-width};
+  --grid-gap-default: #{$grid-gap-default};
+}
+
+// =============================================================================
+// Border Radius Tokens
+// =============================================================================
+
+/**
+ * Consistent border radius for all blocks and cards
+ */
+
+$border-radius-sm: 4px;
+$border-radius-md: 8px;   // STANDARD for cards and blocks
+$border-radius-lg: 12px;
+
+:root {
+  --border-radius-sm: #{$border-radius-sm};
+  --border-radius-md: #{$border-radius-md};
+  --border-radius-lg: #{$border-radius-lg};
+}
+
+// =============================================================================
+// Shadow Tokens
+// =============================================================================
+
+/**
+ * Elevation system for depth and hierarchy
+ */
+
+$shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+$shadow-md: 0 3px 10px rgba(0, 0, 0, 0.05);  // STANDARD
+$shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.08);
+$shadow-hover: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+:root {
+  --shadow-sm: #{$shadow-sm};
+  --shadow-md: #{$shadow-md};
+  --shadow-lg: #{$shadow-lg};
+  --shadow-hover: #{$shadow-hover};
+}
+
+// =============================================================================
+// Block Section Specific Tokens
+// =============================================================================
+
+/**
+ * Block section component tokens
+ */
+
+// Default block padding
+$block-padding-mobile: 1.25rem;  // 20px
+$block-padding-tablet: 1.75rem;  // 28px
+$block-padding-desktop: 2rem;    // 32px
+
+// Block image heights
+$block-image-height-mobile: 180px;
+$block-image-height-tablet: 200px;
+$block-image-height-desktop: 250px;
+
+// Section margins
+$block-section-margin: $spacing-lg;
+
+:root {
+  --block-padding: #{$block-padding-desktop};
+  --block-image-height: #{$block-image-height-desktop};
+  --block-section-margin: #{$block-section-margin};
+}
+
+// =============================================================================
+// Responsive Overrides
+// =============================================================================
+
+@include media-breakpoint-down(md) {
+  :root {
+    --block-padding: #{$block-padding-tablet};
+    --block-image-height: #{$block-image-height-tablet};
+  }
+}
+
+@include media-breakpoint-down(sm) {
+  :root {
+    --block-padding: #{$block-padding-mobile};
+    --block-image-height: #{$block-image-height-mobile};
+  }
+}
+
+// =============================================================================
+// Usage Examples (Documentation)
+// =============================================================================
+
+/**
+ * Container Width Usage:
+ *
+ * .hero-banner {
+ *   max-width: var(--container-full);  // Full width
+ *
+ *   .hero-content {
+ *     max-width: var(--container-narrow);  // Centered 700px content
+ *   }
+ * }
+ *
+ * .card-grid {
+ *   max-width: var(--container-wide);  // 1600px for grids
+ * }
+ *
+ * .content-block {
+ *   max-width: var(--container-standard);  // 1200px default
+ * }
+ */
+
+/**
+ * Spacing Usage:
+ *
+ * .saho-card-grid {
+ *   gap: var(--spacing-lg);  // Standard 32px gap
+ * }
+ *
+ * .section-spacing {
+ *   margin-bottom: var(--spacing-xl);  // Large 48px margin
+ * }
+ */
+
+/**
+ * Grid Usage:
+ *
+ * .card-grid {
+ *   display: grid;
+ *   grid-template-columns: repeat(auto-fill, minmax(var(--card-grid-min-width), 1fr));
+ *   gap: var(--grid-gap-default);
+ * }
+ */
