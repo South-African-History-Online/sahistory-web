@@ -1,7 +1,7 @@
 {#
 /**
  * @file
- * Modern card template for collections view - simplified layout per feedback.
+ * Collections view using saho-card component.
  *
  * Available variables:
  * - fields: Field objects for the current row
@@ -10,8 +10,7 @@
  */
 #}
 
-
-{# CRITICAL: Get URL from the title_2 field which has link_to_entity: true #}
+{# Extract URL from title_2 field #}
 {% set entity_url = '#' %}
 {% if fields.title_2 is defined %}
   {% set content = fields.title_2.content %}
@@ -23,7 +22,7 @@
   {% endif %}
 {% endif %}
 
-{# Fallbacks for URL if not found in title_2 #}
+{# Fallbacks for URL #}
 {% if entity_url == '#' and fields.path is defined %}
   {% set entity_url = fields.path.content|striptags|trim %}
 {% elseif entity_url == '#' and fields.title.content is defined %}
@@ -36,71 +35,88 @@
   {% endif %}
 {% endif %}
 
-{# Get title from title_2 field as per view config #}
+{# Extract title and count #}
 {% set title_text = '' %}
 {% if fields.title_2 is defined %}
   {% set title_text = fields.title_2.content|striptags|trim %}
 {% endif %}
 
-{# Get count from title_1 field which has group_type: count #}
 {% set count = '' %}
 {% if fields.title_1 is defined %}
   {% set count = fields.title_1.content|striptags|trim %}
 {% endif %}
 
-{# Get content type for styling #}
+{# Build description with count #}
+{% set description = count ~ ' archive items' %}
+
+{# Get content type #}
 {% set content_type = 'collection' %}
 {% if row and row._entity %}
   {% set content_type = row._entity.bundle() %}
 {% endif %}
 
-<a href="{{ entity_url }}" class="saho-card-link content-type-{{ content_type }}" aria-label="View collection details">
-  <div class="saho-card saho-card--{{ content_type }}">
-    {# Card Image Area #}
-    <div class="saho-card-image">
-      {% set has_image = false %}
-      {# Image (if available) #}
-      {% if fields.field_archive_image is defined and fields.field_archive_image.content %}
-        {{ fields.field_archive_image.content }}
-        {% set has_image = true %}
-      {% elseif fields.field_article_image is defined and fields.field_article_image.content %}
-        {{ fields.field_article_image.content }}
-        {% set has_image = true %}
-      {% elseif fields.field_bio_pic is defined and fields.field_bio_pic.content %}
-        {{ fields.field_bio_pic.content }}
-        {% set has_image = true %}
-      {% elseif fields.field_image is defined and fields.field_image.content %}
-        {{ fields.field_image.content }}
-        {% set has_image = true %}
-      {% endif %}
+{# Check for images #}
+{% set image_url = '' %}
+{% if fields.field_archive_image is defined and fields.field_archive_image.content %}
+  {% set image_url = 'has_image' %}
+{% elseif fields.field_article_image is defined and fields.field_article_image.content %}
+  {% set image_url = 'has_image' %}
+{% elseif fields.field_bio_pic is defined and fields.field_bio_pic.content %}
+  {% set image_url = 'has_image' %}
+{% elseif fields.field_image is defined and fields.field_image.content %}
+  {% set image_url = 'has_image' %}
+{% endif %}
 
-      {% if not has_image %}
-        <div class="saho-card-image--placeholder">
-          <i class="fas fa-archive"></i>
+{# Render using component pattern #}
+{% if image_url %}
+  <a href="{{ entity_url }}" class="saho-card-link" aria-label="View collection details">
+    <article class="saho-card saho-card--primary saho-card--medium saho-card--type-collection card h-100">
+      <div class="card-img-top-wrapper position-relative overflow-hidden saho-card__image">
+        {% if fields.field_archive_image is defined and fields.field_archive_image.content %}
+          {{ fields.field_archive_image.content }}
+        {% elseif fields.field_article_image is defined and fields.field_article_image.content %}
+          {{ fields.field_article_image.content }}
+        {% elseif fields.field_bio_pic is defined and fields.field_bio_pic.content %}
+          {{ fields.field_bio_pic.content }}
+        {% elseif fields.field_image is defined and fields.field_image.content %}
+          {{ fields.field_image.content }}
+        {% endif %}
+
+        <div class="position-absolute top-0 end-0 m-2">
+          <span class="badge saho-card__type-badge">Collection</span>
         </div>
-      {% endif %}
-
-      {# Card Badge #}
-      <div class="saho-card-badge content-type-badge">Collection</div>
-    </div>
-
-    {# Card Content #}
-    <div class="saho-card-content">
-      {# Title from title_2 field #}
-      <div class="saho-card-title">{{ title_text }}</div>
-
-      {# Count from title_1 field #}
-      <div class="saho-card-subtitle">{{ count }} archive items</div>
-
-      {# Button in footer for proper alignment #}
-      <div class="saho-card-footer">
-        <span class="saho-card-button">
-          View Collection
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
-            <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/>
-          </svg>
-        </span>
       </div>
-    </div>
-  </div>
-</a>
+
+      <div class="card-body d-flex flex-column saho-card__body">
+        <h3 class="card-title saho-card__title">{{ title_text }}</h3>
+
+        <div class="card-text saho-card__content text-muted mb-3">
+          {{ description }}
+        </div>
+
+        <div class="mt-auto saho-card__footer-section">
+          <div class="saho-card__action mb-2">
+            <span class="saho-card-button-wrapper" style="position: relative; z-index: 2;">
+              <span class="saho-button saho-button--card-action saho-button--small">
+                <span class="saho-button__text">View Collection</span>
+                <svg class="saho-button__icon saho-button__icon--arrow-right" width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                  <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/>
+                </svg>
+              </span>
+            </span>
+          </div>
+        </div>
+      </div>
+    </article>
+  </a>
+{% else %}
+  {% include 'saho:saho-card' with {
+    title: title_text,
+    content: description,
+    url: entity_url,
+    content_type: 'collection',
+    button_text: 'View Collection',
+    button_variant: 'card-action',
+    button_icon: 'arrow-right'
+  } %}
+{% endif %}

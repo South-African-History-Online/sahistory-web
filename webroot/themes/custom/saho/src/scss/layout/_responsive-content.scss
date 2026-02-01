@@ -1,0 +1,191 @@
+/**
+ * Global Responsive Content Fixes
+ * Ensures all content stays within viewport on mobile and tablet
+ */
+
+// Prevent horizontal scrolling
+
+html,
+body {
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100vw;
+}
+
+// Make all images responsive by default
+
+img {
+  max-width: 100% !important;
+  height: auto !important;
+  display: block;
+}
+
+// Ensure tables don't overflow
+
+table {
+  max-width: 100%;
+  width: 100%;
+  overflow-x: auto;
+  display: block; // Makes tables scrollable on small screens
+}
+
+// Handle pre and code elements that might overflow
+
+pre,
+code {
+  white-space: pre-wrap; // Allow wrapping
+  word-break: break-word; // Break long words if needed
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+// Handle embedded content
+
+iframe,
+embed,
+object,
+video {
+  max-width: 100%;
+  height: auto;
+}
+
+// Blockquote Styling with Social Sharing
+
+blockquote {
+  margin: 1.5rem 0;
+  padding: 1.5rem;
+  border-left: 4px solid $saho-muted-gold;
+  background-color: rgba($saho-aged-parchment, 0.3);
+  font-style: italic;
+  position: relative;
+
+  // Blockquote sharing container
+  .blockquote-sharing {
+    margin-top: 1rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid rgba($saho-muted-gold, 0.3);
+    font-style: normal;
+
+    .blockquote-sharing-text {
+      font-size: 0.8rem;
+      color: $saho-slate-blue;
+      margin-bottom: 0.4rem;
+      font-weight: 600;
+    }
+
+    .blockquote-sharing-buttons {
+      display: flex;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+
+      .blockquote-share-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 24px;
+        border-radius: 4px;
+        background-color: #fff;
+        color: $saho-deep-heritage-red;
+        border: 1px solid rgba($saho-deep-heritage-red, 0.3);
+        transition: all 0.2s ease;
+        text-decoration: none;
+        font-size: 0.9rem;
+
+        &:hover {
+          background-color: $saho-deep-heritage-red;
+          color: #fff;
+          transform: translateY(-1px);
+          box-shadow: 0 2px 4px rgb(0, 0, 0, 0.1);
+        }
+
+        &.facebook-share {
+          color: #3b5998;
+          border-color: rgba(#3b5998, 0.3);
+
+          &:hover {
+            background-color: #3b5998;
+            color: #fff;
+          }
+        }
+
+        &.twitter-share {
+          color: #1da1f2;
+          border-color: rgba(#1da1f2, 0.3);
+
+          &:hover {
+            background-color: #1da1f2;
+            color: #fff;
+          }
+        }
+
+        &.linkedin-share {
+          color: #0077b5;
+          border-color: rgba(#0077b5, 0.3);
+
+          &:hover {
+            background-color: #0077b5;
+            color: #fff;
+          }
+        }
+
+        &.email-share {
+          color: #666;
+          border-color: rgba(#666, 0.3);
+
+          &:hover {
+            background-color: #666;
+            color: #fff;
+          }
+        }
+
+        &.copy-share {
+          cursor: pointer;
+
+          &.copied {
+            background-color: #28a745;
+            color: #fff;
+            border-color: #28a745;
+          }
+        }
+
+        .visually-hidden {
+          position: absolute;
+          width: 1px;
+          height: 1px;
+          padding: 0;
+          margin: -1px;
+          overflow: hidden;
+          clip: rect(0, 0, 0, 0);
+          white-space: nowrap;
+          border: 0;
+        }
+      }
+
+      // Responsive adjustments
+      @media (max-width: 576px) {
+        gap: 0.3rem;
+
+        .blockquote-share-button {
+          width: 22px;
+          height: 22px;
+          font-size: 0.8rem;
+        }
+      }
+    }
+  }
+}
+
+// PDF Viewer Display
+
+// Ensure PDF viewers display the entire document
+.saho-article-body iframe[src$=".pdf"],
+.saho-article-body object[type="application/pdf"],
+.saho-article-body embed[type="application/pdf"],
+.saho-article-body iframe[src*="/viewerjs/"],
+.saho-article-body iframe[src*="docs.google.com/viewer"] {
+  height: 1500px; /* Much taller to show entire document */
+  width: 100%;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}

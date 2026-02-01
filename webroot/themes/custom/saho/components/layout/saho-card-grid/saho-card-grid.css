@@ -1,0 +1,166 @@
+/**
+ * SAHO Card Grid Component Styles
+ *
+ * Responsive grid layout for card collections with automatic responsiveness
+ * and flexible column configurations.
+ */
+
+/* Base Grid Styles */
+.saho-card-grid {
+  display: grid;
+  width: 100%;
+  align-items: start; /* Prevent cards from stretching to match tallest */
+}
+
+/* Grid Gap Variants */
+.saho-card-grid--gap-compact {
+  gap: 1rem;
+}
+
+.saho-card-grid--gap-normal {
+  gap: 1.5rem;
+}
+
+.saho-card-grid--gap-relaxed {
+  gap: 2rem;
+}
+
+/* Grid Alignment */
+.saho-card-grid--align-start {
+  justify-items: start;
+}
+
+.saho-card-grid--align-center {
+  justify-items: center;
+}
+
+.saho-card-grid--align-end {
+  justify-items: end;
+}
+
+/* Auto Column Layout - Responsive auto-fill based on minimum card width */
+.saho-card-grid--columns-auto {
+  grid-template-columns: repeat(auto-fill, minmax(var(--saho-card-min-width, 300px), 1fr));
+}
+
+/* Fixed Column Layouts */
+.saho-card-grid--columns-one {
+  grid-template-columns: 1fr;
+}
+
+.saho-card-grid--columns-two {
+  grid-template-columns: 1fr;
+}
+
+.saho-card-grid--columns-three {
+  grid-template-columns: 1fr;
+}
+
+.saho-card-grid--columns-four {
+  grid-template-columns: 1fr;
+}
+
+/* Desktop: Two Columns */
+@media (min-width: 768px) {
+  .saho-card-grid--columns-two {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .saho-card-grid--columns-three {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .saho-card-grid--columns-four {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Desktop: Three Columns */
+@media (min-width: 992px) {
+  .saho-card-grid--columns-three {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .saho-card-grid--columns-four {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Large Desktop: Four Columns */
+@media (min-width: 1200px) {
+  .saho-card-grid--columns-four {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* Handle potential Drupal Views wrapper divs */
+.saho-card-grid > div:not([class*="saho"]) {
+  display: contents; /* Make wrapper divs transparent to CSS Grid */
+}
+
+/* Ensure cards are properly sized within the grid */
+.saho-card-grid .saho-card,
+.saho-card-grid .saho-grid-item {
+  display: block;
+  height: 100%;
+  max-width: 100%; /* Prevent cards from being too wide */
+}
+
+/* Constrain width for single cards on large screens */
+@media (min-width: 769px) {
+  .saho-card-grid--columns-auto .saho-card:only-child,
+  .saho-card-grid--columns-auto .saho-grid-item:only-child {
+    max-width: 450px; /* Maximum width for single card on desktop */
+  }
+}
+
+/* Mobile Responsive Adjustments */
+@media (max-width: 768px) {
+  .saho-card-grid--gap-normal {
+    gap: 1rem;
+  }
+
+  .saho-card-grid--gap-relaxed {
+    gap: 1.25rem;
+  }
+
+  .saho-card-grid--gap-compact {
+    gap: 0.875rem;
+  }
+
+  /* Ensure proper spacing on mobile */
+  .saho-card-grid {
+    padding: 0 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .saho-card-grid--gap-normal {
+    gap: 0.875rem;
+  }
+
+  .saho-card-grid {
+    padding: 0 1rem;
+  }
+}
+
+/* Accessibility - Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .saho-card-grid * {
+    transition: none;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .saho-card-grid {
+    display: block;
+  }
+
+  .saho-card-grid .saho-card,
+  .saho-card-grid .saho-grid-item {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    margin-bottom: 1rem;
+  }
+}
