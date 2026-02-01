@@ -59,10 +59,14 @@ echo -e "${GREEN}✓ Maintenance ON${NC}"
 
 # Deploy
 echo -e "${YELLOW}[4/4] Running drush deploy...${NC}"
-vendor/bin/drush deploy -y --uri="${SITE_URI}" >> "${LOG_FILE}" 2>&1 || error_exit "Deploy 1 failed"
-echo -e "${GREEN}✓ Deploy 1/2${NC}"
-vendor/bin/drush deploy -y --uri="${SITE_URI}" >> "${LOG_FILE}" 2>&1 || error_exit "Deploy 2 failed"
-echo -e "${GREEN}✓ Deploy 2/2${NC}"
+echo ""
+vendor/bin/drush deploy -y -v --uri="${SITE_URI}" 2>&1 | tee -a "${LOG_FILE}" || error_exit "Deploy 1 failed"
+echo ""
+echo -e "${GREEN}✓ Deploy 1/2 complete${NC}"
+echo ""
+vendor/bin/drush deploy -y -v --uri="${SITE_URI}" 2>&1 | tee -a "${LOG_FILE}" || error_exit "Deploy 2 failed"
+echo ""
+echo -e "${GREEN}✓ Deploy 2/2 complete${NC}"
 
 # Cleanup
 vendor/bin/drush state:set system.maintenance_mode 0 --uri="${SITE_URI}" >> "${LOG_FILE}" 2>&1
