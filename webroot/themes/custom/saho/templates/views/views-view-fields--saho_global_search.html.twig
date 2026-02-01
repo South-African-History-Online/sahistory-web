@@ -32,47 +32,50 @@
  */
 #}
 
-{# Custom card structure for search result #}
-<a href="{{ search_result_url }}" class="search-result-card">
-  {# Image section #}
-  <div class="search-result-image">
-    <img src="{{ search_result_image }}" alt="{{ search_result_image_alt }}" loading="lazy">
-  </div>
+{# Unified card structure using saho-card classes #}
+<a href="{{ search_result_url }}" class="saho-card-link saho-card-link--search">
+  <div class="saho-card saho-card--search">
+    {# Image section using unified card image class #}
+    <div class="saho-card-image">
+      <img src="{{ search_result_image }}" alt="{{ search_result_image_alt }}" class="saho-card-image__img" loading="lazy">
 
-  {# Content section #}
-  <div class="search-result-content">
-    {# Type badge at top #}
-    {% if fields.type is defined and not fields.type.empty %}
-      <div class="search-result-meta">
-        <span class="search-result-type">{{ fields.type.content|striptags }}</span>
-      </div>
-    {% endif %}
+      {# Type badge using unified badge position #}
+      {% if fields.type is defined and not fields.type.empty %}
+        <div class="saho-card-badge saho-card-badge--search">
+          {{ fields.type.content|striptags }}
+        </div>
+      {% endif %}
+    </div>
 
-    {# Title #}
-    {% if fields.title is defined and not fields.title.empty %}
-      <h3 class="search-result-title">
-        {{ fields.title.content|striptags }}
-      </h3>
-    {% endif %}
+    {# Content section using unified card content class #}
+    <div class="saho-card-content">
+      {# Title using unified card title class #}
+      {% if fields.title is defined and not fields.title.empty %}
+        <h3 class="saho-card-title">
+          {{ fields.title.content|striptags }}
+        </h3>
+      {% endif %}
 
-    {# Excerpt/snippet #}
-    {% if fields.search_api_excerpt is defined and not fields.search_api_excerpt.empty %}
-      <div class="search-snippet-info">
-        <div class="search-snippet">
+      {# Excerpt/snippet using unified card description class #}
+      {% if fields.search_api_excerpt is defined and not fields.search_api_excerpt.empty %}
+        <div class="saho-card-description saho-card-description--search">
           {{ fields.search_api_excerpt.content|striptags }}
         </div>
-      </div>
-    {% elseif fields.body is defined and not fields.body.empty %}
-      <div class="search-snippet-info">
-        <div class="search-snippet">
+      {% elseif fields.body is defined and not fields.body.empty %}
+        <div class="saho-card-description saho-card-description--search">
           {{ fields.body.content|striptags }}
         </div>
-      </div>
-    {% endif %}
+      {% endif %}
 
-    {# Read more button #}
-    <div class="search-result-action">
-      <span class="search-result-readmore">Read more</span>
+      {# Read more button using unified card footer #}
+      <div class="saho-card-footer">
+        <span class="saho-card-button">
+          Read more
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/>
+          </svg>
+        </span>
+      </div>
     </div>
   </div>
 </a>

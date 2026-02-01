@@ -1,139 +1,20 @@
 {#
 /**
  * @file
- * Modern card template for featured content items display.
- * 
+ * Featured content card display using saho-card component.
+ *
  * Available variables:
  * - fields: Field objects for the current row
  * - attributes: HTML attributes for the field container
+ * - row: Row data including _entity
  */
 #}
 
-{# Add styles for featured item cards #}
-<style>
-  /* Featured content card styling */
-  .featured-item-link {
-    display: block;
-    height: 100%;
-    color: inherit;
-    text-decoration: none;
-    transition: all 0.3s ease;
-  }
-  
-  .featured-item-link:hover,
-  .featured-item-link:focus {
-    text-decoration: none;
-    color: inherit;
-    transform: translateY(-5px);
-  }
-  
-  .featured-item-link:hover .featured-item-card,
-  .featured-item-link:focus .featured-item-card {
-    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-  }
-  
-  .featured-item-card {
-    height: 100%;
-    background: #fff;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    overflow: hidden;
-    transition: box-shadow 0.3s ease;
-    margin-bottom: 20px;
-  }
-  
-  .card-image-wrapper {
-    position: relative;
-    padding-top: 66%; /* 2:3 aspect ratio */
-    overflow: hidden;
-    background: #f5f7fa;
-  }
-  
-  .card-image-wrapper img {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: center;
-    transition: transform 0.5s ease;
-  }
-  
-  .featured-item-link:hover .card-image-wrapper img {
-    transform: scale(1.05);
-  }
-  
-  .card-type-label {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    background: #B22222;
-    color: white;
-    padding: 4px 12px;
-    border-radius: 4px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: none;
-    letter-spacing: 0.5px;
-    z-index: 2;
-  }
-  
-  .card-content {
-    padding: 20px;
-  }
-  
-  .card-title {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: #2c3e50;
-    margin-bottom: 10px;
-    line-height: 1.4;
-  }
-  
-  .card-subtitle {
-    display: block;
-    font-size: 0.85rem;
-    color: #6c757d;
-    margin-bottom: 16px;
-    font-weight: normal;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-  
-  .view-featured-btn {
-    display: inline-block;
-    padding: 5px 15px;
-    border: 1px solid #B22222;
-    border-radius: 20px;
-    color: #B22222;
-    font-size: 0.9rem;
-    text-decoration: none;
-    transition: all 0.3s ease;
-  }
-  
-  .featured-item-link:hover .view-featured-btn,
-  .featured-item-link:focus .view-featured-btn {
-    background-color: #B22222;
-    color: white;
-  }
-  
-  .card-placeholder-image {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    font-size: 3rem;
-    color: rgba(0,0,0,0.1);
-  }
-</style>
-
-{# Get URL from the entity directly #}
+{# Extract URL from entity #}
 {% set entity_url = '#' %}
 {% if row and row._entity %}
   {% set entity_url = path('entity.node.canonical', {'node': row._entity.id()}) %}
 {% elseif fields.title is defined %}
-  {# Fallback: Extract URL from title field if it has link_to_entity: true #}
   {% set content = fields.title.content %}
   {% if content matches '/<a href="([^"]+)"/' %}
     {% set matches = content|split('href="')|last|split('"') %}
@@ -143,25 +24,45 @@
   {% endif %}
 {% endif %}
 
-{# Get title from title field #}
+{# Extract title #}
 {% set title_text = '' %}
 {% if fields.title is defined %}
   {% set title_text = fields.title.content|striptags|trim %}
 {% endif %}
 
-{# Get type from type field #}
-{% set type_text = '' %}
+{# Get type for badge #}
+{% set type_text = 'Featured' %}
 {% if fields.type is defined %}
   {% set type_text = fields.type.content|striptags|trim %}
 {% endif %}
 
-<div class="featured-content-item mb-4">
-  {# Make the entire card a link #}
-  <a href="{{ entity_url }}" class="featured-item-link" aria-label="View featured content">
-    <div class="featured-item-card">
-      {# Card Image Area #}
-      <div class="card-image-wrapper">
-        {# Check for all possible image fields in order of priority #}
+{# Get content type for styling #}
+{% set content_type = 'featured' %}
+{% if row and row._entity %}
+  {% set content_type = row._entity.bundle() %}
+{% endif %}
+
+{# Check for images #}
+{% set image_url = '' %}
+{% if fields.field_article_image is defined and fields.field_article_image.content %}
+  {% set image_url = 'has_image' %}
+{% elseif fields.field_bio_pic is defined and fields.field_bio_pic.content %}
+  {% set image_url = 'has_image' %}
+{% elseif fields.field_place_image is defined and fields.field_place_image.content %}
+  {% set image_url = 'has_image' %}
+{% elseif fields.field_event_image is defined and fields.field_event_image.content %}
+  {% set image_url = 'has_image' %}
+{% elseif fields.field_image is defined and fields.field_image.content %}
+  {% set image_url = 'has_image' %}
+{% elseif fields.field_archive_image is defined and fields.field_archive_image.content %}
+  {% set image_url = 'has_image' %}
+{% endif %}
+
+{# Render using component pattern #}
+{% if image_url %}
+  <a href="{{ entity_url }}" class="saho-card-link content-type-{{ content_type }}" aria-label="View featured content">
+    <article class="saho-card saho-card--{{ content_type }} saho-card--primary saho-card--medium saho-card--type-{{ content_type|replace({'_': '-'}) }} card h-100">
+      <div class="card-img-top-wrapper position-relative overflow-hidden saho-card__image">
         {% if fields.field_article_image is defined and fields.field_article_image.content %}
           {{ fields.field_article_image.content }}
         {% elseif fields.field_bio_pic is defined and fields.field_bio_pic.content %}
@@ -174,31 +75,42 @@
           {{ fields.field_image.content }}
         {% elseif fields.field_archive_image is defined and fields.field_archive_image.content %}
           {{ fields.field_archive_image.content }}
-        {% else %}
-          <div class="card-placeholder-image">
-            <i class="fas fa-file-alt"></i>
+        {% endif %}
+
+        <div class="position-absolute top-0 end-0 m-2">
+          <span class="badge saho-card__type-badge content-type-badge">{{ type_text }}</span>
+        </div>
+      </div>
+
+      <div class="card-body d-flex flex-column saho-card__body">
+        <h3 class="card-title saho-card__title">{{ title_text }}</h3>
+
+        {% if type_text %}
+          <div class="saho-card__meta text-muted small mb-2">{{ type_text }}</div>
+        {% endif %}
+
+        <div class="mt-auto saho-card__footer-section">
+          <div class="saho-card__action mb-2">
+            <span class="saho-card-button-wrapper" style="position: relative; z-index: 2;">
+              <span class="saho-button saho-button--card-action saho-button--small">
+                <span class="saho-button__text">Read More</span>
+                <svg class="saho-button__icon saho-button__icon--arrow-right" width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                  <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/>
+                </svg>
+              </span>
+            </span>
           </div>
-        {% endif %}
-        
-        {# Card Type Label #}
-        {% if type_text %}
-          <div class="card-type-label">{{ type_text }}</div>
-        {% endif %}
+        </div>
       </div>
-      
-      {# Card Content #}
-      <div class="card-content">
-        {# Type as subtitle #}
-        {% if type_text %}
-          <div class="card-subtitle">{{ type_text }}</div>
-        {% endif %}
-        
-        {# Title #}
-        <div class="card-title">{{ title_text }}</div>
-        
-        {# View Button #}
-        <span class="view-featured-btn">Read More</span>
-      </div>
-    </div>
+    </article>
   </a>
-</div>
+{% else %}
+  {% include 'saho:saho-card' with {
+    title: title_text,
+    url: entity_url,
+    content_type: content_type,
+    button_text: 'Read More',
+    button_variant: 'card-action',
+    button_icon: 'arrow-right'
+  } %}
+{% endif %}

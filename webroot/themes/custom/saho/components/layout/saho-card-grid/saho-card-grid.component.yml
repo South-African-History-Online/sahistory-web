@@ -1,0 +1,75 @@
+# Drupal 11 Single Directory Component (SDC) Definition
+# SAHO Card Grid Component - Responsive grid layout for card collections
+
+'$schema': https://git.drupalcode.org/project/drupal/-/raw/11.0.x/core/modules/sdc/src/metadata.schema.json
+
+name: SAHO Card Grid
+machine_name: saho_card_grid
+description: 'Responsive grid layout component for displaying collections of saho-card components with consistent spacing and responsive behavior.'
+status: stable
+group: Layout
+category: Grid
+
+props:
+  type: object
+  properties:
+    columns:
+      type: string
+      title: Grid Columns
+      description: Number of columns for different screen sizes
+      enum:
+        - auto      # Auto-fill based on min card width (default)
+        - one       # Single column (mobile-only layout)
+        - two       # Two columns on desktop, one on mobile
+        - three     # Three columns on desktop, responsive
+        - four      # Four columns on large screens, responsive
+      default: auto
+
+    gap:
+      type: string
+      title: Grid Gap
+      description: Spacing between cards
+      enum:
+        - compact   # 1rem gap
+        - normal    # 1.5rem gap (default)
+        - relaxed   # 2rem gap
+      default: normal
+
+    min_card_width:
+      type: string
+      title: Minimum Card Width
+      description: Minimum width for auto-fit columns (used when columns=auto)
+      default: "300px"
+
+    align:
+      type: string
+      title: Grid Alignment
+      description: Horizontal alignment of cards
+      enum:
+        - start
+        - center
+        - end
+      default: start
+
+    attributes:
+      type: object
+      title: HTML Attributes
+      description: Additional HTML attributes (class, id, data-*, etc.)
+      properties:
+        class:
+          type: array
+          title: CSS Classes
+          description: Additional CSS classes
+          items:
+            type: string
+        id:
+          type: string
+          title: Element ID
+
+libraryDependencies:
+  - saho/saho-card-grid
+
+slots:
+  default:
+    title: Grid Content
+    description: Card components to display in the grid

@@ -1,0 +1,275 @@
+/**
+ * SAHO Image Component Styles
+ * Drupal 11 SDC - Responsive image component with lazy loading
+ */
+
+/* Base Image Wrapper */
+.saho-image {
+  position: relative;
+  display: block;
+  width: var(--saho-image-width, 100%);
+  height: var(--saho-image-height, auto);
+  overflow: hidden;
+}
+
+.saho-image__container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background-color: var(--saho-image-placeholder-color, #f5f5f5);
+}
+
+.saho-image__img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: var(--saho-image-object-position, center);
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
+}
+
+/* Lazy Loading States */
+.saho-image__img--lazy {
+  opacity: 0;
+}
+
+.saho-image__img--lazy[loading="lazy"] {
+  opacity: 0;
+}
+
+.saho-image__img--lazy.loaded,
+.saho-image__img--lazy[complete] {
+  opacity: 1;
+}
+
+/* Placeholder Loading Effect */
+.saho-image--placeholder .saho-image__container::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    var(--saho-image-placeholder-color, #f5f5f5) 0%,
+    #fff 50%,
+    var(--saho-image-placeholder-color, #f5f5f5) 100%
+  );
+  background-size: 200% 100%;
+  animation: saho-image-shimmer 1.5s infinite;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.saho-image--placeholder .saho-image__img.loaded ~ .saho-image__container::before {
+  display: none;
+}
+
+@keyframes saho-image-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Aspect Ratios */
+.saho-image--aspect-auto .saho-image__container {
+  aspect-ratio: auto;
+}
+
+.saho-image--aspect-16-9 .saho-image__container {
+  aspect-ratio: 16 / 9;
+}
+
+.saho-image--aspect-4-3 .saho-image__container {
+  aspect-ratio: 4 / 3;
+}
+
+.saho-image--aspect-3-2 .saho-image__container {
+  aspect-ratio: 3 / 2;
+}
+
+.saho-image--aspect-1-1 .saho-image__container {
+  aspect-ratio: 1 / 1;
+}
+
+.saho-image--aspect-3-4 .saho-image__container {
+  aspect-ratio: 3 / 4;
+}
+
+.saho-image--aspect-2-3 .saho-image__container {
+  aspect-ratio: 2 / 3;
+}
+
+/* Object Fit Variants */
+.saho-image--fit-cover .saho-image__img {
+  object-fit: cover;
+}
+
+.saho-image--fit-contain .saho-image__img {
+  object-fit: contain;
+}
+
+.saho-image--fit-fill .saho-image__img {
+  object-fit: fill;
+}
+
+.saho-image--fit-none .saho-image__img {
+  object-fit: none;
+}
+
+/* Border Radius Variants */
+.saho-image--radius-none {
+  border-radius: 0;
+}
+
+.saho-image--radius-small {
+  border-radius: 4px;
+}
+
+.saho-image--radius-medium {
+  border-radius: 8px;
+}
+
+.saho-image--radius-large {
+  border-radius: 16px;
+}
+
+.saho-image--radius-full {
+  border-radius: 50%;
+}
+
+/* Clickable Images */
+.saho-image__link {
+  display: block;
+  width: 100%;
+  height: 100%;
+  position: relative;
+  z-index: 2;
+  text-decoration: none;
+  outline: none;
+}
+
+.saho-image__link:hover .saho-image__img {
+  transform: scale(1.05);
+}
+
+.saho-image__link:focus {
+  outline: 2px solid var(--saho-primary);
+  outline-offset: 2px;
+}
+
+.saho-image__link:focus .saho-image__img {
+  opacity: 0.9;
+}
+
+/* Caption Styles */
+.saho-image__caption {
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--saho-text-muted);
+}
+
+.saho-image__caption--bottom {
+  margin-top: 0.5rem;
+  padding: 0 0.25rem;
+}
+
+.saho-image__caption--overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 1rem;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.8) 0%,
+    rgba(0, 0, 0, 0.4) 50%,
+    transparent 100%
+  );
+  color: #fff;
+  z-index: 3;
+  font-weight: 500;
+}
+
+.saho-image--caption-overlay .saho-image__caption--overlay {
+  opacity: 0;
+  transform: translateY(10px);
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
+}
+
+.saho-image--caption-overlay:hover .saho-image__caption--overlay {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .saho-image__caption {
+    font-size: 0.8125rem;
+  }
+
+  .saho-image__caption--overlay {
+    padding: 0.75rem;
+  }
+
+  .saho-image--caption-overlay .saho-image__caption--overlay {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Print Styles */
+@media print {
+  .saho-image__img {
+    max-width: 100%;
+    height: auto !important;
+  }
+
+  .saho-image__caption--overlay {
+    position: static;
+    background: none;
+    color: #000;
+    padding: 0.5rem 0;
+  }
+
+  .saho-image--placeholder .saho-image__container::before {
+    display: none;
+  }
+}
+
+/* Accessibility */
+.saho-image__img:focus {
+  outline: 2px solid var(--saho-primary);
+  outline-offset: 2px;
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+  .saho-image__caption--overlay {
+    background: rgba(0, 0, 0, 0.95);
+  }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .saho-image__img,
+  .saho-image__caption--overlay {
+    transition: none;
+  }
+
+  .saho-image--placeholder .saho-image__container::before {
+    animation: none;
+  }
+
+  .saho-image__link:hover .saho-image__img {
+    transform: none;
+  }
+}

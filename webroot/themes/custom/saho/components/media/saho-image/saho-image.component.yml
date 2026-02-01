@@ -1,0 +1,192 @@
+'$schema': 'https://git.drupalcode.org/project/drupal/-/raw/HEAD/core/modules/sdc/src/metadata.schema.json'
+name: 'SAHO Image'
+description: 'Responsive image component with lazy loading, WebP support, srcset, aspect ratios, captions, and accessibility features. Used for optimized image display throughout the site.'
+group: 'Media'
+props:
+  type: object
+  properties:
+    src:
+      type: string
+      title: 'Image Source'
+      description: 'Primary image URL'
+      examples:
+        - '/sites/default/files/images/biography-hero.jpg'
+        - 'https://example.com/image.jpg'
+
+    alt:
+      type: string
+      title: 'Alt Text'
+      description: 'Alternative text for accessibility (required for semantic images)'
+      examples:
+        - 'Portrait of Nelson Mandela'
+        - 'Protesters marching in Soweto, 1976'
+
+    srcset:
+      type: string
+      title: 'Responsive Srcset'
+      description: 'Responsive image sources with sizes (optional, for multi-resolution images)'
+      examples:
+        - 'image-320.jpg 320w, image-640.jpg 640w, image-1280.jpg 1280w'
+
+    sizes:
+      type: string
+      title: 'Sizes Attribute'
+      description: 'Media queries for responsive image selection (use with srcset)'
+      default: '100vw'
+      examples:
+        - '(max-width: 768px) 100vw, 50vw'
+        - '(max-width: 1024px) 50vw, 33vw'
+
+    aspect_ratio:
+      type: string
+      title: 'Aspect Ratio'
+      description: 'Image aspect ratio for consistent sizing'
+      default: 'auto'
+      enum:
+        - auto
+        - '16/9'
+        - '4/3'
+        - '3/2'
+        - '1/1'
+        - '3/4'
+        - '2/3'
+      examples:
+        - '16/9'
+        - '4/3'
+
+    lazy:
+      type: boolean
+      title: 'Lazy Loading'
+      description: 'Enable native lazy loading'
+      default: true
+      examples:
+        - true
+        - false
+
+    caption:
+      type: string
+      title: 'Image Caption'
+      description: 'Optional caption text displayed below image'
+      examples:
+        - 'Nelson Mandela at his inauguration, 1994'
+        - 'Photo credit: Historical Archives'
+
+    caption_position:
+      type: string
+      title: 'Caption Position'
+      description: 'Position of the caption'
+      default: 'bottom'
+      enum:
+        - bottom
+        - overlay
+      examples:
+        - 'bottom'
+        - 'overlay'
+
+    placeholder:
+      type: boolean
+      title: 'Show Placeholder'
+      description: 'Show loading placeholder while image loads'
+      default: true
+      examples:
+        - true
+        - false
+
+    placeholder_color:
+      type: string
+      title: 'Placeholder Color'
+      description: 'Background color for placeholder (CSS color value)'
+      default: '#f5f5f5'
+      examples:
+        - '#f5f5f5'
+        - 'var(--saho-background-muted)'
+
+    object_fit:
+      type: string
+      title: 'Object Fit'
+      description: 'How image fills its container'
+      default: 'cover'
+      enum:
+        - cover
+        - contain
+        - fill
+        - none
+      examples:
+        - 'cover'
+        - 'contain'
+
+    object_position:
+      type: string
+      title: 'Object Position'
+      description: 'Image alignment within container'
+      default: 'center'
+      examples:
+        - 'center'
+        - 'top'
+        - 'bottom'
+        - '50% 25%'
+
+    border_radius:
+      type: string
+      title: 'Border Radius'
+      description: 'Rounded corner variant'
+      default: 'none'
+      enum:
+        - none
+        - small
+        - medium
+        - large
+        - full
+      examples:
+        - 'none'
+        - 'medium'
+
+    width:
+      type: string
+      title: 'Width'
+      description: 'Explicit width (CSS value, optional)'
+      examples:
+        - '100%'
+        - '400px'
+        - 'auto'
+
+    height:
+      type: string
+      title: 'Height'
+      description: 'Explicit height (CSS value, optional)'
+      examples:
+        - '300px'
+        - 'auto'
+
+    link:
+      type: string
+      title: 'Link URL'
+      description: 'Optional URL to make image clickable'
+      examples:
+        - '/node/123'
+        - 'https://example.com'
+
+    link_title:
+      type: string
+      title: 'Link Title'
+      description: 'Title attribute for image link (accessibility)'
+      examples:
+        - 'View full biography'
+        - 'Read more about this event'
+
+    decorative:
+      type: boolean
+      title: 'Decorative Image'
+      description: 'Mark image as decorative (uses empty alt, aria-hidden)'
+      default: false
+      examples:
+        - false
+        - true
+
+    attributes:
+      type: Drupal\Core\Template\Attribute
+      title: 'HTML Attributes'
+      description: 'Additional HTML attributes for the wrapper element'
+
+  required:
+    - src

@@ -1,0 +1,63 @@
+{#
+/**
+ * @file
+ * SAHO Badge Component
+ *
+ * Small colored label for content types, categories, status, and tags.
+ *
+ * Available variables:
+ * - text: Badge text content (required)
+ * - variant: Color variant (primary, secondary, success, etc., default: primary)
+ * - size: Size variant (small, medium, large, default: medium)
+ * - icon: Optional Font Awesome icon name (without fa- prefix)
+ * - rounded: Use pill-shape (default: false)
+ * - uppercase: Transform text to uppercase (default: true)
+ * - position: Position variant for overlay use (inline, top-right, etc., default: inline)
+ * - url: Optional URL to make badge clickable
+ * - attributes: HTML attributes
+ *
+ * Usage:
+ * {% include 'saho:saho-badge' with {
+ *   text: 'Biography',
+ *   variant: 'heritage-red',
+ *   size: 'small',
+ *   icon: 'user'
+ * } %}
+ */
+#}
+
+{# Set defaults #}
+{% set variant = variant|default('primary') %}
+{% set size = size|default('medium') %}
+{% set rounded = rounded ?? false %}
+{% set uppercase = uppercase ?? true %}
+{% set position = position|default('inline') %}
+
+{# Build classes #}
+{% set badge_classes = [
+  'saho-badge',
+  'saho-badge--' ~ variant,
+  'saho-badge--' ~ size,
+  rounded ? 'saho-badge--rounded',
+  uppercase ? 'saho-badge--uppercase',
+  'saho-badge--' ~ position,
+  icon ? 'saho-badge--with-icon',
+  url ? 'saho-badge--clickable',
+] %}
+
+{# Render badge #}
+{% if url %}
+  <a href="{{ url }}" {{ attributes.addClass(badge_classes) }}>
+    {% if icon %}
+      <i class="fas fa-{{ icon }} saho-badge__icon" aria-hidden="true"></i>
+    {% endif %}
+    <span class="saho-badge__text">{{ text }}</span>
+  </a>
+{% else %}
+  <span{{ attributes.addClass(badge_classes) }}>
+    {% if icon %}
+      <i class="fas fa-{{ icon }} saho-badge__icon" aria-hidden="true"></i>
+    {% endif %}
+    <span class="saho-badge__text">{{ text }}</span>
+  </span>
+{% endif %}

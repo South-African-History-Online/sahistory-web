@@ -1,0 +1,77 @@
+{#
+/**
+ * @file
+ * SAHO Metadata Component
+ *
+ * Displays content metadata (date, author, category, etc.) with icons and links.
+ *
+ * Available variables:
+ * - items: Array of metadata items (each with icon, label, value, url)
+ * - separator: Separator between items (•, |, etc., default: •)
+ * - layout: Layout variant (inline, stacked, pills, default: inline)
+ * - size: Size variant (small, medium, large, default: medium)
+ * - color: Color variant (muted, primary, dark, default: muted)
+ * - icon_position: Icon position (before, after, none, default: before)
+ * - attributes: HTML attributes
+ *
+ * Usage:
+ * {% include 'saho:saho-metadata' with {
+ *   items: [
+ *     {icon: 'calendar', value: post_date},
+ *     {icon: 'user', label: 'By', value: author, url: author_url},
+ *     {icon: 'folder', value: category, url: category_url}
+ *   ]
+ * } %}
+ */
+#}
+
+{# Set defaults #}
+{% set separator = separator is defined ? separator : '•' %}
+{% set layout = layout|default('inline') %}
+{% set size = size|default('medium') %}
+{% set color = color|default('muted') %}
+{% set icon_position = icon_position|default('before') %}
+
+{# Build classes #}
+{% set metadata_classes = [
+  'saho-metadata',
+  'saho-metadata--' ~ layout,
+  'saho-metadata--' ~ size,
+  'saho-metadata--' ~ color,
+  'saho-metadata--icon-' ~ icon_position,
+] %}
+
+<div{{ attributes.addClass(metadata_classes) }}>
+  {% for item in items %}
+    {% if item.value %}
+      <div class="saho-metadata__item">
+        {# Optional label #}
+        {% if item.label %}
+          <span class="saho-metadata__label">{{ item.label }}</span>
+        {% endif %}
+
+        {# Icon before #}
+        {% if item.icon and icon_position == 'before' %}
+          <i class="fas fa-{{ item.icon }} saho-metadata__icon" aria-hidden="true"></i>
+        {% endif %}
+
+        {# Value (with or without link) #}
+        {% if item.url %}
+          <a href="{{ item.url }}" class="saho-metadata__value saho-metadata__value--link">{{ item.value }}</a>
+        {% else %}
+          <span class="saho-metadata__value">{{ item.value }}</span>
+        {% endif %}
+
+        {# Icon after #}
+        {% if item.icon and icon_position == 'after' %}
+          <i class="fas fa-{{ item.icon }} saho-metadata__icon" aria-hidden="true"></i>
+        {% endif %}
+
+        {# Separator (not after last item) #}
+        {% if not loop.last and separator %}
+          <span class="saho-metadata__separator" aria-hidden="true">{{ separator }}</span>
+        {% endif %}
+      </div>
+    {% endif %}
+  {% endfor %}
+</div>
