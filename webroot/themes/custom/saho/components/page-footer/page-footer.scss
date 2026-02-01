@@ -1,33 +1,54 @@
-@import "../../src/scss/init";
-
-/*
-   Example SAHO text colors from your design guide:
-   .saho-text-primary { color: #990000 !important; }
-   .saho-text-dark    { color: #333333 !important; }
-   .saho-text-gold    { color: #B88A2E !important; }
-   .saho-text-parchment { color: #E5D5B0 !important; }
-   .saho-text-blue    { color: #4A5A74 !important; }
-   .saho-text-highlight { color: #B03030 !important; }
-   .saho-text-white   { color: #FFFFFF !important; }
-   .saho-text-black   { color: #000000 !important; }
-*/
+/**
+ * SAHO Footer Component
+ *
+ * Self-contained footer component with inline design tokens.
+ * NO external SCSS dependencies - pure CSS with custom properties.
+ */
 
 .saho-footer {
-  background-color: #fff;
-  color: #777;
+  /* Inline design tokens - NO external dependencies */
+  --footer-bg-primary: #ffffff;
+  --footer-bg-secondary: #e2e2e2;
+  --footer-color-primary: #990000;
+  --footer-color-secondary: #777777;
+  --footer-color-text: #333333;
+  --footer-color-border: #cccccc;
+  --footer-color-white: #ffffff;
+
+  /* Spacing tokens */
+  --footer-spacing-sm: 0.25rem;
+  --footer-spacing-md: 0.5rem;
+  --footer-spacing-lg: 1rem;
+  --footer-spacing-xl: 1.25rem;
+
+  /* Component-specific tokens */
+  --footer-divider-width: 1px;
+  --footer-logo-max-width: 150px;
+  --footer-social-icon-size: 24px;
+  --footer-bottom-divider-width: 60px;
+
+  /* Transitions */
+  --footer-transition-speed: 0.2s;
+
+  /* Border radius */
+  --footer-border-radius: 4px;
+
+  /* Apply base styles */
+  background-color: var(--footer-bg-primary);
+  color: var(--footer-color-secondary);
   font-family: "Open Sans", sans-serif;
 
   .footer-top {
     .row {
-      padding: 1rem 0;
+      padding: var(--footer-spacing-lg) 0;
     }
 
     .footer-col {
-      margin-bottom: 1rem;
+      margin-bottom: var(--footer-spacing-lg);
 
       h3 {
-        font-size: 1.25rem;
-        margin-bottom: 0.5rem;
+        font-size: var(--footer-spacing-xl);
+        margin-bottom: var(--footer-spacing-md);
       }
     }
 
@@ -52,22 +73,22 @@
           top: 0;
           bottom: 0;
           right: 0;
-          width: 1px;
-          background-color: #ccc;
+          width: var(--footer-divider-width);
+          background-color: var(--footer-color-border);
         }
       }
     }
 
     .footer-links li {
-      margin: 0.25rem 0;
+      margin: var(--footer-spacing-sm) 0;
 
       a {
-        color: #333;
+        color: var(--footer-color-text);
         text-decoration: none;
-        transition: color 0.2s ease;
+        transition: color var(--footer-transition-speed) ease;
 
         &:hover {
-          color: #900;
+          color: var(--footer-color-primary);
           text-decoration: none;
         }
       }
@@ -77,40 +98,40 @@
       display: block;
       margin-left: auto;
       margin-right: auto;
-      max-width: 150px !important;
+      max-width: var(--footer-logo-max-width) !important;
       height: auto;
     }
 
     .footer-donate-btn {
       display: inline-block;
-      padding: 0.4rem 1rem;
-      border: 1px solid #900;
-      color: #900;
+      padding: 0.4rem var(--footer-spacing-lg);
+      border: var(--footer-divider-width) solid var(--footer-color-primary);
+      color: var(--footer-color-primary);
       background-color: transparent;
-      border-radius: 4px;
+      border-radius: var(--footer-border-radius);
       font-weight: 600;
       text-decoration: none;
-      transition: background-color 0.2s ease, color 0.2s ease;
+      transition: background-color var(--footer-transition-speed) ease, color var(--footer-transition-speed) ease;
 
       a {
-        color: #900;
+        color: var(--footer-color-primary);
         text-decoration: none;
       }
 
       &:hover {
-        background-color: #900;
-        color: #fff;
+        background-color: var(--footer-color-primary);
+        color: var(--footer-color-white);
         text-decoration: none;
       }
     }
 
     div.col-12.col-md-3.footer-col.text-center ul.list-unstyled.footer-links.mb-2 li a.footer-donate-btn {
-      color: #900;
+      color: var(--footer-color-primary);
       text-decoration: none;
 
       &:hover {
-        background-color: #900;
-        color: #fff;
+        background-color: var(--footer-color-primary);
+        color: var(--footer-color-white);
         text-decoration: none;
       }
     }
@@ -121,7 +142,7 @@
       list-style: none;
 
       li {
-        margin-right: 1rem;
+        margin-right: var(--footer-spacing-lg);
 
         &:last-child {
           margin-right: 0;
@@ -129,9 +150,9 @@
 
         .footer-social-link {
           display: inline-block;
-          width: 24px;
-          height: 24px;
-          transition: opacity 0.2s ease;
+          width: var(--footer-social-icon-size);
+          height: var(--footer-social-icon-size);
+          transition: opacity var(--footer-transition-speed) ease;
 
           img {
             width: 100%;
@@ -149,28 +170,28 @@
   .footer-divider {
     margin: 0;
     border: none;
-    border-top: 1px solid #ccc;
+    border-top: var(--footer-divider-width) solid var(--footer-color-border);
   }
 
   .footer-bottom {
-    color: #900;
-    background-color: #e2e2e2;
+    color: var(--footer-color-primary);
+    background-color: var(--footer-bg-secondary);
 
     .footer-address {
       margin: 0;
     }
 
     p {
-      margin: 0.25rem 0;
+      margin: var(--footer-spacing-sm) 0;
     }
 
     .footer-address::after {
       content: "";
       display: block;
-      margin: 0.5rem auto;
-      width: 60px;
-      height: 1px;
-      background: #777;
+      margin: var(--footer-spacing-md) auto;
+      width: var(--footer-bottom-divider-width);
+      height: var(--footer-divider-width);
+      background: var(--footer-color-secondary);
     }
   }
 }

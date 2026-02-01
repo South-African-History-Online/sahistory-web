@@ -1,33 +1,54 @@
 /**
  * Admin form styling for SAHO Media Migration
+ *
+ * Uses component-scoped inline CSS custom properties for maintainability
+ * and consistency with SAHO brand colors.
  */
 
 .migration-progress {
-  background: #e7f4e4;
-  border: 1px solid #66c266;
-  border-radius: 4px;
-  padding: 1rem;
-  margin-bottom: 1rem;
-  color: #2d7a2d;
-  font-size: 1.1em;
+  /* Inline design tokens - success state colors */
+  --migration-success-bg: #e7f4e4;
+  --migration-success-border: #66c266;
+  --migration-success-text: #2d7a2d;
+  --migration-spacing: 1rem;
+  --migration-border-radius: 4px;
+  --migration-font-size-large: 1.1em;
+
+  background: var(--migration-success-bg);
+  border: 1px solid var(--migration-success-border);
+  border-radius: var(--migration-border-radius);
+  padding: var(--migration-spacing);
+  margin-bottom: var(--migration-spacing);
+  color: var(--migration-success-text);
+  font-size: var(--migration-font-size-large);
 }
 
 .form-item-actions-section-generate-csv,
 .form-item-actions-section-migrate-used,
 .form-item-advanced-migrate-advanced {
+  /* Inline design tokens - form layout */
+  --migration-spacing: 1rem;
+
   display: inline-block;
-  margin-right: 1rem;
+  margin-right: var(--migration-spacing);
 }
 
 fieldset legend {
+  /* Inline design tokens - typography */
+  --migration-spacing-small: 0.5rem;
+
   font-weight: bold;
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--migration-spacing-small);
 }
 
 .form-actions {
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid #ccc;
+  /* Inline design tokens - section spacing and borders */
+  --migration-spacing: 1rem;
+  --migration-border-color: #ccc;
+
+  margin-top: var(--migration-spacing);
+  padding-top: var(--migration-spacing);
+  border-top: 1px solid var(--migration-border-color);
 }
 
 .saho-migration-stats table {
@@ -41,19 +62,27 @@ fieldset legend {
 }
 
 .button--primary {
-  background-color: #0073aa;
-  color: white;
+  /* Inline design tokens - SAHO brand primary button */
+  --migration-primary-bg: #990000;
+  --migration-primary-bg-hover: #8b0000;
+  --migration-primary-bg-disabled: #ccc;
+  --migration-primary-text: #ffffff;
+  --migration-button-padding: 0.5rem 1rem;
+  --migration-border-radius-small: 3px;
+
+  background-color: var(--migration-primary-bg);
+  color: var(--migration-primary-text);
   border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 3px;
+  padding: var(--migration-button-padding);
+  border-radius: var(--migration-border-radius-small);
   cursor: pointer;
 }
 
 .button--primary:hover {
-  background-color: #005a87;
+  background-color: var(--migration-primary-bg-hover);
 }
 
 .button--primary:disabled {
-  background-color: #ccc;
+  background-color: var(--migration-primary-bg-disabled);
   cursor: not-allowed;
 }

@@ -1,17 +1,55 @@
 /**
  * SAHO Timeline Base Styles
+ * Modernized with inline CSS custom properties
+ * Component-scoped design tokens with --timeline-* prefix
  */
 
 .saho-timeline {
+  /* Inline design tokens - NO external dependencies */
+  --timeline-color-primary: #990000;
+  --timeline-color-primary-dark: #8b0000;
+  --timeline-color-text-primary: #212529;
+  --timeline-color-text-secondary: #6c757d;
+  --timeline-color-text-muted: #495057;
+  --timeline-color-bg-light: #f8f9fa;
+  --timeline-color-bg-white: #fff;
+  --timeline-color-border-light: #dee2e6;
+  --timeline-color-accent: #0d6efd;
+  --timeline-color-shadow: rgba(0, 0, 0, 0.12);
+  --timeline-color-shadow-hover: rgba(0, 0, 0, 0.15);
+  --timeline-color-accent-shadow: rgba(153, 0, 0, 0.2);
+
+  --timeline-spacing-base: 1rem;
+  --timeline-spacing-2x: 2rem;
+  --timeline-spacing-3x: 3rem;
+  --timeline-spacing-half: 0.5rem;
+  --timeline-spacing-quarter: 0.25rem;
+  --timeline-spacing-1-25: 1.25rem;
+  --timeline-spacing-1-5: 1.5rem;
+
+  --timeline-border-radius: 0.5rem;
+  --timeline-border-radius-sm: 0.25rem;
+  --timeline-border-width: 2px;
+  --timeline-border-width-thick: 4px;
+
+  --timeline-font-size-base: 1rem;
+  --timeline-font-size-sm: 0.875rem;
+  --timeline-font-size-lg: 1.25rem;
+  --timeline-font-size-xl: 1.5rem;
+
+  --timeline-transition-speed: 0.2s;
+  --timeline-marker-size: 12px;
+  --timeline-marker-offset: -2.5rem;
+
   position: relative;
-  padding: 2rem 0;
+  padding: var(--timeline-spacing-2x) 0;
 }
 
 .saho-timeline__filters {
-  margin-bottom: 2rem;
-  padding: 1rem;
-  background: #f8f9fa;
-  border-radius: 0.5rem;
+  margin-bottom: var(--timeline-spacing-2x);
+  padding: var(--timeline-spacing-base);
+  background: var(--timeline-color-bg-light);
+  border-radius: var(--timeline-border-radius);
 }
 
 .saho-timeline__content {
@@ -21,22 +59,27 @@
 /* Vertical Timeline */
 .saho-timeline__vertical-container {
   position: relative;
-  padding-left: 3rem;
+  padding-left: var(--timeline-spacing-3x);
 }
 
 .saho-timeline__vertical-container::before {
   content: '';
   position: absolute;
-  left: 1rem;
+  left: var(--timeline-spacing-base);
   top: 0;
   bottom: 0;
-  width: 2px;
-  background: linear-gradient(to bottom, #dee2e6, #6c757d, #dee2e6);
+  width: var(--timeline-border-width);
+  background: linear-gradient(
+    to bottom,
+    var(--timeline-color-border-light),
+    var(--timeline-color-text-secondary),
+    var(--timeline-color-border-light)
+  );
 }
 
 /* Period Styles */
 .saho-timeline__period {
-  margin-bottom: 3rem;
+  margin-bottom: var(--timeline-spacing-3x);
   position: relative;
 }
 
@@ -44,83 +87,83 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 1.5rem;
-  padding: 0.75rem 1rem;
-  background: #fff;
-  border-left: 4px solid #0d6efd;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: var(--timeline-spacing-1-5);
+  padding: 0.75rem var(--timeline-spacing-base);
+  background: var(--timeline-color-bg-white);
+  border-left: var(--timeline-border-width-thick) solid var(--timeline-color-primary);
+  box-shadow: 0 var(--timeline-border-width) var(--timeline-border-width-thick) var(--timeline-color-shadow);
 }
 
 .saho-timeline__period-title {
   margin: 0;
-  font-size: 1.5rem;
+  font-size: var(--timeline-font-size-xl);
   font-weight: 600;
-  color: #212529;
+  color: var(--timeline-color-text-primary);
 }
 
 .saho-timeline__period-count {
-  font-size: 0.875rem;
-  color: #6c757d;
+  font-size: var(--timeline-font-size-sm);
+  color: var(--timeline-color-text-secondary);
 }
 
 /* Event Styles */
 .saho-timeline-event {
   position: relative;
-  margin-bottom: 2rem;
-  padding: 1.25rem;
-  background: #fff;
-  border-radius: 0.5rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
-  transition: transform 0.2s, box-shadow 0.2s;
+  margin-bottom: var(--timeline-spacing-2x);
+  padding: var(--timeline-spacing-1-25);
+  background: var(--timeline-color-bg-white);
+  border-radius: var(--timeline-border-radius);
+  box-shadow: 0 1px 3px var(--timeline-color-shadow);
+  transition: transform var(--timeline-transition-speed), box-shadow var(--timeline-transition-speed);
 }
 
 .saho-timeline-event:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 8px var(--timeline-color-shadow-hover);
 }
 
 .saho-timeline-event__marker {
   position: absolute;
-  left: -2.5rem;
-  top: 1.5rem;
-  width: 12px;
-  height: 12px;
-  background: #0d6efd;
-  border: 2px solid #fff;
+  left: var(--timeline-marker-offset);
+  top: var(--timeline-spacing-1-5);
+  width: var(--timeline-marker-size);
+  height: var(--timeline-marker-size);
+  background: var(--timeline-color-primary);
+  border: var(--timeline-border-width) solid var(--timeline-color-bg-white);
   border-radius: 50%;
-  box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.2);
+  box-shadow: 0 0 0 3px var(--timeline-color-accent-shadow);
 }
 
 .saho-timeline-event__header {
-  margin-bottom: 1rem;
+  margin-bottom: var(--timeline-spacing-base);
 }
 
 .saho-timeline-event__date {
   display: inline-block;
-  margin-bottom: 0.5rem;
-  font-size: 0.875rem;
+  margin-bottom: var(--timeline-spacing-half);
+  font-size: var(--timeline-font-size-sm);
   font-weight: 500;
-  color: #6c757d;
+  color: var(--timeline-color-text-secondary);
 }
 
 .saho-timeline-event__title {
   margin: 0;
-  font-size: 1.25rem;
+  font-size: var(--timeline-font-size-lg);
   line-height: 1.4;
 }
 
 .saho-timeline-event__title a {
-  color: #212529;
+  color: var(--timeline-color-text-primary);
   text-decoration: none;
 }
 
 .saho-timeline-event__title a:hover {
-  color: #0d6efd;
+  color: var(--timeline-color-primary);
 }
 
 .saho-timeline-event__image {
-  margin: 1rem 0;
-  border-radius: 0.25rem;
+  margin: var(--timeline-spacing-base) 0;
+  border-radius: var(--timeline-border-radius-sm);
   overflow: hidden;
 }
 
@@ -130,26 +173,26 @@
 }
 
 .saho-timeline-event__body {
-  margin: 1rem 0;
-  color: #495057;
+  margin: var(--timeline-spacing-base) 0;
+  color: var(--timeline-color-text-muted);
   line-height: 1.6;
 }
 
 .saho-timeline-event__tags {
-  margin: 1rem 0;
+  margin: var(--timeline-spacing-base) 0;
 }
 
 .saho-timeline-event__tags .badge {
-  margin-right: 0.25rem;
+  margin-right: var(--timeline-spacing-quarter);
 }
 
 .saho-timeline-event__footer {
-  margin-top: 1rem;
+  margin-top: var(--timeline-spacing-base);
 }
 
 /* Compact Mode */
 .saho-timeline-event--compact {
-  padding: 1rem;
+  padding: var(--timeline-spacing-base);
 }
 
 .saho-timeline-event--compact .saho-timeline-event__title {
@@ -161,7 +204,7 @@
   position: relative;
   display: flex;
   overflow-x: auto;
-  padding: 3rem 0;
+  padding: var(--timeline-spacing-3x) 0;
 }
 
 .saho-timeline--horizontal .saho-timeline__line {
@@ -169,15 +212,15 @@
   top: 50%;
   left: 0;
   right: 0;
-  height: 2px;
-  background: #dee2e6;
+  height: var(--timeline-border-width);
+  background: var(--timeline-color-border-light);
   transform: translateY(-50%);
 }
 
 .saho-timeline--horizontal .saho-timeline__period {
   flex: 0 0 auto;
   min-width: 300px;
-  margin-right: 2rem;
+  margin-right: var(--timeline-spacing-2x);
 }
 
 /* Loading State */
@@ -191,11 +234,11 @@
 /* Responsive */
 @media (max-width: 768px) {
   .saho-timeline__vertical-container {
-    padding-left: 2rem;
+    padding-left: var(--timeline-spacing-2x);
   }
 
   .saho-timeline__vertical-container::before {
-    left: 0.5rem;
+    left: var(--timeline-spacing-half);
   }
 
   .saho-timeline-event__marker {
@@ -208,6 +251,6 @@
   }
 
   .saho-timeline__period-count {
-    margin-top: 0.5rem;
+    margin-top: var(--timeline-spacing-half);
   }
 }

@@ -1,26 +1,52 @@
 /**
- * SAHO Button Component Styles
+ * SAHO Button Component - Modern Self-Contained CSS
  *
- * Unified button system - single filled red variant
- * Replaces multiple fragmented button implementations across the site.
+ * Pure CSS component with NO external dependencies.
+ * Uses inline CSS custom properties - works everywhere, no SCSS needed.
  *
- * Design Philosophy:
- * - Single filled button style for consistency
- * - Three sizes (small, medium, large) for different contexts
- * - Design token based for easy theming
+ * Philosophy:
+ * - Single filled red button variant
+ * - Three sizes (small, medium, large)
  * - Fully accessible (WCAG 2.1 AA)
- * - Component-based inheritance for specialized buttons
+ * - Modern CSS features (custom properties, nesting support ready)
  */
 
-/* Base button styles - shared across all sizes */
+/* Component-scoped design tokens */
 .saho-button {
-  /* Layout */
+  /* SAHO Brand Colors - inline, no external dependencies */
+  --btn-color-primary: #990000;        /* SAHO Deep Heritage Red */
+  --btn-color-primary-hover: #8b0000;  /* Darker on hover */
+  --btn-color-text: #ffffff;           /* White text */
+  --btn-color-focus: #990000;          /* Focus outline */
+
+  /* Sizing tokens */
+  --btn-padding-sm: 0.5rem 1rem;
+  --btn-padding-md: 0.75rem 1.5rem;
+  --btn-padding-lg: 1rem 2rem;
+
+  --btn-font-size-sm: 0.85rem;
+  --btn-font-size-md: 0.9rem;
+  --btn-font-size-lg: 1rem;
+
+  --btn-radius-sm: 8px;
+  --btn-radius-md: 25px;   /* Pill shape */
+  --btn-radius-lg: 25px;   /* Pill shape */
+
+  /* Shadow tokens */
+  --btn-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  --btn-shadow-hover: 0 3px 10px rgba(0, 0, 0, 0.1);
+  --btn-shadow-focus: 0 0 0 4px rgba(153, 0, 0, 0.25);
+
+  /* Transition */
+  --btn-transition: all 0.2s ease;
+
+  /* Base Layout */
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   position: relative;
-  z-index: 2; /* Ensure buttons are above stretched links in cards */
+  z-index: 2; /* Above stretched links in cards */
 
   /* Typography */
   font-family: inherit;
@@ -33,39 +59,45 @@
   /* Interaction */
   cursor: pointer;
   border: 1px solid transparent;
-  transition: var(--button-transition);
+  transition: var(--btn-transition);
 
-  /* Visual - using design tokens */
-  background: var(--button-bg-primary);
-  color: var(--button-text-primary);
-  border-color: var(--button-bg-primary);
+  /* Visual - Default (medium) */
+  padding: var(--btn-padding-md);
+  font-size: var(--btn-font-size-md);
+  border-radius: var(--btn-radius-md);
+  background: var(--btn-color-primary);
+  color: var(--btn-color-text);
+  border-color: var(--btn-color-primary);
+  box-shadow: var(--btn-shadow);
 }
 
+/* Link button resets */
 .saho-button:hover,
 .saho-button:focus {
   text-decoration: none;
   outline: none;
-}
-
-.saho-button:focus-visible {
-  outline: 2px solid var(--button-focus-outline);
-  outline-offset: 2px;
-  box-shadow: 0 0 0 4px var(--button-focus-shadow);
+  color: var(--btn-color-text);
 }
 
 /* Hover state */
 .saho-button:hover {
-  background: var(--button-bg-primary-hover);
-  border-color: var(--button-bg-primary-hover);
-  color: var(--button-text-primary);
+  background: var(--btn-color-primary-hover);
+  border-color: var(--btn-color-primary-hover);
   transform: translateY(-1px);
-  box-shadow: var(--button-shadow-hover);
+  box-shadow: var(--btn-shadow-hover);
 }
 
 /* Active state */
 .saho-button:active {
   transform: translateY(0);
-  box-shadow: var(--button-shadow);
+  box-shadow: var(--btn-shadow);
+}
+
+/* Focus state - keyboard navigation */
+.saho-button:focus-visible {
+  outline: 2px solid var(--btn-color-focus);
+  outline-offset: 2px;
+  box-shadow: var(--btn-shadow-focus);
 }
 
 /* Button text wrapper */
@@ -81,7 +113,7 @@
   height: 16px;
 }
 
-/* Icon animation on hover */
+/* Icon animations on hover */
 .saho-button:hover .saho-button__icon--arrow-right {
   transform: translateX(3px);
 }
@@ -90,37 +122,37 @@
   transform: translate(2px, -2px);
 }
 
-/* Size variants */
+/* Size Variants */
 .saho-button--small {
-  padding: 0.5rem 1rem;
-  font-size: var(--button-font-size-sm);
-  border-radius: var(--button-radius-lg);
+  padding: var(--btn-padding-sm);
+  font-size: var(--btn-font-size-sm);
+  border-radius: var(--btn-radius-sm);
 }
 
 .saho-button--medium {
-  padding: 0.75rem 1.5rem;
-  font-size: var(--button-font-size-md);
-  border-radius: var(--button-radius-pill);
+  padding: var(--btn-padding-md);
+  font-size: var(--btn-font-size-md);
+  border-radius: var(--btn-radius-md);
 }
 
 .saho-button--large {
-  padding: 1rem 2rem;
-  font-size: var(--button-font-size-lg);
-  border-radius: var(--button-radius-pill);
+  padding: var(--btn-padding-lg);
+  font-size: var(--btn-font-size-lg);
+  border-radius: var(--btn-radius-lg);
 }
 
-/* Primary variant - explicit class for clarity (default) */
+/* Primary variant - explicit for component inheritance */
 .saho-button--primary {
-  background: var(--button-bg-primary);
-  color: var(--button-text-primary);
-  border-color: var(--button-bg-primary);
+  background: var(--btn-color-primary);
+  color: var(--btn-color-text);
+  border-color: var(--btn-color-primary);
 }
 
 .saho-button--primary:hover,
 .saho-button--primary:focus {
-  background: var(--button-bg-primary-hover);
-  border-color: var(--button-bg-primary-hover);
-  color: var(--button-text-primary);
+  background: var(--btn-color-primary-hover);
+  border-color: var(--btn-color-primary-hover);
+  color: var(--btn-color-text);
 }
 
 /* Icon position modifiers */
@@ -132,7 +164,7 @@
   order: -1;
 }
 
-/* Responsive adjustments */
+/* Responsive - Mobile optimizations */
 @media (max-width: 768px) {
   .saho-button--large {
     padding: 0.875rem 1.75rem;
@@ -150,7 +182,7 @@
   }
 }
 
-/* Accessibility - high contrast mode */
+/* Accessibility - High contrast mode support */
 @media (prefers-contrast: high) {
   .saho-button {
     border-width: 2px;
@@ -161,7 +193,7 @@
   }
 }
 
-/* Reduced motion support */
+/* Reduced motion support - respect user preferences */
 @media (prefers-reduced-motion: reduce) {
   .saho-button,
   .saho-button__icon {
@@ -175,5 +207,15 @@
 
   .saho-button:hover .saho-button__icon {
     transform: none;
+  }
+}
+
+/* Print styles */
+@media print {
+  .saho-button {
+    background: white;
+    color: black;
+    border: 1px solid black;
+    box-shadow: none;
   }
 }

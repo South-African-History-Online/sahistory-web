@@ -1,6 +1,49 @@
+/**
+ * SAHO Hero Banner - Legacy Version
+ * Modern CSS with inline custom properties
+ * Component-scoped design tokens with --hero-legacy-* prefix
+ */
+
+/* ========================================
+   HERO BANNER CONTAINER
+   ======================================== */
+
 .hero-banner {
+  /* Inline design tokens - NO external dependencies */
+  --hero-legacy-min-height: 400px;
+  --hero-legacy-min-height-mobile: 300px;
+  --hero-legacy-overlay-color: #000;
+  --hero-legacy-text-color: #fff;
+  --hero-legacy-max-width: 1200px;
+  --hero-legacy-max-width-inner: 800px;
+  --hero-legacy-padding: 3rem 2rem;
+  --hero-legacy-padding-mobile: 2rem 1rem;
+  --hero-legacy-shadow-strong: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  --hero-legacy-shadow-medium: 1px 1px 3px rgba(0, 0, 0, 0.5);
+  --hero-legacy-shadow-light: 1px 1px 2px rgba(0, 0, 0, 0.5);
+
+  /* Typography scale */
+  --hero-legacy-title-size: 3rem;
+  --hero-legacy-title-size-tablet: 2rem;
+  --hero-legacy-title-size-mobile: 1.75rem;
+  --hero-legacy-subtitle-size: 1.5rem;
+  --hero-legacy-subtitle-size-tablet: 1.25rem;
+  --hero-legacy-subtitle-size-mobile: 1.125rem;
+  --hero-legacy-body-size: 1.1rem;
+  --hero-legacy-body-size-mobile: 1rem;
+
+  /* Spacing */
+  --hero-legacy-spacing-1: 1rem;
+  --hero-legacy-spacing-1-5: 1.5rem;
+  --hero-legacy-spacing-2: 2rem;
+
+  /* Line heights */
+  --hero-legacy-line-height-tight: 1.2;
+  --hero-legacy-line-height-normal: 1.3;
+  --hero-legacy-line-height-relaxed: 1.6;
+
   position: relative;
-  min-height: 400px;
+  min-height: var(--hero-legacy-min-height);
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -10,96 +53,116 @@
   overflow: hidden;
 }
 
+/* ========================================
+   OVERLAY
+   ======================================== */
+
 .hero-banner__overlay {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: #000;
+  background-color: var(--hero-legacy-overlay-color);
   pointer-events: none;
 }
+
+/* ========================================
+   CONTENT AREAS
+   ======================================== */
 
 .hero-banner__content {
   position: relative;
   z-index: 1;
   width: 100%;
-  max-width: 1200px;
-  padding: 3rem 2rem;
+  max-width: var(--hero-legacy-max-width);
+  padding: var(--hero-legacy-padding);
   text-align: center;
-  color: #fff;
+  color: var(--hero-legacy-text-color);
 }
 
 .hero-banner__inner {
-  max-width: 800px;
+  max-width: var(--hero-legacy-max-width-inner);
   margin: 0 auto;
 }
 
+/* ========================================
+   TYPOGRAPHY
+   ======================================== */
+
 .hero-banner__title {
-  font-size: 3rem;
+  font-size: var(--hero-legacy-title-size);
   font-weight: bold;
-  margin-bottom: 1rem;
-  line-height: 1.2;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  margin-bottom: var(--hero-legacy-spacing-1);
+  line-height: var(--hero-legacy-line-height-tight);
+  text-shadow: var(--hero-legacy-shadow-strong);
 }
 
 .hero-banner__subtitle {
-  font-size: 1.5rem;
+  font-size: var(--hero-legacy-subtitle-size);
   font-weight: normal;
-  margin-bottom: 1.5rem;
-  line-height: 1.3;
-  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+  margin-bottom: var(--hero-legacy-spacing-1-5);
+  line-height: var(--hero-legacy-line-height-normal);
+  text-shadow: var(--hero-legacy-shadow-medium);
 }
 
 .hero-banner__body {
-  font-size: 1.1rem;
-  line-height: 1.6;
-  margin-bottom: 2rem;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+  font-size: var(--hero-legacy-body-size);
+  line-height: var(--hero-legacy-line-height-relaxed);
+  margin-bottom: var(--hero-legacy-spacing-2);
+  text-shadow: var(--hero-legacy-shadow-light);
 }
 
 .hero-banner__body p {
-  margin-bottom: 1rem;
+  margin-bottom: var(--hero-legacy-spacing-1);
 }
 
 .hero-banner__body p:last-child {
   margin-bottom: 0;
 }
 
+/* ========================================
+   CALL TO ACTION
+   ======================================== */
+
 .hero-banner__cta {
-  margin-top: 2rem;
+  margin-top: var(--hero-legacy-spacing-2);
 }
 
 /* Button styling now handled by saho-button component */
 
+/* ========================================
+   RESPONSIVE BREAKPOINTS
+   ======================================== */
+
 @media (max-width: 768px) {
   .hero-banner {
-    min-height: 300px;
+    min-height: var(--hero-legacy-min-height-mobile);
   }
 
   .hero-banner__content {
-    padding: 2rem 1rem;
+    padding: var(--hero-legacy-padding-mobile);
   }
 
   .hero-banner__title {
-    font-size: 2rem;
+    font-size: var(--hero-legacy-title-size-tablet);
   }
 
   .hero-banner__subtitle {
-    font-size: 1.25rem;
+    font-size: var(--hero-legacy-subtitle-size-tablet);
   }
 
   .hero-banner__body {
-    font-size: 1rem;
+    font-size: var(--hero-legacy-body-size-mobile);
   }
 }
 
 @media (max-width: 480px) {
   .hero-banner__title {
-    font-size: 1.75rem;
+    font-size: var(--hero-legacy-title-size-mobile);
   }
 
   .hero-banner__subtitle {
-    font-size: 1.125rem;
+    font-size: var(--hero-legacy-subtitle-size-mobile);
   }
 }

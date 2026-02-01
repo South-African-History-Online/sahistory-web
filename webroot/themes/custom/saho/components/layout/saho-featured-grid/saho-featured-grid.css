@@ -1,25 +1,50 @@
 /**
- * SAHO Featured Grid Component Styles
+ * SAHO Featured Grid Component - Modern Self-Contained CSS
  * Drupal 11 SDC - Layout component for featured content displays
  * Heritage-themed grid with sidebar navigation
+ *
+ * Pure CSS with inline custom properties - NO external dependencies
  */
 
-/* Base Grid Styles */
+/* Component-scoped design tokens */
 .saho-featured-grid {
+  /* SAHO Brand Colors */
+  --fg-primary: #990000;
+  --fg-secondary: #3a4a64;
+  --fg-accent: #d4a574;
+  --fg-highlight: #8b2331;
+  --fg-deep-heritage-red: #8b0000;
+  --fg-muted-gold: #c9b037;
+  --fg-slate-blue: #5a6c8e;
+
+  /* Surface Colors */
+  --fg-surface: #ffffff;
+  --fg-surface-alt: #f8f9fa;
+  --fg-border-light: #dee2e6;
+
+  /* Text Colors */
+  --fg-text-secondary: #495057;
+  --fg-text-muted: #6c757d;
+
+  /* Alpha Variants */
+  --fg-primary-alpha-25: rgba(153, 0, 0, 0.25);
+  --fg-accent-alpha-25: rgba(212, 165, 116, 0.25);
+
+  /* Spacing */
   --grid-gap: 1.5rem;
   --sidebar-width: 280px;
 }
 
 /* Hero Section */
 .saho-featured-grid__hero {
-  background: linear-gradient(135deg, var(--saho-surface) 0%, var(--saho-surface-alt) 100%);
+  background: linear-gradient(135deg, var(--fg-surface) 0%, var(--fg-surface-alt) 100%);
   padding: 2rem 0;
   border-radius: 0.75rem;
   margin-bottom: 2rem;
 }
 
 .saho-featured-grid__description {
-  color: var(--saho-text-secondary);
+  color: var(--fg-text-secondary);
   font-size: 1.125rem;
   line-height: 1.7;
   max-width: 800px;
@@ -27,7 +52,7 @@
 
 /* Stats Section */
 .saho-featured-grid__stats {
-  background: var(--saho-surface-alt);
+  background: var(--fg-surface-alt);
   border-radius: 0.75rem;
   margin: 2rem 0;
 }
@@ -46,7 +71,7 @@
 
 .saho-stat-label {
   font-size: 0.875rem;
-  color: var(--saho-text-muted);
+  color: var(--fg-text-muted);
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -54,14 +79,14 @@
 
 /* Sidebar Styles */
 .saho-featured-grid__sidebar {
-  background: var(--saho-surface);
-  border: 1px solid var(--saho-border-light);
+  background: var(--fg-surface);
+  border: 1px solid var(--fg-border-light);
   border-radius: 0.75rem;
   box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.05);
 }
 
 .saho-sidebar-header {
-  background: var(--saho-primary);
+  background: var(--fg-primary);
   color: white;
   font-weight: 600;
   border-radius: 0.5rem 0.5rem 0 0;
@@ -87,15 +112,15 @@
 }
 
 .saho-category-item:hover {
-  background: var(--saho-surface-alt);
+  background: var(--fg-surface-alt);
   transform: translateX(4px);
 }
 
 .saho-category-item.active {
-  background: var(--saho-primary);
+  background: var(--fg-primary);
   color: white;
   transform: translateX(4px);
-  box-shadow: 0 2px 8px var(--saho-primary-alpha-25);
+  box-shadow: 0 2px 8px var(--fg-primary-alpha-25);
 }
 
 .saho-category-icon {
@@ -112,7 +137,7 @@
 
 .saho-category-count {
   font-size: 0.75rem;
-  background: var(--saho-surface-alt);
+  background: var(--fg-surface-alt);
   padding: 0.25rem 0.5rem;
   border-radius: 1rem;
   font-weight: 600;
@@ -179,7 +204,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 1rem;
-  background: var(--saho-surface-alt);
+  background: var(--fg-surface-alt);
   border-radius: 0.5rem;
   margin-bottom: 1.5rem;
 }
@@ -188,40 +213,40 @@
 .form-select {
   min-width: 150px;
   border-radius: 0.5rem;
-  border-color: var(--saho-border-light);
-  background-color: var(--saho-surface);
+  border-color: var(--fg-border-light);
+  background-color: var(--fg-surface);
 }
 
 .form-select:focus {
-  border-color: var(--saho-primary);
-  box-shadow: 0 0 0 0.2rem var(--saho-primary-alpha-25);
+  border-color: var(--fg-primary);
+  box-shadow: 0 0 0 0.2rem var(--fg-primary-alpha-25);
 }
 
 /* Color Variants */
 .saho-featured-grid--variant-secondary .saho-sidebar-header {
-  background: var(--saho-secondary);
+  background: var(--fg-secondary);
 }
 
 .saho-featured-grid--variant-secondary .saho-category-item.active {
-  background: var(--saho-secondary);
+  background: var(--fg-secondary);
   box-shadow: 0 2px 8px rgba(58, 74, 100, 0.25);
 }
 
 .saho-featured-grid--variant-accent .saho-sidebar-header {
-  background: var(--saho-accent);
+  background: var(--fg-accent);
 }
 
 .saho-featured-grid--variant-accent .saho-category-item.active {
-  background: var(--saho-accent);
-  box-shadow: 0 2px 8px var(--saho-accent-alpha-25);
+  background: var(--fg-accent);
+  box-shadow: 0 2px 8px var(--fg-accent-alpha-25);
 }
 
 .saho-featured-grid--variant-highlight .saho-sidebar-header {
-  background: var(--saho-highlight);
+  background: var(--fg-highlight);
 }
 
 .saho-featured-grid--variant-highlight .saho-category-item.active {
-  background: var(--saho-highlight);
+  background: var(--fg-highlight);
   box-shadow: 0 2px 8px rgba(139, 35, 49, 0.25);
 }
 
@@ -301,13 +326,13 @@
 
 /* Accessibility */
 .saho-category-item:focus {
-  outline: 2px solid var(--saho-primary);
+  outline: 2px solid var(--fg-primary);
   outline-offset: 2px;
 }
 
 /* Loading States */
 .spinner-border.saho-text-primary {
-  color: var(--saho-primary);
+  color: var(--fg-primary);
   width: 2rem;
   height: 2rem;
 }

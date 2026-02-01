@@ -1,17 +1,56 @@
 /**
- * SAHO Sharing Button Component Styles
+ * SAHO Sharing Button Component - Modern Self-Contained CSS
  *
- * Extends saho-button component with social sharing features:
- * - Platform-specific icon colors
- * - Social media hover states
- * - Toolbar and floating positioning
+ * Pure CSS component with NO external dependencies.
+ * Uses inline CSS custom properties - works everywhere, no SCSS needed.
  *
- * Inherits all base button styling from saho-button component.
+ * Philosophy:
+ * - Extends saho-button with social sharing features
+ * - Platform-specific brand colors (Twitter, Facebook, LinkedIn, etc.)
+ * - Loading and success states for UX feedback
+ * - Toolbar and floating position variants
+ * - Fully accessible (WCAG 2.1 AA)
+ *
+ * Note: Inherits base button styling from .saho-button component.
  * Only sharing-specific styles are defined here.
  */
 
-/* Base Sharing Button - inherits from .saho-button */
+/* Component-scoped design tokens */
 .saho-sharing-button {
+  /* Platform Brand Colors - inline, no external dependencies */
+  --share-color-twitter: #1da1f2;      /* Twitter blue */
+  --share-color-facebook: #4267b2;     /* Facebook blue */
+  --share-color-linkedin: #0077b5;     /* LinkedIn blue */
+  --share-color-whatsapp: #25d366;     /* WhatsApp green */
+  --share-color-email: #6c757d;        /* Email gray */
+  --share-color-reddit: #ff4500;       /* Reddit orange */
+  --share-color-pinterest: #e60023;    /* Pinterest red */
+  --share-color-success: #10b981;      /* Success green */
+  --share-color-success-hover: #22c55e; /* Lighter success green */
+
+  /* Sizing tokens */
+  --share-radius-sm: 8px;
+  --share-radius-pill: 25px;
+
+  /* Shadow tokens */
+  --share-shadow-floating: 0 6px 20px rgba(153, 0, 0, 0.3);
+  --share-shadow-floating-hover: 0 8px 25px rgba(153, 0, 0, 0.4);
+
+  /* Loading spinner */
+  --share-spinner-size: 1rem;
+  --share-spinner-border: 2px;
+
+  /* Position tokens */
+  --share-floating-bottom: 20px;
+  --share-floating-left: 20px;
+  --share-floating-bottom-mobile: 16px;
+  --share-floating-left-mobile: 16px;
+  --share-floating-z: 1000;
+
+  /* Transition */
+  --share-transition: all 0.2s ease;
+  --share-icon-transition: transform 0.2s ease;
+
   /* Inherit all base button styles by using .saho-button in template */
   /* Only add sharing-specific overrides here */
 }
@@ -25,7 +64,7 @@
 }
 
 .saho-sharing-button__icon svg {
-  transition: transform 0.2s ease;
+  transition: var(--share-icon-transition);
 }
 
 .saho-sharing-button:hover .saho-sharing-button__icon svg {
@@ -44,12 +83,12 @@
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 1rem;
-  height: 1rem;
-  margin-top: -0.5rem;
-  margin-left: -0.5rem;
-  border: 2px solid transparent;
-  border-top: 2px solid white;
+  width: var(--share-spinner-size);
+  height: var(--share-spinner-size);
+  margin-top: calc(var(--share-spinner-size) / -2);
+  margin-left: calc(var(--share-spinner-size) / -2);
+  border: var(--share-spinner-border) solid transparent;
+  border-top: var(--share-spinner-border) solid white;
   border-radius: 50%;
   animation: saho-sharing-spin 0.8s linear infinite;
 }
@@ -65,80 +104,99 @@
 
 /* Success State - shown after successful share */
 .saho-sharing-button--success {
-  background: var(--color-success);
-  border-color: var(--color-success);
+  background: var(--share-color-success);
+  border-color: var(--share-color-success);
   color: white;
 }
 
 .saho-sharing-button--success:hover {
-  background: #22c55e;
-  border-color: #22c55e;
+  background: var(--share-color-success-hover);
+  border-color: var(--share-color-success-hover);
 }
 
 /* Social Platform Specific Hover Colors */
 /* When button has platform class, override hover color to match platform brand */
 
 .saho-sharing-button--twitter:hover {
-  background: #1da1f2;
-  border-color: #1da1f2;
+  background: var(--share-color-twitter);
+  border-color: var(--share-color-twitter);
   color: white;
 }
 
 .saho-sharing-button--facebook:hover {
-  background: #4267b2;
-  border-color: #4267b2;
+  background: var(--share-color-facebook);
+  border-color: var(--share-color-facebook);
   color: white;
 }
 
 .saho-sharing-button--linkedin:hover {
-  background: #0077b5;
-  border-color: #0077b5;
+  background: var(--share-color-linkedin);
+  border-color: var(--share-color-linkedin);
   color: white;
 }
 
 .saho-sharing-button--whatsapp:hover {
-  background: #25d366;
-  border-color: #25d366;
+  background: var(--share-color-whatsapp);
+  border-color: var(--share-color-whatsapp);
   color: white;
 }
 
 .saho-sharing-button--email:hover {
-  background: var(--color-accent);
-  border-color: var(--color-accent);
+  background: var(--share-color-email);
+  border-color: var(--share-color-email);
   color: white;
 }
 
 .saho-sharing-button--reddit:hover {
-  background: #ff4500;
-  border-color: #ff4500;
+  background: var(--share-color-reddit);
+  border-color: var(--share-color-reddit);
   color: white;
 }
 
 .saho-sharing-button--pinterest:hover {
-  background: #e60023;
-  border-color: #e60023;
+  background: var(--share-color-pinterest);
+  border-color: var(--share-color-pinterest);
   color: white;
 }
 
 /* Position Variants - for toolbar and floating placements */
 .saho-sharing-button--toolbar {
-  border-radius: var(--button-radius-sm);
+  border-radius: var(--share-radius-sm);
 }
 
 .saho-sharing-button--floating {
   position: fixed;
-  bottom: 20px;
-  left: 20px;
-  z-index: 1000;
-  box-shadow: 0 6px 20px rgba(153, 0, 0, 0.3);
-  border-radius: var(--button-radius-pill);
+  bottom: var(--share-floating-bottom);
+  left: var(--share-floating-left);
+  z-index: var(--share-floating-z);
+  box-shadow: var(--share-shadow-floating);
+  border-radius: var(--share-radius-pill);
 }
 
 .saho-sharing-button--floating:hover {
-  box-shadow: 0 8px 25px rgba(153, 0, 0, 0.4);
+  box-shadow: var(--share-shadow-floating-hover);
 }
 
-/* Reduced Motion */
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .saho-sharing-button--floating {
+    bottom: var(--share-floating-bottom-mobile);
+    left: var(--share-floating-left-mobile);
+  }
+}
+
+/* Accessibility - High contrast mode support */
+@media (prefers-contrast: high) {
+  .saho-sharing-button {
+    border-width: 2px;
+  }
+
+  .saho-sharing-button:focus-visible {
+    outline-width: 3px;
+  }
+}
+
+/* Reduced Motion - respect user preferences */
 @media (prefers-reduced-motion: reduce) {
   .saho-sharing-button__icon svg {
     transition: none;
@@ -147,19 +205,15 @@
   .saho-sharing-button--loading::after {
     animation: none;
   }
+
+  .saho-sharing-button:hover .saho-sharing-button__icon svg {
+    transform: none;
+  }
 }
 
 /* Print Styles - hide sharing buttons in print */
 @media print {
   .saho-sharing-button {
     display: none;
-  }
-}
-
-/* Mobile Responsiveness */
-@media (max-width: 768px) {
-  .saho-sharing-button--floating {
-    bottom: 16px;
-    left: 16px;
   }
 }
