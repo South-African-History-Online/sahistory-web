@@ -36,38 +36,30 @@ log() {
 
 error_exit() {
     echo -e "${RED}ERROR: $1${NC}" | tee -a "${LOG_FILE}"
-    echo -e "${YELLOW}Rollback: vendor/bin/drush sql:cli < ${BACKUP_DIR}/db-default-${TIMESTAMP}.sql${NC}"
     exit 1
 }
 
 log "Starting deployment for default site"
 
-# Database backup
-echo -e "${YELLOW}[1/5] Creating database backup...${NC}"
-BACKUP_FILE="${BACKUP_DIR}/db-default-${TIMESTAMP}.sql"
-vendor/bin/drush sql:dump --result-file="${BACKUP_FILE}" -l "${SITE_URI}" >> "${LOG_FILE}" 2>&1 || error_exit "Backup failed"
-BACKUP_SIZE=$(du -h "${BACKUP_FILE}" | cut -f1)
-echo -e "${GREEN}✓ Backed up (${BACKUP_SIZE})${NC}"
-
 # Git pull
-echo -e "${YELLOW}[2/5] Pulling code...${NC}"
+echo -e "${YELLOW}[1/4] Pulling code...${NC}"
 CURRENT_COMMIT=$(git rev-parse HEAD)
 git pull >> "${LOG_FILE}" 2>&1 || error_exit "Git pull failed"
 NEW_COMMIT=$(git rev-parse HEAD)
 echo -e "${GREEN}✓ Code updated${NC}"
 
 # Composer
-echo -e "${YELLOW}[3/5] Installing dependencies...${NC}"
+echo -e "${YELLOW}[2/4] Installing dependencies...${NC}"
 composer install --no-dev --optimize-autoloader >> "${LOG_FILE}" 2>&1 || error_exit "Composer failed"
 echo -e "${GREEN}✓ Dependencies updated${NC}"
 
 # Maintenance mode
-echo -e "${YELLOW}[4/5] Enabling maintenance mode...${NC}"
+echo -e "${YELLOW}[3/4] Enabling maintenance mode...${NC}"
 vendor/bin/drush state:set system.maintenance_mode 1 -l "${SITE_URI}" >> "${LOG_FILE}" 2>&1
 echo -e "${GREEN}✓ Maintenance ON${NC}"
 
 # Deploy
-echo -e "${YELLOW}[5/5] Running drush deploy...${NC}"
+echo -e "${YELLOW}[4/4] Running drush deploy...${NC}"
 vendor/bin/drush deploy -y -l "${SITE_URI}" >> "${LOG_FILE}" 2>&1 || error_exit "Deploy 1 failed"
 echo -e "${GREEN}✓ Deploy 1/2${NC}"
 vendor/bin/drush deploy -y -l "${SITE_URI}" >> "${LOG_FILE}" 2>&1 || error_exit "Deploy 2 failed"
@@ -76,10 +68,8 @@ echo -e "${GREEN}✓ Deploy 2/2${NC}"
 # Cleanup
 vendor/bin/drush state:set system.maintenance_mode 0 -l "${SITE_URI}" >> "${LOG_FILE}" 2>&1
 vendor/bin/drush cr -l "${SITE_URI}" >> "${LOG_FILE}" 2>&1
-ls -t "${BACKUP_DIR}"/db-default-*.sql | tail -n +3 | xargs -r rm
 
 echo ""
 echo -e "${GREEN}✓ DEPLOYMENT SUCCESSFUL${NC}"
-echo -e "Backup: ${BACKUP_FILE} (${BACKUP_SIZE})"
 echo -e "Log: ${LOG_FILE}"
 echo ""
