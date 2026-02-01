@@ -19,11 +19,38 @@
 
 // Buttons
 // NOTE: For custom SAHO buttons, use the saho-button SDC component instead
-// These Bootstrap overrides are for core Drupal admin UI and legacy components
+// These Bootstrap overrides match the saho-button component for consistency
 
-.btn-primary,
-.btn-primary:hover {
-  @include btn-shadow($primary);
+.btn-primary {
+  // Match saho-button--primary styling exactly
+  background: var(--button-bg-primary);
+  color: var(--button-text-primary);
+  border-color: var(--button-bg-primary);
+  border-radius: var(--button-radius-pill);
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  transition: var(--button-transition);
+  box-shadow: none;
+
+  &:hover,
+  &:focus {
+    background: var(--button-bg-primary-hover);
+    border-color: var(--button-bg-primary-hover);
+    color: var(--button-text-primary);
+    transform: translateY(-1px);
+    box-shadow: var(--button-shadow-hover);
+  }
+
+  &:active {
+    transform: translateY(0);
+    box-shadow: var(--button-shadow);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--button-focus-outline);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--button-focus-shadow);
+  }
 }
 
 .btn-secondary,
@@ -65,6 +92,26 @@
 .btn-light,
 .btn-light:hover {
   @include btn-shadow($light);
+}
+
+// Reduced motion support for buttons
+@media (prefers-reduced-motion: reduce) {
+  .btn-primary,
+  .btn-secondary,
+  .btn,
+  .btn-success,
+  .btn-info,
+  .btn-warning,
+  .btn-danger,
+  .btn-dark,
+  .btn-light {
+    transition: none;
+
+    &:hover,
+    &:focus {
+      transform: none;
+    }
+  }
 }
 
 .btn-outline-secondary {
