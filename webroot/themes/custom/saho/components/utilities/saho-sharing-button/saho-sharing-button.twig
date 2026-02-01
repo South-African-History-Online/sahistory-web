@@ -2,16 +2,16 @@
 /**
  * @file
  * SAHO Sharing Button Component Template
- * 
- * Drupal 11 Single Directory Component (SDC)
- * Social sharing button with SAHO heritage branding
+ *
+ * Extends saho-button component with social sharing features.
+ * Inherits base button styling and adds modal/sharing integration.
  *
  * Props:
  * - title (string): Button text
- * - variant (string): primary|secondary|outline|minimal
- * - size (string): small|medium|large
+ * - size (string): small|medium|large (inherits from saho-button)
  * - show_icon (boolean): Display sharing icon
  * - position (string): inline|toolbar|floating
+ * - platform (string): twitter|facebook|linkedin|whatsapp|email|reddit|pinterest
  * - modal_target (string): Target modal ID
  * - share_data (object): { url, title, description }
  * - accessibility (object): { aria_label, description }
@@ -20,11 +20,12 @@
 
 {%
   set classes = [
+    'saho-button',
+    'saho-button--primary',
     'saho-sharing-button',
-    'btn',
-    variant ? 'saho-sharing-button--' ~ variant : 'saho-sharing-button--secondary',
-    size ? 'saho-sharing-button--' ~ size : 'saho-sharing-button--medium',
-    position ? 'saho-sharing-button--' ~ position : 'saho-sharing-button--inline'
+    size ? 'saho-button--' ~ size : 'saho-button--medium',
+    position ? 'saho-sharing-button--' ~ position : '',
+    platform ? 'saho-sharing-button--' ~ platform : ''
   ]
 %}
 
@@ -54,7 +55,7 @@
   {% for attr_name, attr_value in button_attributes %}
     {% if attr_value %}{{ attr_name }}="{{ attr_value }}"{% endif %}
   {% endfor %}>
-  
+
   {% if show_icon|default(true) %}
     <span class="saho-sharing-button__icon" aria-hidden="true">
       <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" role="img">
@@ -63,9 +64,9 @@
       </svg>
     </span>
   {% endif %}
-  
-  <span class="saho-sharing-button__text">
+
+  <span class="saho-button__text saho-sharing-button__text">
     {{ title|default('Share') }}
   </span>
-  
+
 </button>
