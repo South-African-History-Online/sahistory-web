@@ -15,10 +15,13 @@ NC='\033[0m'
 ENVIRONMENT="${1:-staging}"
 SITE_URI="default"
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-BACKUP_DIR="backups/deploy"
-LOG_FILE="logs/deploy-${ENVIRONMENT}-${TIMESTAMP}.log"
 
 cd "$(dirname "$0")/.." || exit 1
+
+# Use absolute paths
+PROJECT_ROOT=$(pwd)
+BACKUP_DIR="${PROJECT_ROOT}/backups/deploy"
+LOG_FILE="${PROJECT_ROOT}/logs/deploy-${ENVIRONMENT}-${TIMESTAMP}.log"
 
 echo -e "${GREEN}========================================${NC}"
 echo -e "${GREEN}SAHO Default Site Deployment${NC}"
