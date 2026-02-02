@@ -8,56 +8,185 @@
 
 // Define CSS custom properties (CSS variables) for SAHO heritage colors
 :root {
-  // Primary SAHO heritage colors
-  --saho-primary: #{$deep-heritage-red};           // #990000 - Heritage red
-  --saho-secondary: #{$slate-blue};                // #3a4a64 - Academic blue
-  --saho-accent: #{$muted-gold};                   // #b88a2e - Historical gold
-  --saho-highlight: #{$faded-brick-red};           // #8b2331 - Content highlight
-  
-  // Surface and text colors
+  // ============================================
+  // PRIMARY SAHO HERITAGE COLORS
+  // ============================================
+  --saho-color-primary: #{$deep-heritage-red};           // #990000 - Heritage red (Article)
+  --saho-color-primary-dark: #8b0000;                    // Darker variant for hover states
+  --saho-color-secondary: #{$slate-blue};                // #3a4a64 - Academic blue (Place)
+  --saho-color-accent: #{$muted-gold};                   // #b88a2e - Historical gold (Archive)
+  --saho-color-highlight: #{$faded-brick-red};           // #8b2331 - Content highlight
+  --saho-color-charcoal: #{$dark-charcoal};              // #1e293b - Dark charcoal (Event)
+  --saho-color-forest-green: #2d5016;                    // Forest green (Biography)
+
+  // Legacy naming for backward compatibility
+  --saho-primary: var(--saho-color-primary);
+  --saho-secondary: var(--saho-color-secondary);
+  --saho-accent: var(--saho-color-accent);
+  --saho-highlight: var(--saho-color-highlight);
+
+  // ============================================
+  // CONTENT TYPE COLOR MAPPINGS
+  // ============================================
+  // These ensure consistent color coding across the platform:
+  // - Article: Red (#990000) - Primary heritage red
+  // - Archive: Gold (#b88a2e) - Historical accent
+  // - Place: Blue (#3a4a64) - Academic/geographic blue
+  // - Biography: Green (#2d5016) - Life/growth green
+  // - Event: Charcoal (#1e293b) - Temporal/historical dark
+
+  // ============================================
+  // SURFACE AND TEXT COLORS
+  // ============================================
   --saho-surface: #{$aged-parchment};              // #ffffff - Base surface
   --saho-surface-alt: #{darken($aged-parchment, 3%)}; // Darker surface variant
   --saho-text-primary: #{$dark-charcoal};          // Main text color
   --saho-text-secondary: #{lighten($dark-charcoal, 20%)}; // Supporting text
   --saho-text-muted: #{lighten($dark-charcoal, 40%)}; // De-emphasized text
-  
-  // Border and utility colors
+
+  // ============================================
+  // NEUTRAL COLORS
+  // ============================================
+  --saho-color-white: #fff;
+  --saho-color-black: #000;
+  --saho-color-gray-100: #f8fafc;
+  --saho-color-gray-200: #e2e8f0;
+  --saho-color-gray-300: #cbd5e1;
+  --saho-color-gray-400: #94a3b8;
+  --saho-color-gray-500: #64748b;
+  --saho-color-gray-600: #475569;
+  --saho-color-gray-700: #334155;
+  --saho-color-gray-800: #1e293b;
+  --saho-color-text-dark: #222;
+  --saho-color-text-medium: #333;
+  --saho-color-text-light: #444;
+  --saho-color-text-lighter: #555;
+  --saho-color-text-muted: #666;
+  --saho-color-text-subtle: #777;
+
+  // ============================================
+  // BORDER AND UTILITY COLORS
+  // ============================================
   --saho-border: #{darken($aged-parchment, 12%)};  // Border color
   --saho-border-light: #{darken($aged-parchment, 6%)}; // Light border
-  
-  // Alpha variants for overlays and shadows
-  --saho-primary-alpha-10: #{rgba($deep-heritage-red, 0.1)};
-  --saho-primary-alpha-25: #{rgba($deep-heritage-red, 0.25)};
-  --saho-primary-alpha-50: #{rgba($deep-heritage-red, 0.5)};
-  --saho-accent-alpha-10: #{rgba($muted-gold, 0.1)};
-  --saho-accent-alpha-25: #{rgba($muted-gold, 0.25)};
+  --saho-color-border-light: #ccc;
+  --saho-color-border-medium: #ddd;
+  --saho-color-border-subtle: #eee;
 
-  // Spacing scale (based on 1rem = 16px)
-  --saho-space-xs: 0.25rem;      // 4px
-  --saho-space-sm: 0.5rem;       // 8px
-  --saho-space-md: 1rem;         // 16px
-  --saho-space-lg: 1.5rem;       // 24px
-  --saho-space-xl: 2rem;         // 32px
-  --saho-space-2xl: 3rem;        // 48px
+  // ============================================
+  // ALPHA VARIANTS (TRANSPARENCY)
+  // ============================================
+  // Primary color alpha variants
+  --saho-color-primary-alpha-10: #{rgba($deep-heritage-red, 0.1)};
+  --saho-color-primary-alpha-20: rgba(153, 0, 0, 0.2);
+  --saho-color-primary-alpha-25: #{rgba($deep-heritage-red, 0.25)};
+  --saho-color-primary-alpha-50: #{rgba($deep-heritage-red, 0.5)};
+  --saho-color-primary-alpha-80: rgba(153, 0, 0, 0.8);
+  --saho-color-primary-alpha-90: rgba(153, 0, 0, 0.9);
 
-  // Shadow system for elevation
-  --saho-shadow-sm: 0 1px 2px 0 rgb(0, 0, 0, 0.05);
-  --saho-shadow-md: 0 2px 8px rgb(0, 0, 0, 0.1);
-  --saho-shadow-lg: 0 10px 25px rgb(0, 0, 0, 0.15);
-  --saho-shadow-xl: 0 20px 40px rgb(0, 0, 0, 0.2);
+  // Accent color alpha variants
+  --saho-color-accent-alpha-10: #{rgba($muted-gold, 0.1)};
+  --saho-color-accent-alpha-25: #{rgba($muted-gold, 0.25)};
+  --saho-color-accent-alpha-90: rgba(184, 138, 46, 0.9);
 
-  // Border radius scale
+  // Secondary color alpha variants
+  --saho-color-secondary-alpha-90: rgba(58, 74, 100, 0.9);
+
+  // Charcoal color alpha variants
+  --saho-color-charcoal-alpha-90: rgba(30, 41, 59, 0.9);
+
+  // Forest green color alpha variants
+  --saho-color-forest-green-alpha-90: rgba(45, 80, 22, 0.9);
+
+  // Black alpha variants for shadows and overlays
+  --saho-color-black-alpha-05: rgba(0, 0, 0, 0.05);
+  --saho-color-black-alpha-10: rgba(0, 0, 0, 0.1);
+  --saho-color-black-alpha-15: rgba(0, 0, 0, 0.15);
+  --saho-color-black-alpha-20: rgba(0, 0, 0, 0.2);
+  --saho-color-black-alpha-25: rgba(0, 0, 0, 0.25);
+  --saho-color-black-alpha-30: rgba(0, 0, 0, 0.3);
+  --saho-color-black-alpha-50: rgba(0, 0, 0, 0.5);
+  --saho-color-black-alpha-80: rgba(0, 0, 0, 0.8);
+
+  // White alpha variants for overlays
+  --saho-color-white-alpha-70: rgba(255, 255, 255, 0.7);
+
+  // ============================================
+  // BACKGROUND COLORS
+  // ============================================
+  --saho-color-bg-light: #f5f5f5;
+  --saho-color-bg-warm: #fef9f5;
+  --saho-color-bg-cream: #fef9f0;
+  --saho-color-bg-card: #f8f9fa;
+
+  // ============================================
+  // GRADIENT BACKGROUNDS
+  // ============================================
+  --saho-gradient-light: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+
+  // ============================================
+  // SPECIFIC ELEMENT COLORS
+  // ============================================
+  --saho-color-card-text: #2c3e50;
+  --saho-color-card-meta: #6c757d;
+  --saho-color-card-description: #495057;
+  --saho-color-firebrick: #B22222;
+
+  // Legacy alpha variants (kept for backward compatibility)
+  --saho-primary-alpha-10: var(--saho-color-primary-alpha-10);
+  --saho-primary-alpha-25: var(--saho-color-primary-alpha-25);
+  --saho-primary-alpha-50: var(--saho-color-primary-alpha-50);
+  --saho-accent-alpha-10: var(--saho-color-accent-alpha-10);
+  --saho-accent-alpha-25: var(--saho-color-accent-alpha-25);
+
+  // ============================================
+  // SPACING SCALE - 8px Baseline Grid
+  // ============================================
+  // Unified spacing system using 8px baseline for visual rhythm.
+  // All spacing tokens use numeric scale (1-8) for clarity.
+  --saho-space-1: 0.5rem;        // 8px - Tight spacing, inline elements
+  --saho-space-2: 1rem;          // 16px - Standard spacing, close elements
+  --saho-space-3: 1.5rem;        // 24px - Comfortable spacing, related content
+  --saho-space-4: 2rem;          // 32px - Section separation (STANDARD for grids)
+  --saho-space-5: 2.5rem;        // 40px - Large sections
+  --saho-space-6: 3rem;          // 48px - Major sections, dramatic spacing
+  --saho-space-8: 4rem;          // 64px - Page sections, maximum spacing
+
+  // Legacy spacing aliases (for backward compatibility - will be deprecated)
+  // Map old names to new unified system
+  --saho-space-xs: var(--saho-space-1);    // 8px (was 4px)
+  --saho-space-sm: var(--saho-space-2);    // 16px (was 8px)
+  --saho-space-md: var(--saho-space-2);    // 16px (unchanged)
+  --saho-space-lg: var(--saho-space-3);    // 24px (unchanged)
+  --saho-space-xl: var(--saho-space-4);    // 32px (unchanged)
+  --saho-space-2xl: var(--saho-space-6);   // 48px (unchanged)
+
+  // ============================================
+  // SHADOW SYSTEM FOR ELEVATION
+  // ============================================
+  --saho-shadow-sm: 0 1px 2px 0 var(--saho-color-black-alpha-05);
+  --saho-shadow-md: 0 2px 8px var(--saho-color-black-alpha-10);
+  --saho-shadow-lg: 0 10px 25px var(--saho-color-black-alpha-15);
+  --saho-shadow-xl: 0 20px 40px var(--saho-color-black-alpha-20);
+
+  // ============================================
+  // BORDER RADIUS SCALE
+  // ============================================
   --saho-radius-sm: 4px;
   --saho-radius-md: 8px;
   --saho-radius-lg: 12px;
   --saho-radius-full: 9999px;
 
-  // Transitions
+  // ============================================
+  // TRANSITIONS
+  // ============================================
   --saho-transition-fast: 150ms ease;
   --saho-transition-base: 300ms ease;
   --saho-transition-slow: 500ms ease;
 
-  // Z-index scale
+  // ============================================
+  // Z-INDEX SCALE
+  // ============================================
   --saho-z-dropdown: 1000;
   --saho-z-sticky: 1020;
   --saho-z-fixed: 1030;
