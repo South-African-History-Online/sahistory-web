@@ -1,42 +1,69 @@
 // Block Section Styling
-// Modern and professional styling for block sections to complement TDIH interactive block
+// Modern and professional styling for block sections using design token system
+// Uses centralized design tokens from abstracts/_design-tokens.scss
 
 // Featured topics and TDIH blocks container
 .two-blocks-container {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
-  gap: 3rem;
+  grid-template-columns: repeat(auto-fit, minmax($saho-grid-two-col-min-width, 1fr));
+  gap: var(--saho-space-6);
   justify-content: center;
   align-items: start;
-  margin: 2rem 0;
-  max-width: 1600px;
+  margin: var(--saho-space-4) 0;
+  max-width: var(--saho-container-wide);
   margin-left: auto;
   margin-right: auto;
-  padding: 0 1.5rem;
+  padding: 0 var(--saho-space-3);
+
+  // Allow blocks to fill their 50% grid allocation
+  .block-section {
+    max-width: none;
+    width: 100%;
+  }
+}
+
+// Layout Builder two-column sections: Allow blocks to fill their region
+.layout--twocol-section .layout__region .block-section {
+  max-width: none;
+  width: 100%;
 }
 
 // Clean modern block section styling - matching TDIH design
+// Default uses standard container width (1200px)
 .block-section {
   background: $white;
-  border-radius: 8px;
+  border-radius: var(--saho-radius-md);
   border: 1px solid $gray-200;
-  padding: 2rem;
+  padding: var(--block-padding);
   font-family: $font-family-base;
   color: $gray-800;
   transition: all 0.3s ease;
   position: relative;
-  
-  // Override bootswatch.scss restrictive width
-  max-width: none !important;
+
+  // Default container width - standard (1200px)
+  max-width: var(--saho-container-standard);
   width: 100%;
-  margin: 0;
+  margin: 0 auto;
   text-align: left;
-  
+
   // Clean hover effect
   &:hover {
-    box-shadow: 0 2px 8px rgba($gray-900, 0.1);
+    box-shadow: var(--saho-shadow-hover);
     border-color: $gray-300;
   }
+}
+
+// Container width modifiers using design token system
+.block-section--narrow {
+  max-width: var(--saho-container-narrow); // 700px - Single column content
+}
+
+.block-section--wide {
+  max-width: var(--saho-container-wide); // 1600px - Multi-column grids
+}
+
+.block-section--full {
+  max-width: var(--saho-container-full); // 100% - Full-width sections
 }
 
 /* Clean heading with left accent bar - TDIH style */
@@ -44,23 +71,23 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  margin-bottom: 1.5rem;
-  padding-bottom: 1rem;
+  margin-bottom: var(--saho-space-3);
+  padding-bottom: var(--saho-space-2);
   border-bottom: 1px solid $gray-200;
   
   .block-title-wrapper {
     display: flex;
     align-items: flex-start;
-    gap: 0.75rem;
-    
+    gap: var(--saho-space-1);
+
     // Left accent bar
     &::before {
       content: '';
       width: 4px;
-      height: 2rem;
+      height: var(--saho-space-4);
       background: $saho-deep-heritage-red;
       flex-shrink: 0;
-      margin-top: 0.25rem;
+      margin-top: 0;
     }
     
     h2 {
@@ -86,28 +113,28 @@
   font-size: 0.9rem;
   color: $gray-600;
   line-height: 1.5;
-  margin-bottom: 1.5rem;
+  margin-bottom: var(--saho-space-3);
   font-weight: 400;
 }
 
 /* Clean content area */
 .block-section .block-content {
-  margin-bottom: 1.5rem;
+  margin-bottom: var(--saho-space-3);
 }
 
 /* Clean image styling - TDIH style */
 .block-section .block-image {
   width: 100%;
-  height: 250px;
-  border-radius: 8px;
-  margin-bottom: 1rem;
+  height: var(--block-image-height);
+  border-radius: var(--saho-radius-md);
+  margin-bottom: var(--saho-space-2);
   position: relative;
   overflow: hidden;
-  
+
   img {
     width: 100%;
     height: 100%;
-    border-radius: 8px;
+    border-radius: var(--saho-radius-md);
     display: block;
     object-fit: cover;
     object-position: center;
@@ -117,10 +144,10 @@
 /* Clean overlay label - TDIH style */
 .block-section .block-image-wrapper {
   position: relative;
-  margin-bottom: 1rem;
+  margin-bottom: var(--saho-space-2);
   width: 100%;
-  height: 250px;
-  border-radius: 8px;
+  height: var(--block-image-height);
+  border-radius: var(--saho-radius-md);
   overflow: hidden;
   
   img {
@@ -128,22 +155,22 @@
     height: 100%;
     object-fit: cover;
     object-position: center;
-    border-radius: 8px;
+    border-radius: var(--saho-radius-md);
     display: block;
   }
   
   .block-label {
     position: absolute;
-    top: 0.75rem;
-    right: 0.75rem;
+    top: var(--saho-space-1);
+    right: var(--saho-space-1);
     background: $saho-deep-heritage-red;
     color: $white;
     font-size: 0.75rem;
     font-weight: 600;
-    padding: 0.25rem 0.5rem;
-    border-radius: 4px;
+    padding: 0 var(--saho-space-1);
+    border-radius: var(--saho-radius-sm);
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0;
     z-index: 2;
   }
 }
@@ -151,7 +178,7 @@
 /* Clean title styling - TDIH style */
 .block-section h3 {
   font-size: 1.25rem;
-  margin: 0 0 0.5rem;
+  margin: 0 0 var(--saho-space-1);
   line-height: 1.4;
   font-family: $headings-font-family;
   font-weight: 600;
@@ -162,7 +189,7 @@
 .block-section .block-date {
   font-size: 0.9rem;
   color: $gray-600;
-  margin-bottom: 1rem;
+  margin-bottom: var(--saho-space-2);
   font-weight: 500;
 }
 
@@ -171,7 +198,7 @@
   font-size: 0.95rem;
   color: $gray-700;
   line-height: 1.5;
-  margin-bottom: 1.5rem;
+  margin-bottom: var(--saho-space-3);
 }
 
 /* Title link */
@@ -189,7 +216,7 @@
 /* Optional main text below the subheading */
 .block-section p.block-main-text {
   font-size: 0.95rem;
-  margin: 0 0 1.25rem;
+  margin: 0 0 var(--saho-space-2);
   line-height: 1.5;
   color: $gray-700;
 }
@@ -198,33 +225,39 @@
 .block-section .block-buttons {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: var(--saho-space-1);
 }
 
-// Block button styling moved to saho-button SDC component
-// Legacy .block-button classes kept for backwards compatibility during migration
-// TODO: Remove after all templates migrated to saho-button component
-// Use variant: 'block-action' for primary, variant: 'secondary' for outlined
+// DEPRECATED: Block button styling moved to saho-button SDC component
+// These legacy classes are kept for backwards compatibility during migration
+// All button styling now in components/utilities/saho-button/saho-button.css
+//
+// Migration notes:
+// - Old .block-button and .block-button-primary -> saho-button component (primary variant)
+// - Old .block-button-secondary -> saho-button component (primary variant - no outline variant)
+// - Variants removed: block-action, secondary, outline (consolidated to single primary style)
+//
+// TODO: Remove these empty classes after all templates migrated to saho-button component
 .block-section .block-button,
 .block-section .block-button-primary,
 .block-section .block-button-secondary {
-  // Styles now in components/utilities/saho-button/saho-button.css
+  // Empty - all styling now in saho-button component
 }
 
 /* Entity overview block */
 .entity-overview-block {
-  margin: 2rem 0;
+  margin: var(--saho-block-margin) 0;
   text-align: center;
-  padding: 1.5rem;
+  padding: var(--saho-space-3);
   background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 3px 10px rgb(0, 0, 0, 0.05);
+  border-radius: var(--saho-radius-md);
+  box-shadow: var(--saho-shadow-md);
 }
 
 .entity-overview-block .block-title {
   font-size: 1.5rem;
   color: $saho-deep-heritage-red;
-  margin-bottom: 0.75rem;
+  margin-bottom: var(--saho-space-1);
   font-family: $headings-font-family;
   font-weight: $headings-font-weight;
 }
@@ -232,7 +265,7 @@
 .entity-overview-block .intro-text {
   font-size: 0.9rem;
   color: $gray-700;
-  margin-bottom: 1.5rem;
+  margin-bottom: var(--saho-space-3);
   max-width: 600px;
   margin-left: auto;
   margin-right: auto;
@@ -242,7 +275,7 @@
 .entity-overview-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 1.5rem;
+  gap: var(--saho-space-3);
   justify-content: center;
 }
 
@@ -252,7 +285,7 @@
   transition: transform 0.3s ease;
 
   &:hover {
-    transform: translateY(-5px);
+    transform: translateY(-8px);
   }
 
   // Ensure saho-card-image works properly in entity overview
@@ -276,11 +309,11 @@
 .entity-overview-image {
   width: 100%;
   height: auto;
-  border-radius: 8px;
-  margin-bottom: 0.75rem;
-  box-shadow: 0 3px 10px rgb(0, 0, 0, 0.1);
+  border-radius: var(--saho-radius-md);
+  margin-bottom: var(--saho-space-1);
+  box-shadow: var(--saho-shadow-md);
   transition: transform 0.3s ease;
-  
+
   &:hover {
     transform: scale(1.02);
   }
@@ -288,7 +321,7 @@
 
 .entity-overview-item h3 {
   font-size: 1.1rem;
-  margin: 0 0 0.5rem;
+  margin: 0 0 var(--saho-space-1);
   color: $saho-deep-heritage-red;
   font-family: $headings-font-family;
   font-weight: $headings-font-weight;
@@ -315,9 +348,9 @@
   .two-blocks-container {
     grid-template-columns: 1fr;
     max-width: 1000px;
-    gap: 2.5rem;
+    gap: var(--saho-space-4);
   }
-  
+
   .block-section {
     max-width: none;
     width: 100%;
@@ -326,31 +359,31 @@
 
 @include media-breakpoint-down(md) {
   .two-blocks-container {
-    gap: 2rem;
-    padding: 0 1rem;
-    margin: 1.5rem auto;
+    gap: var(--saho-space-4);
+    padding: 0 var(--saho-space-2);
+    margin: var(--saho-space-3) auto;
     max-width: 90%;
   }
-  
+
   .block-section {
-    padding: 1.75rem;
-    
+    padding: var(--block-padding);
+
     h2 {
       font-size: 1.5rem;
     }
-    
+
     .intro-text {
       font-size: 0.95rem;
       max-width: none;
     }
-    
+
     .block-image,
     .block-image-wrapper {
-      height: 200px;
+      height: var(--block-image-height);
     }
-    
+
     .block-button {
-      padding: 0.6rem 1.5rem;
+      padding: var(--saho-space-1) var(--saho-space-3);
       font-size: 0.9rem;
     }
   }
@@ -358,30 +391,30 @@
 
 @include media-breakpoint-down(sm) {
   .block-section {
-    padding: 1.25rem;
-    
+    padding: var(--block-padding);
+
     h2 {
       font-size: 1.4rem;
-      
+
       &::after {
-        width: 50px;
+        width: 48px;
       }
     }
-    
+
     .block-image,
     .block-image-wrapper {
-      height: 180px;
-      border-radius: 8px;
+      height: var(--block-image-height);
+      border-radius: var(--saho-radius-md);
     }
-    
+
     .block-button {
-      padding: 0.6rem 1.25rem;
+      padding: var(--saho-space-1) var(--saho-space-2);
       font-size: 0.85rem;
-      letter-spacing: 0.3px;
+      letter-spacing: 0;
     }
-    
+
     .featured-content {
-      padding: 1.25rem;
+      padding: var(--saho-space-2);
     }
   }
 }

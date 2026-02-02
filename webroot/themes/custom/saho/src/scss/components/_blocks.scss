@@ -3,6 +3,12 @@
  * SAHO-specific blocks and inline content blocks
  */
 
+// Layout Builder two-column sections: Allow blocks to fill their region width
+.layout--twocol-section .layout__region .block-section {
+  max-width: none !important;
+  width: 100%;
+}
+
 // Custom Inline Block Button
 
 .block-inline-blockbutton {
@@ -100,33 +106,16 @@
   font-weight: $headings-font-weight;
 }
 
+// DEPRECATED: TDIH button styling - use saho-button component instead
+// Button is now rendered through button block content type which should use
+// the unified saho-button component styling
 .tdih-button-wrapper {
   margin-top: 1rem;
   width: 100%;
   text-align: center;
 }
 
-.tdih-button-wrapper a.btn-view-more {
-  display: inline-block;
-  padding: 0.6rem 1.2rem;
-  border: 1px solid $saho-deep-heritage-red;
-  color: $saho-deep-heritage-red;
-  background-color: transparent;
-  text-decoration: none;
-  font-size: 0.9rem;
-  font-weight: 600;
-  border-radius: 25px;
-  margin-top: 0.5rem;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 5px rgb(0, 0, 0, 0.05);
-}
-
-.tdih-button-wrapper a.btn-view-more:hover {
-  background-color: $saho-deep-heritage-red;
-  color: white;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgb(0, 0, 0, 0.1);
-}
+// Legacy .btn-view-more class removed - all buttons use saho-button component
 
 // History Pictures Block
 
@@ -206,81 +195,9 @@
   margin: 2rem 0;
 }
 
-.block-section {
-  margin: 0 auto;
-  max-width: 320px;
-  text-align: center;
-  font-family: $font-family-sans-serif;
-  color: #333;
-}
-
-.block-section h2 {
-  font-size: 1.4rem;
-  color: #8b2b2b;
-  margin-bottom: 0.5rem;
-}
-
-.block-section .intro-text {
-  font-size: 0.9rem;
-  color: #444;
-  line-height: 1.4;
-  margin-bottom: 1rem;
-}
-
-.block-section .block-image {
-  width: 100%;
-  height: auto;
-  border-radius: 6px;
-  margin-bottom: 0.5rem;
-}
-
-.block-section .block-label {
-  font-size: 0.85rem;
-  color: #444;
-  margin-bottom: 0.25rem;
-  font-style: italic;
-}
-
-.block-section h3 {
-  font-size: 1.1rem;
-  margin: 0 0 1rem;
-  line-height: 1.3;
-}
-
-.block-section h3 a {
-  color: #8b2b2b;
-  text-decoration: none;
-  transition: color 0.2s;
-}
-
-.block-section h3 a:hover {
-  text-decoration: underline;
-}
-
-.block-section p.block-main-text {
-  font-size: 0.95rem;
-  margin: 0 0 1rem;
-  line-height: 1.4;
-  color: #333;
-}
-
-.block-section .block-button {
-  display: inline-block;
-  padding: 0.4rem 0.8rem;
-  border: 1px solid #8b2b2b;
-  color: #8b2b2b;
-  border-radius: 4px;
-  text-decoration: none;
-  font-size: 0.85rem;
-  transition:
-    background-color 0.2s ease,
-    color 0.2s ease;
-}
-
-.block-section .block-button:hover {
-  background-color: #8b2b2b;
-  color: #fff;
-}
+// NOTE: .block-section styling moved to base/_block-section.scss
+// This removes the conflicting max-width: 320px rule and centralizes all block styling
+// The modern implementation in base/_block-section.scss uses the new design token system
 
 // Entity Overview Block
 
@@ -334,4 +251,22 @@
 .entity-overview-item .date {
   font-size: 0.9rem;
   color: #555;
+}
+
+// Ensure saho-button components in entity overview blocks use unified styling
+// Using hardcoded values to avoid SCSS compilation issues with CSS variables
+.entity-overview-block .saho-button,
+.entity-overview-items .saho-button,
+.saho-card-actions .saho-button {
+  background: #990000 !important;  /* SAHO Deep Heritage Red */
+  color: #ffffff !important;
+  border-color: #990000 !important;
+  pointer-events: auto !important; // Override card pointer-events: none
+
+  &:hover,
+  &:focus {
+    background: #8b0000 !important;  /* Darker red on hover */
+    border-color: #8b0000 !important;
+    color: #ffffff !important;
+  }
 }

@@ -1,101 +1,137 @@
 // Typography styles for SAHO theme
 // -----------------------------------------------------------------------------
+//
+// UNIFIED FLUID TYPOGRAPHY SYSTEM
+// Single source of truth for all typography using --saho-font-size-* tokens
+// Consolidates 200+ hardcoded font-sizes into 9-tier fluid scale
+// Replaces 8 line-heights with 5-tier system
+//
+// Font Size Scale (fluid, responsive):
+// - xs:   12-14px (small labels, metadata)
+// - sm:   14-16px (secondary text, captions)
+// - base: 16-18px (body text, paragraphs)
+// - md:   18-20px (emphasized body text)
+// - lg:   20-24px (lead paragraphs, h4)
+// - xl:   24-30px (h3 headings)
+// - 2xl:  28-36px (h2 headings)
+// - 3xl:  32-48px (h1 headings)
+// - 4xl:  40-64px (hero text)
+// - 5xl:  48-80px (display text)
+//
+// Line Height Scale:
+// - tight:   1.2 (headings)
+// - snug:    1.3 (short paragraphs, UI text)
+// - normal:  1.5 (body text, optimal readability)
+// - relaxed: 1.6 (long-form content)
+//
+// @see base/_variables.scss for token definitions
+// -----------------------------------------------------------------------------
 
 // Using self-hosted Inter fonts from _fonts.scss for better performance
 // Removed Google Fonts import to reduce render-blocking resources
 
-// CSS Custom Properties for Fluid Typography
-:root {
-  --display-xl: #{$fluid-display-xl};
-  --display: #{$fluid-display};
-  --h1: #{$fluid-h1};
-  --h2: #{$fluid-h2};
-  --h3: #{$fluid-h3};
-  --h4: #{$fluid-h4};
-}
-
 // Base typography
 body {
   font-family: $font-family-sans-serif;
-  font-weight: $font-weight-regular;
-  line-height: 1.6;
+  font-weight: var(--saho-font-weight-regular);
+  font-size: var(--saho-font-size-base);
+  line-height: var(--saho-line-height-normal);
   color: $body-color;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-// Headings
+// Headings - Unified fluid typography system
 h1, h2, h3, h4, h5, h6,
 .h1, .h2, .h3, .h4, .h5, .h6 {
   font-family: $headings-font-family;
-  font-weight: $headings-font-weight;
-  line-height: 1.3;
-  margin-bottom: 1rem;
+  font-weight: var(--saho-font-weight-bold);
+  line-height: var(--saho-line-height-tight);
+  margin-bottom: var(--saho-space-2);
   color: $text-primary;
 }
 
-// Apply fluid typography using CSS custom properties
+// Apply fluid typography using unified --saho-font-size-* tokens
 h1, .h1 {
-  font-size: $h1-font-size; // Fallback for calculations
-  font-size: var(--h1);
-  margin-bottom: 1.5rem;
+  font-size: var(--saho-font-size-3xl);  // 32-48px fluid
+  line-height: var(--saho-line-height-tight);
+  margin-bottom: var(--saho-space-3);
 }
 
 h2, .h2 {
-  font-size: $h2-font-size; // Fallback for calculations
-  font-size: var(--h2);
+  font-size: var(--saho-font-size-2xl);  // 28-36px fluid
+  line-height: var(--saho-line-height-tight);
 }
 
 h3, .h3 {
-  font-size: $h3-font-size; // Fallback for calculations
-  font-size: var(--h3);
+  font-size: var(--saho-font-size-xl);   // 24-30px fluid
+  line-height: var(--saho-line-height-tight);
 }
 
 h4, .h4 {
-  font-size: $h4-font-size; // Fallback for calculations
-  font-size: var(--h4);
+  font-size: var(--saho-font-size-lg);   // 20-24px fluid
+  line-height: var(--saho-line-height-snug);
 }
 
 h5, .h5 {
-  font-size: $h5-font-size;
+  font-size: var(--saho-font-size-md);   // 18-20px fluid
+  line-height: var(--saho-line-height-snug);
 }
 
 h6, .h6 {
-  font-size: $h6-font-size;
+  font-size: var(--saho-font-size-base); // 16-18px fluid
+  line-height: var(--saho-line-height-snug);
+  font-weight: var(--saho-font-weight-semibold);
 }
 
-// Display headings
+// Display headings (hero/banner text)
+.display-1,
 .display-xl {
-  font-size: var(--display-xl);
-  font-weight: $font-weight-black;
-  line-height: 1.1;
+  font-size: var(--saho-font-size-5xl);  // 48-80px fluid
+  font-weight: var(--saho-font-weight-black);
+  line-height: var(--saho-line-height-tight);
 }
 
+.display-2,
 .display {
-  font-size: var(--display);
-  font-weight: $font-weight-bold;
-  line-height: 1.2;
+  font-size: var(--saho-font-size-4xl);  // 40-64px fluid
+  font-weight: var(--saho-font-weight-bold);
+  line-height: var(--saho-line-height-tight);
 }
 
-// Responsive heading sizes
-@include media-breakpoint-down(md) {
-  h1, .h1 {
-    font-size: $h1-font-size * 0.8;
-  }
-  
-  h2, .h2 {
-    font-size: $h2-font-size * 0.85;
-  }
-  
-  h3, .h3 {
-    font-size: $h3-font-size * 0.9;
-  }
+.display-3 {
+  font-size: var(--saho-font-size-3xl);  // 32-48px fluid
+  font-weight: var(--saho-font-weight-bold);
+  line-height: var(--saho-line-height-tight);
 }
+
+.display-4 {
+  font-size: var(--saho-font-size-2xl);  // 28-36px fluid
+  font-weight: var(--saho-font-weight-bold);
+  line-height: var(--saho-line-height-tight);
+}
+
+.display-5 {
+  font-size: var(--saho-font-size-xl);   // 24-30px fluid
+  font-weight: var(--saho-font-weight-bold);
+  line-height: var(--saho-line-height-snug);
+}
+
+.display-6 {
+  font-size: var(--saho-font-size-lg);   // 20-24px fluid
+  font-weight: var(--saho-font-weight-bold);
+  line-height: var(--saho-line-height-snug);
+}
+
+// NOTE: Fluid typography handles responsive scaling automatically
+// No need for manual @media breakpoint overrides
 
 // Paragraphs
 p {
-  margin-bottom: 1.25rem;
-  
+  font-size: var(--saho-font-size-base);  // 16-18px fluid
+  line-height: var(--saho-line-height-normal);
+  margin-bottom: var(--saho-space-2);
+
   &:last-child {
     margin-bottom: 0;
   }
@@ -115,30 +151,34 @@ a {
 
 // Lists
 ul, ol {
-  margin-bottom: 1.25rem;
-  padding-left: 1.5rem;
-  
+  font-size: var(--saho-font-size-base);
+  line-height: var(--saho-line-height-normal);
+  margin-bottom: var(--saho-space-2);
+  padding-left: var(--saho-space-3);
+
   li {
-    margin-bottom: 0.5rem;
+    margin-bottom: var(--saho-space-1);
   }
 }
 
 // Blockquotes
 blockquote {
-  padding: 1.25rem 1.5rem;
-  margin: 1.5rem 0;
+  padding: var(--saho-space-2) var(--saho-space-3);
+  margin: var(--saho-space-3) 0;
   border-left: 4px solid $primary;
   background-color: rgba($gray-200, 0.5);
+  font-size: var(--saho-font-size-md);
+  line-height: var(--saho-line-height-relaxed);
   font-style: italic;
-  
+
   p:last-child {
     margin-bottom: 0;
   }
-  
+
   cite {
     display: block;
-    margin-top: 0.75rem;
-    font-size: 0.9rem;
+    margin-top: var(--saho-space-2);
+    font-size: var(--saho-font-size-sm);
     font-style: normal;
     color: $gray-600;
   }
@@ -147,22 +187,22 @@ blockquote {
 // Code
 code, pre {
   font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-  font-size: 0.9em;
+  font-size: var(--saho-font-size-sm);
 }
 
 code {
   padding: 0.2em 0.4em;
   background-color: $gray-100;
-  border-radius: 3px;
+  border-radius: var(--saho-radius-sm);
 }
 
 pre {
-  padding: 1rem;
-  margin: 1.5rem 0;
+  padding: var(--saho-space-2);
+  margin: var(--saho-space-3) 0;
   background-color: $gray-100;
-  border-radius: 4px;
+  border-radius: var(--saho-radius-sm);
   overflow-x: auto;
-  
+
   code {
     padding: 0;
     background-color: transparent;
@@ -172,7 +212,8 @@ pre {
 
 // Small text
 small, .small {
-  font-size: 0.875em;
+  font-size: var(--saho-font-size-sm);  // 14-16px fluid
+  line-height: var(--saho-line-height-normal);
 }
 
 // Text utilities
@@ -204,61 +245,140 @@ small, .small {
   color: $danger !important;
 }
 
-// Font weights
-.font-weight-light {
-  font-weight: 300 !important;
+// Font weights - Using CSS custom properties
+.font-weight-light,
+.fw-light {
+  font-weight: var(--saho-font-weight-light) !important;
 }
 
-.font-weight-normal {
-  font-weight: 400 !important;
+.font-weight-normal,
+.fw-normal {
+  font-weight: var(--saho-font-weight-regular) !important;
 }
 
-.font-weight-medium {
-  font-weight: 500 !important;
+.font-weight-medium,
+.fw-medium {
+  font-weight: var(--saho-font-weight-medium) !important;
 }
 
-.font-weight-semibold {
-  font-weight: 600 !important;
+.font-weight-semibold,
+.fw-semibold {
+  font-weight: var(--saho-font-weight-semibold) !important;
 }
 
-.font-weight-bold {
-  font-weight: 700 !important;
+.font-weight-bold,
+.fw-bold {
+  font-weight: var(--saho-font-weight-bold) !important;
+}
+
+.font-weight-black,
+.fw-black {
+  font-weight: var(--saho-font-weight-black) !important;
 }
 
 // Lead paragraph
 .lead {
-  font-size: 1.25rem;
-  font-weight: 300;
-  line-height: 1.5;
+  font-size: var(--saho-font-size-lg);  // 20-24px fluid
+  font-weight: var(--saho-font-weight-light);
+  line-height: var(--saho-line-height-relaxed);
 }
 
 // Page title
 .page-title {
-  margin-bottom: 1.5rem;
+  font-size: var(--saho-font-size-3xl);
+  line-height: var(--saho-line-height-tight);
+  margin-bottom: var(--saho-space-3);
   color: $primary;
-  font-weight: 700;
-  
+  font-weight: var(--saho-font-weight-bold);
+
   &::after {
     content: '';
     display: block;
     width: 60px;
     height: 3px;
     background-color: $primary;
-    margin-top: 0.75rem;
+    margin-top: var(--saho-space-2);
   }
 }
 
 // Section title
 .section-title {
-  margin-bottom: 1.5rem;
+  font-size: var(--saho-font-size-2xl);
+  line-height: var(--saho-line-height-tight);
+  margin-bottom: var(--saho-space-3);
+  font-weight: var(--saho-font-weight-bold);
   position: relative;
-  
+
   &::after {
     content: '';
     display: block;
     width: 40px;
     height: 2px;
     background-color: $primary;
-    margin-top: 0.5rem;
+    margin-top: var(--saho-space-1);
   }
+}
+
+// Additional text size utilities
+.text-xs {
+  font-size: var(--saho-font-size-xs) !important;
+}
+
+.text-sm {
+  font-size: var(--saho-font-size-sm) !important;
+}
+
+.text-base {
+  font-size: var(--saho-font-size-base) !important;
+}
+
+.text-md {
+  font-size: var(--saho-font-size-md) !important;
+}
+
+.text-lg {
+  font-size: var(--saho-font-size-lg) !important;
+}
+
+.text-xl {
+  font-size: var(--saho-font-size-xl) !important;
+}
+
+.text-2xl {
+  font-size: var(--saho-font-size-2xl) !important;
+}
+
+.text-3xl {
+  font-size: var(--saho-font-size-3xl) !important;
+}
+
+// Line height utilities
+.lh-tight {
+  line-height: var(--saho-line-height-tight) !important;
+}
+
+.lh-snug {
+  line-height: var(--saho-line-height-snug) !important;
+}
+
+.lh-normal {
+  line-height: var(--saho-line-height-normal) !important;
+}
+
+.lh-relaxed {
+  line-height: var(--saho-line-height-relaxed) !important;
+}
+
+// LEGACY COMPATIBILITY
+// Maintain backward compatibility with old variable names
+// These redirect to the new unified system
+:root {
+  --h1: var(--saho-font-size-3xl);           // DEPRECATED: Use --saho-font-size-3xl
+  --h2: var(--saho-font-size-2xl);           // DEPRECATED: Use --saho-font-size-2xl
+  --h3: var(--saho-font-size-xl);            // DEPRECATED: Use --saho-font-size-xl
+  --h4: var(--saho-font-size-lg);            // DEPRECATED: Use --saho-font-size-lg
+  --h5: var(--saho-font-size-md);            // DEPRECATED: Use --saho-font-size-md
+  --h6: var(--saho-font-size-base);          // DEPRECATED: Use --saho-font-size-base
+  --display-xl: var(--saho-font-size-5xl);   // DEPRECATED: Use --saho-font-size-5xl
+  --display: var(--saho-font-size-4xl);      // DEPRECATED: Use --saho-font-size-4xl
 }

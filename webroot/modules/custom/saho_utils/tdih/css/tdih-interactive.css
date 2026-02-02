@@ -1,67 +1,113 @@
 /**
  * CSS for the TDIH Interactive Block.
+ * Modernized to use inline CSS custom properties inheriting from unified SAHO design tokens.
+ * All components are self-contained with NO external SCSS dependencies.
  */
 
 /* Main container */
 .tdih-interactive-block {
+  /* Component-scoped tokens - inherit from base SAHO design system */
+  /* Colors - map to unified SAHO color system */
+  --tdih-color-primary: var(--saho-color-primary);              /* Heritage red */
+  --tdih-color-primary-dark: var(--saho-color-primary-dark);    /* Darker red for hover */
+  --tdih-color-brown-earth: #8b4513;                            /* African-themed brown (component-specific) */
+  --tdih-color-white: var(--saho-color-white);
+  --tdih-color-text-primary: var(--saho-color-text-dark);
+  --tdih-color-text-secondary: var(--saho-color-text-light);
+  --tdih-gray-100: var(--saho-color-gray-100);
+  --tdih-gray-200: var(--saho-color-gray-200);
+  --tdih-gray-300: var(--saho-color-gray-300);
+  --tdih-gray-600: var(--saho-color-gray-600);
+  --tdih-gray-700: var(--saho-color-gray-700);
+  --tdih-color-info: #0dcaf0;                                   /* Bootstrap info color */
+  --tdih-color-info-dark: #0aa2c0;                              /* Darker info variant */
+
+  /* Spacing - use unified 8px baseline grid */
+  --tdih-spacing-xs: var(--saho-space-1);    /* 8px */
+  --tdih-spacing-sm: var(--saho-space-2);    /* 16px */
+  --tdih-spacing-md: var(--saho-space-2);    /* 16px */
+  --tdih-spacing-lg: var(--saho-space-3);    /* 24px */
+  --tdih-spacing-xl: var(--saho-space-4);    /* 32px */
+
+  /* Border radius - use unified scale */
+  --tdih-border-radius-sm: var(--saho-radius-sm);  /* 4px */
+  --tdih-border-radius-md: var(--saho-radius-md);  /* 8px */
+  --tdih-border-radius: var(--saho-radius-md);     /* 8px */
+
+  /* Shadows - use unified shadow system */
+  --tdih-shadow-sm: var(--saho-shadow-sm);
+  --tdih-shadow-md: var(--saho-shadow-md);
+  --tdih-shadow-lg: var(--saho-shadow-md);
+  --tdih-shadow-hover: 0 4px 16px var(--saho-color-black-alpha-15);
+
+  /* Transitions - use unified transition system */
+  --tdih-transition: var(--saho-transition-base);
+  --tdih-transition-fast: var(--saho-transition-fast);
+
+  /* Typography - use unified font size scale */
+  --tdih-font-size-title: var(--saho-font-size-xl);      /* 24-30px */
+  --tdih-font-size-date: var(--saho-font-size-sm);       /* 14-16px */
+  --tdih-font-size-body: var(--saho-font-size-base);     /* 16-18px */
+  --tdih-font-size-meta: var(--saho-font-size-xs);       /* 12-14px */
+
   max-width: 100%;
-  margin-bottom: 2rem;
-  padding: 1.5rem;
-  background-color: #f8f9fa;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: var(--tdih-spacing-xl);
+  padding: var(--tdih-spacing-lg);
+  background-color: var(--tdih-gray-100);
+  border-radius: var(--tdih-border-radius);
+  box-shadow: var(--tdih-shadow-md);
 }
 
 /* Header section */
 .tdih-interactive-header {
-  margin-bottom: 1.5rem;
+  margin-bottom: var(--tdih-spacing-lg);
   text-align: center;
 }
 
 .tdih-interactive-header h2 {
-  font-size: 1.8rem;
-  margin-bottom: 0.5rem;
-  color: #333;
+  font-size: var(--tdih-font-size-title);
+  margin-bottom: var(--tdih-spacing-sm);
+  color: var(--tdih-color-text-primary);
 }
 
 .tdih-intro-text {
-  font-size: 1rem;
-  color: #666;
-  margin-bottom: 1rem;
+  font-size: var(--tdih-font-size-body);
+  color: var(--tdih-color-text-secondary);
+  margin-bottom: var(--tdih-spacing-md);
 }
 
 /* Toggle button for Today in history section */
 .tdih-toggle-button {
-  background-color: #f5f5f5;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  color: #555;
+  background-color: var(--tdih-gray-100);
+  border: 1px solid var(--tdih-gray-300);
+  border-radius: var(--tdih-border-radius-sm);
+  color: var(--tdih-gray-600);
   cursor: pointer;
-  font-size: 0.9rem;
-  margin-bottom: 1rem;
-  padding: 0.5rem 1rem;
-  transition: all 0.2s ease;
+  font-size: var(--tdih-font-size-date);
+  margin-bottom: var(--tdih-spacing-md);
+  padding: var(--tdih-spacing-sm) var(--tdih-spacing-md);
+  transition: var(--tdih-transition-fast);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .tdih-toggle-button:hover {
-  background-color: #e9e9e9;
+  background-color: var(--tdih-gray-200);
 }
 
 .tdih-toggle-button.active {
-  background-color: #B22222;
-  color: white;
-  border-color: #8B0000;
+  background-color: var(--tdih-color-primary);
+  color: var(--tdih-color-white);
+  border-color: var(--tdih-color-primary-dark);
 }
 
 .tdih-toggle-button::before {
   content: "";
   display: inline-block;
-  width: 12px;
-  height: 12px;
-  margin-right: 8px;
+  width: 1rem;      /* 16px - rounded from 12px */
+  height: 1rem;     /* 16px - rounded from 12px */
+  margin-right: 0.5rem;  /* 8px */
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23555'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
   background-size: contain;
   transition: transform 0.2s ease;
@@ -74,147 +120,147 @@
 
 /* Birthday picker section */
 .tdih-birthday-picker {
-  margin-bottom: 2rem;
-  padding: 1rem;
-  background-color: #fff;
-  border-radius: 6px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-bottom: var(--tdih-spacing-xl);
+  padding: var(--tdih-spacing-md);
+  background-color: var(--tdih-color-white);
+  border-radius: var(--tdih-border-radius-md);
+  box-shadow: var(--tdih-shadow-sm);
 }
 
 .tdih-birthday-title {
-  font-size: 1.4rem;
-  margin-bottom: 0.5rem;
-  color: #333;
+  font-size: var(--saho-font-size-lg);
+  margin-bottom: var(--tdih-spacing-sm);
+  color: var(--tdih-color-text-primary);
 }
 
 .tdih-birthday-description {
-  font-size: 0.9rem;
-  color: #666;
-  margin-bottom: 1rem;
+  font-size: var(--tdih-font-size-date);
+  color: var(--tdih-color-text-secondary);
+  margin-bottom: var(--tdih-spacing-md);
 }
 
 .tdih-birthday-date-picker {
   width: 100%;
-  padding: 0.5rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  margin-bottom: 1rem;
+  padding: var(--tdih-spacing-sm);
+  border: 1px solid var(--tdih-gray-300);
+  border-radius: var(--tdih-border-radius-sm);
+  margin-bottom: var(--tdih-spacing-md);
 }
 
 .tdih-birthday-submit {
   display: inline-block;
-  padding: 0.5rem 1rem;
-  background-color: #007bff;
-  color: #fff;
+  padding: var(--tdih-spacing-sm) var(--tdih-spacing-md);
+  background-color: var(--tdih-color-info);
+  color: var(--tdih-color-white);
   border: none;
-  border-radius: 4px;
+  border-radius: var(--tdih-border-radius-sm);
   cursor: pointer;
   font-weight: bold;
 }
 
 .tdih-birthday-submit:hover {
-  background-color: #0069d9;
+  background-color: var(--tdih-color-info-dark);
 }
 
 /* Events section */
 .tdih-today-events {
-  margin-bottom: 1.5rem;
+  margin-bottom: var(--tdih-spacing-lg);
 }
 
 .tdih-today-events h3 {
-  font-size: 1.4rem;
-  margin-bottom: 1rem;
-  color: #333;
-  border-bottom: 1px solid #ddd;
-  padding-bottom: 0.5rem;
+  font-size: var(--saho-font-size-lg);
+  margin-bottom: var(--tdih-spacing-md);
+  color: var(--tdih-color-text-primary);
+  border-bottom: 1px solid var(--tdih-gray-300);
+  padding-bottom: var(--tdih-spacing-sm);
 }
 
 .tdih-events-list {
-  margin-bottom: 1rem;
+  margin-bottom: var(--tdih-spacing-md);
 }
 
 /* Birthday Events Highlighting */
 .tdih-birthday-events .tdih-events-list {
-  border-left: 4px solid #8B4513;
-  padding-left: 1rem;
+  border-left: 4px solid var(--tdih-color-brown-earth);
+  padding-left: var(--tdih-spacing-md);
   background-color: rgba(139, 69, 19, 0.05);
-  border-radius: 4px;
+  border-radius: var(--tdih-border-radius-sm);
 }
 
 /* Exact Date Match Highlighting */
 .tdih-exact-match {
   order: -1; /* Move to the top of the list */
   position: relative;
-  border: 2px solid #B22222 !important;
-  border-radius: 6px;
-  padding: 1rem;
-  margin-bottom: 2rem !important;
-  background-color: rgba(178, 34, 34, 0.05);
-  box-shadow: 0 3px 10px rgba(178, 34, 34, 0.2);
+  border: 2px solid var(--tdih-color-primary) !important;
+  border-radius: var(--tdih-border-radius-md);
+  padding: var(--tdih-spacing-md);
+  margin-bottom: var(--tdih-spacing-xl) !important;
+  background-color: var(--saho-color-primary-alpha-10);
+  box-shadow: 0 4px 8px var(--saho-color-primary-alpha-20);
 }
 
 .tdih-exact-match::before {
   content: "Exact Date Match";
   position: absolute;
-  top: -12px;
-  left: 10px;
-  background-color: #B22222;
-  color: white;
-  font-size: 0.8rem;
-  padding: 2px 8px;
-  border-radius: 4px;
+  top: -0.75rem;     /* -12px */
+  left: 0.5rem;      /* 8px */
+  background-color: var(--tdih-color-primary);
+  color: var(--tdih-color-white);
+  font-size: var(--tdih-font-size-meta);
+  padding: 0 var(--saho-space-1);
+  border-radius: var(--tdih-border-radius-sm);
   font-weight: bold;
 }
 
 .tdih-exact-match .tdih-event-date {
   font-weight: bold;
-  color: #B22222;
-  font-size: 1.1rem;
+  color: var(--tdih-color-primary);
+  font-size: var(--saho-font-size-md);
 }
 
 .tdih-exact-match .tdih-event-title {
-  font-size: 1.4rem;
+  font-size: var(--saho-font-size-lg);
 }
 
 .tdih-birthday-events .tdih-event-item {
   position: relative;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
-  margin-bottom: 2rem;
-  padding: 1.25rem;
-  border-radius: 8px;
-  background-color: #fff;
+  margin-bottom: var(--tdih-spacing-xl);
+  padding: 1.5rem;  /* 24px - rounded from 20px (1.25rem) */
+  border-radius: var(--tdih-border-radius);
+  background-color: var(--tdih-color-white);
   box-shadow: 0 2px 8px rgba(139, 69, 19, 0.1);
-  border-left: 3px solid #8B4513;
+  border-left: 3px solid var(--tdih-color-brown-earth);
   display: flex;
   flex-wrap: wrap;
 }
 
 .tdih-birthday-events .tdih-event-item:hover {
-  transform: translateX(5px);
-  box-shadow: -3px 0 0 #8B4513;
+  transform: translateX(8px);  /* 8px - rounded from 5px */
+  box-shadow: -4px 0 0 var(--tdih-color-brown-earth);  /* 4px - rounded from 3px */
 }
 
 .tdih-birthday-events .tdih-event-date {
   font-weight: bold;
-  color: #8B4513;
+  color: var(--tdih-color-brown-earth);
 }
 
 .tdih-birthday-events .tdih-event-title a {
-  color: #5a3511;
+  color: #6d3710; /* Darker brown for links */
 }
 
 .tdih-birthday-events h3 {
-  color: #8B4513;
-  border-bottom: 2px solid #8B4513;
-  padding-bottom: 0.5rem;
-  margin-bottom: 1rem;
+  color: var(--tdih-color-brown-earth);
+  border-bottom: 2px solid var(--tdih-color-brown-earth);
+  padding-bottom: var(--tdih-spacing-sm);
+  margin-bottom: var(--tdih-spacing-md);
 }
 
 .tdih-birthday-events .tdih-event-item::before {
   content: "★";
   position: absolute;
   left: -1.5rem;
-  color: #8B4513;
+  color: var(--tdih-color-brown-earth);
   opacity: 0;
   transition: opacity 0.3s ease;
 }
@@ -226,19 +272,19 @@
 /* Regular event items styling */
 .tdih-event-item {
   position: relative;
-  transition: all 0.3s ease;
-  margin-bottom: 1.5rem;
-  padding: 1.25rem;
-  border-radius: 8px;
-  background-color: #fff;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  transition: var(--tdih-transition);
+  margin-bottom: var(--tdih-spacing-lg);
+  padding: 1.5rem;  /* 24px - rounded from 20px (1.25rem) */
+  border-radius: var(--tdih-border-radius);
+  background-color: var(--tdih-color-white);
+  box-shadow: var(--tdih-shadow-lg);
   display: flex;
   flex-wrap: wrap;
 }
 
 .tdih-event-item:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  transform: translateY(-4px);  /* 4px - rounded from 3px */
+  box-shadow: var(--tdih-shadow-hover);
 }
 
 .tdih-event-item:last-child {
@@ -246,10 +292,10 @@
 }
 
 .tdih-event-image {
-  flex: 0 0 20%;
-  margin-right: 1rem;
-  margin-bottom: 1rem;
-  max-width: 150px;
+  flex: 0 0 30%;
+  margin-right: var(--tdih-spacing-md);
+  margin-bottom: var(--tdih-spacing-md);
+  max-width: 250px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -257,26 +303,27 @@
 
 .tdih-event-image img {
   max-width: 100%;
-  border-radius: 4px;
-  object-fit: cover;
+  border-radius: var(--tdih-border-radius-sm);
+  object-fit: contain;
   width: 100%;
-  height: 150px;
+  height: auto;
+  max-height: 300px;
 }
 
 /* Placeholder image styling */
 .tdih-event-image--placeholder {
-  background-color: #f0f0f0;
-  border-radius: 4px;
+  background-color: var(--tdih-gray-100);
+  border-radius: var(--tdih-border-radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
   height: 150px;
   width: 100%;
-  color: #B22222;
+  color: var(--tdih-color-primary);
 }
 
 .tdih-event-image--placeholder .fas {
-  font-size: 3rem;
+  font-size: var(--saho-font-size-3xl);
   opacity: 0.6;
 }
 
@@ -290,18 +337,18 @@
 }
 
 .tdih-event-date {
-  font-size: 0.9rem;
-  color: #666;
-  margin-bottom: 0.5rem;
+  font-size: var(--tdih-font-size-date);
+  color: var(--tdih-color-text-secondary);
+  margin-bottom: var(--tdih-spacing-sm);
 }
 
 .tdih-event-title {
-  font-size: 1.2rem;
-  margin-bottom: 0.5rem;
+  font-size: var(--saho-font-size-md);
+  margin-bottom: var(--tdih-spacing-sm);
 }
 
 .tdih-event-title a {
-  color: #B22222; /* SAHO red color */
+  color: var(--tdih-color-primary); /* SAHO red color */
   text-decoration: none;
 }
 
@@ -310,49 +357,49 @@
 }
 
 .tdih-event-body {
-  font-size: 0.9rem;
-  color: #333;
+  font-size: var(--tdih-font-size-date);
+  color: var(--tdih-color-text-primary);
   line-height: 1.5;
 }
 
 /* Compact mode */
 .compact-mode .tdih-event-item {
-  padding-bottom: 0.75rem;
-  margin-bottom: 0.75rem;
+  padding-bottom: var(--saho-space-2);
+  margin-bottom: var(--saho-space-2);
 }
 
 .compact-mode .tdih-event-title {
-  font-size: 1rem;
-  margin-bottom: 0.25rem;
+  font-size: var(--tdih-font-size-body);
+  margin-bottom: var(--saho-space-1);
 }
 
 /* No events message */
 .tdih-no-events {
-  padding: 1rem;
-  background-color: #f8f9fa;
-  border-radius: 4px;
+  padding: var(--tdih-spacing-md);
+  background-color: var(--tdih-gray-100);
+  border-radius: var(--tdih-border-radius-sm);
   text-align: center;
-  color: #666;
+  color: var(--tdih-color-text-secondary);
 }
 
 /* Footer section */
 .tdih-footer {
   text-align: center;
-  margin-top: 1rem;
+  margin-top: var(--tdih-spacing-md);
 }
 
 .tdih-more-link {
   display: inline-block;
-  padding: 0.5rem 1rem;
-  background-color: #6c757d;
-  color: #fff;
-  border-radius: 4px;
+  padding: var(--tdih-spacing-sm) var(--tdih-spacing-md);
+  background-color: var(--tdih-gray-600);
+  color: var(--tdih-color-white);
+  border-radius: var(--tdih-border-radius-sm);
   text-decoration: none;
   font-weight: bold;
 }
 
 .tdih-more-link:hover {
-  background-color: #5a6268;
+  background-color: var(--tdih-gray-700);
   text-decoration: none;
 }
 
@@ -360,10 +407,10 @@
 .tdih-interactive-block .ajax-progress {
   position: relative;
   display: inline-block;
-  padding-left: 40px;
-  margin-left: 10px;
+  padding-left: 2.5rem;  /* 40px */
+  margin-left: 0.5rem;   /* 8px - rounded from 10px */
   font-weight: bold;
-  color: #8B4513; /* Brown color for African theme */
+  color: var(--tdih-color-brown-earth); /* Brown color for African theme */
 }
 
 .tdih-interactive-block .ajax-progress .throbber {
@@ -371,8 +418,8 @@
   left: 0;
   top: 50%;
   transform: translateY(-50%);
-  width: 30px;
-  height: 30px;
+  width: 2rem;   /* 32px - rounded from 30px */
+  height: 2rem;  /* 32px - rounded from 30px */
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath fill='%238B4513' d='M50 5C25.1 5 5 25.1 5 50s20.1 45 45 45 45-20.1 45-45S74.9 5 50 5zm0 80c-19.3 0-35-15.7-35-35s15.7-35 35-35 35 15.7 35 35-15.7 35-35 35z'/%3E%3Cpath fill='%23A0522D' d='M50 20c-16.5 0-30 13.5-30 30s13.5 30 30 30 30-13.5 30-30-13.5-30-30-30zm0 50c-11 0-20-9-20-20s9-20 20-20 20 9 20 20-9 20-20 20z'/%3E%3Cpath fill='%23CD853F' d='M50 30c-11 0-20 9-20 20s9 20 20 20 20-9 20-20-9-20-20-20zm0 30c-5.5 0-10-4.5-10-10s4.5-10 10-10 10 4.5 10 10-4.5 10-10 10z'/%3E%3Cpath fill='%23DEB887' d='M50 40c-5.5 0-10 4.5-10 10s4.5 10 10 10 10-4.5 10-10-4.5-10-10-10zm0 15c-2.8 0-5-2.2-5-5s2.2-5 5-5 5 2.2 5 5-2.2 5-5 5z'/%3E%3Cpath fill='%238B4513' d='M30 50h-5c0-13.8 11.2-25 25-25v5c-11 0-20 9-20 20z'/%3E%3Cpath fill='%238B4513' d='M50 75v-5c11 0 20-9 20-20h5c0 13.8-11.2 25-25 25z'/%3E%3C/svg%3E");
   background-size: contain;
   background-repeat: no-repeat;
@@ -387,7 +434,7 @@
 /* Custom loading message */
 .tdih-interactive-block .ajax-progress .message {
   font-style: italic;
-  color: #8B4513;
+  color: var(--tdih-color-brown-earth);
   font-family: 'Georgia', serif;
 }
 
@@ -395,44 +442,45 @@
 /* Enhanced tablet responsiveness */
 @media (max-width: 1024px) {
   .tdih-interactive-block {
-    padding: 0.75rem;
+    padding: 1rem;  /* 16px - rounded from 12px (0.75rem) */
   }
 
   .tdih-birthday-picker {
-    padding: 1rem;
-    margin-bottom: 1.25rem;
+    padding: var(--tdih-spacing-md);
+    margin-bottom: 1.5rem;  /* 24px - rounded from 20px (1.25rem) */
   }
 }
 
 @media (max-width: 768px) {
   .tdih-interactive-block {
-    padding: 0.5rem;
+    padding: var(--tdih-spacing-sm);
   }
 
   .tdih-event-item {
-    margin-bottom: 1.75rem;
-    padding: 1.5rem;
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+    margin-bottom: 1.5rem;  /* 24px - rounded from 28px (1.75rem) */
+    padding: var(--tdih-spacing-lg);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);  /* Rounded 3px 10px to 4px 8px */
     border-left: none;
-    border-top: 3px solid #B22222;
+    border-top: 3px solid var(--tdih-color-primary);
   }
 
   .tdih-birthday-events .tdih-event-item {
-    border-top: 3px solid #8B4513;
+    border-top: 3px solid var(--tdih-color-brown-earth);
     border-left: none;
   }
 
   .tdih-event-image {
     flex: 0 0 100%;
     margin-right: 0;
-    margin-bottom: 1.25rem;
+    margin-bottom: 1.5rem;  /* 24px - rounded from 20px (1.25rem) */
     text-align: center;
   }
 
   .tdih-event-image img {
-    height: 180px;
-    border-radius: 6px;
-    object-fit: cover;
+    height: auto;
+    max-height: 256px;  /* 256px - rounded from 250px */
+    border-radius: var(--tdih-border-radius-md);
+    object-fit: contain;
   }
 
   /* Better display for vertical/portrait images */
@@ -440,7 +488,7 @@
     width: 100%;
     height: 200px;
     object-fit: cover;
-    border-radius: 6px 6px 0 0;
+    border-radius: 8px 8px 0 0;  /* 8px - rounded from 6px */
   }
 
   /* Full width utilization for mobile TDIH cards */
@@ -450,10 +498,10 @@
   }
 
   .tdih-birthday-picker {
-    padding: 1rem;
-    margin-bottom: 1.25rem;
-    margin-left: -0.25rem;
-    margin-right: -0.25rem;
+    padding: var(--tdih-spacing-md);
+    margin-bottom: 1.5rem;  /* 24px - rounded from 20px (1.25rem) */
+    margin-left: -0.5rem;   /* -8px - rounded from -4px (-0.25rem) */
+    margin-right: -0.5rem;  /* -8px - rounded from -4px (-0.25rem) */
   }
 
   .tdih-event-content {
@@ -461,29 +509,29 @@
   }
 
   .tdih-event-date {
-    font-size: 1rem;
-    margin-bottom: 0.75rem;
+    font-size: var(--tdih-font-size-body);
+    margin-bottom: var(--saho-space-2);
   }
 
   .tdih-event-title {
-    font-size: 1.4rem;
-    margin-bottom: 0.75rem;
+    font-size: var(--saho-font-size-lg);
+    margin-bottom: var(--saho-space-2);
     line-height: 1.3;
   }
 
   .tdih-event-body {
-    font-size: 1rem;
+    font-size: var(--tdih-font-size-body);
     line-height: 1.6;
   }
 
   .tdih-today-events h3 {
-    font-size: 1.6rem;
+    font-size: var(--saho-font-size-xl);
     text-align: center;
-    margin-bottom: 1.5rem;
+    margin-bottom: var(--tdih-spacing-lg);
   }
 
   .tdih-birthday-title {
-    font-size: 1.6rem;
+    font-size: var(--saho-font-size-xl);
     text-align: center;
   }
 
@@ -493,21 +541,21 @@
 
   .tdih-birthday-submit {
     width: 100%;
-    padding: 0.75rem;
-    font-size: 1.1rem;
-    background-color: #B22222;
+    padding: var(--saho-space-2);
+    font-size: var(--saho-font-size-md);
+    background-color: var(--tdih-color-primary);
   }
 
   .tdih-birthday-submit:hover,
   .tdih-birthday-submit:focus {
-    background-color: #8B0000;
+    background-color: var(--tdih-color-primary-dark);
   }
 
   /* Add separation between entries with a subtle gradient line */
   .tdih-event-item::after {
     content: "";
     position: absolute;
-    bottom: -0.875rem;
+    bottom: -1rem;  /* -16px - rounded from -14px (-0.875rem) */
     left: 10%;
     width: 80%;
     height: 1px;
@@ -522,27 +570,27 @@
 /* Extra small devices */
 @media (max-width: 480px) {
   .tdih-interactive-block {
-    padding: 0.25rem;
+    padding: var(--tdih-spacing-xs);
   }
 
   .tdih-event-item {
-    padding: 1.25rem 1rem;
+    padding: 1.5rem 1rem;  /* 24px 16px - rounded from 20px 16px (1.25rem 1rem) */
   }
 
   .tdih-event-title {
-    font-size: 1.3rem;
+    font-size: var(--saho-font-size-lg);
   }
 
   /* Maximum width utilization on small screens */
   .tdih-interactive-block .saho-cards-grid .saho-card {
     width: calc(100% - 0.5rem);
-    margin: 0 0.25rem 0.875rem 0.25rem;
+    margin: 0 0.5rem 1rem 0.5rem;  /* Rounded 14px to 16px (0.875rem to 1rem) */
   }
 
   .tdih-birthday-picker {
-    padding: 0.875rem;
-    margin-left: -0.125rem;
-    margin-right: -0.125rem;
+    padding: 1rem;  /* 16px - rounded from 14px (0.875rem) */
+    margin-left: 0;  /* 0 - rounded from -2px (-0.125rem) */
+    margin-right: 0; /* 0 - rounded from -2px (-0.125rem) */
   }
 }
 

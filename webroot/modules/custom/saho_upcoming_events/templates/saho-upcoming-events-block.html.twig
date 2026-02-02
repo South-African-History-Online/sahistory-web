@@ -75,9 +75,12 @@
             {% endif %}
             
             <div class="event-link">
-              <a href="{{ path('entity.node.canonical', {'node': event.id}) }}" class="read-more-link">
-                {{ 'Learn More'|t }}
-              </a>
+              {% include 'saho:saho-button' with {
+                text: 'Learn More'|t,
+                url: path('entity.node.canonical', {'node': event.id}),
+                size: 'small',
+                icon: 'arrow-right'
+              } %}
             </div>
           </div>
         </article>
@@ -86,9 +89,12 @@
     
     {% if config.show_view_all_link %}
       <div class="view-all-events">
-        <a href="/all-upcoming-events" class="view-all-link">
-          {{ 'View All Upcoming Events'|t }}
-        </a>
+        {% include 'saho:saho-button' with {
+          text: 'View All Upcoming Events'|t,
+          url: '/all-upcoming-events',
+          size: 'medium',
+          icon: 'arrow-right'
+        } %}
       </div>
     {% endif %}
   {% else %}

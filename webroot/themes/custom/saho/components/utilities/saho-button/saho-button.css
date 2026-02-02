@@ -1,42 +1,103 @@
 /**
- * SAHO Button Component Styles
+ * SAHO Button Component - Modern Self-Contained CSS
  *
- * Unified button system that replaces three separate implementations:
- * 1. Bootstrap buttons (btn btn-primary, btn-outline-*)
- * 2. Card buttons (.saho-card-button)
- * 3. Block buttons (.block-button, .block-button-primary/secondary)
+ * Pure CSS component with NO external dependencies.
+ * Uses inline CSS custom properties - works everywhere, no SCSS needed.
  *
- * Design tokens from SAHO heritage color system
+ * Philosophy:
+ * - Single filled red button variant
+ * - Three sizes (small, medium, large)
+ * - Fully accessible (WCAG 2.1 AA)
+ * - Modern CSS features (custom properties, nesting support ready)
  */
 
-/* Base button styles - shared across all variants */
+/* Component-scoped design tokens */
 .saho-button {
+  /* SAHO Brand Colors - inline, no external dependencies */
+  --btn-color-primary: #990000;        /* SAHO Deep Heritage Red */
+  --btn-color-primary-hover: #8b0000;  /* Darker on hover */
+  --btn-color-text: #ffffff;           /* White text */
+  --btn-color-focus: #990000;          /* Focus outline */
+
+  /* Sizing tokens - 8px baseline grid */
+  --btn-padding-sm: 0.5rem 1rem;    /* 8px 16px */
+  --btn-padding-md: 1rem 1.5rem;    /* 16px 24px - rounded from 12px 24px */
+  --btn-padding-lg: 1rem 2rem;      /* 16px 32px */
+
+  --btn-font-size-sm: 0.85rem;
+  --btn-font-size-md: 0.9rem;
+  --btn-font-size-lg: 1rem;
+
+  --btn-radius-sm: 8px;
+  --btn-radius-md: 24px;   /* 24px - rounded from 25px (pill shape) */
+  --btn-radius-lg: 24px;   /* 24px - rounded from 25px (pill shape) */
+
+  /* Shadow tokens - 8px baseline grid */
+  --btn-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  --btn-shadow-hover: 0 4px 8px rgba(0, 0, 0, 0.1);   /* Rounded 3px 10px to 4px 8px */
+  --btn-shadow-focus: 0 0 0 4px rgba(153, 0, 0, 0.25);
+
+  /* Transition */
+  --btn-transition: all 0.2s ease;
+
+  /* Base Layout */
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 0.5rem;  /* 8px */
+  position: relative;
+  z-index: 2; /* Above stretched links in cards */
+
+  /* Typography */
   font-family: inherit;
-  font-weight: 500;
+  font-weight: 600;
   text-align: center;
   text-decoration: none;
   white-space: nowrap;
+  line-height: 1.5;
+
+  /* Interaction */
   cursor: pointer;
   border: 1px solid transparent;
-  transition: all 0.3s ease;
-  position: relative;
-  z-index: 2; /* Ensure buttons are above stretched links in cards */
-  line-height: 1.5;
+  transition: var(--btn-transition);
+
+  /* Visual - Default (medium) */
+  padding: var(--btn-padding-md);
+  font-size: var(--btn-font-size-md);
+  border-radius: var(--btn-radius-md);
+  background: var(--btn-color-primary);
+  color: var(--btn-color-text);
+  border-color: var(--btn-color-primary);
+  box-shadow: var(--btn-shadow);
 }
 
+/* Link button resets */
 .saho-button:hover,
 .saho-button:focus {
   text-decoration: none;
   outline: none;
+  color: var(--btn-color-text);
 }
 
+/* Hover state */
+.saho-button:hover {
+  background: var(--btn-color-primary-hover);
+  border-color: var(--btn-color-primary-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--btn-shadow-hover);
+}
+
+/* Active state */
+.saho-button:active {
+  transform: translateY(0);
+  box-shadow: var(--btn-shadow);
+}
+
+/* Focus state - keyboard navigation */
 .saho-button:focus-visible {
-  outline: 2px solid currentColor;
+  outline: 2px solid var(--btn-color-focus);
   outline-offset: 2px;
+  box-shadow: var(--btn-shadow-focus);
 }
 
 /* Button text wrapper */
@@ -48,135 +109,50 @@
 .saho-button__icon {
   flex-shrink: 0;
   transition: transform 0.3s ease;
-  width: 16px;
-  height: 16px;
+  width: 1rem;   /* 16px */
+  height: 1rem;  /* 16px */
 }
 
-/* Icon animation on hover */
+/* Icon animations on hover */
 .saho-button:hover .saho-button__icon--arrow-right {
-  transform: translateX(3px);
+  transform: translateX(0.25rem);  /* 4px - rounded from 3px */
 }
 
 .saho-button:hover .saho-button__icon--external {
-  transform: translate(2px, -2px);
+  transform: translate(0, 0);  /* No transform - reduced motion friendly */
 }
 
-/* Size variants */
+/* Size Variants */
 .saho-button--small {
-  padding: 6px 12px;
-  font-size: 0.85rem;
-  border-radius: 16px;
+  padding: var(--btn-padding-sm);
+  font-size: var(--btn-font-size-sm);
+  border-radius: var(--btn-radius-sm);
 }
 
 .saho-button--medium {
-  padding: 8px 16px;
-  font-size: 0.9rem;
-  border-radius: 20px;
+  padding: var(--btn-padding-md);
+  font-size: var(--btn-font-size-md);
+  border-radius: var(--btn-radius-md);
 }
 
 .saho-button--large {
-  padding: 12px 24px;
-  font-size: 1rem;
-  border-radius: 25px;
+  padding: var(--btn-padding-lg);
+  font-size: var(--btn-font-size-lg);
+  border-radius: var(--btn-radius-lg);
 }
 
-/* Primary variant - filled red button (default) */
+/* Primary variant - explicit for component inheritance */
 .saho-button--primary {
-  background: #900; /* SAHO deep heritage red */
-  color: #fff;
-  border-color: #900;
+  background: var(--btn-color-primary);
+  color: var(--btn-color-text);
+  border-color: var(--btn-color-primary);
 }
 
 .saho-button--primary:hover,
 .saho-button--primary:focus {
-  background: #700; /* Darker on hover */
-  border-color: #700;
-  color: #fff;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(153, 0, 0, 0.2);
-}
-
-.saho-button--primary:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 4px rgba(153, 0, 0, 0.2);
-}
-
-/* Secondary variant - outlined red button */
-.saho-button--secondary {
-  background: transparent;
-  color: #900;
-  border-color: #900;
-}
-
-.saho-button--secondary:hover,
-.saho-button--secondary:focus {
-  background: #900;
-  color: #fff;
-  transform: translateY(-1px);
-}
-
-/* Outline variant - Bootstrap-style outline */
-.saho-button--outline {
-  background: transparent;
-  color: #6c757d;
-  border-color: #6c757d;
-  border-radius: 4px; /* Bootstrap uses square corners */
-}
-
-.saho-button--outline:hover,
-.saho-button--outline:focus {
-  background: #6c757d;
-  color: #fff;
-}
-
-/* Card action variant - pill-style for cards */
-.saho-button--card-action {
-  background: transparent;
-  color: #900;
-  border-color: #900;
-  border-radius: 20px;
-  min-width: fit-content;
-}
-
-.saho-button--card-action:hover,
-.saho-button--card-action:focus {
-  background: #900;
-  color: #fff;
-  transform: translateY(-1px);
-}
-
-/* Block action variant - for block sections */
-.saho-button--block-action {
-  background: #900;
-  color: #fff;
-  border-color: #900;
-  border-radius: 25px;
-}
-
-.saho-button--block-action:hover,
-.saho-button--block-action:focus {
-  background: #700;
-  border-color: #700;
-  color: #fff;
-}
-
-/* Link variant - text link with icon */
-.saho-button--link {
-  background: transparent;
-  color: #900;
-  border: none;
-  padding: 4px 0;
-  font-weight: 600;
-}
-
-.saho-button--link:hover,
-.saho-button--link:focus {
-  color: #700;
-  text-decoration: underline;
-}
-
-.saho-button--link .saho-button__icon {
-  color: currentColor;
+  background: var(--btn-color-primary-hover);
+  border-color: var(--btn-color-primary-hover);
+  color: var(--btn-color-text);
 }
 
 /* Icon position modifiers */
@@ -188,39 +164,36 @@
   order: -1;
 }
 
-/* Responsive adjustments */
+/* Responsive - Mobile optimizations - 8px baseline grid */
 @media (max-width: 768px) {
   .saho-button--large {
-    padding: 10px 20px;
+    padding: 1rem 1.5rem;  /* 16px 24px - rounded from 14px 28px */
     font-size: 0.95rem;
   }
 
   .saho-button--medium {
-    padding: 8px 14px;
+    padding: 0.5rem 1.5rem;  /* 8px 24px - rounded from 10px 20px */
     font-size: 0.875rem;
   }
 
   .saho-button--small {
-    padding: 6px 10px;
+    padding: 0.5rem 1rem;  /* 8px 16px - rounded from 8px 14px */
     font-size: 0.8rem;
   }
 }
 
-/* Accessibility - ensure sufficient contrast */
+/* Accessibility - High contrast mode support */
 @media (prefers-contrast: high) {
-  .saho-button--primary,
-  .saho-button--block-action {
+  .saho-button {
     border-width: 2px;
   }
 
-  .saho-button--secondary,
-  .saho-button--card-action,
-  .saho-button--outline {
-    border-width: 2px;
+  .saho-button:focus-visible {
+    outline-width: 4px;  /* 4px - rounded from 3px */
   }
 }
 
-/* Reduced motion support */
+/* Reduced motion support - respect user preferences */
 @media (prefers-reduced-motion: reduce) {
   .saho-button,
   .saho-button__icon {
@@ -234,5 +207,15 @@
 
   .saho-button:hover .saho-button__icon {
     transform: none;
+  }
+}
+
+/* Print styles */
+@media print {
+  .saho-button {
+    background: white;
+    color: black;
+    border: 1px solid black;
+    box-shadow: none;
   }
 }

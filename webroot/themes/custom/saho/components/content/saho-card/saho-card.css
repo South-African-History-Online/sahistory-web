@@ -1,25 +1,83 @@
 /**
- * SAHO Card Component Styles
- * Drupal 11 SDC - Heritage-themed card component
- * Consolidated from _unified-cards.scss for single source of truth
- * Uses SAHO color system and responsive design principles
+ * SAHO Card Component - Unified Token System
+ *
+ * Modernized to use global --saho-* tokens with component-scoped overrides.
+ * Inherits from unified design token system for consistency.
+ *
+ * Philosophy:
+ * - Heritage-themed card component with multiple variants
+ * - Size variants (small, medium, large)
+ * - Color variants (primary, secondary, accent, highlight)
+ * - Fully accessible (WCAG 2.1 AA)
+ * - Modern CSS features with responsive design
  */
 
-/* Base Card Styles */
+/* Component-scoped design tokens - Inherit from global system */
 .saho-card {
-  background: #fff;
-  border: 1px solid var(--saho-border-light);
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  /* SAHO Brand Colors - Inherit from unified tokens */
+  --card-color-primary: var(--saho-color-primary);        /* #990000 */
+  --card-color-secondary: var(--saho-color-secondary);    /* #3a4a64 */
+  --card-color-accent: var(--saho-color-accent);          /* #b88a2e */
+  --card-color-highlight: var(--saho-color-highlight);    /* #8b2331 */
+
+  /* Background colors */
+  --card-bg-white: var(--saho-color-white);
+  --card-bg-surface-alt: var(--saho-color-surface-alt);
+
+  /* Border and shadow colors */
+  --card-border-light: var(--saho-color-border-light);
+  --card-shadow-base: var(--saho-color-shadow);
+  --card-shadow-hover: var(--saho-color-shadow-lg);
+
+  /* Text colors */
+  --card-text-primary: var(--saho-color-text-primary);
+  --card-text-secondary: var(--saho-color-text-secondary);
+  --card-text-muted: var(--saho-color-text-muted);
+  --card-text-white: var(--saho-color-white);
+
+  /* Alpha colors for hover effects */
+  --card-primary-alpha-25: rgba(153, 0, 0, 0.25);
+  --card-secondary-alpha-25: rgba(58, 74, 100, 0.25);
+  --card-accent-alpha-25: rgba(212, 165, 116, 0.25);
+  --card-highlight-alpha-25: rgba(139, 35, 49, 0.25);
+
+  /* Spacing - Inherit from unified token system (8px baseline grid) */
+  --card-border-radius: var(--saho-card-radius);      /* 8px */
+  --card-spacing: var(--saho-card-padding-compact);   /* 24px */
+  --card-spacing-mobile: var(--saho-space-2);         /* 16px */
+  --card-gap: var(--saho-card-gap);                   /* 24px - internal spacing */
+
+  /* Image Heights - 8px baseline grid */
+  --card-image-height: 200px;
+  --card-image-height-small: 144px;   /* 8px multiple */
+  --card-image-height-large: 256px;   /* 8px multiple */
+  --card-image-height-mobile: 160px;  /* 8px multiple */
+
+  /* Typography - Inherit from unified tokens */
+  --card-title-size: var(--saho-font-size-lg);      /* 20px */
+  --card-title-weight: var(--saho-font-weight-semibold);  /* 600 */
+  --card-meta-size: var(--saho-font-size-sm);       /* 14px */
+  --card-body-size: var(--saho-font-size-base);     /* 16px */
+  --card-label-size: var(--saho-font-size-xs);      /* 12px */
+
+  /* Transitions */
+  --card-transition-base: var(--saho-transition-base);  /* 300ms ease */
+  --card-transition-slow: var(--saho-transition-slow);  /* 500ms ease */
+
+  /* Base Layout */
+  background: var(--card-bg-white);
+  border: 1px solid var(--card-border-light);
+  border-radius: var(--card-border-radius);
+  box-shadow: var(--saho-shadow-md);
   overflow: hidden;
-  transition: all 0.3s ease;
+  transition: var(--card-transition-base);
   height: 100%;
   position: relative;
 }
 
 .saho-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  transform: translateY(-8px);
+  box-shadow: var(--saho-shadow-xl);
 }
 
 /* Card Link Wrapper */
@@ -28,7 +86,7 @@
   height: 100%;
   color: inherit;
   text-decoration: none;
-  transition: all 0.3s ease;
+  transition: var(--card-transition-base);
 }
 
 .saho-card-link:hover,
@@ -37,76 +95,78 @@
   color: inherit;
 }
 
-/* Card Variants */
+/* Card Color Variants */
 .saho-card--primary {
-  border-left: 4px solid var(--saho-primary);
+  border-left: 4px solid var(--card-color-primary);
 }
 
 .saho-card--primary:hover {
-  border-left-color: var(--saho-primary);
-  box-shadow: 0 0.5rem 1.5rem var(--saho-primary-alpha-25);
+  border-left-color: var(--card-color-primary);
+  box-shadow: 0 0.5rem 1.5rem var(--card-primary-alpha-25);
 }
 
 .saho-card--secondary {
-  border-left: 4px solid var(--saho-secondary);
+  border-left: 4px solid var(--card-color-secondary);
 }
 
 .saho-card--secondary:hover {
-  border-left-color: var(--saho-secondary);
-  box-shadow: 0 0.5rem 1.5rem rgba(58, 74, 100, 0.25);
+  border-left-color: var(--card-color-secondary);
+  box-shadow: 0 0.5rem 1.5rem var(--card-secondary-alpha-25);
 }
 
 .saho-card--accent {
-  border-left: 4px solid var(--saho-accent);
+  border-left: 4px solid var(--card-color-accent);
 }
 
 .saho-card--accent:hover {
-  border-left-color: var(--saho-accent);
-  box-shadow: 0 0.5rem 1.5rem var(--saho-accent-alpha-25);
+  border-left-color: var(--card-color-accent);
+  box-shadow: 0 0.5rem 1.5rem var(--card-accent-alpha-25);
 }
 
 .saho-card--highlight {
-  border-left: 4px solid var(--saho-highlight);
+  border-left: 4px solid var(--card-color-highlight);
 }
 
 .saho-card--highlight:hover {
-  border-left-color: var(--saho-highlight);
-  box-shadow: 0 0.5rem 1.5rem rgba(139, 35, 49, 0.25);
+  border-left-color: var(--card-color-highlight);
+  box-shadow: 0 0.5rem 1.5rem var(--card-highlight-alpha-25);
 }
 
-/* Size Variants */
+/* Size Variants - Small */
 .saho-card--small .saho-card__image {
-  height: 140px;
+  height: var(--card-image-height-small);
 }
 
 .saho-card--small .saho-card__img {
-  height: 140px;
+  height: var(--card-image-height-small);
 }
 
 .saho-card--small .saho-card__placeholder {
-  height: 140px;
+  height: var(--card-image-height-small);
 }
 
+/* Size Variants - Medium (default) */
 .saho-card--medium .saho-card__image {
-  height: 200px;
+  height: var(--card-image-height);
 }
 
+/* Size Variants - Large */
 .saho-card--large .saho-card__image {
-  height: 260px;
+  height: var(--card-image-height-large);
 }
 
 .saho-card--large .saho-card__img {
-  height: 260px;
+  height: var(--card-image-height-large);
 }
 
 .saho-card--large .saho-card__placeholder {
-  height: 260px;
+  height: var(--card-image-height-large);
 }
 
-/* Card Components */
+/* Card Header */
 .saho-card__header {
-  padding: 1rem 1rem 0;
-  background: var(--saho-surface-alt);
+  padding: var(--saho-space-2) var(--saho-space-2) 0;  /* 16px 16px 0 */
+  background: var(--card-bg-surface-alt);
 }
 
 /* Card Image Wrapper - Standardized dimensions and behavior */
@@ -114,7 +174,7 @@
 .saho-card__image {
   position: relative;
   width: 100%;
-  height: 200px;
+  height: var(--card-image-height);
   overflow: hidden;
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
 }
@@ -137,7 +197,7 @@
   min-height: 100%;
   object-fit: cover;
   object-position: center;
-  transition: transform 0.5s ease;
+  transition: var(--card-transition-slow);
   display: block;
 }
 
@@ -155,30 +215,30 @@
   justify-content: center;
   font-size: 3rem;
   color: rgba(255, 255, 255, 0.7);
-  background: var(--saho-surface-alt);
+  background: var(--card-bg-surface-alt);
 }
 
 /* Card Badges/Labels */
 .saho-card-badge,
 .saho-card__type-badge {
   position: absolute;
-  top: 12px;
-  right: 12px;
-  background: #b22222;
-  color: white;
-  padding: 4px 12px;
-  border-radius: 4px;
-  font-size: 0.75rem;
-  font-weight: 600;
+  top: var(--saho-space-2);     /* 16px - rounded from 12px to 8px baseline */
+  right: var(--saho-space-2);   /* 16px - rounded from 12px to 8px baseline */
+  background: var(--saho-color-primary-light);
+  color: var(--card-text-white);
+  padding: var(--saho-space-1) var(--saho-space-2);  /* 8px 16px - rounded from 4px 12px */
+  border-radius: var(--saho-radius-sm);  /* 4px */
+  font-size: var(--card-label-size);     /* 12px */
+  font-weight: var(--saho-font-weight-semibold);  /* 600 */
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0;
   z-index: 2;
 }
 
 /* Card Content Area */
 .saho-card-content,
 .saho-card__body {
-  padding: 20px;
+  padding: var(--card-spacing);
   display: flex;
   flex-direction: column;
   flex-grow: 1;
@@ -187,11 +247,11 @@
 /* Card Title */
 .saho-card-title,
 .saho-card__title {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #2c3e50;
-  margin-bottom: 10px;
-  line-height: 1.4;
+  font-size: var(--card-title-size);      /* 20px */
+  font-weight: var(--card-title-weight);  /* 600 */
+  color: var(--card-text-primary);
+  margin-bottom: var(--saho-space-1);     /* 8px */
+  line-height: var(--saho-line-height-tight);  /* 1.25 */
 }
 
 .saho-card__title a {
@@ -200,33 +260,33 @@
 }
 
 .saho-card__title a:hover {
-  color: var(--saho-primary);
+  color: var(--card-color-primary);
 }
 
 /* Card Subtitle/Metadata */
 .saho-card-subtitle {
   display: block;
-  font-size: 0.85rem;
-  color: #6c757d;
-  margin-bottom: 12px;
-  font-weight: normal;
+  font-size: var(--card-meta-size);       /* 14px */
+  color: var(--card-text-secondary);
+  margin-bottom: var(--saho-space-2);     /* 16px - rounded from 12px */
+  font-weight: var(--saho-font-weight-normal);
 }
 
 .saho-card__meta {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
-  color: var(--saho-text-muted);
-  font-size: 0.875rem;
+  gap: var(--saho-space-1);               /* 8px */
+  color: var(--card-text-muted);
+  font-size: var(--card-meta-size);       /* 14px */
 }
 
 /* Card Description/Body Text */
 .saho-card-description,
 .saho-card__content {
-  font-size: 0.9rem;
-  color: #666;
-  line-height: 1.5;
-  margin-bottom: 16px;
+  font-size: var(--card-body-size);        /* 16px */
+  color: var(--card-text-muted);
+  line-height: var(--saho-line-height-normal);  /* 1.5 */
+  margin-bottom: var(--saho-space-2);      /* 16px */
   flex-grow: 1;
 }
 
@@ -234,14 +294,14 @@
 .saho-card-footer,
 .saho-card__footer-section {
   margin-top: auto;
-  padding-top: 12px;
+  padding-top: var(--saho-space-2);  /* 16px - rounded from 12px */
   text-align: left !important;
   display: flex;
   justify-content: flex-start;
 }
 
 .saho-card__action {
-  margin-bottom: 0.75rem;
+  margin-bottom: var(--saho-space-2);  /* 16px - rounded from 12px */
 }
 
 .saho-card-button-wrapper {
@@ -256,48 +316,48 @@
 }
 
 .saho-card__footer {
-  margin-bottom: 0.75rem;
+  margin-bottom: var(--saho-space-2);  /* 16px - rounded from 12px */
 }
 
-/* Legacy button class - kept for backwards compatibility during migration */
+/* Legacy button class - Inherits from unified button system */
 /* TODO: Migrate templates to use saho-button component with variant: 'card-action' */
 .saho-card-button {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.4rem 1rem;
-  background: transparent;
-  border: 1px solid var(--saho-primary);
-  border-radius: 20px;
-  color: var(--saho-primary);
-  font-size: 0.875rem;
-  font-weight: 500;
+  gap: var(--saho-space-1);                /* 8px */
+  padding: var(--saho-button-padding-sm-y) var(--saho-button-padding-sm-x);  /* 8px 16px */
+  background: var(--saho-button-secondary-bg);  /* transparent */
+  border: var(--saho-button-border-width) solid var(--saho-button-secondary-border);
+  border-radius: var(--saho-radius-pill);  /* 9999px - pill shape */
+  color: var(--saho-button-secondary-text);
+  font-size: var(--saho-button-font-size-sm);
+  font-weight: var(--saho-button-font-weight);
   text-decoration: none;
-  transition: var(--saho-transition-base);
+  transition: var(--card-transition-base);
   cursor: pointer;
 }
 
 .saho-card-button:hover,
 .saho-card-link:hover .saho-card-button {
-  background: var(--saho-primary);
-  color: white;
-  transform: translateX(3px);
+  background: var(--saho-button-secondary-bg-hover);
+  color: var(--saho-button-secondary-text-hover);
+  transform: translateX(var(--saho-space-1));  /* 8px - rounded from 4px */
 }
 
 .saho-card-button svg {
-  width: 14px;
-  height: 14px;
-  transition: var(--saho-transition-base);
+  width: var(--saho-space-2);   /* 16px */
+  height: var(--saho-space-2);  /* 16px */
+  transition: var(--card-transition-base);
 }
 
 .saho-card__category {
-  color: var(--saho-text-muted);
+  color: var(--card-text-muted);
   font-weight: 500;
 }
 
 .saho-card__badges {
   display: flex;
-  gap: 0.25rem;
+  gap: var(--saho-space-1);  /* 8px - rounded from 4px */
   flex-wrap: wrap;
 }
 
@@ -308,7 +368,7 @@
 
 .saho-card__featured {
   background: #3b82f6;
-  color: white;
+  color: var(--card-text-white);
 }
 
 /* Card Type Variations - Badge colors */
@@ -335,45 +395,45 @@
 /* Content Type Specific Styling */
 .saho-card--type-biography .saho-card-badge,
 .saho-card--type-biography .saho-card__type-badge {
-  background: var(--saho-secondary);
+  background: var(--card-color-secondary);
 }
 
 .saho-card--type-place .saho-card-badge,
 .saho-card--type-place .saho-card__type-badge {
-  background: var(--saho-accent);
+  background: var(--card-color-accent);
 }
 
 .saho-card--type-event .saho-card-badge,
 .saho-card--type-event .saho-card__type-badge {
-  background: var(--saho-highlight);
+  background: var(--card-color-highlight);
 }
 
-/* Responsive Design */
+/* Responsive Design - Mobile optimizations */
 @media (max-width: 768px) {
   .saho-card-image,
   .saho-card__image,
   .saho-card--small .saho-card__image,
   .saho-card--medium .saho-card__image,
   .saho-card--large .saho-card__image {
-    height: 160px;
+    height: var(--card-image-height-mobile);
   }
 
   .saho-card-content,
   .saho-card__body {
-    padding: 16px;
+    padding: var(--card-spacing-mobile);
   }
 
   .saho-card-title,
   .saho-card__title {
-    font-size: 1rem;
+    font-size: var(--saho-font-size-base);  /* 16px */
   }
 
   .saho-card__meta {
-    font-size: 0.8125rem;
+    font-size: var(--saho-font-size-xs);  /* 12px */
   }
 
   .saho-card:hover {
-    transform: translateY(-3px);
+    transform: translateY(-8px);  /* Consistent with desktop - 8px baseline */
   }
 
   .saho-card--small .saho-card__img,
@@ -382,18 +442,63 @@
   .saho-card--small .saho-card__placeholder,
   .saho-card--medium .saho-card__placeholder,
   .saho-card--large .saho-card__placeholder {
-    height: 160px;
+    height: var(--card-image-height-mobile);
   }
 }
 
-/* Accessibility */
+/* Accessibility - Keyboard navigation */
 .saho-card[role="link"] {
   cursor: pointer;
 }
 
 .saho-card[role="link"]:focus {
-  outline: 2px solid var(--saho-primary);
+  outline: 2px solid var(--card-color-primary);
   outline-offset: 2px;
+}
+
+/* Accessibility - Focus visible for keyboard navigation */
+.saho-card:focus-visible {
+  outline: 2px solid var(--card-color-primary);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px var(--card-primary-alpha-25);
+}
+
+/* Accessibility - High contrast mode support */
+@media (prefers-contrast: high) {
+  .saho-card {
+    border-width: 2px;
+  }
+
+  .saho-card--primary,
+  .saho-card--secondary,
+  .saho-card--accent,
+  .saho-card--highlight {
+    border-left-width: 4px;
+  }
+}
+
+/* Reduced motion support - respect user preferences */
+@media (prefers-reduced-motion: reduce) {
+  .saho-card,
+  .saho-card-link,
+  .saho-card-button,
+  .saho-card-button svg,
+  .saho-card-image img,
+  .saho-card__image img,
+  .saho-card__img {
+    transition: none;
+  }
+
+  .saho-card:hover,
+  .saho-card:hover .saho-card-image img,
+  .saho-card:hover .saho-card__image img,
+  .saho-card:hover .saho-card__img {
+    transform: none;
+  }
+
+  .saho-card-button:hover {
+    transform: none;
+  }
 }
 
 /* Print Styles */
@@ -401,10 +506,16 @@
   .saho-card {
     break-inside: avoid;
     box-shadow: none;
-    border: 1px solid #ccc;
+    border: 1px solid #cccccc;
   }
 
   .saho-card:hover {
     transform: none;
+  }
+
+  .saho-card-badge,
+  .saho-card__type-badge {
+    background: var(--card-text-primary);
+    color: var(--card-text-white);
   }
 }

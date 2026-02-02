@@ -1,28 +1,52 @@
 /**
- * SAHO Card Grid Component Styles
+ * SAHO Card Grid Component - Unified Token System
  *
  * Responsive grid layout for card collections with automatic responsiveness
  * and flexible column configurations.
+ *
+ * Modernized to use global --saho-* tokens with standardized gaps.
+ * STANDARD gap: 32px (--saho-space-4) for all card grids.
  */
 
 /* Base Grid Styles */
 .saho-card-grid {
+  /* Grid-scoped tokens - Inherit from unified system */
+  --grid-gap: var(--saho-space-4);               /* 32px - STANDARD for card grids */
+  --grid-gap-compact: var(--saho-space-2);       /* 16px */
+  --grid-gap-spacious: var(--saho-space-6);      /* 48px */
+
+  /* Mobile gap adjustments */
+  --grid-gap-mobile: var(--saho-space-2);        /* 16px */
+  --grid-gap-tablet: var(--saho-space-3);        /* 24px */
+
+  /* Grid columns - responsive breakpoints */
+  --grid-columns-mobile: 1;
+  --grid-columns-tablet: 2;
+  --grid-columns-desktop: 3;
+  --grid-columns-wide: 4;
+
+  /* Grid constraints */
+  --grid-card-min-width: var(--saho-grid-card-min-width);  /* 300px */
+  --grid-card-max-width-single: 450px;
+
+  /* Apply base styles */
   display: grid;
   width: 100%;
-  align-items: start; /* Prevent cards from stretching to match tallest */
+  gap: var(--grid-gap);  /* 32px STANDARD */
+  align-items: start;
 }
 
 /* Grid Gap Variants */
 .saho-card-grid--gap-compact {
-  gap: 1rem;
+  gap: var(--grid-gap-compact);  /* 16px */
 }
 
 .saho-card-grid--gap-normal {
-  gap: 1.5rem;
+  gap: var(--grid-gap);  /* 32px STANDARD */
 }
 
 .saho-card-grid--gap-relaxed {
-  gap: 2rem;
+  gap: var(--grid-gap-spacious);  /* 48px */
 }
 
 /* Grid Alignment */
@@ -40,7 +64,7 @@
 
 /* Auto Column Layout - Responsive auto-fill based on minimum card width */
 .saho-card-grid--columns-auto {
-  grid-template-columns: repeat(auto-fill, minmax(var(--saho-card-min-width, 300px), 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(var(--grid-card-min-width), 1fr));
 }
 
 /* Fixed Column Layouts */
@@ -110,37 +134,32 @@
 @media (min-width: 769px) {
   .saho-card-grid--columns-auto .saho-card:only-child,
   .saho-card-grid--columns-auto .saho-grid-item:only-child {
-    max-width: 450px; /* Maximum width for single card on desktop */
+    max-width: var(--grid-card-max-width-single);
+  }
+}
+
+/* Tablet Responsive Adjustments */
+@media (max-width: 992px) {
+  .saho-card-grid--gap-normal,
+  .saho-card-grid {
+    gap: var(--grid-gap-tablet);  /* 24px on tablet */
+  }
+
+  .saho-card-grid--gap-relaxed {
+    gap: var(--grid-gap);  /* 32px maintained */
   }
 }
 
 /* Mobile Responsive Adjustments */
 @media (max-width: 768px) {
-  .saho-card-grid--gap-normal {
-    gap: 1rem;
-  }
-
-  .saho-card-grid--gap-relaxed {
-    gap: 1.25rem;
+  .saho-card-grid--gap-normal,
+  .saho-card-grid--gap-relaxed,
+  .saho-card-grid {
+    gap: var(--grid-gap-mobile);  /* 16px on mobile */
   }
 
   .saho-card-grid--gap-compact {
-    gap: 0.875rem;
-  }
-
-  /* Ensure proper spacing on mobile */
-  .saho-card-grid {
-    padding: 0 0.75rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .saho-card-grid--gap-normal {
-    gap: 0.875rem;
-  }
-
-  .saho-card-grid {
-    padding: 0 1rem;
+    gap: var(--grid-gap-compact);  /* 16px maintained */
   }
 }
 
@@ -161,6 +180,6 @@
   .saho-card-grid .saho-grid-item {
     break-inside: avoid;
     page-break-inside: avoid;
-    margin-bottom: 1rem;
+    margin-bottom: var(--saho-space-2);  /* 16px */
   }
 }
