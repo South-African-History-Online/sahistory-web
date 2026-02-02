@@ -1,26 +1,41 @@
 /**
  * CSS for the This Day in History page.
- * Modernized to use inline CSS custom properties - NO external dependencies.
+ * Modernized to use inline CSS custom properties inheriting from unified SAHO design tokens.
+ * All components are self-contained with NO external SCSS dependencies.
  * Applies consistent styling to the /this-day-in-history page.
  */
 
 /* Main container for the TDIH page */
 .path-this-day-in-history .main-content {
-  /* Inline design tokens - TDIH Page */
-  --tdih-page-color-primary: #990000; /* SAHO Deep Heritage Red */
-  --tdih-page-color-brown-earth: #8b4513; /* African-themed brown */
-  --tdih-page-color-white: #ffffff;
-  --tdih-page-color-text-primary: #212529;
-  --tdih-page-gray-300: #dee2e6;
-  --tdih-page-spacing-sm: 0.5rem;
-  --tdih-page-spacing-md: 1rem;
-  --tdih-page-spacing-lg: 1.5rem;
-  --tdih-page-spacing-xl: 2rem;
-  --tdih-page-border-radius: 8px;
-  --tdih-page-border-radius-sm: 4px;
-  --tdih-page-shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);     /* Rounded 5px to 4px */
-  --tdih-page-shadow-hover: 0 8px 16px rgba(0, 0, 0, 0.15); /* Rounded to 8px baseline */
-  --tdih-page-transition: all 0.3s ease;
+  /* Component-scoped tokens - inherit from base SAHO design system */
+  /* Colors - map to unified SAHO color system */
+  --tdih-page-color-primary: var(--saho-color-primary);           /* Heritage red */
+  --tdih-page-color-brown-earth: #8b4513;                         /* African-themed brown */
+  --tdih-page-color-white: var(--saho-color-white);
+  --tdih-page-color-text-primary: var(--saho-color-text-dark);
+  --tdih-page-gray-300: var(--saho-color-gray-300);
+
+  /* Spacing - use unified 8px baseline grid */
+  --tdih-page-spacing-sm: var(--saho-space-2);    /* 16px */
+  --tdih-page-spacing-md: var(--saho-space-2);    /* 16px */
+  --tdih-page-spacing-lg: var(--saho-space-3);    /* 24px */
+  --tdih-page-spacing-xl: var(--saho-space-4);    /* 32px */
+
+  /* Border radius - use unified scale */
+  --tdih-page-border-radius-sm: var(--saho-radius-sm);  /* 4px */
+  --tdih-page-border-radius: var(--saho-radius-md);     /* 8px */
+
+  /* Shadows - use unified shadow system */
+  --tdih-page-shadow-sm: var(--saho-shadow-sm);
+  --tdih-page-shadow-hover: 0 8px 16px var(--saho-color-black-alpha-15);
+
+  /* Transitions - use unified transition system */
+  --tdih-page-transition: var(--saho-transition-base);
+
+  /* Typography - use unified font size scale */
+  --tdih-page-font-size-title: var(--saho-font-size-xl);    /* 24-30px */
+  --tdih-page-font-size-date: var(--saho-font-size-sm);     /* 14-16px */
+  --tdih-page-font-size-body: var(--saho-font-size-base);   /* 16-18px */
 
   max-width: 1200px;
   margin: 0 auto;
@@ -30,7 +45,7 @@
 /* Page title */
 .path-this-day-in-history .page-title {
   color: var(--tdih-page-color-text-primary);
-  font-size: 2rem;
+  font-size: var(--saho-font-size-2xl);
   margin-bottom: var(--tdih-page-spacing-lg);
   text-align: center;
   border-bottom: 2px solid var(--tdih-page-color-primary); /* SAHO red */
@@ -66,8 +81,8 @@
 .path-this-day-in-history .views-row.tdih-exact-match {
   order: -1;
   border: 2px solid var(--tdih-page-color-primary); /* SAHO red */
-  background-color: rgba(153, 0, 0, 0.05);
-  box-shadow: 0 4px 8px rgba(153, 0, 0, 0.2);
+  background-color: var(--saho-color-primary-alpha-10);
+  box-shadow: 0 4px 8px var(--saho-color-primary-alpha-20);
   margin-bottom: var(--tdih-page-spacing-xl);
   position: relative;
 }
@@ -77,12 +92,12 @@
   content: "Exact Date Match";
   position: absolute;
   top: -0.75rem;      /* -12px */
-  left: 1.25rem;      /* 20px */
+  left: var(--saho-space-3);
   background-color: var(--tdih-page-color-primary);
   color: var(--tdih-page-color-white);
-  padding: 0 0.5rem;  /* 0 8px - rounded from 2px 10px */
-  font-size: 0.8rem;
-  border-radius: 4px;  /* 4px - rounded from 3px */
+  padding: 0 var(--saho-space-1);
+  font-size: var(--tdih-page-font-size-date);
+  border-radius: var(--tdih-page-border-radius-sm);
   font-weight: bold;
 }
 
@@ -91,18 +106,18 @@
   font-weight: bold;
   color: var(--tdih-page-color-brown-earth); /* African-themed brown */
   margin-bottom: var(--tdih-page-spacing-sm);
-  font-size: 1.1rem;
+  font-size: var(--saho-font-size-md);
 }
 
 /* Event title */
 .path-this-day-in-history .views-field-title a {
   color: var(--tdih-page-color-primary); /* SAHO red */
-  font-size: 1.25rem;
+  font-size: var(--saho-font-size-lg);
   font-weight: bold;
   text-decoration: none;
   display: block;
-  margin-bottom: 1rem;  /* 16px - rounded from 12px (0.75rem) */
-  transition: color 0.2s ease;
+  margin-bottom: var(--saho-space-2);
+  transition: color var(--saho-transition-fast);
 }
 
 .path-this-day-in-history .views-field-title a:hover {
@@ -191,11 +206,11 @@
   }
 
   .path-this-day-in-history .views-field-title a {
-    font-size: 1.1rem;
+    font-size: var(--saho-font-size-md);
   }
 
   .path-this-day-in-history .views-field-field-this-day-in-history-3 {
-    font-size: 1rem;
+    font-size: var(--tdih-page-font-size-body);
   }
 
   .path-this-day-in-history .views-row {
@@ -213,7 +228,7 @@
   }
 
   .path-this-day-in-history .page-title {
-    font-size: 1.5rem;
+    font-size: var(--saho-font-size-xl);
   }
 
   .path-this-day-in-history .views-row {
@@ -221,6 +236,6 @@
   }
 
   .path-this-day-in-history .views-field-title a {
-    font-size: 1rem;
+    font-size: var(--tdih-page-font-size-body);
   }
 }
