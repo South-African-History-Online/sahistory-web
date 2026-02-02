@@ -1,75 +1,142 @@
 /**
- * Design Tokens
- * SAHO Layout Builder Block System
+ * Design Tokens - SAHO Unified Token System
+ * South African History Online - Modern Design System
  *
- * Centralized design tokens for consistent spacing, sizing, and layout.
- * These tokens are used across all custom blocks and layout builder sections.
+ * This file provides a centralized, cohesive design token system using the
+ * `--saho-*` naming convention. All tokens follow an 8px baseline grid and
+ * use a component inheritance pattern for consistency.
+ *
+ * Token Architecture:
+ * - Base tokens: Foundational values (colors, spacing, typography)
+ * - Component tokens: Inherit from base tokens with semantic naming
+ * - Pattern tokens: Complex combinations for specific use cases
+ *
+ * @see /webroot/themes/custom/saho/src/scss/base/_saho-colors.scss
+ *      Core color and spacing tokens defined here
  */
 
 // =============================================================================
-// Color Tokens
+// Base Color Tokens
 // =============================================================================
 
 /**
- * SAHO Brand Colors
- * Primary heritage colors with semantic variants
+ * SAHO Heritage Brand Colors
+ *
+ * Primary colors represent South African historical heritage while maintaining
+ * professional academic standards and accessibility for educational content.
+ *
+ * Color System:
+ * - Primary: Deep heritage red (#990000) - Authority, heritage
+ * - Secondary: Slate blue (#3a4a64) - Academic, research
+ * - Accent: Muted gold (#b88a2e) - Historical significance
+ * - Semantic: Success, warning, danger, info for UI states
  */
 
-// Primary brand colors (from base/_variables.scss)
-$color-primary: $saho-deep-heritage-red;        // #990000
-$color-primary-light: #B22222;                  // FireBrick - lighter variant
-$color-primary-dark: #8B0000;                   // DarkRed - darker variant
-$color-secondary: $saho-slate-blue;             // #3a4a64
-$color-accent: $saho-muted-gold;                // #b88a2e
+// Primary brand colors
+$saho-color-primary: $deep-heritage-red;        // #990000
+$saho-color-primary-light: #B22222;             // FireBrick - lighter variant
+$saho-color-primary-dark: #8B0000;              // DarkRed - darker variant
+$saho-color-secondary: $slate-blue;             // #3a4a64
+$saho-color-accent: $muted-gold;                // #b88a2e
+$saho-color-highlight: $faded-brick-red;        // #8b2331
 
 // Semantic colors
-$color-success: #22c55e;                        // Green
-$color-warning: #eab308;                        // Yellow/Gold
-$color-danger: #ef4444;                         // Red
-$color-info: #3b82f6;                           // Blue
-
-// Additional brand colors found in blocks
-$color-green-renewal: #2e7d32;                  // Green for success/growth
-$color-brown-earth: #8B4513;                    // SaddleBrown for grounding
-
-// Text colors
-$color-text-primary: $saho-text-primary;
-$color-text-secondary: $saho-text-secondary;
-$color-text-muted: $text-muted;
+$saho-color-success: #22c55e;                   // Green
+$saho-color-warning: #eab308;                   // Yellow/Gold
+$saho-color-danger: #ef4444;                    // Red
+$saho-color-info: #3b82f6;                      // Blue
 
 // Surface colors
-$color-white: $white;
-$color-surface: $saho-surface;
-$color-border: $border;
+$saho-color-white: $white;
+$saho-color-surface: $surface;
+$saho-color-surface-alt: $surface-alt;
+$saho-color-border: $border;
+$saho-color-border-light: darken($aged-parchment, 6%);
+
+// Text colors
+$saho-color-text-primary: $text-primary;
+$saho-color-text-secondary: $text-secondary;
+$saho-color-text-muted: $text-muted;
+
+// Shadow colors
+$saho-color-shadow: rgba(0, 0, 0, 0.1);
+$saho-color-shadow-sm: rgba(0, 0, 0, 0.05);
+$saho-color-shadow-lg: rgba(0, 0, 0, 0.15);
 
 // CSS Custom Properties for runtime theming
 :root {
   // Primary colors
-  --color-primary: #{$color-primary};
-  --color-primary-light: #{$color-primary-light};
-  --color-primary-dark: #{$color-primary-dark};
-  --color-secondary: #{$color-secondary};
-  --color-accent: #{$color-accent};
+  --saho-color-primary: #{$saho-color-primary};
+  --saho-color-primary-light: #{$saho-color-primary-light};
+  --saho-color-primary-dark: #{$saho-color-primary-dark};
+  --saho-color-secondary: #{$saho-color-secondary};
+  --saho-color-accent: #{$saho-color-accent};
+  --saho-color-highlight: #{$saho-color-highlight};
 
   // Semantic colors
-  --color-success: #{$color-success};
-  --color-warning: #{$color-warning};
-  --color-danger: #{$color-danger};
-  --color-info: #{$color-info};
-
-  // Additional brand colors
-  --color-green-renewal: #{$color-green-renewal};
-  --color-brown-earth: #{$color-brown-earth};
-
-  // Text colors
-  --color-text-primary: #{$color-text-primary};
-  --color-text-secondary: #{$color-text-secondary};
-  --color-text-muted: #{$color-text-muted};
+  --saho-color-success: #{$saho-color-success};
+  --saho-color-warning: #{$saho-color-warning};
+  --saho-color-danger: #{$saho-color-danger};
+  --saho-color-info: #{$saho-color-info};
 
   // Surface colors
-  --color-white: #{$color-white};
-  --color-surface: #{$color-surface};
-  --color-border: #{$color-border};
+  --saho-color-white: #{$saho-color-white};
+  --saho-color-surface: #{$saho-color-surface};
+  --saho-color-surface-alt: #{$saho-color-surface-alt};
+  --saho-color-border: #{$saho-color-border};
+  --saho-color-border-light: #{$saho-color-border-light};
+
+  // Text colors
+  --saho-color-text-primary: #{$saho-color-text-primary};
+  --saho-color-text-secondary: #{$saho-color-text-secondary};
+  --saho-color-text-muted: #{$saho-color-text-muted};
+
+  // Shadow colors
+  --saho-color-shadow: #{$saho-color-shadow};
+  --saho-color-shadow-sm: #{$saho-color-shadow-sm};
+  --saho-color-shadow-lg: #{$saho-color-shadow-lg};
+}
+
+// =============================================================================
+// Spacing Scale Tokens - 8px Baseline Grid
+// =============================================================================
+
+/**
+ * Unified Spacing System
+ *
+ * Based on 8px baseline grid for visual rhythm and consistency.
+ * This system replaces all legacy spacing tokens with a single unified scale.
+ *
+ * Scale:
+ * - 1 (0.5rem/8px):   Tight spacing, inline elements, compact layouts
+ * - 2 (1rem/16px):    Close elements, standard spacing
+ * - 3 (1.5rem/24px):  Related content, comfortable spacing
+ * - 4 (2rem/32px):    Section separation, standard gap for grids
+ * - 5 (2.5rem/40px):  Large sections, prominent spacing
+ * - 6 (3rem/48px):    Major sections, dramatic spacing
+ * - 8 (4rem/64px):    Page sections, maximum spacing
+ *
+ * Note: These values are defined in /base/_saho-colors.scss with 4px baseline.
+ * Here we extend them with additional sizes and provide semantic aliases.
+ */
+
+$saho-space-1: 0.5rem;    // 8px
+$saho-space-2: 1rem;      // 16px
+$saho-space-3: 1.5rem;    // 24px
+$saho-space-4: 2rem;      // 32px - STANDARD for card grids
+$saho-space-5: 2.5rem;    // 40px
+$saho-space-6: 3rem;      // 48px
+$saho-space-8: 4rem;      // 64px
+
+// CSS Custom Properties
+:root {
+  --saho-space-1: #{$saho-space-1};
+  --saho-space-2: #{$saho-space-2};
+  --saho-space-3: #{$saho-space-3};
+  --saho-space-4: #{$saho-space-4};
+  --saho-space-5: #{$saho-space-5};
+  --saho-space-6: #{$saho-space-6};
+  --saho-space-8: #{$saho-space-8};
 }
 
 // =============================================================================
@@ -77,31 +144,53 @@ $color-border: $border;
 // =============================================================================
 
 /**
- * Typography scale for consistent text sizing
- * Based on modular scale with 1rem base
+ * Typography Scale
+ *
+ * Modular scale with 1rem (16px) base for consistent text hierarchy.
+ * Font sizes are optimized for long-form reading and research content.
  */
 
-$font-size-xs: 0.75rem;      // 12px - Captions, labels
-$font-size-sm: 0.875rem;     // 14px - Small text
-$font-size-base: 1rem;       // 16px - Body text
-$font-size-md: 1.125rem;     // 18px - Large body
-$font-size-lg: 1.25rem;      // 20px - Subheadings
-$font-size-xl: 1.5rem;       // 24px - H3
-$font-size-2xl: 1.75rem;     // 28px - H2
-$font-size-3xl: 2.25rem;     // 36px - H1
-$font-size-4xl: 2.5rem;      // 40px - Display
+$saho-font-size-xs: 0.75rem;      // 12px - Captions, labels, metadata
+$saho-font-size-sm: 0.875rem;     // 14px - Small text, supporting content
+$saho-font-size-base: 1rem;       // 16px - Body text (optimal for reading)
+$saho-font-size-md: 1.125rem;     // 18px - Large body, emphasized content
+$saho-font-size-lg: 1.25rem;      // 20px - Subheadings, lead text
+$saho-font-size-xl: 1.5rem;       // 24px - H3, section headings
+$saho-font-size-2xl: 1.75rem;     // 28px - H2, major sections
+$saho-font-size-3xl: 2.25rem;     // 36px - H1, page titles
+$saho-font-size-4xl: 2.5rem;      // 40px - Display, hero text
+
+// Font weights
+$saho-font-weight-normal: 400;
+$saho-font-weight-medium: 500;
+$saho-font-weight-semibold: 600;
+$saho-font-weight-bold: 700;
+
+// Line heights
+$saho-line-height-tight: 1.25;
+$saho-line-height-normal: 1.5;
+$saho-line-height-relaxed: 1.75;
 
 // CSS Custom Properties
 :root {
-  --font-size-xs: #{$font-size-xs};
-  --font-size-sm: #{$font-size-sm};
-  --font-size-base: #{$font-size-base};
-  --font-size-md: #{$font-size-md};
-  --font-size-lg: #{$font-size-lg};
-  --font-size-xl: #{$font-size-xl};
-  --font-size-2xl: #{$font-size-2xl};
-  --font-size-3xl: #{$font-size-3xl};
-  --font-size-4xl: #{$font-size-4xl};
+  --saho-font-size-xs: #{$saho-font-size-xs};
+  --saho-font-size-sm: #{$saho-font-size-sm};
+  --saho-font-size-base: #{$saho-font-size-base};
+  --saho-font-size-md: #{$saho-font-size-md};
+  --saho-font-size-lg: #{$saho-font-size-lg};
+  --saho-font-size-xl: #{$saho-font-size-xl};
+  --saho-font-size-2xl: #{$saho-font-size-2xl};
+  --saho-font-size-3xl: #{$saho-font-size-3xl};
+  --saho-font-size-4xl: #{$saho-font-size-4xl};
+
+  --saho-font-weight-normal: #{$saho-font-weight-normal};
+  --saho-font-weight-medium: #{$saho-font-weight-medium};
+  --saho-font-weight-semibold: #{$saho-font-weight-semibold};
+  --saho-font-weight-bold: #{$saho-font-weight-bold};
+
+  --saho-line-height-tight: #{$saho-line-height-tight};
+  --saho-line-height-normal: #{$saho-line-height-normal};
+  --saho-line-height-relaxed: #{$saho-line-height-relaxed};
 }
 
 // =============================================================================
@@ -109,82 +198,60 @@ $font-size-4xl: 2.5rem;      // 40px - Display
 // =============================================================================
 
 /**
- * Container width hierarchy for different content types:
- * - Narrow: Single column content, hero banner text, focused content
- * - Standard: Default content blocks, articles, general content
- * - Wide: Multi-column grids, card layouts, galleries
- * - Full: Full-width sections, hero banners, special layouts
+ * Container Width Hierarchy
+ *
+ * Defines maximum widths for different content types to optimize readability
+ * and visual hierarchy across the site.
+ *
+ * Usage:
+ * - Narrow (700px): Single column content, hero text, focused reading
+ * - Standard (1200px): Default content blocks, articles, general content
+ * - Wide (1600px): Multi-column grids, card layouts, galleries
+ * - Full (100%): Full-width sections, hero banners, special layouts
  */
 
-$container-narrow: 700px;    // Single column, hero content
-$container-standard: 1200px; // Default blocks, most content
-$container-wide: 1600px;     // Card grids, multi-column
-$container-full: 100%;       // Full-width sections
+$saho-container-narrow: 700px;
+$saho-container-standard: 1200px;
+$saho-container-wide: 1600px;
+$saho-container-full: 100%;
 
-// CSS Custom Properties for runtime flexibility
 :root {
-  --container-narrow: #{$container-narrow};
-  --container-standard: #{$container-standard};
-  --container-wide: #{$container-wide};
-  --container-full: #{$container-full};
+  --saho-container-narrow: #{$saho-container-narrow};
+  --saho-container-standard: #{$saho-container-standard};
+  --saho-container-wide: #{$saho-container-wide};
+  --saho-container-full: #{$saho-container-full};
 }
 
 // =============================================================================
-// Spacing Scale Tokens
+// Responsive Breakpoint Tokens
 // =============================================================================
 
 /**
- * Standardized spacing scale based on 8px baseline grid:
- * - xs: 8px   - Tight spacing, inline elements
- * - sm: 16px  - Close elements, compact layouts
- * - md: 24px  - Related content, default spacing
- * - lg: 32px  - Section separation, card grids (STANDARD)
- * - xl: 48px  - Major sections, large gaps
- * - xxl: 64px - Page sections, dramatic spacing
+ * Bootstrap 5 Breakpoints
+ *
+ * Standard responsive breakpoints matching Bootstrap's grid system.
+ * These are provided as tokens for consistency with the design system.
+ *
+ * Use Bootstrap mixins for media queries:
+ * @include media-breakpoint-up(md) { ... }
+ * @include media-breakpoint-down(lg) { ... }
+ * @include media-breakpoint-between(md, lg) { ... }
  */
 
-$spacing-xs: 0.5rem;   // 8px
-$spacing-sm: 1rem;     // 16px
-$spacing-md: 1.5rem;   // 24px
-$spacing-lg: 2rem;     // 32px  - STANDARD gap for card grids
-$spacing-xl: 3rem;     // 48px
-$spacing-xxl: 4rem;    // 64px
+$saho-breakpoint-xs: 0;
+$saho-breakpoint-sm: 576px;
+$saho-breakpoint-md: 768px;
+$saho-breakpoint-lg: 992px;
+$saho-breakpoint-xl: 1200px;
+$saho-breakpoint-xxl: 1400px;
 
-// CSS Custom Properties
 :root {
-  --spacing-xs: #{$spacing-xs};
-  --spacing-sm: #{$spacing-sm};
-  --spacing-md: #{$spacing-md};
-  --spacing-lg: #{$spacing-lg};
-  --spacing-xl: #{$spacing-xl};
-  --spacing-xxl: #{$spacing-xxl};
-}
-
-// =============================================================================
-// Grid System Tokens
-// =============================================================================
-
-/**
- * Standardized grid configurations:
- * - Card grid: Standard 3-column responsive grid for cards
- * - Two column: 50/50 split for features
- * - Auto-fit: Flexible grid that adapts to content
- */
-
-// Card grid minimum width (responsive breakpoint)
-$card-grid-min-width: 300px;  // Minimum card width before wrapping
-
-// Two-column grid minimum width
-$two-col-grid-min-width: 500px;
-
-// Grid gap (use spacing-lg by default)
-$grid-gap-default: $spacing-lg;  // 32px
-
-// CSS Custom Properties
-:root {
-  --card-grid-min-width: #{$card-grid-min-width};
-  --two-col-grid-min-width: #{$two-col-grid-min-width};
-  --grid-gap-default: #{$grid-gap-default};
+  --saho-breakpoint-xs: #{$saho-breakpoint-xs};
+  --saho-breakpoint-sm: #{$saho-breakpoint-sm};
+  --saho-breakpoint-md: #{$saho-breakpoint-md};
+  --saho-breakpoint-lg: #{$saho-breakpoint-lg};
+  --saho-breakpoint-xl: #{$saho-breakpoint-xl};
+  --saho-breakpoint-xxl: #{$saho-breakpoint-xxl};
 }
 
 // =============================================================================
@@ -192,17 +259,24 @@ $grid-gap-default: $spacing-lg;  // 32px
 // =============================================================================
 
 /**
- * Consistent border radius for all blocks and cards
+ * Border Radius Scale
+ *
+ * Consistent corner rounding for all UI elements.
+ * Standard (8px) used for most cards and blocks.
  */
 
-$border-radius-sm: 4px;
-$border-radius-md: 8px;   // STANDARD for cards and blocks
-$border-radius-lg: 12px;
+$saho-radius-sm: 4px;
+$saho-radius-md: 8px;      // STANDARD for cards and blocks
+$saho-radius-lg: 12px;
+$saho-radius-xl: 16px;
+$saho-radius-pill: 9999px; // Fully rounded (pills, badges)
 
 :root {
-  --border-radius-sm: #{$border-radius-sm};
-  --border-radius-md: #{$border-radius-md};
-  --border-radius-lg: #{$border-radius-lg};
+  --saho-radius-sm: #{$saho-radius-sm};
+  --saho-radius-md: #{$saho-radius-md};
+  --saho-radius-lg: #{$saho-radius-lg};
+  --saho-radius-xl: #{$saho-radius-xl};
+  --saho-radius-pill: #{$saho-radius-pill};
 }
 
 // =============================================================================
@@ -210,19 +284,24 @@ $border-radius-lg: 12px;
 // =============================================================================
 
 /**
- * Elevation system for depth and hierarchy
+ * Elevation System
+ *
+ * Shadows create depth hierarchy and visual interest.
+ * Standard (md) used for cards, hover states use more prominent shadows.
  */
 
-$shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
-$shadow-md: 0 3px 10px rgba(0, 0, 0, 0.05);  // STANDARD
-$shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.08);
-$shadow-hover: 0 2px 8px rgba(0, 0, 0, 0.1);
+$saho-shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+$saho-shadow-md: 0 3px 10px rgba(0, 0, 0, 0.05);     // STANDARD
+$saho-shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.08);
+$saho-shadow-xl: 0 10px 25px rgba(0, 0, 0, 0.15);
+$saho-shadow-hover: 0 2px 8px rgba(0, 0, 0, 0.1);
 
 :root {
-  --shadow-sm: #{$shadow-sm};
-  --shadow-md: #{$shadow-md};
-  --shadow-lg: #{$shadow-lg};
-  --shadow-hover: #{$shadow-hover};
+  --saho-shadow-sm: #{$saho-shadow-sm};
+  --saho-shadow-md: #{$saho-shadow-md};
+  --saho-shadow-lg: #{$saho-shadow-lg};
+  --saho-shadow-xl: #{$saho-shadow-xl};
+  --saho-shadow-hover: #{$saho-shadow-hover};
 }
 
 // =============================================================================
@@ -230,184 +309,494 @@ $shadow-hover: 0 2px 8px rgba(0, 0, 0, 0.1);
 // =============================================================================
 
 /**
- * Text shadows for improved readability on images/backgrounds
+ * Text Shadows
+ *
+ * Improves text readability on images and complex backgrounds.
+ * Use sparingly for hero text and overlay content.
  */
 
-$text-shadow-sm: 1px 1px 2px rgba(0, 0, 0, 0.5);
-$text-shadow-md: 2px 2px 4px rgba(0, 0, 0, 0.7);
-$text-shadow-lg: 3px 3px 6px rgba(0, 0, 0, 0.8);
+$saho-text-shadow-sm: 1px 1px 2px rgba(0, 0, 0, 0.5);
+$saho-text-shadow-md: 2px 2px 4px rgba(0, 0, 0, 0.7);
+$saho-text-shadow-lg: 3px 3px 6px rgba(0, 0, 0, 0.8);
 
 :root {
-  --text-shadow-sm: #{$text-shadow-sm};
-  --text-shadow-md: #{$text-shadow-md};
-  --text-shadow-lg: #{$text-shadow-lg};
+  --saho-text-shadow-sm: #{$saho-text-shadow-sm};
+  --saho-text-shadow-md: #{$saho-text-shadow-md};
+  --saho-text-shadow-lg: #{$saho-text-shadow-lg};
 }
 
 // =============================================================================
-// Button Tokens
+// Transition Tokens
 // =============================================================================
 
 /**
- * Button-specific design tokens
- * Ensures consistent button styling across all blocks
+ * Animation Timing
+ *
+ * Consistent transition durations for all interactive elements.
+ * Fast (150ms) for hover states, base (300ms) for most transitions.
  */
 
-// Button sizing
-$button-padding-sm: 0.4rem 0.8rem;
-$button-padding-md: 0.625rem 1.875rem;
-$button-padding-lg: 0.75rem 2rem;
-
-// Button border radius
-$button-radius-sm: 4px;
-$button-radius-md: 6px;
-$button-radius-lg: 25px;   // Pill-shaped
-$button-radius-pill: 25px; // Explicit pill naming
-
-// Button font sizes
-$button-font-size-sm: 0.85rem;
-$button-font-size-md: 0.9rem;
-$button-font-size-lg: 1rem;
-
-// Button control sizes (for carousel, etc.)
-$button-size-sm: 32px;
-$button-size-md: 40px;
-$button-size-lg: 48px;
-
-// Button transitions
-$button-transition: all 0.2s ease;
+$saho-transition-fast: 150ms ease;
+$saho-transition-base: 300ms ease;
+$saho-transition-slow: 500ms ease;
 
 :root {
-  // Core colors (ensure these are available for modules)
-  --color-primary: #{$color-primary};                     // #990000
-  --color-primary-light: #{$color-primary-light};         // #B22222
-  --color-primary-dark: #{$color-primary-dark};           // #8B0000
-  --color-white: #{$color-white};                         // #FFFFFF
+  --saho-transition-fast: #{$saho-transition-fast};
+  --saho-transition-base: #{$saho-transition-base};
+  --saho-transition-slow: #{$saho-transition-slow};
+}
 
-  // Button sizing
-  --button-padding-sm: #{$button-padding-sm};
-  --button-padding-md: #{$button-padding-md};
-  --button-padding-lg: #{$button-padding-lg};
+// =============================================================================
+// Button Component Tokens
+// =============================================================================
 
-  // Button radius
-  --button-radius-sm: #{$button-radius-sm};
-  --button-radius-md: #{$button-radius-md};
-  --button-radius-lg: #{$button-radius-lg};
-  --button-radius-pill: #{$button-radius-pill};
+/**
+ * Button System - Complete State Management
+ *
+ * Unified button tokens following the proven button system pattern.
+ * Provides all necessary tokens for consistent button styling across
+ * all components including Layout Builder blocks.
+ *
+ * Button Variants:
+ * - Primary: Filled red button (main CTAs)
+ * - Secondary: Outlined button (secondary actions)
+ * - Ghost: Transparent with hover state (tertiary actions)
+ *
+ * Button Sizes:
+ * - Small: Compact buttons for tight spaces
+ * - Medium: Standard button size (default)
+ * - Large: Prominent CTAs and hero buttons
+ */
 
-  // Button font sizes
-  --button-font-size-sm: #{$button-font-size-sm};
-  --button-font-size-md: #{$button-font-size-md};
-  --button-font-size-lg: #{$button-font-size-lg};
+// Button colors - Primary variant (filled red)
+$saho-button-primary-bg: $saho-color-primary;
+$saho-button-primary-bg-hover: $saho-color-primary-dark;
+$saho-button-primary-bg-active: $saho-color-primary-dark;
+$saho-button-primary-text: $saho-color-white;
+$saho-button-primary-text-hover: $saho-color-white;
+$saho-button-primary-border: $saho-color-primary;
+$saho-button-primary-border-hover: $saho-color-primary-dark;
+
+// Button colors - Secondary variant (outlined)
+$saho-button-secondary-bg: transparent;
+$saho-button-secondary-bg-hover: $saho-color-primary;
+$saho-button-secondary-text: $saho-color-primary;
+$saho-button-secondary-text-hover: $saho-color-white;
+$saho-button-secondary-border: $saho-color-primary;
+$saho-button-secondary-border-hover: $saho-color-primary;
+
+// Button colors - Ghost variant (minimal)
+$saho-button-ghost-bg: transparent;
+$saho-button-ghost-bg-hover: rgba($saho-color-primary, 0.1);
+$saho-button-ghost-text: $saho-color-primary;
+$saho-button-ghost-text-hover: $saho-color-primary-dark;
+$saho-button-ghost-border: transparent;
+$saho-button-ghost-border-hover: transparent;
+
+// Button sizing - Small
+$saho-button-padding-sm-y: 0.4rem;   // ~6px
+$saho-button-padding-sm-x: 0.8rem;   // ~13px
+$saho-button-font-size-sm: 0.85rem;  // ~14px
+$saho-button-radius-sm: 4px;
+
+// Button sizing - Medium (default)
+$saho-button-padding-md-y: 0.625rem;   // ~10px
+$saho-button-padding-md-x: 1.875rem;   // ~30px
+$saho-button-font-size-md: 0.9rem;     // ~14px
+$saho-button-radius-md: 6px;
+
+// Button sizing - Large
+$saho-button-padding-lg-y: 0.75rem;    // ~12px
+$saho-button-padding-lg-x: 2rem;       // ~32px
+$saho-button-font-size-lg: 1rem;       // 16px
+$saho-button-radius-lg: 25px;          // Pill-shaped
+
+// Button control sizes (carousel, icon buttons)
+$saho-button-size-sm: 32px;
+$saho-button-size-md: 40px;
+$saho-button-size-lg: 48px;
+
+// Button states
+$saho-button-font-weight: 600;
+$saho-button-line-height: 1.5;
+$saho-button-border-width: 1px;
+$saho-button-transition: $saho-transition-fast;
+
+// Button focus states
+$saho-button-focus-outline: $saho-color-primary;
+$saho-button-focus-shadow: rgba(153, 0, 0, 0.25);
+$saho-button-focus-outline-width: 2px;
+$saho-button-focus-outline-offset: 2px;
+
+// Button disabled states
+$saho-button-disabled-opacity: 0.6;
+$saho-button-disabled-cursor: not-allowed;
+
+// CSS Custom Properties
+:root {
+  // Primary button colors
+  --saho-button-primary-bg: #{$saho-button-primary-bg};
+  --saho-button-primary-bg-hover: #{$saho-button-primary-bg-hover};
+  --saho-button-primary-bg-active: #{$saho-button-primary-bg-active};
+  --saho-button-primary-text: #{$saho-button-primary-text};
+  --saho-button-primary-text-hover: #{$saho-button-primary-text-hover};
+  --saho-button-primary-border: #{$saho-button-primary-border};
+  --saho-button-primary-border-hover: #{$saho-button-primary-border-hover};
+
+  // Secondary button colors
+  --saho-button-secondary-bg: #{$saho-button-secondary-bg};
+  --saho-button-secondary-bg-hover: #{$saho-button-secondary-bg-hover};
+  --saho-button-secondary-text: #{$saho-button-secondary-text};
+  --saho-button-secondary-text-hover: #{$saho-button-secondary-text-hover};
+  --saho-button-secondary-border: #{$saho-button-secondary-border};
+  --saho-button-secondary-border-hover: #{$saho-button-secondary-border-hover};
+
+  // Ghost button colors
+  --saho-button-ghost-bg: #{$saho-button-ghost-bg};
+  --saho-button-ghost-bg-hover: #{$saho-button-ghost-bg-hover};
+  --saho-button-ghost-text: #{$saho-button-ghost-text};
+  --saho-button-ghost-text-hover: #{$saho-button-ghost-text-hover};
+  --saho-button-ghost-border: #{$saho-button-ghost-border};
+  --saho-button-ghost-border-hover: #{$saho-button-ghost-border-hover};
+
+  // Button sizing - Small
+  --saho-button-padding-sm-y: #{$saho-button-padding-sm-y};
+  --saho-button-padding-sm-x: #{$saho-button-padding-sm-x};
+  --saho-button-font-size-sm: #{$saho-button-font-size-sm};
+  --saho-button-radius-sm: #{$saho-button-radius-sm};
+
+  // Button sizing - Medium
+  --saho-button-padding-md-y: #{$saho-button-padding-md-y};
+  --saho-button-padding-md-x: #{$saho-button-padding-md-x};
+  --saho-button-font-size-md: #{$saho-button-font-size-md};
+  --saho-button-radius-md: #{$saho-button-radius-md};
+
+  // Button sizing - Large
+  --saho-button-padding-lg-y: #{$saho-button-padding-lg-y};
+  --saho-button-padding-lg-x: #{$saho-button-padding-lg-x};
+  --saho-button-font-size-lg: #{$saho-button-font-size-lg};
+  --saho-button-radius-lg: #{$saho-button-radius-lg};
 
   // Button control sizes
-  --button-size-sm: #{$button-size-sm};
-  --button-size-md: #{$button-size-md};
-  --button-size-lg: #{$button-size-lg};
+  --saho-button-size-sm: #{$saho-button-size-sm};
+  --saho-button-size-md: #{$saho-button-size-md};
+  --saho-button-size-lg: #{$saho-button-size-lg};
 
-  // Button colors - single filled red variant only
-  --button-bg-primary: var(--color-primary);              // #990000
-  --button-bg-primary-hover: var(--color-primary-dark);   // #8B0000
-  --button-text-primary: var(--color-white);
+  // Button states
+  --saho-button-font-weight: #{$saho-button-font-weight};
+  --saho-button-line-height: #{$saho-button-line-height};
+  --saho-button-border-width: #{$saho-button-border-width};
+  --saho-button-transition: #{$saho-button-transition};
 
   // Button focus states
-  --button-focus-outline: var(--color-primary);
-  --button-focus-shadow: rgba(153, 0, 0, 0.25);
+  --saho-button-focus-outline: #{$saho-button-focus-outline};
+  --saho-button-focus-shadow: #{$saho-button-focus-shadow};
+  --saho-button-focus-outline-width: #{$saho-button-focus-outline-width};
+  --saho-button-focus-outline-offset: #{$saho-button-focus-outline-offset};
 
-  // Button shadows
-  --button-shadow: var(--shadow-sm);
-  --button-shadow-hover: var(--shadow-md);
+  // Button disabled states
+  --saho-button-disabled-opacity: #{$saho-button-disabled-opacity};
+  --saho-button-disabled-cursor: #{$saho-button-disabled-cursor};
 
-  // Button transitions
-  --button-transition: #{$button-transition};
+  // Legacy button tokens (for backward compatibility)
+  --button-bg-primary: var(--saho-button-primary-bg);
+  --button-bg-primary-hover: var(--saho-button-primary-bg-hover);
+  --button-text-primary: var(--saho-button-primary-text);
+  --button-focus-outline: var(--saho-button-focus-outline);
+  --button-focus-shadow: var(--saho-button-focus-shadow);
+  --button-shadow: var(--saho-shadow-sm);
+  --button-shadow-hover: var(--saho-shadow-md);
+  --button-transition: var(--saho-button-transition);
 }
 
 // =============================================================================
-// Block Section Specific Tokens
+// Grid System Tokens
 // =============================================================================
 
 /**
- * Block section component tokens
+ * Grid Configuration
+ *
+ * Responsive grid system for cards, galleries, and multi-column layouts.
+ * Uses CSS Grid with auto-fit for flexible, responsive designs.
+ *
+ * Standard card grid: 3 columns on desktop, responsive down to 1 column
+ * Standard gap: 32px (--saho-space-4)
  */
 
-// Default block padding
-$block-padding-mobile: 1.25rem;  // 20px
-$block-padding-tablet: 1.75rem;  // 28px
-$block-padding-desktop: 2rem;    // 32px
-
-// Block image heights
-$block-image-height-mobile: 180px;
-$block-image-height-tablet: 200px;
-$block-image-height-desktop: 250px;
-
-// Section margins
-$block-section-margin: $spacing-lg;
+$saho-grid-card-min-width: 300px;     // Minimum card width before wrapping
+$saho-grid-two-col-min-width: 500px;  // Two-column layout minimum
+$saho-grid-gap-default: $saho-space-4; // Standard gap (32px)
+$saho-grid-gap-compact: $saho-space-2; // Compact gap (16px)
+$saho-grid-gap-spacious: $saho-space-6; // Spacious gap (48px)
 
 :root {
-  --block-padding: #{$block-padding-desktop};
-  --block-image-height: #{$block-image-height-desktop};
-  --block-section-margin: #{$block-section-margin};
+  --saho-grid-card-min-width: #{$saho-grid-card-min-width};
+  --saho-grid-two-col-min-width: #{$saho-grid-two-col-min-width};
+  --saho-grid-gap-default: #{$saho-grid-gap-default};
+  --saho-grid-gap-compact: #{$saho-grid-gap-compact};
+  --saho-grid-gap-spacious: #{$saho-grid-gap-spacious};
 }
 
 // =============================================================================
-// Responsive Overrides
+// Component Inheritance Patterns
 // =============================================================================
+
+/**
+ * Component Tokens
+ *
+ * Higher-level tokens that inherit from base tokens using semantic names.
+ * This creates a clear hierarchy and makes it easy to update designs
+ * consistently across the site.
+ *
+ * Pattern: Components inherit from base tokens, never use hardcoded values.
+ */
+
+// Card component tokens
+$saho-card-padding: $saho-space-4;              // 32px
+$saho-card-padding-compact: $saho-space-3;      // 24px
+$saho-card-gap: $saho-space-3;                  // 24px internal spacing
+$saho-card-radius: $saho-radius-md;             // 8px
+$saho-card-shadow: $saho-shadow-md;
+$saho-card-shadow-hover: $saho-shadow-hover;
+$saho-card-border: 1px solid $saho-color-border;
+
+// Block section tokens
+$saho-block-padding-mobile: 1.25rem;   // 20px
+$saho-block-padding-tablet: 1.75rem;   // 28px
+$saho-block-padding-desktop: $saho-space-4;  // 32px
+$saho-block-margin: $saho-space-4;     // 32px between sections
+$saho-block-radius: $saho-radius-md;   // 8px
+
+// Image component tokens
+$saho-image-radius: $saho-radius-md;   // 8px
+$saho-image-height-mobile: 180px;
+$saho-image-height-tablet: 200px;
+$saho-image-height-desktop: 250px;
+
+// Hero component tokens
+$saho-hero-padding: $saho-space-8;           // 64px
+$saho-hero-padding-mobile: $saho-space-4;    // 32px
+$saho-hero-text-shadow: $saho-text-shadow-md;
+$saho-hero-overlay: rgba(0, 0, 0, 0.4);
+
+// Navigation tokens
+$saho-nav-padding: $saho-space-2;            // 16px
+$saho-nav-gap: $saho-space-2;                // 16px
+$saho-nav-item-padding: $saho-space-2 $saho-space-3;  // 16px 24px
+
+// Form component tokens
+$saho-input-padding: $saho-space-2 $saho-space-3;  // 16px 24px
+$saho-input-radius: $saho-radius-sm;               // 4px
+$saho-input-border: 1px solid $saho-color-border;
+$saho-input-focus-border: $saho-color-primary;
+$saho-input-focus-shadow: 0 0 0 3px $saho-button-focus-shadow;
+
+// CSS Custom Properties for component tokens
+:root {
+  // Card tokens
+  --saho-card-padding: #{$saho-card-padding};
+  --saho-card-padding-compact: #{$saho-card-padding-compact};
+  --saho-card-gap: #{$saho-card-gap};
+  --saho-card-radius: #{$saho-card-radius};
+  --saho-card-shadow: #{$saho-card-shadow};
+  --saho-card-shadow-hover: #{$saho-card-shadow-hover};
+  --saho-card-border: #{$saho-card-border};
+
+  // Block section tokens
+  --saho-block-padding: #{$saho-block-padding-desktop};
+  --saho-block-margin: #{$saho-block-margin};
+  --saho-block-radius: #{$saho-block-radius};
+
+  // Image tokens
+  --saho-image-radius: #{$saho-image-radius};
+  --saho-image-height: #{$saho-image-height-desktop};
+
+  // Hero tokens
+  --saho-hero-padding: #{$saho-hero-padding};
+  --saho-hero-text-shadow: #{$saho-hero-text-shadow};
+  --saho-hero-overlay: #{$saho-hero-overlay};
+
+  // Navigation tokens
+  --saho-nav-padding: #{$saho-nav-padding};
+  --saho-nav-gap: #{$saho-nav-gap};
+  --saho-nav-item-padding: #{$saho-nav-item-padding};
+
+  // Form tokens
+  --saho-input-padding: #{$saho-input-padding};
+  --saho-input-radius: #{$saho-input-radius};
+  --saho-input-border: #{$saho-input-border};
+  --saho-input-focus-border: #{$saho-input-focus-border};
+  --saho-input-focus-shadow: #{$saho-input-focus-shadow};
+}
+
+// =============================================================================
+// Responsive Token Overrides
+// =============================================================================
+
+/**
+ * Responsive Adjustments
+ *
+ * Override specific tokens at different breakpoints to maintain optimal
+ * proportions and usability across device sizes.
+ */
 
 @include media-breakpoint-down(md) {
   :root {
-    --block-padding: #{$block-padding-tablet};
-    --block-image-height: #{$block-image-height-tablet};
+    --saho-block-padding: #{$saho-block-padding-tablet};
+    --saho-image-height: #{$saho-image-height-tablet};
+    --saho-hero-padding: #{$saho-space-6}; // 48px on tablet
   }
 }
 
 @include media-breakpoint-down(sm) {
   :root {
-    --block-padding: #{$block-padding-mobile};
-    --block-image-height: #{$block-image-height-mobile};
+    --saho-block-padding: #{$saho-block-padding-mobile};
+    --saho-image-height: #{$saho-image-height-mobile};
+    --saho-hero-padding: #{$saho-hero-padding-mobile};
+    --saho-card-padding: #{$saho-space-3}; // Reduce card padding on mobile
   }
 }
 
 // =============================================================================
-// Usage Examples (Documentation)
+// Z-Index Scale
 // =============================================================================
 
 /**
- * Container Width Usage:
+ * Z-Index Management
+ *
+ * Centralized z-index scale to prevent stacking context issues.
+ * Use these tokens instead of arbitrary z-index values.
+ */
+
+$saho-z-base: 1;
+$saho-z-dropdown: 1000;
+$saho-z-sticky: 1020;
+$saho-z-fixed: 1030;
+$saho-z-modal-backdrop: 1040;
+$saho-z-modal: 1050;
+$saho-z-popover: 1060;
+$saho-z-tooltip: 1070;
+
+:root {
+  --saho-z-base: #{$saho-z-base};
+  --saho-z-dropdown: #{$saho-z-dropdown};
+  --saho-z-sticky: #{$saho-z-sticky};
+  --saho-z-fixed: #{$saho-z-fixed};
+  --saho-z-modal-backdrop: #{$saho-z-modal-backdrop};
+  --saho-z-modal: #{$saho-z-modal};
+  --saho-z-popover: #{$saho-z-popover};
+  --saho-z-tooltip: #{$saho-z-tooltip};
+}
+
+// =============================================================================
+// Usage Examples & Documentation
+// =============================================================================
+
+/**
+ * SPACING USAGE
+ *
+ * Use the 8px baseline spacing scale for all margins, padding, and gaps:
+ *
+ * .card-grid {
+ *   gap: var(--saho-space-4);           // 32px standard grid gap
+ * }
+ *
+ * .section {
+ *   margin-bottom: var(--saho-space-6); // 48px major section spacing
+ *   padding: var(--saho-space-4);       // 32px internal padding
+ * }
+ *
+ * .compact-layout {
+ *   gap: var(--saho-space-2);           // 16px tight spacing
+ * }
+ */
+
+/**
+ * CONTAINER USAGE
+ *
+ * Choose the appropriate container width for your content type:
  *
  * .hero-banner {
- *   max-width: var(--container-full);  // Full width
+ *   max-width: var(--saho-container-full);  // Full width background
  *
  *   .hero-content {
- *     max-width: var(--container-narrow);  // Centered 700px content
+ *     max-width: var(--saho-container-narrow); // 700px centered text
  *   }
  * }
  *
  * .card-grid {
- *   max-width: var(--container-wide);  // 1600px for grids
+ *   max-width: var(--saho-container-wide);  // 1600px for grids
  * }
  *
- * .content-block {
- *   max-width: var(--container-standard);  // 1200px default
+ * .article {
+ *   max-width: var(--saho-container-standard); // 1200px default
  * }
  */
 
 /**
- * Spacing Usage:
+ * GRID USAGE
  *
- * .saho-card-grid {
- *   gap: var(--spacing-lg);  // Standard 32px gap
- * }
- *
- * .section-spacing {
- *   margin-bottom: var(--spacing-xl);  // Large 48px margin
- * }
- */
-
-/**
- * Grid Usage:
+ * Create responsive card grids using the grid tokens:
  *
  * .card-grid {
  *   display: grid;
- *   grid-template-columns: repeat(auto-fill, minmax(var(--card-grid-min-width), 1fr));
- *   gap: var(--grid-gap-default);
+ *   grid-template-columns: repeat(
+ *     auto-fill,
+ *     minmax(var(--saho-grid-card-min-width), 1fr)
+ *   );
+ *   gap: var(--saho-grid-gap-default);
+ *   max-width: var(--saho-container-wide);
  * }
+ */
+
+/**
+ * BUTTON USAGE
+ *
+ * Apply button tokens for consistent interactive elements:
+ *
+ * .saho-button-primary {
+ *   background: var(--saho-button-primary-bg);
+ *   color: var(--saho-button-primary-text);
+ *   padding: var(--saho-button-padding-md-y) var(--saho-button-padding-md-x);
+ *   border-radius: var(--saho-button-radius-md);
+ *   transition: var(--saho-button-transition);
+ *
+ *   &:hover {
+ *     background: var(--saho-button-primary-bg-hover);
+ *   }
+ * }
+ */
+
+/**
+ * COMPONENT INHERITANCE
+ *
+ * Build custom components using base tokens:
+ *
+ * .custom-card {
+ *   padding: var(--saho-card-padding);
+ *   border-radius: var(--saho-card-radius);
+ *   box-shadow: var(--saho-card-shadow);
+ *   background: var(--saho-color-surface);
+ *
+ *   &:hover {
+ *     box-shadow: var(--saho-card-shadow-hover);
+ *   }
+ * }
+ */
+
+/**
+ * MIGRATION GUIDE
+ *
+ * Old Token → New Token:
+ * --spacing-xs (8px)  → --saho-space-1 (8px)
+ * --spacing-sm (16px) → --saho-space-2 (16px)
+ * --spacing-md (24px) → --saho-space-3 (24px)
+ * --spacing-lg (32px) → --saho-space-4 (32px)
+ * --spacing-xl (48px) → --saho-space-6 (48px)
+ * --spacing-xxl (64px) → --saho-space-8 (64px)
+ *
+ * --color-primary → --saho-color-primary
+ * --button-bg-primary → --saho-button-primary-bg
+ * --shadow-md → --saho-shadow-md
+ * --border-radius-md → --saho-radius-md
  */
