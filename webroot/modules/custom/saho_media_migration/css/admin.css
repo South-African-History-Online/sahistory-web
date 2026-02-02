@@ -1,33 +1,42 @@
 /**
  * Admin form styling for SAHO Media Migration
+ *
+ * Uses SAHO unified design token system for consistency across admin interfaces.
+ * All tokens inherit from the centralized --saho-* system defined in
+ * /webroot/themes/custom/saho/src/scss/abstracts/_design-tokens.scss
  */
 
 .migration-progress {
-  background: #e7f4e4;
-  border: 1px solid #66c266;
-  border-radius: 4px;
-  padding: 1rem;
-  margin-bottom: 1rem;
-  color: #2d7a2d;
-  font-size: 1.1em;
+  /* Admin-scoped tokens using SAHO system */
+  --admin-success-bg: #e7f4e4;     /* Light green - success state */
+  --admin-success-border: #66c266; /* Medium green - success border */
+  --admin-success-text: #2d7a2d;   /* Dark green - success text */
+
+  background: var(--admin-success-bg);
+  border: 1px solid var(--admin-success-border);
+  border-radius: var(--saho-radius-sm);
+  padding: var(--saho-space-2);
+  margin-bottom: var(--saho-space-2);
+  color: var(--admin-success-text);
+  font-size: var(--saho-font-size-md);
 }
 
 .form-item-actions-section-generate-csv,
 .form-item-actions-section-migrate-used,
 .form-item-advanced-migrate-advanced {
   display: inline-block;
-  margin-right: 1rem;
+  margin-right: var(--saho-space-2);
 }
 
 fieldset legend {
-  font-weight: bold;
-  margin-bottom: 0.5rem;
+  font-weight: var(--saho-font-weight-bold);
+  margin-bottom: var(--saho-space-1);
 }
 
 .form-actions {
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid #ccc;
+  margin-top: var(--saho-space-2);
+  padding-top: var(--saho-space-2);
+  border-top: 1px solid var(--saho-color-border);
 }
 
 .saho-migration-stats table {
@@ -36,24 +45,27 @@ fieldset legend {
 }
 
 .saho-migration-stats td:last-child {
-  font-weight: bold;
+  font-weight: var(--saho-font-weight-bold);
   text-align: right;
 }
 
 .button--primary {
-  background-color: #0073aa;
-  color: white;
+  background-color: var(--saho-button-primary-bg);
+  color: var(--saho-button-primary-text);
   border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 3px;
+  padding: var(--saho-button-padding-sm-y) var(--saho-button-padding-sm-x);
+  border-radius: var(--saho-button-radius-sm);
+  font-weight: var(--saho-button-font-weight);
+  transition: var(--saho-button-transition);
   cursor: pointer;
 }
 
 .button--primary:hover {
-  background-color: #005a87;
+  background-color: var(--saho-button-primary-bg-hover);
 }
 
 .button--primary:disabled {
-  background-color: #ccc;
-  cursor: not-allowed;
+  background-color: var(--saho-color-gray-300);
+  cursor: var(--saho-button-disabled-cursor);
+  opacity: var(--saho-button-disabled-opacity);
 }

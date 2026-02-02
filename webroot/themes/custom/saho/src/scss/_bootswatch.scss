@@ -51,11 +51,39 @@
 
 // Buttons
 // NOTE: For custom SAHO buttons, use the saho-button SDC component instead
-// These Bootstrap overrides are for core Drupal admin UI and legacy components
+// These Bootstrap overrides match the saho-button component for consistency
 
-.btn-primary,
-.btn-primary:hover {
-  @include btn-shadow($primary);
+.btn-primary {
+  // Match saho-button--primary styling exactly
+  // Using CSS custom properties for consistent color system
+  background: var(--saho-color-primary) !important;
+  color: var(--saho-color-white) !important;
+  border-color: var(--saho-color-primary) !important;
+  border-radius: 25px !important;  /* Pill shape */
+  font-weight: 600 !important;
+  padding: 0.75rem 1.5rem !important;
+  transition: all 0.2s ease !important;
+  box-shadow: none !important;
+
+  &:hover,
+  &:focus {
+    background: var(--saho-color-primary-dark) !important;
+    border-color: var(--saho-color-primary-dark) !important;
+    color: var(--saho-color-white) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 3px 10px var(--saho-color-black-alpha-10) !important;
+  }
+
+  &:active {
+    transform: translateY(0) !important;
+    box-shadow: 0 2px 4px var(--saho-color-black-alpha-05) !important;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--saho-color-primary) !important;
+    outline-offset: 2px !important;
+    box-shadow: 0 0 0 4px var(--saho-color-primary-alpha-25) !important;
+  }
 }
 
 .btn-secondary,
@@ -99,6 +127,26 @@
   @include btn-shadow($light);
 }
 
+// Reduced motion support for buttons
+@media (prefers-reduced-motion: reduce) {
+  .btn-primary,
+  .btn-secondary,
+  .btn,
+  .btn-success,
+  .btn-info,
+  .btn-warning,
+  .btn-danger,
+  .btn-dark,
+  .btn-light {
+    transition: none !important;
+
+    &:hover,
+    &:focus {
+      transform: none !important;
+    }
+  }
+}
+
 .btn-outline-secondary {
   color: $gray-400;
   border-color: $gray-400;
@@ -116,41 +164,51 @@
 }
 
 /* Container for the TDIH block */
+/* Modernized to use unified SAHO design tokens - zero hardcoded values */
 
 .tdih-block {
-  margin: 2rem 0;
+  /* Component-scoped tokens */
+  --tdih-block-spacing: var(--saho-space-4);           /* 32px */
+  --tdih-block-padding: var(--saho-space-3);           /* 24px */
+  --tdih-block-item-spacing: var(--saho-space-3);      /* 24px */
+  --tdih-block-font-title: var(--saho-font-size-xl);   /* 24-30px */
+  --tdih-block-font-subtitle: var(--saho-font-size-md); /* 18-20px */
+  --tdih-block-font-date: var(--saho-font-size-sm);    /* 14-16px */
+  --tdih-block-font-body: var(--saho-font-size-base);  /* 16-18px */
+
+  margin: var(--tdih-block-spacing) 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
   font-family: $font-family-base;
-  box-shadow: 0 3px 10px rgb(0, 0, 0, 0.05);
-  padding: 1.5rem;
-  border-radius: 8px;
-  background-color: #fff;
+  box-shadow: var(--saho-shadow-md);
+  padding: var(--tdih-block-padding);
+  border-radius: var(--saho-radius-md);
+  background-color: var(--saho-color-white);
 }
 
 .tdih-block .block-title {
-  font-size: 1.5rem;
-  margin-bottom: 0.2rem;
-  color: $saho-deep-heritage-red;
+  font-size: var(--tdih-block-font-title);
+  margin-bottom: var(--saho-space-1);
+  color: var(--saho-color-primary);
   font-family: $headings-font-family;
   font-weight: $headings-font-weight;
 }
 
 .tdih-block .intro-text {
-  font-size: 0.95rem;
+  font-size: var(--tdih-block-font-date);
   max-width: 400px;
-  color: $gray-700;
-  margin-bottom: 1.5rem;
+  color: var(--saho-color-gray-700);
+  margin-bottom: var(--tdih-block-item-spacing);
   line-height: 1.4;
 }
 
 .tdih-separator {
   width: 60px;
   height: 2px;
-  background-color: $saho-deep-heritage-red;
-  margin: 0 auto 1.5rem;
+  background-color: var(--saho-color-primary);
+  margin: 0 auto var(--tdih-block-item-spacing);
   opacity: 0.7;
 }
 
@@ -163,9 +221,9 @@
 
 .tdih-item {
   max-width: 300px;
-  margin-bottom: 1.5rem;
-  transition: transform 0.3s ease;
-  
+  margin-bottom: var(--tdih-block-item-spacing);
+  transition: transform var(--saho-transition-base);
+
   &:hover {
     transform: translateY(-3px);
   }
@@ -173,65 +231,65 @@
 
 .tdih-item h3 a {
   text-decoration: none;
-  color: $saho-deep-heritage-red;
+  color: var(--saho-color-primary);
   font-family: $headings-font-family;
-  transition: color 0.2s ease;
+  transition: color var(--saho-transition-fast);
 }
 
 .tdih-item h3 a:hover {
-  color: darken($saho-deep-heritage-red, 10%);
+  color: var(--saho-color-primary-dark);
 }
 
 .tdih-item .tdih-image {
   width: 100%;
   height: auto;
-  border-radius: 8px;
-  margin-bottom: 0.75rem;
-  box-shadow: 0 3px 10px rgb(0, 0, 0, 0.1);
+  border-radius: var(--saho-radius-md);
+  margin-bottom: var(--saho-space-2);
+  box-shadow: var(--saho-shadow-md);
 }
 
 .tdih-item .date {
-  font-size: 0.9rem;
-  color: $gray-600;
-  margin-bottom: 0.5rem;
+  font-size: var(--tdih-block-font-date);
+  color: var(--saho-color-gray-600);
+  margin-bottom: var(--saho-space-1);
   font-style: italic;
 }
 
 .tdih-item h3 {
-  margin: 0 0 1.25rem;
-  font-size: 1.1rem;
-  color: $saho-deep-heritage-red;
+  margin: 0 0 var(--saho-space-3);
+  font-size: var(--tdih-block-font-subtitle);
+  color: var(--saho-color-primary);
   line-height: 1.4;
   font-family: $headings-font-family;
   font-weight: $headings-font-weight;
 }
 
 .tdih-button-wrapper {
-  margin-top: 1rem;
+  margin-top: var(--saho-space-2);
   width: 100%;
   text-align: center;
 }
 
 .tdih-button-wrapper a.btn-view-more {
   display: inline-block;
-  padding: 0.6rem 1.2rem;
-  border: 1px solid $saho-deep-heritage-red;
-  color: $saho-deep-heritage-red;
+  padding: var(--saho-space-2) var(--saho-space-3);
+  border: 1px solid var(--saho-color-primary);
+  color: var(--saho-color-primary);
   background-color: transparent;
   text-decoration: none;
-  font-size: 0.9rem;
+  font-size: var(--tdih-block-font-date);
   font-weight: 600;
-  border-radius: 25px;
-  margin-top: 0.5rem;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 5px rgb(0, 0, 0, 0.05);
+  border-radius: var(--saho-radius-full);
+  margin-top: var(--saho-space-1);
+  transition: all var(--saho-transition-base);
+  box-shadow: var(--saho-shadow-sm);
 }
 
 .tdih-button-wrapper a.btn-view-more:hover {
-  background-color: $saho-deep-heritage-red;
-  color: white;
+  background-color: var(--saho-color-primary);
+  color: var(--saho-color-white);
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgb(0, 0, 0, 0.1);
+  box-shadow: var(--saho-shadow-md);
 }
 
 // Typography
@@ -306,13 +364,13 @@ label {
 .field__label {
   font-weight: bold;
   font-size: 1.1em;
-  color: #444;
+  color: var(--saho-color-text-light);
 }
 
 /* Target field items */
 .field__item {
   font-size: 1em;
-  color: #222;
+  color: var(--saho-color-text-dark);
 }
 
 /* Target field items with multiple values */
@@ -353,24 +411,24 @@ label {
 }
 
 .block-section {
-  margin: 0 auto; /* center each block within its “column” */
+  margin: 0 auto; /* center each block within its "column" */
   max-width: 320px;
   text-align: center;
   font-family: $font-family-sans-serif;
-  color: #333;
+  color: var(--saho-color-text-medium);
 }
 
 /* Larger heading for each block */
 .block-section h2 {
   font-size: 1.4rem;
-  color: #8b2b2b;
+  color: var(--saho-color-accent);
   margin-bottom: 0.5rem;
 }
 
 /* Intro text */
 .block-section .intro-text {
   font-size: 0.9rem;
-  color: #444;
+  color: var(--saho-color-text-light);
   line-height: 1.4;
   margin-bottom: 1rem;
 }
@@ -379,14 +437,14 @@ label {
 .block-section .block-image {
   width: 100%;
   height: auto;
-  border-radius: 6px;
+  border-radius: var(--saho-radius-sm);
   margin-bottom: 0.5rem;
 }
 
 /* Label (e.g. "Article", "Date") */
 .block-section .block-label {
   font-size: 0.85rem;
-  color: #444;
+  color: var(--saho-color-text-light);
   margin-bottom: 0.25rem;
   font-style: italic;
 }
@@ -400,7 +458,7 @@ label {
 
 /* Title link */
 .block-section h3 a {
-  color: #8b2b2b;
+  color: var(--saho-color-accent);
   text-decoration: none;
   transition: color 0.2s;
 }
@@ -414,24 +472,24 @@ label {
   font-size: 0.95rem;
   margin: 0 0 1rem;
   line-height: 1.4;
-  color: #333;
+  color: var(--saho-color-text-medium);
 }
 
 /* "More events"/"More features" button */
 .block-section .block-button {
   display: inline-block;
   padding: 0.4rem 0.8rem;
-  border: 1px solid #8b2b2b;
-  color: #8b2b2b;
-  border-radius: 4px;
+  border: 1px solid var(--saho-color-accent);
+  color: var(--saho-color-accent);
+  border-radius: var(--saho-radius-sm);
   text-decoration: none;
   font-size: 0.85rem;
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .block-section .block-button:hover {
-  background-color: #8b2b2b;
-  color: #fff;
+  background-color: var(--saho-color-accent);
+  color: var(--saho-color-white);
 }
 
 /* Entity overview block */
@@ -443,13 +501,13 @@ label {
 
 .entity-overview-block .block-title {
   font-size: 1.5rem;
-  color: #8b2b2b;
+  color: var(--saho-color-accent);
   margin-bottom: 0.5rem;
 }
 
 .entity-overview-block .intro-text {
   font-size: 0.9rem;
-  color: #444;
+  color: var(--saho-color-text-light);
   margin-bottom: 1rem;
 }
 
@@ -475,7 +533,7 @@ label {
 .entity-overview-item h3 {
   font-size: 1.1rem;
   margin: 0 0 0.5rem;
-  color: #8b2b2b;
+  color: var(--saho-color-accent);
 }
 
 .entity-overview-item h3 a {
@@ -485,7 +543,7 @@ label {
 
 .entity-overview-item .date {
   font-size: 0.9rem;
-  color: #555;
+  color: var(--saho-color-text-lighter);
 }
 
 /* Classroom landing page view styles */
@@ -514,36 +572,36 @@ label {
 
   .views-col {
     // Each grid cell
-    background-color: #fff;
-    border: 1px solid #ccc;
-    border-radius: 4px;
+    background-color: var(--saho-color-white);
+    border: 1px solid var(--saho-color-border-light);
+    border-radius: var(--saho-radius-sm);
     padding: 1.5rem;
     flex: 1 1 250px;
-    box-shadow: 0 2px 4px rgb(0, 0, 0, 0.08);
+    box-shadow: 0 2px 4px var(--saho-color-black-alpha-10);
     margin-bottom: 1rem;
 
     // Text styling
     h2,
     h3,
     h4 {
-      color: #900;
+      color: var(--saho-color-primary);
       margin-top: 0;
       margin-bottom: 0.75rem;
     }
 
     p {
-      color: #444;
+      color: var(--saho-color-text-light);
       line-height: 1.4;
       margin-bottom: 1rem;
     }
 
     a {
-      color: #900;
+      color: var(--saho-color-primary);
       text-decoration: none;
       transition: color 0.2s;
 
       &:hover {
-        color: #7a0000;
+        color: var(--saho-color-primary-dark);
         text-decoration: underline;
       }
     }
@@ -552,7 +610,7 @@ label {
     img {
       max-width: 100%;
       height: auto;
-      border-radius: 4px;
+      border-radius: var(--saho-radius-sm);
     }
   }
 }
@@ -564,9 +622,9 @@ label {
 
   .archive-exposed {
     padding: 1rem;
-    background: #fef9f0;
-    border: 1px solid #ddd;
-    border-radius: 4px;
+    background: var(--saho-color-bg-cream);
+    border: 1px solid var(--saho-color-border-medium);
+    border-radius: var(--saho-radius-sm);
     margin-bottom: 1.5rem;
 
     // Inside, you might see .form-item, .form-submit, etc.
@@ -576,14 +634,14 @@ label {
 
     .form-submit,
     input[type="submit"] {
-      background-color: #900;
-      color: #fff;
-      border: 2px solid #900;
-      border-radius: 4px;
+      background-color: var(--saho-color-primary);
+      color: var(--saho-color-white);
+      border: 2px solid var(--saho-color-primary);
+      border-radius: var(--saho-radius-sm);
       padding: 0.5rem 1rem;
 
       &:hover {
-        background-color: #7a0000;
+        background-color: var(--saho-color-primary-dark);
       }
     }
   }
@@ -595,21 +653,21 @@ label {
 
     .archive-row {
       flex: 1 1 300px;
-      background: #fff;
-      border: 1px solid #ccc;
-      border-radius: 4px;
+      background: var(--saho-color-white);
+      border: 1px solid var(--saho-color-border-light);
+      border-radius: var(--saho-radius-sm);
       padding: 1rem;
-      box-shadow: 0 2px 4px rgb(0, 0, 0, 0.08);
+      box-shadow: 0 2px 4px var(--saho-color-black-alpha-10);
 
       h2,
       h3,
       h4 {
-        color: #900; /* SAHO red */
+        color: var(--saho-color-primary);
       }
 
       img {
         max-width: 100%;
-        border-radius: 4px;
+        border-radius: var(--saho-radius-sm);
       }
     }
   }
@@ -623,13 +681,13 @@ label {
 .archive-view {
   margin: 2rem 0;
   padding: 1rem;
-  border-top: 4px solid #900; /* SAHO red accent line at top */
+  border-top: 4px solid var(--saho-color-primary);
 
   .archive-exposed {
     padding: 1rem;
-    background: #fef9f0;
-    border: 1px solid #ddd;
-    border-radius: 4px;
+    background: var(--saho-color-bg-cream);
+    border: 1px solid var(--saho-color-border-medium);
+    border-radius: var(--saho-radius-sm);
     margin-bottom: 1.5rem;
 
     // Inside, you might see .form-item, .form-submit, etc.
@@ -639,14 +697,14 @@ label {
 
     .form-submit,
     input[type="submit"] {
-      background-color: #900;
-      color: #fff;
-      border: 2px solid #900;
-      border-radius: 4px;
+      background-color: var(--saho-color-primary);
+      color: var(--saho-color-white);
+      border: 2px solid var(--saho-color-primary);
+      border-radius: var(--saho-radius-sm);
       padding: 0.5rem 1rem;
 
       &:hover {
-        background-color: #7a0000;
+        background-color: var(--saho-color-primary-dark);
       }
     }
   }
@@ -656,7 +714,7 @@ label {
 
     h2,
     h3 {
-      color: #900;
+      color: var(--saho-color-primary);
       margin-top: 0;
     }
   }
@@ -664,7 +722,7 @@ label {
 
 /* Custom layout builder modal styling */
 #layout-builder-modal form {
-  color: #000;
+  color: var(--saho-color-black);
   font-family: inherit;
 }
 
@@ -683,11 +741,11 @@ label {
   font-size: 2rem;
   display: block;
   padding: 0.5rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  border: 1px solid var(--saho-color-border-light);
+  border-radius: var(--saho-radius-sm);
   text-align: center;
   text-decoration: none;
-  color: #fff;
+  color: var(--saho-color-white);
 }
 
 /* Increase spacing and clarity on all default Drupal form items */
@@ -703,7 +761,7 @@ label {
   display: inline-block;
   font-weight: 600;
   margin-bottom: 0.3rem;
-  color: #333;
+  color: var(--saho-color-text-medium);
   font-size: 1rem;
 }
 
@@ -714,15 +772,15 @@ label {
 .form-select {
   width: 100%;
   padding: 0.6rem 0.8rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  border: 1px solid var(--saho-color-border-light);
+  border-radius: var(--saho-radius-sm);
   font-size: 0.95rem;
-  color: #333;
+  color: var(--saho-color-text-medium);
 
   &:focus {
     outline: none;
-    border-color: #900;  /* SAHO red on focus */
-    box-shadow: 0 0 0 1px #99000020;
+    border-color: var(--saho-color-primary);
+    box-shadow: 0 0 0 1px var(--saho-color-primary-alpha-20);
   }
 }
 
@@ -730,7 +788,7 @@ label {
 .description,
 .form-item__description {
   font-size: 0.85rem;
-  color: #777;
+  color: var(--saho-color-text-subtle);
   margin-top: 0.2rem;
   line-height: 1.3;
 }
@@ -746,10 +804,10 @@ label {
 .webform-submit.button,
 button.form-submit,
 input[type="submit"] {
-  background-color: #900;  /* SAHO red */
+  background-color: var(--saho-color-primary);
   border: none;
-  color: #fff;
-  border-radius: 4px;
+  color: var(--saho-color-white);
+  border-radius: var(--saho-radius-sm);
   padding: 0.6rem 1.2rem;
   cursor: pointer;
   font-size: 1rem;
@@ -757,7 +815,7 @@ input[type="submit"] {
   transition: background-color 0.2s ease;
 
   &:hover {
-    background-color: #7a0000; /* Darker on hover */
+    background-color: var(--saho-color-primary-dark);
   }
 }
 
@@ -859,7 +917,7 @@ h1.title.page-title {
 // Sidebar
 .saho-article-sidebar {
   flex: 1;
-  background: #fef9f5;
+  background: var(--saho-color-bg-warm);
   padding: 1.5rem;
   font-family: $font-family-sans-serif;
   border-top: 4px solid $saho-muted-gold;
@@ -925,7 +983,7 @@ h1.title.page-title {
 
   .caption {
     font-size: 0.9rem;
-    color: #666;
+    color: var(--saho-color-text-muted);
     font-style: italic;
     margin-top: 0.5rem;
     line-height: 1.4;
@@ -961,7 +1019,7 @@ h1.title.page-title {
 
 // References
 .saho-references {
-  border-top: 1px solid #ccc;
+  border-top: 1px solid var(--saho-color-border-light);
   padding-top: 1.5rem;
   margin-top: 2rem;
 
@@ -982,7 +1040,7 @@ h1.title.page-title {
     padding-left: 0;
     font-size: 0.95rem;
     line-height: 1.6;
-    color: #333;
+    color: var(--saho-color-text-medium);
 
     li {
       margin-bottom: 0.75rem;
@@ -1000,7 +1058,7 @@ h1.title.page-title {
 
 // Further Reading
 .saho-further-reading {
-  border-top: 1px solid #ccc;
+  border-top: 1px solid var(--saho-color-border-light);
   padding-top: 1.5rem;
   margin-top: 2rem;
 
@@ -1027,7 +1085,7 @@ h1.title.page-title {
 
 // Thematic Context
 .saho-thematic-context {
-  border-top: 1px solid #ccc;
+  border-top: 1px solid var(--saho-color-border-light);
   padding-top: 1rem;
   margin-top: 1.5rem;
 
@@ -1054,7 +1112,7 @@ h1.title.page-title {
 
 // Further Reading
 .saho-further-reading {
-  border-top: 1px solid #ccc;
+  border-top: 1px solid var(--saho-color-border-light);
   padding-top: 1rem;
   margin-top: 1.5rem;
 
@@ -1070,7 +1128,7 @@ h1.title.page-title {
     padding-left: 1.5rem;
     font-size: 0.95rem;
     line-height: 1.6;
-    color: #333;
+    color: var(--saho-color-text-medium);
 
     li {
       margin-bottom: 0.75rem;
@@ -1099,7 +1157,7 @@ h1.title.page-title {
 
   .accordion .card {
     border: none;
-    border-bottom: 1px solid #ddd;
+    border-bottom: 1px solid var(--saho-color-border-medium);
   }
 
   .accordion .card-header {
@@ -1114,7 +1172,7 @@ h1.title.page-title {
   .accordion-button {
     font-weight: bold;
     color: $saho-deep-heritage-red;
-    background-color: #fff;
+    background-color: var(--saho-color-white);
   }
 
   .accordion-body {
@@ -1166,7 +1224,7 @@ h1.title.page-title {
   margin-top: 1.5rem;
   margin-bottom: 1.5rem;
   padding-top: 1rem;
-  border-top: 1px solid #ccc;
+  border-top: 1px solid var(--saho-color-border-light);
 
   h4 {
     font-size: 1rem;
@@ -1184,12 +1242,12 @@ h1.title.page-title {
     margin: 0;
 
     li {
-      background-color: #f5f5f5;
+      background-color: var(--saho-color-bg-light);
       padding: 0.5rem 1rem;
       border-radius: 0.25rem;
       font-size: 0.9rem;
-      color: #333;
-      border: 1px solid #ddd;
+      color: var(--saho-color-text-medium);
+      border: 1px solid var(--saho-color-border-medium);
       display: inline-block; /* Ensure each tag is treated as an inline block */
 
       a {
@@ -1208,9 +1266,9 @@ h1.title.page-title {
 .saho-comment {
   margin-bottom: 2rem;
   padding: 1.5rem;
-  border: 1px solid #eee;
-  border-radius: 6px;
-  background: #fff;
+  border: 1px solid var(--saho-color-border-subtle);
+  border-radius: var(--saho-radius-sm);
+  background: var(--saho-color-white);
 }
 
 /* Comment title */
@@ -1224,7 +1282,7 @@ h1.title.page-title {
 /* Meta info */
 .saho-comment-meta {
   font-size: 0.85rem;
-  color: #666;
+  color: var(--saho-color-text-muted);
   margin-bottom: 1rem;
   display: flex;
   gap: 0.75rem;
@@ -1261,9 +1319,9 @@ h1.title.page-title {
 
 // Main header
 .saho-header {
-  background: #fff;
+  background: var(--saho-color-white);
   border-bottom: 4px solid $saho-deep-heritage-red;
-  box-shadow: 0 4px 15px rgb(153, 0, 0, 0.1);
+  box-shadow: 0 4px 15px var(--saho-color-primary-alpha-10);
   position: sticky;
   top: 0;
   z-index: 500; /* Lowered z-index to appear below Drupal admin toolbar */
@@ -1397,10 +1455,10 @@ h1.title.page-title {
         position: absolute;
         top: 100%;
         left: 0;
-        background: white;
-        border: 1px solid #eee;
-        border-radius: 6px;
-        box-shadow: 0 8px 25px rgb(0, 0, 0, 0.15);
+        background: var(--saho-color-white);
+        border: 1px solid var(--saho-color-border-subtle);
+        border-radius: var(--saho-radius-sm);
+        box-shadow: 0 8px 25px var(--saho-color-black-alpha-15);
         padding: 8px 0;
         min-width: 200px;
         opacity: 0;
@@ -1508,7 +1566,7 @@ h1.title.page-title {
 .saho-search {
   display: flex;
   align-items: center;
-  background: #fff;
+  background: var(--saho-color-white);
   border: 2px solid $saho-deep-heritage-red;
   border-radius: 25px;
   overflow: hidden;
@@ -1517,7 +1575,7 @@ h1.title.page-title {
 
   &:focus-within {
     border-color: $saho-muted-gold;
-    box-shadow: 0 0 0 3px rgb(184, 138, 46, 0.2);
+    box-shadow: 0 0 0 3px var(--saho-color-accent-alpha-25);
   }
 
   /* Responsive adjustments */
@@ -1592,7 +1650,7 @@ h1.title.page-title {
 
 .saho-contribute-btn {
   background: $saho-deep-heritage-red;
-  color: white;
+  color: var(--saho-color-white);
   text-decoration: none;
   padding: 10px 18px;
   border-radius: 25px;
@@ -1605,11 +1663,11 @@ h1.title.page-title {
   white-space: nowrap; /* Prevent text wrapping */
 
   &:hover {
-    color: white;
+    color: var(--saho-color-white);
     text-decoration: none;
-    background: darken($saho-deep-heritage-red, 10%);
+    background: var(--saho-color-primary-dark);
     transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgb(153, 0, 0, 0.3);
+    box-shadow: 0 4px 15px var(--saho-color-primary-alpha-25);
 
     .saho-contribute-icon {
       animation: bounce 0.6s ease infinite alternate;
@@ -1647,7 +1705,7 @@ h1.title.page-title {
 #toolsDropdown {
   border-color: $saho-muted-gold;
   color: $saho-dark-charcoal;
-  background-color: white;
+  background-color: var(--saho-color-white);
   font-weight: 600;
 
   &:hover,
@@ -1693,11 +1751,11 @@ h1.title.page-title {
   border: none;
   padding: 8px;
   cursor: pointer;
-  border-radius: 6px;
+  border-radius: var(--saho-radius-sm);
   transition: background-color 0.3s ease;
 
   &:hover {
-    background: rgb(153, 0, 0, 0.1);
+    background: var(--saho-color-primary-alpha-10);
   }
 }
 
@@ -1744,7 +1802,7 @@ h1.title.page-title {
 
   .offcanvas-header {
     background: $saho-aged-parchment;
-    border-bottom: 2px solid rgb(153, 0, 0, 0.1);
+    border-bottom: 2px solid var(--saho-color-primary-alpha-10);
     padding: 0.75rem; /* Slightly smaller padding */
 
     h5 {
@@ -1759,7 +1817,7 @@ h1.title.page-title {
       margin: -0.5rem -0.5rem -0.5rem auto;
 
       &:focus {
-        box-shadow: 0 0 0 0.25rem rgb(153, 0, 0, 0.25);
+        box-shadow: 0 0 0 0.25rem var(--saho-color-primary-alpha-25);
       }
     }
   }
@@ -1790,7 +1848,7 @@ h1.title.page-title {
 
 /* Fix for offcanvas backdrop */
 .offcanvas-backdrop {
-  background-color: #000;
+  background-color: var(--saho-color-black);
   opacity: 0.5;
   z-index: 1040;
   position: fixed;
@@ -1811,7 +1869,7 @@ body.offcanvas-open {
   left: 0;
   width: 80%;
   max-width: 280px;
-  border-right: 1px solid rgb(0, 0, 0, 0.2);
+  border-right: 1px solid var(--saho-color-black-alpha-20);
   transform: translateX(-100%);
 }
 
@@ -1826,7 +1884,7 @@ body.offcanvas-open {
 
     &:focus {
       border-color: $saho-muted-gold;
-      box-shadow: 0 0 0 3px rgb(184, 138, 46, 0.2);
+      box-shadow: 0 0 0 3px var(--saho-color-accent-alpha-25);
     }
   }
 
@@ -1925,7 +1983,7 @@ body.offcanvas-open {
   .saho-header {
     position: relative !important; // Remove sticky positioning
     box-shadow: none !important;
-    border-bottom: 2px solid #000 !important;
+    border-bottom: 2px solid var(--saho-color-black) !important;
 
     // Hide desktop navigation
     .saho-desktop-nav {
@@ -1994,15 +2052,15 @@ body.offcanvas-open {
   body {
     font-size: 12pt;
     line-height: 1.5;
-    color: #000 !important;
-    background: #fff !important;
+    color: var(--saho-color-black) !important;
+    background: var(--saho-color-white) !important;
   }
 
   // Ensure links are visible in print
   a[href]::after {
     content: " (" attr(href) ")";
     font-size: 0.8em;
-    color: #666;
+    color: var(--saho-color-text-muted);
   }
 
   // But not for internal/anchor links or javascript
@@ -2028,22 +2086,22 @@ body.offcanvas-open {
   }
 }
 
-/* Standard SAHO Collection Cards */
+/* Standard SAHO Collection Cards - Unified Token System */
 .collection-card.saho-card {
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgb(0,0,0,0.1);
+  background: var(--saho-color-white);
+  border-radius: var(--saho-card-radius);  /* 8px */
+  box-shadow: var(--saho-shadow-md);       /* Unified shadow */
   overflow: hidden;
-  transition: all 0.3s ease;
+  transition: var(--saho-transition-base); /* 300ms ease */
   text-decoration: none;
 }
 
 .collection-card.saho-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 25px rgb(0,0,0,0.15);
+  transform: translateY(-8px);  /* 8px baseline */
+  box-shadow: var(--saho-shadow-xl);
   text-decoration: none;
 }
 
@@ -2052,7 +2110,7 @@ body.offcanvas-open {
   position: relative;
   height: 200px;
   overflow: hidden;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  background: var(--saho-gradient-light);
 }
 
 .collection-card .card-image-wrapper img {
@@ -2069,38 +2127,38 @@ body.offcanvas-open {
   align-items: center;
   justify-content: center;
   font-size: 3rem;
-  color: rgb(255,255,255,0.7);
+  color: var(--saho-color-white-alpha-70);
 }
 
 /* Card Label/Badge */
 .collection-card .card-label {
   position: absolute;
-  top: 12px;
-  right: 12px;
-  background: rgb(178, 34, 34, 0.9);
-  color: white;
-  padding: 4px 12px;
-  border-radius: 4px;
-  font-size: 0.75rem;
-  font-weight: 600;
+  top: var(--saho-space-2);     /* 16px - rounded from 12px */
+  right: var(--saho-space-2);   /* 16px - rounded from 12px */
+  background: var(--saho-color-primary-alpha-90);
+  color: var(--saho-color-white);
+  padding: var(--saho-space-1) var(--saho-space-2);  /* 8px 16px - rounded from 4px 12px */
+  border-radius: var(--saho-radius-sm);  /* 4px */
+  font-size: var(--saho-font-size-xs);   /* 12px */
+  font-weight: var(--saho-font-weight-semibold);  /* 600 */
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 /* Card Content */
 .collection-card .card-content {
-  padding: 20px;
+  padding: var(--saho-card-padding-compact);  /* 24px - rounded from 20px */
   flex: 1;
   display: flex;
   flex-direction: column;
 }
 
 .collection-card .card-title {
-  font-size: 1.125rem;
-  font-weight: 600;
-  line-height: 1.4;
-  margin-bottom: 12px;
-  color: #2c3e50;
+  font-size: var(--saho-font-size-md);   /* 18px */
+  font-weight: var(--saho-font-weight-semibold);  /* 600 */
+  line-height: var(--saho-line-height-tight);  /* 1.25 */
+  margin-bottom: var(--saho-space-2);    /* 16px - rounded from 12px */
+  color: var(--saho-color-card-text);
 }
 
 .collection-card .card-title a {
@@ -2109,65 +2167,65 @@ body.offcanvas-open {
 }
 
 .collection-card .card-title a:hover {
-  color: #B22222;
+  color: var(--saho-color-firebrick);
 }
 
 /* Meta Information */
 .collection-card .card-meta {
-  margin-bottom: 12px;
-  font-size: 0.875rem;
-  color: #6c757d;
+  margin-bottom: var(--saho-space-2);  /* 16px - rounded from 12px */
+  font-size: var(--saho-font-size-sm); /* 14px */
+  color: var(--saho-color-card-meta);
 }
 
 .collection-card .collection-count {
-  background: #f8f9fa;
-  padding: 2px 8px;
-  border-radius: 12px;
-  font-weight: 500;
+  background: var(--saho-color-bg-card);
+  padding: var(--saho-space-1) var(--saho-space-1);  /* 8px 8px - rounded from 2px 8px */
+  border-radius: var(--saho-radius-lg);  /* 12px */
+  font-weight: var(--saho-font-weight-medium);  /* 500 */
 }
 
 /* Description */
 .collection-card .card-description {
-  font-size: 0.9rem;
-  line-height: 1.5;
-  color: #495057;
-  margin-bottom: 16px;
+  font-size: var(--saho-font-size-base);  /* 16px */
+  line-height: var(--saho-line-height-normal);  /* 1.5 */
+  color: var(--saho-color-card-description);
+  margin-bottom: var(--saho-space-2);  /* 16px */
   flex: 1;
 }
 
-/* Card Actions */
+/* Card Actions - Inherit from button system */
 .collection-card .card-actions {
   margin-top: auto;
 }
 
 .collection-card .btn {
-  border-radius: 20px;
-  font-size: 0.875rem;
-  font-weight: 500;
-  transition: all 0.2s ease;
+  border-radius: var(--saho-radius-pill);  /* 9999px - pill shape, rounded from 20px */
+  font-size: var(--saho-button-font-size-sm);  /* 14px */
+  font-weight: var(--saho-button-font-weight);  /* 600 */
+  transition: var(--saho-transition-fast);  /* 150ms ease */
 }
 
 .collection-card .btn:hover {
-  transform: translateY(-1px);
+  transform: translateY(-8px);  /* 8px baseline - rounded from 1px */
 }
 
-/* Grid Layout - Updated to use unified cards grid */
+/* Grid Layout - Unified Token System with STANDARD 32px gap */
 .saho-landing-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(var(--saho-grid-card-min-width), 1fr));
+  gap: var(--saho-space-4);  /* 32px - STANDARD for card grids */
   align-items: start;
-  
+
   @media (max-width: 768px) {
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: 1rem;
+    gap: var(--saho-space-2);  /* 16px on mobile */
   }
-  
+
   // Handle potential Drupal Views wrapper divs
   > div {
     display: contents;
   }
-  
+
   // Ensure cards are properly sized within the grid
   .saho-card-link,
   .saho-card {
@@ -2179,11 +2237,11 @@ body.offcanvas-open {
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .collection-card .card-image-wrapper {
-    height: 160px;
+    height: 160px;  /* 8px multiple */
   }
-  
+
   .collection-card .card-content {
-    padding: 16px;
+    padding: var(--saho-space-2);  /* 16px on mobile */
   }
 }
 
@@ -2340,27 +2398,27 @@ body.offcanvas-open {
 .collection-card .card-label {
   // Archive content type
   &.archive-label {
-    background: rgba($saho-slate-blue, 0.9);
+    background: var(--saho-color-accent-alpha-90);
   }
-  
-  // Place content type  
+
+  // Place content type
   &.place-label {
-    background: rgba($saho-deep-heritage-red, 0.9);
+    background: var(--saho-color-secondary-alpha-90);
   }
-  
+
   // Article content type
   &.article-label {
-    background: rgba($saho-muted-gold, 0.9);
-    color: black;
+    background: var(--saho-color-primary-alpha-90);
+    color: var(--saho-color-white);
   }
-  
+
   // Biography content type
   &.biography-label {
-    background: rgba($saho-faded-brick-red, 0.9);
+    background: var(--saho-color-forest-green-alpha-90);
   }
-  
+
   // Event content type
   &.event-label {
-    background: rgba($saho-dark-charcoal, 0.9);
+    background: var(--saho-color-charcoal-alpha-90);
   }
 }

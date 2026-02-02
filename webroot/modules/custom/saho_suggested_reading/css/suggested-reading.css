@@ -1,51 +1,75 @@
 /**
- * Enhanced suggested reading styles - Mobile First Approach
+ * @file
+ * Suggested reading component styles for SAHO
+ * Uses unified token system with --reading-* scoped tokens
+ * Inherits from --saho-* base tokens for consistency
+ * Mobile-first responsive design with accessibility
  */
 
 /* Base mobile styles (320px+) */
 .saho-suggested-reading-enhanced .saho-cards-grid {
+  /* Component-scoped tokens inheriting from unified system */
+  --reading-grid-gap: var(--saho-space-2);  /* 16px mobile */
+  --reading-grid-padding: var(--saho-space-1);  /* 8px mobile */
+
   display: grid;
   grid-template-columns: 1fr;
-  gap: 1rem;
-  padding: 0 0.5rem;
+  gap: var(--reading-grid-gap);
+  padding: 0 var(--reading-grid-padding);
   min-height: auto;
 }
 
 /* Mobile card styling */
 .saho-suggested-reading-enhanced .saho-card {
+  /* Component-scoped tokens inheriting from unified system */
+  --reading-card-bg: var(--saho-color-white);
+  --reading-card-radius: var(--saho-radius-md);  /* 8px */
+  --reading-card-border-color: var(--saho-color-border);
+  --reading-card-border-hover: var(--saho-color-primary);
+  --reading-card-shadow: var(--saho-shadow-sm);
+  --reading-card-shadow-hover: var(--saho-shadow-hover);
+  --reading-card-min-height: 280px;
+
+  /* Touch feedback tokens */
+  --reading-touch-highlight: rgba(153, 0, 0, 0.1);
+  --reading-touch-scale: 0.98;
+
   display: flex;
   flex-direction: column;
-  background: white;
-  border-radius: 12px;
+  background: var(--reading-card-bg);
+  border-radius: var(--reading-card-radius);
   overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e5e7eb;
-  transition: all 0.3s ease;
-  min-height: 280px;
-  margin-bottom: 0.5rem;
+  box-shadow: var(--reading-card-shadow);
+  border: 1px solid var(--reading-card-border-color);
+  transition: var(--saho-transition-base);
+  min-height: var(--reading-card-min-height);
+  margin-bottom: var(--saho-space-1);
 
   /* Enhanced touch targets for mobile */
-  -webkit-tap-highlight-color: rgba(153, 0, 0, 0.1);
+  -webkit-tap-highlight-color: var(--reading-touch-highlight);
 }
 
 .saho-suggested-reading-enhanced .saho-card-link {
+  /* Component-scoped tokens */
+  --reading-link-transition: var(--saho-transition-fast);
+
   display: flex;
   flex-direction: column;
   height: 100%;
   text-decoration: none;
   color: inherit;
   padding: 0;
-  border-radius: 12px;
+  border-radius: var(--reading-card-radius);
   overflow: hidden;
 
   /* Enhanced touch feedback */
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform var(--reading-link-transition), box-shadow var(--reading-link-transition);
 }
 
 /* Mobile touch interactions */
 .saho-suggested-reading-enhanced .saho-card-link:active {
-  transform: scale(0.98);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transform: scale(var(--reading-touch-scale));
+  box-shadow: var(--saho-shadow-sm);
 }
 
 /* Prioritize cards with images */
@@ -55,104 +79,148 @@
 
 /* Mobile-optimized image display */
 .saho-suggested-reading-enhanced .saho-card-image {
-  height: 160px; /* Smaller for mobile */
+  /* Component-scoped tokens inheriting from unified system */
+  --reading-image-height: 160px;  /* Mobile height */
+  --reading-image-bg: var(--saho-color-surface-alt);
+  --reading-image-scale-hover: 1.03;
+  --reading-image-scale-active: 1.02;
+
+  height: var(--reading-image-height);
   overflow: hidden;
-  background: linear-gradient(135deg, #f0f0f0 0%, #e0e0e0 100%);
+  background: var(--reading-image-bg);
   position: relative;
 }
 
 .saho-suggested-reading-enhanced .saho-card-image img {
+  /* Component-scoped tokens */
+  --reading-image-transition: transform 0.3s ease;
+
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.3s ease;
+  transition: var(--reading-image-transition);
 }
 
 /* Subtle hover/touch effect */
 .saho-suggested-reading-enhanced .saho-card-link:hover .saho-card-image img,
 .saho-suggested-reading-enhanced .saho-card-link:focus .saho-card-image img {
-  transform: scale(1.03);
+  transform: scale(var(--reading-image-scale-hover));
 }
 
 /* Mobile content styling */
 .saho-suggested-reading-enhanced .saho-card-content {
-  padding: 1rem;
+  /* Component-scoped tokens inheriting from unified system */
+  --reading-content-padding: var(--saho-space-2);  /* 16px */
+
+  padding: var(--reading-content-padding);
   flex: 1;
   display: flex;
   flex-direction: column;
 }
 
 .saho-suggested-reading-enhanced .saho-card-title {
-  font-size: 1rem;
-  font-weight: 600;
-  line-height: 1.3;
-  color: #374151;
-  margin: 0 0 0.5rem 0;
-  transition: color 0.2s ease;
+  /* Component-scoped tokens inheriting from unified system */
+  --reading-title-color: var(--saho-color-text-primary);
+  --reading-title-size: var(--saho-font-size-base);  /* 16px mobile */
+  --reading-title-weight: var(--saho-font-weight-semibold);
+  --reading-title-line-height: var(--saho-line-height-tight);
+  --reading-title-margin: 0 0 var(--saho-space-1) 0;
 
-  /* Better touch readability */
-  letter-spacing: -0.01em;
+  font-size: var(--reading-title-size);
+  font-weight: var(--reading-title-weight);
+  line-height: var(--reading-title-line-height);
+  color: var(--reading-title-color);
+  margin: var(--reading-title-margin);
+  transition: var(--saho-transition-fast);
 }
 
 .saho-suggested-reading-enhanced .saho-card-description {
-  font-size: 0.875rem;
-  line-height: 1.4;
-  color: #6b7280;
-  margin: 0 0 auto 0;
+  /* Component-scoped tokens inheriting from unified system */
+  --reading-description-color: var(--saho-color-text-secondary);
+  --reading-description-size: var(--saho-font-size-sm);  /* 14px */
+  --reading-description-line-height: var(--saho-line-height-normal);
+  --reading-description-margin: 0 0 auto 0;
+
+  font-size: var(--reading-description-size);
+  line-height: var(--reading-description-line-height);
+  color: var(--reading-description-color);
+  margin: var(--reading-description-margin);
   flex-grow: 1;
 }
 
-/* All cards now have images - removed image-less card styles */
-
 /* Mobile button styling */
 .saho-suggested-reading-enhanced .saho-card-footer {
-  margin-top: 0.75rem;
-  padding-top: 0.75rem;
-  border-top: 1px solid #f3f4f6;
+  /* Component-scoped tokens inheriting from unified system */
+  --reading-footer-margin-top: var(--saho-space-2);
+  --reading-footer-padding-top: var(--saho-space-2);
+  --reading-footer-border-color: var(--saho-color-border-light);
+
+  margin-top: var(--reading-footer-margin-top);
+  padding-top: var(--reading-footer-padding-top);
+  border-top: 1px solid var(--reading-footer-border-color);
 }
 
 .saho-suggested-reading-enhanced .saho-card-button {
+  /* Component-scoped tokens inheriting from button system */
+  --reading-button-color: var(--saho-button-ghost-text);
+  --reading-button-color-hover: var(--saho-button-ghost-text-hover);
+  --reading-button-size: var(--saho-font-size-sm);  /* 14px */
+  --reading-button-weight: var(--saho-font-weight-medium);
+  --reading-button-padding: 0.25rem 0;
+  --reading-button-min-height: 44px;  /* Touch target */
+
   display: inline-flex;
   align-items: center;
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: #990000;
-  transition: all 0.2s ease;
+  font-size: var(--reading-button-size);
+  font-weight: var(--reading-button-weight);
+  color: var(--reading-button-color);
+  transition: var(--saho-button-transition);
 
   /* Enhanced touch target */
-  padding: 0.25rem 0;
-  min-height: 44px;
+  padding: var(--reading-button-padding);
+  min-height: var(--reading-button-min-height);
   justify-content: flex-start;
 }
 
 .saho-suggested-reading-enhanced .saho-card-button svg {
-  margin-left: 0.5rem;
-  width: 14px;
-  height: 14px;
-  transition: transform 0.2s ease;
+  /* Component-scoped tokens */
+  --reading-icon-margin: var(--saho-space-1);
+  --reading-icon-size: 14px;
+  --reading-icon-translate-hover: 2px;
+
+  margin-left: var(--reading-icon-margin);
+  width: var(--reading-icon-size);
+  height: var(--reading-icon-size);
+  transition: var(--saho-transition-fast);
 }
 
 .saho-suggested-reading-enhanced .saho-card-link:hover .saho-card-button,
 .saho-suggested-reading-enhanced .saho-card-link:focus .saho-card-button {
-  color: #b30000;
+  color: var(--reading-button-color-hover);
 }
 
 .saho-suggested-reading-enhanced .saho-card-link:hover .saho-card-button svg,
 .saho-suggested-reading-enhanced .saho-card-link:focus .saho-card-button svg {
-  transform: translateX(2px);
+  transform: translateX(var(--reading-icon-translate-hover));
 }
 
 /* Loading placeholder for dynamic content */
 .saho-suggested-reading-enhanced.loading .saho-cards-grid::before {
+  /* Component-scoped tokens */
+  --reading-spinner-size: 40px;
+  --reading-spinner-border: 3px;
+  --reading-spinner-color-bg: var(--saho-color-surface-alt);
+  --reading-spinner-color-active: var(--saho-color-primary);
+
   content: '';
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 40px;
-  height: 40px;
-  border: 3px solid #f3f3f3;
-  border-top: 3px solid #990000;
+  width: var(--reading-spinner-size);
+  height: var(--reading-spinner-size);
+  border: var(--reading-spinner-border) solid var(--reading-spinner-color-bg);
+  border-top: var(--reading-spinner-border) solid var(--reading-spinner-color-active);
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -164,18 +232,25 @@
 
 /* Touch interaction states */
 .saho-suggested-reading-enhanced .saho-card-link.touch-active {
-  transform: scale(0.98);
-  box-shadow: 0 2px 8px rgba(153, 0, 0, 0.2);
+  /* Component-scoped tokens */
+  --reading-touch-shadow: 0 2px 8px rgba(153, 0, 0, 0.2);
+
+  transform: scale(var(--reading-touch-scale));
+  box-shadow: var(--reading-touch-shadow);
 }
 
 .saho-suggested-reading-enhanced .touch-active .saho-card-image img {
-  transform: scale(1.02);
+  transform: scale(var(--reading-image-scale-active));
 }
 
 /* Lazy loading states */
 .saho-suggested-reading-enhanced .saho-card-image img.lazy-loading {
-  background: linear-gradient(135deg, #f0f0f0 25%, transparent 25%, transparent 50%, #f0f0f0 50%, #f0f0f0 75%, transparent 75%, transparent);
-  background-size: 20px 20px;
+  /* Component-scoped tokens */
+  --reading-loading-pattern: linear-gradient(135deg, #f0f0f0 25%, transparent 25%, transparent 50%, #f0f0f0 50%, #f0f0f0 75%, transparent 75%, transparent);
+  --reading-loading-size: 20px;
+
+  background: var(--reading-loading-pattern);
+  background-size: var(--reading-loading-size) var(--reading-loading-size);
   animation: loading-shimmer 1.5s infinite;
 }
 
@@ -195,12 +270,16 @@
 
 /* Horizontal scroll styles for mobile */
 .saho-suggested-reading-enhanced .saho-cards-grid.horizontal-scroll {
+  /* Component-scoped tokens */
+  --reading-scrollbar-color-thumb: var(--saho-color-primary);
+  --reading-scrollbar-color-track: var(--saho-color-surface-alt);
+
   overflow-x: auto;
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;
-  scrollbar-color: #990000 #f1f5f9;
-  padding-bottom: 1rem;
+  scrollbar-color: var(--reading-scrollbar-color-thumb) var(--reading-scrollbar-color-track);
+  padding-bottom: var(--saho-space-2);
 }
 
 .saho-suggested-reading-enhanced .saho-cards-grid.horizontal-scroll .saho-card {
@@ -213,10 +292,6 @@
 }
 
 /* Mobile viewport adjustments */
-.saho-suggested-reading-enhanced .saho-cards-grid.mobile-optimized {
-  padding: 0 1rem;
-}
-
 .saho-suggested-reading-enhanced .saho-cards-grid.in-viewport {
   animation: slide-up 0.6s ease;
 }
@@ -234,8 +309,12 @@
 
 /* Mobile section headers */
 .saho-suggested-reading-enhanced .saho-related-content-section {
-  margin-bottom: 1.5rem;
-  padding: 0 0.5rem;
+  /* Component-scoped tokens inheriting from unified system */
+  --reading-section-margin: var(--saho-space-3);  /* 24px */
+  --reading-section-padding: var(--saho-space-1);  /* 8px mobile */
+
+  margin-bottom: var(--reading-section-margin);
+  padding: 0 var(--reading-section-padding);
 }
 
 .saho-suggested-reading-enhanced .saho-related-content-section:last-child {
@@ -243,47 +322,32 @@
 }
 
 .saho-suggested-reading-enhanced .saho-related-content-section h4 {
-  font-size: 1.125rem;
-  font-weight: 700;
-  color: #990000;
-  margin: 0 0 1rem 0;
-  padding: 0.75rem 1rem;
-  background: linear-gradient(135deg, #fef2f2 0%, #fef7f7 100%);
-  border-radius: 8px;
-  border-left: 4px solid #990000;
-}
+  /* Component-scoped tokens inheriting from unified system */
+  --reading-heading-color: var(--saho-color-primary);
+  --reading-heading-bg: var(--saho-color-surface-alt);
+  --reading-heading-border-color: var(--saho-color-primary);
+  --reading-heading-border-width: 4px;
+  --reading-heading-size: var(--saho-font-size-md);  /* 18px mobile */
+  --reading-heading-weight: var(--saho-font-weight-bold);
+  --reading-heading-margin: 0 0 var(--saho-space-2) 0;
+  --reading-heading-padding: var(--saho-space-2);  /* 16px */
+  --reading-heading-radius: var(--saho-radius-md);
 
-/* Mobile horizontal scroll for many items */
-.saho-suggested-reading-enhanced .saho-cards-scroll-container {
-  overflow-x: auto;
-  overflow-y: visible;
-  padding: 0 0.5rem 1rem 0.5rem;
-  margin: 0 -0.5rem;
-
-  /* Smooth scrolling */
-  scroll-behavior: smooth;
-  -webkit-overflow-scrolling: touch;
-}
-
-.saho-suggested-reading-enhanced .saho-cards-scroll-container::-webkit-scrollbar {
-  height: 4px;
-}
-
-.saho-suggested-reading-enhanced .saho-cards-scroll-container::-webkit-scrollbar-track {
-  background: #f1f5f9;
-  border-radius: 2px;
-}
-
-.saho-suggested-reading-enhanced .saho-cards-scroll-container::-webkit-scrollbar-thumb {
-  background: #990000;
-  border-radius: 2px;
+  font-size: var(--reading-heading-size);
+  font-weight: var(--reading-heading-weight);
+  color: var(--reading-heading-color);
+  margin: var(--reading-heading-margin);
+  padding: var(--reading-heading-padding);
+  background: var(--reading-heading-bg);
+  border-radius: var(--reading-heading-radius);
+  border-left: var(--reading-heading-border-width) solid var(--reading-heading-border-color);
 }
 
 /* Small mobile phones (320px - 479px) */
 @media (max-width: 479px) {
   .saho-suggested-reading-enhanced .saho-cards-grid {
     grid-template-columns: 1fr;
-    gap: 0.75rem;
+    gap: var(--saho-space-1);
     padding: 0;
   }
 
@@ -293,11 +357,11 @@
   }
 
   .saho-suggested-reading-enhanced .saho-card-image {
-    height: 140px;
+    --reading-image-height: 140px;
   }
 
   .saho-suggested-reading-enhanced .saho-card-content {
-    padding: 0.875rem;
+    padding: var(--saho-space-1);
   }
 
   .saho-suggested-reading-enhanced .saho-card-title {
@@ -317,7 +381,7 @@
 @media (min-width: 480px) and (max-width: 767px) {
   .saho-suggested-reading-enhanced .saho-cards-grid {
     grid-template-columns: repeat(2, 1fr);
-    gap: 1rem;
+    gap: var(--saho-space-2);
   }
 
   .saho-suggested-reading-enhanced .saho-card {
@@ -325,7 +389,7 @@
   }
 
   .saho-suggested-reading-enhanced .saho-card-image {
-    height: 150px;
+    --reading-image-height: 150px;
   }
 }
 
@@ -333,8 +397,8 @@
 @media (min-width: 768px) and (max-width: 1023px) {
   .saho-suggested-reading-enhanced .saho-cards-grid {
     grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 1.25rem;
-    padding: 0 1rem;
+    gap: var(--saho-space-3);  /* 24px */
+    padding: 0 var(--saho-space-2);
   }
 
   .saho-suggested-reading-enhanced .saho-card {
@@ -342,17 +406,17 @@
   }
 
   .saho-suggested-reading-enhanced .saho-card-image {
-    height: 170px;
+    --reading-image-height: 170px;
   }
 
   .saho-suggested-reading-enhanced .saho-related-content-section {
-    margin-bottom: 2rem;
-    padding: 0 1rem;
+    margin-bottom: var(--saho-space-4);
+    padding: 0 var(--saho-space-2);
   }
 
   .saho-suggested-reading-enhanced .saho-related-content-section h4 {
-    font-size: 1.25rem;
-    padding: 1rem 1.25rem;
+    font-size: var(--saho-font-size-lg);  /* 20px */
+    padding: var(--saho-space-2) var(--saho-space-3);
   }
 }
 
@@ -360,8 +424,8 @@
 @media (min-width: 1024px) {
   .saho-suggested-reading-enhanced .saho-cards-grid {
     grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-    gap: 1.5rem;
-    padding: 0 1.5rem;
+    gap: var(--saho-space-4);  /* 32px */
+    padding: 0 var(--saho-space-3);
     min-height: 200px;
   }
 
@@ -370,7 +434,7 @@
   }
 
   .saho-suggested-reading-enhanced .saho-card-image {
-    height: 200px;
+    --reading-image-height: 200px;
   }
 
   /* For single item, limit width */
@@ -388,19 +452,19 @@
   }
 
   .saho-suggested-reading-enhanced .saho-related-content-section {
-    margin-bottom: 2.5rem;
-    padding: 0 1.5rem;
+    margin-bottom: var(--saho-space-5);
+    padding: 0 var(--saho-space-3);
   }
 
   .saho-suggested-reading-enhanced .saho-related-content-section h4 {
-    font-size: 1.5rem;
+    font-size: var(--saho-font-size-xl);  /* 24px */
   }
 
   /* Hover effects for non-touch devices */
   .saho-suggested-reading-enhanced .saho-card:hover {
     transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-    border-color: #990000;
+    box-shadow: var(--reading-card-shadow-hover);
+    border-color: var(--reading-card-border-hover);
   }
 }
 
@@ -409,23 +473,12 @@
   /* Remove hover effects on touch devices */
   .saho-suggested-reading-enhanced .saho-card:hover {
     transform: none;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--reading-card-shadow);
   }
 
   /* Ensure touch targets are at least 44px */
   .saho-suggested-reading-enhanced .saho-card-link {
-    min-height: 44px;
-  }
-
-  /* Better spacing for mobile section headers */
-  .saho-context-bottom > h3 {
-    font-size: 1.5rem;
-    padding: 1rem 0.5rem;
-    margin-bottom: 1.5rem;
-  }
-
-  .saho-context-bottom > h3::before {
-    font-size: 0.75rem;
+    min-height: var(--reading-button-min-height);
   }
 }
 
@@ -436,12 +489,12 @@
   }
 
   .saho-suggested-reading-enhanced .saho-card-image {
-    height: 120px;
+    --reading-image-height: 120px;
   }
 
   .saho-suggested-reading-enhanced .saho-cards-grid {
     grid-template-columns: repeat(2, 1fr);
-    gap: 0.75rem;
+    gap: var(--saho-space-1);
   }
 }
 
@@ -449,12 +502,12 @@
 @media (-webkit-min-device-pixel-ratio: 2) and (max-width: 767px),
        (min-resolution: 192dpi) and (max-width: 767px) {
   .saho-suggested-reading-enhanced .saho-card-title {
-    font-weight: 500;
+    font-weight: var(--saho-font-weight-medium);
     letter-spacing: -0.005em;
   }
 
   .saho-suggested-reading-enhanced .saho-card-description {
-    line-height: 1.5;
+    line-height: var(--saho-line-height-relaxed);
   }
 }
 
@@ -465,7 +518,7 @@
   }
 
   .saho-suggested-reading-enhanced .saho-related-content-section h4 {
-    font-size: 1rem;
+    font-size: var(--saho-font-size-base);  /* 16px */
     padding: 0.625rem 0.75rem;
   }
 }

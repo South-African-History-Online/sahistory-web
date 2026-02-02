@@ -1,7 +1,26 @@
-/* Accessibility improvements for featured content navigation */
+/**
+ * Accessibility improvements for featured content navigation
+ *
+ * MODERNIZED: Uses unified SAHO design tokens
+ * Component-scoped tokens for focus states and keyboard navigation
+ * Ensures WCAG 2.1 AA compliance
+ */
 
-/* Make category buttons look like the original links */
 .saho-category-item {
+  /* === Component-Scoped Accessibility Tokens === */
+  /* These tokens inherit from the unified SAHO design system */
+
+  /* Info/Focus Color - Maps to unified tokens */
+  --featured-a11y-color-info: var(--saho-color-info, #17a2b8);
+  --featured-a11y-color-info-dark: #117a8b;
+
+  /* Focus States - WCAG 2.1 AA compliant */
+  --featured-a11y-focus-width: var(--saho-button-focus-outline-width, 2px);
+  --featured-a11y-focus-width-enhanced: 3px;
+  --featured-a11y-focus-offset: var(--saho-button-focus-outline-offset, 2px);
+  --featured-a11y-focus-radius: var(--saho-radius-sm, 4px);
+
+  /* Base styles - make category buttons look like the original links */
   background: transparent;
   border: none;
   width: 100%;
@@ -15,8 +34,8 @@
 .saho-category-item:hover,
 .saho-category-item:focus {
   text-decoration: none;
-  outline: 2px solid #007bff;
-  outline-offset: 2px;
+  outline: var(--featured-a11y-focus-width) solid var(--featured-a11y-color-info);
+  outline-offset: var(--featured-a11y-focus-offset);
 }
 
 .saho-category-item:active {
@@ -31,15 +50,15 @@
 
 /* Focus indicators for better keyboard navigation */
 .saho-category-item:focus-visible {
-  outline: 3px solid #005fcc;
-  outline-offset: 2px;
-  border-radius: 2px;
+  outline: var(--featured-a11y-focus-width-enhanced) solid var(--featured-a11y-color-info-dark);
+  outline-offset: var(--featured-a11y-focus-offset);
+  border-radius: var(--featured-a11y-focus-radius);
 }
 
 /* High contrast focus for accessibility */
 @media (prefers-contrast: high) {
   .saho-category-item:focus-visible {
-    outline: 3px solid currentColor;
+    outline: var(--featured-a11y-focus-width-enhanced) solid currentColor;
   }
 }
 

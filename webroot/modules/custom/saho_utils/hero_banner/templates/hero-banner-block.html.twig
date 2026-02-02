@@ -41,9 +41,16 @@
       
       {% if button_text and button_url %}
         <div class="hero-banner__cta">
-          <a href="{{ button_url }}" class="hero-banner__button hero-banner__button--{{ button_style|default('solid') }} btn btn-primary"{% if button_target %} target="{{ button_target }}"{% endif %}{% if button_rel %} rel="{{ button_rel }}"{% endif %}>
-            {{ button_text }}
-          </a>
+          {% include 'saho:saho-button' with {
+            text: button_text,
+            url: button_url,
+            size: 'large',
+            attributes: {
+              class: ['hero-banner__button'],
+              target: button_target,
+              rel: button_rel
+            }
+          } %}
         </div>
       {% endif %}
     </div>

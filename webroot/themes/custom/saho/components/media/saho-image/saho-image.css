@@ -1,14 +1,27 @@
 /**
- * SAHO Image Component Styles
+ * SAHO Image Component - Modern Self-Contained CSS
  * Drupal 11 SDC - Responsive image component with lazy loading
+ *
+ * Pure CSS with inline custom properties - NO external dependencies
  */
 
-/* Base Image Wrapper */
+/* Component-scoped design tokens */
 .saho-image {
+  /* SAHO Brand Colors */
+  --img-primary: #990000;
+  --img-text-muted: #6c757d;
+
+  /* Image Defaults */
+  --img-placeholder-color: #f5f5f5;
+  --img-width: 100%;
+  --img-height: auto;
+  --img-object-position: center;
+
+  /* Base Image Wrapper */
   position: relative;
   display: block;
-  width: var(--saho-image-width, 100%);
-  height: var(--saho-image-height, auto);
+  width: var(--saho-image-width, var(--img-width));
+  height: var(--saho-image-height, var(--img-height));
   overflow: hidden;
 }
 
@@ -16,7 +29,7 @@
   position: relative;
   width: 100%;
   height: 100%;
-  background-color: var(--saho-image-placeholder-color, #f5f5f5);
+  background-color: var(--saho-image-placeholder-color, var(--img-placeholder-color));
 }
 
 .saho-image__img {
@@ -24,7 +37,7 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: var(--saho-image-object-position, center);
+  object-position: var(--saho-image-object-position, var(--img-object-position));
   transition:
     opacity 0.3s ease,
     transform 0.3s ease;
@@ -54,9 +67,9 @@
   height: 100%;
   background: linear-gradient(
     90deg,
-    var(--saho-image-placeholder-color, #f5f5f5) 0%,
+    var(--saho-image-placeholder-color, var(--img-placeholder-color)) 0%,
     #fff 50%,
-    var(--saho-image-placeholder-color, #f5f5f5) 100%
+    var(--saho-image-placeholder-color, var(--img-placeholder-color)) 100%
   );
   background-size: 200% 100%;
   animation: saho-image-shimmer 1.5s infinite;
@@ -160,7 +173,7 @@
 }
 
 .saho-image__link:focus {
-  outline: 2px solid var(--saho-primary);
+  outline: 2px solid var(--img-primary);
   outline-offset: 2px;
 }
 
@@ -172,7 +185,7 @@
 .saho-image__caption {
   font-size: 0.875rem;
   line-height: 1.5;
-  color: var(--saho-text-muted);
+  color: var(--img-text-muted);
 }
 
 .saho-image__caption--bottom {
@@ -247,7 +260,7 @@
 
 /* Accessibility */
 .saho-image__img:focus {
-  outline: 2px solid var(--saho-primary);
+  outline: 2px solid var(--img-primary);
   outline-offset: 2px;
 }
 

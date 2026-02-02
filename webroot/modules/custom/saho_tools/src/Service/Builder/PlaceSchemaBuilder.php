@@ -55,7 +55,7 @@ class PlaceSchemaBuilder implements SchemaOrgBuilderInterface {
         'heritage_site' => 'LandmarksOrHistoricalBuildings',
         'building' => 'LandmarksOrHistoricalBuildings',
       ];
-      if (isset($type_map[strtolower($type_value)])) {
+      if ($type_value && isset($type_map[strtolower($type_value)])) {
         $place_type = $type_map[strtolower($type_value)];
       }
     }

@@ -1,20 +1,97 @@
 /**
- * SAHO Upcoming Events - Modern, Clean, Functional Design
- * Using solid SAHO colors, no gradients
+ * @file
+ * SAHO Upcoming Events - Modernized with Unified Token System
+ * Uses --events-* scoped tokens inheriting from --saho-* base tokens
+ * Mobile-first responsive design with comprehensive accessibility
+ * Component works in isolation with no external dependencies beyond base tokens
  */
+
+/* ========================================
+   ROOT CONTAINER & COMPONENT TOKENS
+   ======================================== */
+
+.all-upcoming-events-page {
+  /* Component-scoped tokens inheriting from unified system */
+  
+  /* Color tokens */
+  --events-color-primary: var(--saho-color-primary);  /* #990000 */
+  --events-color-primary-dark: var(--saho-color-primary-dark);
+  --events-color-white: var(--saho-color-white);
+  --events-color-text: var(--saho-color-text-primary);
+  --events-color-text-secondary: var(--saho-color-text-secondary);
+  --events-color-text-muted: var(--saho-color-text-muted);
+  
+  /* Status colors */
+  --events-color-success: var(--saho-color-success);
+  --events-color-danger: var(--saho-color-danger);
+  --events-color-past: #666;
+  
+  /* Background colors */
+  --events-color-bg: var(--saho-color-white);
+  --events-color-bg-alt: var(--saho-color-surface-alt);
+  --events-color-border: var(--saho-color-border);
+  --events-color-border-light: var(--saho-color-border-light);
+  
+  /* Spacing tokens from 8px baseline */
+  --events-space-1: var(--saho-space-1);  /* 8px */
+  --events-space-2: var(--saho-space-2);  /* 16px */
+  --events-space-3: var(--saho-space-3);  /* 24px */
+  --events-space-4: var(--saho-space-4);  /* 32px */
+  --events-space-5: var(--saho-space-5);  /* 40px */
+  --events-space-6: var(--saho-space-6);  /* 48px */
+  
+  /* Typography tokens */
+  --events-font-size-xs: var(--saho-font-size-xs);    /* 12px */
+  --events-font-size-sm: var(--saho-font-size-sm);    /* 14px */
+  --events-font-size-base: var(--saho-font-size-base);  /* 16px */
+  --events-font-size-md: var(--saho-font-size-md);    /* 18px */
+  --events-font-size-lg: var(--saho-font-size-lg);    /* 20px */
+  --events-font-size-xl: var(--saho-font-size-xl);    /* 24px */
+  --events-font-size-2xl: var(--saho-font-size-2xl);  /* 28px */
+  --events-font-size-3xl: var(--saho-font-size-3xl);  /* 36px */
+  
+  --events-font-weight-normal: var(--saho-font-weight-medium);
+  --events-font-weight-bold: var(--saho-font-weight-bold);
+  
+  --events-line-height-tight: var(--saho-line-height-tight);
+  --events-line-height-normal: var(--saho-line-height-normal);
+  --events-line-height-relaxed: var(--saho-line-height-relaxed);
+  
+  /* Border radius tokens */
+  --events-radius-sm: var(--saho-radius-sm);  /* 4px */
+  --events-radius-md: var(--saho-radius-md);  /* 8px */
+  --events-radius-lg: var(--saho-radius-lg);  /* 12px */
+  
+  /* Shadow tokens */
+  --events-shadow-sm: var(--saho-shadow-sm);
+  --events-shadow-md: var(--saho-shadow-md);
+  --events-shadow-hover: var(--saho-shadow-hover);
+  
+  /* Transition tokens */
+  --events-transition-fast: var(--saho-transition-fast);
+  --events-transition-base: var(--saho-transition-base);
+  
+  /* Dimension tokens */
+  --events-container-max: 1400px;
+  --events-card-min: 300px;
+  --events-image-height: 200px;
+  --events-badge-size: 2.5rem;
+  --events-icon-size: 16px;
+  
+  /* Z-index */
+  --events-z-index-overlay: 10;
+  
+  background: var(--events-color-bg);
+}
 
 /* ========================================
    PAGE CONTAINER
    ======================================== */
 
-.all-upcoming-events-page {
-  background: #fff;
-}
-
 .saho-events-container {
-  max-width: 1400px;
+  max-width: var(--events-container-max);
   margin: 0 auto;
-  padding: 2rem 1rem;
+  padding: var(--events-space-4) var(--events-space-2);
 }
 
 /* ========================================
@@ -22,28 +99,28 @@
    ======================================== */
 
 .events-section {
-  margin-bottom: 3rem;
+  margin-bottom: var(--events-space-6);
 }
 
 .events-section-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 1.5rem;
-  padding-bottom: 1rem;
-  border-bottom: 3px solid #97212d;
+  margin-bottom: var(--events-space-3);
+  padding-bottom: var(--events-space-2);
+  border-bottom: 3px solid var(--events-color-primary);
 }
 
 .section-header-content {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: var(--events-space-2);
 }
 
 .events-section-title {
-  font-size: 1.75rem;
-  font-weight: 700;
-  color: #1a1a1a;
+  font-size: var(--events-font-size-2xl);
+  font-weight: var(--events-font-weight-bold);
+  color: var(--events-color-text);
   margin: 0;
 }
 
@@ -51,55 +128,57 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 2.5rem;
-  height: 2.5rem;
-  padding: 0 0.75rem;
-  background: #97212d;
-  color: #fff;
-  border-radius: 4px;
-  font-size: 1rem;
-  font-weight: 700;
+  min-width: var(--events-badge-size);
+  height: var(--events-badge-size);
+  padding: 0 var(--events-space-2);
+  background: var(--events-color-primary);
+  color: var(--events-color-white);
+  border-radius: var(--events-radius-md);
+  font-size: var(--events-font-size-lg);
+  font-weight: var(--events-font-weight-bold);
 }
 
 .events-section--past .events-section-header {
-  border-bottom-color: #999;
+  border-bottom-color: var(--events-color-text-muted);
 }
 
 .events-section--past .events-count {
-  background: #666;
+  background: var(--events-color-past);
 }
 
 /* ========================================
-   TOGGLE BUTTON
+   TOGGLE BUTTON - Inherits from button system
    ======================================== */
 
 .toggle-past-events {
+  /* Inheriting from button system */
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.6rem 1.25rem;
-  background: #fff;
-  border: 2px solid #ddd;
-  border-radius: 4px;
-  color: #333;
-  font-size: 0.9rem;
-  font-weight: 600;
+  gap: var(--events-space-1);
+  padding: var(--saho-button-padding-sm-y) var(--saho-button-padding-sm-x);
+  background: var(--saho-button-secondary-bg);
+  border: var(--saho-button-border-width) solid var(--saho-button-secondary-border);
+  border-radius: var(--saho-button-radius-sm);
+  color: var(--saho-button-secondary-text);
+  font-size: var(--saho-button-font-size-sm);
+  font-weight: var(--saho-button-font-weight);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: var(--saho-button-transition);
 }
 
 .toggle-past-events:hover {
-  background: #f5f5f5;
-  border-color: #999;
+  background: var(--saho-button-secondary-bg-hover);
+  color: var(--saho-button-secondary-text-hover);
+  border-color: var(--saho-button-secondary-border-hover);
 }
 
 .toggle-past-events:focus {
-  outline: 2px solid #97212d;
-  outline-offset: 2px;
+  outline: var(--saho-button-focus-outline-width) solid var(--saho-button-focus-outline);
+  outline-offset: var(--saho-button-focus-outline-offset);
 }
 
 .toggle-icon {
-  transition: transform 0.3s;
+  transition: transform var(--events-transition-base);
 }
 
 .toggle-past-events[aria-expanded="true"] .toggle-icon {
@@ -112,25 +191,19 @@
 
 .saho-events-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(var(--events-card-min), 1fr));
+  gap: var(--events-space-3);
 }
 
-/* Past events grid - collapsed by default */
 .saho-events-grid--past {
   max-height: 0;
   overflow: hidden;
-  transition: max-height 0.3s ease;
+  transition: max-height var(--events-transition-base) ease;
 }
 
-/* Past events grid - expanded when no upcoming events */
 .saho-events-grid--expanded {
   max-height: none;
   overflow: visible;
-}
-
-.saho-events-grid--expanded .toggle-icon {
-  transform: rotate(180deg);
 }
 
 /* ========================================
@@ -141,19 +214,19 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  background: #fff;
-  border: 1px solid #e0e0e0;
-  border-radius: 4px;
+  background: var(--events-color-white);
+  border: 1px solid var(--events-color-border);
+  border-radius: var(--events-radius-md);
   overflow: hidden;
-  transition: all 0.2s;
+  transition: var(--events-transition-fast);
   cursor: pointer;
   height: 100%;
 }
 
 .event-card-clickable:hover {
   transform: translateY(-4px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
-  border-color: #97212d;
+  box-shadow: var(--events-shadow-hover);
+  border-color: var(--events-color-primary);
 }
 
 .event-card__image-wrapper {
@@ -163,9 +236,9 @@
 
 .event-card__image {
   width: 100%;
-  height: 200px;
+  height: var(--events-image-height);
   overflow: hidden;
-  background: #f5f5f5;
+  background: var(--events-color-bg-alt);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -175,11 +248,7 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.3s;
-}
-
-.event-card__image--placeholder {
-  background: #e9ecef;
+  transition: transform var(--events-transition-base);
 }
 
 .event-card-clickable:hover .event-card__image img {
@@ -190,80 +259,54 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 1.25rem;
+  padding: var(--events-space-3);
 }
 
 .event-card__title {
-  font-size: 1.125rem;
-  font-weight: 700;
-  line-height: 1.4;
-  margin: 0 0 0.75rem;
+  font-size: var(--events-font-size-md);
+  font-weight: var(--events-font-weight-bold);
+  line-height: var(--events-line-height-tight);
+  margin: 0 0 var(--events-space-2);
 }
 
 .event-card__title a {
-  color: #1a1a1a;
+  color: var(--events-color-text);
   text-decoration: none;
 }
 
 .event-card__title a:hover {
-  color: #97212d;
+  color: var(--events-color-primary);
 }
 
 .event-card__meta {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-  font-size: 0.875rem;
-  color: #666;
+  gap: var(--events-space-1);
+  margin-bottom: var(--events-space-2);
+  font-size: var(--events-font-size-sm);
+  color: var(--events-color-text-muted);
 }
 
 .event-card__date,
 .event-card__venue {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--events-space-1);
 }
 
 .event-card__excerpt {
   flex: 1;
-  font-size: 0.9rem;
-  line-height: 1.6;
-  color: #555;
-  margin-bottom: 1rem;
+  font-size: var(--events-font-size-base);
+  line-height: var(--events-line-height-relaxed);
+  color: var(--events-color-text-secondary);
+  margin-bottom: var(--events-space-2);
 }
 
 .event-card__action {
   margin-top: auto;
 }
 
-.event-card__button {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.25rem;
-  background: #97212d;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  text-decoration: none;
-  transition: background 0.2s;
-}
-
-.event-card__button:hover {
-  background: #7a1a24;
-  color: #fff;
-}
-
-.event-card__button-arrow {
-  transition: transform 0.2s;
-}
-
-.event-card__button:hover .event-card__button-arrow {
-  transform: translateX(4px);
-}
+/* Button styling handled by saho-button component */
 
 /* ========================================
    EVENT STATUS BADGES
@@ -271,37 +314,37 @@
 
 .event-card__badge {
   position: absolute;
-  top: 0.75rem;
-  left: 0.75rem;
-  z-index: 10;
-  padding: 0.4rem 0.75rem;
-  border-radius: 3px;
-  font-size: 0.7rem;
-  font-weight: 700;
+  top: var(--events-space-2);
+  left: var(--events-space-2);
+  z-index: var(--events-z-index-overlay);
+  padding: var(--events-space-1);
+  border-radius: var(--events-radius-sm);
+  font-size: var(--events-font-size-xs);
+  font-weight: var(--events-font-weight-bold);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .event-card__badge--upcoming {
-  background: #28a745;
-  color: #fff;
+  background: var(--events-color-success);
+  color: var(--events-color-white);
 }
 
 .event-card__badge--in-progress {
-  background: #dc3545;
-  color: #fff;
+  background: var(--events-color-danger);
+  color: var(--events-color-white);
 }
 
 .event-card__badge--past {
-  background: #666;
-  color: #fff;
+  background: var(--events-color-past);
+  color: var(--events-color-white);
 }
 
 .badge-pulse {
   display: inline-block;
   width: 6px;
   height: 6px;
-  background: #fff;
+  background: var(--events-color-white);
   border-radius: 50%;
   margin-right: 0.25rem;
   animation: pulse 1.5s ease-in-out infinite;
@@ -314,19 +357,19 @@
 
 .event-card__countdown {
   position: absolute;
-  top: 0.75rem;
-  right: 0.75rem;
-  z-index: 10;
+  top: var(--events-space-2);
+  right: var(--events-space-2);
+  z-index: var(--events-z-index-overlay);
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
-  padding: 0.4rem 0.75rem;
-  background: #fff;
-  border: 1px solid #e0e0e0;
-  border-radius: 3px;
-  font-size: 0.7rem;
-  font-weight: 600;
-  color: #97212d;
+  gap: var(--events-space-1);
+  padding: var(--events-space-1);
+  background: var(--events-color-white);
+  border: 1px solid var(--events-color-border-light);
+  border-radius: var(--events-radius-sm);
+  font-size: var(--events-font-size-xs);
+  font-weight: var(--events-font-weight-normal);
+  color: var(--events-color-primary);
 }
 
 .event-card__countdown svg {
@@ -354,15 +397,7 @@
 }
 
 .event-card--past .event-card__title a {
-  color: #666 !important;
-}
-
-.event-card--past .event-card__button {
-  background: #666;
-}
-
-.event-card--past .event-card__button:hover {
-  background: #555;
+  color: var(--events-color-text-muted) !important;
 }
 
 /* ========================================
@@ -370,7 +405,7 @@
    ======================================== */
 
 .event-card--in-progress {
-  border-color: #dc3545;
+  border-color: var(--events-color-danger);
   border-width: 2px;
 }
 
@@ -380,24 +415,24 @@
 
 .saho-empty-state {
   text-align: center;
-  padding: 3rem 1rem;
-  color: #666;
-  font-size: 1rem;
+  padding: var(--events-space-6) var(--events-space-2);
+  color: var(--events-color-text-muted);
+  font-size: var(--events-font-size-lg);
 }
 
 .saho-no-events-message {
-  padding: 2rem;
-  background: #f8f9fa;
-  border: 1px solid #e0e0e0;
-  border-radius: 4px;
+  padding: var(--events-space-4);
+  background: var(--events-color-bg-alt);
+  border: 1px solid var(--events-color-border);
+  border-radius: var(--events-radius-md);
   text-align: center;
 }
 
 .saho-no-events-message p {
-  margin: 0 0 1rem;
-  font-size: 1rem;
-  line-height: 1.6;
-  color: #555;
+  margin: 0 0 var(--events-space-2);
+  font-size: var(--events-font-size-lg);
+  line-height: var(--events-line-height-relaxed);
+  color: var(--events-color-text-secondary);
 }
 
 .saho-no-events-message p:last-child {
@@ -405,15 +440,15 @@
 }
 
 .saho-contact-link {
-  color: #97212d;
-  font-weight: 600;
+  color: var(--events-color-primary);
+  font-weight: var(--events-font-weight-normal);
   text-decoration: none;
   border-bottom: 2px solid transparent;
-  transition: border-color 0.2s;
+  transition: border-color var(--events-transition-fast);
 }
 
 .saho-contact-link:hover {
-  border-bottom-color: #97212d;
+  border-bottom-color: var(--events-color-primary);
 }
 
 /* ========================================
@@ -428,17 +463,17 @@
 
 @media (max-width: 768px) {
   .saho-events-container {
-    padding: 1.5rem 1rem;
+    padding: var(--events-space-3) var(--events-space-2);
   }
 
   .events-section-header {
     flex-direction: column;
     align-items: flex-start;
-    gap: 1rem;
+    gap: var(--events-space-2);
   }
 
   .events-section-title {
-    font-size: 1.5rem;
+    font-size: var(--events-font-size-xl);
   }
 
   .toggle-past-events {
@@ -448,7 +483,7 @@
 
   .saho-events-grid {
     grid-template-columns: 1fr;
-    gap: 1rem;
+    gap: var(--events-space-2);
   }
 
   .event-card__image {
@@ -458,13 +493,13 @@
 
 @media (max-width: 480px) {
   .events-section-title {
-    font-size: 1.25rem;
+    font-size: var(--events-font-size-lg);
   }
 
   .events-count {
     min-width: 2rem;
     height: 2rem;
-    font-size: 0.875rem;
+    font-size: var(--events-font-size-base);
   }
 
   .event-card__image {
@@ -472,59 +507,62 @@
   }
 
   .event-card__content {
-    padding: 1rem;
+    padding: var(--events-space-2);
   }
 
   .event-card__title {
-    font-size: 1rem;
+    font-size: var(--events-font-size-base);
   }
 }
 
+/* ========================================
+   UPCOMING EVENTS BLOCK
+   ======================================== */
+
 .saho-upcoming-events-block {
-  margin: 2rem 0;
+  margin: var(--events-space-4) 0;
 }
 
 .upcoming-events-header {
   text-align: center;
-  margin-bottom: 2rem;
+  margin-bottom: var(--events-space-4);
 }
 
 .upcoming-events-header h2 {
-  color: #97212d;
-  font-size: 2.5rem;
-  font-weight: 700;
-  margin-bottom: 0.5rem;
+  color: var(--events-color-primary);
+  font-size: var(--events-font-size-3xl);
+  font-weight: var(--events-font-weight-bold);
+  margin-bottom: var(--events-space-1);
 }
 
 .upcoming-events-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 2rem;
-  margin-top: 2rem;
+  gap: var(--events-space-4);
+  margin-top: var(--events-space-4);
 }
 
 .upcoming-event-card {
-  background: white;
-  border-radius: 8px;
+  background: var(--events-color-white);
+  border-radius: var(--events-radius-lg);
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: var(--events-shadow-md);
+  transition: transform var(--events-transition-base) ease, box-shadow var(--events-transition-base) ease;
   display: flex;
   flex-direction: column;
 }
 
 .upcoming-event-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--events-shadow-hover);
 }
 
 .upcoming-event-card .event-image {
-  width: 230px;
-  height: 288px; /* Exact dimensions requested */
+  width: 100%;
+  height: 288px;
   overflow: hidden;
-  background: #f0f0f0;
+  background: var(--events-color-bg-alt);
   position: relative;
-  margin: 0 auto; /* Center the image */
 }
 
 .upcoming-event-card .event-image a {
@@ -537,8 +575,8 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center top; /* Focus on top of portrait images */
-  transition: transform 0.3s ease;
+  object-position: center top;
+  transition: transform var(--events-transition-base) ease;
 }
 
 .upcoming-event-card:hover .event-image img {
@@ -546,17 +584,16 @@
 }
 
 .upcoming-event-card .event-content {
-  padding: 1.5rem;
+  padding: var(--events-space-3);
   flex: 1;
   display: flex;
   flex-direction: column;
 }
 
 .upcoming-event-card .event-title {
-  margin: 0 0 1rem;
-  font-size: 1.2rem;
-  line-height: 1.3;
-  /* Limit to 2 lines with ellipses */
+  margin: 0 0 var(--events-space-2);
+  font-size: var(--events-font-size-lg);
+  line-height: var(--events-line-height-tight);
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -565,61 +602,60 @@
 }
 
 .upcoming-event-card .event-title a {
-  color: #333;
+  color: var(--events-color-text);
   text-decoration: none;
-  transition: color 0.3s ease;
+  transition: color var(--events-transition-base) ease;
 }
 
 .upcoming-event-card .event-title a:hover {
-  color: #97212d;
+  color: var(--events-color-primary);
 }
 
 .event-meta {
-  margin-bottom: 1rem;
+  margin-bottom: var(--events-space-2);
 }
 
 .event-date {
-  color: #97212d;
-  font-weight: 600;
-  font-size: 0.95rem;
-  margin-bottom: 0.5rem;
+  color: var(--events-color-primary);
+  font-weight: var(--events-font-weight-normal);
+  font-size: var(--events-font-size-base);
+  margin-bottom: var(--events-space-1);
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--events-space-1);
 }
 
 .event-venue {
-  color: #666;
-  font-size: 0.9rem;
-  margin-bottom: 1rem;
+  color: var(--events-color-text-muted);
+  font-size: var(--events-font-size-sm);
+  margin-bottom: var(--events-space-2);
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--events-space-1);
 }
 
 /* SVG Icon Styles */
 .icon-calendar,
 .icon-location {
-  width: 16px;
-  height: 16px;
+  width: var(--events-icon-size);
+  height: var(--events-icon-size);
   flex-shrink: 0;
 }
 
 .icon-calendar {
-  color: #97212d;
+  color: var(--events-color-primary);
 }
 
 .icon-location {
-  color: #666;
+  color: var(--events-color-text-muted);
 }
 
 .event-excerpt {
-  color: #555;
-  line-height: 1.5;
-  font-size: 0.9rem;
+  color: var(--events-color-text-secondary);
+  line-height: var(--events-line-height-normal);
+  font-size: var(--events-font-size-base);
   flex: 1;
-  margin-bottom: 1rem;
-  /* Limit to 3 lines with ellipses */
+  margin-bottom: var(--events-space-2);
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
@@ -631,118 +667,96 @@
   margin-top: auto;
 }
 
+/* Read more link inherits from button system */
 .read-more-link {
+  /* Inherit from button system - primary variant */
   display: inline-block;
-  padding: 0.5rem 1rem;
-  background: #97212d;
-  color: white;
+  padding: var(--saho-button-padding-sm-y) var(--saho-button-padding-sm-x);
+  background: var(--saho-button-primary-bg);
+  color: var(--saho-button-primary-text);
   text-decoration: none;
-  border-radius: 4px;
-  font-size: 0.9rem;
-  transition: background 0.3s ease;
+  border-radius: var(--saho-button-radius-sm);
+  font-size: var(--saho-button-font-size-sm);
+  font-weight: var(--saho-button-font-weight);
+  transition: var(--saho-button-transition);
   align-self: flex-start;
-  border: 2px solid transparent;
+  border: var(--saho-button-border-width) solid var(--saho-button-primary-border);
 }
 
 .read-more-link:hover,
 .read-more-link:focus {
-  background: #7a1b24;
-  color: white !important;
+  background: var(--saho-button-primary-bg-hover);
+  color: var(--saho-button-primary-text-hover) !important;
+  border-color: var(--saho-button-primary-border-hover);
   text-decoration: none;
 }
 
 .read-more-link:focus {
-  outline: 2px solid #ffd700;
-  outline-offset: 2px;
+  outline: var(--saho-button-focus-outline-width) solid var(--saho-button-focus-outline);
+  outline-offset: var(--saho-button-focus-outline-offset);
 }
 
-/* View All Events Link */
+/* ========================================
+   VIEW ALL EVENTS LINK - Inherits from button system
+   ======================================== */
+
 .view-all-events {
   text-align: center;
-  margin-top: 2rem;
+  margin-top: var(--events-space-4);
 }
 
 .view-all-link {
+  /* Inherit from button system - primary variant large */
   display: inline-block;
-  padding: 0.75rem 2rem;
-  background: #97212d;
-  color: white;
+  padding: var(--saho-button-padding-md-y) var(--saho-button-padding-md-x);
+  background: var(--saho-button-primary-bg);
+  color: var(--saho-button-primary-text);
   text-decoration: none;
-  border-radius: 4px;
-  font-size: 1.1rem;
-  font-weight: 600;
-  transition: background 0.3s ease;
-  border: 2px solid transparent;
+  border-radius: var(--saho-button-radius-md);
+  font-size: var(--saho-button-font-size-md);
+  font-weight: var(--saho-button-font-weight);
+  transition: var(--saho-button-transition);
+  border: var(--saho-button-border-width) solid var(--saho-button-primary-border);
 }
 
 .view-all-link:hover,
 .view-all-link:focus {
-  background: #7a1b24;
-  color: white !important;
+  background: var(--saho-button-primary-bg-hover);
+  color: var(--saho-button-primary-text-hover) !important;
+  border-color: var(--saho-button-primary-border-hover);
   text-decoration: none;
 }
 
 .view-all-link:focus {
-  outline: 2px solid #ffd700;
-  outline-offset: 2px;
+  outline: var(--saho-button-focus-outline-width) solid var(--saho-button-focus-outline);
+  outline-offset: var(--saho-button-focus-outline-offset);
 }
 
-/* No events message */
-.no-events-message {
-  text-align: center;
-  padding: 2rem;
-  color: #666;
-  font-style: italic;
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  .upcoming-events-header h2 {
-    font-size: 2rem;
-  }
-
-  .upcoming-events-grid {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
-  }
-
-  .upcoming-event-card .event-image {
-    width: 200px; /* Slightly smaller on mobile */
-    height: 288px; /* Maintain portrait ratio */
-  }
-
-  .upcoming-event-card .event-content {
-    padding: 1.25rem;
-  }
-}
-
-/* All Upcoming Events Page Styles */
-.all-upcoming-events-page {
-  background: #f8f9fa;
-  min-height: 100vh;
-}
+/* ========================================
+   ALL EVENTS PAGE
+   ======================================== */
 
 .all-events-header {
   background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
-  color: white;
-  padding: 3rem 0 2rem;
+  color: var(--events-color-white);
+  padding: var(--events-space-6) 0 var(--events-space-4);
   position: relative;
 }
 
 .all-events-header .page-title {
-  font-size: 2.5rem;
-  font-weight: 700;
-  margin: 0 0 1rem;
+  font-size: var(--events-font-size-3xl);
+  font-weight: var(--events-font-weight-bold);
+  margin: 0 0 var(--events-space-2);
   text-align: center;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
 }
 
 .all-events-header .page-description {
   max-width: 700px;
   margin: 0 auto;
   text-align: center;
-  font-size: 1.1rem;
-  line-height: 1.5;
+  font-size: var(--events-font-size-xl);
+  line-height: var(--events-line-height-normal);
   opacity: 0.9;
 }
 
@@ -754,315 +768,27 @@
   margin-bottom: 0;
 }
 
-/* Force Grid Layout - Override any default view styles */
-.view-content .container {
-  padding: 2rem 1rem !important;
-  max-width: 1200px !important;
-  margin: 0 auto !important;
+/* ========================================
+   ACCESSIBILITY & FOCUS STATES
+   ======================================== */
+
+.event-card-clickable:focus-visible,
+.toggle-past-events:focus-visible,
+.read-more-link:focus-visible,
+.view-all-link:focus-visible {
+  outline: var(--saho-button-focus-outline-width) solid var(--saho-button-focus-outline);
+  outline-offset: var(--saho-button-focus-outline-offset);
 }
 
-.all-events-grid,
-.view-content .all-events-grid,
-.views-view-unformatted {
-  display: grid !important;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)) !important;
-  gap: 1.5rem !important;
-  max-width: 1200px !important;
-  margin: 0 auto !important;
-  padding: 0 !important;
-  list-style: none !important;
-}
-
-/* Override default Drupal view styles */
-.view-all-upcoming-events .view-content {
-  display: block !important;
-}
-
-.view-all-upcoming-events .views-row {
-  margin: 0 !important;
-  padding: 0 !important;
-  border: none !important;
-  list-style: none !important;
-}
-
-/* ALL EVENTS GRID - Mobile First */
-.all-events-grid {
-  display: grid !important;
-  grid-template-columns: 1fr !important;
-  gap: 1.5rem !important;
-  margin: 2rem 0 !important;
-  padding: 0 !important;
-  list-style: none !important;
-}
-
-/* Tablet: 2 columns */
-@media (min-width: 768px) {
-  .all-events-grid {
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 2rem !important;
-  }
-}
-
-/* Desktop: 3 columns */
-@media (min-width: 1024px) {
-  .all-events-grid {
-    grid-template-columns: repeat(3, 1fr) !important;
-    gap: 2rem !important;
-  }
-}
-
-/* EVENT CARD - Mobile First */
-.all-events-grid .event-card-clickable,
-.views-row .event-card-clickable,
-.event-card-clickable {
-  background: white !important;
-  border-radius: 8px !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
-  overflow: hidden !important;
-  transition: all 0.3s ease !important;
-  border: 1px solid #e5e7eb !important;
-  height: 100% !important;
-  display: flex !important;
-  flex-direction: column !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  list-style: none !important;
-}
-
-.event-card-clickable:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
-  transform: translateY(-2px) !important;
-  border-color: #97212d !important;
-}
-
-/* Event Image - Mobile First */
-.event-card__image,
-.event-card-clickable .event-card__image {
-  position: relative !important;
-  width: 100% !important;
-  height: 200px !important;
-  overflow: hidden !important;
-  background: #f3f4f6 !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  flex-shrink: 0 !important;
-}
-
-/* Ensure nested field wrapper doesn't break layout */
-.event-card__image > div,
-.event-card__image .field,
-.event-card__image .field__item {
-  width: 100% !important;
-  height: 100% !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  display: block !important;
-}
-
-.event-card__image img,
-.event-card-clickable .event-card__image img {
-  width: 100% !important;
-  height: 100% !important;
-  object-fit: cover !important;
-  object-position: center !important;
-  transition: transform 0.3s ease !important;
-  display: block !important;
-  margin: 0 !important;
-  padding: 0 !important;
-}
-
-.event-card-clickable:hover .event-card__image img {
-  transform: scale(1.05) !important;
-}
-
-/* Tablet and up - taller images */
-@media (min-width: 768px) {
-  .event-card__image,
-  .event-card-clickable .event-card__image {
-    height: 220px !important;
-  }
-}
-
-/* Card Content Area - Mobile First */
-.event-card__content,
-.event-card-clickable .event-card__content {
-  padding: 1rem !important;
-  flex-grow: 1 !important;
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 0.75rem !important;
-}
-
-@media (min-width: 768px) {
-  .event-card__content,
-  .event-card-clickable .event-card__content {
-    padding: 1.25rem !important;
-  }
-}
-
-/* Event Title - Mobile First */
-.event-card__title,
-.event-card-clickable .event-card__title {
-  font-size: 1.125rem !important;
-  font-weight: 700 !important;
-  color: #1f2937 !important;
-  margin: 0 0 0.5rem 0 !important;
-  line-height: 1.4 !important;
-  display: -webkit-box !important;
-  -webkit-line-clamp: 2 !important;
-  -webkit-box-orient: vertical !important;
-  overflow: hidden !important;
-}
-
-@media (min-width: 768px) {
-  .event-card__title,
-  .event-card-clickable .event-card__title {
-    font-size: 1.25rem !important;
-  }
-}
-
-.event-card__title a,
-.event-card-clickable .event-card__title a {
-  color: inherit !important;
-  text-decoration: none !important;
-  transition: color 0.2s ease !important;
-}
-
-.event-card__title a:hover,
-.event-card-clickable .event-card__title a:hover {
-  color: #97212d !important;
-}
-
-/* Event Meta */
-.event-card__meta,
-.event-card-clickable .event-card__meta {
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 0.5rem !important;
-  margin: 0 0 0.75rem 0 !important;
-}
-
-/* Date Badge - SAHO Red */
-.event-card__date,
-.event-card-clickable .event-card__date {
-  background: #97212d !important;
-  color: white !important;
-  padding: 0.375rem 0.75rem !important;
-  border-radius: 4px !important;
-  font-size: 0.813rem !important;
-  font-weight: 600 !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 0.25rem !important;
-  width: fit-content !important;
-  margin: 0 !important;
-}
-
-/* Venue */
-.event-card__venue,
-.event-card-clickable .event-card__venue {
-  color: #6b7280 !important;
-  font-size: 0.875rem !important;
-  display: flex !important;
-  align-items: flex-start !important;
-  gap: 0.25rem !important;
-  margin: 0 !important;
-  line-height: 1.4 !important;
-}
-
-/* Excerpt/Description */
-.event-card__excerpt,
-.event-card-clickable .event-card__excerpt {
-  color: #4b5563 !important;
-  font-size: 0.875rem !important;
-  line-height: 1.6 !important;
-  display: -webkit-box !important;
-  -webkit-line-clamp: 3 !important;
-  -webkit-box-orient: vertical !important;
-  overflow: hidden !important;
-  flex-grow: 1 !important;
-  margin: 0 !important;
-}
-
-/* Call to Action Button */
-.event-card__action {
-  margin-top: auto !important;
-  padding-top: 1rem !important;
-}
-
-.event-card__button {
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  gap: 0.5rem !important;
-  background: #97212d !important;
-  color: white !important;
-  padding: 0.625rem 1.25rem !important;
-  border-radius: 4px !important;
-  text-decoration: none !important;
-  font-weight: 600 !important;
-  font-size: 0.875rem !important;
-  transition: all 0.2s ease !important;
-  width: 100% !important;
-  border: none !important;
-}
-
-.event-card__button:hover,
-.event-card__button:focus {
-  background: #7a1a24 !important;
-  color: white !important;
-  text-decoration: none !important;
-  transform: translateY(-1px) !important;
-  box-shadow: 0 2px 8px rgba(151, 33, 45, 0.3) !important;
-}
-
-.event-card__button-arrow {
-  transition: transform 0.2s ease !important;
-  font-size: 1.125rem !important;
-}
-
-.event-card__button:hover .event-card__button-arrow {
-  transform: translateX(4px) !important;
-}
-
-/* Empty State */
-.view-empty .empty-events-message {
-  text-align: center;
-  padding: 3rem 2rem;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  margin: 2rem auto;
-  max-width: 500px;
-}
-
-.view-empty .empty-events-message h3 {
-  font-size: 1.5rem;
-  color: #2c3e50;
-  margin: 0 0 1rem;
-}
-
-.view-empty .empty-events-message p {
-  color: #6c757d;
-  margin: 0;
-}
-
-/* Mobile Responsive */
-@media (max-width: 768px) {
-  .all-events-header .page-title {
-    font-size: 2rem;
-  }
-
-  .all-events-grid {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
-
-  .node--type-upcomingevent .field--name-field-featured-image {
-    height: 160px;
-  }
-
-  .node--type-upcomingevent .node__content {
-    padding: 1rem;
-  }
+/* Screen reader only text */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
 }
