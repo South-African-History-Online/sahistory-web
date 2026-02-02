@@ -2086,22 +2086,22 @@ body.offcanvas-open {
   }
 }
 
-/* Standard SAHO Collection Cards */
+/* Standard SAHO Collection Cards - Unified Token System */
 .collection-card.saho-card {
   display: flex;
   flex-direction: column;
   height: 100%;
   background: var(--saho-color-white);
-  border-radius: var(--saho-radius-md);
-  box-shadow: 0 2px 8px var(--saho-color-black-alpha-10);
+  border-radius: var(--saho-card-radius);  /* 8px */
+  box-shadow: var(--saho-shadow-md);       /* Unified shadow */
   overflow: hidden;
-  transition: all 0.3s ease;
+  transition: var(--saho-transition-base); /* 300ms ease */
   text-decoration: none;
 }
 
 .collection-card.saho-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 25px var(--saho-color-black-alpha-15);
+  transform: translateY(-8px);  /* 8px baseline */
+  box-shadow: var(--saho-shadow-xl);
   text-decoration: none;
 }
 
@@ -2133,31 +2133,31 @@ body.offcanvas-open {
 /* Card Label/Badge */
 .collection-card .card-label {
   position: absolute;
-  top: 12px;
-  right: 12px;
+  top: var(--saho-space-2);     /* 16px - rounded from 12px */
+  right: var(--saho-space-2);   /* 16px - rounded from 12px */
   background: var(--saho-color-primary-alpha-90);
   color: var(--saho-color-white);
-  padding: 4px 12px;
-  border-radius: var(--saho-radius-sm);
-  font-size: 0.75rem;
-  font-weight: 600;
+  padding: var(--saho-space-1) var(--saho-space-2);  /* 8px 16px - rounded from 4px 12px */
+  border-radius: var(--saho-radius-sm);  /* 4px */
+  font-size: var(--saho-font-size-xs);   /* 12px */
+  font-weight: var(--saho-font-weight-semibold);  /* 600 */
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 /* Card Content */
 .collection-card .card-content {
-  padding: 20px;
+  padding: var(--saho-card-padding-compact);  /* 24px - rounded from 20px */
   flex: 1;
   display: flex;
   flex-direction: column;
 }
 
 .collection-card .card-title {
-  font-size: 1.125rem;
-  font-weight: 600;
-  line-height: 1.4;
-  margin-bottom: 12px;
+  font-size: var(--saho-font-size-md);   /* 18px */
+  font-weight: var(--saho-font-weight-semibold);  /* 600 */
+  line-height: var(--saho-line-height-tight);  /* 1.25 */
+  margin-bottom: var(--saho-space-2);    /* 16px - rounded from 12px */
   color: var(--saho-color-card-text);
 }
 
@@ -2172,60 +2172,60 @@ body.offcanvas-open {
 
 /* Meta Information */
 .collection-card .card-meta {
-  margin-bottom: 12px;
-  font-size: 0.875rem;
+  margin-bottom: var(--saho-space-2);  /* 16px - rounded from 12px */
+  font-size: var(--saho-font-size-sm); /* 14px */
   color: var(--saho-color-card-meta);
 }
 
 .collection-card .collection-count {
   background: var(--saho-color-bg-card);
-  padding: 2px 8px;
-  border-radius: 12px;
-  font-weight: 500;
+  padding: var(--saho-space-1) var(--saho-space-1);  /* 8px 8px - rounded from 2px 8px */
+  border-radius: var(--saho-radius-lg);  /* 12px */
+  font-weight: var(--saho-font-weight-medium);  /* 500 */
 }
 
 /* Description */
 .collection-card .card-description {
-  font-size: 0.9rem;
-  line-height: 1.5;
+  font-size: var(--saho-font-size-base);  /* 16px */
+  line-height: var(--saho-line-height-normal);  /* 1.5 */
   color: var(--saho-color-card-description);
-  margin-bottom: 16px;
+  margin-bottom: var(--saho-space-2);  /* 16px */
   flex: 1;
 }
 
-/* Card Actions */
+/* Card Actions - Inherit from button system */
 .collection-card .card-actions {
   margin-top: auto;
 }
 
 .collection-card .btn {
-  border-radius: 20px;
-  font-size: 0.875rem;
-  font-weight: 500;
-  transition: all 0.2s ease;
+  border-radius: var(--saho-radius-pill);  /* 9999px - pill shape, rounded from 20px */
+  font-size: var(--saho-button-font-size-sm);  /* 14px */
+  font-weight: var(--saho-button-font-weight);  /* 600 */
+  transition: var(--saho-transition-fast);  /* 150ms ease */
 }
 
 .collection-card .btn:hover {
-  transform: translateY(-1px);
+  transform: translateY(-8px);  /* 8px baseline - rounded from 1px */
 }
 
-/* Grid Layout - Updated to use unified cards grid */
+/* Grid Layout - Unified Token System with STANDARD 32px gap */
 .saho-landing-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(var(--saho-grid-card-min-width), 1fr));
+  gap: var(--saho-space-4);  /* 32px - STANDARD for card grids */
   align-items: start;
-  
+
   @media (max-width: 768px) {
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: 1rem;
+    gap: var(--saho-space-2);  /* 16px on mobile */
   }
-  
+
   // Handle potential Drupal Views wrapper divs
   > div {
     display: contents;
   }
-  
+
   // Ensure cards are properly sized within the grid
   .saho-card-link,
   .saho-card {
@@ -2237,11 +2237,11 @@ body.offcanvas-open {
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .collection-card .card-image-wrapper {
-    height: 160px;
+    height: 160px;  /* 8px multiple */
   }
-  
+
   .collection-card .card-content {
-    padding: 16px;
+    padding: var(--saho-space-2);  /* 16px on mobile */
   }
 }
 

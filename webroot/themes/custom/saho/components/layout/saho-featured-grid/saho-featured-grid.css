@@ -1,78 +1,81 @@
 /**
- * SAHO Featured Grid Component - Modern Self-Contained CSS
+ * SAHO Featured Grid Component - Unified Token System
  * Drupal 11 SDC - Layout component for featured content displays
  * Heritage-themed grid with sidebar navigation
  *
- * Pure CSS with inline custom properties - NO external dependencies
+ * Modernized to use global --saho-* tokens with standardized gaps.
  */
 
-/* Component-scoped design tokens */
+/* Component-scoped design tokens - Inherit from unified system */
 .saho-featured-grid {
-  /* SAHO Brand Colors */
-  --fg-primary: #990000;
-  --fg-secondary: #3a4a64;
-  --fg-accent: #d4a574;
-  --fg-highlight: #8b2331;
-  --fg-deep-heritage-red: #8b0000;
-  --fg-muted-gold: #c9b037;
-  --fg-slate-blue: #5a6c8e;
+  /* SAHO Brand Colors - Inherit from unified tokens */
+  --fg-primary: var(--saho-color-primary);
+  --fg-secondary: var(--saho-color-secondary);
+  --fg-accent: var(--saho-color-accent);
+  --fg-highlight: var(--saho-color-highlight);
+  --fg-deep-heritage-red: var(--saho-color-primary-dark);
 
   /* Surface Colors */
-  --fg-surface: #ffffff;
-  --fg-surface-alt: #f8f9fa;
-  --fg-border-light: #dee2e6;
+  --fg-surface: var(--saho-color-white);
+  --fg-surface-alt: var(--saho-color-surface-alt);
+  --fg-border-light: var(--saho-color-border-light);
 
   /* Text Colors */
-  --fg-text-secondary: #495057;
-  --fg-text-muted: #6c757d;
+  --fg-text-secondary: var(--saho-color-text-secondary);
+  --fg-text-muted: var(--saho-color-text-muted);
 
   /* Alpha Variants */
   --fg-primary-alpha-25: rgba(153, 0, 0, 0.25);
   --fg-accent-alpha-25: rgba(212, 165, 116, 0.25);
 
-  /* Spacing */
-  --grid-gap: 1.5rem;
+  /* Spacing - Inherit from unified tokens */
+  --grid-gap: var(--saho-space-4);        /* 32px - STANDARD */
+  --grid-gap-compact: var(--saho-space-3); /* 24px */
   --sidebar-width: 280px;
+
+  /* Typography */
+  --fg-title-size: var(--saho-font-size-md);
+  --fg-label-size: var(--saho-font-size-xs);
 }
 
 /* Hero Section */
 .saho-featured-grid__hero {
   background: linear-gradient(135deg, var(--fg-surface) 0%, var(--fg-surface-alt) 100%);
-  padding: 2rem 0;
-  border-radius: 0.75rem;
-  margin-bottom: 2rem;
+  padding: var(--saho-space-4) 0;  /* 32px */
+  border-radius: var(--saho-radius-lg);  /* 12px */
+  margin-bottom: var(--saho-space-4);  /* 32px */
 }
 
 .saho-featured-grid__description {
   color: var(--fg-text-secondary);
-  font-size: 1.125rem;
-  line-height: 1.7;
+  font-size: var(--saho-font-size-md);  /* 18px */
+  line-height: var(--saho-line-height-relaxed);  /* 1.75 */
   max-width: 800px;
 }
 
 /* Stats Section */
 .saho-featured-grid__stats {
   background: var(--fg-surface-alt);
-  border-radius: 0.75rem;
-  margin: 2rem 0;
+  border-radius: var(--saho-radius-lg);  /* 12px */
+  margin: var(--saho-space-4) 0;  /* 32px */
 }
 
 .saho-stat-card {
   text-align: center;
-  padding: 1rem;
+  padding: var(--saho-space-2);  /* 16px */
 }
 
 .saho-stat-number {
-  font-size: 2.5rem;
-  font-weight: 700;
+  font-size: var(--saho-font-size-4xl);  /* 40px */
+  font-weight: var(--saho-font-weight-bold);  /* 700 */
   line-height: 1;
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--saho-space-1);  /* 8px */
 }
 
 .saho-stat-label {
-  font-size: 0.875rem;
+  font-size: var(--fg-label-size);  /* 12px */
   color: var(--fg-text-muted);
-  font-weight: 500;
+  font-weight: var(--saho-font-weight-medium);  /* 500 */
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -81,31 +84,31 @@
 .saho-featured-grid__sidebar {
   background: var(--fg-surface);
   border: 1px solid var(--fg-border-light);
-  border-radius: 0.75rem;
-  box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.05);
+  border-radius: var(--saho-radius-lg);  /* 12px */
+  box-shadow: var(--saho-shadow-sm);
 }
 
 .saho-sidebar-header {
   background: var(--fg-primary);
   color: white;
-  font-weight: 600;
-  border-radius: 0.5rem 0.5rem 0 0;
+  font-weight: var(--saho-font-weight-semibold);  /* 600 */
+  border-radius: var(--saho-radius-md) var(--saho-radius-md) 0 0;  /* 8px 8px 0 0 */
 }
 
 .saho-category-grid {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: var(--saho-space-1);  /* 8px */
 }
 
 .saho-category-item {
   display: flex;
   align-items: center;
-  padding: 0.75rem 1rem;
+  padding: var(--saho-space-2) var(--saho-space-2);  /* 16px 16px - rounded from 12px 16px */
   border: none;
   background: transparent;
-  border-radius: 0.5rem;
-  transition: all 0.2s ease;
+  border-radius: var(--saho-radius-md);  /* 8px */
+  transition: var(--saho-transition-fast);  /* 150ms ease */
   cursor: pointer;
   text-align: left;
   width: 100%;
@@ -113,34 +116,34 @@
 
 .saho-category-item:hover {
   background: var(--fg-surface-alt);
-  transform: translateX(4px);
+  transform: translateX(var(--saho-space-1));  /* 8px - rounded from 4px */
 }
 
 .saho-category-item.active {
   background: var(--fg-primary);
   color: white;
-  transform: translateX(4px);
-  box-shadow: 0 2px 8px var(--fg-primary-alpha-25);
+  transform: translateX(var(--saho-space-1));  /* 8px - rounded from 4px */
+  box-shadow: var(--saho-shadow-hover);
 }
 
 .saho-category-icon {
-  width: 20px;
-  margin-right: 0.75rem;
+  width: var(--saho-space-3);  /* 24px - rounded from 20px */
+  margin-right: var(--saho-space-2);  /* 16px - rounded from 12px */
   text-align: center;
 }
 
 .saho-category-name {
   flex: 1;
-  font-weight: 500;
-  font-size: 0.875rem;
+  font-weight: var(--saho-font-weight-medium);  /* 500 */
+  font-size: var(--saho-font-size-sm);  /* 14px */
 }
 
 .saho-category-count {
-  font-size: 0.75rem;
+  font-size: var(--fg-label-size);  /* 12px */
   background: var(--fg-surface-alt);
-  padding: 0.25rem 0.5rem;
-  border-radius: 1rem;
-  font-weight: 600;
+  padding: var(--saho-space-1) var(--saho-space-1);  /* 8px 8px */
+  border-radius: var(--saho-radius-pill);  /* 9999px */
+  font-weight: var(--saho-font-weight-semibold);  /* 600 */
 }
 
 .saho-category-item.active .saho-category-count {
@@ -160,7 +163,7 @@
 }
 
 .saho-featured-grid--cols-3 .saho-featured-grid__items {
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(var(--saho-grid-card-min-width), 1fr));
 }
 
 .saho-featured-grid--cols-4 .saho-featured-grid__items {
@@ -175,18 +178,18 @@
 .saho-featured-grid--hero-first .saho-featured-grid__items > div:first-child .saho-card {
   display: grid;
   grid-template-columns: 1fr 2fr;
-  gap: 1.5rem;
+  gap: var(--grid-gap-compact);  /* 24px */
 }
 
 .saho-featured-grid--masonry .saho-featured-grid__items {
   column-count: 2;
-  column-gap: var(--grid-gap);
+  column-gap: var(--grid-gap);  /* 32px */
   column-fill: balance;
 }
 
 .saho-featured-grid--masonry .saho-featured-grid__items > div {
   break-inside: avoid;
-  margin-bottom: var(--grid-gap);
+  margin-bottom: var(--grid-gap);  /* 32px */
 }
 
 /* Content Sections */
@@ -203,23 +206,23 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem;
+  padding: var(--saho-space-2);  /* 16px */
   background: var(--fg-surface-alt);
-  border-radius: 0.5rem;
-  margin-bottom: 1.5rem;
+  border-radius: var(--saho-radius-md);  /* 8px */
+  margin-bottom: var(--saho-space-3);  /* 24px */
 }
 
 /* Sort Dropdown */
 .form-select {
   min-width: 150px;
-  border-radius: 0.5rem;
+  border-radius: var(--saho-radius-md);  /* 8px */
   border-color: var(--fg-border-light);
   background-color: var(--fg-surface);
 }
 
 .form-select:focus {
   border-color: var(--fg-primary);
-  box-shadow: 0 0 0 0.2rem var(--fg-primary-alpha-25);
+  box-shadow: 0 0 0 3px var(--fg-primary-alpha-25);
 }
 
 /* Color Variants */
@@ -259,18 +262,18 @@
 
 @media (max-width: 992px) {
   .saho-featured-grid__sidebar {
-    margin-bottom: 2rem;
+    margin-bottom: var(--saho-space-4);  /* 32px */
   }
 
   .saho-category-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 0.75rem;
+    gap: var(--saho-space-2);  /* 16px - rounded from 12px */
   }
 
   .saho-featured-grid--cols-3 .saho-featured-grid__items,
   .saho-featured-grid--cols-4 .saho-featured-grid__items {
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(var(--saho-grid-card-min-width), 1fr));
   }
 
   .saho-featured-grid--masonry .saho-featured-grid__items {
@@ -280,11 +283,11 @@
 
 @media (max-width: 768px) {
   .saho-featured-grid__hero {
-    padding: 1.5rem 0;
+    padding: var(--saho-space-3) 0;  /* 24px */
   }
 
   .saho-stat-number {
-    font-size: 2rem;
+    font-size: var(--saho-font-size-3xl);  /* 36px - down from 40px */
   }
 
   .saho-category-grid {
@@ -299,7 +302,7 @@
 
   .saho-featured-grid__actions {
     flex-direction: column;
-    gap: 1rem;
+    gap: var(--saho-space-2);  /* 16px */
   }
 
   .form-select {
@@ -320,28 +323,28 @@
 
   .saho-featured-grid__items {
     grid-template-columns: repeat(2, 1fr);
-    gap: 1rem;
+    gap: var(--saho-space-2);  /* 16px */
   }
 }
 
 /* Accessibility */
 .saho-category-item:focus {
-  outline: 2px solid var(--fg-primary);
-  outline-offset: 2px;
+  outline: var(--saho-button-focus-outline-width) solid var(--fg-primary);
+  outline-offset: var(--saho-button-focus-outline-offset);
 }
 
 /* Loading States */
 .spinner-border.saho-text-primary {
   color: var(--fg-primary);
-  width: 2rem;
-  height: 2rem;
+  width: var(--saho-space-4);   /* 32px */
+  height: var(--saho-space-4);  /* 32px */
 }
 
 /* Animation */
 @keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(var(--saho-space-3));  /* 24px - rounded from 20px */
   }
   to {
     opacity: 1;
@@ -350,5 +353,5 @@
 }
 
 .featured-content-section.active {
-  animation: fadeInUp 0.3s ease-out;
+  animation: fadeInUp var(--saho-transition-base) ease-out;  /* 300ms */
 }

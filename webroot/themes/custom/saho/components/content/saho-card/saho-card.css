@@ -1,8 +1,8 @@
 /**
- * SAHO Card Component - Modern Self-Contained CSS
+ * SAHO Card Component - Unified Token System
  *
- * Pure CSS component with NO external dependencies.
- * Uses inline CSS custom properties - works everywhere, no SCSS needed.
+ * Modernized to use global --saho-* tokens with component-scoped overrides.
+ * Inherits from unified design token system for consistency.
  *
  * Philosophy:
  * - Heritage-themed card component with multiple variants
@@ -12,28 +12,28 @@
  * - Modern CSS features with responsive design
  */
 
-/* Component-scoped design tokens */
+/* Component-scoped design tokens - Inherit from global system */
 .saho-card {
-  /* SAHO Brand Colors - inline, no external dependencies */
-  --card-color-primary: #990000;           /* SAHO Deep Heritage Red */
-  --card-color-secondary: #3a4a64;         /* Secondary blue-grey */
-  --card-color-accent: #d4a574;            /* Gold/tan accent */
-  --card-color-highlight: #8b2331;         /* Dark burgundy */
+  /* SAHO Brand Colors - Inherit from unified tokens */
+  --card-color-primary: var(--saho-color-primary);        /* #990000 */
+  --card-color-secondary: var(--saho-color-secondary);    /* #3a4a64 */
+  --card-color-accent: var(--saho-color-accent);          /* #b88a2e */
+  --card-color-highlight: var(--saho-color-highlight);    /* #8b2331 */
 
   /* Background colors */
-  --card-bg-white: #ffffff;
-  --card-bg-surface-alt: #f5f7fa;
+  --card-bg-white: var(--saho-color-white);
+  --card-bg-surface-alt: var(--saho-color-surface-alt);
 
   /* Border and shadow colors */
-  --card-border-light: #e2e8f0;
-  --card-shadow-base: rgba(0, 0, 0, 0.1);
-  --card-shadow-hover: rgba(0, 0, 0, 0.15);
+  --card-border-light: var(--saho-color-border-light);
+  --card-shadow-base: var(--saho-color-shadow);
+  --card-shadow-hover: var(--saho-color-shadow-lg);
 
   /* Text colors */
-  --card-text-primary: #2c3e50;
-  --card-text-secondary: #6c757d;
-  --card-text-muted: #666;
-  --card-text-white: #ffffff;
+  --card-text-primary: var(--saho-color-text-primary);
+  --card-text-secondary: var(--saho-color-text-secondary);
+  --card-text-muted: var(--saho-color-text-muted);
+  --card-text-white: var(--saho-color-white);
 
   /* Alpha colors for hover effects */
   --card-primary-alpha-25: rgba(153, 0, 0, 0.25);
@@ -41,24 +41,34 @@
   --card-accent-alpha-25: rgba(212, 165, 116, 0.25);
   --card-highlight-alpha-25: rgba(139, 35, 49, 0.25);
 
-  /* Sizing - 8px baseline grid */
-  --card-border-radius: 8px;
-  --card-spacing: 1.5rem;       /* 24px - rounded from 20px */
-  --card-spacing-mobile: 1rem;  /* 16px */
+  /* Spacing - Inherit from unified token system (8px baseline grid) */
+  --card-border-radius: var(--saho-card-radius);      /* 8px */
+  --card-spacing: var(--saho-card-padding-compact);   /* 24px */
+  --card-spacing-mobile: var(--saho-space-2);         /* 16px */
+  --card-gap: var(--saho-card-gap);                   /* 24px - internal spacing */
+
+  /* Image Heights - 8px baseline grid */
   --card-image-height: 200px;
-  --card-image-height-small: 144px;  /* 144px - rounded from 140px to 8px multiple */
-  --card-image-height-large: 256px;  /* 256px - rounded from 260px to 8px multiple */
-  --card-image-height-mobile: 160px;
+  --card-image-height-small: 144px;   /* 8px multiple */
+  --card-image-height-large: 256px;   /* 8px multiple */
+  --card-image-height-mobile: 160px;  /* 8px multiple */
+
+  /* Typography - Inherit from unified tokens */
+  --card-title-size: var(--saho-font-size-lg);      /* 20px */
+  --card-title-weight: var(--saho-font-weight-semibold);  /* 600 */
+  --card-meta-size: var(--saho-font-size-sm);       /* 14px */
+  --card-body-size: var(--saho-font-size-base);     /* 16px */
+  --card-label-size: var(--saho-font-size-xs);      /* 12px */
 
   /* Transitions */
-  --card-transition-base: all 0.3s ease;
-  --card-transition-slow: transform 0.5s ease;
+  --card-transition-base: var(--saho-transition-base);  /* 300ms ease */
+  --card-transition-slow: var(--saho-transition-slow);  /* 500ms ease */
 
   /* Base Layout */
   background: var(--card-bg-white);
   border: 1px solid var(--card-border-light);
   border-radius: var(--card-border-radius);
-  box-shadow: 0 2px 8px var(--card-shadow-base);
+  box-shadow: var(--saho-shadow-md);
   overflow: hidden;
   transition: var(--card-transition-base);
   height: 100%;
@@ -67,7 +77,7 @@
 
 .saho-card:hover {
   transform: translateY(-8px);
-  box-shadow: 0 8px 24px var(--card-shadow-hover);
+  box-shadow: var(--saho-shadow-xl);
 }
 
 /* Card Link Wrapper */
@@ -155,7 +165,7 @@
 
 /* Card Header */
 .saho-card__header {
-  padding: 1rem 1rem 0;
+  padding: var(--saho-space-2) var(--saho-space-2) 0;  /* 16px 16px 0 */
   background: var(--card-bg-surface-alt);
 }
 
@@ -212,14 +222,14 @@
 .saho-card-badge,
 .saho-card__type-badge {
   position: absolute;
-  top: 0.75rem;    /* 12px */
-  right: 0.75rem;  /* 12px */
-  background: #b22222;
+  top: var(--saho-space-2);     /* 16px - rounded from 12px to 8px baseline */
+  right: var(--saho-space-2);   /* 16px - rounded from 12px to 8px baseline */
+  background: var(--saho-color-primary-light);
   color: var(--card-text-white);
-  padding: 0.25rem 0.75rem;  /* 4px 12px */
-  border-radius: 4px;
-  font-size: 0.75rem;
-  font-weight: 600;
+  padding: var(--saho-space-1) var(--saho-space-2);  /* 8px 16px - rounded from 4px 12px */
+  border-radius: var(--saho-radius-sm);  /* 4px */
+  font-size: var(--card-label-size);     /* 12px */
+  font-weight: var(--saho-font-weight-semibold);  /* 600 */
   text-transform: uppercase;
   letter-spacing: 0;
   z-index: 2;
@@ -237,11 +247,11 @@
 /* Card Title */
 .saho-card-title,
 .saho-card__title {
-  font-size: 1.1rem;
-  font-weight: 600;
+  font-size: var(--card-title-size);      /* 20px */
+  font-weight: var(--card-title-weight);  /* 600 */
   color: var(--card-text-primary);
-  margin-bottom: 0.5rem;  /* 8px - rounded from 10px */
-  line-height: 1.4;
+  margin-bottom: var(--saho-space-1);     /* 8px */
+  line-height: var(--saho-line-height-tight);  /* 1.25 */
 }
 
 .saho-card__title a {
@@ -256,27 +266,27 @@
 /* Card Subtitle/Metadata */
 .saho-card-subtitle {
   display: block;
-  font-size: 0.85rem;
+  font-size: var(--card-meta-size);       /* 14px */
   color: var(--card-text-secondary);
-  margin-bottom: 0.75rem;  /* 12px */
-  font-weight: normal;
+  margin-bottom: var(--saho-space-2);     /* 16px - rounded from 12px */
+  font-weight: var(--saho-font-weight-normal);
 }
 
 .saho-card__meta {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: var(--saho-space-1);               /* 8px */
   color: var(--card-text-muted);
-  font-size: 0.875rem;
+  font-size: var(--card-meta-size);       /* 14px */
 }
 
 /* Card Description/Body Text */
 .saho-card-description,
 .saho-card__content {
-  font-size: 0.9rem;
+  font-size: var(--card-body-size);        /* 16px */
   color: var(--card-text-muted);
-  line-height: 1.5;
-  margin-bottom: 1rem;  /* 16px */
+  line-height: var(--saho-line-height-normal);  /* 1.5 */
+  margin-bottom: var(--saho-space-2);      /* 16px */
   flex-grow: 1;
 }
 
@@ -284,14 +294,14 @@
 .saho-card-footer,
 .saho-card__footer-section {
   margin-top: auto;
-  padding-top: 0.75rem;  /* 12px */
+  padding-top: var(--saho-space-2);  /* 16px - rounded from 12px */
   text-align: left !important;
   display: flex;
   justify-content: flex-start;
 }
 
 .saho-card__action {
-  margin-bottom: 0.75rem;
+  margin-bottom: var(--saho-space-2);  /* 16px - rounded from 12px */
 }
 
 .saho-card-button-wrapper {
@@ -306,22 +316,22 @@
 }
 
 .saho-card__footer {
-  margin-bottom: 0.75rem;
+  margin-bottom: var(--saho-space-2);  /* 16px - rounded from 12px */
 }
 
-/* Legacy button class - kept for backwards compatibility during migration */
+/* Legacy button class - Inherits from unified button system */
 /* TODO: Migrate templates to use saho-button component with variant: 'card-action' */
 .saho-card-button {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;  /* 8px 16px - rounded from 6.4px */
-  background: transparent;
-  border: 1px solid var(--card-color-primary);
-  border-radius: 1.25rem;  /* 20px */
-  color: var(--card-color-primary);
-  font-size: 0.875rem;
-  font-weight: 500;
+  gap: var(--saho-space-1);                /* 8px */
+  padding: var(--saho-button-padding-sm-y) var(--saho-button-padding-sm-x);  /* 8px 16px */
+  background: var(--saho-button-secondary-bg);  /* transparent */
+  border: var(--saho-button-border-width) solid var(--saho-button-secondary-border);
+  border-radius: var(--saho-radius-pill);  /* 9999px - pill shape */
+  color: var(--saho-button-secondary-text);
+  font-size: var(--saho-button-font-size-sm);
+  font-weight: var(--saho-button-font-weight);
   text-decoration: none;
   transition: var(--card-transition-base);
   cursor: pointer;
@@ -329,14 +339,14 @@
 
 .saho-card-button:hover,
 .saho-card-link:hover .saho-card-button {
-  background: var(--card-color-primary);
-  color: var(--card-text-white);
-  transform: translateX(0.25rem);  /* 4px - rounded from 3px */
+  background: var(--saho-button-secondary-bg-hover);
+  color: var(--saho-button-secondary-text-hover);
+  transform: translateX(var(--saho-space-1));  /* 8px - rounded from 4px */
 }
 
 .saho-card-button svg {
-  width: 1rem;  /* 16px - rounded from 14px */
-  height: 1rem;  /* 16px - rounded from 14px */
+  width: var(--saho-space-2);   /* 16px */
+  height: var(--saho-space-2);  /* 16px */
   transition: var(--card-transition-base);
 }
 
@@ -347,7 +357,7 @@
 
 .saho-card__badges {
   display: flex;
-  gap: 0.25rem;
+  gap: var(--saho-space-1);  /* 8px - rounded from 4px */
   flex-wrap: wrap;
 }
 
@@ -415,15 +425,15 @@
 
   .saho-card-title,
   .saho-card__title {
-    font-size: 1rem;
+    font-size: var(--saho-font-size-base);  /* 16px */
   }
 
   .saho-card__meta {
-    font-size: 0.8125rem;
+    font-size: var(--saho-font-size-xs);  /* 12px */
   }
 
   .saho-card:hover {
-    transform: translateY(-4px);
+    transform: translateY(-8px);  /* Consistent with desktop - 8px baseline */
   }
 
   .saho-card--small .saho-card__img,
