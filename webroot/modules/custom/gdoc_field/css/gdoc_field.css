@@ -2,18 +2,16 @@
  * @file
  * Google Docs Field component styles.
  *
- * Component-scoped design tokens using inline CSS custom properties.
- * No external variable dependencies.
+ * Uses SAHO unified design token system for consistent admin interface styling.
+ * All tokens inherit from the centralized --saho-* system defined in
+ * /webroot/themes/custom/saho/src/scss/abstracts/_design-tokens.scss
  */
 
 .gdoc-field {
-  /* Inline design tokens */
+  /* Component-scoped tokens using SAHO system */
   --gdoc-margin-horizontal: 10%;
   --gdoc-width: 80%;
   --gdoc-height: 400px;
-  --gdoc-border-width: 1px;
-  --gdoc-border-style: solid;
-  --gdoc-border-color: #000000;
 
   /* Layout */
   margin-left: var(--gdoc-margin-horizontal);
@@ -21,26 +19,20 @@
   width: var(--gdoc-width);
   height: var(--gdoc-height);
 
-  /* Visual */
-  border: var(--gdoc-border-width) var(--gdoc-border-style) var(--gdoc-border-color);
+  /* Visual - using SAHO border tokens */
+  border: 1px solid var(--saho-color-text-primary);
+  border-radius: var(--saho-radius-sm);
 }
 
 .gdoc-filename {
-  /* Inline design tokens */
-  --gdoc-filename-margin-top: 0;
-  --gdoc-filename-margin-bottom: 1.5em;
-  --gdoc-filename-font-family: serif;
-  --gdoc-filename-font-style: italic;
-  --gdoc-filename-font-size: 80%;
-  --gdoc-filename-text-align: center;
+  /* Layout - using SAHO spacing tokens */
+  margin-top: 0;
+  margin-bottom: var(--saho-space-3);
 
-  /* Layout */
-  margin-top: var(--gdoc-filename-margin-top);
-  margin-bottom: var(--gdoc-filename-margin-bottom);
-
-  /* Typography */
-  font-style: var(--gdoc-filename-font-style);
-  font-family: var(--gdoc-filename-font-family);
-  font-size: var(--gdoc-filename-font-size);
-  text-align: var(--gdoc-filename-text-align);
+  /* Typography - using SAHO typography tokens */
+  font-style: italic;
+  font-family: serif;
+  font-size: var(--saho-font-size-sm);
+  text-align: center;
+  color: var(--saho-color-text-muted);
 }
