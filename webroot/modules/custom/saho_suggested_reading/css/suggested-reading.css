@@ -1,64 +1,57 @@
 /**
- * Enhanced suggested reading styles - Mobile First Approach
- * Uses inline CSS custom properties with --suggested-* prefix
- * No external dependencies - all design tokens defined inline
+ * @file
+ * Suggested reading component styles for SAHO
+ * Uses unified token system with --reading-* scoped tokens
+ * Inherits from --saho-* base tokens for consistency
+ * Mobile-first responsive design with accessibility
  */
 
 /* Base mobile styles (320px+) */
 .saho-suggested-reading-enhanced .saho-cards-grid {
-  /* Inline design tokens - Grid system */
-  --suggested-grid-gap-mobile: 1rem;
-  --suggested-grid-gap-small: 0.75rem;
-  --suggested-grid-gap-tablet: 1.25rem;
-  --suggested-grid-gap-desktop: 1.5rem;
-  --suggested-grid-padding-mobile: 0.5rem;
-  --suggested-grid-padding-tablet: 1rem;
-  --suggested-grid-padding-desktop: 1.5rem;
+  /* Component-scoped tokens inheriting from unified system */
+  --reading-grid-gap: var(--saho-space-2);  /* 16px mobile */
+  --reading-grid-padding: var(--saho-space-1);  /* 8px mobile */
 
   display: grid;
   grid-template-columns: 1fr;
-  gap: var(--suggested-grid-gap-mobile);
-  padding: 0 var(--suggested-grid-padding-mobile);
+  gap: var(--reading-grid-gap);
+  padding: 0 var(--reading-grid-padding);
   min-height: auto;
 }
 
 /* Mobile card styling */
 .saho-suggested-reading-enhanced .saho-card {
-  /* Inline design tokens - Card appearance */
-  --suggested-card-bg: #ffffff;
-  --suggested-card-radius: 12px;
-  --suggested-card-border-color: #e5e7eb;
-  --suggested-card-border-hover: #990000;
-  --suggested-card-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  --suggested-card-shadow-hover: 0 8px 25px rgba(0, 0, 0, 0.15);
-  --suggested-card-shadow-active: 0 2px 8px rgba(0, 0, 0, 0.15);
-  --suggested-card-min-height-mobile: 280px;
-  --suggested-card-min-height-small: 260px;
-  --suggested-card-min-height-tablet: 320px;
-  --suggested-card-min-height-desktop: 350px;
+  /* Component-scoped tokens inheriting from unified system */
+  --reading-card-bg: var(--saho-color-white);
+  --reading-card-radius: var(--saho-radius-md);  /* 8px */
+  --reading-card-border-color: var(--saho-color-border);
+  --reading-card-border-hover: var(--saho-color-primary);
+  --reading-card-shadow: var(--saho-shadow-sm);
+  --reading-card-shadow-hover: var(--saho-shadow-hover);
+  --reading-card-min-height: 280px;
 
-  /* Inline design tokens - Touch feedback */
-  --suggested-touch-highlight: rgba(153, 0, 0, 0.1);
-  --suggested-touch-scale: 0.98;
+  /* Touch feedback tokens */
+  --reading-touch-highlight: rgba(153, 0, 0, 0.1);
+  --reading-touch-scale: 0.98;
 
   display: flex;
   flex-direction: column;
-  background: var(--suggested-card-bg);
-  border-radius: var(--suggested-card-radius);
+  background: var(--reading-card-bg);
+  border-radius: var(--reading-card-radius);
   overflow: hidden;
-  box-shadow: var(--suggested-card-shadow);
-  border: 1px solid var(--suggested-card-border-color);
-  transition: all 0.3s ease;
-  min-height: var(--suggested-card-min-height-mobile);
-  margin-bottom: 0.5rem;
+  box-shadow: var(--reading-card-shadow);
+  border: 1px solid var(--reading-card-border-color);
+  transition: var(--saho-transition-base);
+  min-height: var(--reading-card-min-height);
+  margin-bottom: var(--saho-space-1);
 
   /* Enhanced touch targets for mobile */
-  -webkit-tap-highlight-color: var(--suggested-touch-highlight);
+  -webkit-tap-highlight-color: var(--reading-touch-highlight);
 }
 
 .saho-suggested-reading-enhanced .saho-card-link {
-  /* Inline design tokens - Link transitions */
-  --suggested-link-transition: 0.2s ease;
+  /* Component-scoped tokens */
+  --reading-link-transition: var(--saho-transition-fast);
 
   display: flex;
   flex-direction: column;
@@ -66,17 +59,17 @@
   text-decoration: none;
   color: inherit;
   padding: 0;
-  border-radius: var(--suggested-card-radius);
+  border-radius: var(--reading-card-radius);
   overflow: hidden;
 
   /* Enhanced touch feedback */
-  transition: transform var(--suggested-link-transition), box-shadow var(--suggested-link-transition);
+  transition: transform var(--reading-link-transition), box-shadow var(--reading-link-transition);
 }
 
 /* Mobile touch interactions */
 .saho-suggested-reading-enhanced .saho-card-link:active {
-  transform: scale(var(--suggested-touch-scale));
-  box-shadow: var(--suggested-card-shadow-active);
+  transform: scale(var(--reading-touch-scale));
+  box-shadow: var(--saho-shadow-sm);
 }
 
 /* Prioritize cards with images */
@@ -86,169 +79,148 @@
 
 /* Mobile-optimized image display */
 .saho-suggested-reading-enhanced .saho-card-image {
-  /* Inline design tokens - Image dimensions */
-  --suggested-image-height-mobile: 160px;
-  --suggested-image-height-small: 140px;
-  --suggested-image-height-large-mobile: 150px;
-  --suggested-image-height-tablet: 170px;
-  --suggested-image-height-desktop: 200px;
-  --suggested-image-height-landscape: 120px;
+  /* Component-scoped tokens inheriting from unified system */
+  --reading-image-height: 160px;  /* Mobile height */
+  --reading-image-bg: var(--saho-color-surface-alt);
+  --reading-image-scale-hover: 1.03;
+  --reading-image-scale-active: 1.02;
 
-  /* Inline design tokens - Image background */
-  --suggested-image-bg-gradient: linear-gradient(135deg, #f0f0f0 0%, #e0e0e0 100%);
-  --suggested-image-scale-hover: 1.03;
-  --suggested-image-scale-active: 1.02;
-
-  height: var(--suggested-image-height-mobile);
+  height: var(--reading-image-height);
   overflow: hidden;
-  background: var(--suggested-image-bg-gradient);
+  background: var(--reading-image-bg);
   position: relative;
 }
 
 .saho-suggested-reading-enhanced .saho-card-image img {
-  /* Inline design tokens - Image transitions */
-  --suggested-image-transition: transform 0.3s ease;
+  /* Component-scoped tokens */
+  --reading-image-transition: transform 0.3s ease;
 
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: var(--suggested-image-transition);
+  transition: var(--reading-image-transition);
 }
 
 /* Subtle hover/touch effect */
 .saho-suggested-reading-enhanced .saho-card-link:hover .saho-card-image img,
 .saho-suggested-reading-enhanced .saho-card-link:focus .saho-card-image img {
-  transform: scale(var(--suggested-image-scale-hover));
+  transform: scale(var(--reading-image-scale-hover));
 }
 
 /* Mobile content styling */
 .saho-suggested-reading-enhanced .saho-card-content {
-  /* Inline design tokens - Content spacing */
-  --suggested-content-padding-mobile: 1rem;
-  --suggested-content-padding-small: 0.875rem;
-  --suggested-content-padding-tiny: 0.75rem;
+  /* Component-scoped tokens inheriting from unified system */
+  --reading-content-padding: var(--saho-space-2);  /* 16px */
 
-  padding: var(--suggested-content-padding-mobile);
+  padding: var(--reading-content-padding);
   flex: 1;
   display: flex;
   flex-direction: column;
 }
 
 .saho-suggested-reading-enhanced .saho-card-title {
-  /* Inline design tokens - Typography */
-  --suggested-title-color: #374151;
-  --suggested-title-size-mobile: 1rem;
-  --suggested-title-size-small: 0.9375rem;
-  --suggested-title-weight: 600;
-  --suggested-title-line-height: 1.3;
-  --suggested-title-letter-spacing: -0.01em;
-  --suggested-title-margin: 0 0 0.5rem 0;
-  --suggested-title-transition: color 0.2s ease;
+  /* Component-scoped tokens inheriting from unified system */
+  --reading-title-color: var(--saho-color-text-primary);
+  --reading-title-size: var(--saho-font-size-base);  /* 16px mobile */
+  --reading-title-weight: var(--saho-font-weight-semibold);
+  --reading-title-line-height: var(--saho-line-height-tight);
+  --reading-title-margin: 0 0 var(--saho-space-1) 0;
 
-  font-size: var(--suggested-title-size-mobile);
-  font-weight: var(--suggested-title-weight);
-  line-height: var(--suggested-title-line-height);
-  color: var(--suggested-title-color);
-  margin: var(--suggested-title-margin);
-  transition: var(--suggested-title-transition);
-
-  /* Better touch readability */
-  letter-spacing: var(--suggested-title-letter-spacing);
+  font-size: var(--reading-title-size);
+  font-weight: var(--reading-title-weight);
+  line-height: var(--reading-title-line-height);
+  color: var(--reading-title-color);
+  margin: var(--reading-title-margin);
+  transition: var(--saho-transition-fast);
 }
 
 .saho-suggested-reading-enhanced .saho-card-description {
-  /* Inline design tokens - Description text */
-  --suggested-description-color: #6b7280;
-  --suggested-description-size-mobile: 0.875rem;
-  --suggested-description-size-small: 0.8125rem;
-  --suggested-description-line-height-mobile: 1.4;
-  --suggested-description-line-height-retina: 1.5;
-  --suggested-description-margin: 0 0 auto 0;
+  /* Component-scoped tokens inheriting from unified system */
+  --reading-description-color: var(--saho-color-text-secondary);
+  --reading-description-size: var(--saho-font-size-sm);  /* 14px */
+  --reading-description-line-height: var(--saho-line-height-normal);
+  --reading-description-margin: 0 0 auto 0;
 
-  font-size: var(--suggested-description-size-mobile);
-  line-height: var(--suggested-description-line-height-mobile);
-  color: var(--suggested-description-color);
-  margin: var(--suggested-description-margin);
+  font-size: var(--reading-description-size);
+  line-height: var(--reading-description-line-height);
+  color: var(--reading-description-color);
+  margin: var(--reading-description-margin);
   flex-grow: 1;
 }
 
-/* All cards now have images - removed image-less card styles */
-
 /* Mobile button styling */
 .saho-suggested-reading-enhanced .saho-card-footer {
-  /* Inline design tokens - Footer spacing */
-  --suggested-footer-margin-top: 0.75rem;
-  --suggested-footer-padding-top: 0.75rem;
-  --suggested-footer-border-color: #f3f4f6;
+  /* Component-scoped tokens inheriting from unified system */
+  --reading-footer-margin-top: var(--saho-space-2);
+  --reading-footer-padding-top: var(--saho-space-2);
+  --reading-footer-border-color: var(--saho-color-border-light);
 
-  margin-top: var(--suggested-footer-margin-top);
-  padding-top: var(--suggested-footer-padding-top);
-  border-top: 1px solid var(--suggested-footer-border-color);
+  margin-top: var(--reading-footer-margin-top);
+  padding-top: var(--reading-footer-padding-top);
+  border-top: 1px solid var(--reading-footer-border-color);
 }
 
 .saho-suggested-reading-enhanced .saho-card-button {
-  /* Inline design tokens - SAHO brand colors */
-  --suggested-button-color-primary: #990000;
-  --suggested-button-color-hover: #b30000;
-  --suggested-button-size: 0.875rem;
-  --suggested-button-weight: 500;
-  --suggested-button-padding: 0.25rem 0;
-  --suggested-button-min-height: 44px;
-  --suggested-button-transition: all 0.2s ease;
+  /* Component-scoped tokens inheriting from button system */
+  --reading-button-color: var(--saho-button-ghost-text);
+  --reading-button-color-hover: var(--saho-button-ghost-text-hover);
+  --reading-button-size: var(--saho-font-size-sm);  /* 14px */
+  --reading-button-weight: var(--saho-font-weight-medium);
+  --reading-button-padding: 0.25rem 0;
+  --reading-button-min-height: 44px;  /* Touch target */
 
   display: inline-flex;
   align-items: center;
-  font-size: var(--suggested-button-size);
-  font-weight: var(--suggested-button-weight);
-  color: var(--suggested-button-color-primary);
-  transition: var(--suggested-button-transition);
+  font-size: var(--reading-button-size);
+  font-weight: var(--reading-button-weight);
+  color: var(--reading-button-color);
+  transition: var(--saho-button-transition);
 
   /* Enhanced touch target */
-  padding: var(--suggested-button-padding);
-  min-height: var(--suggested-button-min-height);
+  padding: var(--reading-button-padding);
+  min-height: var(--reading-button-min-height);
   justify-content: flex-start;
 }
 
 .saho-suggested-reading-enhanced .saho-card-button svg {
-  /* Inline design tokens - Icon styling */
-  --suggested-icon-margin: 0.5rem;
-  --suggested-icon-size: 14px;
-  --suggested-icon-transition: transform 0.2s ease;
-  --suggested-icon-translate-hover: 2px;
+  /* Component-scoped tokens */
+  --reading-icon-margin: var(--saho-space-1);
+  --reading-icon-size: 14px;
+  --reading-icon-translate-hover: 2px;
 
-  margin-left: var(--suggested-icon-margin);
-  width: var(--suggested-icon-size);
-  height: var(--suggested-icon-size);
-  transition: var(--suggested-icon-transition);
+  margin-left: var(--reading-icon-margin);
+  width: var(--reading-icon-size);
+  height: var(--reading-icon-size);
+  transition: var(--saho-transition-fast);
 }
 
 .saho-suggested-reading-enhanced .saho-card-link:hover .saho-card-button,
 .saho-suggested-reading-enhanced .saho-card-link:focus .saho-card-button {
-  color: var(--suggested-button-color-hover);
+  color: var(--reading-button-color-hover);
 }
 
 .saho-suggested-reading-enhanced .saho-card-link:hover .saho-card-button svg,
 .saho-suggested-reading-enhanced .saho-card-link:focus .saho-card-button svg {
-  transform: translateX(var(--suggested-icon-translate-hover));
+  transform: translateX(var(--reading-icon-translate-hover));
 }
 
 /* Loading placeholder for dynamic content */
 .saho-suggested-reading-enhanced.loading .saho-cards-grid::before {
-  /* Inline design tokens - Loading spinner */
-  --suggested-spinner-size: 40px;
-  --suggested-spinner-border: 3px;
-  --suggested-spinner-color-bg: #f3f3f3;
-  --suggested-spinner-color-active: #990000;
+  /* Component-scoped tokens */
+  --reading-spinner-size: 40px;
+  --reading-spinner-border: 3px;
+  --reading-spinner-color-bg: var(--saho-color-surface-alt);
+  --reading-spinner-color-active: var(--saho-color-primary);
 
   content: '';
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: var(--suggested-spinner-size);
-  height: var(--suggested-spinner-size);
-  border: var(--suggested-spinner-border) solid var(--suggested-spinner-color-bg);
-  border-top: var(--suggested-spinner-border) solid var(--suggested-spinner-color-active);
+  width: var(--reading-spinner-size);
+  height: var(--reading-spinner-size);
+  border: var(--reading-spinner-border) solid var(--reading-spinner-color-bg);
+  border-top: var(--reading-spinner-border) solid var(--reading-spinner-color-active);
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -260,25 +232,25 @@
 
 /* Touch interaction states */
 .saho-suggested-reading-enhanced .saho-card-link.touch-active {
-  /* Inline design tokens - Touch active state */
-  --suggested-touch-shadow: 0 2px 8px rgba(153, 0, 0, 0.2);
+  /* Component-scoped tokens */
+  --reading-touch-shadow: 0 2px 8px rgba(153, 0, 0, 0.2);
 
-  transform: scale(var(--suggested-touch-scale));
-  box-shadow: var(--suggested-touch-shadow);
+  transform: scale(var(--reading-touch-scale));
+  box-shadow: var(--reading-touch-shadow);
 }
 
 .saho-suggested-reading-enhanced .touch-active .saho-card-image img {
-  transform: scale(var(--suggested-image-scale-active));
+  transform: scale(var(--reading-image-scale-active));
 }
 
 /* Lazy loading states */
 .saho-suggested-reading-enhanced .saho-card-image img.lazy-loading {
-  /* Inline design tokens - Loading pattern */
-  --suggested-loading-pattern: linear-gradient(135deg, #f0f0f0 25%, transparent 25%, transparent 50%, #f0f0f0 50%, #f0f0f0 75%, transparent 75%, transparent);
-  --suggested-loading-size: 20px;
+  /* Component-scoped tokens */
+  --reading-loading-pattern: linear-gradient(135deg, #f0f0f0 25%, transparent 25%, transparent 50%, #f0f0f0 50%, #f0f0f0 75%, transparent 75%, transparent);
+  --reading-loading-size: 20px;
 
-  background: var(--suggested-loading-pattern);
-  background-size: var(--suggested-loading-size) var(--suggested-loading-size);
+  background: var(--reading-loading-pattern);
+  background-size: var(--reading-loading-size) var(--reading-loading-size);
   animation: loading-shimmer 1.5s infinite;
 }
 
@@ -298,17 +270,16 @@
 
 /* Horizontal scroll styles for mobile */
 .saho-suggested-reading-enhanced .saho-cards-grid.horizontal-scroll {
-  /* Inline design tokens - Scrollbar styling */
-  --suggested-scrollbar-color-thumb: #990000;
-  --suggested-scrollbar-color-track: #f1f5f9;
-  --suggested-scrollbar-width: thin;
+  /* Component-scoped tokens */
+  --reading-scrollbar-color-thumb: var(--saho-color-primary);
+  --reading-scrollbar-color-track: var(--saho-color-surface-alt);
 
   overflow-x: auto;
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
-  scrollbar-width: var(--suggested-scrollbar-width);
-  scrollbar-color: var(--suggested-scrollbar-color-thumb) var(--suggested-scrollbar-color-track);
-  padding-bottom: 1rem;
+  scrollbar-width: thin;
+  scrollbar-color: var(--reading-scrollbar-color-thumb) var(--reading-scrollbar-color-track);
+  padding-bottom: var(--saho-space-2);
 }
 
 .saho-suggested-reading-enhanced .saho-cards-grid.horizontal-scroll .saho-card {
@@ -321,10 +292,6 @@
 }
 
 /* Mobile viewport adjustments */
-.saho-suggested-reading-enhanced .saho-cards-grid.mobile-optimized {
-  padding: 0 1rem;
-}
-
 .saho-suggested-reading-enhanced .saho-cards-grid.in-viewport {
   animation: slide-up 0.6s ease;
 }
@@ -342,16 +309,12 @@
 
 /* Mobile section headers */
 .saho-suggested-reading-enhanced .saho-related-content-section {
-  /* Inline design tokens - Section spacing */
-  --suggested-section-margin-mobile: 1.5rem;
-  --suggested-section-margin-tablet: 2rem;
-  --suggested-section-margin-desktop: 2.5rem;
-  --suggested-section-padding-mobile: 0.5rem;
-  --suggested-section-padding-tablet: 1rem;
-  --suggested-section-padding-desktop: 1.5rem;
+  /* Component-scoped tokens inheriting from unified system */
+  --reading-section-margin: var(--saho-space-3);  /* 24px */
+  --reading-section-padding: var(--saho-space-1);  /* 8px mobile */
 
-  margin-bottom: var(--suggested-section-margin-mobile);
-  padding: 0 var(--suggested-section-padding-mobile);
+  margin-bottom: var(--reading-section-margin);
+  padding: 0 var(--reading-section-padding);
 }
 
 .saho-suggested-reading-enhanced .saho-related-content-section:last-child {
@@ -359,93 +322,54 @@
 }
 
 .saho-suggested-reading-enhanced .saho-related-content-section h4 {
-  /* Inline design tokens - Section header styling */
-  --suggested-heading-color: #990000;
-  --suggested-heading-bg: linear-gradient(135deg, #fef2f2 0%, #fef7f7 100%);
-  --suggested-heading-border-color: #990000;
-  --suggested-heading-border-width: 4px;
-  --suggested-heading-size-mobile: 1.125rem;
-  --suggested-heading-size-tiny: 1rem;
-  --suggested-heading-size-tablet: 1.25rem;
-  --suggested-heading-size-desktop: 1.5rem;
-  --suggested-heading-weight: 700;
-  --suggested-heading-margin: 0 0 1rem 0;
-  --suggested-heading-padding-mobile: 0.75rem 1rem;
-  --suggested-heading-padding-tiny: 0.625rem 0.75rem;
-  --suggested-heading-padding-tablet: 1rem 1.25rem;
-  --suggested-heading-radius: 8px;
+  /* Component-scoped tokens inheriting from unified system */
+  --reading-heading-color: var(--saho-color-primary);
+  --reading-heading-bg: var(--saho-color-surface-alt);
+  --reading-heading-border-color: var(--saho-color-primary);
+  --reading-heading-border-width: 4px;
+  --reading-heading-size: var(--saho-font-size-md);  /* 18px mobile */
+  --reading-heading-weight: var(--saho-font-weight-bold);
+  --reading-heading-margin: 0 0 var(--saho-space-2) 0;
+  --reading-heading-padding: var(--saho-space-2);  /* 16px */
+  --reading-heading-radius: var(--saho-radius-md);
 
-  font-size: var(--suggested-heading-size-mobile);
-  font-weight: var(--suggested-heading-weight);
-  color: var(--suggested-heading-color);
-  margin: var(--suggested-heading-margin);
-  padding: var(--suggested-heading-padding-mobile);
-  background: var(--suggested-heading-bg);
-  border-radius: var(--suggested-heading-radius);
-  border-left: var(--suggested-heading-border-width) solid var(--suggested-heading-border-color);
-}
-
-/* Mobile horizontal scroll for many items */
-.saho-suggested-reading-enhanced .saho-cards-scroll-container {
-  /* Inline design tokens - Scroll container */
-  --suggested-scroll-padding: 0 0.5rem 1rem 0.5rem;
-  --suggested-scroll-margin: 0 -0.5rem;
-
-  overflow-x: auto;
-  overflow-y: visible;
-  padding: var(--suggested-scroll-padding);
-  margin: var(--suggested-scroll-margin);
-
-  /* Smooth scrolling */
-  scroll-behavior: smooth;
-  -webkit-overflow-scrolling: touch;
-}
-
-.saho-suggested-reading-enhanced .saho-cards-scroll-container::-webkit-scrollbar {
-  /* Inline design tokens - Webkit scrollbar */
-  --suggested-scrollbar-height: 4px;
-  --suggested-scrollbar-radius: 2px;
-
-  height: var(--suggested-scrollbar-height);
-}
-
-.saho-suggested-reading-enhanced .saho-cards-scroll-container::-webkit-scrollbar-track {
-  background: var(--suggested-scrollbar-color-track);
-  border-radius: var(--suggested-scrollbar-radius);
-}
-
-.saho-suggested-reading-enhanced .saho-cards-scroll-container::-webkit-scrollbar-thumb {
-  background: var(--suggested-scrollbar-color-thumb);
-  border-radius: var(--suggested-scrollbar-radius);
+  font-size: var(--reading-heading-size);
+  font-weight: var(--reading-heading-weight);
+  color: var(--reading-heading-color);
+  margin: var(--reading-heading-margin);
+  padding: var(--reading-heading-padding);
+  background: var(--reading-heading-bg);
+  border-radius: var(--reading-heading-radius);
+  border-left: var(--reading-heading-border-width) solid var(--reading-heading-border-color);
 }
 
 /* Small mobile phones (320px - 479px) */
 @media (max-width: 479px) {
   .saho-suggested-reading-enhanced .saho-cards-grid {
     grid-template-columns: 1fr;
-    gap: var(--suggested-grid-gap-small);
+    gap: var(--saho-space-1);
     padding: 0;
   }
 
   .saho-suggested-reading-enhanced .saho-card {
-    min-height: var(--suggested-card-min-height-small);
+    min-height: 260px;
     margin-bottom: 0;
   }
 
   .saho-suggested-reading-enhanced .saho-card-image {
-    height: var(--suggested-image-height-small);
+    --reading-image-height: 140px;
   }
 
   .saho-suggested-reading-enhanced .saho-card-content {
-    padding: var(--suggested-content-padding-small);
+    padding: var(--saho-space-1);
   }
 
   .saho-suggested-reading-enhanced .saho-card-title {
-    font-size: var(--suggested-title-size-small);
+    font-size: 0.9375rem;
   }
 
   .saho-suggested-reading-enhanced .saho-card-description {
-    font-size: var(--suggested-description-size-small);
+    font-size: 0.8125rem;
   }
 
   .saho-suggested-reading-enhanced .saho-related-content-section {
@@ -457,7 +381,7 @@
 @media (min-width: 480px) and (max-width: 767px) {
   .saho-suggested-reading-enhanced .saho-cards-grid {
     grid-template-columns: repeat(2, 1fr);
-    gap: var(--suggested-grid-gap-mobile);
+    gap: var(--saho-space-2);
   }
 
   .saho-suggested-reading-enhanced .saho-card {
@@ -465,7 +389,7 @@
   }
 
   .saho-suggested-reading-enhanced .saho-card-image {
-    height: var(--suggested-image-height-large-mobile);
+    --reading-image-height: 150px;
   }
 }
 
@@ -473,86 +397,74 @@
 @media (min-width: 768px) and (max-width: 1023px) {
   .saho-suggested-reading-enhanced .saho-cards-grid {
     grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: var(--suggested-grid-gap-tablet);
-    padding: 0 var(--suggested-grid-padding-tablet);
+    gap: var(--saho-space-3);  /* 24px */
+    padding: 0 var(--saho-space-2);
   }
 
   .saho-suggested-reading-enhanced .saho-card {
-    min-height: var(--suggested-card-min-height-tablet);
+    min-height: 320px;
   }
 
   .saho-suggested-reading-enhanced .saho-card-image {
-    height: var(--suggested-image-height-tablet);
+    --reading-image-height: 170px;
   }
 
   .saho-suggested-reading-enhanced .saho-related-content-section {
-    margin-bottom: var(--suggested-section-margin-tablet);
-    padding: 0 var(--suggested-section-padding-tablet);
+    margin-bottom: var(--saho-space-4);
+    padding: 0 var(--saho-space-2);
   }
 
   .saho-suggested-reading-enhanced .saho-related-content-section h4 {
-    font-size: var(--suggested-heading-size-tablet);
-    padding: var(--suggested-heading-padding-tablet);
+    font-size: var(--saho-font-size-lg);  /* 20px */
+    padding: var(--saho-space-2) var(--saho-space-3);
   }
 }
 
 /* Desktop (1024px+) */
 @media (min-width: 1024px) {
   .saho-suggested-reading-enhanced .saho-cards-grid {
-    /* Inline design tokens - Desktop grid */
-    --suggested-grid-min-height-desktop: 200px;
-
     grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-    gap: var(--suggested-grid-gap-desktop);
-    padding: 0 var(--suggested-grid-padding-desktop);
-    min-height: var(--suggested-grid-min-height-desktop);
+    gap: var(--saho-space-4);  /* 32px */
+    padding: 0 var(--saho-space-3);
+    min-height: 200px;
   }
 
   .saho-suggested-reading-enhanced .saho-card {
-    min-height: var(--suggested-card-min-height-desktop);
+    min-height: 350px;
   }
 
   .saho-suggested-reading-enhanced .saho-card-image {
-    height: var(--suggested-image-height-desktop);
+    --reading-image-height: 200px;
   }
 
   /* For single item, limit width */
   .saho-suggested-reading-enhanced .saho-cards-grid:has(.saho-card:only-child) {
-    /* Inline design tokens - Single card layout */
-    --suggested-single-max-width: 500px;
-
     grid-template-columns: 1fr;
-    max-width: var(--suggested-single-max-width);
+    max-width: 500px;
     margin: 0 auto;
   }
 
   /* For two items, show side by side */
   .saho-suggested-reading-enhanced .saho-cards-grid:has(.saho-card:nth-child(2):last-child) {
-    /* Inline design tokens - Two card layout */
-    --suggested-two-max-width: 900px;
-
     grid-template-columns: repeat(2, 1fr);
-    max-width: var(--suggested-two-max-width);
+    max-width: 900px;
     margin: 0 auto;
   }
 
   .saho-suggested-reading-enhanced .saho-related-content-section {
-    margin-bottom: var(--suggested-section-margin-desktop);
-    padding: 0 var(--suggested-section-padding-desktop);
+    margin-bottom: var(--saho-space-5);
+    padding: 0 var(--saho-space-3);
   }
 
   .saho-suggested-reading-enhanced .saho-related-content-section h4 {
-    font-size: var(--suggested-heading-size-desktop);
+    font-size: var(--saho-font-size-xl);  /* 24px */
   }
 
   /* Hover effects for non-touch devices */
   .saho-suggested-reading-enhanced .saho-card:hover {
-    /* Inline design tokens - Desktop hover effects */
-    --suggested-hover-translate: -3px;
-
-    transform: translateY(var(--suggested-hover-translate));
-    box-shadow: var(--suggested-card-shadow-hover);
-    border-color: var(--suggested-card-border-hover);
+    transform: translateY(-3px);
+    box-shadow: var(--reading-card-shadow-hover);
+    border-color: var(--reading-card-border-hover);
   }
 }
 
@@ -561,48 +473,28 @@
   /* Remove hover effects on touch devices */
   .saho-suggested-reading-enhanced .saho-card:hover {
     transform: none;
-    box-shadow: var(--suggested-card-shadow);
+    box-shadow: var(--reading-card-shadow);
   }
 
   /* Ensure touch targets are at least 44px */
   .saho-suggested-reading-enhanced .saho-card-link {
-    min-height: var(--suggested-button-min-height);
-  }
-
-  /* Better spacing for mobile section headers */
-  .saho-context-bottom > h3 {
-    /* Inline design tokens - Context section */
-    --suggested-context-heading-size: 1.5rem;
-    --suggested-context-heading-padding: 1rem 0.5rem;
-    --suggested-context-heading-margin: 1.5rem;
-    --suggested-context-before-size: 0.75rem;
-
-    font-size: var(--suggested-context-heading-size);
-    padding: var(--suggested-context-heading-padding);
-    margin-bottom: var(--suggested-context-heading-margin);
-  }
-
-  .saho-context-bottom > h3::before {
-    font-size: var(--suggested-context-before-size);
+    min-height: var(--reading-button-min-height);
   }
 }
 
 /* Landscape mobile optimizations */
 @media (max-width: 767px) and (orientation: landscape) {
   .saho-suggested-reading-enhanced .saho-card {
-    /* Inline design tokens - Landscape adjustments */
-    --suggested-card-min-height-landscape: 240px;
-
-    min-height: var(--suggested-card-min-height-landscape);
+    min-height: 240px;
   }
 
   .saho-suggested-reading-enhanced .saho-card-image {
-    height: var(--suggested-image-height-landscape);
+    --reading-image-height: 120px;
   }
 
   .saho-suggested-reading-enhanced .saho-cards-grid {
     grid-template-columns: repeat(2, 1fr);
-    gap: var(--suggested-grid-gap-small);
+    gap: var(--saho-space-1);
   }
 }
 
@@ -610,27 +502,23 @@
 @media (-webkit-min-device-pixel-ratio: 2) and (max-width: 767px),
        (min-resolution: 192dpi) and (max-width: 767px) {
   .saho-suggested-reading-enhanced .saho-card-title {
-    /* Inline design tokens - Retina adjustments */
-    --suggested-title-weight-retina: 500;
-    --suggested-title-letter-spacing-retina: -0.005em;
-
-    font-weight: var(--suggested-title-weight-retina);
-    letter-spacing: var(--suggested-title-letter-spacing-retina);
+    font-weight: var(--saho-font-weight-medium);
+    letter-spacing: -0.005em;
   }
 
   .saho-suggested-reading-enhanced .saho-card-description {
-    line-height: var(--suggested-description-line-height-retina);
+    line-height: var(--saho-line-height-relaxed);
   }
 }
 
 /* Ensure accessibility on smaller screens */
 @media (max-width: 360px) {
   .saho-suggested-reading-enhanced .saho-card-content {
-    padding: var(--suggested-content-padding-tiny);
+    padding: 0.75rem;
   }
 
   .saho-suggested-reading-enhanced .saho-related-content-section h4 {
-    font-size: var(--suggested-heading-size-tiny);
-    padding: var(--suggested-heading-padding-tiny);
+    font-size: var(--saho-font-size-base);  /* 16px */
+    padding: 0.625rem 0.75rem;
   }
 }
