@@ -32,10 +32,13 @@
   --timeline-border-width: 2px;
   --timeline-border-width-thick: 4px;
 
-  --timeline-font-size-base: 1rem;
-  --timeline-font-size-sm: 0.875rem;
-  --timeline-font-size-lg: 1.25rem;
-  --timeline-font-size-xl: 1.5rem;
+  /* Typography tokens - inherit from unified fluid system */
+  --timeline-font-size-title: var(--saho-font-size-xl, 1.5rem);
+  --timeline-font-size-large: var(--saho-font-size-lg, 1.25rem);
+  --timeline-font-size-body: var(--saho-font-size-base, 1rem);
+  --timeline-font-size-small: var(--saho-font-size-sm, 0.875rem);
+  --timeline-line-height-heading: var(--saho-line-height-snug, 1.3);
+  --timeline-line-height-body: var(--saho-line-height-relaxed, 1.6);
 
   --timeline-transition-speed: 0.2s;
   --timeline-marker-size: 12px;
@@ -96,13 +99,14 @@
 
 .saho-timeline__period-title {
   margin: 0;
-  font-size: var(--timeline-font-size-xl);
+  font-size: var(--timeline-font-size-title);
+  line-height: var(--timeline-line-height-heading);
   font-weight: 600;
   color: var(--timeline-color-text-primary);
 }
 
 .saho-timeline__period-count {
-  font-size: var(--timeline-font-size-sm);
+  font-size: var(--timeline-font-size-small);
   color: var(--timeline-color-text-secondary);
 }
 
@@ -141,15 +145,15 @@
 .saho-timeline-event__date {
   display: inline-block;
   margin-bottom: var(--timeline-spacing-half);
-  font-size: var(--timeline-font-size-sm);
+  font-size: var(--timeline-font-size-small);
   font-weight: 500;
   color: var(--timeline-color-text-secondary);
 }
 
 .saho-timeline-event__title {
   margin: 0;
-  font-size: var(--timeline-font-size-lg);
-  line-height: 1.4;
+  font-size: var(--timeline-font-size-large);
+  line-height: var(--timeline-line-height-heading);
 }
 
 .saho-timeline-event__title a {
@@ -174,8 +178,9 @@
 
 .saho-timeline-event__body {
   margin: var(--timeline-spacing-base) 0;
+  font-size: var(--timeline-font-size-body);
   color: var(--timeline-color-text-muted);
-  line-height: 1.6;
+  line-height: var(--timeline-line-height-body);
 }
 
 .saho-timeline-event__tags {
@@ -196,7 +201,8 @@
 }
 
 .saho-timeline-event--compact .saho-timeline-event__title {
-  font-size: 1.1rem;
+  font-size: var(--saho-font-size-md, 1.125rem);
+  line-height: var(--timeline-line-height-heading);
 }
 
 /* Horizontal Timeline */
