@@ -30,8 +30,8 @@
 // Using self-hosted Inter fonts from _fonts.scss for better performance
 // Removed Google Fonts import to reduce render-blocking resources
 
-// Base typography
-body {
+// Base typography - scoped to front-end only (exclude admin interface)
+body:not(.path-admin):not(.toolbar-horizontal):not(.toolbar-vertical) {
   font-family: $font-family-sans-serif;
   font-weight: var(--saho-font-weight-regular);
   font-size: var(--saho-font-size-base);
@@ -39,6 +39,18 @@ body {
   color: $body-color;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+// Fallback for admin pages - use browser default
+// Simplified selectors that work with Gin admin theme
+body.path-admin,
+body[class*="gin-"] {
+  font-size: 1rem !important; // 16px - standard browser default, force override
+}
+
+// Toolbar needs smaller font size for proper display
+#toolbar-administration {
+  font-size: small !important;
 }
 
 // Headings - Unified fluid typography system
@@ -149,8 +161,9 @@ a {
   }
 }
 
-// Lists
-ul, ol {
+// Lists - scoped to front-end only (exclude admin interface)
+body:not(.path-admin):not(.toolbar-horizontal):not(.toolbar-vertical) ul,
+body:not(.path-admin):not(.toolbar-horizontal):not(.toolbar-vertical) ol {
   font-size: var(--saho-font-size-base);
   line-height: var(--saho-line-height-normal);
   margin-bottom: var(--saho-space-2);
@@ -159,6 +172,17 @@ ul, ol {
   li {
     margin-bottom: var(--saho-space-1);
   }
+}
+
+// Admin lists - use browser defaults
+body.path-admin ul,
+body.path-admin ol,
+body.toolbar-horizontal ul,
+body.toolbar-horizontal ol,
+body.toolbar-vertical ul,
+body.toolbar-vertical ol {
+  font-size: 1rem !important; // Standard browser default
+  line-height: 1.5 !important;
 }
 
 // Blockquotes
