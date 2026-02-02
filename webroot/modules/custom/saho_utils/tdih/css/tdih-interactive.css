@@ -1,38 +1,54 @@
 /**
  * CSS for the TDIH Interactive Block.
- * Modernized to use inline CSS custom properties - NO external dependencies.
+ * Modernized to use inline CSS custom properties inheriting from unified SAHO design tokens.
+ * All components are self-contained with NO external SCSS dependencies.
  */
 
 /* Main container */
 .tdih-interactive-block {
-  /* Inline design tokens - TDIH Interactive Block */
-  --tdih-color-primary: #990000; /* SAHO Deep Heritage Red */
-  --tdih-color-primary-dark: #8b0000; /* Darker red for hover states */
-  --tdih-color-brown-earth: #8b4513; /* African-themed brown */
-  --tdih-color-white: #ffffff;
-  --tdih-color-text-primary: #212529;
-  --tdih-color-text-secondary: #6c757d;
-  --tdih-gray-100: #f8f9fa;
-  --tdih-gray-200: #e9ecef;
-  --tdih-gray-300: #dee2e6;
-  --tdih-gray-600: #6c757d;
-  --tdih-gray-700: #495057;
-  --tdih-color-info: #0dcaf0;
-  --tdih-color-info-dark: #0aa2c0;
-  --tdih-spacing-xs: 0.25rem;
-  --tdih-spacing-sm: 0.5rem;
-  --tdih-spacing-md: 1rem;
-  --tdih-spacing-lg: 1.5rem;
-  --tdih-spacing-xl: 2rem;
-  --tdih-border-radius: 8px;
-  --tdih-border-radius-sm: 4px;
-  --tdih-border-radius-md: 8px;  /* 8px - rounded from 6px */
-  --tdih-shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);   /* Rounded 1px to 2px */
-  --tdih-shadow-md: 0 2px 4px rgba(0, 0, 0, 0.1);
-  --tdih-shadow-lg: 0 2px 8px rgba(0, 0, 0, 0.08);  /* Rounded 6px to 8px */
-  --tdih-shadow-hover: 0 4px 16px rgba(0, 0, 0, 0.12);  /* Rounded 12px to 16px */
-  --tdih-transition: all 0.3s ease;
-  --tdih-transition-fast: all 0.2s ease;
+  /* Component-scoped tokens - inherit from base SAHO design system */
+  /* Colors - map to unified SAHO color system */
+  --tdih-color-primary: var(--saho-color-primary);              /* Heritage red */
+  --tdih-color-primary-dark: var(--saho-color-primary-dark);    /* Darker red for hover */
+  --tdih-color-brown-earth: #8b4513;                            /* African-themed brown (component-specific) */
+  --tdih-color-white: var(--saho-color-white);
+  --tdih-color-text-primary: var(--saho-color-text-dark);
+  --tdih-color-text-secondary: var(--saho-color-text-light);
+  --tdih-gray-100: var(--saho-color-gray-100);
+  --tdih-gray-200: var(--saho-color-gray-200);
+  --tdih-gray-300: var(--saho-color-gray-300);
+  --tdih-gray-600: var(--saho-color-gray-600);
+  --tdih-gray-700: var(--saho-color-gray-700);
+  --tdih-color-info: #0dcaf0;                                   /* Bootstrap info color */
+  --tdih-color-info-dark: #0aa2c0;                              /* Darker info variant */
+
+  /* Spacing - use unified 8px baseline grid */
+  --tdih-spacing-xs: var(--saho-space-1);    /* 8px */
+  --tdih-spacing-sm: var(--saho-space-2);    /* 16px */
+  --tdih-spacing-md: var(--saho-space-2);    /* 16px */
+  --tdih-spacing-lg: var(--saho-space-3);    /* 24px */
+  --tdih-spacing-xl: var(--saho-space-4);    /* 32px */
+
+  /* Border radius - use unified scale */
+  --tdih-border-radius-sm: var(--saho-radius-sm);  /* 4px */
+  --tdih-border-radius-md: var(--saho-radius-md);  /* 8px */
+  --tdih-border-radius: var(--saho-radius-md);     /* 8px */
+
+  /* Shadows - use unified shadow system */
+  --tdih-shadow-sm: var(--saho-shadow-sm);
+  --tdih-shadow-md: var(--saho-shadow-md);
+  --tdih-shadow-lg: var(--saho-shadow-md);
+  --tdih-shadow-hover: 0 4px 16px var(--saho-color-black-alpha-15);
+
+  /* Transitions - use unified transition system */
+  --tdih-transition: var(--saho-transition-base);
+  --tdih-transition-fast: var(--saho-transition-fast);
+
+  /* Typography - use unified font size scale */
+  --tdih-font-size-title: var(--saho-font-size-xl);      /* 24-30px */
+  --tdih-font-size-date: var(--saho-font-size-sm);       /* 14-16px */
+  --tdih-font-size-body: var(--saho-font-size-base);     /* 16-18px */
+  --tdih-font-size-meta: var(--saho-font-size-xs);       /* 12-14px */
 
   max-width: 100%;
   margin-bottom: var(--tdih-spacing-xl);
@@ -49,13 +65,13 @@
 }
 
 .tdih-interactive-header h2 {
-  font-size: 1.8rem;
+  font-size: var(--tdih-font-size-title);
   margin-bottom: var(--tdih-spacing-sm);
   color: var(--tdih-color-text-primary);
 }
 
 .tdih-intro-text {
-  font-size: 1rem;
+  font-size: var(--tdih-font-size-body);
   color: var(--tdih-color-text-secondary);
   margin-bottom: var(--tdih-spacing-md);
 }
@@ -67,7 +83,7 @@
   border-radius: var(--tdih-border-radius-sm);
   color: var(--tdih-gray-600);
   cursor: pointer;
-  font-size: 0.9rem;
+  font-size: var(--tdih-font-size-date);
   margin-bottom: var(--tdih-spacing-md);
   padding: var(--tdih-spacing-sm) var(--tdih-spacing-md);
   transition: var(--tdih-transition-fast);
@@ -112,13 +128,13 @@
 }
 
 .tdih-birthday-title {
-  font-size: 1.4rem;
+  font-size: var(--saho-font-size-lg);
   margin-bottom: var(--tdih-spacing-sm);
   color: var(--tdih-color-text-primary);
 }
 
 .tdih-birthday-description {
-  font-size: 0.9rem;
+  font-size: var(--tdih-font-size-date);
   color: var(--tdih-color-text-secondary);
   margin-bottom: var(--tdih-spacing-md);
 }
@@ -152,7 +168,7 @@
 }
 
 .tdih-today-events h3 {
-  font-size: 1.4rem;
+  font-size: var(--saho-font-size-lg);
   margin-bottom: var(--tdih-spacing-md);
   color: var(--tdih-color-text-primary);
   border-bottom: 1px solid var(--tdih-gray-300);
@@ -179,19 +195,19 @@
   border-radius: var(--tdih-border-radius-md);
   padding: var(--tdih-spacing-md);
   margin-bottom: var(--tdih-spacing-xl) !important;
-  background-color: rgba(153, 0, 0, 0.05);
-  box-shadow: 0 3px 10px rgba(153, 0, 0, 0.2);
+  background-color: var(--saho-color-primary-alpha-10);
+  box-shadow: 0 4px 8px var(--saho-color-primary-alpha-20);
 }
 
 .tdih-exact-match::before {
   content: "Exact Date Match";
   position: absolute;
   top: -0.75rem;     /* -12px */
-  left: 0.5rem;      /* 8px - rounded from 10px */
+  left: 0.5rem;      /* 8px */
   background-color: var(--tdih-color-primary);
   color: var(--tdih-color-white);
-  font-size: 0.8rem;
-  padding: 0 0.5rem;  /* 0 8px - rounded from 2px 8px */
+  font-size: var(--tdih-font-size-meta);
+  padding: 0 var(--saho-space-1);
   border-radius: var(--tdih-border-radius-sm);
   font-weight: bold;
 }
@@ -199,11 +215,11 @@
 .tdih-exact-match .tdih-event-date {
   font-weight: bold;
   color: var(--tdih-color-primary);
-  font-size: 1.1rem;
+  font-size: var(--saho-font-size-md);
 }
 
 .tdih-exact-match .tdih-event-title {
-  font-size: 1.4rem;
+  font-size: var(--saho-font-size-lg);
 }
 
 .tdih-birthday-events .tdih-event-item {
@@ -307,7 +323,7 @@
 }
 
 .tdih-event-image--placeholder .fas {
-  font-size: 3rem;
+  font-size: var(--saho-font-size-3xl);
   opacity: 0.6;
 }
 
@@ -321,13 +337,13 @@
 }
 
 .tdih-event-date {
-  font-size: 0.9rem;
+  font-size: var(--tdih-font-size-date);
   color: var(--tdih-color-text-secondary);
   margin-bottom: var(--tdih-spacing-sm);
 }
 
 .tdih-event-title {
-  font-size: 1.2rem;
+  font-size: var(--saho-font-size-md);
   margin-bottom: var(--tdih-spacing-sm);
 }
 
@@ -341,20 +357,20 @@
 }
 
 .tdih-event-body {
-  font-size: 0.9rem;
+  font-size: var(--tdih-font-size-date);
   color: var(--tdih-color-text-primary);
   line-height: 1.5;
 }
 
 /* Compact mode */
 .compact-mode .tdih-event-item {
-  padding-bottom: 1rem;  /* 16px - rounded from 12px (0.75rem) */
-  margin-bottom: 1rem;   /* 16px - rounded from 12px (0.75rem) */
+  padding-bottom: var(--saho-space-2);
+  margin-bottom: var(--saho-space-2);
 }
 
 .compact-mode .tdih-event-title {
-  font-size: 1rem;
-  margin-bottom: 0.5rem;  /* 8px - rounded from 4px (0.25rem) */
+  font-size: var(--tdih-font-size-body);
+  margin-bottom: var(--saho-space-1);
 }
 
 /* No events message */
@@ -493,29 +509,29 @@
   }
 
   .tdih-event-date {
-    font-size: 1rem;
-    margin-bottom: 1rem;  /* 16px - rounded from 12px (0.75rem) */
+    font-size: var(--tdih-font-size-body);
+    margin-bottom: var(--saho-space-2);
   }
 
   .tdih-event-title {
-    font-size: 1.4rem;
-    margin-bottom: 1rem;  /* 16px - rounded from 12px (0.75rem) */
+    font-size: var(--saho-font-size-lg);
+    margin-bottom: var(--saho-space-2);
     line-height: 1.3;
   }
 
   .tdih-event-body {
-    font-size: 1rem;
+    font-size: var(--tdih-font-size-body);
     line-height: 1.6;
   }
 
   .tdih-today-events h3 {
-    font-size: 1.6rem;
+    font-size: var(--saho-font-size-xl);
     text-align: center;
     margin-bottom: var(--tdih-spacing-lg);
   }
 
   .tdih-birthday-title {
-    font-size: 1.6rem;
+    font-size: var(--saho-font-size-xl);
     text-align: center;
   }
 
@@ -525,8 +541,8 @@
 
   .tdih-birthday-submit {
     width: 100%;
-    padding: 1rem;  /* 16px - rounded from 12px (0.75rem) */
-    font-size: 1.1rem;
+    padding: var(--saho-space-2);
+    font-size: var(--saho-font-size-md);
     background-color: var(--tdih-color-primary);
   }
 
@@ -562,7 +578,7 @@
   }
 
   .tdih-event-title {
-    font-size: 1.3rem;
+    font-size: var(--saho-font-size-lg);
   }
 
   /* Maximum width utilization on small screens */
