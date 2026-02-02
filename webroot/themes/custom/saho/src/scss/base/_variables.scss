@@ -1,26 +1,300 @@
 /**
- * Variables
- * Variables should follow the $component-state-property-size formula for
- * consistent naming. Examples:
- * $nav-link-disabled-color
- * $modal-content-box-shadow-xs
+ * SAHO Design System Variables
+ * Unified source of truth for all design tokens
  *
- * Customization:
- * To customize Bootstrap variables:
- * Copy the desired variable from node_modules/bootstrap/scss/_variables.scss
+ * This file consolidates all design tokens into a single, consistent system using
+ * the --saho-{category}-{name} naming convention for CSS custom properties.
+ *
+ * Organization:
+ * 1. CSS Custom Properties (Design Tokens) - Modern, runtime-configurable
+ * 2. SCSS Variables - Bootstrap compatibility & build-time calculations
+ * 3. Component-Specific Overrides - Bootstrap component customizations
+ *
  * @see https://github.com/twbs/bootstrap/blob/main/scss/_variables.scss
- * Change the value and remove the !default flag.
- * Examples:
- * $body-bg: #000;
- * $body-color: $gray-100;
  */
 
-// SAHO Theme
-// Modern Design System Implementation
+// =============================================================================
+// PART 1: CSS CUSTOM PROPERTIES (DESIGN TOKENS)
+// =============================================================================
+// These are the single source of truth for all design values.
+// Use these in components via var(--saho-*) for maximum flexibility.
 
+:root {
+  // ---------------------------------------------------------------------------
+  // PRIMARY BRAND COLORS
+  // ---------------------------------------------------------------------------
+  // Core SAHO heritage colors representing South African history
+
+  --saho-color-primary: #990000;                    // Deep Heritage Red - main brand
+  --saho-color-primary-light: #b22222;              // FireBrick - lighter variant
+  --saho-color-primary-dark: #8b0000;               // DarkRed - darker variant
+  --saho-color-secondary: #3a4a64;                  // Slate Blue - academic sections
+  --saho-color-accent: #b88a2e;                     // Muted Gold - historical significance
+  --saho-color-highlight: #8b2331;                  // Faded Brick Red - content emphasis
+  --saho-color-forest-green: #2d5016;               // Biography content type color
+
+  // Alpha variants for overlays and shadows
+  --saho-color-primary-alpha-10: rgba(153, 0, 0, 0.1);
+  --saho-color-primary-alpha-25: rgba(153, 0, 0, 0.25);
+  --saho-color-primary-alpha-50: rgba(153, 0, 0, 0.5);
+  --saho-color-accent-alpha-10: rgba(184, 138, 46, 0.1);
+  --saho-color-accent-alpha-25: rgba(184, 138, 46, 0.25);
+  --saho-color-forest-green-alpha-90: rgba(45, 80, 22, 0.9);
+  --saho-color-black-alpha-05: rgba(0, 0, 0, 0.05);
+  --saho-color-black-alpha-10: rgba(0, 0, 0, 0.1);
+
+  // ---------------------------------------------------------------------------
+  // GRAYSCALE PALETTE
+  // ---------------------------------------------------------------------------
+
+  --saho-color-white: #ffffff;
+  --saho-color-black: #000000;
+  --saho-color-gray-100: #f8fafc;
+  --saho-color-gray-200: #e2e8f0;
+  --saho-color-gray-300: #cbd5e1;
+  --saho-color-gray-400: #94a3b8;
+  --saho-color-gray-500: #64748b;
+  --saho-color-gray-600: #475569;
+  --saho-color-gray-700: #334155;
+  --saho-color-gray-800: #1e293b;
+  --saho-color-gray-900: #0f172a;
+
+  // ---------------------------------------------------------------------------
+  // SEMANTIC COLORS
+  // ---------------------------------------------------------------------------
+
+  --saho-color-success: #22c55e;
+  --saho-color-warning: #eab308;
+  --saho-color-danger: #ef4444;
+  --saho-color-info: #3b82f6;
+
+  // Additional semantic brand colors
+  --saho-color-green-renewal: #2e7d32;              // Growth/renewal
+  --saho-color-brown-earth: #8b4513;                // Grounding/stability
+
+  // ---------------------------------------------------------------------------
+  // SURFACE & TEXT COLORS
+  // ---------------------------------------------------------------------------
+
+  --saho-color-surface: #ffffff;                    // Primary surface
+  --saho-color-surface-alt: #f7f7f7;               // Secondary surface (3% darker)
+  --saho-color-border: #d9d9d9;                    // Standard borders (12% darker)
+  --saho-color-border-light: #efefef;              // Light borders (6% darker)
+
+  --saho-color-text-primary: #1e293b;              // Main text (gray-800)
+  --saho-color-text-secondary: #475569;            // Supporting text (gray-600)
+  --saho-color-text-muted: #94a3b8;                // De-emphasized text (gray-400)
+
+  // ---------------------------------------------------------------------------
+  // SPACING SCALE (8px baseline grid)
+  // ---------------------------------------------------------------------------
+  // All spacing uses 8px multiples for consistent vertical rhythm
+
+  --saho-space-0: 0;
+  --saho-space-1: 0.5rem;    // 8px
+  --saho-space-2: 1rem;      // 16px
+  --saho-space-3: 1.5rem;    // 24px
+  --saho-space-4: 2rem;      // 32px - STANDARD gap for grids
+  --saho-space-6: 3rem;      // 48px
+  --saho-space-8: 4rem;      // 64px
+  --saho-space-12: 6rem;     // 96px
+  --saho-space-16: 8rem;     // 128px
+
+  // Legacy spacing aliases (deprecated, use numbered scale above)
+  --saho-space-xs: var(--saho-space-1);    // DEPRECATED: Use --saho-space-1
+  --saho-space-sm: var(--saho-space-2);    // DEPRECATED: Use --saho-space-2
+  --saho-space-md: var(--saho-space-3);    // DEPRECATED: Use --saho-space-3
+  --saho-space-lg: var(--saho-space-4);    // DEPRECATED: Use --saho-space-4
+  --saho-space-xl: var(--saho-space-6);    // DEPRECATED: Use --saho-space-6
+  --saho-space-2xl: var(--saho-space-8);   // DEPRECATED: Use --saho-space-8
+
+  // ---------------------------------------------------------------------------
+  // TYPOGRAPHY SCALE (Fluid)
+  // ---------------------------------------------------------------------------
+  // Fluid typography scales responsively between min and max viewport widths
+
+  --saho-font-size-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);          // 12-14px
+  --saho-font-size-sm: clamp(0.875rem, 0.85rem + 0.25vw, 1rem);            // 14-16px
+  --saho-font-size-base: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);          // 16-18px
+  --saho-font-size-md: clamp(1.125rem, 1.05rem + 0.375vw, 1.25rem);        // 18-20px
+  --saho-font-size-lg: clamp(1.25rem, 1.15rem + 0.5vw, 1.5rem);            // 20-24px
+  --saho-font-size-xl: clamp(1.5rem, 1.35rem + 0.75vw, 1.875rem);          // 24-30px
+  --saho-font-size-2xl: clamp(1.75rem, 1.5rem + 1.25vw, 2.25rem);          // 28-36px
+  --saho-font-size-3xl: clamp(2rem, 1.75rem + 1.5vw, 3rem);                // 32-48px
+  --saho-font-size-4xl: clamp(2.5rem, 2rem + 2vw, 4rem);                   // 40-64px
+  --saho-font-size-5xl: clamp(3rem, 2.5rem + 2.5vw, 5rem);                 // 48-80px
+
+  // Heading-specific fluid tokens (h1-h6)
+  --saho-font-h1: var(--saho-font-size-3xl);        // 32-48px
+  --saho-font-h2: var(--saho-font-size-2xl);        // 28-36px
+  --saho-font-h3: var(--saho-font-size-xl);         // 24-30px
+  --saho-font-h4: var(--saho-font-size-lg);         // 20-24px
+  --saho-font-h5: var(--saho-font-size-md);         // 18-20px
+  --saho-font-h6: var(--saho-font-size-base);       // 16-18px
+
+  // Display sizes for hero/banner elements
+  --saho-font-display-xl: var(--saho-font-size-5xl); // 48-80px
+  --saho-font-display: var(--saho-font-size-4xl);    // 40-64px
+
+  // ---------------------------------------------------------------------------
+  // LINE HEIGHTS
+  // ---------------------------------------------------------------------------
+
+  --saho-line-height-tight: 1.2;
+  --saho-line-height-snug: 1.3;
+  --saho-line-height-normal: 1.5;
+  --saho-line-height-relaxed: 1.6;
+  --saho-line-height-loose: 1.8;
+
+  // ---------------------------------------------------------------------------
+  // FONT WEIGHTS
+  // ---------------------------------------------------------------------------
+
+  --saho-font-weight-light: 300;
+  --saho-font-weight-regular: 400;
+  --saho-font-weight-medium: 500;
+  --saho-font-weight-semibold: 600;
+  --saho-font-weight-bold: 700;
+  --saho-font-weight-black: 900;
+
+  // ---------------------------------------------------------------------------
+  // CONTAINER WIDTHS
+  // ---------------------------------------------------------------------------
+
+  --saho-container-narrow: 700px;       // Single column, hero content
+  --saho-container-standard: 1200px;    // Default blocks, articles
+  --saho-container-wide: 1600px;        // Card grids, galleries
+  --saho-container-full: 100%;          // Full-width sections
+
+  // ---------------------------------------------------------------------------
+  // BORDER RADIUS
+  // ---------------------------------------------------------------------------
+
+  --saho-radius-sm: 0.25rem;    // 4px
+  --saho-radius-md: 0.5rem;     // 8px - STANDARD for cards
+  --saho-radius-lg: 0.75rem;    // 12px
+  --saho-radius-xl: 1rem;       // 16px
+  --saho-radius-full: 9999px;   // Pill/circular
+
+  // ---------------------------------------------------------------------------
+  // SHADOWS
+  // ---------------------------------------------------------------------------
+
+  --saho-shadow-sm: 0 0.125rem 0.375rem rgba(0, 0, 0, 0.05);
+  --saho-shadow-md: 0 0.1875rem 0.625rem rgba(0, 0, 0, 0.05);
+  --saho-shadow-lg: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.08);
+  --saho-shadow-xl: 0 0.625rem 1.875rem rgba(0, 0, 0, 0.1);
+  --saho-shadow-2xl: 0 1rem 3rem rgba(0, 0, 0, 0.1);
+  --saho-shadow-hover: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.1);
+
+  // Text shadows for overlays
+  --saho-text-shadow-sm: 0.0625rem 0.0625rem 0.125rem rgba(0, 0, 0, 0.5);
+  --saho-text-shadow-md: 0.125rem 0.125rem 0.25rem rgba(0, 0, 0, 0.7);
+  --saho-text-shadow-lg: 0.1875rem 0.1875rem 0.375rem rgba(0, 0, 0, 0.8);
+
+  // ---------------------------------------------------------------------------
+  // TRANSITIONS
+  // ---------------------------------------------------------------------------
+
+  --saho-transition-fast: 150ms ease;
+  --saho-transition-base: 200ms ease;
+  --saho-transition-slow: 300ms ease;
+  --saho-transition-slower: 500ms ease;
+
+  // ---------------------------------------------------------------------------
+  // Z-INDEX SCALE
+  // ---------------------------------------------------------------------------
+
+  --saho-z-dropdown: 1000;
+  --saho-z-sticky: 1020;
+  --saho-z-fixed: 1030;
+  --saho-z-modal-backdrop: 1040;
+  --saho-z-modal: 1050;
+  --saho-z-popover: 1060;
+  --saho-z-tooltip: 1070;
+
+  // ---------------------------------------------------------------------------
+  // BUTTON TOKENS
+  // ---------------------------------------------------------------------------
+
+  --saho-button-padding-sm: 0.4rem 0.8rem;
+  --saho-button-padding-md: 0.625rem 1.875rem;
+  --saho-button-padding-lg: 0.75rem 2rem;
+
+  --saho-button-radius-sm: 0.25rem;    // 4px
+  --saho-button-radius-md: 0.375rem;   // 6px
+  --saho-button-radius-lg: 1.5625rem;  // 25px - pill
+  --saho-button-radius-pill: 1.5625rem;
+
+  --saho-button-font-size-sm: 0.85rem;
+  --saho-button-font-size-md: 0.9rem;
+  --saho-button-font-size-lg: 1rem;
+
+  --saho-button-size-sm: 2rem;     // 32px - control buttons
+  --saho-button-size-md: 2.5rem;   // 40px
+  --saho-button-size-lg: 3rem;     // 48px
+
+  // Button colors - single filled red variant
+  --saho-button-bg-primary: var(--saho-color-primary);
+  --saho-button-bg-primary-hover: var(--saho-color-primary-dark);
+  --saho-button-text-primary: var(--saho-color-white);
+  --saho-button-focus-shadow: var(--saho-color-primary-alpha-25);
+
+  // ---------------------------------------------------------------------------
+  // GRID SYSTEM
+  // ---------------------------------------------------------------------------
+
+  --saho-grid-gap-default: var(--saho-space-4);       // 32px standard
+  --saho-card-grid-min-width: 300px;                  // Min card width
+  --saho-two-col-grid-min-width: 500px;               // Min 2-col width
+
+  // ---------------------------------------------------------------------------
+  // BLOCK SECTION TOKENS
+  // ---------------------------------------------------------------------------
+  // Layout Builder block-specific spacing and sizing
+
+  // Block padding (8px baseline grid)
+  --saho-block-padding-mobile: 1.25rem;               // 20px
+  --saho-block-padding-tablet: 1.75rem;               // 28px (not 8px baseline - legacy)
+  --saho-block-padding-desktop: 2rem;                 // 32px
+
+  // Block image heights
+  --saho-block-image-height-mobile: 180px;
+  --saho-block-image-height-tablet: 200px;
+  --saho-block-image-height-desktop: 250px;
+
+  // Section margins (uses spacing scale)
+  --saho-block-section-margin: var(--saho-space-4);   // 32px
+
+  // Current active padding (defaults to desktop, overridden by media queries)
+  --saho-block-padding: var(--saho-block-padding-desktop);
+  --saho-block-image-height: var(--saho-block-image-height-desktop);
+
+  // ---------------------------------------------------------------------------
+  // DARK MODE COLORS
+  // ---------------------------------------------------------------------------
+  // Reserved for future dark mode implementation
+
+  --saho-dark-bg-primary: #0f172a;
+  --saho-dark-bg-secondary: #1e293b;
+  --saho-dark-bg-tertiary: #334155;
+  --saho-dark-surface: #1e293b;
+  --saho-dark-surface-hover: #334155;
+  --saho-dark-border: #475569;
+  --saho-dark-text-primary: #f8fafc;
+  --saho-dark-text-secondary: #cbd5e1;
+}
+
+// =============================================================================
+// PART 2: SCSS VARIABLES (Bootstrap Compatibility & Build-time)
+// =============================================================================
+// These variables are needed for:
+// - Bootstrap component calculations at build time
+// - SCSS functions and mixins
+// - Backward compatibility during migration
 //
-// Color system
-//
+// MIGRATION NOTE: These are DEPRECATED for direct use in components.
+// Prefer CSS custom properties (--saho-*) for all new development.
 
 // Base grayscale
 $white: #fff !default;
@@ -36,24 +310,24 @@ $gray-900: #0f172a !default;
 $black: #000 !default;
 
 // Primary Colors - Original SAHO heritage palette
-// These colors represent South African historical heritage while maintaining
-// professional academic standards and ensuring accessibility for educational content
-$deep-heritage-red: #900 !default;    // Primary brand color - represents heritage and authority
-$muted-gold: #b88a2e !default;          // Secondary accent - represents historical significance
-$slate-blue: #3a4a64 !default;          // Used for academic/research sections
-$faded-brick-red: #8b2331 !default;     // Complementary to primary - used for highlighting important content
-$dark-charcoal: $gray-800 !default;     // Main text color for optimal readability
+// DEPRECATED: Use CSS custom properties --saho-color-* instead
+$deep-heritage-red: #990000 !default;        // Use --saho-color-primary
+$muted-gold: #b88a2e !default;               // Use --saho-color-accent
+$slate-blue: #3a4a64 !default;               // Use --saho-color-secondary
+$faded-brick-red: #8b2331 !default;          // Use --saho-color-highlight
+$dark-charcoal: $gray-800 !default;          // Use --saho-color-text-primary
+$saho-forest-green: #2d5016 !default;        // Use --saho-color-forest-green
 
-// Neutral Palette - Heritage palette with warm undertones
-// Designed for extended reading and research sessions while maintaining visual comfort
-$aged-parchment: #fff !default;      // Warmer, slightly darker base for comfortable reading
-$surface: $aged-parchment !default;      // Primary surface color
-$surface-alt: darken($aged-parchment, 3%) !default;  // Deeper secondary surface for better hierarchy
-$muted: mix($aged-parchment, $white, 90%) !default;  // Subtle variation for layered content
-$border: darken($aged-parchment, 12%) !default;      // Enhanced borders for better structure
-$text-primary: $dark-charcoal !default;              // Optimal contrast for main content
-$text-secondary: lighten($dark-charcoal, 20%) !default;  // Supporting text
-$text-muted: lighten($dark-charcoal, 40%) !default;      // De-emphasized text
+// Neutral Palette
+// DEPRECATED: Use CSS custom properties instead
+$aged-parchment: #fff !default;
+$surface: $aged-parchment !default;
+$surface-alt: darken($aged-parchment, 3%) !default;
+$muted: mix($aged-parchment, $white, 90%) !default;
+$border: darken($aged-parchment, 12%) !default;
+$text-primary: $dark-charcoal !default;
+$text-secondary: lighten($dark-charcoal, 20%) !default;
+$text-muted: lighten($dark-charcoal, 40%) !default;
 
 // Dark Mode Colors
 $dark-bg-primary: #0f172a !default;
@@ -71,30 +345,32 @@ $warning: #eab308 !default;
 $danger: #ef4444 !default;
 $info: #3b82f6 !default;
 
-// Primary semantic colors - Optimized for educational and research context
-$primary: $deep-heritage-red !default;    // Main brand color - used for primary actions and key elements
-$secondary: $slate-blue !default;         // Academic/research section indicators
-$accent: $muted-gold !default;           // Highlights for important academic content
-$highlight: $faded-brick-red !default;    // Used for emphasizing critical historical content
-$light: $surface !default;               // Main content areas
-$dark: $slate-blue !default;             // Deep contrast areas for serious content
+// Primary semantic colors
+$primary: $deep-heritage-red !default;
+$secondary: $slate-blue !default;
+$accent: $muted-gold !default;
+$highlight: $faded-brick-red !default;
+$light: $surface !default;
+$dark: $slate-blue !default;
 
 $min-contrast-ratio: 4.5 !default;
 
 // Body
-// Optimized for long-form reading and research
 $body-bg: $surface !default;
 $body-color: $text-primary !default;
-$content-bg: lighten($aged-parchment, 2%) !default;  // Slightly lighter for content areas
+$content-bg: lighten($aged-parchment, 2%) !default;
 
+// =============================================================================
 // Typography System
+// =============================================================================
 
 // Modern Font Stack
 $font-family-sans-serif: "Inter", -apple-system, blinkmacsystemfont, "Segoe UI", roboto, "Helvetica Neue", arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol" !default;
 $headings-font-family: $font-family-sans-serif !default;
 $headings-font-weight: 700 !default;
 
-// Typography Scale - Base sizes for calculations
+// Typography Scale - Static sizes for SCSS calculations
+// DEPRECATED: Use CSS custom properties --saho-font-size-* for components
 $font-size-base: 1rem !default;
 $h1-font-size: $font-size-base * 2.25 !default;
 $h2-font-size: $font-size-base * 1.75 !default;
@@ -107,16 +383,19 @@ $body-size: 1rem !default;
 $body-sm-size: 0.875rem !default;
 $caption-size: 0.75rem !default;
 
-// Fluid Typography CSS Variables
-// These will be applied in the typography.scss file
-$fluid-display-xl: "clamp(3rem, 5vw + 1rem, 5rem)" !default;
-$fluid-display: "clamp(2.5rem, 4vw + 1rem, 4rem)" !default;
-$fluid-h1: "clamp(2rem, 3vw + 1rem, 3rem)" !default;
-$fluid-h2: "clamp(1.5rem, 2vw + 1rem, 2.25rem)" !default;
-$fluid-h3: "clamp(1.25rem, 1.5vw + 0.5rem, 1.875rem)" !default;
-$fluid-h4: "clamp(1.125rem, 1vw + 0.5rem, 1.5rem)" !default;
+// Fluid Typography Variables (for backward compatibility with _typography.scss)
+// DEPRECATED: Use CSS custom properties --saho-font-h1, --saho-font-h2, etc.
+$fluid-display-xl: "clamp(3rem, 2.5rem + 2.5vw, 5rem)" !default;    // Maps to --saho-font-size-5xl
+$fluid-display: "clamp(2.5rem, 2rem + 2vw, 4rem)" !default;         // Maps to --saho-font-size-4xl
+$fluid-h1: "clamp(2rem, 1.75rem + 1.5vw, 3rem)" !default;           // Maps to --saho-font-size-3xl
+$fluid-h2: "clamp(1.75rem, 1.5rem + 1.25vw, 2.25rem)" !default;     // Maps to --saho-font-size-2xl
+$fluid-h3: "clamp(1.5rem, 1.35rem + 0.75vw, 1.875rem)" !default;    // Maps to --saho-font-size-xl
+$fluid-h4: "clamp(1.25rem, 1.15rem + 0.5vw, 1.5rem)" !default;      // Maps to --saho-font-size-lg
+$fluid-h5: "clamp(1.125rem, 1.05rem + 0.375vw, 1.25rem)" !default;  // Maps to --saho-font-size-md
+$fluid-h6: "clamp(1rem, 0.95rem + 0.25vw, 1.125rem)" !default;      // Maps to --saho-font-size-base
 
 // Font Weights
+// DEPRECATED: Use CSS custom properties --saho-font-weight-* instead
 $font-weight-light: 300 !default;
 $font-weight-regular: 400 !default;
 $font-weight-medium: 500 !default;
@@ -124,15 +403,19 @@ $font-weight-semibold: 600 !default;
 $font-weight-bold: 700 !default;
 $font-weight-black: 900 !default;
 
-// Dropdowns
+// =============================================================================
+// PART 3: BOOTSTRAP COMPONENT OVERRIDES
+// =============================================================================
+// Component-specific customizations for Bootstrap variables
+// These reference the SCSS variables above for build-time calculations
 
+// Dropdowns
 $dropdown-link-hover-color: $white !default;
 $dropdown-link-hover-bg: $primary !default;
 $dropdown-border-radius: 0.5rem !default;
 $dropdown-box-shadow: 0 0.5rem 1.5rem rgba($black, 0.1) !default;
 
 // Navs
-
 $nav-link-padding-y: 0.75rem !default;
 $nav-link-disabled-color: $text-muted !default;
 $nav-tabs-border-color: $border !default;
@@ -140,7 +423,6 @@ $nav-tabs-link-active-color: $primary !default;
 $nav-tabs-link-active-bg: $surface !default;
 
 // Navbar
-
 $navbar-padding-y: 1rem !default;
 $navbar-dark-color: rgba($white, 0.85) !default;
 $navbar-dark-hover-color: $white !default;
@@ -148,7 +430,6 @@ $navbar-light-color: $text-primary !default;
 $navbar-light-hover-color: $primary !default;
 
 // Pagination
-
 $pagination-border-color: $border !default;
 $pagination-hover-color: $white !default;
 $pagination-hover-bg: $primary !default;
@@ -157,39 +438,33 @@ $pagination-disabled-color: $text-muted !default;
 $pagination-disabled-border-color: $pagination-border-color !default;
 
 // Cards
-
 $card-border-color: $border !default;
 $card-cap-bg: $surface-alt !default;
 $card-border-radius: 1rem !default;
 $card-box-shadow: 0 0.25rem 0.75rem rgba($black, 0.05) !default;
 
 // Popovers
-
 $popover-border-color: $border !default;
 $popover-box-shadow: 0 0.5rem 1rem rgba($black, 0.1) !default;
 
 // Modals
-
 $modal-content-border-color: $border !default;
 $modal-header-border-color: $border !default;
 $modal-content-box-shadow-xs: 0 0.5rem 1rem rgba($black, 0.1) !default;
 $modal-content-box-shadow-sm-up: 0 1rem 2rem rgba($black, 0.1) !default;
 
 // Progress bars
-
 $progress-bar-color: $white !default;
 $progress-height: 0.75rem !default;
 $progress-box-shadow: none !default;
 
 // List group
-
 $list-group-border-color: $border !default;
 $list-group-disabled-bg: $surface-alt !default;
 $list-group-hover-bg: $surface-alt !default;
 $list-group-action-hover-color: $primary !default;
 
 // Breadcrumbs
-
 $breadcrumb-padding-y: 0.75rem !default;
 $breadcrumb-padding-x: 1.25rem !default;
 $breadcrumb-border-radius: 0.5rem !default;
@@ -198,33 +473,68 @@ $breadcrumb-divider-color: $text-secondary !default;
 $breadcrumb-active-color: $text-primary !default;
 
 // Buttons
-
 $btn-font-weight: $font-weight-medium !default;
 $btn-box-shadow: 0 0.25rem 0.5rem rgba($black, 0.05) !default;
 $btn-focus-box-shadow: 0 0 0 0.25rem rgba($primary, 0.25) !default;
 $btn-active-box-shadow: inset 0 3px 5px rgba($black, 0.1) !default;
 
 // Shadows
-
 $box-shadow-sm: 0 0.125rem 0.375rem rgba($black, 0.05) !default;
 $box-shadow: 0 0.5rem 1.5rem rgba($black, 0.08) !default;
 $box-shadow-lg: 0 1rem 3rem rgba($black, 0.1) !default;
 
 // Links
-
 $link-color: $primary !default;
 $link-hover-color: darken($link-color, 10%) !default;
 $link-decoration: none !default;
 $link-hover-decoration: underline !default;
 
-// SAHO Heritage Color Palette
-// These variables are available to all component files
-$saho-deep-heritage-red: $deep-heritage-red !default;
-$saho-dark-charcoal: $dark-charcoal !default;
-$saho-muted-gold: $muted-gold !default;
-$saho-aged-parchment: $aged-parchment !default;
-$saho-slate-blue: $slate-blue !default;
-$saho-faded-brick-red: $faded-brick-red !default;
-$saho-surface: $surface !default;
-$saho-text-primary: $text-primary !default;
-$saho-text-secondary: $text-secondary !default;
+// =============================================================================
+// PART 4: SAHO-PREFIXED CONVENIENCE VARIABLES
+// =============================================================================
+// Backward compatibility - these reference base variables above
+// DEPRECATED: Migrate to CSS custom properties --saho-color-* instead
+
+$saho-deep-heritage-red: $deep-heritage-red !default;     // Use --saho-color-primary
+$saho-dark-charcoal: $dark-charcoal !default;             // Use --saho-color-text-primary
+$saho-muted-gold: $muted-gold !default;                   // Use --saho-color-accent
+$saho-aged-parchment: $aged-parchment !default;           // Use --saho-color-surface
+$saho-slate-blue: $slate-blue !default;                   // Use --saho-color-secondary
+$saho-faded-brick-red: $faded-brick-red !default;         // Use --saho-color-highlight
+$saho-surface: $surface !default;                         // Use --saho-color-surface
+$saho-text-primary: $text-primary !default;               // Use --saho-color-text-primary
+$saho-text-secondary: $text-secondary !default;           // Use --saho-color-text-secondary
+
+// =============================================================================
+// MIGRATION GUIDE
+// =============================================================================
+//
+// OLD (SCSS Variables) → NEW (CSS Custom Properties)
+// --------------------------------------------------
+// $deep-heritage-red     → var(--saho-color-primary)
+// $slate-blue            → var(--saho-color-secondary)
+// $muted-gold            → var(--saho-color-accent)
+// $saho-forest-green     → var(--saho-color-forest-green)
+// $text-primary          → var(--saho-color-text-primary)
+// $surface               → var(--saho-color-surface)
+// $border                → var(--saho-color-border)
+//
+// $spacing-xs            → var(--saho-space-1)
+// $spacing-sm            → var(--saho-space-2)
+// $spacing-md            → var(--saho-space-3)
+// $spacing-lg            → var(--saho-space-4)
+// $spacing-xl            → var(--saho-space-6)
+//
+// $font-size-base        → var(--saho-font-size-base)
+// $h1-font-size          → var(--saho-font-h1)
+// $h2-font-size          → var(--saho-font-h2)
+//
+// BENEFITS OF CSS CUSTOM PROPERTIES:
+// - Runtime theming (dark mode, content type colors)
+// - Better browser DevTools inspection
+// - Cascade inheritance
+// - No recompilation needed for value changes
+//
+// NOTE: Responsive overrides for CSS custom properties are located in
+// abstracts/_design-tokens.scss since they require Bootstrap mixins
+// =============================================================================
