@@ -15,7 +15,7 @@ npm ci
 # Run linting with auto-fix
 echo "Running linting with auto-fix..."
 npm run biome:check
-npm run stylint-fix
+npm run stylelint:fix
 
 # Build assets for production
 echo "Building assets for production..."
