@@ -2,7 +2,7 @@ version: '3.6'
 services:
   # Node.js service for Svelte timeline development
   nodejs:
-    image: node:18-alpine
+    image: node:20-alpine
     container_name: ddev-${DDEV_SITENAME}-nodejs
     hostname: ${DDEV_SITENAME}-nodejs
     ports:
@@ -13,6 +13,10 @@ services:
       - type: bind
         source: ../saho-timeline-svelte
         target: /app
+        consistency: cached
+      - type: bind
+        source: ../webroot/themes/custom/saho
+        target: /theme
         consistency: cached
       - type: bind
         source: ./
