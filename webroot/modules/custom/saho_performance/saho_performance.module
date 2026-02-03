@@ -51,8 +51,17 @@ function saho_performance_page_attachments_alter(array &$page) {
  * Implements hook_css_alter().
  */
 function saho_performance_css_alter(&$css, AttachedAssetsInterface $assets) {
-  // COMPLETELY DISABLE CSS OPTIMIZATION TO PRESERVE HERO BANNER STYLING.
-  return;
+  // Get current user for permission checks.
+  $current_user = \Drupal::currentUser();
+
+  // Skip CSS optimization for admin users.
+  if ($current_user->hasPermission('access toolbar')) {
+    return;
+  }
+
+  // Get current route for conditional CSS.
+  $route_match = \Drupal::routeMatch();
+  $route_name = $route_match->getRouteName();
 
   // Defer non-critical CSS files based on page type.
   foreach ($css as $key => &$item) {
@@ -61,7 +70,7 @@ function saho_performance_css_alter(&$css, AttachedAssetsInterface $assets) {
       'core/themes/stable9/css/system/components/ajax-progress.module.css',
       'core/themes/stable9/css/system/components/align.module.css',
       'core/themes/stable9/css/system/components/autocomplete-loading.module.css',
-      'themes/custom/saho/build/css/main.style.css',
+      'themes/custom/saho/dist/css/main.css',
       'themes/contrib/radix/assets/css/radix.style.css',
       'modules/custom/saho_tools/css/citation.css',
       'modules/custom/saho_tools/css/citation-modern.css',
@@ -79,13 +88,11 @@ function saho_performance_css_alter(&$css, AttachedAssetsInterface $assets) {
     ];
 
     // CSS files that are only needed on specific pages (only for front-end)
+    // NOTE: Hero banner CSS is in critical_files list above (not deferred)
+    // Citation/sharing CSS also in critical_files - needed for modal functionality
     $conditional_css = [
-      // Don't defer citation and sharing CSS - they're needed for modal functionality
-      // 'modules/custom/saho_tools/css/citation.css' => ['entity.node.canonical'],
-      // 'modules/custom/saho_tools/css/citation-modern.css' => ['entity.node.canonical'],
-      // 'modules/custom/saho_tools/css/sharing-modern.css' => ['entity.node.canonical'],
-      // Hero banner CSS deferred since it's in critical CSS.
-      'modules/custom/saho_utils/hero_banner/css/hero-banner-modern.css' => [],
+      // Currently no CSS files are conditionally removed
+      // Add entries here for page-specific CSS when implementing code splitting
     ];
 
     // Check if this CSS is critical for current page.
@@ -541,7 +548,7 @@ function _saho_performance_add_preload_hints(array &$page) {
 
   // Preload critical CSS files.
   $critical_css_files = [
-    '/themes/custom/saho/build/css/main.style.css',
+    '/themes/custom/saho/dist/css/main.css',
   ];
 
   foreach ($critical_css_files as $css_file) {
