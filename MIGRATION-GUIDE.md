@@ -790,34 +790,6 @@ $spacing: var(--saho-space-3);
 
 ---
 
-## Migration Timeline
-
-### Phase 1: High-Priority Components (Weeks 1-2)
-
-- [ ] Button system (✅ Complete)
-- [ ] Card components
-- [ ] Grid layouts
-- [ ] Modal/dialogs
-- [ ] Form inputs
-
-### Phase 2: Medium-Priority Components (Weeks 3-4)
-
-- [ ] Navigation components
-- [ ] Footer components
-- [ ] Layout Builder blocks
-- [ ] Article templates
-- [ ] Utility components
-
-### Phase 3: Low-Priority Components (Weeks 5-6)
-
-- [ ] Admin interface
-- [ ] Rarely used components
-- [ ] Legacy components
-- [ ] Cleanup deprecated code
-- [ ] Update documentation
-
----
-
 ## Support & Resources
 
 - **Design Tokens**: `DESIGN-TOKENS.md`
