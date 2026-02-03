@@ -184,7 +184,8 @@ class CustomBlock extends BlockBase {
 2. Fix any issues found
 3. Export configuration if needed: `ddev drush cex -y`
 4. Build production assets: `npm run production`
-5. Test one more time
+5. **Commit the `dist/` folder** (no Node.js on prod server)
+6. Test one more time
 
 ### Git Workflow
 ```bash

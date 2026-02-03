@@ -674,7 +674,7 @@ JavaScript files follow Drupal behaviors pattern:
 
 ### Build Process
 
-The theme uses Laravel Mix (Webpack) for asset compilation:
+The theme uses **Vite** for fast asset compilation. Built assets are output to `dist/` and **must be committed** (no Node.js on production server).
 
 1. **Install Dependencies**:
    ```sh
@@ -702,6 +702,8 @@ The theme uses Laravel Mix (Webpack) for asset compilation:
    npm run biome:check
    npm run biome:fix
    ```
+
+> **⚠️ Important**: After running `npm run production`, you must commit the `dist/` folder. The production server does not have Node.js, so built assets must be in the repository.
 
 ### Theme Configuration
 
