@@ -248,15 +248,26 @@ function _saho_performance_get_critical_css() {
         position: relative;
         width: 100%;
         min-height: 320px;
-        background-size: cover;
-        background-position: center;
-        background-repeat: no-repeat;
         display: flex;
         align-items: center;
         justify-content: center;
         overflow: hidden;
         margin: 0;
         padding: 2rem 0;
+      }
+      .hero-banner__picture {
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
+      .hero-banner__image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
       }
       .hero-banner__overlay {
         position: absolute;
@@ -636,19 +647,33 @@ function saho_performance_preprocess_html(&$variables) {
 function saho_performance_preprocess_block(&$variables) {
   // Optimize hero banner for LCP.
   if (isset($variables['plugin_id']) && strpos($variables['plugin_id'], 'hero_banner') !== FALSE) {
-    // Add preload for hero banner background image if exists.
+    // Add preload for hero banner image with responsive srcset.
     if (!empty($variables['content']['#background_image'])) {
-      $image_url = $variables['content']['#background_image'];
+      $desktop_url = $variables['content']['#background_image'];
+      $mobile_url = $variables['content']['#background_image_mobile'] ?? NULL;
+
+      // Build preload attributes with imagesrcset for responsive images.
+      $preload_attrs = [
+        'rel' => 'preload',
+        'as' => 'image',
+        'fetchpriority' => 'high',
+      ];
+
+      if ($mobile_url) {
+        // Use imagesrcset and imagesizes for responsive preloading.
+        $preload_attrs['imagesrcset'] = $mobile_url . ' 768w, ' . $desktop_url . ' 1920w';
+        $preload_attrs['imagesizes'] = '100vw';
+      }
+      else {
+        // Fallback to simple href if no mobile image.
+        $preload_attrs['href'] = $desktop_url;
+      }
+
       $variables['#attached']['html_head'][] = [
         [
           '#type' => 'html_tag',
           '#tag' => 'link',
-          '#attributes' => [
-            'rel' => 'preload',
-            'href' => $image_url,
-            'as' => 'image',
-            'fetchpriority' => 'high',
-          ],
+          '#attributes' => $preload_attrs,
         ],
         'hero_banner_preload',
       ];
