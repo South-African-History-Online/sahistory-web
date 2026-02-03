@@ -94,6 +94,10 @@ const input = {
   'css/main.style': resolve(__dirname, 'src/scss/main.style.scss'),
   'css/saho-colors': resolve(__dirname, 'src/scss/base/_saho-colors.scss'),
   'js/main.script': resolve(__dirname, 'src/js/main.script.js'),
+  // Page-specific CSS bundles for code splitting (using JS wrappers to emit CSS)
+  'js/pages/landing-pages': resolve(__dirname, 'src/js/pages/landing-pages.js'),
+  'js/pages/search-results': resolve(__dirname, 'src/js/pages/search-results.js'),
+  'js/pages/article-layout': resolve(__dirname, 'src/js/pages/article-layout.js'),
 };
 
 // Add component SCSS files - output to dist/components/...

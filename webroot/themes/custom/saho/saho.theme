@@ -505,6 +505,41 @@ function saho_preprocess_page(array &$variables) {
   // Make logo available to all templates using page.html.twig.
   $logo = \Drupal::theme()->getActiveTheme()->getLogo();
   $variables['site_logo'] = $logo;
+
+  // Conditionally attach page-specific CSS libraries for performance optimization.
+  $route_match = \Drupal::routeMatch();
+  $route_name = $route_match->getRouteName();
+
+  // Landing pages - attach landing.pages library for section landing views.
+  $landing_views = [
+    'view.politics_society',
+    'view.art_culture',
+    'view.biographies',
+    'view.africa',
+    'view.places',
+    'view.timelines',
+    'view.archives',
+    'view.classroom',
+  ];
+  foreach ($landing_views as $view_route) {
+    if (strpos($route_name, $view_route) === 0) {
+      $variables['#attached']['library'][] = 'saho/landing.pages';
+      break;
+    }
+  }
+
+  // Search page - attach search.results library.
+  if (strpos($route_name, 'view.search') === 0 || $route_name === 'search.view') {
+    $variables['#attached']['library'][] = 'saho/search.results';
+  }
+
+  // Article/content pages - attach article.layout library.
+  if ($route_name === 'entity.node.canonical') {
+    $node = $route_match->getParameter('node');
+    if ($node && in_array($node->bundle(), ['article', 'biography', 'archive', 'place', 'event'])) {
+      $variables['#attached']['library'][] = 'saho/article.layout';
+    }
+  }
 }
 
 /**
