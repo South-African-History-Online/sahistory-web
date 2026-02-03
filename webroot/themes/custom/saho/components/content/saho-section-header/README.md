@@ -8,7 +8,7 @@ Reusable section header component with title, optional subtitle, and colored acc
 {% include 'saho:saho-section-header' with {
   title: 'Featured Articles',
   heading_level: 'h1',
-  subtitle: 'Explore featured content from South African History Online',
+  subtitle: 'Browse featured content from South African History Online',
   accent_bar: true,
   accent_color: 'heritage-red',
   alignment: 'left',
@@ -24,7 +24,7 @@ The main heading text for the section.
 
 **Examples:**
 - `'Featured Articles'`
-- `'More to Explore'`
+- `'More Content'`
 - `'Archives'`
 
 ### heading_level
@@ -52,7 +52,7 @@ Optional subtitle or description text below the title.
 
 **Example:**
 ```twig
-subtitle: 'Explore featured content from South African History Online'
+subtitle: 'Browse featured content from South African History Online'
 ```
 
 ### accent_bar
@@ -209,7 +209,7 @@ Optional slot for action buttons or links displayed on the right side of the hea
   <h1 class="saho-section-title">Featured Articles</h1>
   <div class="saho-section-title-accent saho-bg-deep-heritage-red"></div>
 </div>
-<p class="lead">Explore our curated content</p>
+<p class="lead">Browse our curated content</p>
 ```
 
 **After:**
@@ -217,7 +217,7 @@ Optional slot for action buttons or links displayed on the right side of the hea
 {% include 'saho:saho-section-header' with {
   title: 'Featured Articles',
   heading_level: 'h1',
-  subtitle: 'Explore our curated content',
+  subtitle: 'Browse our curated content',
   accent_color: 'heritage-red'
 } %}
 ```
