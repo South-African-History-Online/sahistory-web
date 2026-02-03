@@ -252,6 +252,9 @@ class HeroBannerBlock extends BlockBase implements ContainerFactoryPluginInterfa
     $build = [];
 
     $background_image_url = NULL;
+    $background_image_mobile_url = NULL;
+    $image_width = NULL;
+    $image_height = NULL;
     if (!empty($config['background_image'])) {
       $media_id = $config['background_image'];
       $media = $this->entityTypeManager->getStorage('media')->load($media_id);
@@ -262,15 +265,60 @@ class HeroBannerBlock extends BlockBase implements ContainerFactoryPluginInterfa
           if ($file && $file instanceof File) {
             $file_uri = $file->getFileUri();
 
-            // Check for WebP version.
-            $webp_uri = preg_replace('/\.(jpe?g|png)$/i', '.webp', $file_uri);
+            // Get image dimensions for CLS prevention.
+            $image_width = $image_field->width;
+            $image_height = $image_field->height;
 
-            // Use WebP if it exists, otherwise fall back to original.
-            if ($webp_uri !== $file_uri && file_exists($webp_uri)) {
-              $background_image_url = $this->fileUrlGenerator->generateAbsoluteString($webp_uri);
+            // Generate image style derivatives for responsive images.
+            /** @var \Drupal\image\ImageStyleInterface $desktop_style */
+            $desktop_style = $this->entityTypeManager->getStorage('image_style')->load('saho_hero');
+            /** @var \Drupal\image\ImageStyleInterface $mobile_style */
+            $mobile_style = $this->entityTypeManager->getStorage('image_style')->load('saho_hero_mobile');
+
+            if ($desktop_style) {
+              $desktop_uri = $desktop_style->buildUri($file_uri);
+              // Ensure the derivative exists.
+              if (!file_exists($desktop_uri)) {
+                $desktop_style->createDerivative($file_uri, $desktop_uri);
+              }
+              // Check for WebP version of the derivative.
+              $webp_desktop_uri = preg_replace('/\.(jpe?g|png)$/i', '.webp', $desktop_uri);
+              if ($webp_desktop_uri !== $desktop_uri && file_exists($webp_desktop_uri)) {
+                $background_image_url = $this->fileUrlGenerator->generateAbsoluteString($webp_desktop_uri);
+              }
+              else {
+                $background_image_url = $desktop_style->buildUrl($file_uri);
+              }
+              // Update dimensions for the styled image.
+              $image_width = 1920;
+              $image_height = $image_height ? (int) round(($image_height / $image_field->width) * 1920) : 800;
             }
             else {
-              $background_image_url = $this->fileUrlGenerator->generateAbsoluteString($file_uri);
+              // Fallback: Check for WebP version of original.
+              $webp_uri = preg_replace('/\.(jpe?g|png)$/i', '.webp', $file_uri);
+              if ($webp_uri !== $file_uri && file_exists($webp_uri)) {
+                $background_image_url = $this->fileUrlGenerator->generateAbsoluteString($webp_uri);
+              }
+              else {
+                $background_image_url = $this->fileUrlGenerator->generateAbsoluteString($file_uri);
+              }
+            }
+
+            // Generate mobile derivative.
+            if ($mobile_style) {
+              $mobile_uri = $mobile_style->buildUri($file_uri);
+              // Ensure the derivative exists.
+              if (!file_exists($mobile_uri)) {
+                $mobile_style->createDerivative($file_uri, $mobile_uri);
+              }
+              // Check for WebP version of the mobile derivative.
+              $webp_mobile_uri = preg_replace('/\.(jpe?g|png)$/i', '.webp', $mobile_uri);
+              if ($webp_mobile_uri !== $mobile_uri && file_exists($webp_mobile_uri)) {
+                $background_image_mobile_url = $this->fileUrlGenerator->generateAbsoluteString($webp_mobile_uri);
+              }
+              else {
+                $background_image_mobile_url = $mobile_style->buildUrl($file_uri);
+              }
             }
           }
         }
@@ -327,6 +375,9 @@ class HeroBannerBlock extends BlockBase implements ContainerFactoryPluginInterfa
       '#subtitle' => (string) ($config['subtitle'] ?? ''),
       '#body' => $body_value,
       '#background_image' => (string) ($background_image_url ?? ''),
+      '#background_image_mobile' => (string) ($background_image_mobile_url ?? ''),
+      '#image_width' => $image_width,
+      '#image_height' => $image_height,
       '#button_text' => (string) ($config['call_to_action']['title'] ?? ''),
       '#button_url' => (string) ($button_url ?? ''),
       '#button_target' => (string) ($button_target ?? ''),
