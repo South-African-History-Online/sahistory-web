@@ -266,8 +266,9 @@ class HeroBannerBlock extends BlockBase implements ContainerFactoryPluginInterfa
             $file_uri = $file->getFileUri();
 
             // Get image dimensions for CLS prevention.
-            $image_width = $image_field->width;
-            $image_height = $image_field->height;
+            $image_values = $image_field->first()->getValue();
+            $image_width = $image_values['width'] ?? NULL;
+            $image_height = $image_values['height'] ?? NULL;
 
             // Generate image style derivatives for responsive images.
             /** @var \Drupal\image\ImageStyleInterface $desktop_style */
@@ -290,8 +291,9 @@ class HeroBannerBlock extends BlockBase implements ContainerFactoryPluginInterfa
                 $background_image_url = $desktop_style->buildUrl($file_uri);
               }
               // Update dimensions for the styled image.
+              $original_width = $image_values['width'] ?? 0;
               $image_width = 1920;
-              $image_height = $image_height ? (int) round(($image_height / $image_field->width) * 1920) : 800;
+              $image_height = ($image_height && $original_width) ? (int) round(($image_height / $original_width) * 1920) : 800;
             }
             else {
               // Fallback: Check for WebP version of original.
