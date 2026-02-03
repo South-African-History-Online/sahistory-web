@@ -7,7 +7,10 @@
  * - title: The title of the hero banner.
  * - subtitle: The subtitle of the hero banner.
  * - body: The body content of the hero banner.
- * - background_image: The URL of the background image.
+ * - background_image: The URL of the background image (desktop).
+ * - background_image_mobile: The URL of the mobile-optimized image.
+ * - image_width: The width of the desktop image for CLS prevention.
+ * - image_height: The height of the desktop image for CLS prevention.
  * - button_text: The text for the call to action button.
  * - button_url: The URL for the call to action button.
  * - button_attributes: Attributes for the button element.
@@ -16,29 +19,42 @@
  * @ingroup themeable
  */
 #}
-{% if background_image %}
-  {# LCP optimization: preload hero image with fetchpriority #}
-  {# WebP is automatically served if available via .htaccess rules #}
-  <img src="{{ background_image }}" fetchpriority="high" style="display: none;" alt="" loading="eager">
-{% endif %}
-<div class="hero-banner" {% if background_image %}style="background-image: url('{{ background_image }}');"{% endif %}>
+<div class="hero-banner">
+  {% if background_image %}
+    {# LCP optimization: Real <picture> element with object-fit cover #}
+    {# Browser can preload this properly, unlike CSS background-image #}
+    <picture class="hero-banner__picture">
+      {% if background_image_mobile %}
+        <source media="(max-width: 768px)" srcset="{{ background_image_mobile }}">
+      {% endif %}
+      <img
+        src="{{ background_image }}"
+        alt="{{ title|default('') }}"
+        class="hero-banner__image"
+        fetchpriority="high"
+        loading="eager"
+        decoding="async"
+        {% if image_width and image_height %}width="{{ image_width }}" height="{{ image_height }}"{% endif %}
+      >
+    </picture>
+  {% endif %}
   <div class="hero-banner__overlay" style="opacity: {{ overlay_opacity }}"></div>
   <div class="hero-banner__content">
     <div class="hero-banner__inner">
       {% if title %}
         <h1 class="hero-banner__title hero-banner__title--{{ title_color|default('white') }}">{{ title }}</h1>
       {% endif %}
-      
+
       {% if subtitle %}
         <h2 class="hero-banner__subtitle">{{ subtitle }}</h2>
       {% endif %}
-      
+
       {% if body %}
         <div class="hero-banner__body text-formatted">
           {{ body }}
         </div>
       {% endif %}
-      
+
       {% if button_text and button_url %}
         <div class="hero-banner__cta">
           {% include 'saho:saho-button' with {
