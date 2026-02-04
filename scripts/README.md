@@ -1,4 +1,4 @@
-# 🚀 SAHO Website Scripts
+#  SAHO Website Scripts
 
 This directory contains scripts and documentation for WebP image optimization and content management on the SAHO website.
 
@@ -35,7 +35,7 @@ This directory contains scripts and documentation for WebP image optimization an
 - **`PRODUCTION_WEBP_DEPLOYMENT.md`** - Complete production deployment guide
 - **`IMAGE_URL_FIX.md`** - Safe image URL conversion guide
 
-## 🔧 **Quick Start Commands**
+##  **Quick Start Commands**
 
 All scripts should be run from the **project root directory**:
 
@@ -56,7 +56,7 @@ php scripts/complete_webp_conversion.php
 php scripts/production_webp_audit.php
 ```
 
-## 🎯 **Most Common Commands**
+##  **Most Common Commands**
 
 ### WebP Development
 ```bash
