@@ -206,6 +206,29 @@ git rebase main
 git push origin SAHO-XX--feature-description --force
 ```
 
+### Version Tagging
+The project uses semantic versioning with git tags (v1.0.0, v1.1.0, v2.0.0):
+
+```bash
+# Create and push a new version tag
+git tag v1.0.1 && git push origin v1.0.1
+
+# View current version
+git describe --tags
+
+# List all tags
+git tag --sort=-v:refname
+```
+
+Version tags are automatically detected by:
+- `version.php` - displays current version
+- `scripts/deploy-default.sh` - uses tags for deployment tracking
+
+**Versioning Guidelines:**
+- **Patch** (v1.0.1): Bug fixes, minor tweaks
+- **Minor** (v1.1.0): New features, non-breaking changes
+- **Major** (v2.0.0): Breaking changes, major rewrites
+
 ## Common Tasks
 
 ### Adding a New Module
