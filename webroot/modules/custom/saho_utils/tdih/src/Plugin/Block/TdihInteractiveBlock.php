@@ -171,8 +171,8 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
 
     $form['show_explore_button'] = [
       '#type' => 'checkbox',
-      '#title' => $this->t('Show "Explore more historical events" button'),
-      '#description' => $this->t('Enable to show the button that links to the full This Day in History page.'),
+      '#title' => $this->t('Show "Read more" button'),
+      '#description' => $this->t('Enable to show the "Read more" button that links to the displayed event.'),
       '#default_value' => $this->configuration['show_explore_button'],
     ];
 

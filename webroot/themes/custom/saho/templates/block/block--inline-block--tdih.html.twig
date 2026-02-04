@@ -42,11 +42,15 @@
     </div>
   {% endif %}
   
-  <div class="block-buttons">
-    {% include 'saho:saho-button' with {
-      text: 'More history'|t,
-      url: '/this-day-in-history',
-      size: 'medium'
-    } %}
-  </div>
+  {% if tdih_nodes %}
+    <div class="block-buttons">
+      {% for item in tdih_nodes %}
+        {% include 'saho:saho-button' with {
+          text: 'Read more'|t,
+          url: item.url,
+          size: 'medium'
+        } %}
+      {% endfor %}
+    </div>
+  {% endif %}
 </div>
