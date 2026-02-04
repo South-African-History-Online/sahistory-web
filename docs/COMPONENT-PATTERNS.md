@@ -110,12 +110,12 @@ This guide documents the component patterns established during the 2026 design s
 
 ### Benefits of This Pattern
 
-✅ **Self-Documenting**: All tokens visible at component level
-✅ **Easy Overrides**: Change tokens without touching styles
-✅ **Runtime Theming**: No recompilation needed
-✅ **DevTools Friendly**: Inspect computed values easily
-✅ **Maintainable**: Clear token source and usage
-✅ **Testable**: Easy to verify token values
+ **Self-Documenting**: All tokens visible at component level
+ **Easy Overrides**: Change tokens without touching styles
+ **Runtime Theming**: No recompilation needed
+ **DevTools Friendly**: Inspect computed values easily
+ **Maintainable**: Clear token source and usage
+ **Testable**: Easy to verify token values
 
 ---
 
@@ -126,13 +126,13 @@ This guide documents the component patterns established during the 2026 design s
 Each component should be completely self-contained:
 
 ```css
-/* ❌ BAD - External dependency */
+/*  BAD - External dependency */
 .component {
   color: $external-variable;      /* SCSS dependency */
   padding: 1.5rem;                /* Magic number */
 }
 
-/* ✅ GOOD - Self-contained */
+/*  GOOD - Self-contained */
 .component {
   --component-color: var(--saho-color-primary);
   --component-padding: var(--saho-space-3);
@@ -149,21 +149,21 @@ Each component should be completely self-contained:
 ```css
 /* Button component */
 .saho-button {
-  --button-bg: var(--saho-color-primary);       /* ✅ button- prefix */
+  --button-bg: var(--saho-color-primary);       /*  button- prefix */
   --button-padding: var(--saho-space-2);
   --button-radius: var(--saho-radius-pill);
 }
 
 /* Card component */
 .saho-card {
-  --card-bg: var(--saho-color-white);           /* ✅ card- prefix */
+  --card-bg: var(--saho-color-white);           /*  card- prefix */
   --card-padding: var(--saho-space-3);
   --card-radius: var(--saho-radius-md);
 }
 
 /* Modal component */
 #citation-modal {
-  --cite-bg: var(--saho-color-white);           /* ✅ cite- prefix */
+  --cite-bg: var(--saho-color-white);           /*  cite- prefix */
   --cite-padding: var(--saho-space-3);
   --cite-radius: var(--saho-radius-lg);
 }
@@ -226,10 +226,10 @@ Global Tokens → Component Tokens → Element Styles
 
 ### Inheritance Benefits
 
-✅ **Cascade-Aware**: Leverage CSS cascade naturally
-✅ **Easy Overrides**: Change parent token, children update
-✅ **Consistent Spacing**: All elements reference same tokens
-✅ **Responsive**: Override tokens at media queries
+ **Cascade-Aware**: Leverage CSS cascade naturally
+ **Easy Overrides**: Change parent token, children update
+ **Consistent Spacing**: All elements reference same tokens
+ **Responsive**: Override tokens at media queries
 
 ### Responsive Token Overrides
 
@@ -273,10 +273,10 @@ $button-padding: 0.75rem 1.5rem;
 ```
 
 **Problems:**
-- ❌ Depends on external variables
-- ❌ Requires SCSS compilation for changes
-- ❌ Magic numbers
-- ❌ Can't override at runtime
+-  Depends on external variables
+-  Requires SCSS compilation for changes
+-  Magic numbers
+-  Can't override at runtime
 
 #### After (Modern CSS)
 
@@ -306,10 +306,10 @@ $button-padding: 0.75rem 1.5rem;
 ```
 
 **Benefits:**
-- ✅ Uses unified tokens
-- ✅ Runtime configurable
-- ✅ Clear token source
-- ✅ Can override with specificity
+-  Uses unified tokens
+-  Runtime configurable
+-  Clear token source
+-  Can override with specificity
 
 ---
 
@@ -335,9 +335,9 @@ $card-min-width: 300px;
 ```
 
 **Problems:**
-- ❌ External SCSS variables
-- ❌ Magic numbers in media queries
-- ❌ Hard to trace gap source
+-  External SCSS variables
+-  Magic numbers in media queries
+-  Hard to trace gap source
 
 #### After (Modern CSS)
 
@@ -365,10 +365,10 @@ $card-min-width: 300px;
 ```
 
 **Benefits:**
-- ✅ Self-documenting gap values
-- ✅ Semantic token names
-- ✅ No magic numbers
-- ✅ Easy to update globally
+-  Self-documenting gap values
+-  Semantic token names
+-  No magic numbers
+-  Easy to update globally
 
 ---
 
@@ -417,10 +417,10 @@ $card-min-width: 300px;
 ```
 
 **Benefits:**
-- ✅ All tokens defined in one place
-- ✅ Zero magic numbers
-- ✅ Fluid typography
-- ✅ Easy to customize
+-  All tokens defined in one place
+-  Zero magic numbers
+-  Fluid typography
+-  Easy to customize
 
 ---
 
@@ -429,7 +429,7 @@ $card-min-width: 300px;
 ### 1. Always Define Tokens First
 
 ```css
-/* ✅ GOOD - Tokens then styles */
+/*  GOOD - Tokens then styles */
 .component {
   /* Define all tokens */
   --component-color: var(--saho-color-primary);
@@ -440,7 +440,7 @@ $card-min-width: 300px;
   padding: var(--component-spacing);
 }
 
-/* ❌ BAD - Mixed definition and usage */
+/*  BAD - Mixed definition and usage */
 .component {
   color: var(--component-color);         /* Defined where? */
   --component-color: var(--saho-color-primary);
@@ -475,12 +475,12 @@ $card-min-width: 300px;
 ### 3. Use Semantic Names
 
 ```css
-/* ✅ GOOD - Semantic names */
+/*  GOOD - Semantic names */
 --card-title-size: var(--saho-font-size-lg);
 --card-body-size: var(--saho-font-size-base);
 --card-meta-size: var(--saho-font-size-sm);
 
-/* ❌ BAD - Generic names */
+/*  BAD - Generic names */
 --card-font-1: var(--saho-font-size-lg);
 --card-font-2: var(--saho-font-size-base);
 --card-font-3: var(--saho-font-size-sm);
@@ -519,16 +519,16 @@ $card-min-width: 300px;
 
 ## Anti-Patterns
 
-### ❌ Don't Reference Global Tokens Directly in Styles
+###  Don't Reference Global Tokens Directly in Styles
 
 ```css
-/* ❌ BAD - Direct global token usage */
+/*  BAD - Direct global token usage */
 .component {
   color: var(--saho-color-primary);      /* Skip component layer */
   padding: var(--saho-space-3);          /* Hard to override */
 }
 
-/* ✅ GOOD - Component-scoped tokens */
+/*  GOOD - Component-scoped tokens */
 .component {
   --component-color: var(--saho-color-primary);
   --component-padding: var(--saho-space-3);
@@ -538,17 +538,17 @@ $card-min-width: 300px;
 }
 ```
 
-### ❌ Don't Use Magic Numbers
+###  Don't Use Magic Numbers
 
 ```css
-/* ❌ BAD - Magic numbers */
+/*  BAD - Magic numbers */
 .component {
   padding: 17px;          /* Random value */
   margin: 23px;           /* No relationship to grid */
   font-size: 1.3rem;      /* Arbitrary size */
 }
 
-/* ✅ GOOD - Token-based */
+/*  GOOD - Token-based */
 .component {
   padding: var(--saho-space-2);         /* 16px - grid aligned */
   margin: var(--saho-space-3);          /* 24px - harmonious */
@@ -556,17 +556,17 @@ $card-min-width: 300px;
 }
 ```
 
-### ❌ Don't Mix SCSS Variables and CSS Custom Properties
+###  Don't Mix SCSS Variables and CSS Custom Properties
 
 ```css
-/* ❌ BAD - Mixed approach */
+/*  BAD - Mixed approach */
 .component {
   --component-padding: var(--saho-space-3);
   color: $scss-variable;         /* SCSS dependency */
   padding: var(--component-padding);
 }
 
-/* ✅ GOOD - CSS custom properties only */
+/*  GOOD - CSS custom properties only */
 .component {
   --component-color: var(--saho-color-primary);
   --component-padding: var(--saho-space-3);
@@ -576,10 +576,10 @@ $card-min-width: 300px;
 }
 ```
 
-### ❌ Don't Nest Token Definitions Too Deeply
+###  Don't Nest Token Definitions Too Deeply
 
 ```css
-/* ❌ BAD - Hard to trace */
+/*  BAD - Hard to trace */
 .component {
   --level-1: var(--saho-space-3);
 }
@@ -593,7 +593,7 @@ $card-min-width: 300px;
   padding: var(--level-3);       /* Where does this come from? */
 }
 
-/* ✅ GOOD - Clear inheritance */
+/*  GOOD - Clear inheritance */
 .component {
   --component-padding: var(--saho-space-3);
 }
@@ -609,16 +609,16 @@ $card-min-width: 300px;
 
 When reviewing component code, check for:
 
-- [ ] ✅ All design tokens defined inline
-- [ ] ✅ Component-scoped token names (prefixed)
-- [ ] ✅ Inherits from unified `--saho-*` tokens
-- [ ] ✅ No external SCSS variable dependencies
-- [ ] ✅ No magic numbers in styles
-- [ ] ✅ Token sections commented
-- [ ] ✅ Semantic token names
-- [ ] ✅ Responsive token overrides
-- [ ] ✅ DevTools-inspectable values
-- [ ] ✅ Documentation includes token usage
+- [ ]  All design tokens defined inline
+- [ ]  Component-scoped token names (prefixed)
+- [ ]  Inherits from unified `--saho-*` tokens
+- [ ]  No external SCSS variable dependencies
+- [ ]  No magic numbers in styles
+- [ ]  Token sections commented
+- [ ]  Semantic token names
+- [ ]  Responsive token overrides
+- [ ]  DevTools-inspectable values
+- [ ]  Documentation includes token usage
 
 ---
 

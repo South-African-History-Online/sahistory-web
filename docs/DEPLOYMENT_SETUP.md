@@ -185,13 +185,13 @@ These scripts:
 
 ### SSH Key Security
 
-✅ **DO:**
+ **DO:**
 - Generate separate keys for different purposes
 - Use strong passphrases for keys stored on personal machines
 - Rotate keys regularly (every 90-180 days)
 - Remove keys immediately when no longer needed
 
-❌ **DON'T:**
+ **DON'T:**
 - Share private keys
 - Use the same key for multiple servers
 - Store private keys in the repository
@@ -199,20 +199,20 @@ These scripts:
 
 ### GitHub Secrets Security
 
-✅ **DO:**
+ **DO:**
 - Use GitHub environments for sensitive deployments
 - Enable required reviewers for production
 - Audit secret access regularly
 - Use different keys for staging and production
 
-❌ **DON'T:**
+ **DON'T:**
 - Echo secrets in workflow logs
 - Share secrets between repositories unnecessarily
 - Use overly permissive SSH keys
 
 ### Server Security
 
-✅ **DO:**
+ **DO:**
 - Restrict SSH key to specific commands if possible
 - Monitor deployment logs
 - Keep backup before auto-deployment

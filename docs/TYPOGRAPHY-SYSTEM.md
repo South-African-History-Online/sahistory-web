@@ -334,10 +334,10 @@ h3 {
 
 #### 200% Zoom Testing
 All typography tested at 200% browser zoom:
-- ✅ No horizontal scrolling
-- ✅ All text readable
-- ✅ No content overlap
-- ✅ Maintain layout integrity
+-  No horizontal scrolling
+-  All text readable
+-  No content overlap
+-  Maintain layout integrity
 
 ### Reduced Motion Support
 
@@ -520,7 +520,7 @@ All typography tested at 200% browser zoom:
 
 ## Best Practices
 
-### Do ✅
+### Do 
 
 - **Use semantic heading tokens** (`--saho-font-h1`) instead of scale tokens
 - **Apply line-height-normal (1.5)** or higher for body text
@@ -529,7 +529,7 @@ All typography tested at 200% browser zoom:
 - **Implement reduced motion** media query for accessibility
 - **Use fluid scale** for responsive sizing without media queries
 
-### Don't ❌
+### Don't 
 
 - **Don't use magic numbers** - always use tokens
 - **Don't use font-weight-light (300)** for body text

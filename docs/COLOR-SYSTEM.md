@@ -208,22 +208,22 @@ All color combinations meet or exceed WCAG 2.1 AA standards:
 
 | Color | Hex | Ratio | Pass Level | Usage |
 |-------|-----|-------|------------|-------|
-| Primary Text | #1e293b | **12.63:1** | AAA | Body text ✅ |
-| Primary Red | #990000 | **7.98:1** | AAA | Links, headers ✅ |
-| Secondary Text | #475569 | **7.52:1** | AAA | Supporting text ✅ |
-| Slate Blue | #3a4a64 | **10.77:1** | AAA | Place badges ✅ |
-| Forest Green | #2d5016 | **11.84:1** | AAA | Biography badges ✅ |
-| Muted Text | #94a3b8 | **4.54:1** | AA | Metadata ✅ |
-| Muted Gold | #b88a2e | **3.89:1** | AA Large | Archive badges ✅ |
+| Primary Text | #1e293b | **12.63:1** | AAA | Body text  |
+| Primary Red | #990000 | **7.98:1** | AAA | Links, headers  |
+| Secondary Text | #475569 | **7.52:1** | AAA | Supporting text  |
+| Slate Blue | #3a4a64 | **10.77:1** | AAA | Place badges  |
+| Forest Green | #2d5016 | **11.84:1** | AAA | Biography badges  |
+| Muted Text | #94a3b8 | **4.54:1** | AA | Metadata  |
+| Muted Gold | #b88a2e | **3.89:1** | AA Large | Archive badges  |
 
 **White Text on Brand Colors**
 
 | Background | Hex | Ratio | Pass Level | Usage |
 |------------|-----|-------|------------|-------|
-| Primary Red | #990000 | **5.25:1** | AA Large | Buttons, badges ✅ |
-| Slate Blue | #3a4a64 | **4.89:1** | AA Large | Place badges ✅ |
-| Forest Green | #2d5016 | **5.60:1** | AA Large | Bio badges ✅ |
-| Gray-800 | #1e293b | **12.63:1** | AAA | Event badges ✅ |
+| Primary Red | #990000 | **5.25:1** | AA Large | Buttons, badges  |
+| Slate Blue | #3a4a64 | **4.89:1** | AA Large | Place badges  |
+| Forest Green | #2d5016 | **5.60:1** | AA Large | Bio badges  |
+| Gray-800 | #1e293b | **12.63:1** | AAA | Event badges  |
 
 ### Testing Tools
 
@@ -234,10 +234,10 @@ All color combinations meet or exceed WCAG 2.1 AA standards:
 ### 200% Zoom Compliance
 
 All color combinations tested at 200% browser zoom:
-- ✅ Text remains readable
-- ✅ No color-only information
-- ✅ Interactive elements identifiable
-- ✅ Focus indicators visible
+-  Text remains readable
+-  No color-only information
+-  Interactive elements identifiable
+-  Focus indicators visible
 
 ---
 
@@ -569,7 +569,7 @@ All color combinations tested at 200% browser zoom:
 
 ## Best Practices
 
-### Do ✅
+### Do 
 
 - **Use CSS custom properties** for all colors
 - **Reference semantic tokens** (--saho-color-text-primary) not raw hex
@@ -578,7 +578,7 @@ All color combinations tested at 200% browser zoom:
 - **Use alpha variants** for overlays and shadows
 - **Document color usage** in component comments
 
-### Don't ❌
+### Don't 
 
 - **Don't use raw hex values** in components
 - **Don't rely on color alone** for information
