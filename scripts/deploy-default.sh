@@ -41,16 +41,16 @@ error_exit() {
 
 log "Starting deployment for default site"
 
-# Increment deploy version
-if [ -f "${PROJECT_ROOT}/DEPLOY_VERSION" ]; then
-    CURRENT_VERSION=$(cat "${PROJECT_ROOT}/DEPLOY_VERSION")
-    NEW_VERSION=$((CURRENT_VERSION + 1))
+# Get current version from git tag
+CURRENT_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "no-tag")
+CURRENT_COMMIT_SHORT=$(git rev-parse --short HEAD)
+if [ "$CURRENT_TAG" = "no-tag" ]; then
+    VERSION="commit-${CURRENT_COMMIT_SHORT}"
 else
-    NEW_VERSION=1
+    VERSION="${CURRENT_TAG}"
 fi
-echo "$NEW_VERSION" > "${PROJECT_ROOT}/DEPLOY_VERSION"
-log "Deploy version: ${NEW_VERSION}"
-echo -e "${GREEN}Deploy #${NEW_VERSION}${NC}"
+log "Current version: ${VERSION}"
+echo -e "${GREEN}Deploying version: ${VERSION}${NC}"
 
 # Git pull
 echo -e "${YELLOW}[1/4] Pulling code...${NC}"
@@ -95,6 +95,8 @@ vendor/bin/drush cr -l "${SITE_URI}" >> "${LOG_FILE}" 2>&1
 
 echo ""
 echo -e "${GREEN}✓ DEPLOYMENT SUCCESSFUL${NC}"
-echo -e "Deploy version: #${NEW_VERSION}"
+echo -e "Version: ${VERSION}"
 echo -e "Log: ${LOG_FILE}"
+echo ""
+echo -e "${YELLOW}To tag a new version:${NC} git tag v1.2.3 && git push origin v1.2.3"
 echo ""
