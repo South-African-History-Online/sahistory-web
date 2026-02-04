@@ -110,16 +110,18 @@
     {% endif %}
   </div>
 
-  {% if show_explore_button %}
+  {% if show_explore_button and all_events|length > 0 %}
     <div class="tdih-footer text-center mt-4">
-      {% include 'saho:saho-button' with {
-        text: 'View more historical events'|t,
-        url: '/this-day-in-history',
-        size: 'medium',
-        attributes: {
-          class: ['tdih-view-more-button']
-        }
-      } %}
+      {% for item in all_events|slice(0, 1) %}
+        {% include 'saho:saho-button' with {
+          text: 'Read more'|t,
+          url: item.url,
+          size: 'medium',
+          attributes: {
+            class: ['tdih-view-more-button']
+          }
+        } %}
+      {% endfor %}
     </div>
   {% endif %}
 </div>
