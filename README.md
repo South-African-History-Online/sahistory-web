@@ -857,6 +857,53 @@ New features should be submitted as Pull Requests (PRs) and reviewed by other de
 
 Let's keep the repository clean and delete old feature branches when they are no longer needed.
 
+### Versioning & Releases
+
+The project uses semantic versioning with git tags for version tracking:
+
+```bash
+# Create a new version tag
+git tag v1.0.1
+
+# Push the tag to GitHub
+git push origin v1.0.1
+
+# View current version
+git describe --tags
+
+# List all version tags
+git tag --sort=-v:refname
+```
+
+#### Version Numbering
+
+Follow semantic versioning (MAJOR.MINOR.PATCH):
+- **PATCH** (v1.0.1): Bug fixes, security patches, minor tweaks
+- **MINOR** (v1.1.0): New features, enhancements, non-breaking changes
+- **MAJOR** (v2.0.0): Breaking changes, major refactors, API changes
+
+#### Version Display
+
+The current version is automatically displayed:
+- **version.php**: Shows version, deployment timestamp, and environment info
+- **Deployment script** (`scripts/deploy-default.sh`): Logs deployed version
+- **GitHub Releases**: Tags appear as releases in GitHub
+
+#### Release Workflow
+
+1. Merge feature branch to main
+2. Ensure main is tested and stable
+3. Create and push version tag
+4. Tag automatically appears in GitHub releases
+5. Deployment script picks up the new version
+
+Example:
+```bash
+git checkout main
+git pull origin main
+git tag v1.2.0 && git push origin v1.2.0
+```
+
 ## Contributing to SAHO
 
 South African History Online welcomes contributions from people with diverse skills and backgrounds. You don't need to be a developer to make a meaningful impact on this project!
