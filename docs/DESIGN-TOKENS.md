@@ -140,11 +140,11 @@ All color combinations meet accessibility standards:
 
 | Combination | Ratio | Pass |
 |-------------|-------|------|
-| Primary text (#1e293b) on white (#ffffff) | 12.63:1 | ✅ AAA |
-| Primary red (#990000) on white (#ffffff) | 7.98:1 | ✅ AAA |
-| Secondary text (#475569) on white (#ffffff) | 7.52:1 | ✅ AAA |
-| Muted text (#94a3b8) on white (#ffffff) | 4.54:1 | ✅ AA |
-| White text on primary red (#990000) | 5.25:1 | ✅ AA |
+| Primary text (#1e293b) on white (#ffffff) | 12.63:1 |  AAA |
+| Primary red (#990000) on white (#ffffff) | 7.98:1 |  AAA |
+| Secondary text (#475569) on white (#ffffff) | 7.52:1 |  AAA |
+| Muted text (#94a3b8) on white (#ffffff) | 4.54:1 |  AA |
+| White text on primary red (#990000) | 5.25:1 |  AA |
 
 ---
 
@@ -200,7 +200,7 @@ All spacing uses multiples of 8px for consistent vertical rhythm and alignment.
 
 ### Deprecated Spacing Aliases
 
-**⚠️ Deprecated - Use numbered scale instead:**
+** Deprecated - Use numbered scale instead:**
 
 ```css
 /* OLD - DO NOT USE */
@@ -620,10 +620,10 @@ All color combinations have been tested and meet accessibility standards:
 
 All components tested at 200% browser zoom:
 
-- ✅ No horizontal scrolling
-- ✅ All text readable
-- ✅ No content overlap
-- ✅ Interactive elements remain accessible
+-  No horizontal scrolling
+-  All text readable
+-  No content overlap
+-  Interactive elements remain accessible
 
 ### Browser Support
 

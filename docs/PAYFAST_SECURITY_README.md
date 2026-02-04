@@ -1,7 +1,7 @@
 # PayFast Security Configuration - SAHO Shop
 
 **Date**: 2026-01-29
-**Status**: ✅ Configured with placeholder values
+**Status**:  Configured with placeholder values
 
 ---
 
@@ -14,10 +14,10 @@ We use a **two-layer approach**:
 2. **Settings.php** (not in git): Overrides with real credentials at runtime
 
 This ensures:
-- ✅ Config can be version controlled safely
-- ✅ Real credentials never touch git
-- ✅ Different credentials per environment (local/production)
-- ✅ Easy to update credentials without changing config
+-  Config can be version controlled safely
+-  Real credentials never touch git
+-  Different credentials per environment (local/production)
+-  Easy to update credentials without changing config
 
 ---
 
@@ -33,7 +33,7 @@ configuration:
   passphrase: ''       # Empty placeholder
 ```
 
-**Status**: ✅ Committed to git with placeholder values
+**Status**:  Committed to git with placeholder values
 
 ### 2. Settings Override (Template - SAFE to commit)
 **Location**: `PAYFAST_SETTINGS_OVERRIDE.php`
@@ -41,14 +41,14 @@ configuration:
 This is a **template file** showing how to override the placeholders.
 Contains example code but no real credentials.
 
-**Status**: ✅ Committed to git as documentation
+**Status**:  Committed to git as documentation
 
 ### 3. Settings.php (NEVER commit)
 **Location**: `webroot/sites/shop.sahistory.org.za/settings.php`
 
 This file should contain the actual credentials and override code.
 
-**Status**: ⚠️ In `.gitignore` - never committed
+**Status**:  In `.gitignore` - never committed
 
 ---
 
@@ -199,8 +199,8 @@ debug: 0                         # Debug disabled
 
 ### What you should NOT see
 ```yaml
-merchant_id: abc123  # ❌ Means override didn't work
-merchant_key: abc123 # ❌ Means override didn't work
+merchant_id: abc123  #  Means override didn't work
+merchant_key: abc123 #  Means override didn't work
 ```
 
 ---
@@ -208,15 +208,15 @@ merchant_key: abc123 # ❌ Means override didn't work
 ## Git Status
 
 ### What IS in git (safe)
-✅ `config/shop/commerce_payment.commerce_payment_gateway.payfast.yml` (with abc123)
-✅ `PAYFAST_SETTINGS_OVERRIDE.php` (template with no real credentials)
-✅ `PAYFAST_SETTINGS_TEMPLATE.php` (examples)
-✅ `PAYFAST_SECURITY_README.md` (this file)
+ `config/shop/commerce_payment.commerce_payment_gateway.payfast.yml` (with abc123)
+ `PAYFAST_SETTINGS_OVERRIDE.php` (template with no real credentials)
+ `PAYFAST_SETTINGS_TEMPLATE.php` (examples)
+ `PAYFAST_SECURITY_README.md` (this file)
 
 ### What is NOT in git (protected)
-❌ `webroot/sites/shop.sahistory.org.za/settings.php` (in .gitignore)
-❌ Any file with real merchant IDs or keys
-❌ Environment variable files with credentials
+ `webroot/sites/shop.sahistory.org.za/settings.php` (in .gitignore)
+ Any file with real merchant IDs or keys
+ Environment variable files with credentials
 
 ### Verify git protection
 ```bash
@@ -367,7 +367,7 @@ ddev drush --uri=https://shop.ddev.site wd-show --type=commerce_payment
 **Last Updated**: 2026-01-29
 **Status**: Configuration exported with abc123 placeholders
 **Next Step**: Add settings.php override with real credentials
-**Security**: ✅ No credentials in git
+**Security**:  No credentials in git
 
 ---
 

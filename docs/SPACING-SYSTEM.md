@@ -116,7 +116,7 @@ The 8px baseline grid provides:
 
 ### Deprecated Aliases
 
-**⚠️ Do NOT use - migrate to numbered scale:**
+** Do NOT use - migrate to numbered scale:**
 
 ```css
 /* OLD - DEPRECATED */
@@ -623,7 +623,7 @@ The 8px baseline grid provides:
 
 ### Magic Number Elimination
 
-**❌ Bad - Magic numbers:**
+** Bad - Magic numbers:**
 
 ```css
 .component {
@@ -633,7 +633,7 @@ The 8px baseline grid provides:
 }
 ```
 
-**✅ Good - Using scale:**
+** Good - Using scale:**
 
 ```css
 .component {
@@ -680,7 +680,7 @@ The 8px baseline grid provides:
 }
 ```
 
-### Do ✅
+### Do 
 
 - **Use the spacing scale** for all margins, padding, gaps
 - **Start with mobile spacing**, enhance for desktop
@@ -688,7 +688,7 @@ The 8px baseline grid provides:
 - **Test at multiple viewport sizes** to ensure spacing works
 - **Document spacing decisions** in component comments
 
-### Don't ❌
+### Don't 
 
 - **Don't use magic numbers** - always use tokens
 - **Don't break the 8px grid** (except for optical balance)

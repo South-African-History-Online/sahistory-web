@@ -27,12 +27,12 @@ Step-by-step guide for migrating legacy SCSS components to the modern inline CSS
 
 ### Why Migrate?
 
-✅ **Runtime Theming**: Change tokens without recompilation
-✅ **Component Isolation**: Zero external dependencies
-✅ **Maintainability**: Clear token source and usage
-✅ **DevTools Friendly**: Easy to inspect and debug
-✅ **Dark Mode Ready**: Switch themes via media queries
-✅ **Performance**: No SCSS compilation overhead
+ **Runtime Theming**: Change tokens without recompilation
+ **Component Isolation**: Zero external dependencies
+ **Maintainability**: Clear token source and usage
+ **DevTools Friendly**: Easy to inspect and debug
+ **Dark Mode Ready**: Switch themes via media queries
+ **Performance**: No SCSS compilation overhead
 
 ### Migration Scope
 
@@ -549,17 +549,17 @@ h2 {
 
 ### Token Definition
 
-✅ **Pass**: All design tokens defined inline at component level
-❌ **Fail**: External SCSS variables used
+ **Pass**: All design tokens defined inline at component level
+ **Fail**: External SCSS variables used
 
 ```css
-/* ✅ PASS */
+/*  PASS */
 .component {
   --component-color: var(--saho-color-primary);
   color: var(--component-color);
 }
 
-/* ❌ FAIL */
+/*  FAIL */
 .component {
   color: $scss-variable;
 }
@@ -567,46 +567,46 @@ h2 {
 
 ### Token Naming
 
-✅ **Pass**: Component-scoped, semantic names
-❌ **Fail**: Generic or global names
+ **Pass**: Component-scoped, semantic names
+ **Fail**: Generic or global names
 
 ```css
-/* ✅ PASS */
+/*  PASS */
 --card-title-size: var(--saho-font-size-lg);
 --card-padding: var(--saho-space-3);
 
-/* ❌ FAIL */
+/*  FAIL */
 --size-1: var(--saho-font-size-lg);
 --spacing: var(--saho-space-3);
 ```
 
 ### Magic Numbers
 
-✅ **Pass**: All values from token scale
-❌ **Fail**: Arbitrary px/rem values
+ **Pass**: All values from token scale
+ **Fail**: Arbitrary px/rem values
 
 ```css
-/* ✅ PASS */
+/*  PASS */
 padding: var(--saho-space-3);  /* 24px */
 
-/* ❌ FAIL */
+/*  FAIL */
 padding: 17px;  /* Magic number */
 ```
 
 ### Responsive Behavior
 
-✅ **Pass**: Token overrides at breakpoints
-❌ **Fail**: Magic numbers in media queries
+ **Pass**: Token overrides at breakpoints
+ **Fail**: Magic numbers in media queries
 
 ```css
-/* ✅ PASS */
+/*  PASS */
 @media (max-width: 768px) {
   .component {
     --component-padding: var(--saho-space-2);
   }
 }
 
-/* ❌ FAIL */
+/*  FAIL */
 @media (max-width: 768px) {
   .component {
     padding: 15px;
@@ -616,17 +616,17 @@ padding: 17px;  /* Magic number */
 
 ### Documentation
 
-✅ **Pass**: Token sections commented, usage documented
-❌ **Fail**: No comments, unclear token purpose
+ **Pass**: Token sections commented, usage documented
+ **Fail**: No comments, unclear token purpose
 
 ```css
-/* ✅ PASS */
+/*  PASS */
 .component {
   /* ===== SPACING TOKENS (8px baseline grid) ===== */
   --component-padding: var(--saho-space-3);  /* 24px - comfortable spacing */
 }
 
-/* ❌ FAIL */
+/*  FAIL */
 .component {
   --component-padding: var(--saho-space-3);
 }
@@ -651,7 +651,7 @@ padding: 17px;  /* Magic number */
 /* Check token is actually used */
 .component {
   --component-color: var(--saho-color-primary);  /* Defined */
-  color: var(--component-color);                  /* Used ✅ */
+  color: var(--component-color);                  /* Used  */
 }
 
 /* Check specificity */
@@ -676,7 +676,7 @@ body .wrapper .component {
 **Solution:**
 
 ```css
-/* ❌ PROBLEM */
+/*  PROBLEM */
 .parent {
   --component-padding: var(--saho-space-3);
 }
@@ -686,7 +686,7 @@ body .wrapper .component {
   padding: var(--component-padding);          /* Uses child's value */
 }
 
-/* ✅ SOLUTION */
+/*  SOLUTION */
 .parent {
   --component-padding: var(--saho-space-3);
 }
@@ -715,7 +715,7 @@ body .wrapper .component {
 **Solution:**
 
 ```css
-/* ❌ PROBLEM - Override after usage */
+/*  PROBLEM - Override after usage */
 .component {
   padding: var(--component-padding);  /* Uses undefined value */
 }
@@ -726,7 +726,7 @@ body .wrapper .component {
   }
 }
 
-/* ✅ SOLUTION - Define default, override in media query */
+/*  SOLUTION - Define default, override in media query */
 .component {
   --component-padding: var(--saho-space-3);  /* Default */
   padding: var(--component-padding);
@@ -769,13 +769,13 @@ body .wrapper .component {
 **Solution:**
 
 ```scss
-/* ❌ PROBLEM - SCSS can't interpolate CSS custom properties */
+/*  PROBLEM - SCSS can't interpolate CSS custom properties */
 $spacing: var(--saho-space-3);
 .component {
   padding: $spacing + 10px;  /* ERROR */
 }
 
-/* ✅ SOLUTION - Use CSS calc() */
+/*  SOLUTION - Use CSS calc() */
 .component {
   --component-padding-base: var(--saho-space-3);
   padding: calc(var(--component-padding-base) + 10px);

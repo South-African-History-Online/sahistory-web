@@ -462,7 +462,7 @@ The `saho_utils` module serves as a container for smaller, focused sub-modules:
 
 The SAHO Timeline is a high-performance, interactive timeline application built with **Svelte 5** and **Vite**. It provides users with an immersive way to explore South African history through thousands of chronologically organized events.
 
-### 🌟 Key Features
+###  Key Features
 
 - **Interactive Timeline**: Smooth scrolling through centuries of South African history
 - **Advanced Filtering**: Filter by historical periods, themes, event types, and search terms  
@@ -477,7 +477,7 @@ The SAHO Timeline is a high-performance, interactive timeline application built 
 - **Production URL**: `https://sahistory-web.ddev.site/saho-timeline/`
 - **Development Server**: `http://localhost:5173` (when running locally)
 
-### 🚀 Quick Start
+###  Quick Start
 
 ```bash
 # Navigate to timeline app
@@ -507,7 +507,7 @@ For comprehensive documentation including:
 
 See the detailed README: **`saho-timeline-svelte/README.md`**
 
-### 🔧 Integration with SAHO
+###  Integration with SAHO
 
 The timeline app integrates seamlessly with the main SAHO Drupal site:
 
@@ -516,7 +516,7 @@ The timeline app integrates seamlessly with the main SAHO Drupal site:
 - **Responsive Design**: Matches SAHO's mobile-first approach
 - **Theme Consistency**: Follows SAHO's design language and color scheme
 
-### 🎯 For Developers
+###  For Developers
 
 The timeline app is a **standalone Svelte application** with its own:
 - Build process (`npm run build`)
@@ -703,7 +703,7 @@ The theme uses **Vite** for fast asset compilation. Built assets are output to `
    npm run biome:fix
    ```
 
-> **⚠️ Important**: After running `npm run production`, you must commit the `dist/` folder. The production server does not have Node.js, so built assets must be in the repository.
+> ** Important**: After running `npm run production`, you must commit the `dist/` folder. The production server does not have Node.js, so built assets must be in the repository.
 
 ### Theme Configuration
 
@@ -897,14 +897,14 @@ South African History Online welcomes contributions from people with diverse ski
 
 We value all contributions, big and small, and are committed to creating an inclusive and welcoming environment for contributors of all backgrounds and experience levels.
 
-### CI/CD Pipeline 🚀
+### CI/CD Pipeline 
 
 [![Frontend CI](https://github.com/South-African-History-Online/sahistory-web/actions/workflows/frontend-ci.yml/badge.svg)](https://github.com/South-African-History-Online/sahistory-web/actions/workflows/frontend-ci.yml)
 [![PR Build and Test](https://github.com/South-African-History-Online/sahistory-web/actions/workflows/ci.yml/badge.svg)](https://github.com/South-African-History-Online/sahistory-web/actions/workflows/ci.yml)
 
 This project leverages a robust Continuous Integration and Continuous Deployment (CI/CD) pipeline to ensure high code quality and streamline the development process. Our automated workflows help catch issues early and maintain a consistent codebase.
 
-#### ✨ Benefits of Our CI/CD Pipeline
+####  Benefits of Our CI/CD Pipeline
 
 - **Catch Issues Early**: Identify and fix problems before they reach production
 - **Consistent Quality**: Enforce coding standards across all contributions
@@ -921,7 +921,7 @@ This project leverages a robust Continuous Integration and Continuous Deployment
 - **Drupal Best Practices** 💧: Checks for Drupal-specific issues and recommendations
 - **Composer Validation** 🎵: Ensures Composer configuration is valid
 
-#### 🛠️ How to Ensure the Pipeline Passes
+#### 🛠 How to Ensure the Pipeline Passes
 
 Before pushing your changes, run these checks locally:
 
