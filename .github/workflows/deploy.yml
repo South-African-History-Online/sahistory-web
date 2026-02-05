@@ -2,8 +2,8 @@ name: Deploy to Production
 
 on:
   push:
-    branches:
-      - main
+    tags:
+      - 'v*'  # Trigger on version tags (v1.0.0, v1.0.1, etc.)
   workflow_dispatch:
     inputs:
       environment:
@@ -40,9 +40,10 @@ jobs:
             cd ${{ secrets.DEPLOY_PATH_PROD }}
             echo "========================================="
             echo "Deploying to PRODUCTION"
+            echo "Tag: ${{ github.ref_name }}"
             echo "========================================="
-            git fetch origin
-            git reset --hard origin/main
+            git fetch origin --tags
+            git checkout ${{ github.ref_name }}
             scripts/deploy-all.sh production
             echo ""
             echo "✓ Production deployment complete"
