@@ -52,12 +52,23 @@ fi
 log "Current version: ${VERSION}"
 echo -e "${GREEN}Deploying version: ${VERSION}${NC}"
 
-# Git pull
-echo -e "${YELLOW}[1/4] Pulling code...${NC}"
+# Git pull (only if on a branch, not a tag)
+echo -e "${YELLOW}[1/4] Updating code...${NC}"
 CURRENT_COMMIT=$(git rev-parse HEAD)
-git pull >> "${LOG_FILE}" 2>&1 || error_exit "Git pull failed"
-NEW_COMMIT=$(git rev-parse HEAD)
-echo -e "${GREEN}✓ Code updated${NC}"
+
+# Check if we're on a detached HEAD (tag deployment)
+if git symbolic-ref -q HEAD >/dev/null 2>&1; then
+    # We're on a branch - pull latest
+    log "On branch, pulling latest changes"
+    git pull >> "${LOG_FILE}" 2>&1 || error_exit "Git pull failed"
+    NEW_COMMIT=$(git rev-parse HEAD)
+    echo -e "${GREEN}✓ Code updated (pulled latest)${NC}"
+else
+    # We're on a detached HEAD (tag) - already at exact version
+    log "On tag/commit, skipping pull (already at exact version)"
+    NEW_COMMIT=$(git rev-parse HEAD)
+    echo -e "${GREEN}✓ Code ready (using tag ${VERSION})${NC}"
+fi
 
 # Composer
 echo -e "${YELLOW}[2/4] Installing dependencies...${NC}"
