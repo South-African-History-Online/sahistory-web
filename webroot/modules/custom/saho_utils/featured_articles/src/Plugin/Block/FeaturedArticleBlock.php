@@ -4,11 +4,14 @@ namespace Drupal\featured_articles\Plugin\Block;
 
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\File\FileUrlGeneratorInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Drupal\file\FileInterface;
 use Drupal\node\NodeInterface;
+use Drupal\saho_utils\Service\CacheHelperService;
+use Drupal\saho_utils\Service\ConfigurationFormHelperService;
+use Drupal\saho_utils\Service\EntityItemBuilderService;
+use Drupal\saho_utils\Service\ImageExtractorService;
+use Drupal\saho_utils\Service\SortingService;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -30,11 +33,39 @@ class FeaturedArticleBlock extends BlockBase implements ContainerFactoryPluginIn
   protected $entityTypeManager;
 
   /**
-   * The file URL generator.
+   * The sorting service.
    *
-   * @var \Drupal\Core\File\FileUrlGeneratorInterface
+   * @var \Drupal\saho_utils\Service\SortingService
    */
-  protected $fileUrlGenerator;
+  protected $sortingService;
+
+  /**
+   * The image extractor service.
+   *
+   * @var \Drupal\saho_utils\Service\ImageExtractorService
+   */
+  protected $imageExtractor;
+
+  /**
+   * The entity item builder service.
+   *
+   * @var \Drupal\saho_utils\Service\EntityItemBuilderService
+   */
+  protected $entityItemBuilder;
+
+  /**
+   * The configuration form helper service.
+   *
+   * @var \Drupal\saho_utils\Service\ConfigurationFormHelperService
+   */
+  protected $configFormHelper;
+
+  /**
+   * The cache helper service.
+   *
+   * @var \Drupal\saho_utils\Service\CacheHelperService
+   */
+  protected $cacheHelper;
 
   /**
    * Constructs a FeaturedArticleBlock object.
@@ -47,19 +78,35 @@ class FeaturedArticleBlock extends BlockBase implements ContainerFactoryPluginIn
    *   The plugin implementation definition.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
-   * @param \Drupal\Core\File\FileUrlGeneratorInterface $file_url_generator
-   *   The file URL generator.
+   * @param \Drupal\saho_utils\Service\SortingService $sorting_service
+   *   The sorting service.
+   * @param \Drupal\saho_utils\Service\ImageExtractorService $image_extractor
+   *   The image extractor service.
+   * @param \Drupal\saho_utils\Service\EntityItemBuilderService $entity_item_builder
+   *   The entity item builder service.
+   * @param \Drupal\saho_utils\Service\ConfigurationFormHelperService $config_form_helper
+   *   The configuration form helper service.
+   * @param \Drupal\saho_utils\Service\CacheHelperService $cache_helper
+   *   The cache helper service.
    */
   public function __construct(
     array $configuration,
     $plugin_id,
     $plugin_definition,
     EntityTypeManagerInterface $entity_type_manager,
-    FileUrlGeneratorInterface $file_url_generator,
+    SortingService $sorting_service,
+    ImageExtractorService $image_extractor,
+    EntityItemBuilderService $entity_item_builder,
+    ConfigurationFormHelperService $config_form_helper,
+    CacheHelperService $cache_helper,
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->entityTypeManager = $entity_type_manager;
-    $this->fileUrlGenerator = $file_url_generator;
+    $this->sortingService = $sorting_service;
+    $this->imageExtractor = $image_extractor;
+    $this->entityItemBuilder = $entity_item_builder;
+    $this->configFormHelper = $config_form_helper;
+    $this->cacheHelper = $cache_helper;
   }
 
   /**
@@ -70,6 +117,7 @@ class FeaturedArticleBlock extends BlockBase implements ContainerFactoryPluginIn
       'use_manual_override' => FALSE,
       'manual_entity_id' => NULL,
       'sort_by' => 'none',
+      'display_mode' => 'default',
     ] + parent::defaultConfiguration();
   }
 
@@ -79,55 +127,44 @@ class FeaturedArticleBlock extends BlockBase implements ContainerFactoryPluginIn
   public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
     $form = parent::buildConfigurationForm($form, $form_state);
 
-    $form['use_manual_override'] = [
-      '#type' => 'checkbox',
-      '#title' => $this->t('Use Manual Override?'),
-      '#description' => $this->t('Select a specific article instead of a random featured one.'),
-      '#default_value' => $this->configuration['use_manual_override'],
-    ];
+    // Manual override checkbox using service.
+    $form['use_manual_override'] = $this->configFormHelper->buildManualOverrideCheckbox(
+      $this->configuration['use_manual_override'],
+      NULL,
+      $this->t('Select a specific article instead of a random featured one.')
+    );
 
-    // Validate entity ID before loading to prevent errors from
-    // invalid/deleted nodes.
-    $default_node = NULL;
-    $manual_id = $this->configuration['manual_entity_id'];
-    if ($manual_id && is_numeric($manual_id) && (int) $manual_id > 0) {
-      $default_node = $this->entityTypeManager->getStorage('node')->load($manual_id);
-    }
-
-    $form['manual_entity_id'] = [
-      '#type' => 'entity_autocomplete',
-      '#title' => $this->t('Manual Article'),
-      '#description' => $this->t('Choose the article to display if override is enabled.'),
-      '#target_type' => 'node',
-      '#selection_handler' => 'default:node',
-      '#selection_settings' => [
-        'target_bundles' => ['article'],
-      ],
-      '#default_value' => $default_node,
-      '#states' => [
+    // Entity autocomplete using service.
+    $form['manual_entity_id'] = $this->configFormHelper->buildEntityAutocomplete(
+      'node',
+      'article',
+      $this->configuration['manual_entity_id'],
+      [
         'visible' => [
           ':input[name="use_manual_override"]' => ['checked' => TRUE],
         ],
       ],
-    ];
+      $this->t('Manual Article'),
+      $this->t('Choose the article to display if override is enabled.')
+    );
 
-    $form['sort_by'] = [
-      '#type' => 'select',
-      '#title' => $this->t('Sort By'),
-      '#description' => $this->t('Choose how to sort featured articles. "Random" shuffles results each time.'),
-      '#options' => [
-        'none' => $this->t('Random (shuffle)'),
-        'title' => $this->t('Title (alphabetical)'),
-        'changed' => $this->t('Recently updated'),
-        'created' => $this->t('Recently created'),
-      ],
-      '#default_value' => $this->configuration['sort_by'],
-      '#states' => [
+    // Sort select using service with custom options.
+    $form['sort_by'] = $this->configFormHelper->buildSortSelect(
+      $this->configuration['sort_by'],
+      [
         'visible' => [
           ':input[name="settings[use_manual_override]"]' => ['checked' => FALSE],
         ],
       ],
-    ];
+      TRUE,
+      []
+    );
+    $form['sort_by']['#description'] = $this->t('Choose how to sort featured articles. "Random" shuffles results each time.');
+
+    // Display mode configuration.
+    $form['display_mode'] = $this->configFormHelper->buildDisplayModeSelect(
+      $this->configuration['display_mode'] ?? 'default'
+    );
 
     return $form;
   }
@@ -141,6 +178,7 @@ class FeaturedArticleBlock extends BlockBase implements ContainerFactoryPluginIn
     $this->configuration['use_manual_override'] = $form_state->getValue('use_manual_override');
     $this->configuration['manual_entity_id'] = $form_state->getValue('manual_entity_id');
     $this->configuration['sort_by'] = $form_state->getValue('sort_by');
+    $this->configuration['display_mode'] = $form_state->getValue('display_mode');
   }
 
   /**
@@ -171,42 +209,13 @@ class FeaturedArticleBlock extends BlockBase implements ContainerFactoryPluginIn
       ->condition('field_staff_picks', 1)
       ->accessCheck(TRUE);
 
-    // Apply sorting based on configuration.
+    // Apply sorting based on configuration using shared service.
     $sort_by = $this->configuration['sort_by'] ?? 'none';
+    $this->sortingService->applySorting($query, $sort_by);
 
-    if ($sort_by !== 'none') {
-      // Sorted selection - get top result after sorting.
-      switch ($sort_by) {
-        case 'title':
-          $query->sort('title', 'ASC');
-          break;
-
-        case 'changed':
-          $query->sort('changed', 'DESC');
-          break;
-
-        case 'created':
-          $query->sort('created', 'DESC');
-          break;
-      }
-      $query->range(0, 1);
-      $nids = $query->execute();
-      $nid = !empty($nids) ? reset($nids) : NULL;
-    }
-    else {
-      // Random selection - existing shuffle logic.
-      $query->range(0, 50);
-      $nids = $query->execute();
-
-      if (!empty($nids)) {
-        $nids_array = array_values($nids);
-        shuffle($nids_array);
-        $nid = reset($nids_array);
-      }
-      else {
-        $nid = NULL;
-      }
-    }
+    // Execute query and get the node ID.
+    $nids = $query->execute();
+    $nid = !empty($nids) ? reset($nids) : NULL;
 
     if (empty($nid)) {
       return [
@@ -217,15 +226,17 @@ class FeaturedArticleBlock extends BlockBase implements ContainerFactoryPluginIn
 
     $node = $this->entityTypeManager->getStorage('node')->load($nid);
 
+    // Get display mode.
+    $display_mode = $this->configuration['display_mode'] ?? 'default';
+
+    // Build cache array using CacheHelperService.
+    $cache = $this->cacheHelper->buildNodeListCache('article');
+
     return [
       '#theme' => 'featured_article_block',
       '#article_item' => $node ? $this->buildArticleItem($node) : NULL,
-      '#cache' => [
-        'max-age' => 3600,
-        'contexts' => ['url'],
-        'tags' => ['node_list:article'],
-        'keys' => ['featured_article_block', $sort_by],
-      ],
+      '#display_mode' => $display_mode,
+      '#cache' => $cache,
     ];
   }
 
@@ -243,43 +254,15 @@ class FeaturedArticleBlock extends BlockBase implements ContainerFactoryPluginIn
    *   - image: The image URL if available
    */
   protected function buildArticleItem(NodeInterface $node) {
-    $image_url = '';
-    if ($node->hasField('field_article_image') && !$node->get('field_article_image')->isEmpty()) {
-      $file = $node->get('field_article_image')->entity;
-      if ($file) {
-        // Check if the entity implements FileInterface or is a File entity.
-        if ($file instanceof FileInterface) {
-          $image_url = $this->fileUrlGenerator->generateAbsoluteString($file->getFileUri());
-        }
-        // Fallback: check if the entity has a getFileUri method
-        // and is a file entity.
-        elseif ($file->getEntityTypeId() === 'file' && method_exists($file, 'getFileUri')) {
-          $image_url = $this->fileUrlGenerator->generateAbsoluteString($file->getFileUri());
-        }
-        // Last resort: try to load it as a media entity and
-        // get the source file.
-        elseif ($file->getEntityTypeId() === 'media') {
-          // Check if this is a media entity that has a source plugin.
-          if (method_exists($file, 'getSource') && $file->getSource()) {
-            $source_field = $file->getSource()->getConfiguration()['source_field'];
-            // Check if the media entity has the source field.
-            if (method_exists($file, 'get') && !empty($file->get($source_field)->entity)) {
-              $source_file = $file->get($source_field)->entity;
-              if ($source_file instanceof FileInterface) {
-                $image_url = $this->fileUrlGenerator->generateAbsoluteString($source_file->getFileUri());
-              }
-            }
-          }
-        }
-      }
+    // Use EntityItemBuilderService for consistent item building.
+    $item = $this->entityItemBuilder->buildItemWithImage($node, 'field_article_image');
+
+    // Ensure backward compatibility with 'image' key.
+    if (isset($item['image_url'])) {
+      $item['image'] = $item['image_url'];
     }
 
-    return [
-      'id' => $node->id(),
-      'title' => $node->label(),
-      'url' => $node->toUrl()->toString(),
-      'image' => $image_url,
-    ];
+    return $item;
   }
 
   /**
@@ -291,7 +274,11 @@ class FeaturedArticleBlock extends BlockBase implements ContainerFactoryPluginIn
       $plugin_id,
       $plugin_definition,
       $container->get('entity_type.manager'),
-      $container->get('file_url_generator'),
+      $container->get('saho_utils.sorting'),
+      $container->get('saho_utils.image_extractor'),
+      $container->get('saho_utils.entity_item_builder'),
+      $container->get('saho_utils.config_form_helper'),
+      $container->get('saho_utils.cache_helper'),
     );
   }
 

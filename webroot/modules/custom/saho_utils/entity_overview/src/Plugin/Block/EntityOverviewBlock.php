@@ -5,11 +5,16 @@ namespace Drupal\entity_overview\Plugin\Block;
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\File\FileUrlGeneratorInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Drupal\file\FileInterface;
 use Drupal\node\NodeInterface;
+use Drupal\saho_utils\Service\BlockQueryBuilderService;
+use Drupal\saho_utils\Service\CacheHelperService;
+use Drupal\saho_utils\Service\ConfigurationFormHelperService;
+use Drupal\saho_utils\Service\ContentExtractorService;
+use Drupal\saho_utils\Service\EntityItemBuilderService;
+use Drupal\saho_utils\Service\ImageExtractorService;
+use Drupal\saho_utils\Service\SortingService;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -38,11 +43,53 @@ class EntityOverviewBlock extends BlockBase implements ContainerFactoryPluginInt
   protected $entityTypeManager;
 
   /**
-   * The file URL generator.
+   * The sorting service.
    *
-   * @var \Drupal\Core\File\FileUrlGeneratorInterface
+   * @var \Drupal\saho_utils\Service\SortingService
    */
-  protected $fileUrlGenerator;
+  protected $sortingService;
+
+  /**
+   * The image extractor service.
+   *
+   * @var \Drupal\saho_utils\Service\ImageExtractorService
+   */
+  protected $imageExtractor;
+
+  /**
+   * The block query builder service.
+   *
+   * @var \Drupal\saho_utils\Service\BlockQueryBuilderService
+   */
+  protected $queryBuilder;
+
+  /**
+   * The entity item builder service.
+   *
+   * @var \Drupal\saho_utils\Service\EntityItemBuilderService
+   */
+  protected $entityItemBuilder;
+
+  /**
+   * The content extractor service.
+   *
+   * @var \Drupal\saho_utils\Service\ContentExtractorService
+   */
+  protected $contentExtractor;
+
+  /**
+   * The configuration form helper service.
+   *
+   * @var \Drupal\saho_utils\Service\ConfigurationFormHelperService
+   */
+  protected $configFormHelper;
+
+  /**
+   * The cache helper service.
+   *
+   * @var \Drupal\saho_utils\Service\CacheHelperService
+   */
+  protected $cacheHelper;
 
   /**
    * Constructs an EntityOverviewBlock object.
@@ -57,8 +104,20 @@ class EntityOverviewBlock extends BlockBase implements ContainerFactoryPluginInt
    *   The entity type bundle info service.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
-   * @param \Drupal\Core\File\FileUrlGeneratorInterface $file_url_generator
-   *   The file URL generator.
+   * @param \Drupal\saho_utils\Service\SortingService $sorting_service
+   *   The sorting service.
+   * @param \Drupal\saho_utils\Service\ImageExtractorService $image_extractor
+   *   The image extractor service.
+   * @param \Drupal\saho_utils\Service\BlockQueryBuilderService $query_builder
+   *   The block query builder service.
+   * @param \Drupal\saho_utils\Service\EntityItemBuilderService $entity_item_builder
+   *   The entity item builder service.
+   * @param \Drupal\saho_utils\Service\ContentExtractorService $content_extractor
+   *   The content extractor service.
+   * @param \Drupal\saho_utils\Service\ConfigurationFormHelperService $config_form_helper
+   *   The configuration form helper service.
+   * @param \Drupal\saho_utils\Service\CacheHelperService $cache_helper
+   *   The cache helper service.
    */
   public function __construct(
     array $configuration,
@@ -66,12 +125,24 @@ class EntityOverviewBlock extends BlockBase implements ContainerFactoryPluginInt
     $plugin_definition,
     EntityTypeBundleInfoInterface $entity_type_bundle_info,
     EntityTypeManagerInterface $entity_type_manager,
-    FileUrlGeneratorInterface $file_url_generator,
+    SortingService $sorting_service,
+    ImageExtractorService $image_extractor,
+    BlockQueryBuilderService $query_builder,
+    EntityItemBuilderService $entity_item_builder,
+    ContentExtractorService $content_extractor,
+    ConfigurationFormHelperService $config_form_helper,
+    CacheHelperService $cache_helper,
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->entityTypeBundleInfo = $entity_type_bundle_info;
     $this->entityTypeManager = $entity_type_manager;
-    $this->fileUrlGenerator = $file_url_generator;
+    $this->sortingService = $sorting_service;
+    $this->imageExtractor = $image_extractor;
+    $this->queryBuilder = $query_builder;
+    $this->entityItemBuilder = $entity_item_builder;
+    $this->contentExtractor = $content_extractor;
+    $this->configFormHelper = $config_form_helper;
+    $this->cacheHelper = $cache_helper;
   }
 
   /**
@@ -86,7 +157,9 @@ class EntityOverviewBlock extends BlockBase implements ContainerFactoryPluginInt
       'intro_text' => 'Displaying the latest content from the %title section of the site.',
       'enable_filtering' => FALSE,
       'enable_sorting' => FALSE,
-      // No display toggles needed.
+      'require_images' => FALSE,
+      'display_mode' => 'default',
+      'show_display_toggle' => FALSE,
     ] + parent::defaultConfiguration();
   }
 
@@ -134,17 +207,31 @@ class EntityOverviewBlock extends BlockBase implements ContainerFactoryPluginInt
       ],
     ];
 
-    // No longer using filtering - focus on sorting and display modes.
-    // Sorting is handled via backend configuration only.
-    // No display mode toggle needed - clean content display only.
+    // Comprehensive sorting options.
     $form['sort_order'] = [
-      '#type' => 'radios',
+      '#type' => 'select',
       '#title' => $this->t('Sort Order'),
+      '#description' => $this->t('Select how to sort the content items.'),
       '#options' => [
-        'latest' => $this->t('Latest'),
-        'oldest' => $this->t('Oldest'),
+        'latest' => $this->t('Latest - Most recently created items first (by created date)'),
+        'oldest' => $this->t('Oldest - Least recently created items first (by created date)'),
+        'recently_updated' => $this->t('Recently Updated - Most recently modified items first (by changed date)'),
+        'random' => $this->t('Random - Shuffle all matching items'),
+        'random_with_images' => $this->t('Random with Images - Only items with images, shuffled'),
       ],
       '#default_value' => $this->configuration['sort_order'],
+    ];
+
+    $form['require_images'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Require images'),
+      '#description' => $this->t('Filter out any items that do not have an image.'),
+      '#default_value' => $this->configuration['require_images'],
+      '#states' => [
+        'visible' => [
+          ':input[name="settings[sort_order]"]' => ['!value' => 'random_with_images'],
+        ],
+      ],
     ];
 
     $form['limit'] = [
@@ -155,6 +242,18 @@ class EntityOverviewBlock extends BlockBase implements ContainerFactoryPluginInt
       '#min' => 1,
       '#max' => 50,
     ];
+
+    // Display mode configuration.
+    $form['display_mode'] = $this->configFormHelper->buildDisplayModeSelect(
+      $this->configuration['display_mode'] ?? 'default'
+    );
+
+    // Display toggle option.
+    $form['show_display_toggle'] = $this->configFormHelper->buildFeatureToggle(
+      'Display Toggle',
+      $this->configuration['show_display_toggle'] ?? FALSE,
+      $this->t('Allow users to switch between display modes (grid/list/compact).')
+    );
 
     return $form;
   }
@@ -169,9 +268,10 @@ class EntityOverviewBlock extends BlockBase implements ContainerFactoryPluginInt
     $this->configuration['content_type'] = $form_state->getValue('content_type');
     $this->configuration['sort_order'] = $form_state->getValue('sort_order');
     $this->configuration['limit'] = $form_state->getValue('limit');
+    $this->configuration['require_images'] = $form_state->getValue('require_images');
+    $this->configuration['display_mode'] = $form_state->getValue('display_mode');
+    $this->configuration['show_display_toggle'] = $form_state->getValue('show_display_toggle');
     $this->configuration['enable_filtering'] = FALSE;
-    // No frontend sorting controls needed
-    // No display toggle configuration needed.
   }
 
   /**
@@ -181,6 +281,8 @@ class EntityOverviewBlock extends BlockBase implements ContainerFactoryPluginInt
     $content_type = $this->configuration['content_type'];
     $sort_order = $this->configuration['sort_order'];
     $limit = $this->configuration['limit'];
+    $require_images = $this->configuration['require_images'] ?? FALSE;
+
     // Simplified - backend configuration only
     // Use custom header if provided, otherwise fall back to block label.
     $custom_header = $this->configuration['custom_header'];
@@ -199,34 +301,52 @@ class EntityOverviewBlock extends BlockBase implements ContainerFactoryPluginInt
     // Generate a unique ID for this block instance.
     $block_id = 'entity-overview-' . substr(hash('sha256', $this->getPluginId() . serialize($this->configuration)), 0, 8);
 
-    // Build the query to fetch entities.
-    $query = $this->entityTypeManager->getStorage('node')->getQuery()
-      ->condition('type', $content_type)
-      ->condition('status', 1)
-      ->range(0, $limit)
-      ->accessCheck(TRUE);
+    // Build the query using BlockQueryBuilderService.
+    $query = $this->queryBuilder->buildBaseQuery('node', $content_type);
+    $query = $this->queryBuilder->addPublishedFilter($query);
 
-    // Apply sorting based on sort_order configuration.
-    if ($sort_order == 'latest') {
-      $query->sort('changed', 'DESC');
+    // Apply image filter if required or if sort is random_with_images.
+    if ($require_images || $sort_order === 'random_with_images') {
+      $image_field = $this->imageExtractor->findImageFieldForContentType($content_type);
+      $query = $this->queryBuilder->addImageFilter($query, $image_field);
     }
-    elseif ($sort_order == 'oldest') {
-      $query->sort('changed', 'ASC');
+
+    // For random sorting, fetch more items for better variety before shuffling.
+    if ($sort_order === 'random' || $sort_order === 'random_with_images') {
+      // Fetch 5x the limit to provide good randomization.
+      $fetch_limit = $limit * 5;
+      $query = $this->queryBuilder->applyLimit($query, $fetch_limit);
     }
     else {
-      // Default to latest changed.
-      $query->sort('changed', 'DESC');
+      // Apply sorting via SortingService.
+      $query = $this->sortingService->applySorting($query, $sort_order, 'node');
+      $query = $this->queryBuilder->applyLimit($query, $limit);
     }
 
     // Execute the query and load the entities.
     $nids = $query->execute();
     $nodes = !empty($nids) ? $this->entityTypeManager->getStorage('node')->loadMultiple($nids) : [];
-    $items = [];
-    foreach ($nodes as $node) {
-      $items[] = $this->buildEntityItem($node);
+
+    // For random sorting, shuffle and slice the results.
+    if ($sort_order === 'random' || $sort_order === 'random_with_images') {
+      $nodes = $this->sortingService->sortLoadedEntities($nodes, 'random');
+      $nodes = array_slice($nodes, 0, $limit);
     }
 
-    // Simple display - no load more functionality needed.
+    // Build entity items using EntityItemBuilderService.
+    $items = $this->entityItemBuilder->buildMultipleItems($nodes, 'full');
+
+    // Get display mode and toggle setting.
+    $display_mode = $this->configuration['display_mode'] ?? 'default';
+    $show_display_toggle = $this->configuration['show_display_toggle'] ?? FALSE;
+
+    // Determine if there are more items available.
+    $total_count = $this->getEntityCount($content_type);
+    $has_more = count($items) < $total_count;
+
+    // Build cache array using CacheHelperService.
+    $cache = $this->cacheHelper->buildNodeListCache($content_type);
+
     // Return the render array.
     $build = [
       '#theme' => 'entity_overview_block',
@@ -234,14 +354,13 @@ class EntityOverviewBlock extends BlockBase implements ContainerFactoryPluginInt
       '#block_title' => $block_title,
       '#intro_text' => $intro_text,
       '#block_id' => $block_id,
-      // No filter options
-      // Backend sorting only.
+      '#display_mode' => $display_mode,
+      '#show_display_toggle' => $show_display_toggle,
+      '#has_more' => $has_more,
+      '#filter_options' => [],
+      '#sort_options' => [],
       '#current_sort_order' => $sort_order,
-      '#cache' => [
-        'contexts' => ['url.query_args'],
-        'tags' => ['node_list:' . $content_type],
-        'max-age' => 3600,
-      ],
+      '#cache' => $cache,
       '#attached' => [
         'library' => ['entity_overview/entity_overview'],
         'drupalSettings' => [
@@ -251,6 +370,7 @@ class EntityOverviewBlock extends BlockBase implements ContainerFactoryPluginInt
               'contentType' => $content_type,
               'currentSortOrder' => $sort_order,
               'limit' => $limit,
+              'displayMode' => $display_mode,
             ],
           ],
         ],
@@ -288,85 +408,23 @@ class EntityOverviewBlock extends BlockBase implements ContainerFactoryPluginInt
    *   The entity item data.
    */
   protected function buildEntityItem(NodeInterface $node) {
-    $image_url = '';
+    // Use EntityItemBuilderService for consistent item building.
+    $item = $this->entityItemBuilder->buildFullItem($node);
 
-    // Define image field names for different content types.
-    $image_field_map = [
-      'article' => 'field_article_image',
-      'biography' => 'field_bio_pic',
-      'place' => 'field_place_image',
-      'event' => 'field_event_image',
-      'upcomingevent' => 'field_upcomingevent_image',
-      'archive' => 'field_archive_image',
-      // Add more content types and their image field names as needed.
-    ];
-
-    // Get the content type of the node.
-    $content_type = $node->bundle();
-
-    // Get the appropriate image field name for this content type.
-    $image_field = $image_field_map[$content_type] ?? 'field_article_image';
-
-    // Check if the node has the image field and it's not empty.
-    if ($node->hasField($image_field) && !$node->get($image_field)->isEmpty()) {
-      $file = $node->get($image_field)->entity;
-      if ($file) {
-        // Check if entity implements FileInterface or has getFileUri method.
-        if (($file instanceof FileInterface) ||
-            (method_exists($file, 'getFileUri') &&
-             $file->getEntityTypeId() === 'file')
-        ) {
-          $image_url = $this->fileUrlGenerator->generateAbsoluteString($file->getFileUri());
-        }
-      }
+    // Ensure backward compatibility with legacy field names.
+    if (isset($item['image_url'])) {
+      $item['image'] = $item['image_url'];
+    }
+    if (isset($item['created'])) {
+      // Convert from date string back to timestamp for BC.
+      $item['created'] = $node->getCreatedTime();
+    }
+    if (isset($item['changed'])) {
+      // Convert from date string back to timestamp for BC.
+      $item['changed'] = $node->getChangedTime();
     }
 
-    // Extract teaser text from body field.
-    $teaser_text = '';
-    $body_field_candidates = ['body', 'field_body', 'field_description', 'field_summary'];
-
-    foreach ($body_field_candidates as $field_name) {
-      if ($node->hasField($field_name) && !$node->get($field_name)->isEmpty()) {
-        $body_field = $node->get($field_name)->first();
-        if ($body_field) {
-          $body_value = $body_field->getValue();
-          $body_text = $body_value['value'] ?? '';
-
-          // Strip HTML and create teaser (around 150 characters)
-          $teaser_text = strip_tags($body_text);
-          $teaser_text = substr($teaser_text, 0, 150);
-
-          // Find the last complete sentence or word within the limit.
-          if (strlen($teaser_text) == 150) {
-            $last_period = strrpos($teaser_text, '.');
-            $last_space = strrpos($teaser_text, ' ');
-
-            if ($last_period !== FALSE && $last_period > 100) {
-              $teaser_text = substr($teaser_text, 0, $last_period + 1);
-            }
-            elseif ($last_space !== FALSE) {
-              $teaser_text = substr($teaser_text, 0, $last_space) . '...';
-            }
-            else {
-              $teaser_text .= '...';
-            }
-          }
-
-          // Use first available body field.
-          break;
-        }
-      }
-    }
-
-    return [
-      'id' => $node->id(),
-      'title' => $node->label(),
-      'url' => $node->toUrl()->toString(),
-      'image' => $image_url,
-      'teaser' => $teaser_text,
-      'created' => $node->getCreatedTime(),
-      'changed' => $node->getChangedTime(),
-    ];
+    return $item;
   }
 
   /**
@@ -379,7 +437,13 @@ class EntityOverviewBlock extends BlockBase implements ContainerFactoryPluginInt
       $plugin_definition,
       $container->get('entity_type.bundle.info'),
       $container->get('entity_type.manager'),
-      $container->get('file_url_generator'),
+      $container->get('saho_utils.sorting'),
+      $container->get('saho_utils.image_extractor'),
+      $container->get('saho_utils.query_builder'),
+      $container->get('saho_utils.entity_item_builder'),
+      $container->get('saho_utils.content_extractor'),
+      $container->get('saho_utils.config_form_helper'),
+      $container->get('saho_utils.cache_helper'),
     );
   }
 
