@@ -7,6 +7,9 @@ use Drupal\Core\Database\Connection;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Url;
+use Drupal\saho_utils\Service\CacheHelperService;
+use Drupal\saho_utils\Service\ConfigurationFormHelperService;
+use Drupal\saho_utils\Service\SortingService;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -15,7 +18,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * @Block(
  *   id = "wall_of_champions_block",
  *   admin_label = @Translation("Wall of Champions Block"),
- *   category = @Translation("SAHO"),
+ *   category = @Translation("All custom"),
  * )
  */
 class WallOfChampionsBlock extends BlockBase implements ContainerFactoryPluginInterface {
@@ -28,6 +31,27 @@ class WallOfChampionsBlock extends BlockBase implements ContainerFactoryPluginIn
   protected $database;
 
   /**
+   * The sorting service.
+   *
+   * @var \Drupal\saho_utils\Service\SortingService
+   */
+  protected $sortingService;
+
+  /**
+   * The configuration form helper service.
+   *
+   * @var \Drupal\saho_utils\Service\ConfigurationFormHelperService
+   */
+  protected $configFormHelper;
+
+  /**
+   * The cache helper service.
+   *
+   * @var \Drupal\saho_utils\Service\CacheHelperService
+   */
+  protected $cacheHelper;
+
+  /**
    * Constructs a WallOfChampionsBlock object.
    *
    * @param array $configuration
@@ -38,10 +62,27 @@ class WallOfChampionsBlock extends BlockBase implements ContainerFactoryPluginIn
    *   The plugin implementation definition.
    * @param \Drupal\Core\Database\Connection $database
    *   The database connection.
+   * @param \Drupal\saho_utils\Service\SortingService $sorting_service
+   *   The sorting service.
+   * @param \Drupal\saho_utils\Service\ConfigurationFormHelperService $config_form_helper
+   *   The configuration form helper service.
+   * @param \Drupal\saho_utils\Service\CacheHelperService $cache_helper
+   *   The cache helper service.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, Connection $database) {
+  public function __construct(
+    array $configuration,
+    $plugin_id,
+    $plugin_definition,
+    Connection $database,
+    SortingService $sorting_service,
+    ConfigurationFormHelperService $config_form_helper,
+    CacheHelperService $cache_helper,
+  ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->database = $database;
+    $this->sortingService = $sorting_service;
+    $this->configFormHelper = $config_form_helper;
+    $this->cacheHelper = $cache_helper;
   }
 
   /**
@@ -52,7 +93,10 @@ class WallOfChampionsBlock extends BlockBase implements ContainerFactoryPluginIn
       $configuration,
       $plugin_id,
       $plugin_definition,
-      $container->get('database')
+      $container->get('database'),
+      $container->get('saho_utils.sorting'),
+      $container->get('saho_utils.config_form_helper'),
+      $container->get('saho_utils.cache_helper'),
     );
   }
 
@@ -62,6 +106,7 @@ class WallOfChampionsBlock extends BlockBase implements ContainerFactoryPluginIn
   public function defaultConfiguration() {
     return [
       'display_count' => 6,
+      'sort_order' => 'recent_subscribers',
     ] + parent::defaultConfiguration();
   }
 
@@ -82,6 +127,18 @@ class WallOfChampionsBlock extends BlockBase implements ContainerFactoryPluginIn
       '#description' => $this->t('Select how many champions to show in this block.'),
     ];
 
+    $form['sort_order'] = [
+      '#type' => 'select',
+      '#title' => $this->t('Sort order'),
+      '#options' => [
+        'recent_subscribers' => $this->t('Recent Subscribers (default)'),
+        'alphabetical' => $this->t('Alphabetical (A-Z)'),
+        'random' => $this->t('Random'),
+      ],
+      '#default_value' => $this->configuration['sort_order'],
+      '#description' => $this->t('Select how to sort the champions. Recent Subscribers shows newest members first.'),
+    ];
+
     return $form;
   }
 
@@ -90,6 +147,7 @@ class WallOfChampionsBlock extends BlockBase implements ContainerFactoryPluginIn
    */
   public function blockSubmit($form, FormStateInterface $form_state) {
     $this->configuration['display_count'] = $form_state->getValue('display_count');
+    $this->configuration['sort_order'] = $form_state->getValue('sort_order');
   }
 
   /**
@@ -97,11 +155,13 @@ class WallOfChampionsBlock extends BlockBase implements ContainerFactoryPluginIn
    *
    * @param int $limit
    *   Number of champions to return.
+   * @param string $sort_order
+   *   The sort order to apply.
    *
    * @return array
    *   Array of champion data.
    */
-  protected function getChampions($limit) {
+  protected function getChampions($limit, $sort_order = 'recent_subscribers') {
     // Check if first_name and last_name fields exist.
     $has_name_fields = $this->database->schema()->tableExists('user__field_first_name')
       && $this->database->schema()->tableExists('user__field_last_name');
@@ -136,8 +196,38 @@ class WallOfChampionsBlock extends BlockBase implements ContainerFactoryPluginIn
     $query->condition('opt.field_champion_wall_opt_in_value', 1);
 
     $query->distinct();
-    $query->orderBy('cs.starts', 'DESC');
-    $query->range(0, $limit);
+
+    // Apply sorting based on configuration.
+    switch ($sort_order) {
+      case 'alphabetical':
+        // Sort by first name, then last name if name fields exist.
+        if ($has_name_fields) {
+          $query->orderBy('fn.field_first_name_value', 'ASC');
+          $query->orderBy('ln.field_last_name_value', 'ASC');
+        }
+        else {
+          $query->orderBy('u.name', 'ASC');
+        }
+        break;
+
+      case 'random':
+        // For random, fetch more results and shuffle later.
+        // Increase limit to provide better randomization.
+        $fetch_limit = min($limit * 10, 100);
+        $query->range(0, $fetch_limit);
+        break;
+
+      case 'recent_subscribers':
+      default:
+        // Default: Sort by subscription start date, newest first.
+        $query->orderBy('cs.starts', 'DESC');
+        break;
+    }
+
+    // Apply limit if not random (random applies larger fetch limit above).
+    if ($sort_order !== 'random') {
+      $query->range(0, $limit);
+    }
 
     $results = $query->execute()->fetchAll();
 
@@ -169,6 +259,13 @@ class WallOfChampionsBlock extends BlockBase implements ContainerFactoryPluginIn
       ];
     }
 
+    // Apply random shuffling if needed.
+    if ($sort_order === 'random') {
+      shuffle($champions);
+      // Limit to requested count after shuffling.
+      $champions = array_slice($champions, 0, $limit);
+    }
+
     return $champions;
   }
 
@@ -177,7 +274,8 @@ class WallOfChampionsBlock extends BlockBase implements ContainerFactoryPluginIn
    */
   public function build() {
     $limit = $this->configuration['display_count'];
-    $champions = $this->getChampions($limit);
+    $sort_order = $this->configuration['sort_order'] ?? 'recent_subscribers';
+    $champions = $this->getChampions($limit, $sort_order);
 
     // Get total count for context.
     $total_query = $this->database->select('commerce_subscription', 'cs');
@@ -191,16 +289,21 @@ class WallOfChampionsBlock extends BlockBase implements ContainerFactoryPluginIn
     $total_query->addExpression('COUNT(DISTINCT cs.uid)', 'total');
     $total_count = $total_query->execute()->fetchField();
 
+    // Build cache array using CacheHelperService.
+    $cache_max_age = ($sort_order === 'random') ? 300 : 3600;
+    $cache = $this->cacheHelper->buildStandardCache(
+      'wall_of_champions_block',
+      $this->configuration,
+      $cache_max_age
+    );
+    $cache = $this->cacheHelper->addCacheTags($cache, ['commerce_subscription_list', 'user_list']);
+
     return [
       '#theme' => 'wall_of_champions_block',
       '#champions' => $champions,
       '#total_count' => $total_count,
       '#view_all_url' => Url::fromRoute('wall_of_champions.page')->toString(),
-      '#cache' => [
-        'max-age' => 3600,
-        'contexts' => ['url'],
-        'tags' => ['commerce_subscription_list', 'user_list'],
-      ],
+      '#cache' => $cache,
     ];
   }
 

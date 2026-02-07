@@ -6,10 +6,14 @@ use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Cache\Cache;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\File\FileUrlGeneratorInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Drupal\file\FileInterface;
+use Drupal\saho_utils\Service\CacheHelperService;
+use Drupal\saho_utils\Service\ConfigurationFormHelperService;
+use Drupal\saho_utils\Service\ContentExtractorService;
+use Drupal\saho_utils\Service\EntityItemBuilderService;
+use Drupal\saho_utils\Service\ImageExtractorService;
+use Drupal\saho_utils\Service\SortingService;
 use Drupal\tdih\Service\NodeFetcher;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -49,11 +53,46 @@ class TdihBlock extends BlockBase implements ContainerFactoryPluginInterface {
   protected $time;
 
   /**
-   * The file URL generator.
+   * The sorting service.
    *
-   * @var \Drupal\Core\File\FileUrlGeneratorInterface
+   * @var \Drupal\saho_utils\Service\SortingService
    */
-  protected $fileUrlGenerator;
+  protected $sortingService;
+
+  /**
+   * The image extractor service.
+   *
+   * @var \Drupal\saho_utils\Service\ImageExtractorService
+   */
+  protected $imageExtractor;
+
+  /**
+   * The entity item builder service.
+   *
+   * @var \Drupal\saho_utils\Service\EntityItemBuilderService
+   */
+  protected $entityItemBuilder;
+
+  /**
+   * The content extractor service.
+   *
+   * @var \Drupal\saho_utils\Service\ContentExtractorService
+   */
+  protected $contentExtractor;
+
+  /**
+   * The configuration form helper service.
+   *
+   * @var \Drupal\saho_utils\Service\ConfigurationFormHelperService
+   */
+  protected $configFormHelper;
+
+  /**
+   * The cache helper service.
+   *
+   * @var \Drupal\saho_utils\Service\CacheHelperService
+   */
+  protected $cacheHelper;
 
   /**
    * Constructs a new TdihBlock instance.
@@ -70,8 +109,18 @@ class TdihBlock extends BlockBase implements ContainerFactoryPluginInterface {
    *   The entity type manager service.
    * @param \Drupal\Component\Datetime\TimeInterface $time
    *   The time service.
-   * @param \Drupal\Core\File\FileUrlGeneratorInterface $file_url_generator
-   *   The file URL generator service.
+   * @param \Drupal\saho_utils\Service\SortingService $sorting_service
+   *   The sorting service.
+   * @param \Drupal\saho_utils\Service\ImageExtractorService $image_extractor
+   *   The image extractor service.
+   * @param \Drupal\saho_utils\Service\EntityItemBuilderService $entity_item_builder
+   *   The entity item builder service.
+   * @param \Drupal\saho_utils\Service\ContentExtractorService $content_extractor
+   *   The content extractor service.
+   * @param \Drupal\saho_utils\Service\ConfigurationFormHelperService $config_form_helper
+   *   The configuration form helper service.
+   * @param \Drupal\saho_utils\Service\CacheHelperService $cache_helper
+   *   The cache helper service.
    */
   public function __construct(
     array $configuration,
@@ -80,13 +129,23 @@ class TdihBlock extends BlockBase implements ContainerFactoryPluginInterface {
     NodeFetcher $nodeFetcher,
     EntityTypeManagerInterface $entity_type_manager,
     TimeInterface $time,
-    FileUrlGeneratorInterface $file_url_generator,
+    SortingService $sorting_service,
+    ImageExtractorService $image_extractor,
+    EntityItemBuilderService $entity_item_builder,
+    ContentExtractorService $content_extractor,
+    ConfigurationFormHelperService $config_form_helper,
+    CacheHelperService $cache_helper,
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->nodeFetcher = $nodeFetcher;
     $this->entityTypeManager = $entity_type_manager;
     $this->time = $time;
-    $this->fileUrlGenerator = $file_url_generator;
+    $this->sortingService = $sorting_service;
+    $this->imageExtractor = $image_extractor;
+    $this->entityItemBuilder = $entity_item_builder;
+    $this->contentExtractor = $content_extractor;
+    $this->configFormHelper = $config_form_helper;
+    $this->cacheHelper = $cache_helper;
   }
 
   /**
@@ -100,7 +159,12 @@ class TdihBlock extends BlockBase implements ContainerFactoryPluginInterface {
       $container->get('tdih.node_fetcher'),
       $container->get('entity_type.manager'),
       $container->get('datetime.time'),
-      $container->get('file_url_generator')
+      $container->get('saho_utils.sorting'),
+      $container->get('saho_utils.image_extractor'),
+      $container->get('saho_utils.entity_item_builder'),
+      $container->get('saho_utils.content_extractor'),
+      $container->get('saho_utils.config_form_helper'),
+      $container->get('saho_utils.cache_helper'),
     );
   }
 
@@ -125,38 +189,26 @@ class TdihBlock extends BlockBase implements ContainerFactoryPluginInterface {
   public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
     $form = parent::buildConfigurationForm($form, $form_state);
 
-    $form['use_manual_override'] = [
-      '#type' => 'checkbox',
-      '#title' => $this->t('Use Manual Override?'),
-      '#description' => $this->t('Enable to manually select a node instead of auto date-based logic.'),
-      '#default_value' => $this->configuration['use_manual_override'],
-    ];
+    // Manual override checkbox using service.
+    $form['use_manual_override'] = $this->configFormHelper->buildManualOverrideCheckbox(
+      $this->configuration['use_manual_override'],
+      NULL,
+      $this->t('Enable to manually select a node instead of auto date-based logic.')
+    );
 
-    // Validate manual_entity_id before loading.
-    $manual_entity_default = NULL;
-    $manual_id = $this->configuration['manual_entity_id'] ?? NULL;
-    if ($manual_id !== NULL && is_numeric($manual_id) && (int) $manual_id > 0) {
-      $manual_entity_default = $this->entityTypeManager->getStorage('node')->load((int) $manual_id);
-    }
-
-    $form['manual_entity_id'] = [
-      '#type' => 'entity_autocomplete',
-      '#title' => $this->t('Manual Entity'),
-      '#description' => $this->t('Select an event node to display if "Use Manual Override" is checked.'),
-      '#target_type' => 'node',
-      // Specify the default selection handler for nodes.
-      '#selection_handler' => 'default:node',
-      // Limit to specific bundles (e.g., 'event').
-      '#selection_settings' => [
-        'target_bundles' => ['event'],
-      ],
-      '#default_value' => $manual_entity_default,
-      '#states' => [
+    // Entity autocomplete using service.
+    $form['manual_entity_id'] = $this->configFormHelper->buildEntityAutocomplete(
+      'node',
+      'event',
+      $this->configuration['manual_entity_id'] ?? NULL,
+      [
         'visible' => [
           ':input[name="use_manual_override"]' => ['checked' => TRUE],
         ],
       ],
-    ];
+      $this->t('Manual Entity'),
+      $this->t('Select an event node to display if "Use Manual Override" is checked.')
+    );
 
     // Validate button_block_id before loading.
     $button_block_default = NULL;
@@ -177,23 +229,18 @@ class TdihBlock extends BlockBase implements ContainerFactoryPluginInterface {
       '#default_value' => $button_block_default,
     ];
 
-    $form['sort_by'] = [
-      '#type' => 'select',
-      '#title' => $this->t('Sort By'),
-      '#description' => $this->t('Choose how to select the event for today. "Random" shuffles results, other options select consistently.'),
-      '#options' => [
-        'none' => $this->t('Random (shuffle)'),
-        'title' => $this->t('Title (alphabetical)'),
-        'changed' => $this->t('Recently updated'),
-        'created' => $this->t('Recently created'),
-      ],
-      '#default_value' => $this->configuration['sort_by'],
-      '#states' => [
+    // Sort select using service.
+    $form['sort_by'] = $this->configFormHelper->buildSortSelect(
+      $this->configuration['sort_by'],
+      [
         'visible' => [
           ':input[name="settings[use_manual_override]"]' => ['checked' => FALSE],
         ],
       ],
-    ];
+      TRUE,
+      []
+    );
+    $form['sort_by']['#description'] = $this->t('Choose how to select the event for today. "Random" shuffles results, other options select consistently.');
 
     return $form;
   }
@@ -271,33 +318,31 @@ class TdihBlock extends BlockBase implements ContainerFactoryPluginInterface {
           $sort_by = $this->configuration['sort_by'] ?? 'none';
           $selected_node = NULL;
 
-          if ($sort_by === 'none') {
+          // Handle random_with_images option.
+          if ($sort_by === 'random_with_images') {
+            // Filter nodes to only those with images.
+            $nodes_with_images = array_filter($filtered_nodes, function ($node) {
+              return $this->imageExtractor->hasImage($node, 'field_event_image');
+            });
+
+            if (!empty($nodes_with_images)) {
+              // Random selection from nodes with images.
+              $selected_node = $nodes_with_images[array_rand($nodes_with_images)];
+            }
+            else {
+              // Fallback to random selection if none have images.
+              $selected_node = $filtered_nodes[array_rand($filtered_nodes)];
+            }
+          }
+          elseif ($sort_by === 'none') {
             // Random selection (existing behavior).
             $selected_node = $filtered_nodes[array_rand($filtered_nodes)];
           }
           else {
-            // Sort nodes based on configuration.
-            switch ($sort_by) {
-              case 'title':
-                usort($filtered_nodes, function ($a, $b) {
-                  return strcmp($a->label(), $b->label());
-                });
-                break;
-
-              case 'changed':
-                usort($filtered_nodes, function ($a, $b) {
-                  return $b->getChangedTime() - $a->getChangedTime();
-                });
-                break;
-
-              case 'created':
-                usort($filtered_nodes, function ($a, $b) {
-                  return $b->getCreatedTime() - $a->getCreatedTime();
-                });
-                break;
-            }
+            // Use SortingService for consistent sorting.
+            $sorted_nodes = $this->sortingService->sortLoadedEntities($filtered_nodes, $sort_by);
             // Select the first node after sorting.
-            $selected_node = reset($filtered_nodes);
+            $selected_node = reset($sorted_nodes);
           }
 
           if ($selected_node) {
@@ -429,66 +474,54 @@ class TdihBlock extends BlockBase implements ContainerFactoryPluginInterface {
    *   image, and rendered node.
    */
   protected function buildNodeItem($node) {
+    // Use EntityItemBuilderService for basic item building.
+    $item = $this->entityItemBuilder->buildItemWithImage($node, 'field_event_image');
+
+    // Ensure backward compatibility with 'image' key.
+    if (isset($item['image_url'])) {
+      $item['image'] = $item['image_url'];
+    }
+
+    // Strip tags from title for TDIH display.
+    $item['title'] = strip_tags($item['title']);
+
     try {
-      // Fetch the value from your event date field, e.g.
-      // "field_event_date".
+      // Add event-specific date handling.
       $event_date = NULL;
       if ($node->hasField('field_event_date') && !$node->get('field_event_date')->isEmpty()) {
         $raw_date = $node->get('field_event_date')->value;
 
         if (!empty($raw_date)) {
           // Create DateTime at noon to avoid timezone boundary issues.
-          // This prevents date shifting across different timezones.
           $event_date = new \DateTime($raw_date . ' 12:00:00',
             new \DateTimeZone('Africa/Johannesburg'));
         }
       }
+      $item['event_date'] = $event_date;
 
-      // If there's an image field named "field_event_image," generate a URL.
-      $image_url = '';
+      // Get alt text from the image field if available.
       $image_alt = $node->label();
       if ($node->hasField('field_event_image') && !$node->get('field_event_image')->isEmpty()) {
-        /** @var \Drupal\file\FileInterface $file */
-        $file = $node->get('field_event_image')->entity;
-        if ($file instanceof FileInterface) {
-          // Get file URL generator service through dependency injection.
-          $image_url = $this->fileUrlGenerator->generateAbsoluteString($file->getFileUri());
-
-          // Try to get alt text from the image field if available.
-          $image_item = $node->get('field_event_image')->first();
-          // Access the alt text property safely.
-          if ($image_item && !empty($image_item->getValue()['alt'])) {
-            $image_alt = $image_item->getValue()['alt'];
-          }
+        $image_item = $node->get('field_event_image')->first();
+        if ($image_item && !empty($image_item->getValue()['alt'])) {
+          $image_alt = $image_item->getValue()['alt'];
         }
       }
+      $item['image_alt'] = strip_tags($image_alt);
     }
     catch (\Exception $e) {
       // Silently handle exceptions.
+      $item['event_date'] = NULL;
+      $item['image_alt'] = strip_tags($node->label());
     }
 
-    // Get the body text, strip HTML tags, and decode HTML entities.
-    $body_text = '';
-    if ($node->hasField('body') && !$node->get('body')->isEmpty()) {
-      // Strip all HTML tags and decode HTML entities to prevent them from being
-      // displayed as plain text.
-      $body_text = html_entity_decode(strip_tags($node->get('body')->value));
-    }
+    // Use ContentExtractorService for body text extraction.
+    $item['body'] = $this->contentExtractor->extractBodyText($node);
 
-    // Return a data array, including the event_date DateTime object
-    // and image with alt text.
-    return [
-      'id' => $node->id(),
-      'title' => strip_tags($node->label()),
-      'url' => $node->toUrl()->toString(),
-      // Use this in Twig with |date filter.
-      'event_date' => $event_date,
-      'image' => $image_url ?? '',
-      'image_alt' => $image_alt ?? strip_tags($node->label()),
-      'body' => $body_text,
-      // If you still want the fully rendered 'teaser':
-      'rendered' => $this->renderNode($node, 'teaser'),
-    ];
+    // Add fully rendered teaser.
+    $item['rendered'] = $this->renderNode($node, 'teaser');
+
+    return $item;
   }
 
   /**

@@ -5,10 +5,14 @@ namespace Drupal\featured_biography\Plugin\Block;
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Entity\EntityFieldManagerInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\File\FileUrlGeneratorInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Session\AccountProxyInterface;
+use Drupal\saho_utils\Service\CacheHelperService;
+use Drupal\saho_utils\Service\ConfigurationFormHelperService;
+use Drupal\saho_utils\Service\EntityItemBuilderService;
+use Drupal\saho_utils\Service\ImageExtractorService;
+use Drupal\saho_utils\Service\SortingService;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -30,13 +34,6 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
   protected $entityTypeManager;
 
   /**
-   * The file URL generator.
-   *
-   * @var \Drupal\Core\File\FileUrlGeneratorInterface
-   */
-  protected $fileUrlGenerator;
-
-  /**
    * The current user.
    *
    * @var \Drupal\Core\Session\AccountProxyInterface
@@ -51,6 +48,41 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
   protected $entityFieldManager;
 
   /**
+   * The sorting service.
+   *
+   * @var \Drupal\saho_utils\Service\SortingService
+   */
+  protected $sortingService;
+
+  /**
+   * The image extractor service.
+   *
+   * @var \Drupal\saho_utils\Service\ImageExtractorService
+   */
+  protected $imageExtractor;
+
+  /**
+   * The entity item builder service.
+   *
+   * @var \Drupal\saho_utils\Service\EntityItemBuilderService
+   */
+  protected $entityItemBuilder;
+
+  /**
+   * The configuration form helper service.
+   *
+   * @var \Drupal\saho_utils\Service\ConfigurationFormHelperService
+   */
+  protected $configFormHelper;
+
+  /**
+   * The cache helper service.
+   *
+   * @var \Drupal\saho_utils\Service\CacheHelperService
+   */
+  protected $cacheHelper;
+
+  /**
    * Constructs a new FeaturedBiographyBlock instance.
    *
    * @param array $configuration
@@ -61,27 +93,43 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
    *   The plugin implementation definition.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
-   * @param \Drupal\Core\File\FileUrlGeneratorInterface $file_url_generator
-   *   The file URL generator.
    * @param \Drupal\Core\Session\AccountProxyInterface $current_user
    *   The current user.
    * @param \Drupal\Core\Entity\EntityFieldManagerInterface $entity_field_manager
    *   The entity field manager.
+   * @param \Drupal\saho_utils\Service\SortingService $sorting_service
+   *   The sorting service.
+   * @param \Drupal\saho_utils\Service\ImageExtractorService $image_extractor
+   *   The image extractor service.
+   * @param \Drupal\saho_utils\Service\EntityItemBuilderService $entity_item_builder
+   *   The entity item builder service.
+   * @param \Drupal\saho_utils\Service\ConfigurationFormHelperService $config_form_helper
+   *   The configuration form helper service.
+   * @param \Drupal\saho_utils\Service\CacheHelperService $cache_helper
+   *   The cache helper service.
    */
   public function __construct(
     array $configuration,
     $plugin_id,
     $plugin_definition,
     EntityTypeManagerInterface $entity_type_manager,
-    FileUrlGeneratorInterface $file_url_generator,
     AccountProxyInterface $current_user,
     EntityFieldManagerInterface $entity_field_manager,
+    SortingService $sorting_service,
+    ImageExtractorService $image_extractor,
+    EntityItemBuilderService $entity_item_builder,
+    ConfigurationFormHelperService $config_form_helper,
+    CacheHelperService $cache_helper,
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->entityTypeManager = $entity_type_manager;
-    $this->fileUrlGenerator = $file_url_generator;
     $this->currentUser = $current_user;
     $this->entityFieldManager = $entity_field_manager;
+    $this->sortingService = $sorting_service;
+    $this->imageExtractor = $image_extractor;
+    $this->entityItemBuilder = $entity_item_builder;
+    $this->configFormHelper = $config_form_helper;
+    $this->cacheHelper = $cache_helper;
   }
 
   /**
@@ -93,9 +141,13 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
       $plugin_id,
       $plugin_definition,
       $container->get('entity_type.manager'),
-      $container->get('file_url_generator'),
       $container->get('current_user'),
       $container->get('entity_field.manager'),
+      $container->get('saho_utils.sorting'),
+      $container->get('saho_utils.image_extractor'),
+      $container->get('saho_utils.entity_item_builder'),
+      $container->get('saho_utils.config_form_helper'),
+      $container->get('saho_utils.cache_helper'),
     );
   }
 
@@ -291,23 +343,18 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
       ],
     ];
 
-    $form['sort_by'] = [
-      '#type' => 'select',
-      '#title' => $this->t('Sort By'),
-      '#description' => $this->t('Choose how to sort the biographies.'),
-      '#options' => [
-        'none' => $this->t('No sorting (use the order as entered)'),
-        'title' => $this->t('Title (alphabetical)'),
-        'changed' => $this->t('Changed date (most recent first)'),
-        'created' => $this->t('Created date (most recent first)'),
-      ],
-      '#default_value' => $config['sort_by'],
-      '#states' => [
+    // Use ConfigurationFormHelperService for sort select.
+    $form['sort_by'] = $this->configFormHelper->buildSortSelect(
+      $config['sort_by'],
+      [
         'invisible' => [
           ':input[name="settings[entity_count]"]' => ['value' => '1'],
         ],
       ],
-    ];
+      TRUE,
+      []
+    );
+    $form['sort_by']['#description'] = $this->t('Choose how to sort the biographies.');
 
     $form['enable_carousel'] = [
       '#type' => 'checkbox',
@@ -367,6 +414,14 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
       // Provide helpful error message for admins.
       $show_admin_info = $this->currentUser->hasPermission('administer blocks');
 
+      // Build cache array using CacheHelperService.
+      $cache = $this->cacheHelper->buildStandardCache(
+        'featured_biography_block',
+        $this->configuration,
+        300
+      );
+      $cache = $this->cacheHelper->addCacheContext($cache, 'user.permissions');
+
       return [
         '#theme' => 'featured_biography_block',
         '#biography_item' => $demo_biography,
@@ -376,27 +431,22 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
         '#selection_method' => $this->configuration['selection_method'],
         '#display_title' => $this->configuration['display_title'],
         '#block_description' => $this->configuration['block_description'],
-        '#cache' => [
-          'max-age' => 300,
-          'contexts' => ['user.permissions'],
-        ],
+        '#cache' => $cache,
       ];
     }
+    // Build cache array using CacheHelperService.
+    $cache = $this->cacheHelper->buildNodeListCache('biography');
+
     // For backward compatibility, if we have a single item,
     // pass it as biography_item.
     if (isset($biography_data['nid'])) {
-      // Cache for 1 hour.
       return [
         '#theme' => 'featured_biography_block',
         '#biography_item' => $biography_data,
         '#display_mode' => $this->configuration['display_mode'],
         '#display_title' => $this->configuration['display_title'],
         '#block_description' => $this->configuration['block_description'],
-        '#cache' => [
-          'max-age' => 3600,
-          'contexts' => ['url'],
-          'tags' => ['node_list:biography'],
-        ],
+        '#cache' => $cache,
       ];
     }
     // For multiple items or category highlighting.
@@ -415,11 +465,7 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
           $this->configuration['enable_carousel'] ? 'enable-carousel' : '',
         ],
       ],
-      '#cache' => [
-        'max-age' => 3600,
-        'contexts' => ['url'],
-        'tags' => ['node_list:biography'],
-      ],
+      '#cache' => $cache,
     ];
   }
 
@@ -510,23 +556,6 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
           break;
       }
 
-      // Apply sorting if specified.
-      if (!empty($this->configuration['sort_by']) && $this->configuration['sort_by'] !== 'none') {
-        switch ($this->configuration['sort_by']) {
-          case 'title':
-            $query->sort('title', 'ASC');
-            break;
-
-          case 'changed':
-            $query->sort('changed', 'DESC');
-            break;
-
-          case 'created':
-            $query->sort('created', 'DESC');
-            break;
-        }
-      }
-
       // Apply range after all conditions.
       $query->range(0, $entity_count);
 
@@ -536,6 +565,11 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
       if (!empty($nids)) {
         // Load all selected biographies.
         $nodes = $this->entityTypeManager->getStorage('node')->loadMultiple($nids);
+
+        // Apply sorting if specified (after loading entities).
+        if (!empty($this->configuration['sort_by']) && $this->configuration['sort_by'] !== 'none') {
+          $this->sortingService->sortLoadedEntities($nodes, $this->configuration['sort_by']);
+        }
       }
     }
     catch (\Exception $e) {
@@ -602,22 +636,13 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
    *   The biography item data.
    */
   protected function buildBiographyItem($node) {
-    $item = [
-      'nid' => $node->id(),
-      'title' => $node->getTitle(),
-      'url' => $node->toUrl()->toString(),
-    ];
+    // Use EntityItemBuilderService for basic item building.
+    $item = $this->entityItemBuilder->buildItemWithImage($node, 'field_bio_pic');
 
-    // Get the biography image.
-    if ($node->hasField('field_bio_pic') && !$node->get('field_bio_pic')->isEmpty()) {
-      $image_field = $node->get('field_bio_pic');
-      $image_entity = $this->entityTypeManager->getStorage('file')
-        ->load($image_field->getValue()[0]['target_id']);
-      if ($image_entity) {
-        // Extract the string value from the URI field.
-        $image_uri = $image_entity->uri->value;
-        $item['image'] = $this->fileUrlGenerator->generateAbsoluteString($image_uri);
-      }
+    // Ensure backward compatibility with 'nid' and 'image' keys.
+    $item['nid'] = $item['id'];
+    if (isset($item['image_url'])) {
+      $item['image'] = $item['image_url'];
     }
 
     // Get the biography dates and format them consistently.

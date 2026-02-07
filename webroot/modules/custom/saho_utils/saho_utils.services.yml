@@ -1,0 +1,28 @@
+services:
+  saho_utils.sorting:
+    class: Drupal\saho_utils\Service\SortingService
+    arguments: ['@entity_type.manager']
+
+  saho_utils.image_extractor:
+    class: Drupal\saho_utils\Service\ImageExtractorService
+    arguments: ['@entity_type.manager', '@file_url_generator']
+
+  saho_utils.query_builder:
+    class: Drupal\saho_utils\Service\BlockQueryBuilderService
+    arguments: ['@entity_type.manager']
+
+  saho_utils.content_extractor:
+    class: Drupal\saho_utils\Service\ContentExtractorService
+    arguments: []
+
+  saho_utils.entity_item_builder:
+    class: Drupal\saho_utils\Service\EntityItemBuilderService
+    arguments: ['@saho_utils.image_extractor', '@saho_utils.content_extractor']
+
+  saho_utils.config_form_helper:
+    class: Drupal\saho_utils\Service\ConfigurationFormHelperService
+    arguments: ['@saho_utils.sorting', '@entity_type.manager', '@string_translation']
+
+  saho_utils.cache_helper:
+    class: Drupal\saho_utils\Service\CacheHelperService
+    arguments: []
