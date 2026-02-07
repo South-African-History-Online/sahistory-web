@@ -53,18 +53,15 @@
     {# Image Section #}
     {% if image and image.url %}
       <div class="card-img-top-wrapper position-relative overflow-hidden saho-card__image">
-        <img src="{{ image.url }}" 
-             alt="{{ image.alt|default(title) }}" 
+        <img src="{{ image.url }}"
+             alt="{{ image.alt|default(title) }}"
              class="card-img-top w-100 h-100 saho-card__img"
-             loading="lazy"
-             style="object-fit: cover; height: 200px;">
-        
+             loading="lazy">
+
         {# Content Type Badge #}
-        <div class="position-absolute top-0 end-0 m-2">
-          <span class="badge saho-card__type-badge">
-            {{ content_type|replace({'_': ' '})|title|default('Article') }}
-          </span>
-        </div>
+        <span class="badge saho-card__type-badge">
+          {{ content_type|replace({'_': ' '})|title|default('Article') }}
+        </span>
         
         {# Badge Slot - Custom badges #}
         {% if slots.card_badge %}
@@ -76,17 +73,14 @@
     {% else %}
       {# Fallback placeholder - SVG for biographies, icons for others #}
       {% if content_type == 'biography' %}
-        <div class="card-img-top saho-card__placeholder" style="height: 200px; position: relative; overflow: hidden;">
-          <img src="/themes/custom/saho/images/default-portrait.svg" alt="Biography portrait" class="w-100 h-100" style="object-fit: cover;">
-          <div class="position-absolute top-0 end-0 m-2">
-            <span class="badge saho-card__type-badge">
-              {{ content_type|replace({'_': ' '})|title|default('Biography') }}
-            </span>
-          </div>
+        <div class="card-img-top saho-card__image saho-card__placeholder">
+          <img src="/themes/custom/saho/images/default-portrait.svg" alt="Biography portrait" class="w-100 h-100">
+          <span class="badge saho-card__type-badge">
+            {{ content_type|replace({'_': ' '})|title|default('Biography') }}
+          </span>
         </div>
       {% else %}
-        <div class="card-img-top bg-light d-flex align-items-center justify-content-center saho-card__placeholder"
-             style="height: 200px; position: relative;">
+        <div class="card-img-top bg-light d-flex align-items-center justify-content-center saho-card__image saho-card__placeholder">
           {% if content_type == 'place' %}
             <i class="fas fa-map-marker-alt fa-3x text-muted" aria-hidden="true"></i>
           {% elseif content_type == 'event' %}
@@ -95,11 +89,9 @@
             <i class="fas fa-file-alt fa-3x text-muted" aria-hidden="true"></i>
           {% endif %}
 
-          <div class="position-absolute top-0 end-0 m-2">
-            <span class="badge saho-card__type-badge">
-              {{ content_type|replace({'_': ' '})|title|default('Article') }}
-            </span>
-          </div>
+          <span class="badge saho-card__type-badge">
+            {{ content_type|replace({'_': ' '})|title|default('Article') }}
+          </span>
         </div>
       {% endif %}
     {% endif %}
