@@ -82,6 +82,7 @@ class HeroBannerBlock extends BlockBase implements ContainerFactoryPluginInterfa
         'format' => 'basic_html',
       ],
       'background_image' => NULL,
+      'display_mode' => 'standard',
       'call_to_action' => [
         'title' => '',
         'uri' => '',
@@ -162,6 +163,17 @@ class HeroBannerBlock extends BlockBase implements ContainerFactoryPluginInterfa
       '#description' => $this->t('Set the overlay opacity for the background image (0 = transparent, 100 = opaque).'),
     ];
 
+    $form['display_mode'] = [
+      '#type' => 'select',
+      '#title' => $this->t('Display Mode'),
+      '#default_value' => $config['display_mode'] ?? 'standard',
+      '#options' => [
+        'standard' => $this->t('Standard (with CTA button)'),
+        'graphic' => $this->t('Graphic Mode (entire banner is clickable)'),
+      ],
+      '#description' => $this->t('Choose how the banner behaves. In Graphic Mode, the entire banner becomes a clickable link.'),
+    ];
+
     $form['call_to_action'] = [
       '#type' => 'fieldset',
       '#title' => $this->t('Call to Action Button'),
@@ -219,6 +231,7 @@ class HeroBannerBlock extends BlockBase implements ContainerFactoryPluginInterfa
       $this->configuration['background_image'] = NULL;
     }
     $this->configuration['overlay_opacity'] = $values['overlay_opacity'];
+    $this->configuration['display_mode'] = $values['display_mode'];
     $this->configuration['call_to_action']['title'] = $values['call_to_action']['title'];
     $this->configuration['call_to_action']['style'] = $values['call_to_action']['style'];
     // Handle URI from form.
@@ -370,25 +383,36 @@ class HeroBannerBlock extends BlockBase implements ContainerFactoryPluginInterfa
       $body_value = Markup::create($filtered_body);
     }
 
+    // Use SDC component for rendering (Drupal 11 best practice).
+    // Falls back to module template for backward compatibility.
     $build = [
-      '#theme' => 'hero_banner_block',
-      '#title' => (string) ($config['title'] ?? ''),
-      '#title_color' => (string) ($config['title_color'] ?? 'white'),
-      '#subtitle' => (string) ($config['subtitle'] ?? ''),
-      '#body' => $body_value,
-      '#background_image' => (string) ($background_image_url ?? ''),
-      '#background_image_mobile' => (string) ($background_image_mobile_url ?? ''),
-      '#image_width' => $image_width,
-      '#image_height' => $image_height,
-      '#button_text' => (string) ($config['call_to_action']['title'] ?? ''),
-      '#button_url' => (string) ($button_url ?? ''),
-      '#button_target' => (string) ($button_target ?? ''),
-      '#button_rel' => (string) ($button_rel ?? ''),
-      '#button_style' => (string) ($config['call_to_action']['style'] ?? 'solid'),
-      '#overlay_opacity' => (float) (($config['overlay_opacity'] ?? 50) / 100),
+      '#type' => 'component',
+      '#component' => 'saho:saho-hero-banner',
+      '#props' => [
+        'title' => (string) ($config['title'] ?? ''),
+        'title_color' => (string) ($config['title_color'] ?? 'white'),
+        'subtitle' => (string) ($config['subtitle'] ?? ''),
+        'body' => $body_value,
+        'background_image' => (string) ($background_image_url ?? ''),
+        'background_image_mobile' => (string) ($background_image_mobile_url ?? $background_image_url ?? ''),
+        'overlay_opacity' => (float) (($config['overlay_opacity'] ?? 50) / 100),
+        'display_mode' => (string) ($config['display_mode'] ?? 'standard'),
+        'button_text' => (string) ($config['call_to_action']['title'] ?? ''),
+        'button_url' => (string) ($button_url ?? ''),
+        'button_target' => (string) ($button_target ?? '_self'),
+        'button_rel' => (string) ($button_rel ?? ''),
+        'button_style' => (string) ($config['call_to_action']['style'] ?? 'solid'),
+        'image_width' => $image_width,
+        'image_height' => $image_height,
+      ],
+      '#cache' => [
+        'contexts' => ['url'],
+        'tags' => !empty($config['background_image']) ? ['media:' . $config['background_image']] : [],
+        'max-age' => 3600,
+      ],
       '#attached' => [
         'library' => [
-          'hero_banner/hero_banner_modern',
+          'saho/saho-hero-banner',
         ],
       ],
     ];

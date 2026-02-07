@@ -1,0 +1,105 @@
+# Drupal 11 Single Directory Component (SDC) Definition
+# SAHO Hero Banner Component - Full-width hero banner with responsive images and CTA
+
+'$schema': https://git.drupalcode.org/project/drupal/-/raw/11.0.x/core/modules/sdc/src/metadata.schema.json
+
+name: SAHO Hero Banner
+machine_name: saho_hero_banner
+description: 'Full-width hero banner with background image, overlay, and CTA button. Optimized for mobile with responsive images and smooth animations.'
+status: stable
+group: Layout
+category: Sections
+
+props:
+  type: object
+  properties:
+    title:
+      type: string
+      title: Hero Title
+      description: Main heading text
+    title_color:
+      type: string
+      title: Title Color
+      description: Color variant for title text
+      enum: [white, red, gold, green]
+      default: white
+    subtitle:
+      type: string
+      title: Subtitle
+      description: Optional subtitle text
+    body:
+      type: string
+      title: Body Content
+      description: Optional body content (HTML allowed)
+    background_image:
+      type: string
+      title: Background Image URL
+      description: Desktop background image URL
+    background_image_mobile:
+      type: string
+      title: Mobile Background Image URL
+      description: Optional mobile-optimized image URL
+    overlay_opacity:
+      type: number
+      title: Overlay Opacity
+      description: Dark overlay opacity (0-100)
+      minimum: 0
+      maximum: 100
+      default: 40
+    display_mode:
+      type: string
+      title: Display Mode
+      description: Banner display mode (standard or graphic)
+      enum: [standard, graphic]
+      default: standard
+    button_text:
+      type: string
+      title: CTA Button Text
+      description: Call-to-action button text
+    button_url:
+      type: string
+      title: CTA Button URL
+      description: Call-to-action button URL
+    button_target:
+      type: string
+      title: Button Link Target
+      description: Link target (_self or _blank)
+      default: _self
+    button_rel:
+      type: string
+      title: Button Link Rel
+      description: Link rel attribute for external links
+    button_style:
+      type: string
+      title: Button Style
+      description: Visual style of the button
+      enum: [solid, ghost]
+      default: solid
+    image_width:
+      type: number
+      title: Image Width
+      description: Image width for CLS prevention
+    image_height:
+      type: number
+      title: Image Height
+      description: Image height for CLS prevention
+    attributes:
+      type: object
+      title: HTML Attributes
+      description: Additional HTML attributes (class, id, data-*, etc.)
+      properties:
+        class:
+          type: array
+          title: CSS Classes
+          description: Additional CSS classes
+          items:
+            type: string
+        id:
+          type: string
+          title: Element ID
+  required:
+    - title
+    - background_image
+
+libraryDependencies:
+  - saho/saho-hero-banner

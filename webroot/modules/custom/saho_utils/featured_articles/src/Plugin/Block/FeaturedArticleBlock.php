@@ -69,6 +69,7 @@ class FeaturedArticleBlock extends BlockBase implements ContainerFactoryPluginIn
     return [
       'use_manual_override' => FALSE,
       'manual_entity_id' => NULL,
+      'sort_by' => 'none',
     ] + parent::defaultConfiguration();
   }
 
@@ -110,6 +111,24 @@ class FeaturedArticleBlock extends BlockBase implements ContainerFactoryPluginIn
       ],
     ];
 
+    $form['sort_by'] = [
+      '#type' => 'select',
+      '#title' => $this->t('Sort By'),
+      '#description' => $this->t('Choose how to sort featured articles. "Random" shuffles results each time.'),
+      '#options' => [
+        'none' => $this->t('Random (shuffle)'),
+        'title' => $this->t('Title (alphabetical)'),
+        'changed' => $this->t('Recently updated'),
+        'created' => $this->t('Recently created'),
+      ],
+      '#default_value' => $this->configuration['sort_by'],
+      '#states' => [
+        'visible' => [
+          ':input[name="settings[use_manual_override]"]' => ['checked' => FALSE],
+        ],
+      ],
+    ];
+
     return $form;
   }
 
@@ -121,6 +140,7 @@ class FeaturedArticleBlock extends BlockBase implements ContainerFactoryPluginIn
 
     $this->configuration['use_manual_override'] = $form_state->getValue('use_manual_override');
     $this->configuration['manual_entity_id'] = $form_state->getValue('manual_entity_id');
+    $this->configuration['sort_by'] = $form_state->getValue('sort_by');
   }
 
   /**
@@ -142,32 +162,70 @@ class FeaturedArticleBlock extends BlockBase implements ContainerFactoryPluginIn
       }
     }
 
-    // Otherwise, pick a random article that has BOTH field_home_page_feature=1
-    // AND field_staff_picks=1.
-    $nids = $this->entityTypeManager->getStorage('node')->getQuery()
+    // Otherwise, pick an article based on sort configuration.
+    // Build base query for featured articles.
+    $query = $this->entityTypeManager->getStorage('node')->getQuery()
       ->condition('type', 'article')
       ->condition('status', 1)
       ->condition('field_home_page_feature', 1)
       ->condition('field_staff_picks', 1)
-      ->range(0, 50)
-      ->accessCheck(TRUE)
-      ->execute();
+      ->accessCheck(TRUE);
 
-    if (empty($nids)) {
+    // Apply sorting based on configuration.
+    $sort_by = $this->configuration['sort_by'] ?? 'none';
+
+    if ($sort_by !== 'none') {
+      // Sorted selection - get top result after sorting.
+      switch ($sort_by) {
+        case 'title':
+          $query->sort('title', 'ASC');
+          break;
+
+        case 'changed':
+          $query->sort('changed', 'DESC');
+          break;
+
+        case 'created':
+          $query->sort('created', 'DESC');
+          break;
+      }
+      $query->range(0, 1);
+      $nids = $query->execute();
+      $nid = !empty($nids) ? reset($nids) : NULL;
+    }
+    else {
+      // Random selection - existing shuffle logic.
+      $query->range(0, 50);
+      $nids = $query->execute();
+
+      if (!empty($nids)) {
+        $nids_array = array_values($nids);
+        shuffle($nids_array);
+        $nid = reset($nids_array);
+      }
+      else {
+        $nid = NULL;
+      }
+    }
+
+    if (empty($nid)) {
       return [
         '#theme' => 'featured_article_block',
         '#article_item' => NULL,
       ];
     }
 
-    $nids_array = array_values($nids);
-    shuffle($nids_array);
-    $nid = reset($nids_array);
     $node = $this->entityTypeManager->getStorage('node')->load($nid);
 
     return [
       '#theme' => 'featured_article_block',
       '#article_item' => $node ? $this->buildArticleItem($node) : NULL,
+      '#cache' => [
+        'max-age' => 3600,
+        'contexts' => ['url'],
+        'tags' => ['node_list:article'],
+        'keys' => ['featured_article_block', $sort_by],
+      ],
     ];
   }
 

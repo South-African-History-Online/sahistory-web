@@ -1,0 +1,62 @@
+{#
+/**
+ * @file
+ * SAHO Skeleton Component Template
+ *
+ * Loading placeholder with shimmer animation for better perceived performance.
+ *
+ * Available variables:
+ * - variant: Type of skeleton (card, text, image, line, circle)
+ * - count: Number of skeleton items to display
+ * - height: Custom height
+ * - width: Custom width
+ * - attributes: HTML attributes for the wrapper
+ *
+ * @ingroup themeable
+ */
+#}
+{% set classes = [
+  'saho-skeleton-wrapper',
+] %}
+
+<div{{ attributes.addClass(classes) }}>
+  {% for i in 1..count %}
+    <div class="saho-skeleton saho-skeleton--{{ variant|default('card') }}"
+         {% if height %}style="height: {{ height }};"{% endif %}
+         {% if width %}style="width: {{ width }};"{% endif %}
+         aria-hidden="true">
+
+      {% if variant == 'card' %}
+        {# Card skeleton with image and text areas #}
+        <div class="saho-skeleton__card">
+          <div class="saho-skeleton__image"></div>
+          <div class="saho-skeleton__content">
+            <div class="saho-skeleton__line saho-skeleton__line--title"></div>
+            <div class="saho-skeleton__line saho-skeleton__line--short"></div>
+            <div class="saho-skeleton__line"></div>
+            <div class="saho-skeleton__line saho-skeleton__line--short"></div>
+          </div>
+        </div>
+      {% elseif variant == 'text' %}
+        {# Text skeleton with multiple lines #}
+        <div class="saho-skeleton__line"></div>
+        <div class="saho-skeleton__line"></div>
+        <div class="saho-skeleton__line saho-skeleton__line--short"></div>
+      {% elseif variant == 'image' %}
+        {# Simple image placeholder #}
+        <div class="saho-skeleton__image"></div>
+      {% elseif variant == 'circle' %}
+        {# Circular skeleton (for avatars, etc.) #}
+        <div class="saho-skeleton__circle"></div>
+      {% else %}
+        {# Single line (default for 'line' variant) #}
+        <div class="saho-skeleton__line"></div>
+      {% endif %}
+    </div>
+  {% endfor %}
+</div>
+
+{# Screen reader announcement #}
+<span class="visually-hidden" role="status" aria-live="polite">
+  Loading content...
+</span>

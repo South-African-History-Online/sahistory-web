@@ -1,0 +1,371 @@
+/**
+ * Hero Banner Component - SAHO Design System
+ * Full-width hero banner with responsive images and smooth animations
+ *
+ * Design Token Integration:
+ * - Uses --saho-space-* for all spacing (8px baseline grid)
+ * - Aligned to Bootstrap 5 breakpoints (576px, 768px, 992px)
+ * - Smooth min-height progression across breakpoints
+ * - Mobile-first responsive design with fade-in animation
+ */
+
+.saho-hero-banner {
+  /* Layout */
+  position: relative;
+  width: 100%;
+  min-height: 400px; /* Desktop default */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  margin: 0;
+  border-radius: 0;
+  padding: var(--saho-space-8, 4rem) 0; /* 64px desktop padding */
+
+  /* Animation (applied on mobile only - see responsive section) */
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* LCP-optimized picture element (replaces CSS background-image) */
+.saho-hero-banner__picture {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: hidden; /* Prevent image overflow on mobile */
+}
+
+.saho-hero-banner__image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top; /* Prioritize top of image for better framing */
+  transition: transform 0.3s ease; /* Smooth parallax effect */
+}
+
+/* Fallback for older mobile browsers that don't support object-fit */
+@supports not (object-fit: cover) {
+  .saho-hero-banner__image {
+    min-width: 100%;
+    min-height: 100%;
+    width: auto;
+    height: auto;
+  }
+}
+
+/* Dark overlay - z-index 1 to sit above image */
+.saho-hero-banner__overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Content container - z-index 2 to sit above overlay */
+.saho-hero-banner__content {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  padding: var(--saho-space-4, 2rem); /* 32px default */
+  max-width: var(--saho-container-narrow, 700px); /* 700px */
+  margin: 0 auto;
+}
+
+/* Inner wrapper */
+.saho-hero-banner__inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--saho-space-2, 1rem); /* 16px default gap */
+}
+
+/* Title styling - bright eye-catching text */
+.saho-hero-banner__title {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif;
+  font-size: clamp(1.4rem, 4vw, 2.5rem); /* Fluid typography (mobile to desktop) */
+  font-weight: var(--saho-font-weight-semibold, 600);
+  line-height: var(--saho-line-height-tight, 1.25);
+  letter-spacing: -0.5px;
+  margin: 0 0 var(--saho-space-1, 0.5rem) 0; /* 8px bottom margin */
+  text-shadow: var(--saho-text-shadow-md, 2px 2px 4px rgba(0, 0, 0, 0.7));
+}
+
+/* Title color variations - SAHO brand colors */
+/* Keep !important for color overrides (necessary to override Drupal core styles) */
+.saho-hero-banner__title--white {
+  color: var(--saho-color-white, #ffffff) !important;
+  text-shadow: var(--saho-text-shadow-md, 2px 2px 4px rgba(0, 0, 0, 0.7)) !important;
+}
+
+.saho-hero-banner__title--red {
+  color: var(--saho-color-primary, #990000) !important;
+  text-shadow: var(--saho-text-shadow-sm, 1px 1px 2px rgba(0, 0, 0, 0.5)) !important;
+}
+
+.saho-hero-banner__title--gold {
+  color: var(--saho-color-accent, #b88a2e) !important;
+  text-shadow: var(--saho-text-shadow-sm, 1px 1px 2px rgba(0, 0, 0, 0.5)) !important;
+}
+
+.saho-hero-banner__title--green {
+  color: #2d5016 !important; /* Green renewal */
+  text-shadow: var(--saho-text-shadow-sm, 1px 1px 2px rgba(0, 0, 0, 0.5)) !important;
+}
+
+/* Subtitle styling */
+.saho-hero-banner__subtitle {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif;
+  font-size: var(--saho-font-size-md, 1.125rem); /* 18px */
+  color: var(--saho-color-white, #ffffff);
+  margin: 0 0 var(--saho-space-1, 0.5rem) 0;
+  font-weight: var(--saho-font-weight-normal, 400);
+  line-height: var(--saho-line-height-normal, 1.5);
+  opacity: 0.95;
+}
+
+/* Body text */
+.saho-hero-banner__body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif;
+  font-size: var(--saho-font-size-base, 1rem);
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0 0 var(--saho-space-2, 1rem) 0; /* 16px */
+  line-height: var(--saho-line-height-relaxed, 1.75);
+  max-width: 500px;
+}
+
+.saho-hero-banner__body p {
+  margin: 0 0 var(--saho-space-1, 0.5rem) 0;
+  color: inherit;
+}
+
+.saho-hero-banner__body p:last-child {
+  margin-bottom: 0;
+}
+
+.saho-hero-banner__body * {
+  color: inherit;
+}
+
+/* CTA Button - Uses saho-button component, minimal overrides */
+.saho-hero-banner__cta {
+  margin-top: var(--saho-space-2, 1rem); /* 16px */
+}
+
+/* =============================================================================
+ * Graphic Mode - Entire Banner as Link
+ * ============================================================================= */
+
+.saho-hero-banner--graphic {
+  cursor: pointer;
+}
+
+.saho-hero-banner__link {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+  transition: opacity 0.3s ease;
+}
+
+.saho-hero-banner__link:hover,
+.saho-hero-banner__link:focus {
+  color: inherit;
+  text-decoration: none;
+  opacity: 0.95;
+}
+
+.saho-hero-banner__link:focus {
+  outline: 2px solid var(--saho-color-white, #ffffff);
+  outline-offset: 4px;
+}
+
+/* Subtle hover effect for graphic mode */
+.saho-hero-banner--graphic:hover .saho-hero-banner__overlay {
+  background: rgba(0, 0, 0, 0.5);
+  transition: background 0.3s ease;
+}
+
+/* Animation keyframes for mobile fade-in */
+@keyframes heroFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* =============================================================================
+ * Responsive Design - Bootstrap 5 Breakpoints
+ * ============================================================================= */
+
+/**
+ * Tablet (< 768px)
+ * - Reduce min-height to 320px
+ * - Reduce padding to 32px
+ * - Adjust content padding to 24px
+ */
+@media (max-width: 767.98px) {
+  .saho-hero-banner {
+    min-height: 320px;
+    padding: var(--saho-space-4, 2rem) 0; /* 32px */
+  }
+
+  .saho-hero-banner__content {
+    padding: var(--saho-space-3, 1.5rem); /* 24px */
+  }
+
+  .saho-hero-banner__title {
+    font-size: clamp(1.5rem, 4.5vw, 1.875rem); /* 24-30px range */
+  }
+
+  .saho-hero-banner__subtitle {
+    font-size: var(--saho-font-size-base, 1rem); /* 16px */
+  }
+
+  .saho-hero-banner__body {
+    font-size: var(--saho-font-size-sm, 0.875rem); /* 14px */
+  }
+}
+
+/**
+ * Mobile (< 576px)
+ * - Reduced min-height to 240px (save 40px for better content visibility)
+ * - Reduced padding to 12px (save 8px width for better screen utilization)
+ * - Full width content utilization
+ * - Add smooth fade-in animation
+ * - Tight spacing (8px gaps)
+ * - Mobile-specific image handling
+ */
+@media (max-width: 575.98px) {
+  .saho-hero-banner {
+    min-height: 240px; /* Reduced from 280px - save 40px */
+    padding: var(--saho-space-3, 1.5rem) 0; /* 24px vertical */
+    animation: heroFadeIn 0.6s ease-out; /* Smooth entrance */
+  }
+
+  .saho-hero-banner__content {
+    padding: var(--saho-space-1-5, 0.75rem); /* 12px - save 8px total width */
+    max-width: 100%; /* Use full width on mobile */
+  }
+
+  .saho-hero-banner__inner {
+    gap: var(--saho-space-1, 0.5rem); /* 8px tight spacing */
+  }
+
+  .saho-hero-banner__title {
+    font-size: clamp(1.4rem, 5vw, 1.75rem);
+    margin-bottom: var(--saho-space-1, 0.5rem);
+    line-height: 1.15; /* Tighter for space efficiency */
+  }
+
+  .saho-hero-banner__subtitle {
+    font-size: 0.9375rem; /* 15px */
+    margin-bottom: var(--saho-space-1, 0.5rem);
+  }
+
+  .saho-hero-banner__body {
+    font-size: 0.8125rem; /* 13px */
+    margin-bottom: var(--saho-space-2, 1rem);
+    line-height: 1.4;
+  }
+
+  /* Mobile-specific image handling */
+  .saho-hero-banner__picture {
+    min-height: 240px; /* Match banner min-height */
+  }
+
+  .saho-hero-banner__image {
+    object-fit: cover; /* Ensure proper coverage on mobile */
+    object-position: center center; /* Center on mobile for better framing */
+    min-height: 100%; /* Ensure full coverage */
+  }
+}
+
+/**
+ * Medium Mobile (400-576px)
+ * - Intermediate breakpoint for gradual scaling
+ * - 16px padding on slightly larger mobiles
+ */
+@media (min-width: 400px) and (max-width: 575.98px) {
+  .saho-hero-banner {
+    min-height: 260px; /* Gradual scaling between breakpoints */
+  }
+
+  .saho-hero-banner__content {
+    padding: var(--saho-space-2, 1rem); /* 16px on slightly larger mobiles */
+  }
+}
+
+/**
+ * Extra Small (< 360px)
+ * - Minimal spacing for very small screens (save 60px height)
+ * - Ensure content remains readable and accessible
+ */
+@media (max-width: 360px) {
+  .saho-hero-banner {
+    min-height: 220px; /* Further reduced - save 60px from original */
+    padding: var(--saho-space-2, 1rem) 0; /* 16px vertical */
+  }
+
+  .saho-hero-banner__content {
+    padding: var(--saho-space-1, 0.5rem); /* 8px - minimal padding */
+  }
+
+  .saho-hero-banner__inner {
+    gap: 0.375rem; /* 6px ultra-tight spacing */
+  }
+
+  .saho-hero-banner__title {
+    font-size: 1.375rem; /* Fixed 22px */
+    line-height: 1.1;
+    margin-bottom: 0.375rem;
+  }
+
+  .saho-hero-banner__subtitle {
+    font-size: 0.875rem; /* 14px */
+    margin-bottom: 0.375rem;
+  }
+
+  .saho-hero-banner__body {
+    font-size: 0.75rem; /* 12px */
+    line-height: 1.35;
+  }
+}
+
+/* =============================================================================
+ * Enhanced States
+ * ============================================================================= */
+
+/**
+ * Loaded State
+ * Adds class when image is fully loaded for additional effects
+ */
+.saho-hero-banner.is-loaded {
+  /* Image is loaded, can add additional effects if needed */
+}
+
+/**
+ * Accessibility
+ * Reduce motion for users who prefer it
+ */
+@media (prefers-reduced-motion: reduce) {
+  .saho-hero-banner {
+    animation: none;
+  }
+
+  .saho-hero-banner__image {
+    transition: none;
+  }
+}
