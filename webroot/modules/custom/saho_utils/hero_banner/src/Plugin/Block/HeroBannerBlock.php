@@ -99,12 +99,32 @@ class HeroBannerBlock extends BlockBase implements ContainerFactoryPluginInterfa
     $form = parent::blockForm($form, $form_state);
     $config = $this->getConfiguration();
 
+    // Display Mode selection (moved up for #states dependencies).
+    $form['display_mode'] = [
+      '#type' => 'select',
+      '#title' => $this->t('Display Mode'),
+      '#default_value' => $config['display_mode'] ?? 'standard',
+      '#options' => [
+        'standard' => $this->t('Standard (with text and CTA button)'),
+        'graphic' => $this->t('Graphic Mode (image only - clickable banner)'),
+      ],
+      '#description' => $this->t('<strong>Graphic Mode:</strong> For promotional banners from the design team. Hides all text fields - the graphic itself contains the messaging. The entire banner becomes a clickable link.'),
+    ];
+
     $form['title'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Title'),
       '#default_value' => $config['title'],
       '#required' => TRUE,
       '#maxlength' => 255,
+      '#states' => [
+        'visible' => [
+          ':input[name="settings[display_mode]"]' => ['value' => 'standard'],
+        ],
+        'required' => [
+          ':input[name="settings[display_mode]"]' => ['value' => 'standard'],
+        ],
+      ],
     ];
 
     $form['title_color'] = [
@@ -118,6 +138,11 @@ class HeroBannerBlock extends BlockBase implements ContainerFactoryPluginInterfa
         'green' => $this->t('SAHO Green'),
       ],
       '#description' => $this->t('Choose the color for the hero banner title.'),
+      '#states' => [
+        'visible' => [
+          ':input[name="settings[display_mode]"]' => ['value' => 'standard'],
+        ],
+      ],
     ];
 
     $form['subtitle'] = [
@@ -125,6 +150,11 @@ class HeroBannerBlock extends BlockBase implements ContainerFactoryPluginInterfa
       '#title' => $this->t('Subtitle'),
       '#default_value' => $config['subtitle'],
       '#maxlength' => 255,
+      '#states' => [
+        'visible' => [
+          ':input[name="settings[display_mode]"]' => ['value' => 'standard'],
+        ],
+      ],
     ];
 
     $form['body'] = [
@@ -133,6 +163,11 @@ class HeroBannerBlock extends BlockBase implements ContainerFactoryPluginInterfa
       '#default_value' => $config['body']['value'],
       '#format' => $config['body']['format'],
       '#rows' => 5,
+      '#states' => [
+        'visible' => [
+          ':input[name="settings[display_mode]"]' => ['value' => 'standard'],
+        ],
+      ],
     ];
 
     // Load media entity for default value if available.
@@ -163,20 +198,10 @@ class HeroBannerBlock extends BlockBase implements ContainerFactoryPluginInterfa
       '#description' => $this->t('Set the overlay opacity for the background image (0 = transparent, 100 = opaque).'),
     ];
 
-    $form['display_mode'] = [
-      '#type' => 'select',
-      '#title' => $this->t('Display Mode'),
-      '#default_value' => $config['display_mode'] ?? 'standard',
-      '#options' => [
-        'standard' => $this->t('Standard (with CTA button)'),
-        'graphic' => $this->t('Graphic Mode (entire banner is clickable)'),
-      ],
-      '#description' => $this->t('Choose how the banner behaves. In Graphic Mode, the entire banner becomes a clickable link.'),
-    ];
-
     $form['call_to_action'] = [
       '#type' => 'fieldset',
-      '#title' => $this->t('Call to Action Button'),
+      '#title' => $this->t('Link / Call to Action'),
+      '#description' => $this->t('<strong>Standard Mode:</strong> Shows as a button. <strong>Graphic Mode:</strong> Makes entire banner clickable.'),
     ];
 
     $form['call_to_action']['title'] = [
@@ -369,10 +394,14 @@ class HeroBannerBlock extends BlockBase implements ContainerFactoryPluginInterfa
       }
     }
 
+    // Check display mode to determine what content to show.
+    $display_mode = $config['display_mode'] ?? 'standard';
+    $is_graphic_mode = ($display_mode === 'graphic');
+
     // Process body through the administrator-configured text format
-    // for XSS protection.
+    // for XSS protection (only in standard mode).
     $body_value = '';
-    if (!empty($config['body']['value'])) {
+    if (!$is_graphic_mode && !empty($config['body']['value'])) {
       // Use the format selected by the administrator in the block config
       // form. The format is stored when the block is saved via text_format.
       // Fallback to 'basic_html' only if format is missing (e.g., legacy data).
@@ -385,18 +414,20 @@ class HeroBannerBlock extends BlockBase implements ContainerFactoryPluginInterfa
 
     // Use SDC component for rendering (Drupal 11 best practice).
     // Falls back to module template for backward compatibility.
+    // In graphic mode, suppress title/subtitle/body.
+    // The graphic itself contains the messaging.
     $build = [
       '#type' => 'component',
       '#component' => 'saho:saho-hero-banner',
       '#props' => [
-        'title' => (string) ($config['title'] ?? ''),
+        'title' => $is_graphic_mode ? '' : (string) ($config['title'] ?? ''),
         'title_color' => (string) ($config['title_color'] ?? 'white'),
-        'subtitle' => (string) ($config['subtitle'] ?? ''),
-        'body' => $body_value,
+        'subtitle' => $is_graphic_mode ? '' : (string) ($config['subtitle'] ?? ''),
+        'body' => $is_graphic_mode ? '' : $body_value,
         'background_image' => (string) ($background_image_url ?? ''),
         'background_image_mobile' => (string) ($background_image_mobile_url ?? $background_image_url ?? ''),
         'overlay_opacity' => (float) (($config['overlay_opacity'] ?? 50) / 100),
-        'display_mode' => (string) ($config['display_mode'] ?? 'standard'),
+        'display_mode' => (string) $display_mode,
         'button_text' => (string) ($config['call_to_action']['title'] ?? ''),
         'button_url' => (string) ($button_url ?? ''),
         'button_target' => (string) ($button_target ?? '_self'),
