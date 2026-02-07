@@ -1,0 +1,112 @@
+{#
+/**
+ * @file
+ * SAHO Hero Banner Component Template
+ *
+ * Full-width hero banner with responsive images, overlay, and CTA button.
+ * Optimized for mobile with smooth animations and proper image loading.
+ *
+ * Display Modes:
+ * - standard: Traditional banner with CTA button
+ * - graphic: Entire banner is a clickable link
+ *
+ * Available variables:
+ * - title: The title of the hero banner.
+ * - title_color: Color variant for title (white, red, gold, green).
+ * - subtitle: The subtitle of the hero banner.
+ * - body: The body content of the hero banner (render array or HTML).
+ * - background_image: The URL of the background image (desktop).
+ * - background_image_mobile: The URL of the mobile-optimized image.
+ * - image_width: The width of the desktop image for CLS prevention.
+ * - image_height: The height of the desktop image for CLS prevention.
+ * - display_mode: Display mode (standard or graphic).
+ * - button_text: The text for the call to action button.
+ * - button_url: The URL for the call to action button.
+ * - button_target: Link target (_self or _blank).
+ * - button_rel: Link rel attribute for external links.
+ * - button_style: Button style (solid or ghost).
+ * - overlay_opacity: The opacity of the overlay (0-1 decimal).
+ * - attributes: HTML attributes for the component wrapper.
+ *
+ * @ingroup themeable
+ */
+#}
+{% set classes = [
+  'saho-hero-banner',
+  display_mode == 'graphic' ? 'saho-hero-banner--graphic',
+] %}
+
+{% set is_graphic_mode = display_mode == 'graphic' %}
+
+<div{{ attributes.addClass(classes) }}>
+  {% if background_image %}
+    {# LCP optimization: Real <picture> element with object-fit cover #}
+    {# Browser can preload this properly, unlike CSS background-image #}
+    <picture class="saho-hero-banner__picture">
+      {% if background_image_mobile %}
+        <source media="(max-width: 768px)" srcset="{{ background_image_mobile }}">
+      {% endif %}
+      <img
+        src="{{ background_image }}"
+        alt="{{ title|default('') }}"
+        class="saho-hero-banner__image"
+        fetchpriority="high"
+        loading="eager"
+        decoding="async"
+        {% if image_width and image_height %}width="{{ image_width }}" height="{{ image_height }}"{% endif %}
+      >
+    </picture>
+  {% endif %}
+
+  <div class="saho-hero-banner__overlay" style="opacity: {{ overlay_opacity|default(0.4) }}"></div>
+
+  <div class="saho-hero-banner__content">
+    {# In graphic mode, wrap entire content in a link #}
+    {% if is_graphic_mode and button_url %}
+      <a href="{{ button_url }}"
+         class="saho-hero-banner__link"
+         {% if button_target %}target="{{ button_target }}"{% endif %}
+         {% if button_rel %}rel="{{ button_rel }}"{% endif %}>
+    {% endif %}
+
+    <div class="saho-hero-banner__inner">
+      {% if title %}
+        <h1 class="saho-hero-banner__title saho-hero-banner__title--{{ title_color|default('white') }}">
+          {{ title }}
+        </h1>
+      {% endif %}
+
+      {% if subtitle %}
+        <h2 class="saho-hero-banner__subtitle">{{ subtitle }}</h2>
+      {% endif %}
+
+      {% if body %}
+        <div class="saho-hero-banner__body text-formatted">
+          {{ body }}
+        </div>
+      {% endif %}
+
+      {# Only show CTA button in standard mode #}
+      {% if not is_graphic_mode and button_text and button_url %}
+        <div class="saho-hero-banner__cta">
+          {% include 'saho:saho-button' with {
+            text: button_text,
+            url: button_url,
+            size: 'large',
+            variant: button_style|default('solid') == 'solid' ? 'primary' : 'secondary',
+            attributes: {
+              class: ['saho-hero-banner__button'],
+              target: button_target|default('_self'),
+              rel: button_rel|default(null)
+            }
+          } %}
+        </div>
+      {% endif %}
+    </div>
+
+    {# Close graphic mode link #}
+    {% if is_graphic_mode and button_url %}
+      </a>
+    {% endif %}
+  </div>
+</div>

@@ -113,6 +113,7 @@ class TdihBlock extends BlockBase implements ContainerFactoryPluginInterface {
       'use_manual_override' => FALSE,
       'manual_entity_id' => NULL,
       'button_block_id' => NULL,
+      'sort_by' => 'none',
     ] + parent::defaultConfiguration();
   }
 
@@ -176,6 +177,24 @@ class TdihBlock extends BlockBase implements ContainerFactoryPluginInterface {
       '#default_value' => $button_block_default,
     ];
 
+    $form['sort_by'] = [
+      '#type' => 'select',
+      '#title' => $this->t('Sort By'),
+      '#description' => $this->t('Choose how to select the event for today. "Random" shuffles results, other options select consistently.'),
+      '#options' => [
+        'none' => $this->t('Random (shuffle)'),
+        'title' => $this->t('Title (alphabetical)'),
+        'changed' => $this->t('Recently updated'),
+        'created' => $this->t('Recently created'),
+      ],
+      '#default_value' => $this->configuration['sort_by'],
+      '#states' => [
+        'visible' => [
+          ':input[name="settings[use_manual_override]"]' => ['checked' => FALSE],
+        ],
+      ],
+    ];
+
     return $form;
   }
 
@@ -190,6 +209,7 @@ class TdihBlock extends BlockBase implements ContainerFactoryPluginInterface {
     $this->configuration['use_manual_override'] = $form_state->getValue('use_manual_override');
     $this->configuration['manual_entity_id'] = $form_state->getValue('manual_entity_id');
     $this->configuration['button_block_id'] = $form_state->getValue('button_block_id');
+    $this->configuration['sort_by'] = $form_state->getValue('sort_by');
   }
 
   /**
@@ -247,9 +267,42 @@ class TdihBlock extends BlockBase implements ContainerFactoryPluginInterface {
         }
 
         if (!empty($filtered_nodes)) {
-          // Randomly pick one node from the filtered results.
-          $selected_node = $filtered_nodes[array_rand($filtered_nodes)];
-          $tdih_nodes[] = $this->buildNodeItem($selected_node);
+          // Apply sorting configuration.
+          $sort_by = $this->configuration['sort_by'] ?? 'none';
+          $selected_node = NULL;
+
+          if ($sort_by === 'none') {
+            // Random selection (existing behavior).
+            $selected_node = $filtered_nodes[array_rand($filtered_nodes)];
+          }
+          else {
+            // Sort nodes based on configuration.
+            switch ($sort_by) {
+              case 'title':
+                usort($filtered_nodes, function ($a, $b) {
+                  return strcmp($a->label(), $b->label());
+                });
+                break;
+
+              case 'changed':
+                usort($filtered_nodes, function ($a, $b) {
+                  return $b->getChangedTime() - $a->getChangedTime();
+                });
+                break;
+
+              case 'created':
+                usort($filtered_nodes, function ($a, $b) {
+                  return $b->getCreatedTime() - $a->getCreatedTime();
+                });
+                break;
+            }
+            // Select the first node after sorting.
+            $selected_node = reset($filtered_nodes);
+          }
+
+          if ($selected_node) {
+            $tdih_nodes[] = $this->buildNodeItem($selected_node);
+          }
         }
       }
     }
@@ -260,6 +313,7 @@ class TdihBlock extends BlockBase implements ContainerFactoryPluginInterface {
     $sa_timezone = new \DateTimeZone('Africa/Johannesburg');
     $today = new \DateTime('now', $sa_timezone);
     $cache_date = $today->format('Y-m-d');
+    $sort_by = $this->configuration['sort_by'] ?? 'none';
 
     // Prepare the render array.
     $build = [
@@ -273,7 +327,7 @@ class TdihBlock extends BlockBase implements ContainerFactoryPluginInterface {
       ],
       // Add cache metadata to ensure the block updates at midnight.
       '#cache' => [
-        'keys' => ['tdih_block', $cache_date],
+        'keys' => ['tdih_block', $sort_by, $cache_date],
         'contexts' => $this->getCacheContexts(),
         'tags' => $this->getCacheTags(),
         'max-age' => $this->getCacheMaxAge(),

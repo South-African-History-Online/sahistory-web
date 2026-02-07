@@ -1,0 +1,1 @@
+((s,o)=>{s.behaviors.sahoHeroBanner={attach:(d,r)=>{o("saho-hero-banner",".saho-hero-banner",d).forEach(e=>{const a=e.querySelector(".saho-hero-banner__image");a&&(a.complete?e.classList.add("is-loaded"):(a.addEventListener("load",()=>{e.classList.add("is-loaded")}),a.addEventListener("error",()=>{e.classList.add("is-loaded")})))})}}})(Drupal,once);
