@@ -262,12 +262,12 @@ class HistoryClassroomBlock extends BlockBase implements ContainerFactoryPluginI
       }
 
       // Count articles for this grade.
-      $count = $this->countArticlesForGrade($term->id());
+      $count = $this->countArticlesForGrade((int) $term->id());
 
       // Get featured topic if enabled.
       $featured_topic = NULL;
       if ($show_featured) {
-        $featured_topic = $this->getFeaturedTopicForGrade($term->id());
+        $featured_topic = $this->getFeaturedTopicForGrade((int) $term->id());
       }
 
       $grades[] = [
