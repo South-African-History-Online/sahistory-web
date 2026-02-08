@@ -1,0 +1,307 @@
+/**
+ * @file
+ * Styles for History Classroom Block
+ */
+
+/* Block container */
+.history-classroom-block {
+  padding: 2rem 0;
+}
+
+.history-classroom-block .block-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #2c3e50;
+  text-align: center;
+}
+
+.history-classroom-block .block-intro {
+  text-align: center;
+  font-size: 1.1rem;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Grid layout */
+.classroom-grades-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+/* Grade card styling */
+.grade-card {
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: 2px solid transparent;
+}
+
+.grade-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+  border-color: var(--grade-color);
+}
+
+/* Grade image area with color */
+.grade-card .grade-image {
+  position: relative;
+  background: linear-gradient(135deg, var(--grade-color), var(--grade-color) 50%, rgba(255, 255, 255, 0.1));
+  min-height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* Grade badge */
+.grade-badge {
+  position: relative;
+  z-index: 2;
+  background: rgba(255, 255, 255, 0.95);
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border: 4px solid var(--grade-color);
+}
+
+.grade-number {
+  font-size: 3rem;
+  font-weight: 800;
+  color: var(--grade-color);
+  line-height: 1;
+}
+
+/* Decorative pattern overlay */
+.grade-pattern {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.1;
+  background-image:
+    repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255, 255, 255, 0.3) 10px, rgba(255, 255, 255, 0.3) 20px),
+    repeating-linear-gradient(-45deg, transparent, transparent 10px, rgba(255, 255, 255, 0.3) 10px, rgba(255, 255, 255, 0.3) 20px);
+  pointer-events: none;
+}
+
+/* Card content */
+.grade-card .saho-card-content {
+  padding: 1.5rem;
+  background: #fff;
+}
+
+.grade-card .saho-card-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+  color: var(--grade-color);
+}
+
+/* Featured topic */
+.featured-topic {
+  background: #fff3cd;
+  border-left: 3px solid #ffc107;
+  padding: 0.5rem 0.75rem;
+  margin-bottom: 0.75rem;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.featured-topic .topic-text {
+  color: #856404;
+  font-weight: 500;
+}
+
+/* Resource count */
+.resource-count {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+  color: #6c757d;
+  font-size: 1rem;
+  border-top: 1px solid #e9ecef;
+  margin-top: 0.75rem;
+}
+
+.resource-count .count-number {
+  font-weight: 700;
+  font-size: 1.25rem;
+  color: var(--grade-color);
+}
+
+.resource-count .count-label {
+  font-size: 0.9rem;
+}
+
+/* Card footer button */
+.grade-card .saho-card-footer {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e9ecef;
+}
+
+.grade-card .saho-card-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--grade-color);
+  font-weight: 600;
+  transition: gap 0.3s ease;
+}
+
+.grade-card:hover .saho-card-button {
+  gap: 0.75rem;
+}
+
+/* List mode styling */
+.display-mode-list .classroom-grades-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.display-mode-list .grade-card {
+  display: flex;
+  flex-direction: row;
+}
+
+.display-mode-list .grade-image {
+  width: 150px;
+  min-height: auto;
+  flex-shrink: 0;
+}
+
+.display-mode-list .saho-card-content {
+  flex: 1;
+}
+
+/* Carousel mode styling */
+.display-mode-carousel .carousel-item {
+  padding: 2rem;
+  min-height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.display-mode-carousel .grade-card {
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.display-mode-carousel .carousel-control-prev,
+.display-mode-carousel .carousel-control-next {
+  width: 50px;
+  opacity: 0.8;
+}
+
+.display-mode-carousel .carousel-control-prev:hover,
+.display-mode-carousel .carousel-control-next:hover {
+  opacity: 1;
+}
+
+.display-mode-carousel .carousel-indicators button {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: var(--grade-color, #6c757d);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .classroom-grades-grid {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1rem;
+  }
+
+  .grade-badge {
+    width: 80px;
+    height: 80px;
+  }
+
+  .grade-number {
+    font-size: 2.5rem;
+  }
+
+  .grade-card .saho-card-title {
+    font-size: 1.25rem;
+  }
+
+  /* Force list mode on very small screens */
+  .display-mode-list .grade-card {
+    flex-direction: column;
+  }
+
+  .display-mode-list .grade-image {
+    width: 100%;
+  }
+}
+
+@media (max-width: 576px) {
+  .classroom-grades-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .history-classroom-block .block-title {
+    font-size: 1.5rem;
+  }
+
+  .history-classroom-block .block-intro {
+    font-size: 1rem;
+  }
+}
+
+/* Accessibility: Focus states */
+.grade-card:focus-within {
+  outline: 3px solid var(--grade-color);
+  outline-offset: 4px;
+}
+
+/* Animation for card entrance */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.grade-card {
+  animation: fadeInUp 0.5s ease-out backwards;
+}
+
+/* Stagger animation delay for each card */
+.grade-card:nth-child(1) { animation-delay: 0.05s; }
+.grade-card:nth-child(2) { animation-delay: 0.1s; }
+.grade-card:nth-child(3) { animation-delay: 0.15s; }
+.grade-card:nth-child(4) { animation-delay: 0.2s; }
+.grade-card:nth-child(5) { animation-delay: 0.25s; }
+.grade-card:nth-child(6) { animation-delay: 0.3s; }
+.grade-card:nth-child(7) { animation-delay: 0.35s; }
+.grade-card:nth-child(8) { animation-delay: 0.4s; }
+.grade-card:nth-child(9) { animation-delay: 0.45s; }
+
+/* Print styles */
+@media print {
+  .grade-card {
+    page-break-inside: avoid;
+    box-shadow: none !important;
+    border: 1px solid #ddd;
+  }
+
+  .saho-card-button {
+    display: none;
+  }
+}

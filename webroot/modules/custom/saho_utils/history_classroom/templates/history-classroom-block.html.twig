@@ -1,0 +1,133 @@
+{#
+/**
+ * @file
+ * Theme implementation for the History Classroom block.
+ *
+ * Available variables:
+ * - grades: Array of grade data:
+ *   - number: Grade number (4-12)
+ *   - tid: Taxonomy term ID
+ *   - name: Full term name
+ *   - label: Display label (e.g., "Grade 8")
+ *   - count: Number of articles
+ *   - featured_topic: Featured/recent topic title
+ *   - url: Link to grade page
+ *   - color: Hex color for grade
+ * - block_title: Block title
+ * - intro_text: Introduction text
+ * - display_mode: Display mode (grid, carousel, list)
+ * - show_content_count: Whether to show content counts
+ * - show_featured_topic: Whether to show featured topics
+ *
+ * @ingroup themeable
+ */
+#}
+<div class="history-classroom-block">
+  {% if block_title %}
+    <h2 class="block-title mb-3">{{ block_title }}</h2>
+  {% endif %}
+
+  {% if intro_text %}
+    <p class="block-intro text-muted mb-4">{{ intro_text }}</p>
+  {% endif %}
+
+  {% if grades %}
+    <div class="classroom-grades-wrapper display-mode-{{ display_mode }}">
+      {% if display_mode == 'carousel' %}
+        {# Carousel mode for mobile-friendly browsing #}
+        <div id="classroomCarousel" class="carousel slide" data-bs-ride="carousel">
+          <div class="carousel-indicators">
+            {% for grade in grades %}
+              <button type="button" data-bs-target="#classroomCarousel" data-bs-slide-to="{{ loop.index0 }}"
+                      class="{{ loop.first ? 'active' : '' }}" aria-label="Grade {{ grade.number }}"></button>
+            {% endfor %}
+          </div>
+
+          <div class="carousel-inner">
+            {% for grade in grades %}
+              <div class="carousel-item {{ loop.first ? 'active' : '' }}">
+                {{ _self.grade_card(grade, show_content_count, show_featured_topic) }}
+              </div>
+            {% endfor %}
+          </div>
+
+          <button class="carousel-control-prev" type="button" data-bs-target="#classroomCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">{{ 'Previous'|t }}</span>
+          </button>
+          <button class="carousel-control-next" type="button" data-bs-target="#classroomCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">{{ 'Next'|t }}</span>
+          </button>
+        </div>
+
+      {% elseif display_mode == 'list' %}
+        {# Stacked list mode #}
+        <div class="classroom-grades-list">
+          {% for grade in grades %}
+            {{ _self.grade_card(grade, show_content_count, show_featured_topic) }}
+          {% endfor %}
+        </div>
+
+      {% else %}
+        {# Grid mode (default) #}
+        <div class="saho-cards-grid classroom-grades-grid">
+          {% for grade in grades %}
+            {{ _self.grade_card(grade, show_content_count, show_featured_topic) }}
+          {% endfor %}
+        </div>
+      {% endif %}
+    </div>
+  {% else %}
+    <div class="alert alert-info">
+      <i class="fas fa-info-circle me-2"></i>
+      {{ 'No classroom content available.'|t }}
+    </div>
+  {% endif %}
+</div>
+
+{#
+/**
+ * Grade card macro for reusable card rendering.
+ */
+#}
+{% macro grade_card(grade, show_count, show_topic) %}
+  <div class="saho-card grade-card grade-{{ grade.number }}" style="--grade-color: {{ grade.color }}">
+    <a href="{{ grade.url }}" class="saho-card-link">
+      <div class="saho-card-image grade-image">
+        {# Grade number badge #}
+        <div class="grade-badge">
+          <span class="grade-number">{{ grade.number }}</span>
+        </div>
+        {# Decorative background pattern #}
+        <div class="grade-pattern"></div>
+      </div>
+
+      <div class="saho-card-content">
+        <h3 class="saho-card-title">{{ grade.label }}</h3>
+
+        {% if show_topic and grade.featured_topic %}
+          <div class="featured-topic">
+            <i class="fas fa-star text-warning me-1"></i>
+            <span class="topic-text">{{ grade.featured_topic|truncate(60, true) }}</span>
+          </div>
+        {% endif %}
+
+        {% if show_count %}
+          <div class="resource-count">
+            <i class="fas fa-book-open me-1"></i>
+            <span class="count-number">{{ grade.count }}</span>
+            <span class="count-label">{{ grade.count == 1 ? 'resource'|t : 'resources'|t }}</span>
+          </div>
+        {% endif %}
+
+        <div class="saho-card-footer">
+          <span class="saho-card-button">
+            {{ 'Explore Grade'|t }} {{ grade.number }}
+            <i class="fas fa-arrow-right ms-1"></i>
+          </span>
+        </div>
+      </div>
+    </a>
+  </div>
+{% endmacro %}
