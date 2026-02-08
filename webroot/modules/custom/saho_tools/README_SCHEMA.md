@@ -230,7 +230,7 @@ ddev drush ev "\$node = \Drupal::entityTypeManager()->getStorage('node')->load(1
 ## Credits
 
 **Implementation**: February 2026
-**Developer**: SAHO Development Team + Claude Sonnet 4.5
+**Developer**: SAHO Development Team
 **Version**: 3.1.0
 **License**: CC BY-NC-SA 4.0
 
