@@ -10,7 +10,6 @@
 #   - 4 article nodes
 #
 # Date: 2025-10-21
-# Created by: Claude Code
 
 set -e
 

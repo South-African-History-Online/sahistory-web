@@ -16,8 +16,7 @@
  * - Fixes URL encoding (%20 spaces, %5B brackets, etc.)
  * - Updates both node__body and node_revision__body tables
  * - Leaves URLs with missing files unchanged to prevent broken links
- * 
- * Author: Claude Code Assistant
+ *
  * Date: September 2025
  */
 

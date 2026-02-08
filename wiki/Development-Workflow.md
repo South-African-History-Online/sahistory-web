@@ -61,8 +61,6 @@ git commit -m "Add featured articles dynamic loading
 - Fix Node object rendering in templates
 - Add proper Bootstrap card components
 
-🤖 Generated with [Claude Code](https://claude.ai/code)"
-
 # Push feature branch
 git push -u origin feature/your-feature-name
 ```
