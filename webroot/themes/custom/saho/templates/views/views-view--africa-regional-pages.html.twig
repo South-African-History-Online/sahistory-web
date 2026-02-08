@@ -1,0 +1,193 @@
+{#
+/**
+ * @file
+ * Theme override for Africa Regional Pages view - Multi-section layout
+ *
+ * Creates an engaging, structured experience with:
+ * - Countries section (taxonomy term cards)
+ * - Places section (place node cards)
+ * - Content grid (articles, archives, biographies)
+ *
+ * Available variables:
+ * - view: The view object.
+ * - rows: The rendered rows from the grid template.
+ * - header: The view header.
+ * - pager: The view pager.
+ * - region_data: Preprocessed region data (countries, places, etc.)
+ */
+#}
+
+{% if region_data %}
+<div class="africa-regional-page africa-regional-page--{{ view.current_display|replace({'page_': ''}) }}">
+
+  {# Hero Section with Region Introduction #}
+  <div class="africa-region-hero bg-light py-4 mb-5">
+    <div class="container">
+      <div class="row align-items-center">
+        <div class="col-lg-8">
+          {% if header %}
+            {{ header }}
+          {% endif %}
+        </div>
+        <div class="col-lg-4 text-lg-end">
+          <span class="badge bg-danger fs-6 px-3 py-2">
+            <i class="fas fa-globe-africa me-1"></i>
+            {{ region_data.country_count }} Countries
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+
+    {# Countries Section #}
+    {% if region_data.countries %}
+    <section class="africa-countries-section mb-5">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="h3 mb-0">
+          <i class="fas fa-flag me-2 text-danger"></i>
+          Countries in {{ region_data.name }}
+        </h2>
+      </div>
+
+      <div class="row row-cols-2 row-cols-md-3 row-cols-lg-6 g-3">
+        {% for country in region_data.countries %}
+          <div class="col">
+            <a href="{{ country.url }}" class="text-decoration-none">
+              <div class="card h-100 border-0 shadow-sm hover-shadow transition">
+                <div class="card-body text-center p-3">
+                  <i class="fas fa-map-marked-alt fs-2 text-muted mb-2"></i>
+                  <h3 class="h6 mb-1">{{ country.name }}</h3>
+                  {% if country.count %}
+                    <small class="text-muted">{{ country.count }} items</small>
+                  {% endif %}
+                </div>
+              </div>
+            </a>
+          </div>
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
+
+    {# Places Section #}
+    {% if region_data.places %}
+    <section class="africa-places-section mb-5">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="h3 mb-0">
+          <i class="fas fa-map-marker-alt me-2 text-danger"></i>
+          Featured Places
+        </h2>
+        <a href="#all-content" class="btn btn-sm btn-outline-secondary smooth-scroll">
+          View All Content
+          <i class="fas fa-arrow-down ms-1"></i>
+        </a>
+      </div>
+
+      <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
+        {% for place in region_data.places %}
+          <div class="col">
+            <a href="{{ place.url }}" class="text-decoration-none">
+              <div class="card h-100 shadow-sm hover-shadow transition">
+                <div class="position-relative overflow-hidden" style="height: 150px;">
+                  {% if place.image %}
+                    <img src="{{ place.image }}"
+                         alt="{{ place.title }}"
+                         class="card-img-top w-100 h-100"
+                         style="object-fit: cover;"
+                         loading="lazy">
+                  {% else %}
+                    <div class="card-img-top bg-light d-flex align-items-center justify-content-center h-100">
+                      <i class="fas fa-map-marker-alt fa-3x text-muted"></i>
+                    </div>
+                  {% endif %}
+                  <span class="badge bg-info position-absolute top-0 end-0 m-2">Place</span>
+                </div>
+                <div class="card-body">
+                  <h3 class="h6 card-title">{{ place.title }}</h3>
+                  {% if place.country %}
+                    <p class="small text-muted mb-0">
+                      <i class="fas fa-map-pin me-1"></i>{{ place.country }}
+                    </p>
+                  {% endif %}
+                </div>
+              </div>
+            </a>
+          </div>
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
+
+    {# Main Content Grid Section #}
+    <section class="africa-content-section" id="all-content">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="h3 mb-0">
+          <i class="fas fa-th-large me-2 text-danger"></i>
+          All Content from {{ region_data.name }}
+        </h2>
+        <div class="text-muted small">
+          {{ view.total_rows }} items
+        </div>
+      </div>
+
+      {# Main content grid from views-view-grid template #}
+      {{ rows }}
+    </section>
+
+    {# Footer/Pager #}
+    {% if pager %}
+      <div class="africa-pager mt-5">
+        {{ pager }}
+      </div>
+    {% endif %}
+
+  </div>
+</div>
+
+<style>
+.hover-shadow {
+  transition: box-shadow 0.3s ease, transform 0.2s ease;
+}
+.hover-shadow:hover {
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+  transform: translateY(-2px);
+}
+.africa-region-hero {
+  border-bottom: 3px solid #dc2626;
+}
+.smooth-scroll {
+  scroll-behavior: smooth;
+}
+.transition {
+  transition: all 0.3s ease;
+}
+</style>
+
+<script>
+// Smooth scrolling for anchor links
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+  anchor.addEventListener('click', function (e) {
+    const href = this.getAttribute('href');
+    if (href !== '#') {
+      e.preventDefault();
+      const target = document.querySelector(href);
+      if (target) {
+        target.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
+        });
+      }
+    }
+  });
+});
+</script>
+
+{% else %}
+  {# Fallback if no region data #}
+  {{ rows }}
+  {% if pager %}
+    {{ pager }}
+  {% endif %}
+{% endif %}

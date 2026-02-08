@@ -1,0 +1,170 @@
+{#
+/**
+ * @file
+ * Theme override for Africa Regional Pages view grid.
+ *
+ * Uses the unified SAHO card component for consistent styling.
+ *
+ * Available variables:
+ * - attributes: HTML attributes for the wrapping element.
+ * - title: The title of this group of rows.
+ * - view: The view object.
+ * - items: The items contained in this view.
+ * - options: The view plugin style options.
+ *
+ * @see template_preprocess_views_view_grid()
+ */
+#}
+
+{% set view_id = view.id() %}
+{% set display_id = view.current_display %}
+
+{# Map display IDs to region names for theming #}
+{% set region_colors = {
+  'page_northern': 'deep-heritage-red',
+  'page_eastern': 'muted-gold',
+  'page_central': 'slate-blue',
+  'page_western': 'faded-brick-red',
+  'page_southern': 'deep-heritage-red'
+} %}
+
+{% set region_color = region_colors[display_id] ?? 'deep-heritage-red' %}
+
+{# Placeholder icon mapping #}
+{% set placeholder_icons = {
+  'biography': 'fa-user',
+  'article': 'fa-newspaper',
+  'place': 'fa-map-marker-alt',
+  'archive': 'fa-archive',
+  'event': 'fa-calendar',
+  'default': 'fa-file-alt'
+} %}
+
+{# Use responsive grid with Bootstrap classes #}
+<div{{ attributes.addClass('saho-cards-grid', 'row', 'row-cols-1', 'row-cols-md-2', 'row-cols-lg-3', 'g-4') }}>
+  {% for row in items %}
+    {% for column in row.content %}
+      {% if column.content %}
+        {# Extract node entity from row #}
+        {% set node = false %}
+        {% if column.content['#row'] is defined and column.content['#row']._entity is defined %}
+          {% set node = column.content['#row']._entity %}
+        {% elseif column.content['#node'] is defined %}
+          {% set node = column.content['#node'] %}
+        {% endif %}
+
+        {# Build card data from node #}
+        {% set card_data = {
+          title: false,
+          body: false,
+          url: false,
+          date: false,
+          image_url: false,
+          image_alt: false,
+          content_type: 'Article'
+        } %}
+
+        {% if node %}
+          {% set card_data = card_data|merge({
+            title: node.label(),
+            content_type: node.bundle()|capitalize,
+            url: path('entity.node.canonical', {'node': node.id()}),
+            date: node.getChangedTime()|date('j F Y'),
+            image_alt: node.label()
+          }) %}
+
+          {# Get body/synopsis for description #}
+          {% if node.hasField('field_synopsis') and not node.get('field_synopsis').isEmpty() %}
+            {% set card_data = card_data|merge({body: node.get('field_synopsis').value}) %}
+          {% elseif node.hasField('body') and not node.get('body').isEmpty() %}
+            {% set card_data = card_data|merge({body: node.get('body').value}) %}
+          {% elseif node.hasField('field_description') and not node.get('field_description').isEmpty() %}
+            {% set card_data = card_data|merge({body: node.get('field_description').value}) %}
+          {% endif %}
+
+          {# Get image from various possible field names #}
+          {% set image_fields = ['field_article_image', 'field_image', 'field_bio_pic', 'field_place_image', 'field_event_image', 'field_archive_image'] %}
+          {% for image_field in image_fields %}
+            {% if not card_data.image_url and node.hasField(image_field) and not node.get(image_field).isEmpty() %}
+              {% set file_entity = node.get(image_field).entity %}
+              {% if file_entity %}
+                {# Get the file URL - image style will be applied via CSS object-fit #}
+                {% set file_uri = file_entity.uri.value %}
+                {% set image_url = file_url(file_uri) %}
+                {% set card_data = card_data|merge({image_url: image_url}) %}
+
+                {# Get alt text if available - use array access instead of first() method #}
+                {% set image_field_values = node.get(image_field).getValue() %}
+                {% if image_field_values[0] and image_field_values[0].alt %}
+                  {% set card_data = card_data|merge({image_alt: image_field_values[0].alt}) %}
+                {% endif %}
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+        {% endif %}
+
+        {# Render SAHO card #}
+        <div class="col">
+          <a href="{{ card_data.url ? card_data.url : '#' }}" class="text-decoration-none" aria-label="View {{ card_data.title }}">
+            <div class="saho-card saho-card--{{ card_data.content_type|lower|replace({' ': '-'}) }} card h-100 shadow-sm hover-shadow-lg transition">
+
+              {# Card Image Area #}
+              <div class="saho-card-image position-relative overflow-hidden">
+                {% if card_data.image_url %}
+                  <img src="{{ card_data.image_url }}"
+                       alt="{{ card_data.image_alt }}"
+                       class="card-img-top saho-card-image__img"
+                       loading="lazy"
+                       style="height: 200px; object-fit: cover;">
+                {% else %}
+                  <div class="card-img-top saho-card-image--placeholder bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                    {% set icon_class = placeholder_icons[card_data.content_type|lower] ?? placeholder_icons.default %}
+                    <i class="fas {{ icon_class }} fa-3x text-muted"></i>
+                  </div>
+                {% endif %}
+
+                {# Content Type Badge #}
+                <span class="badge position-absolute top-0 end-0 m-2 bg-{{ region_color }} saho-card-badge">
+                  {{ card_data.content_type }}
+                </span>
+              </div>
+
+              {# Card Body #}
+              <div class="card-body d-flex flex-column saho-card-content">
+                {# Title #}
+                <h3 class="card-title h5 saho-card-title mb-2">
+                  {{ card_data.title ? card_data.title : (card_data.content_type ~ ' Item') }}
+                </h3>
+
+                {# Date subtitle #}
+                {% if card_data.date %}
+                  <div class="text-muted small mb-2 saho-card-subtitle">
+                    <i class="far fa-clock me-1"></i>
+                    {{ card_data.date }}
+                  </div>
+                {% endif %}
+
+                {# Description #}
+                {% if card_data.body %}
+                  <div class="card-text text-muted small mb-3 saho-card-description">
+                    {{ card_data.body|striptags|trim|slice(0, 120) ~ (card_data.body|striptags|trim|length > 120 ? '...' : '') }}
+                  </div>
+                {% endif %}
+
+                {# Read More Button #}
+                <div class="mt-auto saho-card-footer">
+                  <span class="btn btn-sm btn-outline-secondary saho-card-button">
+                    Read more
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="ms-1" viewBox="0 0 16 16">
+                      <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/>
+                    </svg>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </a>
+        </div>
+      {% endif %}
+    {% endfor %}
+  {% endfor %}
+</div>

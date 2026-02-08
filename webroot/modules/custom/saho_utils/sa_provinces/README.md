@@ -1,6 +1,6 @@
 # South African Provinces Block
 
-A visual, educational block that showcases South Africa's 9 provinces with alphabetical organization for exploring places, cities, towns, and historical sites.
+A visual, educational block that showcases South Africa's 9 provinces with alphabetical organization for viewing places, cities, towns, and historical sites.
 
 ## Features
 
@@ -58,7 +58,7 @@ A visual, educational block that showcases South Africa's 9 provinces with alpha
 
 ### Block Settings
 
-1. **Block Title**: Custom title for the block (default: "Explore South African Provinces")
+1. **Block Title**: Custom title for the block (default: "South African Provinces")
 2. **Introduction Text**: Brief description shown below title
 3. **Display Mode**: Choose between Grid, Carousel, or List
 4. **Show Place Count**: Toggle place counts

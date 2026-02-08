@@ -64,15 +64,24 @@ class HistoryClassroomBlock extends BlockBase implements ContainerFactoryPluginI
    * @var array
    */
   protected const GRADE_COLORS = [
-    4 => '#990000',  // Deep Heritage Red.
-    5 => '#B22222',  // Firebrick Red.
-    6 => '#8b2331',  // Faded Brick Red.
-    7 => '#8B0000',  // Dark Red.
-    8 => '#3a4a64',  // Slate Blue.
-    9 => '#4a5a74',  // Lighter Slate.
-    10 => '#b88a2e',  // Muted Gold.
-    11 => '#c89a3e',  // Lighter Gold.
-    12 => '#8B6914',  // Dark Gold.
+  // Deep Heritage Red.
+    4 => '#990000',
+  // Firebrick Red.
+    5 => '#B22222',
+  // Faded Brick Red.
+    6 => '#8b2331',
+  // Dark Red.
+    7 => '#8B0000',
+  // Slate Blue.
+    8 => '#3a4a64',
+  // Lighter Slate.
+    9 => '#4a5a74',
+  // Muted Gold.
+    10 => '#b88a2e',
+  // Lighter Gold.
+    11 => '#c89a3e',
+  // Dark Gold.
+    12 => '#8B6914',
   ];
 
   /**
@@ -257,7 +266,7 @@ class HistoryClassroomBlock extends BlockBase implements ContainerFactoryPluginI
     $grades = [];
 
     foreach ($terms as $term) {
-      // Extract grade number from term name (e.g., "History Classroom Grade Eight" -> 8).
+      // Extract grade number from term name (e.g., "Grade Eight" -> 8).
       $grade_number = $this->extractGradeNumber($term->getName());
 
       if (!in_array($grade_number, $grade_numbers, TRUE)) {

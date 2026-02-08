@@ -1,0 +1,152 @@
+<?php
+
+/**
+ * @file
+ * Africa Regions module.
+ */
+
+/**
+ * Implements hook_theme().
+ */
+function africa_regions_theme($existing, $type, $theme, $path) {
+  return [
+    'africa_regions_block' => [
+      'template' => 'africa-regions-block',
+      'variables' => [
+        'regions' => [],
+        'block_title' => NULL,
+        'intro_text' => NULL,
+        'display_mode' => 'grid',
+        'show_content_count' => TRUE,
+        'show_featured_country' => TRUE,
+      ],
+    ],
+  ];
+}
+
+/**
+ * Implements template_preprocess_views_view() for africa_regional_pages view.
+ */
+function africa_regions_preprocess_views_view(&$variables) {
+  $view = $variables['view'];
+
+  // Only process our specific view
+  if ($view->id() !== 'africa_regional_pages') {
+    return;
+  }
+
+  $display_id = $view->current_display;
+
+  // Map displays to their country term IDs
+  $region_config = [
+    'page_northern' => [
+      'name' => 'Northern Africa',
+      'country_tids' => [32464, 32481, 32495, 32501, 32514, 32518],
+      'color' => 'deep-heritage-red',
+    ],
+    'page_eastern' => [
+      'name' => 'Eastern Africa',
+      'country_tids' => [32469, 32480, 32483, 32484, 32492, 32506, 32511, 32516, 32519],
+      'color' => 'muted-gold',
+    ],
+    'page_central' => [
+      'name' => 'Central Africa',
+      'country_tids' => [32465, 32471, 32472, 32473, 32475, 32478, 32482, 32487],
+      'color' => 'slate-blue',
+    ],
+    'page_western' => [
+      'name' => 'Western Africa',
+      'country_tids' => [32466, 32468, 32470, 32477, 32488, 32489, 32490, 32491, 32494, 32498, 32499, 32504, 32505, 32508, 32510, 32517],
+      'color' => 'faded-brick-red',
+    ],
+    'page_southern' => [
+      'name' => 'Southern Africa',
+      'country_tids' => [32467, 32474, 32493, 32496, 32497, 32500, 32502, 32503, 32512, 32515, 32520, 32521],
+      'color' => 'deep-heritage-red',
+    ],
+  ];
+
+  if (!isset($region_config[$display_id])) {
+    return;
+  }
+
+  $current_region = $region_config[$display_id];
+  $country_tids = $current_region['country_tids'];
+
+  // Load country taxonomy terms
+  $term_storage = \Drupal::entityTypeManager()->getStorage('taxonomy_term');
+  $country_terms = $term_storage->loadMultiple($country_tids);
+
+  $countries = [];
+  $taxonomy_counter = \Drupal::service('saho_utils.taxonomy_counter');
+
+  foreach ($country_terms as $term) {
+    $count = $taxonomy_counter->countNodesByTerm(
+      $term->id(),
+      ['article', 'biography', 'archive', 'place'],
+      ['field_african_country']
+    );
+
+    $countries[] = [
+      'name' => $term->label(),
+      'id' => $term->id(),
+      'url' => $term->toUrl()->toString(),
+      'count' => $count,
+    ];
+  }
+
+  // Load featured places (limit to 4)
+  $place_query = \Drupal::entityQuery('node')
+    ->condition('type', 'place')
+    ->condition('status', 1)
+    ->condition('field_african_country', $country_tids, 'IN')
+    ->accessCheck(FALSE)
+    ->sort('changed', 'DESC')
+    ->range(0, 4);
+
+  $place_nids = $place_query->execute();
+  $places = [];
+
+  if ($place_nids) {
+    $node_storage = \Drupal::entityTypeManager()->getStorage('node');
+    $place_nodes = $node_storage->loadMultiple($place_nids);
+
+    foreach ($place_nodes as $place) {
+      $image_url = NULL;
+
+      // Get place image.
+      if ($place->hasField('field_place_image') && !$place->get('field_place_image')->isEmpty()) {
+        $file = $place->get('field_place_image')->entity;
+        if ($file && $file instanceof \Drupal\file\FileInterface) {
+          $file_uri = $file->getFileUri();
+          $image_url = \Drupal::service('file_url_generator')->generateString($file_uri);
+        }
+      }
+
+      // Get country name
+      $country_name = '';
+      if ($place->hasField('field_african_country') && !$place->get('field_african_country')->isEmpty()) {
+        $country_ref = $place->get('field_african_country')->entity;
+        if ($country_ref) {
+          $country_name = $country_ref->label();
+        }
+      }
+
+      $places[] = [
+        'title' => $place->label(),
+        'url' => $place->toUrl()->toString(),
+        'image' => $image_url,
+        'country' => $country_name,
+      ];
+    }
+  }
+
+  // Make data available to template
+  $variables['region_data'] = [
+    'name' => $current_region['name'],
+    'color' => $current_region['color'],
+    'countries' => $countries,
+    'places' => $places,
+    'country_count' => count($countries),
+  ];
+}
