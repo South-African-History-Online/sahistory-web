@@ -46,3 +46,92 @@ jobs:
           echo "- PHPStan static analysis"
           echo "- Drupal coding standards"
           echo "- Deprecated code usage"
+
+  phpunit:
+    name: PHPUnit Tests
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: drupal_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP 8.3
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: gd, pdo_mysql, opcache
+          coverage: none
+
+      - name: Get Composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress --no-interaction
+
+      - name: Setup environment variables
+        run: |
+          echo "SIMPLETEST_BASE_URL=http://127.0.0.1:8080" >> $GITHUB_ENV
+          echo "SIMPLETEST_DB=mysql://root:root@127.0.0.1:3306/drupal_test" >> $GITHUB_ENV
+          echo "BROWSERTEST_OUTPUT_DIRECTORY=/tmp/browser_output" >> $GITHUB_ENV
+          mkdir -p /tmp/browser_output
+
+      - name: Setup Drupal files directory
+        run: |
+          mkdir -p webroot/sites/default/files
+          chmod 777 webroot/sites/default/files
+
+      - name: Run Unit Tests
+        working-directory: webroot/modules/custom
+        run: |
+          ../../../vendor/bin/phpunit \
+            --configuration phpunit.xml \
+            --testsuite unit \
+            --log-junit ../../../test-results/unit.xml
+
+      - name: Run Kernel Tests
+        working-directory: webroot/modules/custom
+        run: |
+          ../../../vendor/bin/phpunit \
+            --configuration phpunit.xml \
+            --testsuite kernel \
+            --log-junit ../../../test-results/kernel.xml
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phpunit-results
+          path: test-results/
+
+      - name: Test summary
+        if: always()
+        run: |
+          echo "::notice::PHPUnit tests completed"
+          if [ -f test-results/unit.xml ]; then
+            echo "Unit tests executed successfully"
+          fi
+          if [ -f test-results/kernel.xml ]; then
+            echo "Kernel tests executed successfully"
+          fi
