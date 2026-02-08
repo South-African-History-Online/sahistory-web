@@ -88,10 +88,10 @@
             {% if not card_data.image_url and node.hasField(image_field) and not node.get(image_field).isEmpty() %}
               {% set file_entity = node.get(image_field).entity %}
               {% if file_entity %}
-                {# Use image style for consistent sizing #}
-                {% set image_uri = file_entity.uri.value %}
-                {% set styled_url = image_uri|image_style('lp_new') %}
-                {% set card_data = card_data|merge({image_url: styled_url}) %}
+                {# Get the file URL - image style will be applied via CSS object-fit #}
+                {% set file_uri = file_entity.uri.value %}
+                {% set image_url = file_url(file_uri) %}
+                {% set card_data = card_data|merge({image_url: image_url}) %}
 
                 {# Get alt text if available - use array access instead of first() method #}
                 {% set image_field_values = node.get(image_field).getValue() %}
