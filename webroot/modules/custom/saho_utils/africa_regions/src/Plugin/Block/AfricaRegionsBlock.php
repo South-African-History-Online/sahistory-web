@@ -63,8 +63,8 @@ class AfricaRegionsBlock extends BlockBase implements ContainerFactoryPluginInte
    */
   protected const REGIONS = [
     'north' => [
-      'label' => 'North Africa',
-      'description' => 'Explore the histories of North African nations',
+      'label' => 'Northern Africa',
+      'description' => 'View the histories of Northern African nations',
       'color' => '#d97706',
       // Warm Amber.
       'countries' => [
@@ -75,11 +75,11 @@ class AfricaRegionsBlock extends BlockBase implements ContainerFactoryPluginInte
         'Sudan',
         'Tunisia',
       ],
-      'url' => '/africa/north-africa',
+      'url' => '/taxonomy/africa-categories/northern-africa',
     ],
     'east' => [
-      'label' => 'East Africa',
-      'description' => 'Discover stories from the East African region',
+      'label' => 'Eastern Africa',
+      'description' => 'Discover stories from the Eastern African region',
       'color' => '#059669',
       // Emerald Green.
       'countries' => [
@@ -93,7 +93,7 @@ class AfricaRegionsBlock extends BlockBase implements ContainerFactoryPluginInte
         'Tanzania',
         'Uganda',
       ],
-      'url' => '/africa/east-africa',
+      'url' => '/taxonomy/africa-categories/eastern-africa',
     ],
     'southern' => [
       'label' => 'Southern Africa',
@@ -111,7 +111,7 @@ class AfricaRegionsBlock extends BlockBase implements ContainerFactoryPluginInte
         'Zambia',
         'Zimbabwe',
       ],
-      'url' => '/africa/southern-africa',
+      'url' => '/taxonomy/africa-categories/southern-africa',
     ],
     'central' => [
       'label' => 'Central Africa',
@@ -128,11 +128,11 @@ class AfricaRegionsBlock extends BlockBase implements ContainerFactoryPluginInte
         'Equatorial Guinea',
         'Gabon',
       ],
-      'url' => '/africa/central-africa',
+      'url' => '/taxonomy/africa-categories/central-africa',
     ],
     'west' => [
-      'label' => 'West Africa',
-      'description' => 'West African stories and historical narratives',
+      'label' => 'Western Africa',
+      'description' => 'Western African stories and historical narratives',
       'color' => '#0891b2',
       // Cyan Blue.
       'countries' => [
@@ -153,7 +153,7 @@ class AfricaRegionsBlock extends BlockBase implements ContainerFactoryPluginInte
         'Sierra Leone',
         'Togo',
       ],
-      'url' => '/africa/west-africa',
+      'url' => '/taxonomy/africa-categories/western-africa',
     ],
   ];
 
