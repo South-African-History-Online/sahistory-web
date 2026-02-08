@@ -296,7 +296,7 @@ class SaProvincesBlock extends BlockBase implements ContainerFactoryPluginInterf
         'count' => $count,
         'featured_place' => $featured_place,
         'image' => $image_url,
-        'url' => '/places?province=' . urlencode($province_info['name']),
+        'url' => '/places?tid_2[' . $term_id . ']=' . $term_id,
         'tid' => $term_id,
       ];
     }
