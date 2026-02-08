@@ -1,0 +1,127 @@
+{#
+/**
+ * @file
+ * Theme template for History Through Pictures block.
+ *
+ * Available variables:
+ * - items: Array of image items to display. Each item contains:
+ *   - nid: Node ID
+ *   - title: Image title
+ *   - url: URL to the featured article/biography (or image node if no feature link)
+ *   - image: Image file URL
+ *   - caption: Optional caption text
+ *   - has_feature_link: Boolean indicating if this links to a featured article/biography
+ * - block_title: The title of the block
+ * - display_mode: Display mode ('grid', 'masonry', or 'carousel')
+ * - show_title: Boolean to show titles
+ * - show_caption: Boolean to show captions
+ * - total_count: Total number of featured images available
+ * - attributes: HTML attributes for the wrapper element
+ */
+#}
+<div{{ attributes.addClass([
+  'saho-history-pictures',
+  'display-mode-' ~ display_mode
+]) }}>
+  {% if block_title %}
+    <h2 class="history-pictures-title">{{ block_title }}</h2>
+  {% endif %}
+
+  {% if display_mode == 'grid' %}
+    <div class="history-pictures-grid">
+      {% for item in items %}
+        <div class="history-picture-item">
+          <a href="{{ item.url }}" class="history-picture-link">
+            <div class="history-picture-image">
+              <img src="{{ item.image }}" alt="{{ item.title }}" loading="lazy" />
+              {% if show_title %}
+                <div class="history-picture-overlay">
+                  <h3 class="history-picture-item-title">{{ item.title }}</h3>
+                </div>
+              {% endif %}
+            </div>
+          </a>
+          {% if show_caption and item.caption %}
+            <div class="history-picture-caption">
+              {{ item.caption }}
+            </div>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+
+  {% elseif display_mode == 'masonry' %}
+    <div class="history-pictures-masonry">
+      {% for item in items %}
+        <div class="history-picture-item">
+          <a href="{{ item.url }}" class="history-picture-link">
+            <div class="history-picture-image">
+              <img src="{{ item.image }}" alt="{{ item.title }}" loading="lazy" />
+              {% if show_title %}
+                <div class="history-picture-overlay">
+                  <h3 class="history-picture-item-title">{{ item.title }}</h3>
+                </div>
+              {% endif %}
+            </div>
+          </a>
+          {% if show_caption and item.caption %}
+            <div class="history-picture-caption">
+              {{ item.caption }}
+            </div>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+
+  {% elseif display_mode == 'carousel' %}
+    <div class="history-pictures-carousel">
+      <div class="carousel-track">
+        {% for item in items %}
+          <div class="history-picture-item">
+            <a href="{{ item.url }}" class="history-picture-link">
+              <div class="history-picture-image">
+                <img src="{{ item.image }}" alt="{{ item.title }}" loading="lazy" />
+                {% if show_title %}
+                  <div class="history-picture-overlay">
+                    <h3 class="history-picture-item-title">{{ item.title }}</h3>
+                  </div>
+                {% endif %}
+              </div>
+            </a>
+            {% if show_caption and item.caption %}
+              <div class="history-picture-caption">
+                {{ item.caption }}
+              </div>
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
+      <button class="carousel-prev" aria-label="Previous">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+      </button>
+      <button class="carousel-next" aria-label="Next">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
+      </button>
+    </div>
+  {% endif %}
+
+  {# View all link #}
+  <div class="history-pictures-view-all">
+    <a href="/history-through-pictures" class="saho-button saho-button--primary saho-button--medium saho-button--with-icon">
+      <span class="saho-button__text">
+        {% if total_count > 0 %}
+          View All {{ total_count }} Images
+        {% else %}
+          View All Images
+        {% endif %}
+      </span>
+      <svg class="saho-button__icon saho-button__icon--arrow-right" width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+        <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/>
+      </svg>
+    </a>
+  </div>
+</div>

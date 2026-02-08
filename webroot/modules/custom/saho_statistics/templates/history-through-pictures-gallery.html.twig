@@ -1,0 +1,125 @@
+{#
+/**
+ * @file
+ * Theme template for History Through Pictures gallery page.
+ *
+ * Available variables:
+ * - items: Array of image items to display.
+ * - total_count: Total number of featured images.
+ * - sort_links: Array of sort option links.
+ * - current_sort: Currently active sort option.
+ */
+#}
+<div class="history-pictures-gallery">
+  <div class="container">
+    {# Header section #}
+    <div class="gallery-header">
+      <div class="gallery-intro">
+        <div class="gallery-title-wrapper">
+          <svg class="gallery-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+            <circle cx="8.5" cy="8.5" r="1.5"></circle>
+            <polyline points="21 15 16 10 5 21"></polyline>
+          </svg>
+          <h1 class="gallery-title">History Through Pictures</h1>
+        </div>
+        <div class="gallery-description">
+          <div class="description-content">
+            <svg class="description-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+            </svg>
+            <p>
+              Explore our collection of {{ total_count }} historical images that tell the story of South Africa's rich and complex past.
+              Browse, search, and discover images from our archives. Featured images link to articles, biographies, and historical events.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {# Sort controls #}
+      <div class="gallery-controls">
+        <div class="sort-label">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <line x1="4" y1="6" x2="20" y2="6"></line>
+            <line x1="4" y1="12" x2="20" y2="12"></line>
+            <line x1="4" y1="18" x2="14" y2="18"></line>
+          </svg>
+          Sort by:
+        </div>
+        <div class="sort-links">
+          {% for link in sort_links %}
+            <a href="{{ link.url }}" class="sort-link{% if link.active %} active{% endif %}">
+              {% if link.label == 'Newest' %}
+                <svg class="sort-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <polyline points="17 11 12 6 7 11"></polyline>
+                  <polyline points="17 18 12 13 7 18"></polyline>
+                </svg>
+              {% elseif link.label == 'Oldest' %}
+                <svg class="sort-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <polyline points="7 13 12 18 17 13"></polyline>
+                  <polyline points="7 6 12 11 17 6"></polyline>
+                </svg>
+              {% elseif link.label == 'A-Z' %}
+                <svg class="sort-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <path d="M3 7h18M3 12h12M3 17h6"></path>
+                </svg>
+              {% elseif link.label == 'Z-A' %}
+                <svg class="sort-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <path d="M3 17h18M3 12h12M3 7h6"></path>
+                </svg>
+              {% elseif link.label == 'Random' %}
+                <svg class="sort-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <polyline points="16 3 21 3 21 8"></polyline>
+                  <line x1="4" y1="20" x2="21" y2="3"></line>
+                  <polyline points="21 16 21 21 16 21"></polyline>
+                  <line x1="15" y1="15" x2="21" y2="21"></line>
+                  <line x1="4" y1="4" x2="9" y2="9"></line>
+                </svg>
+              {% endif %}
+              {{ link.label }}
+            </a>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    {# Image grid #}
+    <div class="history-pictures-grid history-pictures-grid--gallery">
+      {% for item in items %}
+        <div class="history-picture-item">
+          <a href="{{ item.url }}" class="history-picture-link">
+            <div class="history-picture-image">
+              <img src="{{ item.image }}" alt="{{ item.title }}" loading="lazy" />
+              <div class="history-picture-overlay">
+                <h3 class="history-picture-item-title">{{ item.title }}</h3>
+                {% if item.has_feature_link %}
+                  <span class="feature-link-badge">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                      <polyline points="15 3 21 3 21 9"></polyline>
+                      <line x1="10" y1="14" x2="21" y2="3"></line>
+                    </svg>
+                    Featured Story
+                  </span>
+                {% endif %}
+              </div>
+            </div>
+          </a>
+          {% if item.caption %}
+            <div class="history-picture-caption">
+              {{ item.caption }}
+            </div>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+
+    {# Pager #}
+    {% if pager %}
+      <div class="gallery-pager">
+        {{ pager }}
+      </div>
+    {% endif %}
+  </div>
+</div>

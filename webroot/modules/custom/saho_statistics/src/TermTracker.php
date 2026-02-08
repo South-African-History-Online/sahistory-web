@@ -187,4 +187,81 @@ class TermTracker {
     return [];
   }
 
+  /**
+   * Gets the most read content with full details.
+   *
+   * Returns content nodes sorted by view count with optional filtering by
+   * content type and time period.
+   *
+   * @param int $limit
+   *   The number of items to return. Default is 10.
+   * @param string $time_period
+   *   The time period to filter by. Options: 'all_time', 'today'.
+   *   Default is 'all_time'.
+   * @param array $content_types
+   *   Array of content type machine names to filter by. Empty array means
+   *   all types. Default is empty array.
+   *
+   * @return array
+   *   Array of objects with node details including nid, title, type, created,
+   *   view count (totalcount or daycount), and timestamp.
+   */
+  public function getMostReadContent($limit = 10, $time_period = 'all_time', array $content_types = []) {
+    // Check if statistics module is installed.
+    if (!$this->moduleHandler->moduleExists('statistics')) {
+      return [];
+    }
+
+    // Build cache ID based on parameters.
+    $cid = 'saho_statistics:most_read:' . $time_period . ':' . implode('_', $content_types) . ':' . $limit;
+
+    // Check if we have a cached result.
+    if ($cache = $this->cacheBackend->get($cid)) {
+      return $cache->data;
+    }
+
+    // Build the query.
+    $query = $this->database->select('node_counter', 'nc');
+    $query->fields('nc', ['nid', 'totalcount', 'daycount', 'timestamp']);
+
+    // Join with node_field_data to get node details.
+    $query->join('node_field_data', 'nfd', 'nc.nid = nfd.nid');
+    $query->fields('nfd', ['title', 'type', 'created']);
+
+    // Only published nodes.
+    $query->condition('nfd.status', 1);
+
+    // Filter by content types if specified.
+    if (!empty($content_types)) {
+      $query->condition('nfd.type', $content_types, 'IN');
+    }
+
+    // Sort and filter based on time period.
+    switch ($time_period) {
+      case 'today':
+        $query->orderBy('nc.daycount', 'DESC');
+        break;
+
+      case 'this_week':
+        // Filter to nodes accessed in the last 7 days.
+        $week_ago = time() - (7 * 86400);
+        $query->condition('nc.timestamp', $week_ago, '>=');
+        $query->orderBy('nc.totalcount', 'DESC');
+        break;
+
+      case 'all_time':
+      default:
+        $query->orderBy('nc.totalcount', 'DESC');
+        break;
+    }
+
+    $query->range(0, $limit);
+    $results = $query->execute()->fetchAll();
+
+    // Cache the result for 1 hour.
+    $this->cacheBackend->set($cid, $results, time() + 3600, ['node_list', 'node_counter']);
+
+    return $results;
+  }
+
 }

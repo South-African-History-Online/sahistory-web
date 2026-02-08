@@ -1,0 +1,111 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the SAHO Statistics module.
+ */
+
+/**
+ * Implements hook_schema().
+ */
+function saho_statistics_schema() {
+  $schema = [];
+
+  $schema['saho_search_queries'] = [
+    'description' => 'Stores search query tracking data for analytics.',
+    'fields' => [
+      'id' => [
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => 'Primary Key: Unique query ID.',
+      ],
+      'query_text' => [
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'The search query text.',
+      ],
+      'index_id' => [
+        'type' => 'varchar',
+        'length' => 50,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'The Search API index ID.',
+      ],
+      'result_count' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => FALSE,
+        'description' => 'Number of results returned.',
+      ],
+      'filters' => [
+        'type' => 'text',
+        'size' => 'normal',
+        'not null' => FALSE,
+        'description' => 'Serialized array of applied filters.',
+      ],
+      'uid' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'User ID who performed the search (0 for anonymous).',
+      ],
+      'session_id' => [
+        'type' => 'varchar',
+        'length' => 128,
+        'not null' => FALSE,
+        'description' => 'Anonymized session identifier (8 chars of hash).',
+      ],
+      'timestamp' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Unix timestamp when query was performed.',
+      ],
+      'ip_hash' => [
+        'type' => 'varchar',
+        'length' => 64,
+        'not null' => FALSE,
+        'description' => 'SHA-256 hashed IP address for privacy.',
+      ],
+    ],
+    'primary key' => ['id'],
+    'indexes' => [
+      'query_text' => ['query_text'],
+      'timestamp' => ['timestamp'],
+      'uid' => ['uid'],
+      'index_id' => ['index_id'],
+    ],
+  ];
+
+  return $schema;
+}
+
+/**
+ * Implements hook_install().
+ */
+function saho_statistics_install() {
+  // Set default configuration values.
+  $config = \Drupal::configFactory()->getEditable('saho_statistics.settings');
+  $config->set('track_searches', FALSE);
+  $config->set('search_query_retention', 90);
+  $config->save();
+
+  \Drupal::messenger()->addStatus(t('SAHO Statistics module installed. Configure search query tracking in the <a href="@url">settings page</a>.', [
+    '@url' => '/admin/config/system/saho-statistics',
+  ]));
+}
+
+/**
+ * Add search query tracking table.
+ */
+function saho_statistics_update_9001() {
+  $schema = saho_statistics_schema();
+  if (isset($schema['saho_search_queries'])) {
+    \Drupal::database()->schema()->createTable('saho_search_queries', $schema['saho_search_queries']);
+  }
+}
