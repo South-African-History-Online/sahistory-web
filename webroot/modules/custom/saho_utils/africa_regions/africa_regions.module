@@ -114,11 +114,11 @@ function africa_regions_preprocess_views_view(&$variables) {
     foreach ($place_nodes as $place) {
       $image_url = NULL;
 
-      // Get place image
+      // Get place image.
       if ($place->hasField('field_place_image') && !$place->get('field_place_image')->isEmpty()) {
         $file = $place->get('field_place_image')->entity;
-        if ($file) {
-          $file_uri = $file->uri->value;
+        if ($file && $file instanceof \Drupal\file\FileInterface) {
+          $file_uri = $file->getFileUri();
           $image_url = \Drupal::service('file_url_generator')->generateString($file_uri);
         }
       }

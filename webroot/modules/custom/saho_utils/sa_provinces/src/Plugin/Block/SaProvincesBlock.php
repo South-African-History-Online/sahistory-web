@@ -401,7 +401,7 @@ class SaProvincesBlock extends BlockBase implements ContainerFactoryPluginInterf
     foreach ($nids as $nid) {
       $node = $this->entityTypeManager->getStorage('node')->load($nid);
       if ($node) {
-        $image_url = $this->imageExtractor->extractImageUrl($node, 'field_image', 'large');
+        $image_url = $this->imageExtractor->extractImageUrl($node, 'field_image');
         if ($image_url) {
           return $image_url;
         }
