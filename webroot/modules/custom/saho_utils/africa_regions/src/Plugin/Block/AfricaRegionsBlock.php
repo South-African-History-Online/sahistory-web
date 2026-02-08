@@ -75,7 +75,7 @@ class AfricaRegionsBlock extends BlockBase implements ContainerFactoryPluginInte
         'Sudan',
         'Tunisia',
       ],
-      'url' => '/taxonomy/africa-categories/northern-africa',
+      'url' => '/africa/northern-africa',
     ],
     'east' => [
       'label' => 'Eastern Africa',
@@ -93,7 +93,7 @@ class AfricaRegionsBlock extends BlockBase implements ContainerFactoryPluginInte
         'Tanzania',
         'Uganda',
       ],
-      'url' => '/taxonomy/africa-categories/eastern-africa',
+      'url' => '/africa/eastern-africa',
     ],
     'southern' => [
       'label' => 'Southern Africa',
@@ -111,7 +111,7 @@ class AfricaRegionsBlock extends BlockBase implements ContainerFactoryPluginInte
         'Zambia',
         'Zimbabwe',
       ],
-      'url' => '/taxonomy/africa-categories/southern-africa',
+      'url' => '/africa/southern-africa',
     ],
     'central' => [
       'label' => 'Central Africa',
@@ -128,7 +128,7 @@ class AfricaRegionsBlock extends BlockBase implements ContainerFactoryPluginInte
         'Equatorial Guinea',
         'Gabon',
       ],
-      'url' => '/taxonomy/africa-categories/central-africa',
+      'url' => '/africa/central-africa',
     ],
     'west' => [
       'label' => 'Western Africa',
@@ -153,7 +153,7 @@ class AfricaRegionsBlock extends BlockBase implements ContainerFactoryPluginInte
         'Sierra Leone',
         'Togo',
       ],
-      'url' => '/taxonomy/africa-categories/western-africa',
+      'url' => '/africa/western-africa',
     ],
   ];
 
