@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Drupal\educational_resources\Plugin\Block;
 
+use Drupal\taxonomy\TermInterface;
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
@@ -66,40 +67,55 @@ class EducationalResourcesBlock extends BlockBase implements ContainerFactoryPlu
       'description' => 'Curriculum Assessment Policy Statements',
       'keywords' => ['CAPS', 'curriculum', 'assessment policy'],
       'icon' => 'fa-file-alt',
-  // Deep Heritage Red.
+      // Deep Heritage Red.
       'color' => '#990000',
+      'term_name' => 'CAPS Document',
+      'vocabulary' => 'field_media_library_type',
+      'field' => 'field_media_library_type',
     ],
     'books' => [
       'label' => 'School Books',
       'description' => 'Educational books and reading materials',
       'keywords' => ['book', 'textbook', 'reading'],
       'icon' => 'fa-book',
-    // Slate Blue.
+      // Slate Blue.
       'color' => '#3a4a64',
+      'term_name' => 'School book',
+      'vocabulary' => 'field_media_library_type',
+      'field' => 'field_media_library_type',
     ],
     'aids' => [
-      'label' => 'AIDS Resources',
-      'description' => 'HIV/AIDS education and awareness materials',
-      'keywords' => ['AIDS', 'HIV', 'health'],
-      'icon' => 'fa-heartbeat',
-    // Faded Brick Red.
+      'label' => 'Aids & Resources',
+      'description' => 'Educational aids, teaching tools and classroom resources',
+      'keywords' => ['aids', 'resources', 'teaching tools'],
+      'icon' => 'fa-toolbox',
+      // Faded Brick Red.
       'color' => '#8b2331',
+      'term_name' => 'Aids & Resources',
+      'vocabulary' => 'field_classroom_categories',
+      'field' => 'field_classroom_categories',
     ],
     'teaching' => [
-      'label' => 'Teaching Materials',
-      'description' => 'Lesson plans and teaching resources',
+      'label' => 'Lecture Materials',
+      'description' => 'Lectures and teaching presentations',
       'keywords' => ['teaching', 'lesson', 'educator'],
       'icon' => 'fa-chalkboard-teacher',
-    // Muted Gold.
+      // Muted Gold.
       'color' => '#b88a2e',
+      'term_name' => 'Lecture',
+      'vocabulary' => 'field_media_library_type',
+      'field' => 'field_media_library_type',
     ],
     'policy' => [
       'label' => 'Policy Documents',
       'description' => 'Educational policies and guidelines',
       'keywords' => ['policy', 'regulation', 'guideline'],
       'icon' => 'fa-gavel',
-    // Lighter Slate.
+      // Lighter Slate.
       'color' => '#4a5a74',
+      'term_name' => 'Official Document - Policy documents',
+      'vocabulary' => 'field_media_library_type',
+      'field' => 'field_media_library_type',
     ],
   ];
 
@@ -278,13 +294,22 @@ class EducationalResourcesBlock extends BlockBase implements ContainerFactoryPlu
         continue;
       }
 
-      // Count articles for this resource type.
-      $count = $this->countArticlesForResourceType($type_info['keywords']);
+      // Load the taxonomy term.
+      $vocabulary = $type_info['vocabulary'] ?? 'field_media_library_type';
+      $field = $type_info['field'] ?? 'field_media_library_type';
+
+      $term = $this->loadTermByName($type_info['term_name'], $vocabulary);
+      if (!$term) {
+        continue;
+      }
+
+      // Count articles tagged with this term.
+      $count = $this->countArticlesForTerm((int) $term->id(), $field);
 
       // Get featured item if enabled.
       $featured_item = NULL;
       if ($show_featured) {
-        $featured_item = $this->getFeaturedItemForResourceType($type_info['keywords']);
+        $featured_item = $this->getFeaturedItemForTerm((int) $term->id(), $field);
       }
 
       $resources[] = [
@@ -295,7 +320,7 @@ class EducationalResourcesBlock extends BlockBase implements ContainerFactoryPlu
         'color' => $type_info['color'],
         'count' => $count,
         'featured_item' => $featured_item,
-        'url' => '/search?keywords=' . urlencode($type_info['keywords'][0]),
+        'url' => $term->toUrl()->toString(),
       ];
     }
 
@@ -303,53 +328,45 @@ class EducationalResourcesBlock extends BlockBase implements ContainerFactoryPlu
   }
 
   /**
-   * Count articles for a resource type.
+   * Count articles tagged with a specific term.
    *
-   * @param array $keywords
-   *   Keywords to search for.
+   * @param int $term_id
+   *   The taxonomy term ID.
+   * @param string $field_name
+   *   The field name to query.
    *
    * @return int
    *   The article count.
    */
-  protected function countArticlesForResourceType(array $keywords): int {
+  protected function countArticlesForTerm(int $term_id, string $field_name): int {
     $query = $this->entityTypeManager->getStorage('node')->getQuery()
       ->condition('type', 'article')
       ->condition('status', 1)
+      ->condition($field_name, $term_id)
       ->accessCheck(TRUE);
-
-    // Create OR condition group for keywords.
-    $or_group = $query->orConditionGroup();
-    foreach ($keywords as $keyword) {
-      $or_group->condition('title', '%' . $keyword . '%', 'LIKE');
-    }
-    $query->condition($or_group);
 
     return (int) $query->count()->execute();
   }
 
   /**
-   * Get featured item for a resource type.
+   * Get featured item for a taxonomy term.
    *
-   * @param array $keywords
-   *   Keywords to search for.
+   * @param int $term_id
+   *   The taxonomy term ID.
+   * @param string $field_name
+   *   The field name to query.
    *
    * @return string|null
    *   The featured item title or NULL.
    */
-  protected function getFeaturedItemForResourceType(array $keywords): ?string {
+  protected function getFeaturedItemForTerm(int $term_id, string $field_name): ?string {
     $query = $this->entityTypeManager->getStorage('node')->getQuery()
       ->condition('type', 'article')
       ->condition('status', 1)
+      ->condition($field_name, $term_id)
       ->accessCheck(TRUE)
       ->sort('created', 'DESC')
       ->range(0, 1);
-
-    // Create OR condition group for keywords.
-    $or_group = $query->orConditionGroup();
-    foreach ($keywords as $keyword) {
-      $or_group->condition('title', '%' . $keyword . '%', 'LIKE');
-    }
-    $query->condition($or_group);
 
     $nids = $query->execute();
     if (empty($nids)) {
@@ -358,6 +375,26 @@ class EducationalResourcesBlock extends BlockBase implements ContainerFactoryPlu
 
     $node = $this->entityTypeManager->getStorage('node')->load(reset($nids));
     return $node ? $node->label() : NULL;
+  }
+
+  /**
+   * Load a taxonomy term by name.
+   *
+   * @param string $term_name
+   *   The term name to search for.
+   * @param string $vocabulary
+   *   The vocabulary ID.
+   *
+   * @return \Drupal\taxonomy\TermInterface|null
+   *   The loaded term or NULL.
+   */
+  protected function loadTermByName(string $term_name, string $vocabulary): ?TermInterface {
+    $terms = $this->entityTypeManager->getStorage('taxonomy_term')->loadByProperties([
+      'vid' => $vocabulary,
+      'name' => $term_name,
+    ]);
+
+    return !empty($terms) ? reset($terms) : NULL;
   }
 
 }
