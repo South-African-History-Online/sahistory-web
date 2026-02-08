@@ -24,6 +24,46 @@ function saho_statistics_help($route_name, RouteMatchInterface $route_match) {
 }
 
 /**
+ * Implements hook_theme().
+ */
+function saho_statistics_theme($existing, $type, $theme, $path) {
+  return [
+    'saho_top_read_content_block' => [
+      'variables' => [
+        'items' => [],
+        'block_title' => '',
+        'display_mode' => 'list',
+        'show_view_count' => TRUE,
+        'show_thumbnail' => FALSE,
+        'full_width' => TRUE,
+      ],
+      'template' => 'saho-top-read-content-block',
+    ],
+    'saho_history_through_pictures' => [
+      'variables' => [
+        'items' => [],
+        'block_title' => '',
+        'display_mode' => 'grid',
+        'show_title' => TRUE,
+        'show_caption' => FALSE,
+        'total_count' => 0,
+      ],
+      'template' => 'saho-history-through-pictures',
+    ],
+    'history_through_pictures_gallery' => [
+      'variables' => [
+        'items' => [],
+        'total_count' => 0,
+        'sort_links' => [],
+        'current_sort' => 'newest',
+        'pager' => NULL,
+      ],
+      'template' => 'history-through-pictures-gallery',
+    ],
+  ];
+}
+
+/**
  * Implements hook_theme_suggestions_HOOK_alter() for views-view.
  */
 function saho_statistics_theme_suggestions_views_view_alter(array &$suggestions, array $variables) {
@@ -78,5 +118,33 @@ function saho_statistics_entity_update(EntityInterface $entity) {
   if ($entity instanceof TermInterface) {
     // Clear cached statistics for this term.
     \Drupal::service('saho_statistics.term_tracker')->clearCache();
+  }
+}
+
+/**
+ * Implements hook_cron().
+ */
+function saho_statistics_cron() {
+  $config = \Drupal::config('saho_statistics.settings');
+
+  // Only run cleanup if search tracking is enabled.
+  if (!$config->get('track_searches')) {
+    return;
+  }
+
+  // Get retention period in days (default 90).
+  $retention_days = $config->get('search_query_retention') ?? 90;
+  $cutoff = \Drupal::time()->getRequestTime() - ($retention_days * 86400);
+
+  // Delete old search queries.
+  $deleted = \Drupal::database()->delete('saho_search_queries')
+    ->condition('timestamp', $cutoff, '<')
+    ->execute();
+
+  if ($deleted > 0) {
+    \Drupal::logger('saho_statistics')->info('Deleted @count old search queries older than @days days.', [
+      '@count' => $deleted,
+      '@days' => $retention_days,
+    ]);
   }
 }

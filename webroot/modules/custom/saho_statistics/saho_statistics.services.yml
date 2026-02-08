@@ -2,3 +2,9 @@ services:
   saho_statistics.term_tracker:
     class: Drupal\saho_statistics\TermTracker
     arguments: ['@database', '@entity_type.manager', '@entity_usage.usage', '@cache.default', '@module_handler']
+
+  saho_statistics.search_query_tracker:
+    class: Drupal\saho_statistics\EventSubscriber\SearchQueryTracker
+    arguments: ['@database', '@current_user', '@request_stack', '@config.factory']
+    tags:
+      - { name: event_subscriber }
