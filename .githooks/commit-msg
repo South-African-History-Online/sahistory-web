@@ -1,0 +1,8 @@
+#!/bin/bash
+# Reject commits with Claude/Sonnet credits
+
+if grep -qi "Co-Authored-By.*Claude\|Co-Authored-By.*Sonnet" "$1"; then
+    echo "❌ ERROR: Claude/Sonnet credits not allowed in commits"
+    echo "Please remove 'Co-Authored-By: Claude' lines from commit message"
+    exit 1
+fi
