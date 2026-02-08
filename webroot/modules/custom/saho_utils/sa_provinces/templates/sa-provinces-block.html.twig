@@ -1,0 +1,149 @@
+{#
+/**
+ * @file
+ * Theme implementation for the South African Provinces block.
+ *
+ * Available variables:
+ * - provinces: Array of province data:
+ *   - id: Province ID (e.g., 'eastern_cape')
+ *   - name: Province name (e.g., 'Eastern Cape')
+ *   - description: Province description
+ *   - color: Hex color for province
+ *   - icon_letter: Province abbreviation (e.g., 'EC')
+ *   - count: Number of places
+ *   - featured_place: Featured place title
+ *   - url: Link to province places
+ *   - tid: Taxonomy term ID
+ * - block_title: Block title
+ * - intro_text: Introduction text
+ * - display_mode: Display mode (grid, carousel, list)
+ * - show_place_count: Whether to show place counts
+ * - show_featured_place: Whether to show featured places
+ *
+ * @ingroup themeable
+ */
+#}
+<div class="sa-provinces-block">
+  {% if block_title %}
+    <h2 class="block-title mb-3">{{ block_title }}</h2>
+  {% endif %}
+
+  {% if intro_text %}
+    <p class="block-intro text-muted mb-4">{{ intro_text }}</p>
+  {% endif %}
+
+  {% if provinces %}
+    <div class="provinces-wrapper display-mode-{{ display_mode }}">
+      {% if display_mode == 'carousel' %}
+        {# Carousel mode for mobile-friendly browsing #}
+        <div id="provincesCarousel" class="carousel slide" data-bs-ride="carousel">
+          <div class="carousel-indicators">
+            {% for province in provinces %}
+              <button type="button" data-bs-target="#provincesCarousel" data-bs-slide-to="{{ loop.index0 }}"
+                      class="{{ loop.first ? 'active' : '' }}" aria-label="{{ province.name }}"></button>
+            {% endfor %}
+          </div>
+
+          <div class="carousel-inner">
+            {% for province in provinces %}
+              <div class="carousel-item {{ loop.first ? 'active' : '' }}">
+                {{ _self.province_card(province, show_place_count, show_featured_place) }}
+              </div>
+            {% endfor %}
+          </div>
+
+          <button class="carousel-control-prev" type="button" data-bs-target="#provincesCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">{{ 'Previous'|t }}</span>
+          </button>
+          <button class="carousel-control-next" type="button" data-bs-target="#provincesCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">{{ 'Next'|t }}</span>
+          </button>
+        </div>
+
+      {% elseif display_mode == 'list' %}
+        {# Stacked list mode #}
+        <div class="provinces-list">
+          {% for province in provinces %}
+            {{ _self.province_card(province, show_place_count, show_featured_place) }}
+          {% endfor %}
+        </div>
+
+      {% else %}
+        {# Grid mode (default) #}
+        <div class="saho-cards-grid provinces-grid">
+          {% for province in provinces %}
+            {{ _self.province_card(province, show_place_count, show_featured_place) }}
+          {% endfor %}
+        </div>
+      {% endif %}
+    </div>
+  {% else %}
+    <div class="alert alert-info">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="16" x2="12" y2="12" stroke="white" stroke-width="2"></line>
+        <line x1="12" y1="8" x2="12.01" y2="8" stroke="white" stroke-width="2"></line>
+      </svg>
+      {{ 'No province data available.'|t }}
+    </div>
+  {% endif %}
+</div>
+
+{#
+/**
+ * Province card macro for reusable card rendering.
+ */
+#}
+{% macro province_card(province, show_count, show_featured) %}
+  <div class="saho-card province-card province-{{ province.id }}" style="--province-color: {{ province.color }}">
+    <a href="{{ province.url }}" class="saho-card-link">
+      <div class="saho-card-image province-image">
+        {# Province abbreviation badge #}
+        <div class="province-badge">
+          <span class="province-letters">{{ province.icon_letter }}</span>
+        </div>
+        {# Decorative background pattern #}
+        <div class="province-pattern"></div>
+      </div>
+
+      <div class="saho-card-content">
+        <h3 class="saho-card-title">{{ province.name }}</h3>
+
+        <p class="province-description text-muted mb-3">{{ province.description }}</p>
+
+        {% if show_featured and province.featured_place %}
+          <div class="featured-place">
+            <svg class="featured-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+              <circle cx="12" cy="10" r="3"></circle>
+            </svg>
+            <span class="place-text">{{ province.featured_place|truncate(50, true) }}</span>
+          </div>
+        {% endif %}
+
+        {% if show_count %}
+          <div class="province-count">
+            <svg class="count-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+              <circle cx="12" cy="10" r="3"></circle>
+            </svg>
+            <span class="count-number">{{ province.count }}</span>
+            <span class="count-label">{{ province.count == 1 ? 'place'|t : 'places'|t }}</span>
+          </div>
+        {% endif %}
+
+        <div class="saho-card-footer">
+          <span class="saho-card-button">
+            {{ 'Explore Province'|t }}
+            <svg class="button-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+          </span>
+        </div>
+      </div>
+    </a>
+  </div>
+{% endmacro %}
