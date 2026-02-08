@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Drupal\saho_utils\Service;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Entity\FieldableEntityInterface;
 
 /**
  * Service for counting entities by taxonomy term reference.
@@ -175,7 +176,7 @@ class TaxonomyCounterService {
         // Load entities to check which terms they reference.
         $entities = $storage->loadMultiple($results);
         foreach ($entities as $entity) {
-          if ($entity->hasField($field)) {
+          if ($entity instanceof FieldableEntityInterface && $entity->hasField($field)) {
             $referenced_terms = $entity->get($field)->getValue();
             foreach ($referenced_terms as $reference) {
               $tid = (int) $reference['target_id'];
