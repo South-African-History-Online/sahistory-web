@@ -10,6 +10,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\saho_utils\Service\CacheHelperService;
 use Drupal\saho_utils\Service\ConfigurationFormHelperService;
+use Drupal\saho_utils\Service\ImageExtractorService;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -46,6 +47,13 @@ class SaProvincesBlock extends BlockBase implements ContainerFactoryPluginInterf
    * @var \Drupal\saho_utils\Service\CacheHelperService
    */
   protected CacheHelperService $cacheHelper;
+
+  /**
+   * The image extractor service.
+   *
+   * @var \Drupal\saho_utils\Service\ImageExtractorService
+   */
+  protected $imageExtractor;
 
   /**
    * Province data with SAHO heritage colors (alphabetically ordered).
@@ -124,6 +132,8 @@ class SaProvincesBlock extends BlockBase implements ContainerFactoryPluginInterf
    *   The configuration form helper service.
    * @param \Drupal\saho_utils\Service\CacheHelperService $cache_helper
    *   The cache helper service.
+   * @param \Drupal\saho_utils\Service\ImageExtractorService $image_extractor
+   *   The image extractor service.
    */
   public function __construct(
     array $configuration,
@@ -132,11 +142,13 @@ class SaProvincesBlock extends BlockBase implements ContainerFactoryPluginInterf
     EntityTypeManagerInterface $entity_type_manager,
     ConfigurationFormHelperService $config_form_helper,
     CacheHelperService $cache_helper,
+    ImageExtractorService $image_extractor,
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->entityTypeManager = $entity_type_manager;
     $this->configFormHelper = $config_form_helper;
     $this->cacheHelper = $cache_helper;
+    $this->imageExtractor = $image_extractor;
   }
 
   /**
@@ -150,6 +162,7 @@ class SaProvincesBlock extends BlockBase implements ContainerFactoryPluginInterf
       $container->get('entity_type.manager'),
       $container->get('saho_utils.config_form_helper'),
       $container->get('saho_utils.cache_helper'),
+      $container->get('saho_utils.image_extractor'),
     );
   }
 
@@ -158,8 +171,8 @@ class SaProvincesBlock extends BlockBase implements ContainerFactoryPluginInterf
    */
   public function defaultConfiguration() {
     return [
-      'block_title' => 'Explore South African Provinces',
-      'intro_text' => 'Search for the history of your city, town, suburb or village. Explore places of interest, monuments and historical centres organised by province.',
+      'block_title' => 'South African Provinces',
+      'intro_text' => 'Search for the history of your city, town, suburb or village. View our Places Page to search for places of interest, monuments and centres or browse an alphabetical list.',
       'display_mode' => 'grid',
       'show_place_count' => TRUE,
       'show_featured_place' => TRUE,
@@ -271,6 +284,9 @@ class SaProvincesBlock extends BlockBase implements ContainerFactoryPluginInterf
         $featured_place = $this->getFeaturedPlaceForProvince($term_id);
       }
 
+      // Get representative image for province.
+      $image_url = $this->getProvinceImage($term_id);
+
       $provinces[] = [
         'id' => $province_id,
         'name' => $province_info['name'],
@@ -279,6 +295,7 @@ class SaProvincesBlock extends BlockBase implements ContainerFactoryPluginInterf
         'icon_letter' => $province_info['icon_letter'],
         'count' => $count,
         'featured_place' => $featured_place,
+        'image' => $image_url,
         'url' => '/places?province=' . urlencode($province_info['name']),
         'tid' => $term_id,
       ];
@@ -352,6 +369,46 @@ class SaProvincesBlock extends BlockBase implements ContainerFactoryPluginInterf
 
     $node = $this->entityTypeManager->getStorage('node')->load(reset($nids));
     return $node ? $node->label() : NULL;
+  }
+
+  /**
+   * Get a representative image for a province.
+   *
+   * Loads a place node from the province and extracts its image.
+   *
+   * @param int $term_id
+   *   The taxonomy term ID.
+   *
+   * @return string|null
+   *   The image URL or NULL.
+   */
+  protected function getProvinceImage(int $term_id): ?string {
+    // Find a place with an image for this province.
+    $query = $this->entityTypeManager->getStorage('node')->getQuery()
+      ->condition('type', 'place')
+      ->condition('status', 1)
+      ->condition('field_places_level3', $term_id)
+      ->accessCheck(TRUE)
+      ->sort('created', 'DESC')
+      ->range(0, 5);
+
+    $nids = $query->execute();
+    if (empty($nids)) {
+      return NULL;
+    }
+
+    // Try to find a place with an image.
+    foreach ($nids as $nid) {
+      $node = $this->entityTypeManager->getStorage('node')->load($nid);
+      if ($node) {
+        $image_url = $this->imageExtractor->extractImageUrl($node, 'field_image', 'large');
+        if ($image_url) {
+          return $image_url;
+        }
+      }
+    }
+
+    return NULL;
   }
 
 }
