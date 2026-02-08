@@ -2,6 +2,7 @@
   import { onMount, createEventDispatcher } from 'svelte';
   import VirtualList from 'svelte-virtual-list';
   import { format } from 'date-fns';
+  import DOMPurify from 'dompurify';
   import EventCard from './EventCard.svelte';
   import TimelineCanvas from './TimelineCanvas.svelte';
   
@@ -178,7 +179,7 @@
         {/if}
         <h2>{selectedEvent.title}</h2>
         <p class="date">{format(new Date(selectedEvent.date), 'MMMM d, yyyy')}</p>
-        <div class="body">{@html selectedEvent.body}</div>
+        <div class="body">{@html DOMPurify.sanitize(selectedEvent.body)}</div>
         {#if selectedEvent.url}
           <a href={selectedEvent.url} target="_blank" rel="noopener">
             Read full article →

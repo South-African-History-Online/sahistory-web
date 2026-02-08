@@ -2,6 +2,7 @@
   import { onMount, createEventDispatcher } from 'svelte';
   import VirtualList from 'svelte-virtual-list';
   import { format } from 'date-fns';
+  import DOMPurify from 'dompurify';
   import EventCard from './EventCard.svelte';
   import TimelineCanvas from './TimelineCanvas.svelte';
   import ResearchTools from './ResearchTools.svelte';
@@ -780,7 +781,7 @@
             <p class="location"><Icon name="location" size="16" color="#666" /> {selectedEvent.location}</p>
           {/if}
           
-          <div class="event-body">{@html selectedEvent.body}</div>
+          <div class="event-body">{@html DOMPurify.sanitize(selectedEvent.body)}</div>
           
           {#if selectedEvent.themes && selectedEvent.themes.length > 0}
             <div class="themes">

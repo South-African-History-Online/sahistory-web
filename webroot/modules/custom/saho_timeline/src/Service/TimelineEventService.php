@@ -151,9 +151,8 @@ class TimelineEventService {
   public function getAllTimelineEvents($include_tdih = TRUE, $use_cache = TRUE) {
     $cache_id = 'saho_timeline:all_events:' . ($include_tdih ? 'with_tdih' : 'no_tdih');
 
-    // TEMPORARILY DISABLE SERVICE CACHE for debugging
     // Try to get from cache first.
-    if (FALSE && $use_cache && $cached = $this->cache->get($cache_id)) {
+    if ($use_cache && $cached = $this->cache->get($cache_id)) {
       return $cached->data;
     }
 
@@ -213,9 +212,8 @@ class TimelineEventService {
         return strcmp($date_a, $date_b);
       });
 
-      // TEMPORARILY DISABLE SERVICE CACHE SAVING for debugging
       // Cache the results.
-      if (FALSE && $use_cache) {
+      if ($use_cache) {
         $cache_lifetime = $config->get('cache_lifetime') ?: 3600;
         $this->cache->set($cache_id, $events, $this->time->getRequestTime() + $cache_lifetime, ['node_list:event']);
       }
