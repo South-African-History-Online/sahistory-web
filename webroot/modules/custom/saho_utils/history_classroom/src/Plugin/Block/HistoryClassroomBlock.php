@@ -56,20 +56,23 @@ class HistoryClassroomBlock extends BlockBase implements ContainerFactoryPluginI
   protected ImageExtractorService $imageExtractor;
 
   /**
-   * Grade colors for visual distinction.
+   * Grade colors using SAHO heritage palette.
+   *
+   * Colors derived from SAHO brand guidelines for professional,
+   * academic presentation while maintaining visual distinction.
    *
    * @var array
    */
   protected const GRADE_COLORS = [
-    4 => '#FF6B6B',
-    5 => '#4ECDC4',
-    6 => '#45B7D1',
-    7 => '#FFA07A',
-    8 => '#98D8C8',
-    9 => '#F7B731',
-    10 => '#5F27CD',
-    11 => '#00D2D3',
-    12 => '#1B9CFC',
+    4 => '#990000',  // Deep Heritage Red.
+    5 => '#B22222',  // Firebrick Red.
+    6 => '#8b2331',  // Faded Brick Red.
+    7 => '#8B0000',  // Dark Red.
+    8 => '#3a4a64',  // Slate Blue.
+    9 => '#4a5a74',  // Lighter Slate.
+    10 => '#b88a2e',  // Muted Gold.
+    11 => '#c89a3e',  // Lighter Gold.
+    12 => '#8B6914',  // Dark Gold.
   ];
 
   /**

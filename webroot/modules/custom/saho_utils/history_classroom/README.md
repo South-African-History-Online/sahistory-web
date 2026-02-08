@@ -32,16 +32,16 @@ A visual, educational block that showcases South African History curriculum cont
 
 ### Grade Colors
 
-Each grade has a unique color for visual distinction:
-- Grade 4: Coral Red (#FF6B6B)
-- Grade 5: Turquoise (#4ECDC4)
-- Grade 6: Sky Blue (#45B7D1)
-- Grade 7: Light Salmon (#FFA07A)
-- Grade 8: Mint (#98D8C8)
-- Grade 9: Golden (#F7B731)
-- Grade 10: Purple (#5F27CD)
-- Grade 11: Cyan (#00D2D3)
-- Grade 12: Bright Blue (#1B9CFC)
+Each grade has a unique color derived from the SAHO heritage palette for professional, academic presentation:
+- Grade 4: Deep Heritage Red (#990000)
+- Grade 5: Firebrick Red (#B22222)
+- Grade 6: Faded Brick Red (#8b2331)
+- Grade 7: Dark Red (#8B0000)
+- Grade 8: Slate Blue (#3a4a64)
+- Grade 9: Lighter Slate (#4a5a74)
+- Grade 10: Muted Gold (#b88a2e)
+- Grade 11: Lighter Gold (#c89a3e)
+- Grade 12: Dark Gold (#8B6914)
 
 ## Usage
 
