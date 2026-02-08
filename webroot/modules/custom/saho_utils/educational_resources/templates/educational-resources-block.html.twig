@@ -1,0 +1,135 @@
+{#
+/**
+ * @file
+ * Theme implementation for the Educational Resources block.
+ *
+ * Available variables:
+ * - resources: Array of resource data:
+ *   - id: Resource type ID
+ *   - label: Display label (e.g., "CAPS Documents")
+ *   - description: Resource type description
+ *   - icon: FontAwesome icon class
+ *   - color: Hex color for resource type
+ *   - count: Number of articles
+ *   - featured_item: Featured/recent article title
+ *   - url: Link to resource search/listing
+ * - block_title: Block title
+ * - intro_text: Introduction text
+ * - display_mode: Display mode (grid, carousel, list)
+ * - show_content_count: Whether to show content counts
+ * - show_featured_item: Whether to show featured items
+ *
+ * @ingroup themeable
+ */
+#}
+<div class="educational-resources-block">
+  {% if block_title %}
+    <h2 class="block-title mb-3">{{ block_title }}</h2>
+  {% endif %}
+
+  {% if intro_text %}
+    <p class="block-intro text-muted mb-4">{{ intro_text }}</p>
+  {% endif %}
+
+  {% if resources %}
+    <div class="resources-wrapper display-mode-{{ display_mode }}">
+      {% if display_mode == 'carousel' %}
+        {# Carousel mode for mobile-friendly browsing #}
+        <div id="resourcesCarousel" class="carousel slide" data-bs-ride="carousel">
+          <div class="carousel-indicators">
+            {% for resource in resources %}
+              <button type="button" data-bs-target="#resourcesCarousel" data-bs-slide-to="{{ loop.index0 }}"
+                      class="{{ loop.first ? 'active' : '' }}" aria-label="{{ resource.label }}"></button>
+            {% endfor %}
+          </div>
+
+          <div class="carousel-inner">
+            {% for resource in resources %}
+              <div class="carousel-item {{ loop.first ? 'active' : '' }}">
+                {{ _self.resource_card(resource, show_content_count, show_featured_item) }}
+              </div>
+            {% endfor %}
+          </div>
+
+          <button class="carousel-control-prev" type="button" data-bs-target="#resourcesCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">{{ 'Previous'|t }}</span>
+          </button>
+          <button class="carousel-control-next" type="button" data-bs-target="#resourcesCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">{{ 'Next'|t }}</span>
+          </button>
+        </div>
+
+      {% elseif display_mode == 'list' %}
+        {# Stacked list mode #}
+        <div class="resources-list">
+          {% for resource in resources %}
+            {{ _self.resource_card(resource, show_content_count, show_featured_item) }}
+          {% endfor %}
+        </div>
+
+      {% else %}
+        {# Grid mode (default) #}
+        <div class="saho-cards-grid resources-grid">
+          {% for resource in resources %}
+            {{ _self.resource_card(resource, show_content_count, show_featured_item) }}
+          {% endfor %}
+        </div>
+      {% endif %}
+    </div>
+  {% else %}
+    <div class="alert alert-info">
+      <i class="fas fa-info-circle me-2"></i>
+      {{ 'No educational resources available.'|t }}
+    </div>
+  {% endif %}
+</div>
+
+{#
+/**
+ * Resource card macro for reusable card rendering.
+ */
+#}
+{% macro resource_card(resource, show_count, show_featured) %}
+  <div class="saho-card resource-card resource-{{ resource.id }}" style="--resource-color: {{ resource.color }}">
+    <a href="{{ resource.url }}" class="saho-card-link">
+      <div class="saho-card-image resource-image">
+        {# Resource icon badge #}
+        <div class="resource-badge">
+          <i class="fas {{ resource.icon }} resource-icon"></i>
+        </div>
+        {# Decorative background pattern #}
+        <div class="resource-pattern"></div>
+      </div>
+
+      <div class="saho-card-content">
+        <h3 class="saho-card-title">{{ resource.label }}</h3>
+
+        <p class="resource-description text-muted mb-3">{{ resource.description }}</p>
+
+        {% if show_featured and resource.featured_item %}
+          <div class="featured-item">
+            <i class="fas fa-star text-warning me-1"></i>
+            <span class="item-text">{{ resource.featured_item|truncate(60, true) }}</span>
+          </div>
+        {% endif %}
+
+        {% if show_count %}
+          <div class="resource-count">
+            <i class="fas fa-file-alt me-1"></i>
+            <span class="count-number">{{ resource.count }}</span>
+            <span class="count-label">{{ resource.count == 1 ? 'resource'|t : 'resources'|t }}</span>
+          </div>
+        {% endif %}
+
+        <div class="saho-card-footer">
+          <span class="saho-card-button">
+            {{ 'Explore Resources'|t }}
+            <i class="fas fa-arrow-right ms-1"></i>
+          </span>
+        </div>
+      </div>
+    </a>
+  </div>
+{% endmacro %}
