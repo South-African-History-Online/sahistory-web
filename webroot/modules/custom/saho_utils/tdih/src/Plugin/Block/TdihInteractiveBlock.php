@@ -110,7 +110,7 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
       'show_date_picker' => TRUE,
       'date_picker_mode' => 'full',
       'show_today_history' => TRUE,
-      'show_explore_button' => TRUE,
+      'show_details_button' => TRUE,
       'show_header_title' => TRUE,
     ] + parent::defaultConfiguration();
   }
@@ -169,11 +169,11 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
       '#default_value' => $this->configuration['show_today_history'],
     ];
 
-    $form['show_explore_button'] = [
+    $form['show_details_button'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Show "Read more" button'),
       '#description' => $this->t('Enable to show the "Read more" button that links to the displayed event.'),
-      '#default_value' => $this->configuration['show_explore_button'],
+      '#default_value' => $this->configuration['show_details_button'],
     ];
 
     return $form;
@@ -189,7 +189,7 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
     $this->configuration['show_date_picker'] = $form_state->getValue('show_date_picker');
     $this->configuration['date_picker_mode'] = $form_state->getValue('date_picker_mode');
     $this->configuration['show_today_history'] = $form_state->getValue('show_today_history');
-    $this->configuration['show_explore_button'] = $form_state->getValue('show_explore_button');
+    $this->configuration['show_details_button'] = $form_state->getValue('show_details_button');
   }
 
   /**
@@ -429,7 +429,7 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
       '#display_mode' => $this->configuration['display_mode'],
       '#show_header_title' => $this->configuration['show_header_title'],
       '#show_today_history' => $this->configuration['show_today_history'],
-      '#show_explore_button' => $this->configuration['show_explore_button'],
+      '#show_details_button' => $this->configuration['show_details_button'],
       '#attached' => [
         'library' => [
           'tdih/tdih-interactive',

@@ -204,7 +204,7 @@ class EducationalResourcesBlock extends BlockBase implements ContainerFactoryPlu
   public function defaultConfiguration() {
     return [
       'block_title' => 'Educational Resources',
-      'intro_text' => 'Explore our collection of educational materials, documents, and resources.',
+      'intro_text' => 'Browse our collection of educational materials, documents, and resources.',
       'display_mode' => 'grid',
       'resources_to_show' => 'all',
       'show_content_count' => TRUE,

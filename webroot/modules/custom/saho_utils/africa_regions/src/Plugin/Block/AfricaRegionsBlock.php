@@ -197,7 +197,7 @@ class AfricaRegionsBlock extends BlockBase implements ContainerFactoryPluginInte
   public function defaultConfiguration() {
     return [
       'block_title' => 'Africa',
-      'intro_text' => 'Explore the histories of other African countries organised by region.',
+      'intro_text' => 'Browse the histories of other African countries organised by region.',
       'display_mode' => 'grid',
       'show_content_count' => TRUE,
       'show_featured_country' => TRUE,
