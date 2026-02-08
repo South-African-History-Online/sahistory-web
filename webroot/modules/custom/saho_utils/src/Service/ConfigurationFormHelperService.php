@@ -58,9 +58,9 @@ class ConfigurationFormHelperService {
    *
    * @param bool $default_value
    *   Default value for the checkbox.
-   * @param string|null $title
+   * @param string|\Drupal\Core\StringTranslation\TranslatableMarkup|null $title
    *   Optional custom title. If NULL, uses default.
-   * @param string|null $description
+   * @param string|\Drupal\Core\StringTranslation\TranslatableMarkup|null $description
    *   Optional custom description. If NULL, uses default.
    *
    * @return array
@@ -68,8 +68,8 @@ class ConfigurationFormHelperService {
    */
   public function buildManualOverrideCheckbox(
     bool $default_value = FALSE,
-    ?string $title = NULL,
-    ?string $description = NULL,
+    string|TranslatableMarkup|null $title = NULL,
+    string|TranslatableMarkup|null $description = NULL,
   ): array {
     return [
       '#type' => 'checkbox',
@@ -90,9 +90,9 @@ class ConfigurationFormHelperService {
    *   Default entity or entity ID.
    * @param array $states
    *   Optional Form API #states for conditional visibility.
-   * @param string|null $title
+   * @param string|\Drupal\Core\StringTranslation\TranslatableMarkup|null $title
    *   Optional custom title.
-   * @param string|null $description
+   * @param string|\Drupal\Core\StringTranslation\TranslatableMarkup|null $description
    *   Optional custom description.
    *
    * @return array
@@ -103,8 +103,8 @@ class ConfigurationFormHelperService {
     string $bundle,
     $default_value = NULL,
     array $states = [],
-    ?string $title = NULL,
-    ?string $description = NULL,
+    string|TranslatableMarkup|null $title = NULL,
+    string|TranslatableMarkup|null $description = NULL,
   ): array {
     // Load entity if we have an ID.
     $default_entity = NULL;
@@ -198,9 +198,9 @@ class ConfigurationFormHelperService {
    *   Minimum number of items. Default is 1.
    * @param int $max
    *   Maximum number of items. Default is 50.
-   * @param string|null $title
+   * @param string|\Drupal\Core\StringTranslation\TranslatableMarkup|null $title
    *   Optional custom title.
-   * @param string|null $description
+   * @param string|\Drupal\Core\StringTranslation\TranslatableMarkup|null $description
    *   Optional custom description.
    *
    * @return array
@@ -210,8 +210,8 @@ class ConfigurationFormHelperService {
     int $default_value = 5,
     int $min = 1,
     int $max = 50,
-    ?string $title = NULL,
-    ?string $description = NULL,
+    string|TranslatableMarkup|null $title = NULL,
+    string|TranslatableMarkup|null $description = NULL,
   ): array {
     // Build options array from min to max.
     $options = [];
@@ -235,9 +235,9 @@ class ConfigurationFormHelperService {
    *   Default display mode.
    * @param array $custom_modes
    *   Optional custom display modes to use instead of defaults.
-   * @param string|null $title
+   * @param string|\Drupal\Core\StringTranslation\TranslatableMarkup|null $title
    *   Optional custom title.
-   * @param string|null $description
+   * @param string|\Drupal\Core\StringTranslation\TranslatableMarkup|null $description
    *   Optional custom description.
    *
    * @return array
@@ -246,8 +246,8 @@ class ConfigurationFormHelperService {
   public function buildDisplayModeSelect(
     string $default_value = 'default',
     array $custom_modes = [],
-    ?string $title = NULL,
-    ?string $description = NULL,
+    string|TranslatableMarkup|null $title = NULL,
+    string|TranslatableMarkup|null $description = NULL,
   ): array {
     $options = !empty($custom_modes) ? $custom_modes : [
       'default' => $this->t('Default'),
@@ -271,9 +271,9 @@ class ConfigurationFormHelperService {
    *   The vocabulary ID (e.g., 'biography_category').
    * @param mixed $default_value
    *   Default term ID or term object.
-   * @param string|null $title
+   * @param string|\Drupal\Core\StringTranslation\TranslatableMarkup|null $title
    *   Optional custom title.
-   * @param string|null $description
+   * @param string|\Drupal\Core\StringTranslation\TranslatableMarkup|null $description
    *   Optional custom description.
    *
    * @return array
@@ -282,8 +282,8 @@ class ConfigurationFormHelperService {
   public function buildCategorySelect(
     string $vocabulary_id,
     $default_value = NULL,
-    ?string $title = NULL,
-    ?string $description = NULL,
+    string|TranslatableMarkup|null $title = NULL,
+    string|TranslatableMarkup|null $description = NULL,
   ): array {
     // Load all terms from the vocabulary.
     $terms = $this->entityTypeManager
