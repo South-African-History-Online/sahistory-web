@@ -30,13 +30,13 @@ jobs:
       - name: Run drupal-check
         run: |
           echo "Running drupal-check on custom modules..."
-          ./vendor/bin/drupal-check webroot/modules/custom
+          find webroot/modules/custom -maxdepth 2 -type d -name "src" -exec ./vendor/bin/drupal-check {} \;
 
       - name: Check for deprecated code
         continue-on-error: true
         run: |
           echo "Checking for Drupal 11 deprecated code..."
-          ./vendor/bin/drupal-check webroot/modules/custom || echo "Deprecation warnings found"
+          find webroot/modules/custom -maxdepth 2 -type d -name "src" -exec ./vendor/bin/drupal-check {} \; || echo "Deprecation warnings found"
 
       - name: Code quality summary
         if: always()

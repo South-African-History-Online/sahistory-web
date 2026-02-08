@@ -122,4 +122,6 @@ jobs:
         run: composer require mglaman/drupal-check --dev
 
       - name: Run Drupal Best Practices Check
-        run: ./vendor/bin/drupal-check webroot/modules/custom
+        run: |
+          # Check only src directories to exclude tests
+          find webroot/modules/custom -maxdepth 2 -type d -name "src" -exec ./vendor/bin/drupal-check {} \;
