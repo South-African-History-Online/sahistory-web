@@ -319,14 +319,14 @@ class ConfigurationFormHelperService {
    */
   public function buildFeatureToggle(
     string|TranslatableMarkup $feature_name,
-    bool $default_value = FALSE,
+    bool|int $default_value = FALSE,
     string|TranslatableMarkup|null $description = NULL,
   ): array {
     return [
       '#type' => 'checkbox',
       '#title' => $this->t('Enable @feature', ['@feature' => $feature_name]),
       '#description' => $description ?? $this->t('Enable or disable the @feature feature.', ['@feature' => strtolower($feature_name)]),
-      '#default_value' => $default_value,
+      '#default_value' => (bool) $default_value,
     ];
   }
 
