@@ -22,7 +22,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * @Block(
  *   id = "history_classroom_block",
  *   admin_label = @Translation("History Classroom Block"),
- *   category = @Translation("SAHO"),
+ *   category = @Translation("All custom"),
  * )
  */
 class HistoryClassroomBlock extends BlockBase implements ContainerFactoryPluginInterface {
