@@ -12,6 +12,7 @@ use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\saho_utils\Service\CacheHelperService;
 use Drupal\saho_utils\Service\ConfigurationFormHelperService;
 use Drupal\saho_utils\Service\ImageExtractorService;
+use Drupal\saho_utils\Service\TaxonomyCounterService;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -57,6 +58,13 @@ class EducationalResourcesBlock extends BlockBase implements ContainerFactoryPlu
   protected ImageExtractorService $imageExtractor;
 
   /**
+   * The taxonomy counter service.
+   *
+   * @var \Drupal\saho_utils\Service\TaxonomyCounterService
+   */
+  protected TaxonomyCounterService $taxonomyCounter;
+
+  /**
    * Resource types with metadata using SAHO heritage colors.
    *
    * @var array
@@ -72,9 +80,10 @@ class EducationalResourcesBlock extends BlockBase implements ContainerFactoryPlu
       'term_name' => 'CAPS Document',
       'vocabulary' => 'field_media_library_type',
       'field' => 'field_media_library_type',
+      'bundles' => [],
     ],
     'books' => [
-      'label' => 'School Books',
+      'label' => 'Life Orientation and School Books',
       'description' => 'Educational books and reading materials',
       'keywords' => ['book', 'textbook', 'reading'],
       'icon' => 'fa-book',
@@ -83,6 +92,7 @@ class EducationalResourcesBlock extends BlockBase implements ContainerFactoryPlu
       'term_name' => 'School book',
       'vocabulary' => 'field_media_library_type',
       'field' => 'field_media_library_type',
+      'bundles' => [],
     ],
     'aids' => [
       'label' => 'Aids & Resources',
@@ -94,6 +104,19 @@ class EducationalResourcesBlock extends BlockBase implements ContainerFactoryPlu
       'term_name' => 'Aids & Resources',
       'vocabulary' => 'field_classroom_categories',
       'field' => 'field_classroom_categories',
+      'bundles' => [],
+    ],
+    'technical' => [
+      'label' => 'Technical Skills',
+      'description' => 'Technical and vocational education resources',
+      'keywords' => ['technical', 'skills', 'vocational'],
+      'icon' => 'fa-cog',
+      // Deep Teal.
+      'color' => '#2c7a7b',
+      'term_name' => 'Technical skills',
+      'vocabulary' => 'field_classroom_categories',
+      'field' => 'field_classroom_categories',
+      'bundles' => [],
     ],
     'teaching' => [
       'label' => 'Lecture Materials',
@@ -105,6 +128,7 @@ class EducationalResourcesBlock extends BlockBase implements ContainerFactoryPlu
       'term_name' => 'Lecture',
       'vocabulary' => 'field_media_library_type',
       'field' => 'field_media_library_type',
+      'bundles' => [],
     ],
     'policy' => [
       'label' => 'Policy Documents',
@@ -116,6 +140,7 @@ class EducationalResourcesBlock extends BlockBase implements ContainerFactoryPlu
       'term_name' => 'Official Document - Policy documents',
       'vocabulary' => 'field_media_library_type',
       'field' => 'field_media_library_type',
+      'bundles' => [],
     ],
   ];
 
@@ -136,6 +161,8 @@ class EducationalResourcesBlock extends BlockBase implements ContainerFactoryPlu
    *   The cache helper service.
    * @param \Drupal\saho_utils\Service\ImageExtractorService $image_extractor
    *   The image extractor service.
+   * @param \Drupal\saho_utils\Service\TaxonomyCounterService $taxonomy_counter
+   *   The taxonomy counter service.
    */
   public function __construct(
     array $configuration,
@@ -145,12 +172,14 @@ class EducationalResourcesBlock extends BlockBase implements ContainerFactoryPlu
     ConfigurationFormHelperService $config_form_helper,
     CacheHelperService $cache_helper,
     ImageExtractorService $image_extractor,
+    TaxonomyCounterService $taxonomy_counter,
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->entityTypeManager = $entity_type_manager;
     $this->configFormHelper = $config_form_helper;
     $this->cacheHelper = $cache_helper;
     $this->imageExtractor = $image_extractor;
+    $this->taxonomyCounter = $taxonomy_counter;
   }
 
   /**
@@ -165,6 +194,7 @@ class EducationalResourcesBlock extends BlockBase implements ContainerFactoryPlu
       $container->get('saho_utils.config_form_helper'),
       $container->get('saho_utils.cache_helper'),
       $container->get('saho_utils.image_extractor'),
+      $container->get('saho_utils.taxonomy_counter'),
     );
   }
 
@@ -297,19 +327,30 @@ class EducationalResourcesBlock extends BlockBase implements ContainerFactoryPlu
       // Load the taxonomy term.
       $vocabulary = $type_info['vocabulary'] ?? 'field_media_library_type';
       $field = $type_info['field'] ?? 'field_media_library_type';
+      $bundles = $type_info['bundles'] ?? [];
 
       $term = $this->loadTermByName($type_info['term_name'], $vocabulary);
       if (!$term) {
         continue;
       }
 
-      // Count articles tagged with this term.
-      $count = $this->countArticlesForTerm((int) $term->id(), $field);
+      // Count nodes tagged with this term using the counter service.
+      $count = $this->taxonomyCounter->countNodesByTerm(
+        (int) $term->id(),
+        $bundles,
+        [$field]
+      );
 
       // Get featured item if enabled.
       $featured_item = NULL;
       if ($show_featured) {
-        $featured_item = $this->getFeaturedItemForTerm((int) $term->id(), $field);
+        $featured_entity = $this->taxonomyCounter->getRecentEntity(
+          (int) $term->id(),
+          'node',
+          $bundles,
+          [$field]
+        );
+        $featured_item = $featured_entity ? $featured_entity->label() : NULL;
       }
 
       $resources[] = [
@@ -325,56 +366,6 @@ class EducationalResourcesBlock extends BlockBase implements ContainerFactoryPlu
     }
 
     return $resources;
-  }
-
-  /**
-   * Count articles tagged with a specific term.
-   *
-   * @param int $term_id
-   *   The taxonomy term ID.
-   * @param string $field_name
-   *   The field name to query.
-   *
-   * @return int
-   *   The article count.
-   */
-  protected function countArticlesForTerm(int $term_id, string $field_name): int {
-    $query = $this->entityTypeManager->getStorage('node')->getQuery()
-      ->condition('type', 'article')
-      ->condition('status', 1)
-      ->condition($field_name, $term_id)
-      ->accessCheck(TRUE);
-
-    return (int) $query->count()->execute();
-  }
-
-  /**
-   * Get featured item for a taxonomy term.
-   *
-   * @param int $term_id
-   *   The taxonomy term ID.
-   * @param string $field_name
-   *   The field name to query.
-   *
-   * @return string|null
-   *   The featured item title or NULL.
-   */
-  protected function getFeaturedItemForTerm(int $term_id, string $field_name): ?string {
-    $query = $this->entityTypeManager->getStorage('node')->getQuery()
-      ->condition('type', 'article')
-      ->condition('status', 1)
-      ->condition($field_name, $term_id)
-      ->accessCheck(TRUE)
-      ->sort('created', 'DESC')
-      ->range(0, 1);
-
-    $nids = $query->execute();
-    if (empty($nids)) {
-      return NULL;
-    }
-
-    $node = $this->entityTypeManager->getStorage('node')->load(reset($nids));
-    return $node ? $node->label() : NULL;
   }
 
   /**
