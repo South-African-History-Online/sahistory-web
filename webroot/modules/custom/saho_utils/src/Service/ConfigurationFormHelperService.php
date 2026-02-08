@@ -6,6 +6,7 @@ namespace Drupal\saho_utils\Service;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\StringTranslation\TranslationInterface;
 
 /**
@@ -306,20 +307,20 @@ class ConfigurationFormHelperService {
   /**
    * Build enable/disable checkbox for features.
    *
-   * @param string $feature_name
+   * @param string|\Drupal\Core\StringTranslation\TranslatableMarkup $feature_name
    *   The name of the feature (e.g., 'Load More', 'Filtering').
    * @param bool $default_value
    *   Default value for the checkbox.
-   * @param string|null $description
+   * @param string|\Drupal\Core\StringTranslation\TranslatableMarkup|null $description
    *   Optional custom description.
    *
    * @return array
    *   Form element array.
    */
   public function buildFeatureToggle(
-    string $feature_name,
+    string|TranslatableMarkup $feature_name,
     bool $default_value = FALSE,
-    ?string $description = NULL,
+    string|TranslatableMarkup|null $description = NULL,
   ): array {
     return [
       '#type' => 'checkbox',
@@ -332,7 +333,7 @@ class ConfigurationFormHelperService {
   /**
    * Build number input element.
    *
-   * @param string $title
+   * @param string|\Drupal\Core\StringTranslation\TranslatableMarkup $title
    *   The title for the field.
    * @param int $default_value
    *   Default value.
@@ -340,18 +341,18 @@ class ConfigurationFormHelperService {
    *   Minimum value.
    * @param int $max
    *   Maximum value.
-   * @param string|null $description
+   * @param string|\Drupal\Core\StringTranslation\TranslatableMarkup|null $description
    *   Optional description.
    *
    * @return array
    *   Form element array.
    */
   public function buildNumberInput(
-    string $title,
+    string|TranslatableMarkup $title,
     int $default_value,
     int $min = 0,
     int $max = 100,
-    ?string $description = NULL,
+    string|TranslatableMarkup|null $description = NULL,
   ): array {
     return [
       '#type' => 'number',
@@ -366,11 +367,11 @@ class ConfigurationFormHelperService {
   /**
    * Build text input element.
    *
-   * @param string $title
+   * @param string|\Drupal\Core\StringTranslation\TranslatableMarkup $title
    *   The title for the field.
    * @param string $default_value
    *   Default value.
-   * @param string|null $description
+   * @param string|\Drupal\Core\StringTranslation\TranslatableMarkup|null $description
    *   Optional description.
    * @param int $maxlength
    *   Maximum length. Default is 255.
@@ -379,9 +380,9 @@ class ConfigurationFormHelperService {
    *   Form element array.
    */
   public function buildTextInput(
-    string $title,
+    string|TranslatableMarkup $title,
     string $default_value = '',
-    ?string $description = NULL,
+    string|TranslatableMarkup|null $description = NULL,
     int $maxlength = 255,
   ): array {
     return [
