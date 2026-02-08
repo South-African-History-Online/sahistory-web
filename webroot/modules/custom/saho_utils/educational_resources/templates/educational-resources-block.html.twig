@@ -97,7 +97,53 @@
       <div class="saho-card-image resource-image">
         {# Resource icon badge #}
         <div class="resource-badge">
-          <i class="fas {{ resource.icon }} resource-icon"></i>
+          {% if resource.label == 'CAPS Documents' %}
+            {# Certificate/official document with seal #}
+            <svg class="resource-icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <path d="M12 18h.01"></path>
+              <circle cx="12" cy="15" r="3"></circle>
+              <path d="M9 12h6"></path>
+            </svg>
+          {% elseif resource.label == 'Lecture Materials' %}
+            {# Chalkboard with teacher pointer #}
+            <svg class="resource-icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+              <rect x="3" y="4" width="18" height="12" rx="2"></rect>
+              <path d="M7 20h10"></path>
+              <path d="M12 16v4"></path>
+              <path d="M8 8l3 3 5-5"></path>
+            </svg>
+          {% elseif resource.label == 'School Books' %}
+            {# Bookmark in book #}
+            <svg class="resource-icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+              <path d="M12 6v7l2.5-1.5L17 13V6"></path>
+            </svg>
+          {% elseif resource.label == 'Aids & Resources' %}
+            {# Toolbox (educational aids and resources) #}
+            <svg class="resource-icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+              <path d="M16 8h4a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h4"></path>
+              <path d="M8 8V6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              <path d="M8 14h8"></path>
+            </svg>
+          {% elseif resource.label == 'Policy Documents' %}
+            {# Gavel (policy/law) #}
+            <svg class="resource-icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+              <path d="M14 13l-7.5 7.5c-.83.83-2.17.83-3 0 0 0 0 0 0 0-.83-.83-.83-2.17 0-3L11 10"></path>
+              <path d="M16 16l6-6"></path>
+              <path d="M8 8l6-6"></path>
+              <path d="M9 7l8 8"></path>
+              <path d="M21 11l-8-8"></path>
+            </svg>
+          {% else %}
+            {# Graduation cap (education default) #}
+            <svg class="resource-icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+              <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+              <path d="M6 12v5c0 3 4 3 6 3s6 0 6-3v-5"></path>
+            </svg>
+          {% endif %}
         </div>
         {# Decorative background pattern #}
         <div class="resource-pattern"></div>
@@ -110,14 +156,19 @@
 
         {% if show_featured and resource.featured_item %}
           <div class="featured-item">
-            <i class="fas fa-star text-warning me-1"></i>
+            <svg class="featured-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+            </svg>
             <span class="item-text">{{ resource.featured_item|truncate(60, true) }}</span>
           </div>
         {% endif %}
 
         {% if show_count %}
           <div class="resource-count">
-            <i class="fas fa-file-alt me-1"></i>
+            <svg class="count-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+            </svg>
             <span class="count-number">{{ resource.count }}</span>
             <span class="count-label">{{ resource.count == 1 ? 'resource'|t : 'resources'|t }}</span>
           </div>
@@ -125,8 +176,11 @@
 
         <div class="saho-card-footer">
           <span class="saho-card-button">
-            {{ 'Explore Resources'|t }}
-            <i class="fas fa-arrow-right ms-1"></i>
+            {{ 'View Resources'|t }}
+            <svg class="button-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
           </span>
         </div>
       </div>
