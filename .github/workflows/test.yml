@@ -103,20 +103,18 @@ jobs:
           chmod 777 webroot/sites/default/files
 
       - name: Run Unit Tests
-        working-directory: webroot/modules/custom
         run: |
-          ../../vendor/bin/phpunit \
-            --configuration phpunit.xml \
+          ./vendor/bin/phpunit \
+            --configuration webroot/modules/custom/phpunit.xml \
             --testsuite unit \
-            --log-junit ../../test-results/unit.xml
+            --log-junit test-results/unit.xml
 
       - name: Run Kernel Tests
-        working-directory: webroot/modules/custom
         run: |
-          ../../vendor/bin/phpunit \
-            --configuration phpunit.xml \
+          ./vendor/bin/phpunit \
+            --configuration webroot/modules/custom/phpunit.xml \
             --testsuite kernel \
-            --log-junit ../../test-results/kernel.xml
+            --log-junit test-results/kernel.xml
 
       - name: Upload test results
         if: always()
