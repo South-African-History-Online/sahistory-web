@@ -45,7 +45,8 @@ class TaxonomyCounterService {
    *   If empty, all bundles are counted.
    * @param array $fields
    *   Array of field names that might reference the term.
-   *   The count will include entities where ANY of these fields reference the term.
+   *   The count will include entities where ANY of these fields
+   *   reference the term.
    * @param bool $published_only
    *   Whether to count only published entities. Default TRUE.
    *
