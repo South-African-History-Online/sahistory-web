@@ -99,13 +99,13 @@
 {% macro province_card(province, show_count, show_featured) %}
   <div class="saho-card province-card province-{{ province.id }}" style="--province-color: {{ province.color }}">
     <a href="{{ province.url }}" class="saho-card-link">
-      <div class="saho-card-image province-image">
-        {# Province abbreviation badge #}
+      <div class="saho-card-image province-image" {% if province.image %}style="background-image: url('{{ province.image }}');"{% endif %}>
+        {# Province abbreviation overlay #}
         <div class="province-badge">
           <span class="province-letters">{{ province.icon_letter }}</span>
         </div>
-        {# Decorative background pattern #}
-        <div class="province-pattern"></div>
+        {# Overlay gradient for better text visibility #}
+        <div class="province-overlay"></div>
       </div>
 
       <div class="saho-card-content">
@@ -136,7 +136,7 @@
 
         <div class="saho-card-footer">
           <span class="saho-card-button">
-            {{ 'Explore Province'|t }}
+            {{ 'View Places'|t }}
             <svg class="button-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
               <line x1="5" y1="12" x2="19" y2="12"></line>
               <polyline points="12 5 19 12 12 19"></polyline>
