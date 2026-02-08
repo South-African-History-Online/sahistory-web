@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         bootstrap="../../../core/tests/bootstrap.php"
+         colors="true"
+         cacheDirectory=".phpunit.cache"
+         xsi:noNamespaceSchemaLocation="../../../core/phpunit.xml.dist">
+  <php>
+    <env name="SIMPLETEST_BASE_URL" value="https://sahistory-web.ddev.site"/>
+    <env name="SIMPLETEST_DB" value="mysql://db:db@db:3306/db"/>
+    <env name="BROWSERTEST_OUTPUT_DIRECTORY" value="/var/www/html/webroot/sites/default/files/simpletest"/>
+    <env name="BROWSERTEST_OUTPUT_BASE_URL" value="https://sahistory-web.ddev.site"/>
+    <env name="MINK_DRIVER_CLASS" value="Drupal\FunctionalJavascriptTests\DrupalSelenium2Driver"/>
+    <env name="MINK_DRIVER_ARGS" value='["chrome", {"chromeOptions": {"w3c": false}}, "http://chrome:9515"]'/>
+    <env name="MINK_DRIVER_ARGS_WEBDRIVER" value='["chrome", {"chromeOptions": {"w3c": false}}, "http://chrome:9515"]'/>
+  </php>
+
+  <testsuites>
+    <testsuite name="unit">
+      <directory>./*/tests/src/Unit</directory>
+    </testsuite>
+    <testsuite name="kernel">
+      <directory>./*/tests/src/Kernel</directory>
+    </testsuite>
+    <testsuite name="functional">
+      <directory>./*/tests/src/Functional</directory>
+    </testsuite>
+  </testsuites>
+
+  <coverage includeUncoveredFiles="true" processUncoveredFiles="true">
+    <include>
+      <directory suffix=".php">./*/src</directory>
+    </include>
+    <exclude>
+      <directory>./*/tests</directory>
+      <directory>./*/vendor</directory>
+    </exclude>
+  </coverage>
+</phpunit>
