@@ -71,6 +71,12 @@ class HistoryThroughPicturesController extends ControllerBase {
       ->condition('status', 1)
       ->accessCheck(TRUE);
 
+    // Only fetch nodes that have an image in field_image or field_archive_image.
+    $image_condition = $query->orConditionGroup()
+      ->exists('field_image')
+      ->exists('field_archive_image');
+    $query->condition($image_condition);
+
     // Apply sorting.
     switch ($sort) {
       case 'random':
@@ -235,8 +241,9 @@ class HistoryThroughPicturesController extends ControllerBase {
         continue;
       }
 
-      $file = $field_value->get('entity')->getValue();
-      if (!$file) {
+      // Fix: Access file entity properly using ->entity property.
+      $file = $field_value->entity;
+      if (!$file || !$file instanceof \Drupal\file\FileInterface) {
         continue;
       }
 
