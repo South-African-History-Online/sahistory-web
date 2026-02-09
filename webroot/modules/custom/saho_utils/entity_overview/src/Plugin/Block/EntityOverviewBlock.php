@@ -333,8 +333,11 @@ class EntityOverviewBlock extends BlockBase implements ContainerFactoryPluginInt
       $nodes = array_slice($nodes, 0, $limit);
     }
 
-    // Build entity items using EntityItemBuilderService.
-    $items = $this->entityItemBuilder->buildMultipleItems($nodes, 'full');
+    // Build entity items using EntityItemBuilderService with BC compatibility.
+    $items = [];
+    foreach ($nodes as $node) {
+      $items[] = $this->buildEntityItem($node);
+    }
 
     // Get display mode and toggle setting.
     $display_mode = $this->configuration['display_mode'] ?? 'default';
