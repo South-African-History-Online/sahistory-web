@@ -5,6 +5,7 @@ namespace Drupal\saho_statistics\Controller;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Url;
+use Drupal\file\FileInterface;
 use Drupal\saho_utils\Service\ImageExtractorService;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -71,7 +72,7 @@ class HistoryThroughPicturesController extends ControllerBase {
       ->condition('status', 1)
       ->accessCheck(TRUE);
 
-    // Only fetch nodes that have an image in field_image or field_archive_image.
+    // Only fetch nodes with non-empty image fields.
     $image_condition = $query->orConditionGroup()
       ->exists('field_image')
       ->exists('field_archive_image');
@@ -243,7 +244,7 @@ class HistoryThroughPicturesController extends ControllerBase {
 
       // Fix: Access file entity properly using ->entity property.
       $file = $field_value->entity;
-      if (!$file || !$file instanceof \Drupal\file\FileInterface) {
+      if (!$file || !$file instanceof FileInterface) {
         continue;
       }
 
