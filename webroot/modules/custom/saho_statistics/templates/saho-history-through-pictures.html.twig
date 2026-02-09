@@ -31,16 +31,29 @@
     <div class="history-pictures-grid">
       {% for item in items %}
         <div class="history-picture-item">
-          <a href="{{ item.url }}" class="history-picture-link">
-            <div class="history-picture-image">
-              <img src="{{ item.image }}" alt="{{ item.title }}" loading="lazy" />
-              {% if show_title %}
-                <div class="history-picture-overlay">
-                  <h3 class="history-picture-item-title">{{ item.title }}</h3>
-                </div>
-              {% endif %}
-            </div>
-          </a>
+          {% if item.has_feature_link %}
+            <a href="{{ item.url }}" class="history-picture-link">
+              <div class="history-picture-image">
+                <img src="{{ item.image }}" alt="{{ item.title }}" loading="lazy" />
+                {% if show_title %}
+                  <div class="history-picture-overlay">
+                    <h3 class="history-picture-item-title">{{ item.title }}</h3>
+                  </div>
+                {% endif %}
+              </div>
+            </a>
+          {% else %}
+            <a href="{{ item.image }}" class="history-picture-link history-picture-lightbox" data-gallery="history-gallery" data-title="{{ item.title }}"{% if item.caption %} data-description="{{ item.caption }}"{% endif %}>
+              <div class="history-picture-image">
+                <img src="{{ item.image }}" alt="{{ item.title }}" loading="lazy" />
+                {% if show_title %}
+                  <div class="history-picture-overlay">
+                    <h3 class="history-picture-item-title">{{ item.title }}</h3>
+                  </div>
+                {% endif %}
+              </div>
+            </a>
+          {% endif %}
           {% if show_caption and item.caption %}
             <div class="history-picture-caption">
               {{ item.caption }}
@@ -54,16 +67,29 @@
     <div class="history-pictures-masonry">
       {% for item in items %}
         <div class="history-picture-item">
-          <a href="{{ item.url }}" class="history-picture-link">
-            <div class="history-picture-image">
-              <img src="{{ item.image }}" alt="{{ item.title }}" loading="lazy" />
-              {% if show_title %}
-                <div class="history-picture-overlay">
-                  <h3 class="history-picture-item-title">{{ item.title }}</h3>
-                </div>
-              {% endif %}
-            </div>
-          </a>
+          {% if item.has_feature_link %}
+            <a href="{{ item.url }}" class="history-picture-link">
+              <div class="history-picture-image">
+                <img src="{{ item.image }}" alt="{{ item.title }}" loading="lazy" />
+                {% if show_title %}
+                  <div class="history-picture-overlay">
+                    <h3 class="history-picture-item-title">{{ item.title }}</h3>
+                  </div>
+                {% endif %}
+              </div>
+            </a>
+          {% else %}
+            <a href="{{ item.image }}" class="history-picture-link history-picture-lightbox" data-gallery="history-gallery" data-title="{{ item.title }}"{% if item.caption %} data-description="{{ item.caption }}"{% endif %}>
+              <div class="history-picture-image">
+                <img src="{{ item.image }}" alt="{{ item.title }}" loading="lazy" />
+                {% if show_title %}
+                  <div class="history-picture-overlay">
+                    <h3 class="history-picture-item-title">{{ item.title }}</h3>
+                  </div>
+                {% endif %}
+              </div>
+            </a>
+          {% endif %}
           {% if show_caption and item.caption %}
             <div class="history-picture-caption">
               {{ item.caption }}
@@ -78,16 +104,29 @@
       <div class="carousel-track">
         {% for item in items %}
           <div class="history-picture-item">
-            <a href="{{ item.url }}" class="history-picture-link">
-              <div class="history-picture-image">
-                <img src="{{ item.image }}" alt="{{ item.title }}" loading="lazy" />
-                {% if show_title %}
-                  <div class="history-picture-overlay">
-                    <h3 class="history-picture-item-title">{{ item.title }}</h3>
-                  </div>
-                {% endif %}
-              </div>
-            </a>
+            {% if item.has_feature_link %}
+              <a href="{{ item.url }}" class="history-picture-link">
+                <div class="history-picture-image">
+                  <img src="{{ item.image }}" alt="{{ item.title }}" loading="lazy" />
+                  {% if show_title %}
+                    <div class="history-picture-overlay">
+                      <h3 class="history-picture-item-title">{{ item.title }}</h3>
+                    </div>
+                  {% endif %}
+                </div>
+              </a>
+            {% else %}
+              <a href="{{ item.image }}" class="history-picture-link history-picture-lightbox" data-gallery="history-gallery" data-title="{{ item.title }}"{% if item.caption %} data-description="{{ item.caption }}"{% endif %}>
+                <div class="history-picture-image">
+                  <img src="{{ item.image }}" alt="{{ item.title }}" loading="lazy" />
+                  {% if show_title %}
+                    <div class="history-picture-overlay">
+                      <h3 class="history-picture-item-title">{{ item.title }}</h3>
+                    </div>
+                  {% endif %}
+                </div>
+              </a>
+            {% endif %}
             {% if show_caption and item.caption %}
               <div class="history-picture-caption">
                 {{ item.caption }}
