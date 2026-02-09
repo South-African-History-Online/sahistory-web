@@ -146,11 +146,14 @@ class FeaturedArticlesController extends ControllerBase {
 
     }
     catch (\Exception $e) {
+      \Drupal::logger('saho_featured_articles')->error('Error loading section content: @message', [
+        '@message' => $e->getMessage(),
+      ]);
       return new JsonResponse([
-        'html' => '<div class="col-12"><div class="alert alert-danger">Error loading content: ' . $e->getMessage() . '</div></div>',
+        'html' => '<div class="col-12"><div class="alert alert-danger">Error loading content. Please try again later.</div></div>',
         'count' => 0,
         'section' => $section,
-        'error' => $e->getMessage(),
+        'error' => 'An unexpected error occurred.',
       ], 500);
     }
   }
@@ -202,10 +205,13 @@ class FeaturedArticlesController extends ControllerBase {
 
     }
     catch (\Exception $e) {
+      \Drupal::logger('saho_featured_articles')->error('Error loading most read content: @message', [
+        '@message' => $e->getMessage(),
+      ]);
       return new JsonResponse([
-        'html' => '<div class="col-12"><div class="alert alert-danger">Error loading most read content: ' . $e->getMessage() . '</div></div>',
+        'html' => '<div class="col-12"><div class="alert alert-danger">Error loading most read content. Please try again later.</div></div>',
         'count' => 0,
-        'error' => $e->getMessage(),
+        'error' => 'An unexpected error occurred.',
       ], 500);
     }
   }
@@ -217,7 +223,7 @@ class FeaturedArticlesController extends ControllerBase {
    *   Debug information render array.
    */
   public function debugServices() {
-    if (!$this->config('system.logging')->get('error_level') === 'verbose') {
+    if ($this->config('system.logging')->get('error_level') !== 'verbose') {
       throw new AccessDeniedHttpException();
     }
 

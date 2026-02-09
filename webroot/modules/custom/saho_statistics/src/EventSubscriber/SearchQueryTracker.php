@@ -117,7 +117,7 @@ class SearchQueryTracker implements EventSubscriberInterface {
     $this->tempStorage[$query_id] = [
       'query_text' => is_string($keys) ? $keys : json_encode($keys),
       'index_id' => $query->getIndex()->id(),
-      'filters' => serialize($this->extractFilters($query)),
+      'filters' => json_encode($this->extractFilters($query)),
       'timestamp' => \Drupal::time()->getRequestTime(),
     ];
   }

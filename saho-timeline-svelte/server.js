@@ -10,6 +10,8 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const API_BASE = process.env.API_BASE || 'https://sahistory.org.za';
 
+const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || 'https://sahistory.org.za,https://www.sahistory.org.za').split(',');
+
 // Enable trust proxy for proper IP forwarding behind reverse proxy
 app.set('trust proxy', true);
 
@@ -29,10 +31,12 @@ app.use('/api', createProxyMiddleware({
     proxyReq.setHeader('X-Requested-With', 'XMLHttpRequest');
   },
   onProxyRes: (proxyRes, req, res) => {
-    // Handle CORS
-    proxyRes.headers['Access-Control-Allow-Origin'] = '*';
-    proxyRes.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS';
-    proxyRes.headers['Access-Control-Allow-Headers'] = 'Origin, X-Requested-With, Content-Type, Accept, Authorization';
+    const origin = res.req.headers.origin;
+    if (origin && ALLOWED_ORIGINS.includes(origin)) {
+      proxyRes.headers['Access-Control-Allow-Origin'] = origin;
+    }
+    proxyRes.headers['Access-Control-Allow-Methods'] = 'GET, OPTIONS';
+    proxyRes.headers['Access-Control-Allow-Headers'] = 'Origin, X-Requested-With, Content-Type, Accept';
   },
   logLevel: 'warn'
 }));
