@@ -10,15 +10,15 @@ use Drupal\node\NodeInterface;
 use Drupal\saho_tools\Service\SchemaOrgBuilderInterface;
 
 /**
- * Builds Schema.org Event structured data for Event nodes.
+ * Builds Schema.org Event structured data for Upcoming Event nodes.
  *
- * Maps SAHO "This Day in History" (TDIH) events to Schema.org Event
- * vocabulary for optimal discovery by search engines and AI systems.
+ * Maps SAHO upcoming events (exhibitions, conferences, museum openings)
+ * to Schema.org Event vocabulary for optimal discovery by search engines.
  */
-class EventSchemaBuilder implements SchemaOrgBuilderInterface {
+class UpcomingEventSchemaBuilder implements SchemaOrgBuilderInterface {
 
   /**
-   * Constructs an EventSchemaBuilder.
+   * Constructs an UpcomingEventSchemaBuilder.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
@@ -34,7 +34,7 @@ class EventSchemaBuilder implements SchemaOrgBuilderInterface {
    * {@inheritdoc}
    */
   public function supports(string $node_type): bool {
-    return $node_type === 'event';
+    return $node_type === 'upcomingevent';
   }
 
   /**
@@ -48,25 +48,31 @@ class EventSchemaBuilder implements SchemaOrgBuilderInterface {
     $schema = [
       '@context' => 'https://schema.org',
       '@type' => 'Event',
-      'additionalType' => 'https://schema.org/HistoricalEvent',
       'name' => $node->getTitle(),
       'url' => $node->toUrl()->setAbsolute()->toString(),
     ];
 
-    // Add event date as startDate and temporalCoverage.
-    $event_date = NULL;
-    if ($node->hasField('field_event_date') && !$node->get('field_event_date')->isEmpty()) {
-      $event_date = $node->get('field_event_date')->value;
+    // Add start date.
+    $start_date = NULL;
+    if ($node->hasField('field_start_date') && !$node->get('field_start_date')->isEmpty()) {
+      $start_date = $node->get('field_start_date')->value;
     }
 
-    // Fallback: Use node created date if event date is missing.
-    if (empty($event_date)) {
-      $event_date = date('c', $node->getCreatedTime());
+    // Fallback: Use node created date if start date is missing.
+    if (empty($start_date)) {
+      $start_date = date('c', $node->getCreatedTime());
     }
 
-    $schema['startDate'] = $event_date;
-    $schema['endDate'] = $event_date;
-    $schema['temporalCoverage'] = $event_date;
+    $schema['startDate'] = $start_date;
+
+    // Add end date.
+    if ($node->hasField('field_end_date') && !$node->get('field_end_date')->isEmpty()) {
+      $schema['endDate'] = $node->get('field_end_date')->value;
+    }
+    else {
+      // Default to start date if no end date specified.
+      $schema['endDate'] = $start_date;
+    }
 
     // Add event description from body.
     if ($node->hasField('body') && !$node->get('body')->isEmpty()) {
@@ -80,11 +86,11 @@ class EventSchemaBuilder implements SchemaOrgBuilderInterface {
     }
     else {
       // Fallback: Use generic description if body is missing.
-      $schema['description'] = 'Historical event from South African History Online archives.';
+      $schema['description'] = 'Upcoming event from South African History Online.';
     }
 
-    // Add event image (field_tdih_image or field_event_image).
-    $image_url = $this->getImageUrl($node, ['field_tdih_image', 'field_event_image', 'field_image']);
+    // Add event image.
+    $image_url = $this->getImageUrl($node, ['field_upcomingevent_image', 'field_image']);
     if ($image_url) {
       $schema['image'] = [
         '@type' => 'ImageObject',
@@ -94,37 +100,21 @@ class EventSchemaBuilder implements SchemaOrgBuilderInterface {
     }
 
     // Add event type as additionalType.
-    if ($node->hasField('field_event_type') && !$node->get('field_event_type')->isEmpty()) {
-      $event_types = [];
-      foreach ($node->get('field_event_type') as $event_type) {
-        /** @var \Drupal\taxonomy\Entity\Term|null $term */
-        // @phpstan-ignore-next-line
-        $term = $event_type->entity;
-        if ($term) {
-          $event_types[] = $term->getName();
-        }
-      }
-      if (!empty($event_types)) {
-        $schema['additionalType'] = count($event_types) === 1 ? $event_types[0] : $event_types;
+    if ($node->hasField('field_type_of_event') && !$node->get('field_type_of_event')->isEmpty()) {
+      $event_type = $node->get('field_type_of_event')->value;
+      if (!empty($event_type)) {
+        $schema['additionalType'] = $event_type;
       }
     }
 
-    // Add location (African country).
-    if ($node->hasField('field_african_country') && !$node->get('field_african_country')->isEmpty()) {
-      $countries = [];
-      foreach ($node->get('field_african_country') as $country) {
-        /** @var \Drupal\taxonomy\Entity\Term|null $term */
-        // @phpstan-ignore-next-line
-        $term = $country->entity;
-        if ($term) {
-          $countries[] = [
-            '@type' => 'Place',
-            'name' => $term->getName(),
-          ];
-        }
-      }
-      if (!empty($countries)) {
-        $schema['location'] = count($countries) === 1 ? $countries[0] : $countries;
+    // Add location (venue).
+    if ($node->hasField('field_upcoming_venue') && !$node->get('field_upcoming_venue')->isEmpty()) {
+      $venue = $node->get('field_upcoming_venue')->value;
+      if (!empty($venue)) {
+        $schema['location'] = [
+          '@type' => 'Place',
+          'name' => strip_tags($venue),
+        ];
       }
     }
 
@@ -136,29 +126,28 @@ class EventSchemaBuilder implements SchemaOrgBuilderInterface {
       ];
     }
 
-    // Add citations from field_ref_str (pipe-delimited).
-    if ($node->hasField('field_ref_str') && !$node->get('field_ref_str')->isEmpty()) {
-      $ref_str = $node->get('field_ref_str')->value;
-      if (!empty($ref_str)) {
-        $citations = array_filter(explode('|', $ref_str));
-        if (!empty($citations)) {
-          $schema['citation'] = array_map('trim', $citations);
-        }
-      }
-    }
+    // Add organizer (SAHO).
+    $schema['organizer'] = $this->getOrganizationSchema();
 
-    // Add publisher (SAHO as curator/publisher of historical events).
-    $schema['publisher'] = $this->getOrganizationSchema();
+    // Add offers (free event).
+    $schema['offers'] = [
+      '@type' => 'Offer',
+      'price' => '0',
+      'priceCurrency' => 'ZAR',
+      'availability' => 'https://schema.org/InStock',
+      'url' => $node->toUrl()->setAbsolute()->toString(),
+    ];
+
+    // Add event status and attendance mode.
+    $schema['eventStatus'] = 'https://schema.org/EventScheduled';
+    $schema['eventAttendanceMode'] = 'https://schema.org/OfflineEventAttendanceMode';
 
     // Add educational properties.
     $schema['isAccessibleForFree'] = TRUE;
-    $schema['educationalUse'] = 'research';
 
     // Add inLanguage.
     $schema['inLanguage'] = 'en-ZA';
 
-    // Note: eventStatus and eventAttendanceMode removed.
-    // Not applicable to historical events.
     return $schema;
   }
 
@@ -203,7 +192,7 @@ class EventSchemaBuilder implements SchemaOrgBuilderInterface {
    * Get SAHO organization schema.
    *
    * @return array
-   *   Organization schema for publisher/curator.
+   *   Organization schema for organizer.
    */
   protected function getOrganizationSchema(): array {
     $request = \Drupal::request();

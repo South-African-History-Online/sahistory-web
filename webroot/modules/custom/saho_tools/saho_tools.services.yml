@@ -11,6 +11,7 @@ services:
       - [registerBuilder, ['article', '@saho_tools.schema_builder.article']]
       - [registerBuilder, ['biography', '@saho_tools.schema_builder.biography']]
       - [registerBuilder, ['event', '@saho_tools.schema_builder.event']]
+      - [registerBuilder, ['upcomingevent', '@saho_tools.schema_builder.upcoming_event']]
       - [registerBuilder, ['archive', '@saho_tools.schema_builder.archive']]
       - [registerBuilder, ['place', '@saho_tools.schema_builder.place']]
       - [registerBuilder, ['product', '@saho_tools.schema_builder.product']]
@@ -29,6 +30,10 @@ services:
 
   saho_tools.schema_builder.event:
     class: Drupal\saho_tools\Service\Builder\EventSchemaBuilder
+    arguments: ['@entity_type.manager', '@file_url_generator']
+
+  saho_tools.schema_builder.upcoming_event:
+    class: Drupal\saho_tools\Service\Builder\UpcomingEventSchemaBuilder
     arguments: ['@entity_type.manager', '@file_url_generator']
 
   saho_tools.schema_builder.archive:
