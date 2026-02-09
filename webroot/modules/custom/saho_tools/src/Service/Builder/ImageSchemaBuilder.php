@@ -118,6 +118,23 @@ class ImageSchemaBuilder implements SchemaOrgBuilderInterface {
     $schema['license'] = 'https://creativecommons.org/licenses/by-nc-sa/4.0/';
     $schema['isAccessibleForFree'] = TRUE;
 
+    // Add IPTC Photo Metadata properties (schema.org 2020 update).
+    $request = \Drupal::request();
+    $base_url = $request->getSchemeAndHttpHost();
+
+    $schema['acquireLicensePage'] = $base_url . '/about/copyright-licensing';
+
+    $schema['copyrightNotice'] = '© ' . date('Y') . ' South African History Online. Licensed under CC BY-NC-SA 4.0.';
+
+    // Add creditText based on creator.
+    if (isset($schema['creator'])) {
+      $creator_name = $schema['creator']['name'];
+      $schema['creditText'] = 'Photo by ' . $creator_name . ' / SAHO';
+    }
+    else {
+      $schema['creditText'] = 'South African History Online (SAHO)';
+    }
+
     return $schema;
   }
 
