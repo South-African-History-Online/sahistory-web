@@ -568,7 +568,7 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
 
         // Apply sorting if specified (after loading entities).
         if (!empty($this->configuration['sort_by']) && $this->configuration['sort_by'] !== 'none') {
-          $this->sortingService->sortLoadedEntities($nodes, $this->configuration['sort_by']);
+          $nodes = $this->sortingService->sortLoadedEntities($nodes, $this->configuration['sort_by']);
         }
       }
     }
