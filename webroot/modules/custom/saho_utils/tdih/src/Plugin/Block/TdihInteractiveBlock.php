@@ -179,8 +179,8 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
 
     $form['use_todays_date'] = [
       '#type' => 'checkbox',
-      '#title' => $this->t("Use today's date for results"),
-      '#description' => $this->t("Enable to always show events from today's date. When disabled, events will be shown based on the current page context (e.g., the date of the viewed dated-event node). <strong>Note:</strong> This setting is automatically ignored on dated-event pages to prevent confusion."),
+      '#title' => $this->t("Pre-fill date picker with today's date"),
+      '#description' => $this->t("Enable to automatically select today's date in the date picker when the block loads. Users can still change the date if desired."),
       '#default_value' => $this->configuration['use_todays_date'],
     ];
 
@@ -380,60 +380,16 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
   public function build() {
     // Force South African timezone for accurate "Today in history".
     $sa_timezone = new \DateTimeZone('Africa/Johannesburg');
-
-    // Determine which date to use for displaying events.
-    $month = NULL;
-    $day = NULL;
-
-    // Check if we're on a dated-event node page.
-    $route_match = \Drupal::routeMatch();
-    $current_node = $route_match->getParameter('node');
-    $is_dated_event_page = FALSE;
-
-    // Ensure $current_node is a Node entity object, not a revision ID.
-    if ($current_node && is_numeric($current_node)) {
-      $current_node = \Drupal::entityTypeManager()->getStorage('node')->load($current_node);
-    }
-
-    if ($current_node && is_object($current_node) && method_exists($current_node, 'bundle') && $current_node->bundle() === 'event') {
-      $is_dated_event_page = TRUE;
-      // On dated-event pages, ALWAYS use the node's date (ignore config).
-      if ($current_node->hasField('field_event_date') && !$current_node->get('field_event_date')->isEmpty()) {
-        $event_date_value = $current_node->get('field_event_date')->value;
-        if (!empty($event_date_value)) {
-          // Parse the date (format: YYYY-MM-DD).
-          $event_date = new \DateTime($event_date_value, $sa_timezone);
-          $month = $event_date->format('m');
-          $day = $event_date->format('d');
-        }
-      }
-    }
-
-    // If not on dated-event page OR no date found, check configuration.
-    if ($month === NULL || $day === NULL) {
-      if (!$is_dated_event_page && $this->configuration['use_todays_date']) {
-        // Config enabled: use today's date.
-        $date = new \DateTime('now', $sa_timezone);
-        $month = $date->format('m');
-        $day = $date->format('d');
-      }
-      else {
-        // Default fallback: use today's date for backward compatibility.
-        $date = new \DateTime('now', $sa_timezone);
-        $month = $date->format('m');
-        $day = $date->format('d');
-      }
-    }
+    $date = new \DateTime('now', $sa_timezone);
+    $month = $date->format('m');
+    $day = $date->format('d');
 
     // Load potential events and let Twig filter by exact date.
     $all_events = [];
     $target_date = $month . '-' . $day;
 
-    // Show events if either config option is enabled.
-    $should_load_events = $this->configuration['show_today_history'] ||
-      $this->configuration['use_todays_date'];
-
-    if ($should_load_events) {
+    // Only auto-load events if "show_today_history" is enabled.
+    if ($this->configuration['show_today_history']) {
       $nodes = $this->nodeFetcher->loadPotentialEvents($target_date);
 
       if (!empty($nodes)) {
@@ -464,15 +420,31 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
     // Build the date picker form if enabled.
     $form = [];
     if ($this->configuration['show_date_picker']) {
+      // Pre-fill with today's date if enabled.
+      $default_day = NULL;
+      $default_month = NULL;
+      if ($this->configuration['use_todays_date']) {
+        $today = new \DateTime('now', $sa_timezone);
+        $default_day = (int) $today->format('d');
+        $default_month = $today->format('m');
+      }
+
       if ($this->configuration['date_picker_mode'] === 'day_month') {
-        // Use simplified day/month form.
-        $form = $this->formBuilder->getForm('Drupal\tdih\Form\DayMonthDateForm');
+        // Use simplified day/month form with optional defaults.
+        $form = $this->formBuilder->getForm(
+          'Drupal\tdih\Form\DayMonthDateForm',
+          $default_day,
+          $default_month
+        );
       }
       else {
         // Use full birthday form with year.
         $form = $this->formBuilder->getForm('Drupal\tdih\Form\BirthdayDateForm');
       }
     }
+
+    // Determine if events should be shown.
+    $show_events = $this->configuration['show_today_history'];
 
     // Return a render array referencing our theme hook.
     return [
@@ -483,8 +455,9 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
       '#date_picker_mode' => $this->configuration['date_picker_mode'],
       '#display_mode' => $this->configuration['display_mode'],
       '#show_header_title' => $this->configuration['show_header_title'],
-      '#show_today_history' => $this->configuration['show_today_history'],
+      '#show_today_history' => $show_events,
       '#show_details_button' => $this->configuration['show_details_button'],
+      '#use_todays_date' => $this->configuration['use_todays_date'],
       '#attached' => [
         'library' => [
           'tdih/tdih-interactive',
