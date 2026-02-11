@@ -198,7 +198,8 @@ class DayMonthDateForm extends FormBase {
       ],
     ];
 
-    // If day and month are selected (from form submission or defaults), load and display events.
+    // If day and month are selected (from form submission or defaults),
+    // load and display events.
     $selected_day = $form_state->getValue('day') ?: $default_day;
     $selected_month = $form_state->getValue('month') ?: $default_month;
 
