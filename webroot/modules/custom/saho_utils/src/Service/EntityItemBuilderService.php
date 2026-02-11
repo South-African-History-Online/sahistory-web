@@ -72,7 +72,7 @@ class EntityItemBuilderService {
    *   Optional image style name.
    *
    * @return array
-   *   Array with basic fields plus 'image_url'.
+   *   Array with basic fields plus 'image'.
    */
   public function buildItemWithImage(
     ContentEntityInterface $entity,
@@ -86,7 +86,7 @@ class EntityItemBuilderService {
       ? $this->imageExtractor->extractImageWithDerivatives($entity, $image_style, $image_field)
       : $this->imageExtractor->extractImageUrl($entity, $image_field);
 
-    $item['image_url'] = $image_url ?? '';
+    $item['image'] = $image_url;
 
     return $item;
   }
@@ -104,7 +104,7 @@ class EntityItemBuilderService {
    *   Optional image style name.
    *
    * @return array
-   *   Array with basic fields plus 'image_url' and 'teaser'.
+   *   Array with basic fields plus 'image' and 'teaser'.
    */
   public function buildItemWithTeaser(
     ContentEntityInterface $entity,
@@ -204,12 +204,19 @@ class EntityItemBuilderService {
    * @param \Drupal\Core\Entity\ContentEntityInterface $entity
    *   The entity to build the item from.
    * @param array $fields
-   *   Array of field names to include. Special values:
+   *   Array of field names to include. Can be:
+   *   - 'id': Entity ID
+   *   - 'title': Entity label
+   *   - 'url': Entity URL
+   *   - 'image': Image URL
+   *   - 'teaser': Teaser text
+   *   - 'created', 'changed', 'published_date': Date fields
+   *   - Any custom field name
+   *   Special prefixed values:
    *   - '_basic': Include ID, title, URL
-   *   - '_image': Include image_url
+   *   - '_image': Include image
    *   - '_teaser': Include teaser
-   *   - '_dates': Include created, changed, published_date
-   *   - Any field name: Include that field's value.
+   *   - '_dates': Include created, changed, published_date.
    *
    * @return array
    *   Custom entity item array with requested fields.
@@ -219,13 +226,52 @@ class EntityItemBuilderService {
 
     foreach ($fields as $field) {
       switch ($field) {
+        case 'id':
+          $item['id'] = $entity->id();
+          break;
+
+        case 'title':
+          $item['title'] = $entity->label();
+          break;
+
+        case 'url':
+          $item['url'] = $entity->toUrl()->toString();
+          break;
+
+        case 'image':
+          $image_url = $this->imageExtractor->extractImageUrl($entity);
+          $item['image'] = $image_url;
+          break;
+
+        case 'teaser':
+          $item['teaser'] = $this->contentExtractor->extractTeaser($entity);
+          break;
+
+        case 'created':
+          if ($entity->hasField('created') && !$entity->get('created')->isEmpty()) {
+            $item['created'] = date('Y-m-d', (int) $entity->get('created')->value);
+          }
+          break;
+
+        case 'changed':
+          if ($entity->hasField('changed') && !$entity->get('changed')->isEmpty()) {
+            $item['changed'] = date('Y-m-d', (int) $entity->get('changed')->value);
+          }
+          break;
+
+        case 'published_date':
+          if ($entity->hasField('field_published_date') && !$entity->get('field_published_date')->isEmpty()) {
+            $item['published_date'] = $entity->get('field_published_date')->value;
+          }
+          break;
+
         case '_basic':
           $item += $this->buildBasicItem($entity);
           break;
 
         case '_image':
           $image_url = $this->imageExtractor->extractImageUrl($entity);
-          $item['image_url'] = $image_url ?? '';
+          $item['image'] = $image_url;
           break;
 
         case '_teaser':
@@ -267,7 +313,8 @@ class EntityItemBuilderService {
    * @param array $entities
    *   Array of ContentEntityInterface objects.
    * @param string $method
-   *   Method to use: 'basic', 'image', 'teaser', 'full', or 'custom'.
+   *   Method to use: 'basic', 'image', 'with_image', 'teaser', 'full',
+   *   or 'custom'.
    * @param array $options
    *   Options to pass to the builder method.
    *
@@ -288,6 +335,7 @@ class EntityItemBuilderService {
           break;
 
         case 'image':
+        case 'with_image':
           $items[] = $this->buildItemWithImage(
             $entity,
             $options['image_field'] ?? NULL,
