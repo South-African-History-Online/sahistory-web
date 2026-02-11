@@ -35,6 +35,36 @@
             });
           }
         }
+
+        // Graphic mode link protection
+        const link = banner.querySelector('.saho-hero-banner__link');
+        if (link) {
+          const originalUrl = link.getAttribute('data-original-url') || link.getAttribute('href');
+
+          // Prevent link href from being modified
+          const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+              if (mutation.type === 'attributes' && mutation.attributeName === 'href') {
+                const currentHref = link.getAttribute('href');
+                if (currentHref !== originalUrl) {
+                  console.warn('Hero banner link was modified! Restoring original URL:', originalUrl);
+                  link.setAttribute('href', originalUrl);
+                }
+              }
+            });
+          });
+
+          observer.observe(link, { attributes: true });
+
+          // Also prevent any click event modifications
+          link.addEventListener('click', (e) => {
+            const href = link.getAttribute('href');
+            if (href !== originalUrl) {
+              console.warn('Click detected with wrong URL. Fixing and continuing...');
+              link.setAttribute('href', originalUrl);
+            }
+          }, true); // Use capture phase
+        }
       });
     },
   };

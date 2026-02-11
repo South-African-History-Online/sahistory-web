@@ -80,12 +80,12 @@ class ResponseSubscriber implements EventSubscriberInterface {
 
     // Preload critical CSS.
     $css = [
-      '</themes/custom/saho/build/css/main.style.css>; rel=preload; as=style',
+      '</themes/custom/saho/dist/css/main.css>; rel=preload; as=style',
     ];
 
     // Preload critical JavaScript.
     $js = [
-      '</themes/custom/saho/build/js/main.script.js>; rel=preload; as=script',
+      '</themes/custom/saho/dist/js/main.script.js>; rel=preload; as=script',
     ];
 
     // DNS prefetch for external resources.
