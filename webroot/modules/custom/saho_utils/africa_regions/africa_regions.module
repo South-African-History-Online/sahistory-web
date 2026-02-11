@@ -5,6 +5,8 @@
  * Africa Regions module.
  */
 
+use Drupal\file\FileInterface;
+
 /**
  * Implements hook_theme().
  */
@@ -30,14 +32,14 @@ function africa_regions_theme($existing, $type, $theme, $path) {
 function africa_regions_preprocess_views_view(&$variables) {
   $view = $variables['view'];
 
-  // Only process our specific view
+  // Only process our specific view.
   if ($view->id() !== 'africa_regional_pages') {
     return;
   }
 
   $display_id = $view->current_display;
 
-  // Map displays to their country term IDs
+  // Map displays to their country term IDs.
   $region_config = [
     'page_northern' => [
       'name' => 'Northern Africa',
@@ -56,7 +58,10 @@ function africa_regions_preprocess_views_view(&$variables) {
     ],
     'page_western' => [
       'name' => 'Western Africa',
-      'country_tids' => [32466, 32468, 32470, 32477, 32488, 32489, 32490, 32491, 32494, 32498, 32499, 32504, 32505, 32508, 32510, 32517],
+      'country_tids' => [
+        32466, 32468, 32470, 32477, 32488, 32489, 32490, 32491,
+        32494, 32498, 32499, 32504, 32505, 32508, 32510, 32517,
+      ],
       'color' => 'faded-brick-red',
     ],
     'page_southern' => [
@@ -73,7 +78,7 @@ function africa_regions_preprocess_views_view(&$variables) {
   $current_region = $region_config[$display_id];
   $country_tids = $current_region['country_tids'];
 
-  // Load country taxonomy terms
+  // Load country taxonomy terms.
   $term_storage = \Drupal::entityTypeManager()->getStorage('taxonomy_term');
   $country_terms = $term_storage->loadMultiple($country_tids);
 
@@ -117,13 +122,13 @@ function africa_regions_preprocess_views_view(&$variables) {
       // Get place image.
       if ($place->hasField('field_place_image') && !$place->get('field_place_image')->isEmpty()) {
         $file = $place->get('field_place_image')->entity;
-        if ($file && $file instanceof \Drupal\file\FileInterface) {
+        if ($file && $file instanceof FileInterface) {
           $file_uri = $file->getFileUri();
           $image_url = \Drupal::service('file_url_generator')->generateString($file_uri);
         }
       }
 
-      // Get country name
+      // Get country name.
       $country_name = '';
       if ($place->hasField('field_african_country') && !$place->get('field_african_country')->isEmpty()) {
         $country_ref = $place->get('field_african_country')->entity;
@@ -141,7 +146,7 @@ function africa_regions_preprocess_views_view(&$variables) {
     }
   }
 
-  // Make data available to template
+  // Make data available to template.
   $variables['region_data'] = [
     'name' => $current_region['name'],
     'color' => $current_region['color'],

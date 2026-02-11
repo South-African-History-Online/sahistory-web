@@ -167,17 +167,17 @@ class TermTrackerTest extends UnitTestCase {
       ->method('fetchAll')
       ->willReturn($results);
 
-    $query->expects($this->once())
+    $query->expects($this->exactly(2))
       ->method('fields')
-      ->with('nc', ['nid', 'totalcount', 'daycount', 'timestamp'])
       ->willReturnSelf();
 
     $query->expects($this->once())
       ->method('join')
       ->willReturnSelf();
 
-    $query->expects($this->exactly(2))
+    $query->expects($this->once())
       ->method('condition')
+      ->with('nfd.status', 1)
       ->willReturnSelf();
 
     $query->expects($this->once())

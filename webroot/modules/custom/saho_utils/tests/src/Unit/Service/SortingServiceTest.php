@@ -5,6 +5,7 @@ namespace Drupal\Tests\saho_utils\Unit\Service;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\Query\QueryInterface;
+use Drupal\node\NodeInterface;
 use Drupal\saho_utils\Service\SortingService;
 use Drupal\Tests\UnitTestCase;
 
@@ -223,13 +224,13 @@ class SortingServiceTest extends UnitTestCase {
    * @covers ::sortLoadedEntities
    */
   public function testSortLoadedEntitiesByCreatedLatest() {
-    $entity1 = $this->createMock(EntityInterface::class);
+    $entity1 = $this->createMock(NodeInterface::class);
     $entity1->method('getCreatedTime')->willReturn(1000);
 
-    $entity2 = $this->createMock(EntityInterface::class);
+    $entity2 = $this->createMock(NodeInterface::class);
     $entity2->method('getCreatedTime')->willReturn(3000);
 
-    $entity3 = $this->createMock(EntityInterface::class);
+    $entity3 = $this->createMock(NodeInterface::class);
     $entity3->method('getCreatedTime')->willReturn(2000);
 
     $entities = [1 => $entity1, 2 => $entity2, 3 => $entity3];
@@ -247,13 +248,13 @@ class SortingServiceTest extends UnitTestCase {
    * @covers ::sortLoadedEntities
    */
   public function testSortLoadedEntitiesByCreatedOldest() {
-    $entity1 = $this->createMock(EntityInterface::class);
+    $entity1 = $this->createMock(NodeInterface::class);
     $entity1->method('getCreatedTime')->willReturn(3000);
 
-    $entity2 = $this->createMock(EntityInterface::class);
+    $entity2 = $this->createMock(NodeInterface::class);
     $entity2->method('getCreatedTime')->willReturn(1000);
 
-    $entity3 = $this->createMock(EntityInterface::class);
+    $entity3 = $this->createMock(NodeInterface::class);
     $entity3->method('getCreatedTime')->willReturn(2000);
 
     $entities = [1 => $entity1, 2 => $entity2, 3 => $entity3];
@@ -271,13 +272,13 @@ class SortingServiceTest extends UnitTestCase {
    * @covers ::sortLoadedEntities
    */
   public function testSortLoadedEntitiesByRecentlyUpdated() {
-    $entity1 = $this->createMock(EntityInterface::class);
+    $entity1 = $this->createMock(NodeInterface::class);
     $entity1->method('getChangedTime')->willReturn(1500);
 
-    $entity2 = $this->createMock(EntityInterface::class);
+    $entity2 = $this->createMock(NodeInterface::class);
     $entity2->method('getChangedTime')->willReturn(2500);
 
-    $entity3 = $this->createMock(EntityInterface::class);
+    $entity3 = $this->createMock(NodeInterface::class);
     $entity3->method('getChangedTime')->willReturn(500);
 
     $entities = [1 => $entity1, 2 => $entity2, 3 => $entity3];

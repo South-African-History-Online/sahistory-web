@@ -23,6 +23,7 @@ class SearchQueryTrackerTest extends KernelTestBase {
   protected static $modules = [
     'saho_statistics',
     'search_api',
+    'entity_usage',
     'user',
     'system',
     'node',
@@ -83,10 +84,10 @@ class SearchQueryTrackerTest extends KernelTestBase {
     // Create a mock result set.
     $results = $this->createMock(ResultSet::class);
     $results->method('getResultCount')->willReturn(10);
+    $results->method('getQuery')->willReturn($query);
 
     // Dispatch the processing results event.
     $post_event = new ProcessingResultsEvent($results);
-    $post_event->setQuery($query);
     $this->eventDispatcher->dispatch($post_event, SearchApiEvents::PROCESSING_RESULTS);
 
     // Verify that the query was logged to the database.
@@ -132,9 +133,9 @@ class SearchQueryTrackerTest extends KernelTestBase {
 
     $results = $this->createMock(ResultSet::class);
     $results->method('getResultCount')->willReturn(5);
+    $results->method('getQuery')->willReturn($query);
 
     $post_event = new ProcessingResultsEvent($results);
-    $post_event->setQuery($query);
     $this->eventDispatcher->dispatch($post_event, SearchApiEvents::PROCESSING_RESULTS);
 
     // Verify no queries were logged.
@@ -162,9 +163,9 @@ class SearchQueryTrackerTest extends KernelTestBase {
 
     $results = $this->createMock(ResultSet::class);
     $results->method('getResultCount')->willReturn(0);
+    $results->method('getQuery')->willReturn($query);
 
     $post_event = new ProcessingResultsEvent($results);
-    $post_event->setQuery($query);
     $this->eventDispatcher->dispatch($post_event, SearchApiEvents::PROCESSING_RESULTS);
 
     // Verify no empty queries were logged.
@@ -193,9 +194,9 @@ class SearchQueryTrackerTest extends KernelTestBase {
 
     $results = $this->createMock(ResultSet::class);
     $results->method('getResultCount')->willReturn(5);
+    $results->method('getQuery')->willReturn($query);
 
     $post_event = new ProcessingResultsEvent($results);
-    $post_event->setQuery($query);
     $this->eventDispatcher->dispatch($post_event, SearchApiEvents::PROCESSING_RESULTS);
 
     // Verify IP hash was stored.
@@ -225,9 +226,9 @@ class SearchQueryTrackerTest extends KernelTestBase {
 
     $results = $this->createMock(ResultSet::class);
     $results->method('getResultCount')->willReturn(3);
+    $results->method('getQuery')->willReturn($query);
 
     $post_event = new ProcessingResultsEvent($results);
-    $post_event->setQuery($query);
     $this->eventDispatcher->dispatch($post_event, SearchApiEvents::PROCESSING_RESULTS);
 
     // Verify session ID is anonymized (8 characters).
