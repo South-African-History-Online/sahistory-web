@@ -152,12 +152,32 @@ class EntityItemBuilderServiceTest extends UnitTestCase {
     $entity = $this->createMock(ContentEntityInterface::class);
     $entity->method('id')->willReturn('202');
     $entity->method('label')->willReturn('Full Article');
-    $entity->method('getCreatedTime')->willReturn(1234567890);
-    $entity->method('getChangedTime')->willReturn(1234567999);
 
     $url = $this->createMock(Url::class);
     $url->method('toString')->willReturn('/node/202');
     $entity->method('toUrl')->willReturn($url);
+
+    // Use timestamps that work across timezones (noon UTC).
+    // 1234526400 = 2009-02-13 12:00:00 UTC.
+    // 1234612800 = 2009-02-14 12:00:00 UTC.
+    $createdField = $this->createMock('\Drupal\Core\Field\FieldItemListInterface');
+    $createdField->method('isEmpty')->willReturn(FALSE);
+    $createdField->method('__get')->with('value')->willReturn(1234526400);
+    $entity->method('hasField')->willReturnCallback(function ($field) {
+      return in_array($field, ['created', 'changed']);
+    });
+    $entity->method('get')->willReturnCallback(function ($field) use ($createdField) {
+      if ($field === 'created') {
+        return $createdField;
+      }
+      if ($field === 'changed') {
+        $changedField = $this->createMock('\Drupal\Core\Field\FieldItemListInterface');
+        $changedField->method('isEmpty')->willReturn(FALSE);
+        $changedField->method('__get')->with('value')->willReturn(1234612800);
+        return $changedField;
+      }
+      return NULL;
+    });
 
     $this->imageExtractor->method('extractImageUrl')
       ->willReturn('https://example.com/full.jpg');
@@ -173,7 +193,7 @@ class EntityItemBuilderServiceTest extends UnitTestCase {
     $this->assertEquals('https://example.com/full.jpg', $item['image']);
     $this->assertEquals('Full article teaser', $item['teaser']);
     $this->assertEquals('2009-02-13', $item['created']);
-    $this->assertEquals('2009-02-13', $item['changed']);
+    $this->assertEquals('2009-02-14', $item['changed']);
   }
 
   /**
@@ -183,11 +203,25 @@ class EntityItemBuilderServiceTest extends UnitTestCase {
     $entity = $this->createMock(ContentEntityInterface::class);
     $entity->method('id')->willReturn('303');
     $entity->method('label')->willReturn('Custom Options Article');
-    $entity->method('getCreatedTime')->willReturn(1234567890);
 
     $url = $this->createMock(Url::class);
     $url->method('toString')->willReturn('/node/303');
     $entity->method('toUrl')->willReturn($url);
+
+    // Mock created field with timezone-safe timestamp.
+    // 1234526400 = 2009-02-13 12:00:00 UTC.
+    $createdField = $this->createMock('\Drupal\Core\Field\FieldItemListInterface');
+    $createdField->method('isEmpty')->willReturn(FALSE);
+    $createdField->method('__get')->with('value')->willReturn(1234526400);
+    $entity->method('hasField')->willReturnCallback(function ($field) {
+      return $field === 'created';
+    });
+    $entity->method('get')->willReturnCallback(function ($field) use ($createdField) {
+      if ($field === 'created') {
+        return $createdField;
+      }
+      return NULL;
+    });
 
     $this->imageExtractor->method('extractImageUrl')
       ->willReturn('https://example.com/custom.jpg');
