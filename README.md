@@ -1,7 +1,8 @@
-# South African History Online (SAHO) 
+# South African History Online (SAHO)
 
-[![Frontend CI](https://github.com/South-African-History-Online/sahistory-web/actions/workflows/frontend-ci.yml/badge.svg)](https://github.com/South-African-History-Online/sahistory-web/actions/workflows/frontend-ci.yml)
+[![Code Quality Checks](https://github.com/South-African-History-Online/sahistory-web/actions/workflows/test.yml/badge.svg)](https://github.com/South-African-History-Online/sahistory-web/actions/workflows/test.yml)
 [![PR Build and Test](https://github.com/South-African-History-Online/sahistory-web/actions/workflows/ci.yml/badge.svg)](https://github.com/South-African-History-Online/sahistory-web/actions/workflows/ci.yml)
+[![Frontend CI](https://github.com/South-African-History-Online/sahistory-web/actions/workflows/frontend-ci.yml/badge.svg)](https://github.com/South-African-History-Online/sahistory-web/actions/workflows/frontend-ci.yml)
 
 The primary Git repository for the South African History Online (SAHO) website - sahistory.org.za
 

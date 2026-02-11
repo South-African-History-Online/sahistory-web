@@ -36,12 +36,25 @@ ddev drush updb              # Run database updates
 
 # Check for deprecated code
 ./vendor/bin/drupal-check webroot/modules/custom
+```
 
-# Frontend (in theme directory)
-cd webroot/themes/custom/saho
-npm run biome:check          # Lint JavaScript
-npm run biome:fix           # Auto-fix JS issues
-npm run production          # Build production assets
+### PHPUnit Testing
+```bash
+# Run all tests (local DDEV environment)
+ddev exec -d /var/www/html/webroot/modules/custom phpunit
+
+# Run specific test suite
+ddev exec -d /var/www/html/webroot/modules/custom phpunit --testsuite unit
+ddev exec -d /var/www/html/webroot/modules/custom phpunit --testsuite kernel
+
+# Run tests with coverage
+ddev exec -d /var/www/html/webroot/modules/custom phpunit --coverage-html coverage/
+
+# Run specific test file
+ddev exec phpunit webroot/modules/custom/saho_utils/tests/src/Unit/Service/EntityItemBuilderServiceTest.php
+
+# Debug tests
+ddev exec phpunit --debug --verbose
 ```
 
 ### Theme Development
@@ -177,8 +190,16 @@ class CustomBlock extends BlockBase {
 ### Before Committing
 1. **CRITICAL**: Run all code quality checks
    ```bash
+   # PHP code standards
    ./vendor/bin/phpcs --standard=Drupal webroot/modules/custom
+
+   # Drupal best practices
    ./vendor/bin/drupal-check webroot/modules/custom
+
+   # Run PHPUnit tests
+   ddev exec -d /var/www/html/webroot/modules/custom phpunit
+
+   # Frontend checks
    cd webroot/themes/custom/saho && npm run biome:check
    ```
 2. Fix any issues found

@@ -30,13 +30,13 @@ jobs:
       - name: Run drupal-check
         run: |
           echo "Running drupal-check on custom modules..."
-          find webroot/modules/custom -maxdepth 2 -type d -name "src" -exec ./vendor/bin/drupal-check {} \;
+          # Check both src/ and tests/ directories
+          find webroot/modules/custom -maxdepth 2 -type d \( -name "src" -o -name "tests" \) -exec ./vendor/bin/drupal-check {} \;
 
       - name: Check for deprecated code
-        continue-on-error: true
         run: |
           echo "Checking for Drupal 11 deprecated code..."
-          find webroot/modules/custom -maxdepth 2 -type d -name "src" -exec ./vendor/bin/drupal-check {} \; || echo "Deprecation warnings found"
+          find webroot/modules/custom -maxdepth 2 -type d \( -name "src" -o -name "tests" \) -exec ./vendor/bin/drupal-check {} \;
 
       - name: Code quality summary
         if: always()
@@ -50,7 +50,6 @@ jobs:
   phpunit:
     name: PHPUnit Tests
     runs-on: ubuntu-latest
-    if: false  # Disabled: PHPUnit not installed in composer.json - needs setup
 
     services:
       mysql:
@@ -75,7 +74,7 @@ jobs:
         with:
           php-version: '8.3'
           extensions: gd, pdo_mysql, opcache
-          coverage: none
+          coverage: xdebug
 
       - name: Get Composer cache directory
         id: composer-cache
@@ -103,14 +102,29 @@ jobs:
           mkdir -p webroot/sites/default/files
           chmod 777 webroot/sites/default/files
 
-      - name: Run Unit Tests
+      - name: Start PHP built-in server
         run: |
+          cd webroot
+          php -S 127.0.0.1:8080 .ht.router.php &
+          sleep 2
+
+      - name: Run Unit Tests with Coverage
+        env:
+          SIMPLETEST_BASE_URL: "http://127.0.0.1:8080"
+          SIMPLETEST_DB: "mysql://root:root@127.0.0.1:3306/drupal_test"
+        run: |
+          mkdir -p test-results coverage
           ./vendor/bin/phpunit \
             --configuration webroot/modules/custom/phpunit.xml \
             --testsuite unit \
+            --coverage-clover coverage/clover.xml \
+            --coverage-html coverage/html \
             --log-junit test-results/unit.xml
 
       - name: Run Kernel Tests
+        env:
+          SIMPLETEST_BASE_URL: "http://127.0.0.1:8080"
+          SIMPLETEST_DB: "mysql://root:root@127.0.0.1:3306/drupal_test"
         run: |
           ./vendor/bin/phpunit \
             --configuration webroot/modules/custom/phpunit.xml \
@@ -123,6 +137,24 @@ jobs:
         with:
           name: phpunit-results
           path: test-results/
+
+      - name: Upload coverage reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-reports
+          path: coverage/
+
+      - name: Coverage summary
+        if: success()
+        run: |
+          echo "::notice::Code Coverage Report Generated"
+          if [ -f coverage/clover.xml ]; then
+            echo "Coverage XML: coverage/clover.xml"
+            # Parse and display coverage percentage
+            COVERAGE=$(grep -oP '(?<=lines-percent=")[^"]*' coverage/clover.xml | head -1)
+            echo "::notice::Line Coverage: ${COVERAGE}%"
+          fi
 
       - name: Test summary
         if: always()
