@@ -161,12 +161,15 @@
 
 /**
  * Graphic Mode: Full image in natural proportions without cropping
+ * Standard size: 1640 x 720px (aspect ratio 2.278:1)
  */
 .saho-hero-banner--graphic {
   min-height: 0;
   height: auto;
   padding: 0 !important;
   cursor: pointer;
+  aspect-ratio: 1640 / 720;
+  width: 100%;
 }
 
 /* Remove ALL content constraints in graphic mode */
@@ -184,22 +187,23 @@
   max-width: none !important;
 }
 
-/* Picture container: relative positioning for natural image flow */
+/* Picture container: maintains 1640:720 aspect ratio */
 .saho-hero-banner--graphic .saho-hero-banner__picture {
   position: relative !important;
-  height: auto !important;
-  min-height: 0 !important;
+  height: 100% !important;
+  width: 100%;
+  aspect-ratio: 1640 / 720;
 }
 
-/* Image: full proportions, no cropping - shows entire graphic */
+/* Image: fills container at 1640:720 proportions */
 .saho-hero-banner--graphic .saho-hero-banner__image {
-  object-fit: contain !important;
+  object-fit: cover !important;
   object-position: center !important;
   width: 100% !important;
-  height: auto !important;
-  min-height: 0 !important;
-  max-height: none !important;
-  position: relative !important;
+  height: 100% !important;
+  position: absolute !important;
+  top: 0;
+  left: 0;
 }
 
 /* Make the ENTIRE banner clickable - simple and direct */

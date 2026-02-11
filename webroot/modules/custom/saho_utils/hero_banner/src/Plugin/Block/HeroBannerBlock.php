@@ -184,7 +184,7 @@ class HeroBannerBlock extends BlockBase implements ContainerFactoryPluginInterfa
       ],
       '#title' => $this->t('Hero Banner Image'),
       '#default_value' => $default_media_entity,
-      '#description' => $this->t('Start typing to search for an image, or upload a new one through the media library.'),
+      '#description' => $this->t('<strong>Graphic Mode:</strong> Use images at <strong>1640 x 720px</strong> for optimal display. <br><strong>Standard Mode:</strong> Recommended minimum 1920 x 800px.'),
       '#maxlength' => 1024,
     ];
 
