@@ -60,6 +60,7 @@
   background: rgba(0, 0, 0, 0.45);
   z-index: 1;
   pointer-events: none;
+  transition: opacity 0.3s ease; // Smooth transition for hover effects
 }
 
 /* Content container - z-index 2 to sit above overlay */
@@ -150,6 +151,75 @@
 /* CTA Button - Uses saho-button component, minimal overrides */
 .saho-hero-banner__cta {
   margin-top: var(--saho-space-2); // 16px
+}
+
+/* =============================================================================
+ * Graphic Mode - Full Banner Link with Hover Effects
+ * ============================================================================= */
+
+/**
+ * Graphic Mode Wrapper
+ * Makes entire banner clickable with modern hover effects
+ */
+.saho-hero-banner--graphic {
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+  // Full height image display (contain instead of cover)
+  .saho-hero-banner__image {
+    object-fit: contain;
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), filter 0.3s ease;
+  }
+
+  // Modern hover effect - subtle lift and brightness
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+
+    .saho-hero-banner__image {
+      transform: scale(1.02);
+      filter: brightness(1.05);
+    }
+
+    .saho-hero-banner__overlay {
+      opacity: 0.35 !important; // Lighten overlay on hover
+    }
+  }
+
+  // Active state
+  &:active {
+    transform: translateY(0);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  // Remove text selection to make it feel more like a clickable image
+  user-select: none;
+}
+
+/**
+ * Graphic Mode Link
+ * Full-area clickable link that overlays the entire banner
+ */
+.saho-hero-banner__link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  width: 100%;
+  height: 100%;
+
+  // Make link cover entire content area
+  &:hover,
+  &:focus {
+    text-decoration: none;
+    color: inherit;
+    outline: none;
+  }
+
+  // Focus state for accessibility
+  &:focus-visible {
+    outline: 3px solid var(--saho-color-primary);
+    outline-offset: 4px;
+  }
 }
 
 /* Animation keyframes for mobile fade-in */
@@ -296,5 +366,47 @@
 
   .saho-hero-banner__image {
     transition: none;
+  }
+
+  .saho-hero-banner--graphic {
+    transition: none;
+
+    &:hover {
+      transform: none;
+
+      .saho-hero-banner__image {
+        transform: none;
+        filter: brightness(1.05); // Keep subtle brightness change
+      }
+    }
+  }
+}
+
+/**
+ * Touch Device Optimizations
+ * Disable hover effects on touch devices, only show on active state
+ */
+@media (hover: none) and (pointer: coarse) {
+  .saho-hero-banner--graphic {
+    &:hover {
+      transform: none;
+      box-shadow: none;
+
+      .saho-hero-banner__image {
+        transform: none;
+        filter: none;
+      }
+
+      .saho-hero-banner__overlay {
+        opacity: inherit !important;
+      }
+    }
+
+    // Keep active state for tap feedback
+    &:active {
+      .saho-hero-banner__image {
+        transform: scale(0.98);
+      }
+    }
   }
 }
