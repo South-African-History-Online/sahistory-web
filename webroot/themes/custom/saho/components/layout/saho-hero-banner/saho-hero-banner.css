@@ -160,10 +160,11 @@
  * ============================================================================= */
 
 /**
- * Graphic Mode: Full width/height display, no padding
+ * Graphic Mode: Full image in natural proportions without cropping
  */
 .saho-hero-banner--graphic {
-  min-height: 500px;
+  min-height: 0;
+  height: auto;
   padding: 0 !important;
   cursor: pointer;
 }
@@ -174,7 +175,7 @@
   max-width: none !important;
   padding: 0 !important;
   width: 100%;
-  height: 100%;
+  height: auto;
 }
 
 .saho-hero-banner--graphic .saho-hero-banner__inner {
@@ -183,11 +184,22 @@
   max-width: none !important;
 }
 
-/* Image fills entire banner - cover mode, no cutoff */
+/* Picture container: relative positioning for natural image flow */
+.saho-hero-banner--graphic .saho-hero-banner__picture {
+  position: relative !important;
+  height: auto !important;
+  min-height: 0 !important;
+}
+
+/* Image: full proportions, no cropping - shows entire graphic */
 .saho-hero-banner--graphic .saho-hero-banner__image {
-  object-fit: cover !important;
+  object-fit: contain !important;
   object-position: center !important;
-  min-height: 100%;
+  width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  position: relative !important;
 }
 
 /* Make the ENTIRE banner clickable - simple and direct */
@@ -334,15 +346,17 @@
  * Graphic Mode Responsive Overrides
  * ============================================================================= */
 
-/* Ensure graphic mode stays full width/height on ALL screen sizes */
+/* Ensure graphic mode stays full width with natural height on ALL screen sizes */
 @media (max-width: 767.98px) {
   .saho-hero-banner--graphic {
-    min-height: 400px;
+    min-height: 0;
+    height: auto;
     padding: 0 !important;
   }
 
   .saho-hero-banner--graphic .saho-hero-banner__content {
     padding: 0 !important;
+    height: auto;
   }
 
   .saho-hero-banner--graphic .saho-hero-banner__inner {
@@ -352,29 +366,37 @@
 
 @media (max-width: 575.98px) {
   .saho-hero-banner--graphic {
-    min-height: 350px;
+    min-height: 0;
+    height: auto;
     padding: 0 !important;
   }
 
   .saho-hero-banner--graphic .saho-hero-banner__content {
     padding: 0 !important;
     max-width: none !important;
+    height: auto;
   }
 
   .saho-hero-banner--graphic .saho-hero-banner__inner {
     padding: 0 !important;
     gap: 0 !important;
   }
+
+  .saho-hero-banner--graphic .saho-hero-banner__picture {
+    height: auto !important;
+  }
 }
 
 @media (max-width: 360px) {
   .saho-hero-banner--graphic {
-    min-height: 300px;
+    min-height: 0;
+    height: auto;
     padding: 0 !important;
   }
 
   .saho-hero-banner--graphic .saho-hero-banner__content {
     padding: 0 !important;
+    height: auto;
   }
 }
 
