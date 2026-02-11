@@ -78,7 +78,7 @@ class DayMonthDateForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state) {
+  public function buildForm(array $form, FormStateInterface $form_state, $default_day = NULL, $default_month = NULL) {
     // Create a container for the form elements.
     $form['#prefix'] = '<div id="tdih-day-month-form-wrapper">';
     $form['#suffix'] = '</div>';
@@ -123,6 +123,7 @@ class DayMonthDateForm extends FormBase {
           range(1, 31)
         )
       ),
+      '#default_value' => $default_day ? sprintf('%d', (int) $default_day) : '',
       '#attributes' => [
         'class' => ['form-select', 'tdih-day-picker'],
       ],
@@ -149,6 +150,7 @@ class DayMonthDateForm extends FormBase {
         '11' => $this->t('November'),
         '12' => $this->t('December'),
       ],
+      '#default_value' => $default_month ?: '',
       '#attributes' => [
         'class' => ['form-select', 'tdih-month-picker'],
       ],
@@ -196,9 +198,10 @@ class DayMonthDateForm extends FormBase {
       ],
     ];
 
-    // If day and month are selected, load and display events.
-    $selected_day = $form_state->getValue('day');
-    $selected_month = $form_state->getValue('month');
+    // If day and month are selected (from form submission or defaults),
+    // load and display events.
+    $selected_day = $form_state->getValue('day') ?: $default_day;
+    $selected_month = $form_state->getValue('month') ?: $default_month;
 
     if (!empty($selected_day) && !empty($selected_month)) {
       // Format the date components.
