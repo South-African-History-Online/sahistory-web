@@ -38,10 +38,13 @@ class ContentExtractorServiceTest extends UnitTestCase {
     $entity = $this->createMock(ContentEntityInterface::class);
 
     $field_item = $this->createMock(FieldItemInterface::class);
-    $field_item->value = '<p>This is a long article with HTML tags and <strong>formatting</strong>. It should be truncated properly at word boundaries to create a nice teaser.</p>';
+    $field_item->method('getValue')->willReturn([
+      'value' => '<p>This is a long article with HTML tags and <strong>formatting</strong>. It should be truncated properly at word boundaries to create a nice teaser.</p>',
+    ]);
 
     $field_list = $this->createMock(FieldItemListInterface::class);
     $field_list->method('first')->willReturn($field_item);
+    $field_list->method('isEmpty')->willReturn(FALSE);
 
     $entity->method('hasField')->willReturn(TRUE);
     $entity->method('get')->willReturn($field_list);
@@ -62,10 +65,13 @@ class ContentExtractorServiceTest extends UnitTestCase {
     $entity = $this->createMock(ContentEntityInterface::class);
 
     $field_item = $this->createMock(FieldItemInterface::class);
-    $field_item->value = 'Short text';
+    $field_item->method('getValue')->willReturn([
+      'value' => 'Short text',
+    ]);
 
     $field_list = $this->createMock(FieldItemListInterface::class);
     $field_list->method('first')->willReturn($field_item);
+    $field_list->method('isEmpty')->willReturn(FALSE);
 
     $entity->method('hasField')->willReturn(TRUE);
     $entity->method('get')->willReturn($field_list);
@@ -112,10 +118,13 @@ class ContentExtractorServiceTest extends UnitTestCase {
     $entity = $this->createMock(ContentEntityInterface::class);
 
     $field_item = $this->createMock(FieldItemInterface::class);
-    $field_item->value = 'Custom field content';
+    $field_item->method('getValue')->willReturn([
+      'value' => 'Custom field content',
+    ]);
 
     $field_list = $this->createMock(FieldItemListInterface::class);
     $field_list->method('first')->willReturn($field_item);
+    $field_list->method('isEmpty')->willReturn(FALSE);
 
     $entity->method('hasField')->willReturn(TRUE);
     $entity->method('get')->willReturn($field_list);
@@ -132,10 +141,13 @@ class ContentExtractorServiceTest extends UnitTestCase {
     $entity = $this->createMock(ContentEntityInterface::class);
 
     $field_item = $this->createMock(FieldItemInterface::class);
-    $field_item->summary = 'This is the summary';
+    $field_item->method('getValue')->willReturn([
+      'value' => 'This is the summary',
+    ]);
 
     $field_list = $this->createMock(FieldItemListInterface::class);
     $field_list->method('first')->willReturn($field_item);
+    $field_list->method('isEmpty')->willReturn(FALSE);
 
     $entity->method('hasField')->willReturn(TRUE);
     $entity->method('get')->willReturn($field_list);
@@ -151,15 +163,33 @@ class ContentExtractorServiceTest extends UnitTestCase {
   public function testExtractSummaryFallbackToBody() {
     $entity = $this->createMock(ContentEntityInterface::class);
 
-    $field_item = $this->createMock(FieldItemInterface::class);
-    $field_item->summary = '';
-    $field_item->value = 'Body content used as summary';
+    $summary_field_item = $this->createMock(FieldItemInterface::class);
+    $summary_field_item->method('getValue')->willReturn([
+      'value' => '',
+    ]);
 
-    $field_list = $this->createMock(FieldItemListInterface::class);
-    $field_list->method('first')->willReturn($field_item);
+    $summary_field_list = $this->createMock(FieldItemListInterface::class);
+    $summary_field_list->method('first')->willReturn($summary_field_item);
+    $summary_field_list->method('isEmpty')->willReturn(TRUE);
 
-    $entity->method('hasField')->willReturn(TRUE);
-    $entity->method('get')->willReturn($field_list);
+    $body_field_item = $this->createMock(FieldItemInterface::class);
+    $body_field_item->method('getValue')->willReturn([
+      'value' => 'Body content used as summary',
+    ]);
+
+    $body_field_list = $this->createMock(FieldItemListInterface::class);
+    $body_field_list->method('first')->willReturn($body_field_item);
+    $body_field_list->method('isEmpty')->willReturn(FALSE);
+
+    $entity->method('hasField')->willReturnCallback(function ($field_name) {
+      return in_array($field_name, ['field_summary', 'summary', 'body']);
+    });
+    $entity->method('get')->willReturnCallback(function ($field_name) use ($summary_field_list, $body_field_list) {
+      if (in_array($field_name, ['field_summary', 'summary'])) {
+        return $summary_field_list;
+      }
+      return $body_field_list;
+    });
 
     $summary = $this->contentExtractor->extractSummary($entity);
 
@@ -173,10 +203,13 @@ class ContentExtractorServiceTest extends UnitTestCase {
     $entity = $this->createMock(ContentEntityInterface::class);
 
     $field_item = $this->createMock(FieldItemInterface::class);
-    $field_item->value = '<p>HTML <strong>content</strong> here</p>';
+    $field_item->method('getValue')->willReturn([
+      'value' => '<p>HTML <strong>content</strong> here</p>',
+    ]);
 
     $field_list = $this->createMock(FieldItemListInterface::class);
     $field_list->method('first')->willReturn($field_item);
+    $field_list->method('isEmpty')->willReturn(FALSE);
 
     $entity->method('hasField')->willReturn(TRUE);
     $entity->method('get')->willReturn($field_list);
@@ -194,10 +227,13 @@ class ContentExtractorServiceTest extends UnitTestCase {
     $entity = $this->createMock(ContentEntityInterface::class);
 
     $field_item = $this->createMock(FieldItemInterface::class);
-    $field_item->value = '<p>HTML <strong>content</strong> here</p>';
+    $field_item->method('getValue')->willReturn([
+      'value' => '<p>HTML <strong>content</strong> here</p>',
+    ]);
 
     $field_list = $this->createMock(FieldItemListInterface::class);
     $field_list->method('first')->willReturn($field_item);
+    $field_list->method('isEmpty')->willReturn(FALSE);
 
     $entity->method('hasField')->willReturn(TRUE);
     $entity->method('get')->willReturn($field_list);
