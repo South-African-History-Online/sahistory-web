@@ -556,8 +556,26 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
           break;
       }
 
-      // Apply range after all conditions.
-      $query->range(0, $entity_count);
+      // Apply sorting to query BEFORE limiting results.
+      // This ensures we get the TOP N sorted items, not just sort
+      // whatever N items happen to be fetched first.
+      if (!empty($this->configuration['sort_by']) && $this->configuration['sort_by'] !== 'none') {
+        // For 'random' sorting, we need to fetch more results and shuffle
+        // after loading (can't be done at query level).
+        if ($this->configuration['sort_by'] === 'random') {
+          // Fetch more results for better randomization.
+          $query->range(0, min($entity_count * 10, 50));
+        }
+        else {
+          // Apply sorting at query level for all other sort options.
+          $query = $this->sortingService->applySorting($query, $this->configuration['sort_by']);
+        }
+      }
+
+      // Apply range after sorting (unless random, which needs more results).
+      if (empty($this->configuration['sort_by']) || $this->configuration['sort_by'] !== 'random') {
+        $query->range(0, $entity_count);
+      }
 
       // Execute the query.
       $nids = $query->execute();
@@ -566,9 +584,11 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
         // Load all selected biographies.
         $nodes = $this->entityTypeManager->getStorage('node')->loadMultiple($nids);
 
-        // Apply sorting if specified (after loading entities).
-        if (!empty($this->configuration['sort_by']) && $this->configuration['sort_by'] !== 'none') {
-          $nodes = $this->sortingService->sortLoadedEntities($nodes, $this->configuration['sort_by']);
+        // Apply post-load sorting only for 'random' (shuffle).
+        if (!empty($this->configuration['sort_by']) && $this->configuration['sort_by'] === 'random') {
+          $nodes = $this->sortingService->sortLoadedEntities($nodes, 'random');
+          // Limit to requested count after shuffling.
+          $nodes = array_slice($nodes, 0, $entity_count, TRUE);
         }
       }
     }

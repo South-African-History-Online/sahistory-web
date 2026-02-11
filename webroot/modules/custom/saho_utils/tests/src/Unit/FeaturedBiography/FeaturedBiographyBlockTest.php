@@ -190,6 +190,7 @@ class FeaturedBiographyBlockTest extends UnitTestCase {
     $query->method('condition')->willReturnSelf();
     $query->method('accessCheck')->willReturnSelf();
     $query->method('range')->willReturnSelf();
+    $query->method('sort')->willReturnSelf();
     $query->method('execute')->willReturn([1, 2, 3]);
 
     // Create mock nodes.
@@ -257,6 +258,7 @@ class FeaturedBiographyBlockTest extends UnitTestCase {
     $query->method('condition')->willReturnSelf();
     $query->method('accessCheck')->willReturnSelf();
     $query->method('range')->willReturnSelf();
+    $query->method('sort')->willReturnSelf();
     $query->method('execute')->willReturn([1, 2, 3]);
 
     // Create mock nodes.
@@ -274,11 +276,15 @@ class FeaturedBiographyBlockTest extends UnitTestCase {
       1 => $nodes[1],
     ];
 
-    // Sorting service SHOULD be called when sort_by is 'latest'.
+    // Sorting service applySorting() SHOULD be called on query when sort_by is 'latest'.
     $this->sortingService->expects($this->once())
-      ->method('sortLoadedEntities')
-      ->with($nodes, 'latest')
-      ->willReturn($sorted_nodes);
+      ->method('applySorting')
+      ->with($query, 'latest')
+      ->willReturn($query);
+
+    // sortLoadedEntities() should NOT be called (only used for 'random').
+    $this->sortingService->expects($this->never())
+      ->method('sortLoadedEntities');
 
     // Mock entity item builder.
     $this->entityItemBuilder->method('buildItemWithImage')->willReturn([
@@ -334,7 +340,9 @@ class FeaturedBiographyBlockTest extends UnitTestCase {
     $query->method('condition')->willReturnSelf();
     $query->method('accessCheck')->willReturnSelf();
     $query->method('range')->willReturnSelf();
-    $query->method('execute')->willReturn([1, 2, 3]);
+    $query->method('sort')->willReturnSelf();
+    // Query returns NIDs in sorted order (Alice=2, Bob=3, Charlie=1).
+    $query->method('execute')->willReturn([2, 3, 1]);
 
     // Create mock nodes with labels.
     $node1 = $this->createMock(NodeInterface::class);
@@ -349,17 +357,19 @@ class FeaturedBiographyBlockTest extends UnitTestCase {
     $node3->method('label')->willReturn('Bob');
     $node3->method('id')->willReturn(3);
 
-    $nodes = [1 => $node1, 2 => $node2, 3 => $node3];
-    $node_storage->method('loadMultiple')->with([1, 2, 3])->willReturn($nodes);
+    // Nodes are loaded in sorted order because query returns them sorted.
+    $nodes = [2 => $node2, 3 => $node3, 1 => $node1];
+    $node_storage->method('loadMultiple')->with([2, 3, 1])->willReturn($nodes);
 
-    // Sorted alphabetically: Alice, Bob, Charlie.
-    $sorted_nodes = [2 => $node2, 3 => $node3, 1 => $node1];
-
-    // Sorting service returns sorted array.
+    // Sorting service applySorting() is called on query.
     $this->sortingService->expects($this->once())
-      ->method('sortLoadedEntities')
-      ->with($nodes, 'title_asc')
-      ->willReturn($sorted_nodes);
+      ->method('applySorting')
+      ->with($query, 'title_asc')
+      ->willReturn($query);
+
+    // sortLoadedEntities() should NOT be called (only for 'random').
+    $this->sortingService->expects($this->never())
+      ->method('sortLoadedEntities');
 
     // Mock entity item builder to return items with IDs.
     $this->entityItemBuilder->method('buildItemWithImage')
@@ -510,11 +520,15 @@ class FeaturedBiographyBlockTest extends UnitTestCase {
     $nodes = [1 => $node];
     $node_storage->method('loadMultiple')->with([1])->willReturn($nodes);
 
-    // Sorting IS called even for single item (returns same array).
+    // Sorting IS called even for single item at query level.
     $this->sortingService->expects($this->once())
-      ->method('sortLoadedEntities')
-      ->with($nodes, 'latest')
-      ->willReturn($nodes);
+      ->method('applySorting')
+      ->with($query, 'latest')
+      ->willReturn($query);
+
+    // sortLoadedEntities() should NOT be called (only for 'random').
+    $this->sortingService->expects($this->never())
+      ->method('sortLoadedEntities');
 
     // Mock entity item builder.
     $this->entityItemBuilder->method('buildItemWithImage')->willReturn([
