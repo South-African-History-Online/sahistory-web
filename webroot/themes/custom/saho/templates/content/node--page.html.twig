@@ -1,78 +1,89 @@
 {#
 /**
  * @file
- * Custom SAHO page template.
+ * Custom SAHO page template - matches article/event layout.
  *
- * Displays a simple page with image aligned right within the content
- * in a modern, clean layout.
+ * Uses the same two-column grid structure as other content types
+ * for consistency across the site.
  */
 #}
 
-<article{{ attributes.addClass('saho-page-wrapper') }}>
-  <div class="saho-page-container">
-    
-    {# Page metadata and tools #}
-    <div class="saho-page-meta">
-      {% if node.getCreatedTime() %}
-        <span class="saho-page-date">Published {{ node.getCreatedTime()|date("j F Y") }}</span>
-      {% endif %}
-      {% if node.getChangedTime() != node.getCreatedTime() %}
-        <span class="saho-page-date">Updated {{ node.getChangedTime()|date("j F Y") }}</span>
-      {% endif %}
-      
-      {# Tools (citation and sharing) #}
-      <div class="saho-tools-wrapper">
-        {% if citation_button %}
-          <div class="saho-citation-wrapper">
-            {{ citation_button }}
-          </div>
+{# Variable to track if sidebar has content #}
+{% set sidebar_has_content = false %}
+
+<article{{ attributes.addClass('saho-article-wrapper') }}>
+
+  <div class="saho-article-grid">
+
+    {# LEFT: Main content column #}
+    <div class="saho-main-content">
+
+      {# Article metadata (Published/Updated dates) #}
+      <div class="saho-article-meta">
+        {% if node.getCreatedTime() %}
+          <span>Published {{ node.getCreatedTime()|date("j F Y") }}</span>
         {% endif %}
-        
-        {% if sharing_button %}
-          <div class="saho-sharing-wrapper">
-            {{ sharing_button }}
-          </div>
+        {% if node.getChangedTime() != node.getCreatedTime() %}
+          <span>Updated {{ node.getChangedTime()|date("j F Y") }}</span>
+        {% endif %}
+        <div class="saho-tools-wrapper">
+          {% if citation_button %}
+            <div class="saho-citation-wrapper">
+              {{ citation_button }}
+            </div>
+          {% endif %}
+          {% if sharing_button %}
+            <div class="saho-sharing-wrapper">
+              {{ sharing_button }}
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+      {# Main content #}
+      <div class="saho-article-body">
+        {% if content.body %}
+          {# Remove the label by accessing the content directly #}
+          {{ content.body.0 }}
         {% endif %}
       </div>
+
+      {# Comments if available #}
+      {% if content.comment_node_page %}
+        <div class="saho-comments-section">
+          <h3>Comments</h3>
+          {{ content.comment_node_page }}
+        </div>
+      {% endif %}
+
+      {# Render remaining fields not already shown manually #}
+      {{ content|without(
+        'body',
+        'field_image',
+        'comment_node_page',
+        'sharing_buttons'
+      ) }}
+
     </div>
-    
-    {# Main content with image aligned right #}
-    <div class="saho-page-body">
-      {% if content.field_image|render|trim %}
-        <div class="saho-page-image-container">
+
+    {# RIGHT: Sidebar - check if there's an image #}
+    {% if content.field_image is defined and content.field_image|render|trim %}
+      {% set sidebar_has_content = true %}
+    {% endif %}
+
+    {% if sidebar_has_content %}
+    <aside class="saho-article-sidebar">
+
+      {# Display image if available #}
+      {% if content.field_image %}
+        <div class="saho-image-block mb-4">
           {{ content.field_image }}
         </div>
       {% endif %}
-      
-      {% if content.body %}
-        {{ content.body }}
-      {% endif %}
-    </div>
-    
-    {# Links if available #}
-    {% if content.links %}
-      <div class="saho-page-links">
-        {{ content.links }}
-      </div>
-    {% endif %}
-    
-    {# Comments if available #}
-    {% if content.comment_node_page %}
-      <div class="saho-page-comments">
-        <h3>Comments</h3>
-        {{ content.comment_node_page }}
-      </div>
-    {% endif %}
-    
-    {# Render any remaining fields not explicitly handled above #}
-    {{ content|without(
-      'field_image',
-      'body',
-      'links',
-      'comment_node_page',
-      'sharing_buttons'
-    ) }}
-  </div>
-</article>
 
-{# Page-specific styles now in src/scss/content/_page-node.scss #}
+    </aside>
+    {% endif %}
+
+  </div>
+
+</article>

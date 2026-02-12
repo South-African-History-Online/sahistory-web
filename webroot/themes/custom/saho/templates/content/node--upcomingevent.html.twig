@@ -20,14 +20,8 @@
 
       {# No feature banner or images in main content for upcoming events - images go to sidebar #}
 
-      {# Article metadata (Published/Updated dates) #}
+      {# Tools only (no published/updated dates for events - those are shown in event details box) #}
       <div class="saho-article-meta">
-        {% if node.getCreatedTime() %}
-          <span>Published {{ node.getCreatedTime()|date("j F Y") }}</span>
-        {% endif %}
-        {% if node.getChangedTime() != node.getCreatedTime() %}
-          <span>Updated {{ node.getChangedTime()|date("j F Y") }}</span>
-        {% endif %}
         <div class="saho-tools-wrapper">
           {% if citation_button %}
             <div class="saho-citation-wrapper">
@@ -77,9 +71,15 @@
                 {% if is_multiday %}
                   <strong>Event Dates:</strong>
                   <span>{{ formatted_start_date }} – {{ formatted_end_date }}</span>
+                  {% if event_times %}
+                    <br><span class="saho-event-times">Daily: {{ event_times }}</span>
+                  {% endif %}
                 {% else %}
                   <strong>Date:</strong>
                   <span>{{ formatted_start_date }}</span>
+                  {% if event_times %}
+                    <br><span class="saho-event-times">Time: {{ event_times }}</span>
+                  {% endif %}
                 {% endif %}
               </div>
             </div>
@@ -153,16 +153,12 @@
       {# Display upcoming event image if available #}
       {% if node.field_upcomingevent_image.entity %}
         <div class="saho-image-block mb-4">
-          {% set image_url = node.field_upcomingevent_image.entity.uri.value %}
-          {% if image_url %}
-            {% set styled_image_url = image_url|image_style('upcoming_events_front') %}
-            <img
-              src="{{ styled_image_url }}"
-              alt="{{ node.field_upcomingevent_image.alt }}"
-              class="saho-image"
-              loading="lazy"
-            >
-          {% endif %}
+          <img
+            src="{{ file_url(node.field_upcomingevent_image.entity.uri.value) }}"
+            alt="{{ node.field_upcomingevent_image.alt|default(node.getTitle()) }}"
+            class="saho-image"
+            loading="lazy"
+          >
         </div>
       {% endif %}
 

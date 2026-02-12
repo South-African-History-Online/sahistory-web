@@ -1,0 +1,114 @@
+'$schema': https://git.drupalcode.org/project/drupal/-/raw/11.0.x/core/modules/sdc/src/metadata.schema.json
+
+name: SAHO Upcoming Events Card
+machine_name: saho_upcoming_events_card
+description: 'Specialized card for upcoming events with status badges, countdown, and date/venue display'
+status: stable
+group: Content
+category: Events
+
+props:
+  type: object
+  properties:
+    title:
+      type: string
+      title: Event Title
+      description: Name of the event
+
+    url:
+      type: string
+      format: uri
+      title: Event URL
+      description: Link to full event page
+
+    image:
+      type: object
+      title: Event Image
+      properties:
+        url:
+          type: string
+          format: uri
+        alt:
+          type: string
+
+    event_status:
+      type: string
+      title: Event Status
+      enum:
+        - in-progress
+        - upcoming
+        - past
+      default: upcoming
+
+    event_status_label:
+      type: string
+      title: Status Label
+      description: Display label (e.g., "Happening Now", "Today", "In 3 days")
+
+    event_badge_variant:
+      type: string
+      title: Badge Color Variant
+      enum:
+        - heritage-red
+        - primary
+        - secondary
+      default: primary
+
+    show_pulse:
+      type: boolean
+      title: Show Pulse Animation
+      description: Animated pulse for "Happening Now" events
+      default: false
+
+    countdown:
+      type: string
+      title: Countdown Text
+      description: Optional countdown display
+
+    start_date:
+      type: string
+      title: Start Date
+      description: Formatted start date
+
+    end_date:
+      type: string
+      title: End Date
+      description: Formatted end date (optional)
+
+    venue:
+      type: string
+      title: Venue
+      description: Event location
+
+    body_excerpt:
+      type: string
+      title: Body Excerpt
+      description: Brief description
+
+    card_format:
+      type: string
+      title: Card Format
+      enum:
+        - portrait    # Tall format for inline block (400px height)
+        - standard    # 16:9 aspect ratio for page views
+      default: standard
+
+    attributes:
+      type: Drupal\Core\Template\Attribute
+      title: HTML Attributes
+      description: Additional HTML attributes for the card element
+
+  required:
+    - title
+    - url
+
+slots:
+  status_badge:
+    title: Status Badge Slot
+    description: For saho-badge component
+  countdown_badge:
+    title: Countdown Badge Slot
+    description: For countdown display
+
+libraryDependencies:
+  - saho/saho-upcoming-events-card

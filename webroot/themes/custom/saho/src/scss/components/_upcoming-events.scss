@@ -656,6 +656,18 @@ body .view-all-upcoming-events .views-row {
 // Uses standard .block-section styling from base/_block-section.scss
 // This provides the white background, border, left accent bar, and hover effect
 
+// Ensure block title matches Educational Resources and other block sections
+// Override any Layout Builder or module-added classes
+.block--inline-block--upcoming-events,
+.upcoming-events-header {
+  .block-section-header .block-title-wrapper h2,
+  h2 {
+    font-size: 1.5rem !important;
+    font-weight: 600 !important;
+    line-height: 1.3 !important;
+  }
+}
+
 .upcoming-events-grid-wrapper {
     // 3-column grid for portrait cards
     display: grid;
@@ -973,6 +985,24 @@ body .view-all-upcoming-events .views-row {
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
     transform: translateY(-4px);
   }
+
+  // Card title link styling
+  .card-title a {
+    color: #1e293b;
+    transition: color 0.3s ease;
+
+    &:hover {
+      color: #990000; // Heritage red on hover
+    }
+  }
+
+  // Fix: Prevent red-on-red for "Happening Now" badges
+  &.event-card--in-progress {
+    .card-title a:hover {
+      color: #1e293b; // Keep dark text on hover for in-progress events
+      text-decoration: underline;
+    }
+  }
 }
 
 .event-card__image-wrapper {
@@ -1010,10 +1040,44 @@ body .view-all-upcoming-events .views-row {
   }
 }
 
-.event-card__badge {
+// Status badge wrapper - positioned over image (top-left)
+.saho-upcoming-events-card__status-badge {
   position: absolute;
   top: 12px;
   left: 12px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+// Countdown badge - positioned over image (top-right)
+.saho-upcoming-events-card__countdown {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 10;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 6px 12px;
+  border-radius: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #2c3e50;
+  backdrop-filter: blur(10px);
+
+  .saho-upcoming-events-card__icon {
+    width: 14px;
+    height: 14px;
+    color: #990000;
+  }
+}
+
+.event-card__badge {
+  position: relative; // Changed from absolute - parent wrapper handles positioning
   padding: 6px 12px;
   border-radius: 20px;
   font-size: 0.75rem;
@@ -1025,6 +1089,26 @@ body .view-all-upcoming-events .views-row {
   align-items: center;
   gap: 6px;
   z-index: 2;
+  color: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+
+  // Happening Now - Red
+  &--in-progress {
+    background: rgba(153, 0, 0, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  // Upcoming - Blue
+  &--upcoming {
+    background: rgba(59, 130, 246, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  // Past Event - Gray
+  &--past {
+    background: rgba(107, 114, 128, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+  }
 
   &--in-progress {
     background: rgba(153, 0, 0, 0.95);
@@ -1305,14 +1389,17 @@ body .view-all-upcoming-events .views-row {
     }
 
     .events-count {
-      display: inline-block;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       background: #990000;
       color: white;
-      padding: 4px 12px;
+      padding: 6px 12px;
       border-radius: 12px;
       font-size: 0.875rem;
       font-weight: 600;
-      margin-left: 1rem;
+      line-height: 1;
+      min-height: 28px;
     }
   }
 
@@ -1330,6 +1417,95 @@ body .view-all-upcoming-events .views-row {
 
     .saho-events-grid {
       grid-template-columns: 1fr;
+    }
+  }
+}
+
+// Full node page event status section
+.saho-event-status-wrapper {
+  margin-bottom: 2rem;
+  position: relative;
+  display: inline-block;
+
+  // Fix: Prevent red-on-red hover for "Happening Now" badges
+  // The saho-badge component with heritage-red variant
+  .saho-badge--heritage-red {
+    a, button {
+      color: white;
+
+      &:hover {
+        color: white !important; // Keep white text on hover for red badges
+        text-decoration: underline;
+      }
+    }
+  }
+
+  // Position pulse dot inside the badge
+  .badge-pulse {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #fff;
+    animation: pulse 2s ease-in-out infinite;
+    z-index: 1;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: translateY(-50%) scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: translateY(-50%) scale(1.2);
+  }
+}
+
+// Event info section styling
+.saho-event-info-section {
+  margin-bottom: 2rem;
+
+  .saho-event-details-box {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-top: 1rem;
+  }
+
+  .saho-event-detail-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1rem;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  .saho-event-icon {
+    flex-shrink: 0;
+    color: #990000;
+    margin-top: 2px;
+  }
+
+  .saho-event-detail-content {
+    flex: 1;
+
+    strong {
+      display: block;
+      margin-bottom: 0.25rem;
+      color: #1e293b;
+    }
+
+    span {
+      color: #475569;
     }
   }
 }
