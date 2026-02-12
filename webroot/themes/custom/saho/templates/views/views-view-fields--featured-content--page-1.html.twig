@@ -43,7 +43,18 @@
 {% endif %}
 
 {# Check for images - content-type-specific fields first, then generic #}
+{# DEBUG: Check what fields are available for archives #}
 {% set image_url = '' %}
+{% set debug_fields = [] %}
+{% if content_type == 'archive' %}
+  {% for field_name, field_value in fields %}
+    {% if 'image' in field_name|lower %}
+      {% set debug_fields = debug_fields|merge([field_name]) %}
+    {% endif %}
+  {% endfor %}
+  {# Uncomment to debug: {{ dump(debug_fields) }} #}
+{% endif %}
+
 {% if fields.field_article_image is defined and fields.field_article_image.content %}
   {% set image_url = 'has_image' %}
 {% elseif fields.field_bio_pic is defined and fields.field_bio_pic.content %}
