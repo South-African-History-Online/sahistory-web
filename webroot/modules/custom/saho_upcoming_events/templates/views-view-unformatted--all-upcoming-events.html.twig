@@ -30,14 +30,20 @@
         {# Start Date #}
         {% if node.field_start_date.value %}
           <div class="event-card__date">
-            📅 {{ node.field_start_date.value|date('j F Y') }}
+            <svg class="icon-calendar" width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+              <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/>
+            </svg>
+            <span>{{ node.field_start_date.value|date('j F Y') }}</span>
           </div>
         {% endif %}
 
         {# Venue #}
         {% if node.field_upcoming_venue.value %}
           <div class="event-card__venue">
-            📍 {{ node.field_upcoming_venue.value|striptags }}
+            <svg class="icon-location" width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+              <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/>
+            </svg>
+            <span>{{ node.field_upcoming_venue.value|striptags }}</span>
           </div>
         {% endif %}
       </div>
@@ -52,10 +58,12 @@
 
       {# Call to Action Button #}
       <div class="event-card__action">
-        <a href="{{ node.toUrl().toString() }}" class="event-card__button">
-          Learn More
-          <span class="event-card__button-arrow">→</span>
-        </a>
+        {% include 'saho:saho-button' with {
+          text: 'Learn More'|t,
+          url: node.toUrl().toString(),
+          size: 'small',
+          icon: 'arrow-right'
+        } %}
       </div>
     </div>
 
