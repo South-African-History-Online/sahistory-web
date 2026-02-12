@@ -16,11 +16,11 @@ use Drupal\file\Entity\File;
  */
 function saho_page_attachments_alter(array &$page) {
   // Removed Google Fonts preconnect - using self-hosted fonts instead
-  
+
   // Critical CSS is now handled by the Critical CSS contrib module
   // See: /admin/config/development/performance/critical-css
   // Critical CSS files are located in: themes/custom/saho/critical-css/
-  
+
   // Manually load AOS library to fix dependency issues
   $page['#attached']['html_head'][] = [
     [
@@ -33,6 +33,42 @@ function saho_page_attachments_alter(array &$page) {
     ],
     'aos_library_manual',
   ];
+
+  // Add Organization Schema.org JSON-LD for site-wide recognition.
+  // Only for anonymous users (not admin/editors).
+  if (!\Drupal::currentUser()->isAuthenticated()) {
+    $organization_schema = [
+      '@context' => 'https://schema.org',
+      '@type' => 'EducationalOrganization',
+      'name' => 'South African History Online',
+      'alternateName' => 'SAHO',
+      'url' => 'https://sahistory.org.za',
+      'logo' => 'https://sahistory.org.za/themes/custom/saho/logo.svg',
+      'description' => 'Towards a People\'s History of South Africa',
+      'foundingDate' => '2000',
+      'sameAs' => [
+        'https://www.facebook.com/sahistoryonline',
+        'https://twitter.com/sahistoryonline',
+      ],
+      'contactPoint' => [
+        '@type' => 'ContactPoint',
+        'contactType' => 'General Inquiries',
+        'url' => 'https://sahistory.org.za/contact',
+      ],
+    ];
+
+    $page['#attached']['html_head'][] = [
+      [
+        '#type' => 'html_tag',
+        '#tag' => 'script',
+        '#attributes' => [
+          'type' => 'application/ld+json',
+        ],
+        '#value' => json_encode($organization_schema, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT),
+      ],
+      'saho_organization_schema',
+    ];
+  }
 }
 
 /**
@@ -279,8 +315,31 @@ function saho_preprocess_node(array &$variables) {
  $logo = \Drupal::theme()->getActiveTheme()->getLogo();
  $variables['site_logo'] = $logo;
 
- // Pre-render responsive images for article templates
+ // Embed Schema.org JSON-LD in full node view for SEO and rich snippets.
  $node = $variables['node'];
+ if ($variables['view_mode'] === 'full') {
+   try {
+     $schema_service = \Drupal::service('saho_tools.schema_org');
+     if ($schema_service) {
+       $schema_data = $schema_service->generateSchemaForNode($node);
+
+       if ($schema_data) {
+         $variables['schema_json'] = json_encode(
+           $schema_data,
+           JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT
+         );
+       }
+     }
+   }
+   catch (\Exception $e) {
+     \Drupal::logger('saho')->error('Schema.org generation failed for node @nid: @message', [
+       '@nid' => $node->id(),
+       '@message' => $e->getMessage(),
+     ]);
+   }
+ }
+
+ // Pre-render responsive images for article templates
 
  // For articles: pre-render hero images
  if ($node->bundle() == 'article') {
