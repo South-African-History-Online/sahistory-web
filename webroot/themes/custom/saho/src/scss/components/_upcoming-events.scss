@@ -655,20 +655,34 @@ body .view-all-upcoming-events .views-row {
 // -----------------------------------------------------------------------------
 .upcoming-events-inline-block {
   margin: 2rem 0;
-  
-  .upcoming-events-block-title {
+  padding: 2rem 0;
+
+  .block-title {
     text-align: center;
     font-size: 2.5rem;
     font-weight: 800;
-    color: #B22222;
+    color: #990000;
     margin-bottom: 2rem;
     letter-spacing: -0.025em;
-    
+    font-family: $headings-font-family;
+    position: relative;
+
+    // Decorative underline
+    &::after {
+      content: '';
+      display: block;
+      width: 80px;
+      height: 4px;
+      background: #990000;
+      margin: 1rem auto 0;
+      border-radius: 2px;
+    }
+
     @media (max-width: 768px) {
       font-size: 2rem;
     }
   }
-  
+
   .upcoming-events-block-content {
     // 3-column grid for portrait cards
     display: grid;
@@ -1289,6 +1303,61 @@ body .view-all-upcoming-events .views-row {
     .saho-event-icon {
       width: 18px;
       height: 18px;
+    }
+  }
+}
+
+// ============================================================
+// ALL UPCOMING EVENTS PAGE - SECTION SPACING
+// ============================================================
+
+.all-upcoming-events-page {
+  .events-section {
+    margin-bottom: 3rem;
+
+    &--past {
+      margin-top: 5rem; // Extra space before Past Events section
+      padding-top: 3rem;
+      border-top: 2px solid #e2e8f0;
+    }
+  }
+
+  .events-section-header {
+    margin-bottom: 2rem;
+
+    .events-section-title {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #1a202c;
+      margin-bottom: 0.5rem;
+    }
+
+    .events-count {
+      display: inline-block;
+      background: #990000;
+      color: white;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      margin-left: 1rem;
+    }
+  }
+
+  .saho-events-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 2rem;
+  }
+
+  @media (max-width: 768px) {
+    .events-section--past {
+      margin-top: 3rem;
+      padding-top: 2rem;
+    }
+
+    .saho-events-grid {
+      grid-template-columns: 1fr;
     }
   }
 }
