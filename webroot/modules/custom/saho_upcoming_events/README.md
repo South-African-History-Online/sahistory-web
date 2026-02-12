@@ -63,6 +63,39 @@ This module provides a configurable block for displaying upcoming events on the 
 ### Cache Tags
 The block automatically includes cache tags for `node_list:upcomingevent` with a 1-hour cache lifetime.
 
+## Event Display Logic
+
+### Date Handling
+All date comparisons use Africa/Johannesburg (SAST) timezone for consistency with local event times.
+
+### Event Categories
+The block categorizes events into three types:
+
+- **Happening Now**: Events where `start_date <= today AND end_date >= today`
+  - These events are sorted first in all displays
+  - Shows "Happening Now" badge in the block template
+  - Includes multi-day events that started in the past but haven't ended yet
+
+- **Upcoming**: Events where `start_date > today`
+  - Shows countdown indicators ("Today", "Tomorrow", "In X days")
+  - Sorted by start date after "happening now" events
+
+- **Past**: Events where `end_date < today`
+  - Only shown in the "All Events" page (collapsed by default)
+  - Not included in the block display
+
+### Single-Day Events
+If `field_end_date` is empty, the event is treated as a single-day event using `field_start_date` as both the start and effective end date.
+
+### Block Query Strategy
+The block uses a two-phase approach to handle "happening now" events correctly:
+
+1. **Database Query**: Retrieves all published events sorted by start date (no date filtering at query level)
+2. **PHP Filtering**: Filters events to include only those where `effective_end_date >= today`
+3. **Sorting**: Orders results with "happening now" events first, then upcoming events by start date
+
+This strategy ensures that multi-day events (e.g., conferences that started yesterday but end tomorrow) appear correctly in the block as "happening now" rather than being excluded by a `start_date >= today` filter.
+
 ## Styling
 
 The module includes comprehensive CSS styling that matches the SAHO brand colors and design patterns. The styling is responsive and includes hover effects for better user interaction.

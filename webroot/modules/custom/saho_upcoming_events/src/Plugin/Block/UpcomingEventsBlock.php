@@ -6,7 +6,6 @@ use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Drupal\datetime\Plugin\Field\FieldType\DateTimeItemInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -198,17 +197,18 @@ class UpcomingEventsBlock extends BlockBase implements ContainerFactoryPluginInt
    */
   private function getUpcomingEvents($limit = 4) {
     $storage = $this->entityTypeManager->getStorage('node');
-    // Use start of today to include events happening today.
-    $today = new \DateTime('today', new \DateTimeZone('UTC'));
-    $current_date = $today->format(DateTimeItemInterface::DATETIME_STORAGE_FORMAT);
+    // Use SAST timezone for consistency.
+    $today = new \DateTime('today', new \DateTimeZone('Africa/Johannesburg'));
 
+    // Query more events than needed to account for filtering.
+    // Sort DESC to get newest events first, then filter in PHP.
     $query = $storage->getQuery()
       ->accessCheck(TRUE)
       ->condition('type', 'upcomingevent')
       ->condition('status', 1)
-      ->condition('field_start_date', $current_date, '>=')
-      ->sort('field_start_date', 'ASC')
-      ->range(0, $limit);
+      ->exists('field_start_date')
+      ->sort('field_start_date', 'DESC')
+      ->range(0, $limit * 3);
 
     $nids = $query->execute();
 
@@ -216,7 +216,93 @@ class UpcomingEventsBlock extends BlockBase implements ContainerFactoryPluginInt
       return [];
     }
 
-    return $storage->loadMultiple($nids);
+    $nodes = $storage->loadMultiple($nids);
+
+    // Filter in PHP to include "happening now" events.
+    $upcoming_events = [];
+    foreach ($nodes as $node) {
+      if (!$node->hasField('field_start_date') || $node->get('field_start_date')->isEmpty()) {
+        continue;
+      }
+
+      // Calculate effective end date.
+      $effective_end_date = $this->getEffectiveEndDate($node);
+      $effective_end_date_only = new \DateTime($effective_end_date->format('Y-m-d'), new \DateTimeZone('Africa/Johannesburg'));
+
+      // Include if event hasn't ended yet.
+      if ($effective_end_date_only >= $today) {
+        // @phpstan-ignore-next-line
+        $start_date = $node->get('field_start_date')->date;
+        $upcoming_events[] = [
+          'node' => $node,
+          'start_timestamp' => $start_date->getTimestamp(),
+          'is_happening_now' => $this->isHappeningNow($node, $today),
+        ];
+      }
+
+      if (count($upcoming_events) >= $limit) {
+        break;
+      }
+    }
+
+    // Sort: "happening now" first, then by start date.
+    usort($upcoming_events, function ($a, $b) {
+      if ($a['is_happening_now'] && !$b['is_happening_now']) {
+        return -1;
+      }
+      if (!$a['is_happening_now'] && $b['is_happening_now']) {
+        return 1;
+      }
+      return $a['start_timestamp'] <=> $b['start_timestamp'];
+    });
+
+    return array_column($upcoming_events, 'node');
+  }
+
+  /**
+   * Get the effective end date for an event.
+   *
+   * @param \Drupal\node\NodeInterface $node
+   *   The event node.
+   *
+   * @return \Drupal\Core\Datetime\DrupalDateTime
+   *   The effective end date (end_date if set, otherwise start_date).
+   */
+  private function getEffectiveEndDate($node) {
+    // @phpstan-ignore-next-line
+    $start_date = $node->get('field_start_date')->date;
+    $end_date = NULL;
+    if ($node->hasField('field_end_date') && !$node->get('field_end_date')->isEmpty()) {
+      // @phpstan-ignore-next-line
+      $end_date = $node->get('field_end_date')->date;
+    }
+
+    $effective_end_date = $end_date ?? $start_date;
+    $effective_end_date->setTimezone(new \DateTimeZone('Africa/Johannesburg'));
+    return $effective_end_date;
+  }
+
+  /**
+   * Check if an event is happening now.
+   *
+   * @param \Drupal\node\NodeInterface $node
+   *   The event node.
+   * @param \DateTime $current_date
+   *   The current date to compare against.
+   *
+   * @return bool
+   *   TRUE if the event is happening now.
+   */
+  private function isHappeningNow($node, $current_date) {
+    // @phpstan-ignore-next-line
+    $start_date = $node->get('field_start_date')->date;
+    $start_date->setTimezone(new \DateTimeZone('Africa/Johannesburg'));
+    $start_date_only = new \DateTime($start_date->format('Y-m-d'), new \DateTimeZone('Africa/Johannesburg'));
+
+    $effective_end_date = $this->getEffectiveEndDate($node);
+    $effective_end_date_only = new \DateTime($effective_end_date->format('Y-m-d'), new \DateTimeZone('Africa/Johannesburg'));
+
+    return ($start_date_only <= $current_date && $effective_end_date_only >= $current_date);
   }
 
 }
