@@ -42,31 +42,39 @@
   {% set content_type = row._entity.bundle() %}
 {% endif %}
 
-{# Check for images - content-type-specific fields first, then generic #}
-{# DEBUG: Check what fields are available for archives #}
+{# Check for images - use entity directly for archives to ensure field_archive_image is used #}
 {% set image_url = '' %}
-{% set debug_fields = [] %}
-{% if content_type == 'archive' %}
-  {% for field_name, field_value in fields %}
-    {% if 'image' in field_name|lower %}
-      {% set debug_fields = debug_fields|merge([field_name]) %}
-    {% endif %}
-  {% endfor %}
-  {# Uncomment to debug: {{ dump(debug_fields) }} #}
+{% set has_image_field = false %}
+
+{# For archives, check entity directly #}
+{% if content_type == 'archive' and row and row._entity %}
+  {% if row._entity.field_archive_image is defined and not row._entity.field_archive_image.isEmpty() %}
+    {% set has_image_field = 'field_archive_image' %}
+    {% set image_url = 'has_image' %}
+  {% endif %}
 {% endif %}
 
-{% if fields.field_article_image is defined and fields.field_article_image.content %}
-  {% set image_url = 'has_image' %}
-{% elseif fields.field_bio_pic is defined and fields.field_bio_pic.content %}
-  {% set image_url = 'has_image' %}
-{% elseif fields.field_place_image is defined and fields.field_place_image.content %}
-  {% set image_url = 'has_image' %}
-{% elseif fields.field_event_image is defined and fields.field_event_image.content %}
-  {% set image_url = 'has_image' %}
-{% elseif fields.field_archive_image is defined and fields.field_archive_image.content %}
-  {% set image_url = 'has_image' %}
-{% elseif fields.field_image is defined and fields.field_image.content %}
-  {% set image_url = 'has_image' %}
+{# For other content types, check fields as normal #}
+{% if not has_image_field %}
+  {% if fields.field_article_image is defined and fields.field_article_image.content %}
+    {% set image_url = 'has_image' %}
+    {% set has_image_field = 'field_article_image' %}
+  {% elseif fields.field_bio_pic is defined and fields.field_bio_pic.content %}
+    {% set image_url = 'has_image' %}
+    {% set has_image_field = 'field_bio_pic' %}
+  {% elseif fields.field_place_image is defined and fields.field_place_image.content %}
+    {% set image_url = 'has_image' %}
+    {% set has_image_field = 'field_place_image' %}
+  {% elseif fields.field_event_image is defined and fields.field_event_image.content %}
+    {% set image_url = 'has_image' %}
+    {% set has_image_field = 'field_event_image' %}
+  {% elseif fields.field_archive_image is defined and fields.field_archive_image.content %}
+    {% set image_url = 'has_image' %}
+    {% set has_image_field = 'field_archive_image' %}
+  {% elseif fields.field_image is defined and fields.field_image.content %}
+    {% set image_url = 'has_image' %}
+    {% set has_image_field = 'field_image' %}
+  {% endif %}
 {% endif %}
 
 {# Render using component pattern #}
@@ -74,7 +82,17 @@
   <a href="{{ entity_url }}" class="saho-card-link content-type-{{ content_type }}" aria-label="View featured content">
     <article class="saho-card saho-card--{{ content_type }} saho-card--primary saho-card--medium saho-card--type-{{ content_type|replace({'_': '-'}) }} card h-100">
       <div class="card-img-top-wrapper position-relative overflow-hidden saho-card__image">
-        {% if fields.field_article_image is defined and fields.field_article_image.content %}
+        {# For archives, render field_archive_image directly from entity #}
+        {% if content_type == 'archive' and row and row._entity and has_image_field == 'field_archive_image' %}
+          {{ row._entity.field_archive_image|view({
+            'type': 'image',
+            'settings': {
+              'image_style': 'large',
+              'image_link': ''
+            }
+          }) }}
+        {# For other content types, use fields as normal #}
+        {% elseif fields.field_article_image is defined and fields.field_article_image.content %}
           {{ fields.field_article_image.content }}
         {% elseif fields.field_bio_pic is defined and fields.field_bio_pic.content %}
           {{ fields.field_bio_pic.content }}
