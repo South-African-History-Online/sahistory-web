@@ -42,7 +42,7 @@
   {% set content_type = row._entity.bundle() %}
 {% endif %}
 
-{# Check for images #}
+{# Check for images - content-type-specific fields first, then generic #}
 {% set image_url = '' %}
 {% if fields.field_article_image is defined and fields.field_article_image.content %}
   {% set image_url = 'has_image' %}
@@ -52,9 +52,9 @@
   {% set image_url = 'has_image' %}
 {% elseif fields.field_event_image is defined and fields.field_event_image.content %}
   {% set image_url = 'has_image' %}
-{% elseif fields.field_image is defined and fields.field_image.content %}
-  {% set image_url = 'has_image' %}
 {% elseif fields.field_archive_image is defined and fields.field_archive_image.content %}
+  {% set image_url = 'has_image' %}
+{% elseif fields.field_image is defined and fields.field_image.content %}
   {% set image_url = 'has_image' %}
 {% endif %}
 
@@ -71,10 +71,10 @@
           {{ fields.field_place_image.content }}
         {% elseif fields.field_event_image is defined and fields.field_event_image.content %}
           {{ fields.field_event_image.content }}
-        {% elseif fields.field_image is defined and fields.field_image.content %}
-          {{ fields.field_image.content }}
         {% elseif fields.field_archive_image is defined and fields.field_archive_image.content %}
           {{ fields.field_archive_image.content }}
+        {% elseif fields.field_image is defined and fields.field_image.content %}
+          {{ fields.field_image.content }}
         {% endif %}
 
         <div class="position-absolute top-0 end-0 m-2">
