@@ -1,0 +1,126 @@
+{#
+/**
+ * @file
+ * Featured content card display using saho-card component.
+ *
+ * Available variables:
+ * - fields: Field objects for the current row
+ * - attributes: HTML attributes for the field container
+ * - row: Row data including _entity
+ */
+#}
+
+{# Extract URL from entity #}
+{% set entity_url = '#' %}
+{% if row and row._entity %}
+  {% set entity_url = path('entity.node.canonical', {'node': row._entity.id()}) %}
+{% elseif fields.title is defined %}
+  {% set content = fields.title.content %}
+  {% if content matches '/<a href="([^"]+)"/' %}
+    {% set matches = content|split('href="')|last|split('"') %}
+    {% if matches|length > 0 %}
+      {% set entity_url = matches[0] %}
+    {% endif %}
+  {% endif %}
+{% endif %}
+
+{# Extract title #}
+{% set title_text = '' %}
+{% if fields.title is defined %}
+  {% set title_text = fields.title.content|striptags|trim %}
+{% endif %}
+
+{# Get type for badge #}
+{% set type_text = 'Featured' %}
+{% if fields.type is defined %}
+  {% set type_text = fields.type.content|striptags|trim %}
+{% endif %}
+
+{# Get content type for styling #}
+{% set content_type = 'featured' %}
+{% if row and row._entity %}
+  {% set content_type = row._entity.bundle() %}
+{% endif %}
+
+{# Check for images in priority order #}
+{% set image_url = '' %}
+{% set has_image_field = false %}
+
+{# Check all image fields in priority order #}
+{% if fields.field_archive_image is defined and fields.field_archive_image.content %}
+  {% set image_url = 'has_image' %}
+  {% set has_image_field = 'field_archive_image' %}
+{% elseif fields.field_article_image is defined and fields.field_article_image.content %}
+  {% set image_url = 'has_image' %}
+  {% set has_image_field = 'field_article_image' %}
+{% elseif fields.field_bio_pic is defined and fields.field_bio_pic.content %}
+  {% set image_url = 'has_image' %}
+  {% set has_image_field = 'field_bio_pic' %}
+{% elseif fields.field_place_image is defined and fields.field_place_image.content %}
+  {% set image_url = 'has_image' %}
+  {% set has_image_field = 'field_place_image' %}
+{% elseif fields.field_event_image is defined and fields.field_event_image.content %}
+  {% set image_url = 'has_image' %}
+  {% set has_image_field = 'field_event_image' %}
+{% elseif fields.field_image is defined and fields.field_image.content %}
+  {% set image_url = 'has_image' %}
+  {% set has_image_field = 'field_image' %}
+{% endif %}
+
+{# Render using component pattern #}
+{% if image_url %}
+  <a href="{{ entity_url }}" class="saho-card-link content-type-{{ content_type }}" aria-label="View featured content">
+    <article class="saho-card saho-card--{{ content_type }} saho-card--primary saho-card--medium saho-card--type-{{ content_type|replace({'_': '-'}) }} card h-100">
+      <div class="card-img-top-wrapper position-relative overflow-hidden saho-card__image">
+        {# Render image field based on which was found #}
+        {% if has_image_field == 'field_archive_image' %}
+          {{ fields.field_archive_image.content }}
+        {% elseif has_image_field == 'field_article_image' %}
+          {{ fields.field_article_image.content }}
+        {% elseif has_image_field == 'field_bio_pic' %}
+          {{ fields.field_bio_pic.content }}
+        {% elseif has_image_field == 'field_place_image' %}
+          {{ fields.field_place_image.content }}
+        {% elseif has_image_field == 'field_event_image' %}
+          {{ fields.field_event_image.content }}
+        {% elseif has_image_field == 'field_image' %}
+          {{ fields.field_image.content }}
+        {% endif %}
+
+        <div class="position-absolute top-0 end-0 m-2">
+          <span class="badge saho-card__type-badge content-type-badge">{{ type_text }}</span>
+        </div>
+      </div>
+
+      <div class="card-body d-flex flex-column saho-card__body">
+        <h3 class="card-title saho-card__title">{{ title_text }}</h3>
+
+        {% if type_text %}
+          <div class="saho-card__meta text-muted small mb-2">{{ type_text }}</div>
+        {% endif %}
+
+        <div class="mt-auto saho-card__footer-section">
+          <div class="saho-card__action mb-2">
+            <span class="saho-card-button-wrapper" style="position: relative; z-index: 2;">
+              <span class="saho-button saho-button--card-action saho-button--small">
+                <span class="saho-button__text">Read More</span>
+                <svg class="saho-button__icon saho-button__icon--arrow-right" width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                  <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/>
+                </svg>
+              </span>
+            </span>
+          </div>
+        </div>
+      </div>
+    </article>
+  </a>
+{% else %}
+  {% include 'saho:saho-card' with {
+    title: title_text,
+    url: entity_url,
+    content_type: content_type,
+    button_text: 'Read More',
+    button_variant: 'card-action',
+    button_icon: 'arrow-right'
+  } %}
+{% endif %}
