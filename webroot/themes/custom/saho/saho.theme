@@ -560,17 +560,61 @@ function saho_preprocess_node__upcomingevent(&$variables) {
       $variables['countdown'] = $days_until;
     }
 
-    // Format dates for display.
-    $variables['formatted_start_date'] = $start_date->format('j F Y');
-    if ($end_date) {
-      $variables['formatted_end_date'] = $end_date->format('j F Y');
+    // Format dates for display with time.
+    // Handle different event types: single-day events, multi-day with daily hours, exhibitions, etc.
 
-      // If multi-day event, show date range.
-      if ($start_date->format('Y-m-d') != $end_date->format('Y-m-d')) {
-        $variables['is_multiday'] = TRUE;
+    if ($end_date && $start_date->format('Y-m-d') != $end_date->format('Y-m-d')) {
+      // Multi-day event
+      $variables['is_multiday'] = TRUE;
+
+      // Check if times are identical (likely daily operating hours)
+      $start_time = $start_date->format('H:i');
+      $end_time = $end_date->format('H:i');
+
+      if ($start_time === $end_time || ($start_time === '00:00' && $end_time === '00:00')) {
+        // Times are the same or both midnight - likely all-day or no specific times
+        $variables['formatted_start_date'] = $start_date->format('j F Y');
+        $variables['formatted_end_date'] = $end_date->format('j F Y');
+        $variables['event_times'] = NULL;
+      }
+      else {
+        // Different times - show as daily operating hours
+        // Format: "10 February - 20 March 2026"
+        $variables['formatted_start_date'] = $start_date->format('j F');
+        $variables['formatted_end_date'] = $end_date->format('j F Y');
+        // Store operating hours separately
+        $variables['event_times'] = $start_time . ' - ' . $end_time;
+      }
+    }
+    else {
+      // Single-day event or no end date
+      $variables['is_multiday'] = FALSE;
+      $variables['formatted_start_date'] = $start_date->format('j F Y');
+
+      if ($end_date) {
+        // Same day with specific time range
+        $start_time = $start_date->format('H:i');
+        $end_time = $end_date->format('H:i');
+
+        if ($start_time !== '00:00' || $end_time !== '00:00') {
+          $variables['event_times'] = $start_time . ' - ' . $end_time;
+        }
+        else {
+          $variables['event_times'] = NULL;
+        }
+      }
+      else {
+        // No end date - just show start time if not midnight
+        $start_time = $start_date->format('H:i');
+        $variables['event_times'] = ($start_time !== '00:00') ? $start_time : NULL;
       }
     }
   }
+
+  // Set card format based on view mode.
+  // Portrait format for inline blocks (home page), standard for page views.
+  $view_mode = $variables['view_mode'] ?? 'default';
+  $variables['view_mode_card_format'] = ($view_mode === 'teaser') ? 'portrait' : 'standard';
 }
 
 function saho_preprocess_page(array &$variables) {

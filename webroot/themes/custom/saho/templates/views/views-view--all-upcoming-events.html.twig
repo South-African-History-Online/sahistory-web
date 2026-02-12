@@ -18,6 +18,7 @@
  */
 #}
 {{ attach_library('saho_upcoming_events/upcoming_events') }}
+{{ attach_library('saho/events.count.animation') }}
 
 <div class="all-upcoming-events-page">
   {# Main Content #}
@@ -37,10 +38,10 @@
     {# Upcoming Events Section - Always Show #}
     <div class="events-section events-section--upcoming">
       <div class="events-section-header">
-        <div class="section-header-content">
-          <h2 class="events-section-title">Upcoming Events</h2>
+        <div class="section-header-content d-flex align-items-center gap-3">
+          <h2 class="events-section-title mb-0">Upcoming Events</h2>
           {% if has_upcoming %}
-            <span class="events-count">{{ upcoming_events|length }}</span>
+            <span class="events-count" data-count="{{ upcoming_events|length }}">0</span>
           {% endif %}
         </div>
       </div>
@@ -62,9 +63,9 @@
     {% if has_past %}
       <div class="events-section events-section--past">
         <div class="events-section-header">
-          <div class="section-header-content">
-            <h2 class="events-section-title">Past Events</h2>
-            <span class="events-count">{{ past_events|length }}</span>
+          <div class="section-header-content d-flex align-items-center gap-3">
+            <h2 class="events-section-title mb-0">Past Events</h2>
+            <span class="events-count" data-count="{{ past_events|length }}">0</span>
           </div>
         </div>
         <div class="saho-events-grid">

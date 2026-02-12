@@ -130,69 +130,8 @@ function saho_upcoming_events_preprocess_views_view(&$variables) {
 }
 
 /**
- * Implements hook_preprocess_HOOK() for node.
+ * Note: Badge logic (event_status, event_status_label, event_badge_variant,
+ * show_pulse, countdown) is handled by the theme preprocess function
+ * saho_preprocess_node__upcomingevent() in saho.theme.
+ * This ensures consistent badge rendering across all view modes.
  */
-function saho_upcoming_events_preprocess_node(&$variables) {
-  $node = $variables['node'];
-
-  // Add event status for upcoming events.
-  if ($node->getType() === 'upcomingevent' && $variables['view_mode'] === 'teaser') {
-    // Use start of today in SAST timezone for comparison.
-    $current_date = new \DateTime('today', new \DateTimeZone('Africa/Johannesburg'));
-
-    if ($node->hasField('field_start_date') && !$node->get('field_start_date')->isEmpty()) {
-      $start_date = $node->get('field_start_date')->date;
-
-      // Skip if start_date is null.
-      if (!$start_date) {
-        return;
-      }
-
-      $end_date = NULL;
-      if ($node->hasField('field_end_date') && !$node->get('field_end_date')->isEmpty()) {
-        $end_date = $node->get('field_end_date')->date;
-      }
-
-      // Convert dates to SAST timezone for date-only comparison.
-      $start_date->setTimezone(new \DateTimeZone('Africa/Johannesburg'));
-      $start_date_only = new \DateTime($start_date->format('Y-m-d'), new \DateTimeZone('Africa/Johannesburg'));
-
-      // Determine the effective end date for status calculation.
-      // If end_date exists, use it. Otherwise, use start_date.
-      $effective_end_date = $end_date ? $end_date : $start_date;
-      $effective_end_date->setTimezone(new \DateTimeZone('Africa/Johannesburg'));
-      $effective_end_date_only = new \DateTime($effective_end_date->format('Y-m-d'), new \DateTimeZone('Africa/Johannesburg'));
-
-      // Determine event status using date-only comparison.
-      if ($start_date_only > $current_date) {
-        // Event hasn't started yet.
-        $variables['event_status'] = 'upcoming';
-        $variables['event_status_label'] = t('Upcoming');
-
-        // Calculate days until event.
-        $interval = $current_date->diff($start_date_only);
-        $days = $interval->days;
-
-        if ($days === 0) {
-          $variables['countdown'] = t('Today');
-        }
-        elseif ($days === 1) {
-          $variables['countdown'] = t('Tomorrow');
-        }
-        elseif ($days <= 30) {
-          $variables['countdown'] = t('In @days days', ['@days' => $days]);
-        }
-      }
-      elseif ($effective_end_date_only >= $current_date) {
-        // Event has started and is still ongoing.
-        $variables['event_status'] = 'in-progress';
-        $variables['event_status_label'] = t('Happening Now');
-      }
-      else {
-        // Event has ended.
-        $variables['event_status'] = 'past';
-        $variables['event_status_label'] = t('Past Event');
-      }
-    }
-  }
-}

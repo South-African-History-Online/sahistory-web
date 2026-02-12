@@ -1,0 +1,120 @@
+{#
+/**
+ * @file
+ * SAHO Upcoming Events Card Component
+ * Specialized card for events with status indicators
+ *
+ * Available variables:
+ * - title: Event title (required)
+ * - url: Event URL (required)
+ * - image: Image object with url and alt properties
+ * - event_status: Event status (in-progress, upcoming, past)
+ * - event_status_label: Status label text
+ * - event_badge_variant: Badge color variant
+ * - show_pulse: Show pulse animation for "Happening Now"
+ * - countdown: Countdown text
+ * - start_date: Formatted start date
+ * - end_date: Formatted end date (optional)
+ * - venue: Event location
+ * - body_excerpt: Brief description
+ * - card_format: Card format (portrait or standard)
+ * - attributes: HTML attributes
+ *
+ * Slots:
+ * - status_badge: For saho-badge component
+ * - countdown_badge: For countdown display
+ */
+#}
+
+{% set classes = [
+  'saho-upcoming-events-card',
+  'event-card-clickable',
+  event_status ? 'event-card--' ~ event_status,
+  card_format ? 'saho-upcoming-events-card--' ~ card_format : 'saho-upcoming-events-card--standard',
+  'card',
+  'h-100'
+] %}
+
+<article{{ attributes.addClass(classes) }}>
+
+  {# Image Section #}
+  <div class="saho-upcoming-events-card__image-wrapper card-img-top-wrapper position-relative overflow-hidden">
+    {% if image and image.url %}
+      <img src="{{ image.url }}"
+           alt="{{ image.alt|default(title) }}"
+           class="saho-upcoming-events-card__img card-img-top w-100 h-100"
+           loading="lazy">
+    {% else %}
+      <div class="saho-upcoming-events-card__placeholder bg-light d-flex align-items-center justify-content-center">
+        <i class="fas fa-calendar-alt fa-3x text-muted" aria-hidden="true"></i>
+      </div>
+    {% endif %}
+
+    {# Status Badge Slot - uses saho-badge component #}
+    {% if slots.status_badge %}
+      <div class="saho-upcoming-events-card__status-badge">
+        {{ slots.status_badge }}
+      </div>
+    {% endif %}
+
+    {# Countdown Badge Slot #}
+    {% if slots.countdown_badge %}
+      <div class="saho-upcoming-events-card__countdown">
+        {{ slots.countdown_badge }}
+      </div>
+    {% endif %}
+  </div>
+
+  {# Card Body #}
+  <div class="card-body d-flex flex-column saho-upcoming-events-card__body">
+
+    {# Title #}
+    <h2 class="saho-upcoming-events-card__title card-title">
+      <a href="{{ url }}" class="text-decoration-none stretched-link">{{ title }}</a>
+    </h2>
+
+    {# Date and Venue Metadata #}
+    <div class="saho-upcoming-events-card__meta">
+      {% if start_date %}
+        <div class="saho-upcoming-events-card__date">
+          <svg class="saho-upcoming-events-card__icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/>
+          </svg>
+          {{ start_date }}
+          {% if end_date %}
+            - {{ end_date }}
+          {% endif %}
+        </div>
+      {% endif %}
+
+      {% if venue %}
+        <div class="saho-upcoming-events-card__venue">
+          <svg class="saho-upcoming-events-card__icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+          </svg>
+          {{ venue|striptags }}
+        </div>
+      {% endif %}
+    </div>
+
+    {# Body Excerpt #}
+    {% if body_excerpt %}
+      <div class="saho-upcoming-events-card__excerpt card-text text-muted">
+        {{ body_excerpt }}
+      </div>
+    {% endif %}
+
+    {# CTA Button #}
+    <div class="mt-auto saho-upcoming-events-card__action">
+      <span class="saho-card-button-wrapper" style="position: relative; z-index: 2;">
+        <span class="saho-button saho-button--card-action saho-button--small">
+          <span class="saho-button__text">Learn More</span>
+          <svg class="saho-button__icon saho-button__icon--arrow-right" width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+            <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/>
+          </svg>
+        </span>
+      </span>
+    </div>
+
+  </div>
+</article>

@@ -54,6 +54,7 @@ const purgeCSSConfig = {
       /^social-/,
       /^better-/,
       /^card/,
+      /^event-card/,
       /^container/,
       /^row$/,
       /^col/,

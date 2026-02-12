@@ -67,9 +67,21 @@ class UpcomingEventsBlock extends BlockBase implements ContainerFactoryPluginInt
       'show_venue' => TRUE,
       'show_excerpt' => TRUE,
       'show_view_all_link' => TRUE,
-      'block_title' => 'Upcoming Events',
       'excerpt_length' => 150,
     ] + parent::defaultConfiguration();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function label() {
+    // Return default label - can be overridden when placing block.
+    $config = $this->getConfiguration();
+    // For backward compatibility with existing blocks.
+    if (!empty($config['block_title'])) {
+      return $config['block_title'];
+    }
+    return $this->t('Upcoming Events');
   }
 
   /**
@@ -78,12 +90,8 @@ class UpcomingEventsBlock extends BlockBase implements ContainerFactoryPluginInt
   public function blockForm($form, FormStateInterface $form_state) {
     $config = $this->getConfiguration();
 
-    $form['block_title'] = [
-      '#type' => 'textfield',
-      '#title' => $this->t('Block Title'),
-      '#default_value' => $config['block_title'],
-      '#description' => $this->t('The title to display for this block.'),
-    ];
+    // Note: Block title is now configured via the standard Drupal block title
+    // field when placing the block. Use "Display title" checkbox to show/hide.
 
     $form['number_of_events'] = [
       '#type' => 'number',
@@ -143,7 +151,6 @@ class UpcomingEventsBlock extends BlockBase implements ContainerFactoryPluginInt
    * {@inheritdoc}
    */
   public function blockSubmit($form, FormStateInterface $form_state) {
-    $this->configuration['block_title'] = $form_state->getValue('block_title');
     $this->configuration['number_of_events'] = $form_state->getValue('number_of_events');
     $this->configuration['show_images'] = $form_state->getValue(['display_options', 'show_images']);
     $this->configuration['show_venue'] = $form_state->getValue(['display_options', 'show_venue']);
