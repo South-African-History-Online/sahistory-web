@@ -38,6 +38,7 @@ class ImageExtractorService {
   protected const CONTENT_TYPE_IMAGE_FIELDS = [
     'article' => 'field_article_image',
     'biography' => 'field_bio_pic',
+    'archive' => 'field_archive_image',
     'event' => 'field_event_image',
     'place' => 'field_place_image',
     'default' => 'field_image',
