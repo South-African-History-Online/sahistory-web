@@ -15,23 +15,18 @@
  */
 #}
 
-{%
-  set classes = [
-    'block',
-    'block-' ~ configuration.provider|clean_class,
-    'block-' ~ plugin_id|clean_class,
-    'upcoming-events-inline-block'
-  ]
-%}
+<div class="block-section block-section--wide">
+  <div class="block-section-header">
+    <div class="block-title-wrapper">
+      {{ title_prefix }}
+      {% if label %}
+        <h2>{{ label }}</h2>
+      {% endif %}
+      {{ title_suffix }}
+    </div>
+  </div>
 
-<div{{ attributes.addClass(classes) }}>
-  {{ title_prefix }}
-  {% if label %}
-    <h2{{ title_attributes.addClass('upcoming-events-block-title') }}>{{ label }}</h2>
-  {% endif %}
-  {{ title_suffix }}
-
-  <div class="upcoming-events-block-content">
+  <div class="block-content upcoming-events-grid-wrapper">
     {% block content %}
       {{ content }}
     {% endblock %}

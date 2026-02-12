@@ -653,23 +653,10 @@ body .view-all-upcoming-events .views-row {
 
 // Upcoming Events Inline Block - Portrait/Leaflet Format
 // -----------------------------------------------------------------------------
-.upcoming-events-inline-block {
-  margin: 2rem 0;
-  
-  .upcoming-events-block-title {
-    text-align: center;
-    font-size: 2.5rem;
-    font-weight: 800;
-    color: #B22222;
-    margin-bottom: 2rem;
-    letter-spacing: -0.025em;
-    
-    @media (max-width: 768px) {
-      font-size: 2rem;
-    }
-  }
-  
-  .upcoming-events-block-content {
+// Uses standard .block-section styling from base/_block-section.scss
+// This provides the white background, border, left accent bar, and hover effect
+
+.upcoming-events-grid-wrapper {
     // 3-column grid for portrait cards
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -965,6 +952,384 @@ body .view-all-upcoming-events .views-row {
           backdrop-filter: blur(10px);
         }
       }
+    }
+  }
+
+// ============================================================
+// EVENT CARD STYLES (Teaser/Grid View)
+// ============================================================
+
+.event-card-clickable {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+
+  &:hover {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    transform: translateY(-4px);
+  }
+}
+
+.event-card__image-wrapper {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+}
+
+.event-card__image {
+  position: relative;
+  padding-bottom: 56.25%; // 16:9 aspect ratio
+  background: #f0f0f0;
+
+  img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .field__item {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+}
+
+.event-card__badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  z-index: 2;
+
+  &--in-progress {
+    background: rgba(153, 0, 0, 0.95);
+    color: white;
+  }
+
+  &--upcoming {
+    background: rgba(59, 130, 246, 0.95);
+    color: white;
+  }
+
+  &--past {
+    background: rgba(107, 114, 128, 0.95);
+    color: white;
+  }
+
+  .badge-pulse {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: white;
+    animation: pulse 2s ease-in-out infinite;
+  }
+}
+
+.event-card__countdown {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: rgba(255, 255, 255, 0.95);
+  color: #1a202c;
+  padding: 6px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  backdrop-filter: blur(10px);
+  z-index: 2;
+
+  svg {
+    flex-shrink: 0;
+  }
+}
+
+.event-card__content {
+  padding: 20px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.event-card__title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1a202c;
+  margin-bottom: 12px;
+  line-height: 1.3;
+
+  a {
+    color: inherit;
+    text-decoration: none;
+    transition: color 0.2s;
+
+    &:hover {
+      color: #990000;
+    }
+  }
+}
+
+.event-card__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+  font-size: 0.875rem;
+  color: #4a5568;
+}
+
+.event-card__date,
+.event-card__venue {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  line-height: 1.5;
+
+  .event-card__icon {
+    flex-shrink: 0;
+    color: #990000;
+    width: 16px;
+    height: 16px;
+  }
+
+  .field__item {
+    display: inline;
+  }
+}
+
+.event-card__excerpt {
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: #4a5568;
+  margin-bottom: 16px;
+  flex: 1;
+
+  // Limit to 3 lines
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.event-card__action {
+  margin-top: auto;
+}
+
+.event-card__button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: #990000;
+  color: white;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.875rem;
+  text-decoration: none;
+  transition: all 0.3s;
+
+  &:hover {
+    background: #7a0000;
+    transform: translateX(4px);
+    color: white;
+    text-decoration: none;
+  }
+
+  .event-card__button-arrow {
+    transition: transform 0.3s;
+  }
+
+  &:hover .event-card__button-arrow {
+    transform: translateX(4px);
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .event-card__title {
+    font-size: 1.125rem;
+  }
+
+  .event-card__content {
+    padding: 16px;
+  }
+
+  .event-card__badge {
+    font-size: 0.7rem;
+    padding: 4px 10px;
+  }
+}
+
+// ============================================================
+// EVENT NODE PAGE STYLES
+// ============================================================
+
+.saho-event-info-section {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-left: 4px solid #990000;
+  border-radius: 8px;
+  padding: 24px;
+  margin-bottom: 30px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.saho-event-status-wrapper {
+  position: relative;
+  margin-bottom: 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  .badge-pulse {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #990000;
+    animation: pulse 2s ease-in-out infinite;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.3);
+  }
+}
+
+.saho-event-details-box {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.saho-event-detail-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+
+  .saho-event-icon {
+    flex-shrink: 0;
+    margin-top: 2px;
+    color: #990000;
+  }
+
+  .saho-event-detail-content {
+    flex: 1;
+
+    strong {
+      display: block;
+      color: #2c3e50;
+      font-weight: 600;
+      font-size: 0.9rem;
+      margin-bottom: 4px;
+    }
+
+    span {
+      color: #4a5568;
+      font-size: 1rem;
+      line-height: 1.5;
+    }
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .saho-event-info-section {
+    padding: 16px;
+  }
+
+  .saho-event-detail-row {
+    .saho-event-icon {
+      width: 18px;
+      height: 18px;
+    }
+  }
+}
+
+// ============================================================
+// ALL UPCOMING EVENTS PAGE - SECTION SPACING
+// ============================================================
+
+.all-upcoming-events-page {
+  .events-section {
+    margin-bottom: 3rem;
+
+    &--past {
+      margin-top: 5rem; // Extra space before Past Events section
+      padding-top: 3rem;
+      border-top: 2px solid #e2e8f0;
+    }
+  }
+
+  .events-section-header {
+    margin-bottom: 2rem;
+
+    .events-section-title {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #1a202c;
+      margin-bottom: 0.5rem;
+    }
+
+    .events-count {
+      display: inline-block;
+      background: #990000;
+      color: white;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      margin-left: 1rem;
+    }
+  }
+
+  .saho-events-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 2rem;
+  }
+
+  @media (max-width: 768px) {
+    .events-section--past {
+      margin-top: 3rem;
+      padding-top: 2rem;
+    }
+
+    .saho-events-grid {
+      grid-template-columns: 1fr;
     }
   }
 }

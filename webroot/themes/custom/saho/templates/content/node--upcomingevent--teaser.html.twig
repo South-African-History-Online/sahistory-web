@@ -51,12 +51,15 @@
 
     {# Event Meta Information #}
     <div class="event-card__meta">
-      {# Date/Time - use Drupal's field rendering #}
-      {% if content.field_start_date|render|striptags|trim %}
+      {# Date/Time - Format as day month year (e.g., "12 February 2026") #}
+      {% if node.field_start_date.value %}
         <div class="event-card__date">
-          📅 {{ content.field_start_date }}
-          {% if content.field_end_date|render|striptags|trim %}
-            - {{ content.field_end_date }}
+          <svg class="event-card__icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/>
+          </svg>
+          {{ node.field_start_date.value|date('j F Y') }}
+          {% if node.field_end_date.value %}
+            - {{ node.field_end_date.value|date('j F Y') }}
           {% endif %}
         </div>
       {% endif %}
@@ -64,7 +67,10 @@
       {# Venue #}
       {% if content.field_upcoming_venue|render|striptags|trim %}
         <div class="event-card__venue">
-          📍 {{ content.field_upcoming_venue }}
+          <svg class="event-card__icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+          </svg>
+          {{ content.field_upcoming_venue }}
         </div>
       {% endif %}
     </div>

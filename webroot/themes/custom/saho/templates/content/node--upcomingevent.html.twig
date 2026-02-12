@@ -42,20 +42,65 @@
         </div>
       </div>
 
-      {# Display event dates and venue #}
-      {% if node.field_start_date.value or node.field_end_date.value %}
-        <div class="saho-event-date" style="background-color: #f0f0f0; padding: 8px 12px; margin-bottom: 20px; display: inline-block;">
-          {% if node.field_start_date.value %}
-            <strong>Start Date:</strong> {{ node.field_start_date.value|date("j F Y") }}
+      {# Event Status & Information Section #}
+      <div class="saho-event-info-section">
+
+        {# Event Status Badge #}
+        {% if event_status %}
+          <div class="saho-event-status-wrapper">
+            {% include 'saho:saho-badge' with {
+              text: event_status_label,
+              variant: event_badge_variant,
+              size: 'large',
+              icon: event_status == 'in-progress' ? 'circle' : (event_status == 'upcoming' ? 'calendar-alt' : 'calendar-check'),
+              rounded: true,
+              uppercase: true
+            } %}
+
+            {# Animated pulse for happening now #}
+            {% if show_pulse %}
+              <span class="badge-pulse" aria-hidden="true"></span>
+            {% endif %}
+          </div>
+        {% endif %}
+
+        {# Event Details Box #}
+        <div class="saho-event-details-box">
+
+          {# Date Information #}
+          {% if formatted_start_date %}
+            <div class="saho-event-detail-row">
+              <svg class="saho-event-icon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/>
+              </svg>
+              <div class="saho-event-detail-content">
+                {% if is_multiday %}
+                  <strong>Event Dates:</strong>
+                  <span>{{ formatted_start_date }} – {{ formatted_end_date }}</span>
+                {% else %}
+                  <strong>Date:</strong>
+                  <span>{{ formatted_start_date }}</span>
+                {% endif %}
+              </div>
+            </div>
           {% endif %}
-          {% if node.field_end_date.value %}
-            <br><strong>End Date:</strong> {{ node.field_end_date.value|date("j F Y") }}
-          {% endif %}
+
+          {# Venue Information #}
           {% if node.field_upcoming_venue.value %}
-            <br><strong>Venue:</strong> {{ node.field_upcoming_venue.value|striptags|trim }}
+            <div class="saho-event-detail-row">
+              <svg class="saho-event-icon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+              </svg>
+              <div class="saho-event-detail-content">
+                <strong>Venue:</strong>
+                <span>{{ node.field_upcoming_venue.value|striptags|trim }}</span>
+              </div>
+            </div>
           {% endif %}
+
         </div>
-      {% endif %}
+
+      </div>
 
       {# Main content with ID for TOC linking #}
       <div id="event-details" class="saho-article-body">
@@ -107,7 +152,7 @@
 
       {# Display upcoming event image if available #}
       {% if node.field_upcomingevent_image.entity %}
-        <div class="saho-image-block">
+        <div class="saho-image-block mb-4">
           {% set image_url = node.field_upcomingevent_image.entity.uri.value %}
           {% if image_url %}
             {% set styled_image_url = image_url|image_style('upcoming_events_front') %}
@@ -120,27 +165,53 @@
           {% endif %}
         </div>
       {% endif %}
-      
+
+      {# Custom Accordion for feature_children views #}
+      {% if accordion_views is not empty %}
+        <div class="saho-accordion mb-5" id="sahoFeatureAccordion">
+          {% for item in accordion_views %}
+            <div class="saho-accordion-item">
+              <h4 class="saho-accordion-header">
+                <button class="saho-accordion-button {% if not loop.first %}collapsed{% endif %}"
+                        type="button"
+                        aria-expanded="{{ loop.first ? 'true' : 'false' }}"
+                        aria-controls="collapse-{{ item.id }}"
+                        data-target="#collapse-{{ item.id }}">
+                  {{ item.title }}
+                </button>
+              </h4>
+              <div id="collapse-{{ item.id }}"
+                   class="saho-accordion-collapse {% if loop.first %}show{% endif %}"
+                   aria-hidden="{{ loop.first ? 'false' : 'true' }}">
+                <div class="saho-accordion-body">
+                  {{ drupal_view(item.view, item.block, node.id()) }}
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+
       {# Display Event Type #}
       {% if content.field_type_of_event %}
-        <div class="saho-event-type">
-          <h3>Type of Event</h3>
+        <div class="saho-taxonomy-group">
+          <h4>Type of Event</h4>
           {{ content.field_type_of_event }}
         </div>
       {% endif %}
-      
+
       {# Display file uploads if available #}
       {% if content.field_file_upload %}
-        <div class="saho-file-downloads">
-          <h3>Downloads</h3>
+        <div class="saho-taxonomy-group">
+          <h4>Downloads</h4>
           {{ content.field_file_upload }}
         </div>
       {% endif %}
-      
+
       {# Display parent field if available #}
       {% if content.field_parent %}
-        <div class="saho-parent-reference">
-          <h3>Related</h3>
+        <div class="saho-taxonomy-group">
+          <h4>Related</h4>
           {{ content.field_parent }}
         </div>
       {% endif %}
