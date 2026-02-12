@@ -201,11 +201,13 @@ class UpcomingEventsBlock extends BlockBase implements ContainerFactoryPluginInt
     $today = new \DateTime('today', new \DateTimeZone('Africa/Johannesburg'));
 
     // Query more events than needed to account for filtering.
+    // Sort DESC to get newest events first, then filter in PHP.
     $query = $storage->getQuery()
       ->accessCheck(TRUE)
       ->condition('type', 'upcomingevent')
       ->condition('status', 1)
-      ->sort('field_start_date', 'ASC')
+      ->exists('field_start_date')
+      ->sort('field_start_date', 'DESC')
       ->range(0, $limit * 3);
 
     $nids = $query->execute();
