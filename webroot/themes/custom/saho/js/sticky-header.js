@@ -11,6 +11,20 @@
     attach: function (context) {
       once('saho-sticky-header', '.saho-header', context).forEach(function (header) {
 
+        // Disable sticky header for authenticated users (they need admin toolbar access)
+        // Check for admin toolbar or toolbar-administration elements
+        const hasToolbar = document.getElementById('toolbar-administration') ||
+                          document.querySelector('.toolbar') ||
+                          document.querySelector('#toolbar-bar') ||
+                          document.body.classList.contains('toolbar-fixed') ||
+                          document.body.classList.contains('toolbar-horizontal') ||
+                          document.body.classList.contains('toolbar-vertical') ||
+                          document.body.classList.contains('user-logged-in');
+
+        if (hasToolbar) {
+          return;
+        }
+
         let lastScrollY = window.scrollY;
         let ticking = false;
         const scrollThreshold = 5; // Minimum scroll distance to trigger
