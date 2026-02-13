@@ -1,0 +1,79 @@
+# ============================================
+# SAHO Bot Blocking Rules
+# ============================================
+# Add these rules to your production .htaccess file
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # Block PetalBot (China - Huawei Search Engine)
+  RewriteCond %{HTTP_USER_AGENT} petalbot [NC,OR]
+
+  # Block AhrefsBot (Aggressive SEO crawler)
+  RewriteCond %{HTTP_USER_AGENT} ahrefsbot [NC,OR]
+
+  # Block other aggressive Asian bots
+  RewriteCond %{HTTP_USER_AGENT} (bytespider|bytedance|baiduspider|sogou|yandex|semrushbot|dotbot|mj12bot|blexbot) [NC,OR]
+
+  # Block suspicious crawlers and scrapers
+  RewriteCond %{HTTP_USER_AGENT} (scraper|crawler|spider|python-requests|go-http-client|httpclient) [NC,OR]
+
+  # Block empty user agents
+  RewriteCond %{HTTP_USER_AGENT} ^$ [OR]
+  RewriteCond %{HTTP_USER_AGENT} ^- [OR]
+  RewriteCond %{HTTP_USER_AGENT} ^\s*$
+
+  # Return 403 Forbidden
+  RewriteRule .* - [F,L]
+</IfModule>
+
+# Block Chinese IP ranges (PetalBot and suspicious IPs)
+<RequireAll>
+  Require all granted
+
+  # Block PetalBot IP range (China Lanzhou)
+  Require not ip 114.119.0.0/16
+
+  # Block other suspicious Chinese IP ranges from logs
+  Require not ip 42.200.0.0/16
+  Require not ip 14.171.0.0/16
+  Require not ip 106.49.0.0/16
+  Require not ip 123.25.0.0/16
+  Require not ip 124.156.0.0/16
+</RequireAll>
+
+# Alternative method using SetEnvIf (if above doesn't work)
+<IfModule mod_setenvif.c>
+  # Block by user agent
+  SetEnvIfNoCase User-Agent "petalbot" bad_bot
+  SetEnvIfNoCase User-Agent "ahrefsbot" bad_bot
+  SetEnvIfNoCase User-Agent "bytespider" bad_bot
+  SetEnvIfNoCase User-Agent "baiduspider" bad_bot
+  SetEnvIfNoCase User-Agent "semrushbot" bad_bot
+  SetEnvIfNoCase User-Agent "dotbot" bad_bot
+  SetEnvIfNoCase User-Agent "mj12bot" bad_bot
+  SetEnvIfNoCase User-Agent "scraper" bad_bot
+  SetEnvIfNoCase User-Agent "^$" bad_bot
+
+  # Deny access to bad bots
+  <RequireAll>
+    Require all granted
+    Require not env bad_bot
+  </RequireAll>
+</IfModule>
+
+# Rate limiting for remaining bots (requires mod_ratelimit)
+<IfModule mod_ratelimit.c>
+  <If "%{HTTP_USER_AGENT} =~ /bot|crawler|spider/i">
+    SetOutputFilter RATE_LIMIT
+    SetEnv rate-limit 200
+  </If>
+</IfModule>
+
+# Protect large PDF files from bot downloads
+<FilesMatch "\.(pdf|zip|tar|gz)$">
+  RewriteEngine On
+  RewriteCond %{HTTP_USER_AGENT} (bot|crawler|spider|scraper) [NC]
+  RewriteCond %{HTTP_USER_AGENT} !(googlebot|bingbot|slurp|duckduckbot) [NC]
+  RewriteRule .* - [F,L]
+</FilesMatch>
