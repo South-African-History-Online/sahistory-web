@@ -56,12 +56,18 @@
     {# Upcoming events use the countdown badge instead (with icon) #}
     {% if event_status and event_status != 'upcoming' %}
       <div class="saho-upcoming-events-card__status-badge">
-        <div class="event-card__badge event-card__badge--{{ event_status }}">
-          {% if event_status == 'in-progress' %}
-            <span class="badge-pulse"></span>
-          {% endif %}
-          {{ event_status_label }}
-        </div>
+        {% include 'saho:saho-badge' with {
+          text: event_status_label,
+          variant: event_badge_variant,
+          size: 'small',
+          icon: event_status == 'in-progress' ? 'circle' : 'calendar-check',
+          rounded: true,
+          uppercase: true,
+          position: 'top-left'
+        } %}
+        {% if show_pulse %}
+          <span class="badge-pulse" aria-hidden="true"></span>
+        {% endif %}
       </div>
     {% endif %}
 
