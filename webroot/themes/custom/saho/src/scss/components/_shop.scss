@@ -1,0 +1,142 @@
+/**
+ * Shop/Commerce Product Styling
+ * Styles for shop.sahistory.org.za product cards and checkout
+ */
+
+// Cart Block in Header
+.saho-cart-block {
+  .cart-block--link__expand {
+    text-decoration: none;
+    color: inherit;
+    padding: 0.5rem 1rem;
+    border-radius: 0.25rem;
+    transition: background-color 0.2s ease;
+
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.05);
+      color: #990000; // SAHO heritage red
+    }
+  }
+
+  .cart-block--summary__icon {
+    font-size: 1.5rem;
+  }
+
+  .cart-block--summary__label {
+    font-size: 1rem;
+    line-height: 1.2;
+  }
+
+  .cart-block--summary__count {
+    font-size: 0.85rem;
+    color: #6c757d;
+    line-height: 1;
+  }
+}
+
+// Hide PayPal payment options (shop uses PayFast)
+.payment-method-paypal,
+.commerce-paypal,
+[class*="paypal"],
+[id*="paypal"] {
+  display: none !important;
+}
+
+// Only show PayFast payment gateway
+.payment-method-payfast {
+  display: block;
+}
+
+// Product Cards (Teaser View)
+.product-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  }
+
+  &__image {
+    overflow: hidden;
+    background-color: #f8f9fa;
+
+    img {
+      width: 100%;
+      height: auto;
+      object-fit: cover;
+      transition: transform 0.3s ease;
+    }
+  }
+
+  &:hover &__image img {
+    transform: scale(1.05);
+  }
+
+  &__title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+
+    a {
+      color: inherit;
+
+      &:hover {
+        color: #990000; // SAHO heritage red
+      }
+    }
+  }
+
+  &__description {
+    font-size: 0.9rem;
+    line-height: 1.6;
+    flex-grow: 1;
+  }
+
+  &__price {
+    padding-top: 1rem;
+    border-top: 1px solid #dee2e6;
+
+    // Style the price display prominently
+    .field--name-variations {
+      .commerce-product-variation-field--variation-price {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #990000; // SAHO heritage red
+        display: block;
+
+        .field__label {
+          display: none; // Hide "Price:" label
+        }
+
+        .field__item {
+          font-size: 1.75rem;
+        }
+      }
+    }
+
+    // If there's an "Add to cart" button
+    .form-item-quantity,
+    .form-actions {
+      margin-top: 0.75rem;
+    }
+  }
+}
+
+// Product Grid Layout
+.view-products {
+  .view-content {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+
+    @media (max-width: 768px) {
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 1.5rem;
+    }
+
+    @media (max-width: 576px) {
+      grid-template-columns: 1fr;
+    }
+  }
+}

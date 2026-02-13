@@ -1,0 +1,39 @@
+{#
+/**
+ * @file
+ * SAHO Shop: Shopping cart block with "Checkout" text.
+ *
+ * Available variables:
+ * - attributes: block attributes, eg classes, ids etc.
+ * - url: url of shopping cart page.
+ * - icon: icon of shopping cart.
+ * - count: number of items in the cart.
+ * - count_text: text indicating number of items in the cart: 'X items'.
+ * - content: rendered view of shopping carts.
+ * - links: array of links to card page.
+ * - dropdown: flag indicating whether content should be rendered and displayed in dropdown div.
+ */
+#}
+<div{{ attributes.addClass('saho-cart-block') }}>
+  <div class="cart-block--summary">
+    <a class="cart-block--link__expand d-flex align-items-center gap-2" href="{{ url }}">
+      <span class="cart-block--summary__icon">{{ icon }}</span>
+      <span class="cart-block--summary__text d-flex flex-column align-items-start">
+        <span class="cart-block--summary__label fw-bold">Checkout</span>
+        <span class="cart-block--summary__count small">{{ count_text }}</span>
+      </span>
+    </a>
+  </div>
+  {% if content %}
+  <div class="cart-block--contents">
+    <div class="cart-block--contents__inner">
+      <div class="cart-block--contents__items">
+        {{ content }}
+      </div>
+      <div class="cart-block--contents__links">
+        {{ links }}
+      </div>
+    </div>
+  </div>
+  {% endif %}
+</div>
