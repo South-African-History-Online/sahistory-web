@@ -58,10 +58,35 @@
 
 // Header content
 .saho-header-content {
-  min-height: 70px;
+  min-height: 60px; // Reduced from 70px for leaner header
+  transition: min-height 0.3s ease;
 
   @media (min-width: 768px) {
-    min-height: 80px;
+    min-height: 65px; // Reduced from 80px for leaner header
+  }
+}
+
+// Compact mode when scrolling (even leaner)
+.saho-header--sticky.saho-header--visible {
+  .saho-header-content {
+    min-height: 55px;
+
+    @media (min-width: 768px) {
+      min-height: 60px;
+    }
+  }
+
+  // Slightly smaller logo when scrolled
+  .saho-logo-img {
+    width: 50px;
+
+    @media (min-width: 768px) {
+      width: 60px;
+    }
+  }
+
+  .saho-logo-title {
+    font-size: 1.2rem;
   }
 }
 
@@ -69,8 +94,24 @@
 body {
   // Add padding equal to header height to prevent content jump
   &:has(.saho-header--sticky) {
-    padding-top: 0; // Will be calculated by JS if needed
+    padding-top: 65px; // Match desktop header height
+
+    @media (max-width: 767px) {
+      padding-top: 60px; // Match mobile header height
+    }
   }
+}
+
+// Prevent sticky header from covering anchor targets
+html {
+  scroll-padding-top: 80px; // Offset for sticky header + buffer
+}
+
+// Ensure page titles and content aren't hidden behind header
+.page-title,
+h1.node__title,
+.article-header {
+  scroll-margin-top: 80px; // Offset for sticky header
 }
 
 // ==================================================
@@ -85,19 +126,21 @@ body {
 }
 
 .saho-logo-img {
-  width: 60px;
+  width: 55px; // Reduced from 60px for leaner header
   height: auto;
+  transition: width 0.3s ease;
 
   @media (min-width: 768px) {
-    width: 70px;
+    width: 65px; // Reduced from 70px for leaner header
   }
 }
 
 .saho-logo-title {
   font-family: $font-family-sans-serif;
-  font-size: 1.4rem;
+  font-size: 1.3rem; // Reduced from 1.4rem for leaner header
   font-weight: 700;
   color: $saho-deep-heritage-red;
+  transition: font-size 0.3s ease;
   line-height: 1.2;
 
   @media (min-width: 992px) {
