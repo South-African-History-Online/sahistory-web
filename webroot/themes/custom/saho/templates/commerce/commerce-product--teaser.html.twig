@@ -1,0 +1,50 @@
+{#
+/**
+ * @file
+ * Product teaser template for SAHO shop - displays product cards with price.
+ *
+ * Available variables:
+ * - attributes: HTML attributes for the wrapper.
+ * - product: The rendered product fields.
+ * - product_entity: The product entity.
+ * - product_url: The product URL.
+ */
+#}
+<article{{ attributes.addClass('product-card', 'card', 'h-100') }}>
+  {{ title_prefix }}
+  {{ title_suffix }}
+
+  {# Product Image #}
+  {% if product.field_product_image|render %}
+    <div class="product-card__image card-img-top-wrapper">
+      {{ product.field_product_image }}
+    </div>
+  {% endif %}
+
+  <div class="card-body d-flex flex-column">
+    {# Product Title #}
+    {% if product_url %}
+      <h3 class="product-card__title card-title">
+        <a href="{{ product_url }}" class="stretched-link text-decoration-none">
+          {{ product.title }}
+        </a>
+      </h3>
+    {% else %}
+      <h3 class="product-card__title card-title">
+        {{ product.title }}
+      </h3>
+    {% endif %}
+
+    {# Product Description/Body #}
+    {% if product.body|render %}
+      <div class="product-card__description card-text text-muted mb-3">
+        {{ product.body }}
+      </div>
+    {% endif %}
+
+    {# Price - Prominent Display #}
+    <div class="product-card__price mt-auto">
+      {{ product.variations }}
+    </div>
+  </div>
+</article>
