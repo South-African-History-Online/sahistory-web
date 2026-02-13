@@ -79,7 +79,13 @@ else
 fi
 
 # Final cache clear
-vendor/bin/drush cr --uri="${SITE_URI}" >> "${LOG_FILE}" 2>&1
+echo -e "${YELLOW}Final cache clear...${NC}"
+if vendor/bin/drush cr --uri="${SITE_URI}" >> "${LOG_FILE}" 2>&1; then
+    echo -e "${GREEN}✓ Cache cleared${NC}"
+else
+    log "Warning: Final cache clear failed (non-fatal, site is still operational)"
+    echo -e "${YELLOW}⚠ Cache clear failed (non-fatal)${NC}"
+fi
 
 echo ""
 echo -e "${GREEN}✓ DEPLOYMENT SUCCESSFUL${NC}"
