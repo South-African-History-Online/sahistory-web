@@ -996,12 +996,23 @@ body .view-all-upcoming-events .views-row {
     }
   }
 
-  // Fix: Prevent red-on-red for "Happening Now" badges
+  // Status-specific border colors
   &.event-card--in-progress {
+    border-top: 3px solid rgba(153, 0, 0, 0.6); // Heritage red
+
     .card-title a:hover {
       color: #1e293b; // Keep dark text on hover for in-progress events
       text-decoration: underline;
     }
+  }
+
+  &.event-card--upcoming {
+    border-top: 3px solid rgba(59, 130, 246, 0.6); // Primary blue
+  }
+
+  &.event-card--past {
+    border-top: 3px solid rgba(107, 114, 128, 0.4); // Secondary gray
+    opacity: 0.9;
   }
 }
 
@@ -1040,6 +1051,133 @@ body .view-all-upcoming-events .views-row {
   }
 }
 
+// SDC-aligned image wrapper with format variants
+.saho-upcoming-events-card__image-wrapper {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  background: #f0f0f0;
+
+  // Default: standard format (16:9 aspect ratio)
+  aspect-ratio: 16 / 9;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+  }
+
+  // Placeholder for missing images
+  &:has(.saho-upcoming-events-card__placeholder) {
+    min-height: 200px;
+  }
+}
+
+// Portrait format variant (for inline block)
+.saho-upcoming-events-card--portrait {
+  .saho-upcoming-events-card__image-wrapper {
+    height: 400px; // Tall portrait format
+    aspect-ratio: auto; // Override default aspect ratio
+
+    @media (max-width: 768px) {
+      height: 300px; // Shorter on mobile
+    }
+  }
+}
+
+// Standard format variant (for page views) - uses default aspect-ratio
+
+// Card image
+.saho-upcoming-events-card__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+// Hover effect on card - scale image
+.saho-upcoming-events-card:hover {
+  .saho-upcoming-events-card__img {
+    transform: scale(1.05);
+  }
+}
+
+// Placeholder for missing images
+.saho-upcoming-events-card__placeholder {
+  height: 100%;
+  min-height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #f0f0f0 0%, #e0e0e0 100%);
+}
+
+// Card body
+.saho-upcoming-events-card__body {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  flex-grow: 1;
+}
+
+// Card title
+.saho-upcoming-events-card__title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.4;
+  margin-bottom: 0.5rem;
+  color: #1e293b;
+
+  a {
+    color: inherit;
+    text-decoration: none;
+    transition: color 0.3s ease;
+
+    &:hover {
+      color: #990000; // Heritage red
+    }
+  }
+}
+
+// Metadata section (date + venue)
+.saho-upcoming-events-card__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: #6c757d;
+}
+
+.saho-upcoming-events-card__date,
+.saho-upcoming-events-card__venue {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  line-height: 1.5;
+}
+
+.saho-upcoming-events-card__icon {
+  flex-shrink: 0;
+  color: #990000; // Heritage red for icons
+  margin-top: 2px; // Align with text baseline
+}
+
+// Body excerpt
+.saho-upcoming-events-card__excerpt {
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: #6c757d;
+  flex-grow: 1;
+}
+
+// Action button area
+.saho-upcoming-events-card__action {
+  margin-top: auto;
+  padding-top: 1rem;
+}
+
 // Status badge wrapper - positioned over image (top-left)
 .saho-upcoming-events-card__status-badge {
   position: absolute;
@@ -1049,6 +1187,16 @@ body .view-all-upcoming-events .views-row {
   display: flex;
   align-items: center;
   gap: 8px;
+
+  // Pulse animation for "Happening Now" badges
+  .badge-pulse {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #ffffff;
+    animation: pulse 2s ease-in-out infinite;
+  }
 }
 
 // Countdown badge - positioned over image (top-right)
