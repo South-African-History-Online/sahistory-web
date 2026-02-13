@@ -92,7 +92,6 @@ class UpcomingEventsBlock extends BlockBase implements ContainerFactoryPluginInt
 
     // Note: Block title is now configured via the standard Drupal block title
     // field when placing the block. Use "Display title" checkbox to show/hide.
-
     $form['number_of_events'] = [
       '#type' => 'number',
       '#title' => $this->t('Number of events to display'),
@@ -234,6 +233,11 @@ class UpcomingEventsBlock extends BlockBase implements ContainerFactoryPluginInt
 
       // Calculate effective end date.
       $effective_end_date = $this->getEffectiveEndDate($node);
+      // Skip events with invalid/missing dates.
+      if ($effective_end_date === NULL) {
+        continue;
+      }
+
       $effective_end_date_only = new \DateTime($effective_end_date->format('Y-m-d'), new \DateTimeZone('Africa/Johannesburg'));
 
       // Include if event hasn't ended yet.
@@ -272,12 +276,17 @@ class UpcomingEventsBlock extends BlockBase implements ContainerFactoryPluginInt
    * @param \Drupal\node\NodeInterface $node
    *   The event node.
    *
-   * @return \Drupal\Core\Datetime\DrupalDateTime
-   *   The effective end date (end_date if set, otherwise start_date).
+   * @return \Drupal\Core\Datetime\DrupalDateTime|null
+   *   The effective end date (end_date if set, otherwise start_date),
+   *   or NULL if no valid date exists.
    */
   private function getEffectiveEndDate($node) {
-    // @phpstan-ignore-next-line
-    $start_date = $node->get('field_start_date')->date;
+    $start_date = NULL;
+    if ($node->hasField('field_start_date') && !$node->get('field_start_date')->isEmpty()) {
+      // @phpstan-ignore-next-line
+      $start_date = $node->get('field_start_date')->date;
+    }
+
     $end_date = NULL;
     if ($node->hasField('field_end_date') && !$node->get('field_end_date')->isEmpty()) {
       // @phpstan-ignore-next-line
@@ -285,6 +294,12 @@ class UpcomingEventsBlock extends BlockBase implements ContainerFactoryPluginInt
     }
 
     $effective_end_date = $end_date ?? $start_date;
+
+    // Return NULL if no valid date exists (corrupted/incomplete event data).
+    if ($effective_end_date === NULL) {
+      return NULL;
+    }
+
     $effective_end_date->setTimezone(new \DateTimeZone('Africa/Johannesburg'));
     return $effective_end_date;
   }
@@ -303,10 +318,19 @@ class UpcomingEventsBlock extends BlockBase implements ContainerFactoryPluginInt
   private function isHappeningNow($node, $current_date) {
     // @phpstan-ignore-next-line
     $start_date = $node->get('field_start_date')->date;
+    if ($start_date === NULL) {
+      return FALSE;
+    }
+
     $start_date->setTimezone(new \DateTimeZone('Africa/Johannesburg'));
     $start_date_only = new \DateTime($start_date->format('Y-m-d'), new \DateTimeZone('Africa/Johannesburg'));
 
     $effective_end_date = $this->getEffectiveEndDate($node);
+    // Events without valid dates cannot be "happening now".
+    if ($effective_end_date === NULL) {
+      return FALSE;
+    }
+
     $effective_end_date_only = new \DateTime($effective_end_date->format('Y-m-d'), new \DateTimeZone('Africa/Johannesburg'));
 
     return ($start_date_only <= $current_date && $effective_end_date_only >= $current_date);
