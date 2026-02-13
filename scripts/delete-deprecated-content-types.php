@@ -23,7 +23,7 @@
 use Drupal\node\Entity\NodeType;
 
 // Content types to delete.
-$content_types_to_delete = ['blog', 'frontpagecustom'];
+$content_types_to_delete = ['blog', 'frontpagecustom', 'panel'];
 
 echo "\n";
 echo "========================================\n";
