@@ -17,6 +17,8 @@ services:
       - [registerBuilder, ['product', '@saho_tools.schema_builder.product']]
       - [registerBuilder, ['image', '@saho_tools.schema_builder.image']]
       - [registerBuilder, ['gallery_image', '@saho_tools.schema_builder.image']]
+      - [registerBuilder, ['page', '@saho_tools.schema_builder.page']]
+      - [registerBuilder, ['drag_and_drop_page', '@saho_tools.schema_builder.drag_and_drop_page']]
       - [registerBuilder, ['organization', '@saho_tools.schema_builder.organization']]
       - [registerBuilder, ['breadcrumb', '@saho_tools.schema_builder.breadcrumb']]
 
@@ -58,4 +60,12 @@ services:
 
   saho_tools.schema_builder.breadcrumb:
     class: Drupal\saho_tools\Service\Builder\BreadcrumbSchemaBuilder
+    arguments: ['@entity_type.manager', '@file_url_generator']
+
+  saho_tools.schema_builder.page:
+    class: Drupal\saho_tools\Service\Builder\PageSchemaBuilder
+    arguments: ['@entity_type.manager', '@file_url_generator']
+
+  saho_tools.schema_builder.drag_and_drop_page:
+    class: Drupal\saho_tools\Service\Builder\DragAndDropPageSchemaBuilder
     arguments: ['@entity_type.manager', '@file_url_generator']
