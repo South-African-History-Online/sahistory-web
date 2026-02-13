@@ -1,0 +1,10 @@
+Verifying deletion... ddev drush sqlq 
+SELECT
+  type as 'Content Type',
+  COUNT(DISTINCT nid) as 'Total',
+  SUM(CASE WHEN status = 1 THEN 1 ELSE 0 END) as 'Published',
+  SUM(CASE WHEN status = 0 THEN 1 ELSE 0 END) as 'Unpublished'
+FROM node_field_data
+GROUP BY type
+ORDER BY type
+
