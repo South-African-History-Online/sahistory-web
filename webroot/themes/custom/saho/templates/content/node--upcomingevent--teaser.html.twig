@@ -6,6 +6,7 @@
  */
 #}
 
+{# Prepare image data #}
 {% set image_data = null %}
 {% if node.field_upcomingevent_image.0 and node.field_upcomingevent_image.entity %}
   {% set image_data = {
@@ -14,132 +15,69 @@
   } %}
 {% endif %}
 
-{# Badge will be rendered directly with original working HTML approach #}
-
-{# Prepare countdown badge content #}
-{% set countdown_badge_content = null %}
-{% if countdown and event_status == 'upcoming' %}
-  {% set countdown_badge_content %}
-    <svg class="saho-upcoming-events-card__icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-      <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/>
-    </svg>
-    <span>{{ event_status_label }}</span>
-  {% endset %}
+{# Format start date for display #}
+{% set formatted_start_date = null %}
+{% if node.field_start_date.value %}
+  {% if node.field_end_date.value %}
+    {# Multi-day or same-day with end time #}
+    {% set start_date_only = node.field_start_date.value|date('Y-m-d') %}
+    {% set end_date_only = node.field_end_date.value|date('Y-m-d') %}
+    {% if start_date_only == end_date_only %}
+      {# Same day event - show date once with time range #}
+      {% set formatted_start_date = node.field_start_date.value|date('j F Y, H:i') ~ ' - ' ~ node.field_end_date.value|date('H:i') %}
+    {% else %}
+      {# Multi-day event - show full date and time for both #}
+      {% set formatted_start_date = node.field_start_date.value|date('j F Y, H:i') ~ ' - ' ~ node.field_end_date.value|date('j F Y, H:i') %}
+    {% endif %}
+  {% else %}
+    {# No end date - just show start date and time #}
+    {% set formatted_start_date = node.field_start_date.value|date('j F Y, H:i') %}
+  {% endif %}
 {% endif %}
 
-{# Render the card component #}
-{% set classes = [
-  'saho-upcoming-events-card',
-  'event-card-clickable',
-  event_status ? 'event-card--' ~ event_status,
-  view_mode_card_format|default('standard') ? 'saho-upcoming-events-card--' ~ view_mode_card_format|default('standard'),
-  'card',
-  'h-100'
-] %}
+{# Embed the SDC component #}
+{% embed 'saho:saho-upcoming-events-card' with {
+  title: label,
+  url: url,
+  image: image_data,
+  event_status: event_status,
+  event_status_label: event_status_label,
+  event_badge_variant: event_badge_variant,
+  show_pulse: show_pulse,
+  countdown: countdown,
+  start_date: formatted_start_date,
+  venue: node.field_upcoming_venue.value,
+  body_excerpt: content.body,
+  card_format: view_mode_card_format|default('standard'),
+  attributes: attributes
+} %}
 
-<article{{ attributes.addClass(classes) }}>
-
-  {# Image Section #}
-  <div class="saho-upcoming-events-card__image-wrapper card-img-top-wrapper position-relative overflow-hidden">
-    {% if node.field_upcomingevent_image.0 and node.field_upcomingevent_image.entity %}
-      <img src="{{ file_url(node.field_upcomingevent_image.entity.uri.value) }}"
-           alt="{{ node.field_upcomingevent_image.alt|default(label) }}"
-           class="saho-upcoming-events-card__img w-100 h-100"
-           loading="lazy">
-    {% else %}
-      <div class="saho-upcoming-events-card__placeholder bg-light d-flex align-items-center justify-content-center">
-        <i class="fas fa-calendar-alt fa-3x text-muted"></i>
-      </div>
-    {% endif %}
-
-    {# Status Badge - Show only for "Happening Now" and "Past Event", not "Upcoming" #}
-    {# Upcoming events use the countdown badge instead (with icon) #}
+  {# Status Badge Slot - Only for "Happening Now" and "Past", not "Upcoming" #}
+  {% block status_badge %}
     {% if event_status and event_status != 'upcoming' %}
-      <div class="saho-upcoming-events-card__status-badge">
-        {% include 'saho:saho-badge' with {
-          text: event_status_label,
-          variant: event_badge_variant,
-          size: 'small',
-          icon: event_status == 'in-progress' ? 'circle' : 'calendar-check',
-          rounded: true,
-          uppercase: true,
-          position: 'top-left'
-        } %}
-        {% if show_pulse %}
-          <span class="badge-pulse" aria-hidden="true"></span>
-        {% endif %}
-      </div>
-    {% endif %}
-
-    {# Countdown Badge #}
-    {% if countdown_badge_content %}
-      <div class="saho-upcoming-events-card__countdown">
-        {{ countdown_badge_content }}
-      </div>
-    {% endif %}
-  </div>
-
-  {# Card Body #}
-  <div class="card-body d-flex flex-column saho-upcoming-events-card__body">
-
-    {# Title #}
-    <h2 class="saho-upcoming-events-card__title card-title">
-      <a href="{{ url }}" class="text-decoration-none stretched-link">{{ label }}</a>
-    </h2>
-
-    {# Date and Venue Metadata #}
-    <div class="saho-upcoming-events-card__meta">
-      {% if node.field_start_date.value %}
-        <div class="saho-upcoming-events-card__date">
-          <svg class="saho-upcoming-events-card__icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-            <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/>
-          </svg>
-          {% if node.field_end_date.value %}
-            {# Multi-day or same-day with end time #}
-            {% set start_date_only = node.field_start_date.value|date('Y-m-d') %}
-            {% set end_date_only = node.field_end_date.value|date('Y-m-d') %}
-            {% if start_date_only == end_date_only %}
-              {# Same day event - show date once with time range #}
-              {{ node.field_start_date.value|date('j F Y, H:i') }} - {{ node.field_end_date.value|date('H:i') }}
-            {% else %}
-              {# Multi-day event - show full date and time for both #}
-              {{ node.field_start_date.value|date('j F Y, H:i') }} - {{ node.field_end_date.value|date('j F Y, H:i') }}
-            {% endif %}
-          {% else %}
-            {# No end date - just show start date and time #}
-            {{ node.field_start_date.value|date('j F Y, H:i') }}
-          {% endif %}
-        </div>
+      {% include 'saho:saho-badge' with {
+        text: event_status_label,
+        variant: event_badge_variant,
+        size: 'small',
+        icon: event_status == 'in-progress' ? 'circle' : 'calendar-check',
+        rounded: true,
+        uppercase: true,
+        position: 'top-left'
+      } %}
+      {% if show_pulse %}
+        <span class="badge-pulse" aria-hidden="true"></span>
       {% endif %}
-
-      {% if node.field_upcoming_venue.value %}
-        <div class="saho-upcoming-events-card__venue">
-          <svg class="saho-upcoming-events-card__icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-          </svg>
-          {{ node.field_upcoming_venue.value|striptags }}
-        </div>
-      {% endif %}
-    </div>
-
-    {# Body Excerpt #}
-    {% if content.body %}
-      <div class="saho-upcoming-events-card__excerpt card-text text-muted">
-        {{ content.body }}
-      </div>
     {% endif %}
+  {% endblock %}
 
-    {# CTA Button #}
-    <div class="mt-auto saho-upcoming-events-card__action">
-      <span class="saho-card-button-wrapper" style="position: relative; z-index: 2;">
-        <span class="saho-button saho-button--card-action saho-button--small">
-          <span class="saho-button__text">Learn More</span>
-          <svg class="saho-button__icon saho-button__icon--arrow-right" width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-            <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/>
-          </svg>
-        </span>
-      </span>
-    </div>
+  {# Countdown Badge Slot - Only for upcoming events #}
+  {% block countdown_badge %}
+    {% if countdown and event_status == 'upcoming' %}
+      <svg class="saho-upcoming-events-card__icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/>
+      </svg>
+      <span>{{ event_status_label }}</span>
+    {% endif %}
+  {% endblock %}
 
-  </div>
-</article>
+{% endembed %}
