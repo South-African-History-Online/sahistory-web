@@ -413,6 +413,139 @@ h1.node__title,
   }
 }
 
+// Mobile Search Button (Tablet & Mobile)
+.saho-mobile-search-btn {
+  color: $saho-deep-heritage-red;
+  padding: 0.5rem;
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+
+  &:hover,
+  &:focus {
+    color: $saho-muted-gold;
+    background-color: rgba(153, 0, 0, 0.05);
+  }
+
+  svg {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+// Mobile Search Modal
+.saho-search-modal {
+  .modal-dialog {
+    margin: 0;
+  }
+
+  .modal-content {
+    border: none;
+    border-radius: 0;
+    min-height: 100vh;
+    background: linear-gradient(180deg, #ffffff 0%, #fafafa 100%);
+  }
+
+  .modal-header {
+    background: linear-gradient(135deg, $saho-aged-parchment 0%, lighten($saho-aged-parchment, 3%) 100%);
+    border-bottom: 3px solid $saho-deep-heritage-red;
+    padding: 1.5rem;
+    min-height: 70px;
+
+    .modal-title {
+      color: $saho-deep-heritage-red;
+      font-weight: 700;
+      font-size: 1.25rem;
+      letter-spacing: 0.5px;
+      margin-bottom: 0;
+    }
+
+    .btn-close {
+      opacity: 1;
+      padding: 0.75rem;
+      background: transparent url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23990000'%3e%3cpath d='M.293.293a1 1 0 011.414 0L8 6.586 14.293.293a1 1 0 111.414 1.414L9.414 8l6.293 6.293a1 1 0 01-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 01-1.414-1.414L6.586 8 .293 1.707a1 1 0 010-1.414z'/%3e%3c/svg%3e") center/1em auto no-repeat;
+      min-width: 44px;
+      min-height: 44px;
+      border-radius: var(--saho-radius-sm);
+      transition: all 0.3s ease;
+
+      &:hover {
+        background-color: rgba(153, 0, 0, 0.1);
+        transform: rotate(90deg);
+      }
+
+      &:focus {
+        box-shadow: 0 0 0 0.25rem var(--saho-color-primary-alpha-25);
+        outline: none;
+      }
+    }
+  }
+
+  .modal-body {
+    padding: 2rem 1.5rem;
+
+    .input-group {
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+      border-radius: 12px;
+      overflow: hidden;
+
+      .form-control {
+        border: 2px solid $saho-aged-parchment;
+        border-right: none;
+        padding: 1rem 1.25rem;
+        font-size: 1.1rem;
+        background: #ffffff;
+        transition: all 0.3s ease;
+
+        &:focus {
+          border-color: $saho-muted-gold;
+          box-shadow: none;
+          outline: none;
+        }
+
+        &::placeholder {
+          color: rgba(0, 0, 0, 0.4);
+        }
+      }
+
+      .btn-primary {
+        background: $saho-deep-heritage-red;
+        border: 2px solid $saho-deep-heritage-red;
+        padding: 1rem 2rem;
+        font-weight: 600;
+        font-size: 1.1rem;
+        transition: all 0.3s ease;
+
+        &:hover {
+          background: darken($saho-deep-heritage-red, 8%);
+          border-color: darken($saho-deep-heritage-red, 8%);
+          transform: translateY(-1px);
+          box-shadow: 0 4px 12px rgba(153, 0, 0, 0.25);
+        }
+
+        &:focus {
+          box-shadow: 0 0 0 0.25rem var(--saho-color-primary-alpha-25);
+          outline: none;
+        }
+      }
+    }
+  }
+
+  // Smooth modal transitions
+  &.fade .modal-dialog {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  &.show .modal-dialog {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
 // ==================================================
 // CONTRIBUTE BUTTON
 // ==================================================
@@ -575,12 +708,27 @@ h1.node__title,
   bottom: 0;
   left: 0;
   transform: translateX(-100%);
-  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+              visibility 0.35s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 4px 0 16px rgba(0, 0, 0, 0.15);
   background: #ffffff;
+  visibility: hidden;
 
   &.show {
     transform: translateX(0);
+    visibility: visible;
+  }
+
+  // Ensure backdrop fades in/out in sync with menu
+  &.show ~ .offcanvas-backdrop {
+    opacity: 0.5;
+    transition: opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  // Smooth backdrop fade out on close
+  &:not(.show) ~ .offcanvas-backdrop {
+    opacity: 0;
+    transition: opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .offcanvas-header {
@@ -651,11 +799,6 @@ h1.node__title,
     }
   }
 
-  /* Ensure backdrop is visible and has proper opacity */
-  &.show ~ .offcanvas-backdrop {
-    opacity: 0.5;
-    display: block;
-  }
 
   /* Responsive adjustments */
   @media (max-width: 576px) {
@@ -667,13 +810,20 @@ h1.node__title,
 /* Fix for offcanvas backdrop */
 .offcanvas-backdrop {
   background-color: var(--saho-color-black);
-  opacity: 0.5;
+  opacity: 0;
   z-index: 1040;
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
+  transition: opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+
+  &.show {
+    opacity: 0.5;
+    pointer-events: auto;
+  }
 }
 
 /* Prevent body scrolling when offcanvas is open */

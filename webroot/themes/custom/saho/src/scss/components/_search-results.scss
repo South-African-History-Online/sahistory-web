@@ -395,61 +395,56 @@
   }
 }
 
-// Modern search results container - card grid like landing pages
-// Targets the actual Views grid structure used by SAHO search
+// Modern search results container - responsive CSS Grid layout
+// Mobile-first approach
 .saho-search-results-wrapper {
+  // Apply CSS Grid directly to search-results container
   .search-results {
     background-color: transparent;
     border-radius: 0;
     overflow: visible;
+    display: grid;
+    gap: 1rem;
+    padding: 0;
 
-    // Target the Views grid structure
-    .views-view--grid {
-      display: grid !important;
+    // Mobile first: 1 column (default)
+    grid-template-columns: 1fr;
+
+    // Tablet: 2 columns (768px and up)
+    @media (min-width: 768px) {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.25rem;
+    }
+
+    // Desktop: 3 columns (992px and up)
+    @media (min-width: 992px) {
       grid-template-columns: repeat(3, 1fr);
       gap: 1.5rem;
-      padding: 0;
+    }
 
-      @media (max-width: 991px) {
-        grid-template-columns: repeat(2, 1fr);
-      }
+    // Each result row is a grid item
+    .views-row {
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgb(0, 0, 0, 0.1);
+      overflow: hidden;
+      transition: all 0.3s ease;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
 
-      @media (max-width: 767px) {
-        grid-template-columns: 1fr;
-      }
+      &:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgb(0, 0, 0, 0.15);
 
-      // Reset Views default grid behavior
-      &.horizontal {
-        display: grid !important;
-      }
-
-      // Each row becomes a grid item (card)
-      .views-row {
-        background: #fff;
-        border-radius: 8px;
-        box-shadow: 0 2px 8px rgb(0, 0, 0, 0.1);
-        overflow: hidden;
-        transition: all 0.3s ease;
-        height: 100%;
-
-        &:hover {
-          transform: translateY(-5px);
-          box-shadow: 0 10px 25px rgb(0, 0, 0, 0.15);
-
-          .search-result-inner::after {
-            border-color: $deep-heritage-red;
-            background-color: $deep-heritage-red;
-            color: #fff;
-          }
-
-          .search-result-title a {
-            color: darken($deep-heritage-red, 10%);
-          }
+        .search-result-inner::after {
+          border-color: $deep-heritage-red;
+          background-color: $deep-heritage-red;
+          color: #fff;
         }
 
-        .views-col {
-          width: 100% !important;
-          height: 100%;
+        .search-result-title a {
+          color: darken($deep-heritage-red, 10%);
         }
       }
     }
