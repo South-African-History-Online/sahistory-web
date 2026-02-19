@@ -1,0 +1,38 @@
+uuid: e7ceb257-dcc6-4757-82b3-f31a65a2e363
+langcode: en
+status: true
+dependencies:
+  config:
+    - search_api.index.saho_content
+    - views.view.saho_global_search
+  module:
+    - search_api_solr_autocomplete
+    - views
+id: saho_global_search
+label: 'SAHO global search'
+index_id: saho_content
+suggester_settings:
+  search_api_solr_suggester:
+    search_api_solr/site_hash: 1
+    search_api/index: saho_content
+    drupal/langcode: any
+  search_api_solr_terms:
+    fields: {  }
+suggester_weights:
+  search_api_solr_suggester: 0
+  search_api_solr_terms: 0
+suggester_limits:
+  search_api_solr_suggester: 10
+  search_api_solr_terms: 10
+search_settings:
+  'views:saho_global_search':
+    displays:
+      default: true
+      selected: {  }
+options:
+  limit: 10
+  min_length: 3
+  show_count: false
+  delay: 200
+  submit_button_selector: ':submit'
+  autosubmit: false

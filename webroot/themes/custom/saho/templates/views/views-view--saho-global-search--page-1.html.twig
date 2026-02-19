@@ -36,7 +36,13 @@
       <div class="row">
         <div class="col-lg-12">
           <div class="saho-search-header">
-            <h1 class="saho-search-page-title">Search Results</h1>
+            <h3 class="saho-search-page-title">
+              {% if search_query %}
+                Search Results for <em>&ldquo;{{ search_query }}&rdquo;</em>
+              {% else %}
+                Search Results
+              {% endif %}
+            </h3>
             {% if header %}
               <div class="saho-landing-description mb-4">
                 {{ header }}
@@ -60,7 +66,7 @@
             {% if exposed %}
               <div class="saho-landing-filters mb-4">
                 {{ exposed }}
-                
+
                 {% if feed_icons %}
                   <div class="saho-landing-feeds mt-3 text-end">
                     {{ feed_icons }}
@@ -68,6 +74,7 @@
                 {% endif %}
               </div>
             {% endif %}
+
           </div>
         </div>
         
@@ -77,14 +84,9 @@
             <h2 class="h3 mb-4">{{ title }}</h2>
           {% endif %}
           
-          {# Results count - preserved but without sort and view toggles #}
+          {# Results count #}
           {% if rows_total is defined and rows_total > 0 %}
-            <div class="saho-search-toolbar d-flex align-items-center p-3 mb-4">
-              <div class="results-count">
-                Showing <strong>{{ rows_total }}</strong> results
-              </div>
-              {# Sort and grid/list selector removed here #}
-            </div>
+            <p class="saho-results-count small text-muted mb-3">Showing <strong>{{ rows_total }}</strong> results</p>
           {% endif %}
           
           {% if rows %}
@@ -93,10 +95,23 @@
                 {{ rows }}
               </div>
             </div>
-          {% elseif empty %}
-            <div class="saho-view-empty alert alert-info">
-              {{ empty }}
-            </div>
+          {% else %}
+            {% if empty %}
+              <div class="saho-view-empty alert alert-info">
+                {{ empty }}
+              </div>
+            {% elseif search_query %}
+              <p class="text-muted mb-3">No results found for <em>&ldquo;{{ search_query }}&rdquo;</em>.</p>
+            {% endif %}
+
+            {% if spellcheck_suggestion and search_query %}
+              <p class="saho-spellcheck-suggestion">
+                Did you mean:
+                <a href="{{ path('view.saho_global_search.page_1', {}, {'query': {'search_api_fulltext': spellcheck_suggestion}}) }}" class="saho-spellcheck-link fw-semibold">
+                  {{ spellcheck_suggestion }}
+                </a>?
+              </p>
+            {% endif %}
           {% endif %}
           
           {% if pager %}

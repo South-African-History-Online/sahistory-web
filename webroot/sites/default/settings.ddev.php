@@ -129,5 +129,3 @@ $config['search_api.server.saho_prod']['status'] = FALSE;
 $config['search_api.index.saho_content']['status'] = TRUE;
 $config['search_api.index.saho_content']['server'] = 'local_solr';
 
-// Also enable the DDEV-specific index (optional, for testing).
-$config['search_api.index.saho_global_ddev']['status'] = TRUE;

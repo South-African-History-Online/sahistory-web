@@ -9,6 +9,10 @@ use Drupal\file\Entity\File;
 use Drupal\node\NodeInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
+use Drupal\search_api\Query\QueryInterface as SearchApiQueryInterface;
+use Drupal\search_api\ResultSet\ResultSetInterface as SearchApiResultSetInterface;
+use Solarium\Core\Query\QueryInterface as SolariumQueryInterface;
+use Solarium\QueryType\Select\Result\Result as SolrSelectResult;
 
 /**
  * Implements hook_help().
@@ -667,6 +671,91 @@ function saho_tools_robotstxt() {
   $lines[] = '';
 
   return $lines;
+}
+
+/**
+ * Implements hook_search_api_solr_query_alter().
+ *
+ * Adds a popularity boost using statistics_weight and enables Solr spellcheck
+ * for "Did you mean?" suggestions on the SAHO content search.
+ */
+function saho_tools_search_api_solr_query_alter(SolariumQueryInterface $solarium_query, SearchApiQueryInterface $query) {
+  if ($query->getIndex()->id() !== 'saho_content') {
+    return;
+  }
+
+  $keys = $query->getKeys();
+  if (empty($keys)) {
+    return;
+  }
+
+  // Item 3: Popularity boost via statistics_weight.
+  // Search API Solr maps single-value integer fields with the 'its_' prefix.
+  // Log scale prevents extreme outliers from dominating relevance scores.
+  if (method_exists($solarium_query, 'addParam')) {
+    $solarium_query->addParam('bf', 'log(sum(1,if(exists(its_statistics_weight),its_statistics_weight,0)))');
+  }
+
+  // Item 6: Enable Solr spellcheck to power "Did you mean?" suggestions.
+  if ($solarium_query instanceof \Solarium\QueryType\Select\Query\Query) {
+    $spellcheck = $solarium_query->getSpellcheck();
+    $spellcheck->setCollate(TRUE);
+    $spellcheck->setCount(3);
+    $spellcheck->setMaxCollations(3);
+    $spellcheck->setMaxCollationTries(10);
+    $spellcheck->setOnlyMorePopular(FALSE);
+  }
+}
+
+/**
+ * Implements hook_search_api_solr_search_results_alter().
+ *
+ * Captures Solr spellcheck collations when a search returns zero results and
+ * stores the best suggestion in the request attributes for template use.
+ */
+function saho_tools_search_api_solr_search_results_alter(SearchApiResultSetInterface $result_set, SearchApiQueryInterface $query, SolrSelectResult $result) {
+  if ($query->getIndex()->id() !== 'saho_content') {
+    return;
+  }
+
+  // Only suggest alternatives when there are no results.
+  if ($result_set->getResultCount() > 0) {
+    return;
+  }
+
+  try {
+    $spellcheck = $result->getSpellcheck();
+    if (!$spellcheck) {
+      return;
+    }
+    $collations = $spellcheck->getCollations();
+    if (!empty($collations)) {
+      $first_collation = reset($collations);
+      $suggestion = $first_collation->getQuery();
+      if (!empty($suggestion)) {
+        \Drupal::request()->attributes->set('saho_spellcheck_suggestion', $suggestion);
+      }
+    }
+  }
+  catch (\Exception $e) {
+    // Spellcheck is non-critical — silently ignore errors.
+  }
+}
+
+/**
+ * Implements hook_preprocess_views_view().
+ *
+ * Passes the active search query string and any spellcheck suggestion to the
+ * global search view template.
+ */
+function saho_tools_preprocess_views_view(&$variables) {
+  if ($variables['view']->id() !== 'saho_global_search') {
+    return;
+  }
+
+  $request = \Drupal::request();
+  $variables['search_query'] = trim((string) $request->query->get('search_api_fulltext'));
+  $variables['spellcheck_suggestion'] = (string) $request->attributes->get('saho_spellcheck_suggestion', '');
 }
 
 /**

@@ -1,17 +1,25 @@
 uuid: d8ef1dca-1d74-4820-9987-84ac801af483
 langcode: en
-status: false
+status: true
 dependencies:
   config:
     - field.storage.node.body
+    - field.storage.node.field_african_country
+    - field.storage.node.field_article_type
+    - field.storage.node.field_event_type
+    - field.storage.node.field_feature_tag
     - field.storage.node.field_isbn
+    - field.storage.node.field_people_category
+    - field.storage.node.field_place_category
     - field.storage.node.field_place_type
     - field.storage.node.field_places_level3
     - field.storage.node.field_ref_str
+    - field.storage.node.field_tags
     - search_api.server.saho_prod
   module:
     - node
     - search_api_solr
+    - search_api_sort_priority
 third_party_settings:
   search_api_solr:
     finalize: false
@@ -69,10 +77,46 @@ field_settings:
     datasource_id: 'entity:node'
     property_path: body
     type: text
-    boost: 13.0
+    boost: 1.5
     dependencies:
       config:
         - field.storage.node.body
+  field_african_country:
+    label: 'African country'
+    datasource_id: 'entity:node'
+    property_path: field_african_country
+    type: text
+    boost: 1.5
+    dependencies:
+      config:
+        - field.storage.node.field_african_country
+  field_article_type:
+    label: 'Article type'
+    datasource_id: 'entity:node'
+    property_path: field_article_type
+    type: text
+    boost: 1.5
+    dependencies:
+      config:
+        - field.storage.node.field_article_type
+  field_event_type:
+    label: 'Event type'
+    datasource_id: 'entity:node'
+    property_path: field_event_type
+    type: text
+    boost: 2.0
+    dependencies:
+      config:
+        - field.storage.node.field_event_type
+  field_feature_tag:
+    label: 'Feature tag'
+    datasource_id: 'entity:node'
+    property_path: field_feature_tag
+    type: text
+    boost: 2.0
+    dependencies:
+      config:
+        - field.storage.node.field_feature_tag
   field_isbn:
     label: ISBN
     datasource_id: 'entity:node'
@@ -81,6 +125,24 @@ field_settings:
     dependencies:
       config:
         - field.storage.node.field_isbn
+  field_people_category:
+    label: 'People category'
+    datasource_id: 'entity:node'
+    property_path: field_people_category
+    type: text
+    boost: 3.0
+    dependencies:
+      config:
+        - field.storage.node.field_people_category
+  field_place_category:
+    label: 'Place category'
+    datasource_id: 'entity:node'
+    property_path: field_place_category
+    type: text
+    boost: 2.0
+    dependencies:
+      config:
+        - field.storage.node.field_place_category
   field_place_type:
     label: 'Place type '
     datasource_id: 'entity:node'
@@ -105,11 +167,36 @@ field_settings:
     dependencies:
       config:
         - field.storage.node.field_ref_str
+  field_tags:
+    label: Tags
+    datasource_id: 'entity:node'
+    property_path: field_tags
+    type: text
+    boost: 2.0
+    dependencies:
+      config:
+        - field.storage.node.field_tags
+  statistics_weight:
+    label: 'Sort Priority by Statistics'
+    property_path: statistics_weight
+    type: integer
+    indexed_locked: true
+    type_locked: true
+    hidden: true
   title:
     label: Title
     datasource_id: 'entity:node'
     property_path: title
     type: text
+    boost: 8.0
+    dependencies:
+      module:
+        - node
+  title_1:
+    label: Title
+    datasource_id: 'entity:node'
+    property_path: title
+    type: 'solr_text_custom:ngram'
     dependencies:
       module:
         - node
@@ -177,6 +264,13 @@ processor_settings:
   solr_date_range:
     weights:
       preprocess_index: 0
+  statistics:
+    weight: 0
+    totalcount: 0
+    daycount: 0
+    timestamp: 0
+    allowed_entity_types:
+      - node
   type_boost:
     weights:
       preprocess_index: 0
@@ -184,9 +278,9 @@ processor_settings:
       'entity:node':
         datasource_boost: 1.0
         bundle_boosts:
-          article: 2.0
-          biography: 2.0
-          place: 5.0
+          article: 1.5
+          biography: 5.0
+          place: 1.0
 tracker_settings:
   default:
     indexing_order: lifo
