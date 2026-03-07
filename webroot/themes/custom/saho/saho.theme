@@ -315,7 +315,7 @@ function saho_preprocess_node(array &$variables) {
  $logo = \Drupal::theme()->getActiveTheme()->getLogo();
  $variables['site_logo'] = $logo;
 
- // Embed Schema.org JSON-LD in full node view for SEO and rich snippets.
+ // Embed Schema.org JSON-LD in <head> for full node views (better for LCP).
  $node = $variables['node'];
  if ($variables['view_mode'] === 'full') {
    try {
@@ -324,10 +324,19 @@ function saho_preprocess_node(array &$variables) {
        $schema_data = $schema_service->generateSchemaForNode($node);
 
        if ($schema_data) {
-         $variables['schema_json'] = json_encode(
+         $schema_json = json_encode(
            $schema_data,
            JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT
          );
+         $variables['#attached']['html_head'][] = [
+           [
+             '#type' => 'html_tag',
+             '#tag' => 'script',
+             '#value' => $schema_json,
+             '#attributes' => ['type' => 'application/ld+json'],
+           ],
+           'schema_org_node_' . $node->id(),
+         ];
        }
      }
    }
