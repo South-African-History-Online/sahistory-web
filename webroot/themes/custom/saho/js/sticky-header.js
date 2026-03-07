@@ -1,114 +1,62 @@
 /**
  * @file
- * SAHO Sticky Header - Modern scroll behavior
- * Shows header when scrolling up, hides when scrolling down
+ * SAHO Header scroll tracker.
+ *
+ * Tracks whether the nav bar has scrolled out of view and toggles
+ * body.saho--scrolled accordingly. This controls desktop hamburger
+ * visibility ONLY — no layout changes, zero CLS.
+ *
+ * The body padding-top: 60px offset lives in CSS (.saho-header-wrapper)
+ * and never changes, so there is no Cumulative Layout Shift from this JS.
  */
 
 (function (Drupal, once) {
   'use strict';
 
-  Drupal.behaviors.sahoStickyHeader = {
+  Drupal.behaviors.sahoHeader = {
     attach: function (context) {
-      once('saho-sticky-header', '.saho-header', context).forEach(function (header) {
-
-        // Disable sticky header for authenticated users (they need admin toolbar access)
-        // Check for admin toolbar or toolbar-administration elements
-        const hasToolbar = document.getElementById('toolbar-administration') ||
-                          document.querySelector('.toolbar') ||
-                          document.querySelector('#toolbar-bar') ||
-                          document.body.classList.contains('toolbar-fixed') ||
-                          document.body.classList.contains('toolbar-horizontal') ||
-                          document.body.classList.contains('toolbar-vertical') ||
-                          document.body.classList.contains('user-logged-in');
-
-        if (hasToolbar) {
+      once('saho-header', 'body', context).forEach(function (body) {
+        // Skip for authenticated users — admin toolbar changes layout.
+        if (body.classList.contains('user-logged-in')) {
           return;
         }
 
-        let lastScrollY = window.scrollY;
-        let ticking = false;
-        const scrollThreshold = 5; // Minimum scroll distance to trigger
-        const headerHeight = header.offsetHeight;
-
-        // Add initial classes
-        header.classList.add('saho-header--sticky');
-
-        /**
-         * Update header state based on scroll position and direction
-         */
-        function updateHeaderState(scrollY) {
-          const scrollDelta = scrollY - lastScrollY;
-
-          // Only update if scroll exceeds threshold
-          if (Math.abs(scrollDelta) < scrollThreshold) {
-            return;
-          }
-
-          // Scrolling down - hide header
-          if (scrollDelta > 0 && scrollY > headerHeight) {
-            header.classList.add('saho-header--hidden');
-            header.classList.remove('saho-header--visible');
-          }
-          // Scrolling up - show header
-          else if (scrollDelta < 0) {
-            header.classList.remove('saho-header--hidden');
-            header.classList.add('saho-header--visible');
-          }
-
-          // At top of page - always show header
-          if (scrollY <= headerHeight) {
-            header.classList.remove('saho-header--hidden', 'saho-header--visible');
-            header.classList.add('saho-header--at-top');
-          } else {
-            header.classList.remove('saho-header--at-top');
-          }
-
-          lastScrollY = scrollY;
+        var navBar = document.querySelector('.saho-nav-bar');
+        if (!navBar) {
+          return;
         }
 
-        /**
-         * Request animation frame for smooth 60fps updates
-         */
-        function requestTick() {
+        var navBarBottom = 0;
+        var ticking = false;
+
+        function getNavBarBottom() {
+          navBarBottom = navBar.offsetTop + navBar.offsetHeight;
+        }
+
+        function update() {
+          body.classList.toggle('saho--scrolled', window.scrollY >= navBarBottom);
+        }
+
+        // Recalculate nav bar position when viewport or content changes.
+        var ro = new ResizeObserver(function () {
+          getNavBarBottom();
+          update();
+        });
+        ro.observe(navBar);
+
+        window.addEventListener('scroll', function () {
           if (!ticking) {
-            window.requestAnimationFrame(function() {
-              updateHeaderState(window.scrollY);
+            requestAnimationFrame(function () {
+              update();
               ticking = false;
             });
             ticking = true;
           }
-        }
-
-        /**
-         * Passive scroll event listener for best performance
-         */
-        window.addEventListener('scroll', requestTick, { passive: true });
-
-        /**
-         * Handle mobile menu opening - always show header when menu opens
-         */
-        const mobileMenuTrigger = document.getElementById('sahoMobileMenu');
-        if (mobileMenuTrigger) {
-          mobileMenuTrigger.addEventListener('show.bs.offcanvas', function() {
-            header.classList.remove('saho-header--hidden');
-            header.classList.add('saho-header--visible');
-          });
-        }
-
-        /**
-         * Recalculate header height on window resize
-         */
-        let resizeTimeout;
-        window.addEventListener('resize', function() {
-          clearTimeout(resizeTimeout);
-          resizeTimeout = setTimeout(function() {
-            // Recalculate if needed
-            updateHeaderState(window.scrollY);
-          }, 250);
         }, { passive: true });
 
-        // Initial state
-        updateHeaderState(window.scrollY);
+        // Set initial state synchronously before first paint.
+        getNavBarBottom();
+        update();
       });
     }
   };
