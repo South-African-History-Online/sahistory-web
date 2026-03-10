@@ -1,10 +1,11 @@
 {#
 /**
  * @file
- * SAHO Header — Two-tier: fixed primary bar (60px) + scrollable nav bar.
+ * SAHO Header — single fixed bar (60px, zero CLS).
  *
- * Primary bar: always fixed at top, exact 60px, zero CLS.
- * Nav bar:     in document flow, desktop-only (≥992px), scrolls away.
+ * ≥1200px: logo — nav items — actions  (one row)
+ * <1200px: logo — actions — hamburger  (nav in offcanvas)
+ *
  * Body offset: saho-header-wrapper padding-top: 60px — static CSS, no JS.
  *
  * @see saho_preprocess_header()
@@ -12,12 +13,21 @@
 #}
 <header class="saho-header-wrapper" role="banner">
 
-  {# ── PRIMARY BAR: fixed, always 60px ── #}
+  {# ── PRIMARY BAR: fixed 60px, single row ── #}
   <div class="saho-primary-bar">
 
     <a href="{{ path('<front>') }}" class="saho-logo" aria-label="South African History Online — Homepage">
       <img src="/themes/custom/saho/logo.svg" alt="SAHO" width="44" height="44">
+      <span class="saho-logo-wordmark" aria-hidden="true">
+        <span class="saho-logo-wordmark__line1">South African</span>
+        <span class="saho-logo-wordmark__line2">History Online</span>
+      </span>
     </a>
+
+    {# Desktop inline nav — visible ≥1200px, hidden below (hamburger takes over) #}
+    <nav class="saho-primary-nav" role="navigation" aria-label="Main navigation">
+      {{ drupal_menu('main') }}
+    </nav>
 
     <div class="saho-primary-actions">
 
@@ -41,7 +51,7 @@
                 aria-expanded="false"
                 aria-label="Tools — cite, share, print">
           <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-            <path d="M1 0 0 1l2.2 3.081a1 1 0 0 0 .815.419h.07a1 1 0 0 1 .708.293l2.675 2.675-2.617 2.654A3.003 3.003 0 0 0 0 13a3 3 0 1 0 5.878-.851l2.654-2.617.968.968-.305.914a1 1 0 0 0 .242 1.023l3.27 3.27a.997.997 0 0 0 1.414 0l1.586-1.586a.997.997 0 0 0 0-1.414l-3.27-3.27a1 1 0 0 0-1.023-.242L10.5 9.5l-.96-.96 2.68-2.643A3.005 3.005 0 0 0 16 3c0-.269-.035-.53-.102-.777l-2.14 2.141L12 4l-.364-1.757L13.777.102a3 3 0 0 0-3.675 3.68L7.462 6.46 4.793 3.793a1 1 0 0 1-.293-.707v-.071a1 1 0 0 0-.419-.814L1 0Zm9.646 10.646a.5.5 0 0 1 .708 0l2.914 2.915a.5.5 0 0 1-.707.707l-2.915-2.914a.5.5 0 0 1 0-.708ZM3 11l.471.242.529.026.287.445.445.287.026.529L5 13l-.242.471-.026.529-.445.287-.287.445-.529.026L3 15l-.471-.242L2 14.732l-.287-.445L1.268 14l-.026-.529L1 13l.242-.471.026-.529.445-.287.287-.445.529-.026L3 11Z"/>
+            <path d="M9.5 13a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
           </svg>
         </button>
         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="toolsDropdown">
@@ -83,10 +93,10 @@
         </ul>
       </div>
 
-      {# Contribute — icon + text ≥576px, icon-only below #}
-      <a href="/form/contribute" class="saho-contribute-btn" aria-label="Contribute to SAHO">
-        <span class="saho-contribute-icon" aria-hidden="true">✦</span>
-        <span class="saho-contribute-text d-none d-sm-inline">Contribute</span>
+      {# Donate button #}
+      <a href="/donate" class="saho-donate-btn" aria-label="Donate to South African History Online">
+        <span class="saho-donate-icon" aria-hidden="true">♥</span>
+        <span class="saho-donate-label">Donate</span>
       </a>
 
       {# Hamburger — always mobile; desktop only when nav bar has scrolled away #}
@@ -105,10 +115,6 @@
     </div>
   </div>
 
-  {# ── NAV BAR: in document flow, desktop ≥992px only, scrolls away ── #}
-  <nav class="saho-nav-bar" role="navigation" aria-label="Main navigation">
-    {{ drupal_menu('main') }}
-  </nav>
 
 </header>
 
@@ -169,85 +175,12 @@
       </div>
     </form>
 
-    {# Mobile Navigation #}
+    {# Mobile Navigation — same drupal_menu() → menu--main.html.twig → saho:nav. #}
+    {# CSS in .saho-mobile-nav context makes it vertical with tap-friendly links. #}
     <nav class="saho-mobile-nav" role="navigation" aria-label="Mobile navigation">
-      {% if main_menu %}
-        <ul class="nav flex-column">
-          {% for item in main_menu %}
-            <li class="nav-item{% if item.below %} dropdown{% endif %}">
-              {% if item.below %}
-                <a href="#"
-                   class="nav-link dropdown-toggle d-flex justify-content-between align-items-center{% if item.in_active_trail %} active{% endif %}"
-                   data-bs-toggle="collapse"
-                   data-bs-target="#mobileSubmenu{{ loop.index }}"
-                   aria-expanded="false"
-                   aria-controls="mobileSubmenu{{ loop.index }}">
-                  {{ item.title }}
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-down" viewBox="0 0 16 16" aria-hidden="true">
-                    <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/>
-                  </svg>
-                </a>
-                <div class="collapse" id="mobileSubmenu{{ loop.index }}">
-                  <ul class="nav flex-column ms-3 border-start border-2 ps-2 my-2">
-                    {% for subitem in item.below %}
-                      <li class="nav-item{% if subitem.below %} dropdown{% endif %}">
-                        {% if subitem.below %}
-                          <a href="#"
-                             class="nav-link dropdown-toggle d-flex justify-content-between align-items-center{% if subitem.in_active_trail %} active{% endif %}"
-                             data-bs-toggle="collapse"
-                             data-bs-target="#mobileSubSubmenu{{ loop.parent.loop.index }}_{{ loop.index }}"
-                             aria-expanded="false"
-                             aria-controls="mobileSubSubmenu{{ loop.parent.loop.index }}_{{ loop.index }}">
-                            {{ subitem.title }}
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-down" viewBox="0 0 16 16" aria-hidden="true">
-                              <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/>
-                            </svg>
-                          </a>
-                          <div class="collapse" id="mobileSubSubmenu{{ loop.parent.loop.index }}_{{ loop.index }}">
-                            <ul class="nav flex-column ms-3 border-start border-2 ps-2 my-2">
-                              {% for subsubitem in subitem.below %}
-                                <li class="nav-item">
-                                  <a href="{{ subsubitem.url }}" class="nav-link{% if subsubitem.in_active_trail %} active{% endif %}">
-                                    {{ subsubitem.title }}
-                                  </a>
-                                </li>
-                              {% endfor %}
-                            </ul>
-                          </div>
-                        {% else %}
-                          <a href="{{ subitem.url }}" class="nav-link{% if subitem.in_active_trail %} active{% endif %}">
-                            {{ subitem.title }}
-                          </a>
-                        {% endif %}
-                      </li>
-                    {% endfor %}
-                  </ul>
-                </div>
-              {% else %}
-                <a href="{{ item.url }}" class="nav-link{% if item.in_active_trail %} active{% endif %}">
-                  {{ item.title }}
-                </a>
-              {% endif %}
-            </li>
-          {% endfor %}
-        </ul>
-      {% else %}
-        {{ drupal_menu('main') }}
-      {% endif %}
+      {{ drupal_menu('main') }}
     </nav>
 
-    {# Mobile Contribute #}
-    <div class="mt-4 pt-4 border-top">
-      {% include 'saho:saho-button' with {
-        text: '✦ Contribute to SAHO',
-        url: '/form/contribute',
-        variant: 'primary',
-        size: 'large',
-        attributes: {
-          class: ['w-100']
-        }
-      } %}
-    </div>
   </div>
 </div>
 

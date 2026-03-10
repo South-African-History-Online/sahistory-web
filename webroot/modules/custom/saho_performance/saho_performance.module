@@ -557,25 +557,6 @@ function _saho_performance_add_preload_hints(array &$page) {
     ];
   }
 
-  // Preload critical CSS files.
-  $critical_css_files = [
-    '/themes/custom/saho/dist/css/main.css',
-  ];
-
-  foreach ($critical_css_files as $css_file) {
-    $page['#attached']['html_head'][] = [
-      [
-        '#type' => 'html_tag',
-        '#tag' => 'link',
-        '#attributes' => [
-          'rel' => 'preload',
-          'href' => $css_file . '?v=' . time(),
-          'as' => 'style',
-        ],
-      ],
-      'css_preload_' . basename($css_file),
-    ];
-  }
 }
 
 /**

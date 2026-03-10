@@ -71,39 +71,17 @@ class ResponseSubscriber implements EventSubscriberInterface {
    *   The request object.
    */
   protected function addLinkHeaders($response, $request) {
-    // Preload critical fonts.
-    $fonts = [
-      '</themes/custom/saho/fonts/inter/Inter-Regular.woff2>; rel=preload; as=font; type=font/woff2; crossorigin',
-      '</themes/custom/saho/fonts/inter/Inter-Medium.woff2>; rel=preload; as=font; type=font/woff2; crossorigin',
-      '</themes/custom/saho/fonts/inter/Inter-Bold.woff2>; rel=preload; as=font; type=font/woff2; crossorigin',
-    ];
-
-    // Preload critical CSS.
-    $css = [
-      '</themes/custom/saho/dist/css/main.css>; rel=preload; as=style',
-    ];
-
-    // Preload critical JavaScript.
-    $js = [
-      '</themes/custom/saho/dist/js/main.script.js>; rel=preload; as=script',
-    ];
-
     // DNS prefetch for external resources.
     $dns_prefetch = [
       '</www.google-analytics.com>; rel=dns-prefetch',
       '</fonts.gstatic.com>; rel=dns-prefetch',
     ];
 
-    $links = array_merge($fonts, $css, $js, $dns_prefetch);
-
-    // Set Link header with all preload hints.
-    $response->headers->set('Link', implode(', ', $links));
-
-    // Early hints for HTTP/3.
-    if ($request->server->get('SERVER_PROTOCOL') === 'HTTP/2.0' ||
-        $request->server->get('SERVER_PROTOCOL') === 'HTTP/3.0') {
-      $response->headers->set('X-Early-Hints', '103');
-    }
+    // Set Link header with resource hints.
+    // Note: Font preloads are handled via HTML <link> tags in saho_performance_page_attachments()
+    // to avoid duplicate fetches. CSS/JS are loaded by Drupal's library system with versioned
+    // query params that won't match a static Link header URL.
+    $response->headers->set('Link', implode(', ', $dns_prefetch));
   }
 
 }

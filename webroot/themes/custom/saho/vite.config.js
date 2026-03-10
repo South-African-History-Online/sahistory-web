@@ -84,6 +84,7 @@ const purgeCSSConfig = {
   },
   variables: true,
   keyframes: true,
+  fontFace: true,
   defaultExtractor: content => {
     const matches = content.match(/[\w-/:[\]]+(?<!:)/g) || [];
     return matches;
