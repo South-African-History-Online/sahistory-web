@@ -1,35 +1,16 @@
 {#
 /**
  * @file
- * Theme override to display the main menu.
+ * SAHO main menu — clean output, no Bootstrap navbar/collapse wrapper.
  *
- * Available variables:
- * - menu_name: The machine name of the menu.
- * - items: A nested list of menu items.
- *   - attributes: HTML attributes for the menu item.
- *   - below: The menu item child items.
- *   - title: The menu link title.
- *   - url: The menu link URL, instance of \Drupal\Core\Url
- *   - localized_options: Menu link localized options.
- *   - is_expanded: TRUE if the link has visible children within the current
- *     menu tree.
- *   - is_collapsed: TRUE if the link has children within the current menu tree
- *     that are not currently visible.
- *   - in_active_trail: TRUE if the link is in the active trail.
+ * Used in two contexts:
+ *  - .saho-nav-bar   (desktop, horizontal)
+ *  - .saho-mobile-nav (offcanvas, vertical)
+ *
+ * CSS differentiates layout by parent container class.
+ * The saho-main-menu utility class is passed to saho:nav so CSS can target it.
  */
 #}
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
-  <div class="container-fluid">
-
-    <div class="collapse navbar-collapse" id="mainNavbar">
-      {% include 'saho:nav' with {
-        nav_utility_classes: [
-          'navbar-nav',
-          'me-auto',
-        ]
-      } %}
-    </div>
-
-  </div>
-</nav>
-
+{% include 'saho:nav' with {
+  nav_utility_classes: ['saho-main-menu']
+} %}

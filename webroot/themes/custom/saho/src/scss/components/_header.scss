@@ -1,442 +1,450 @@
 // ==================================================
-// SAHO HEADER & NAVIGATION COMPONENT
+// SAHO HEADER — SINGLE FIXED BAR
 // ==================================================
-// Extracted from _bootswatch.scss for proper component isolation
-// Contains: Header, Logo, Desktop Nav, Mobile Nav, Search, Tools Dropdown
+//
+// .saho-primary-bar  position: fixed, always 60px, zero CLS.
+// Layout: [logo] [saho-primary-nav — flex: 1] [saho-primary-actions]
+//
+// ≥1200px: nav items inline between logo and icons (single row)
+// <1200px: nav hidden, hamburger opens offcanvas
+//
+// Body offset: padding-top: 60px — STATIC CSS, no JS.
+//
 
 // ==================================================
-// MAIN HEADER
+// HEADER WRAPPER
 // ==================================================
 
-.saho-header {
+.saho-header-wrapper {
+  padding-top: 60px; // Compensates for fixed bar — never changes, zero CLS.
+}
+
+// ==================================================
+// PRIMARY BAR — fixed, 60px
+// ==================================================
+
+.saho-primary-bar {
+  position: fixed;
+  top: var(--drupal-displace-offset-top, 0px);
+  left: 0;
+  right: 0;
+  height: 60px;
+  z-index: 500;
   background: var(--saho-color-white);
-  border-bottom: 4px solid $saho-deep-heritage-red;
-  box-shadow: 0 4px 15px var(--saho-color-primary-alpha-10);
-  position: sticky;
-  top: 0;
-  z-index: 500; /* Lowered z-index to appear below Drupal admin toolbar */
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 0 1.25rem;
 
-  // Sticky header transitions
-  &.saho-header--sticky {
-    position: fixed;
-    width: 100%;
-    top: 0;
+  // Red → gold → red gradient accent along the bottom edge
+  &::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
     left: 0;
     right: 0;
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    will-change: transform;
-
-    // Hidden state - slide up
-    &.saho-header--hidden {
-      transform: translate3d(0, -100%, 0);
-    }
-
-    // Visible state - slide down
-    &.saho-header--visible {
-      transform: translate3d(0, 0, 0);
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-    }
-
-    // At top of page - no shadow
-    &.saho-header--at-top {
-      transform: translate3d(0, 0, 0);
-      box-shadow: 0 4px 15px var(--saho-color-primary-alpha-10);
-    }
+    height: 3px;
+    background: linear-gradient(
+      90deg,
+      $saho-deep-heritage-red 0%,
+      $saho-muted-gold 50%,
+      $saho-deep-heritage-red 100%
+    );
+    pointer-events: none;
   }
-}
-
-// Accent bar
-.saho-accent-bar {
-  height: 3px;
-  background: linear-gradient(
-    90deg,
-    $saho-deep-heritage-red 0%,
-    $saho-muted-gold 50%,
-    $saho-deep-heritage-red 100%
-  );
-}
-
-// Header content
-.saho-header-content {
-  min-height: 60px; // Reduced from 70px for leaner header
-  transition: min-height 0.3s ease;
-
-  @media (min-width: 768px) {
-    min-height: 65px; // Reduced from 80px for leaner header
-  }
-}
-
-// Compact mode when scrolling (even leaner)
-.saho-header--sticky.saho-header--visible {
-  .saho-header-content {
-    min-height: 55px;
-
-    @media (min-width: 768px) {
-      min-height: 60px;
-    }
-  }
-
-  // Slightly smaller logo when scrolled
-  .saho-logo-img {
-    width: 50px;
-
-    @media (min-width: 768px) {
-      width: 60px;
-    }
-  }
-
-  .saho-logo-title {
-    font-size: 1.2rem;
-  }
-}
-
-// Body adjustment for fixed sticky header
-body {
-  // Add padding equal to header height to prevent content jump
-  &:has(.saho-header--sticky) {
-    padding-top: 65px; // Match desktop header height
-
-    @media (max-width: 767px) {
-      padding-top: 60px; // Match mobile header height
-    }
-  }
-}
-
-// Prevent sticky header from covering anchor targets
-html {
-  scroll-padding-top: 80px; // Offset for sticky header + buffer
-}
-
-// Ensure page titles and content aren't hidden behind header
-.page-title,
-h1.node__title,
-.article-header {
-  scroll-margin-top: 80px; // Offset for sticky header
 }
 
 // ==================================================
-// LOGO SECTION
+// LOGO
 // ==================================================
 
 .saho-logo {
-  a:hover {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  gap: 0.6rem;
+  text-decoration: none;
+
+  img {
+    display: block;
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+  }
+
+  &:hover img,
+  &:focus img {
     transform: translateY(-2px);
-    transition: transform 0.3s ease;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $saho-deep-heritage-red;
+    outline-offset: 3px;
+    border-radius: 4px;
   }
 }
 
-.saho-logo-img {
-  width: 55px; // Reduced from 60px for leaner header
-  height: auto;
-  transition: width 0.3s ease;
+// Wordmark — "South African / History Online" in two stacked lines.
+// Hidden on mobile (<768px) where space is tight; visible on tablet+.
+.saho-logo-wordmark {
+  display: none;
 
   @media (min-width: 768px) {
-    width: 65px; // Reduced from 70px for leaner header
-  }
-}
-
-.saho-logo-title {
-  font-family: $font-family-sans-serif;
-  font-size: 1.3rem; // Reduced from 1.4rem for leaner header
-  font-weight: 700;
-  color: $saho-deep-heritage-red;
-  transition: font-size 0.3s ease;
-  line-height: 1.2;
-
-  @media (min-width: 992px) {
-    font-size: 1.6rem;
-  }
-}
-
-.saho-logo-tagline {
-  font-family: $font-family-sans-serif;
-  font-size: 0.9rem;
-  color: $saho-slate-blue;
-  font-style: italic;
-  margin-top: -2px;
-}
-
-// ==================================================
-// DESKTOP NAVIGATION
-// ==================================================
-
-.saho-desktop-nav {
-  ul.menu {
     display: flex;
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    gap: 2rem;
-
-    li {
-      position: relative;
-
-      a {
-        color: $saho-dark-charcoal;
-        text-decoration: none;
-        font-weight: 600;
-        font-size: 1rem;
-        padding: 10px 5px;
-        display: block;
-        transition: color 0.3s ease;
-        position: relative;
-
-        &::after {
-          content: "";
-          position: absolute;
-          bottom: 0;
-          left: 0;
-          width: 0;
-          height: 2px;
-          background: $saho-deep-heritage-red;
-          transition: width 0.3s ease;
-        }
-
-        &:hover,
-        &.is-active,
-        &.active {
-          color: $saho-deep-heritage-red;
-
-          &::after {
-            width: 100%;
-          }
-        }
-      }
-
-      // Active trail styling
-      &.active-trail > a {
-        color: $saho-deep-heritage-red;
-        font-weight: 700;
-
-        &::after {
-          width: 100%;
-        }
-      }
-
-      // Dropdown support
-      &:has(ul) > a::before {
-        content: "▾";
-        margin-right: 5px;
-        font-size: 0.8em;
-      }
-
-      ul {
-        position: absolute;
-        top: 100%;
-        left: 0;
-        background: var(--saho-color-white);
-        border: 1px solid var(--saho-color-border-subtle);
-        border-radius: var(--saho-radius-sm);
-        box-shadow: 0 8px 25px var(--saho-color-black-alpha-15);
-        padding: 8px 0;
-        min-width: 200px;
-        opacity: 0;
-        visibility: hidden;
-        transition: all 0.3s ease;
-        z-index: 100;
-
-        li {
-          a {
-            padding: 8px 15px;
-            font-size: 0.9rem;
-
-            &:hover,
-            &.active,
-            &.is-active {
-              background: $saho-aged-parchment;
-              color: $saho-deep-heritage-red;
-            }
-
-            &::after {
-              display: none;
-            }
-          }
-
-          // Active trail styling for dropdown items
-          &.active-trail > a {
-            background: $saho-aged-parchment;
-            color: $saho-deep-heritage-red;
-            font-weight: 700;
-          }
-
-          // Multilevel dropdown support
-          &.dropdown-submenu {
-            position: relative;
-
-            > a::after {
-              content: "▸";
-              position: absolute;
-              right: 10px;
-              top: 50%;
-              transform: translateY(-50%);
-              display: inline-block;
-            }
-
-            > .dropdown-menu {
-              top: 0;
-              left: 100%;
-              margin-top: -8px;
-              margin-left: 1px;
-              display: block !important; /* Force display */
-            }
-
-            &:hover > .dropdown-menu {
-              display: block !important;
-              opacity: 1;
-              visibility: visible;
-            }
-          }
-        }
-      }
-
-      &:hover > ul {
-        opacity: 1;
-        visibility: visible;
-        transform: translateY(5px);
-        display: block !important; /* Force display */
-      }
-    }
-  }
-}
-
-// Bootstrap dropdown submenu styles
-.dropdown-submenu {
-  position: relative;
-}
-
-.dropdown-submenu > .dropdown-toggle::after {
-  display: inline-block;
-  margin-left: 0.5em;
-  vertical-align: 0.255em;
-  content: "";
-  border-top: 0.3em solid transparent;
-  border-right: 0;
-  border-bottom: 0.3em solid transparent;
-  border-left: 0.3em solid;
-}
-
-.dropdown-submenu > .dropdown-menu {
-  top: 0;
-  left: 100%;
-  margin-top: -0.5rem;
-  margin-left: 0.1rem;
-  border-radius: 0.25rem;
-  display: none;
-}
-
-.dropdown-submenu:hover > .dropdown-menu {
-  display: block;
-}
-
-// ==================================================
-// SEARCH STYLING
-// ==================================================
-
-.saho-search {
-  display: flex;
-  align-items: center;
-  background: var(--saho-color-white);
-  border: 2px solid $saho-deep-heritage-red;
-  border-radius: 25px;
-  overflow: hidden;
-  transition: all 0.3s ease;
-  max-width: 100%; /* Ensure it doesn't overflow container */
-
-  &:focus-within {
-    border-color: $saho-muted-gold;
-    box-shadow: 0 0 0 3px var(--saho-color-accent-alpha-25);
+    flex-direction: column;
+    line-height: 1.2;
+    gap: 1px;
   }
 
-  /* Responsive adjustments */
-  @media (max-width: 991px) {
-    width: 100%; /* Full width on smaller screens */
-    max-width: 300px;
-  }
-
-  @media (max-width: 767px) {
-    max-width: 250px;
-  }
-}
-
-.saho-search-input {
-  border: none;
-  outline: none;
-  padding: 8px 12px; /* Slightly smaller padding */
-  font-size: 0.9rem;
-  background: transparent;
-  width: 180px; /* Smaller default width */
-  flex: 1; /* Allow input to grow */
-  min-width: 0; /* Prevent flex item from overflowing */
-
-  &::placeholder {
-    color: $saho-slate-blue;
-    opacity: 0.7;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
+  // Hide wordmark when nav items are inline to reclaim space for nav
   @media (min-width: 1200px) {
-    width: 220px;
-    padding: 10px 15px;
+    display: none;
   }
 
-  @media (max-width: 767px) {
-    width: 140px;
-  }
-}
-
-.saho-search-btn {
-  background: transparent;
-  border: none;
-  color: $saho-muted-gold;
-  padding: 8px 10px; /* Slightly smaller padding */
-  min-width: 40px; /* Ensure minimum clickable area */
-  cursor: pointer;
-  transition: color 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0; /* Prevent button from shrinking */
-
-  &:hover {
-    color: darken($saho-muted-gold, 10%);
-  }
-
-  svg {
-    width: 16px;
-    height: 16px;
-  }
-
-  @media (min-width: 1200px) {
-    padding: 10px 12px;
+  // Show again on very wide screens where there's ample space
+  @media (min-width: 1440px) {
+    display: flex;
   }
 }
 
-// Mobile Search Button (Tablet & Mobile)
-.saho-mobile-search-btn {
+.saho-logo-wordmark__line1 {
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
   color: $saho-deep-heritage-red;
+  white-space: nowrap;
+}
+
+.saho-logo-wordmark__line2 {
+  font-size: 0.6rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: $saho-dark-charcoal;
+  opacity: 0.7;
+  white-space: nowrap;
+}
+
+// ==================================================
+// PRIMARY ACTIONS — right side of primary bar
+// ==================================================
+
+.saho-primary-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.125rem;
+}
+
+// ==================================================
+// ICON BUTTON — shared base for search, tools, hamburger
+// ==================================================
+
+.saho-icon-btn {
+  background: none;
+  border: none;
+  color: $saho-dark-charcoal;
   padding: 0.5rem;
   min-width: 44px;
   min-height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s ease;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: color 0.2s ease, background-color 0.2s ease;
 
-  &:hover,
-  &:focus {
-    color: $saho-muted-gold;
-    background-color: rgba(153, 0, 0, 0.05);
+  // Suppress Bootstrap's dropdown caret arrow
+  &.dropdown-toggle::after {
+    display: none;
   }
 
-  svg {
-    width: 20px;
-    height: 20px;
+  &:hover {
+    color: $saho-deep-heritage-red;
+    background-color: rgba(153, 0, 0, 0.06);
+  }
+
+  &:focus {
+    outline: none;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $saho-deep-heritage-red;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 3px var(--saho-color-primary-alpha-25);
+  }
+
+  &.show {
+    color: $saho-deep-heritage-red;
+    background-color: rgba(153, 0, 0, 0.06);
   }
 }
 
-// Mobile Search Modal
+// ==================================================
+// PRIMARY NAV — inline at ≥1200px, hidden below
+// ==================================================
+//
+// drupal_menu('main') → menu--main.html.twig → {% include 'saho:nav' with {
+//   nav_utility_classes: ['saho-main-menu'] } %}
+//
+// Actual rendered structure:
+//   <ul class="nav saho-main-menu">
+//     <li class="nav-item [active active-trail] [dropdown]">
+//       <a class="nav-link [active]" href="...">Title</a>
+//       <ul class="dropdown-menu">          ← only when item has children
+//         <li><a class="dropdown-item" href="...">Sub</a></li>
+//       </ul>
+//     </li>
+//   </ul>
+//
+// Desktop context (.saho-primary-nav):  horizontal flex row, hover dropdowns.
+// Mobile context (.saho-mobile-nav): vertical flex column, tap-friendly.
+//
+
+.saho-primary-nav {
+  display: none; // Hidden below ≥1200px — hamburger handles nav
+
+  @media (min-width: 1200px) {
+    display: flex;
+    flex: 1;
+    align-self: stretch; // Fill the full 60px bar height so ::after anchors to bar bottom
+    align-items: stretch;
+    min-width: 0;
+    padding: 0 0.5rem;
+    margin-left: 1.5rem; // Breathing room between logo/wordmark and first nav item
+  }
+
+  // ── Desktop horizontal menu ──────────────────────────────────────────────
+
+  .saho-main-menu {
+    display: flex;
+    flex-direction: row;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    align-items: stretch;
+    height: 100%;
+
+    // Override Bootstrap .nav margin/padding
+    &.nav {
+      flex-wrap: nowrap;
+    }
+  }
+
+  .nav-item {
+    position: relative;
+    display: flex;
+    align-items: stretch;
+    height: 100%; // Stretch full 60px bar height
+
+    // Active section indicator
+    &.active,
+    &.active-trail {
+      > .nav-link {
+        color: $saho-deep-heritage-red;
+        font-weight: 700;
+
+        &::after {
+          transform: scaleX(1);
+        }
+      }
+    }
+  }
+
+  .nav-link {
+    color: $saho-dark-charcoal;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.8125rem; // 13px — all 7 items fit comfortably
+    letter-spacing: 0.04em; // Slight institutional register — archive typography
+    padding: 0 0.75rem;
+    height: 100%; // Fill full bar height so ::after anchors to bar bottom
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    position: relative;
+    transition: color 0.2s ease;
+
+    // Bootstrap overrides
+    &:hover,
+    &:focus {
+      color: $saho-deep-heritage-red;
+    }
+
+    // Bottom indicator — 8px above the bar base, clearing the 3px gradient accent.
+    // Slides in on hover/active.
+    &::after {
+      content: "" !important; // Override Bootstrap dropdown caret
+      position: absolute;
+      bottom: 8px; // 3px gradient + 5px gap
+      left: 0.5rem;
+      right: 0.5rem;
+      height: 3px;
+      background: $saho-deep-heritage-red;
+      transform: scaleX(0);
+      transform-origin: center;
+      transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      border: none;
+      border-radius: 2px 2px 0 0;
+      width: auto;
+      margin: 0;
+      vertical-align: unset;
+      display: block;
+    }
+
+    &:hover::after,
+    &.active::after,
+    &.is-active::after {
+      transform: scaleX(1);
+    }
+
+    // Dropdown toggle caret — suppress Bootstrap's, use saho:nav's ▾ span
+    &.dropdown-toggle {
+      padding-right: 0.75rem;
+    }
+  }
+
+  // ── Desktop dropdown panel ───────────────────────────────────────────────
+
+  .dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: var(--saho-color-white);
+    border: 1px solid var(--saho-color-border-subtle);
+    border-radius: var(--saho-radius-sm);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    padding: 6px 0;
+    min-width: 215px;
+    margin: 0;
+    list-style: none;
+    // Override saho:nav's inline style="display: block" with visibility approach
+    display: block !important;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-6px);
+    transition:
+      opacity 0.2s ease,
+      visibility 0.2s ease,
+      transform 0.2s ease;
+    z-index: 200;
+  }
+
+  .nav-item:hover > .dropdown-menu,
+  .nav-item:focus-within > .dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+
+  .dropdown-item {
+    color: $saho-dark-charcoal;
+    font-weight: 500;
+    font-size: 0.875rem;
+    padding: 8px 16px;
+    transition: background-color 0.15s ease, color 0.15s ease;
+    white-space: nowrap;
+
+    &:hover,
+    &:focus,
+    &.active,
+    &.is-active {
+      background: $saho-aged-parchment;
+      color: $saho-deep-heritage-red;
+    }
+  }
+}
+
+// ==================================================
+// HAMBURGER BUTTON
+// ==================================================
+
+.saho-hamburger-btn {
+  background: none;
+  border: none;
+  padding: 0.5rem;
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: rgba(153, 0, 0, 0.06);
+  }
+
+  &:focus {
+    outline: none;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $saho-deep-heritage-red;
+    outline-offset: 2px;
+  }
+}
+
+.saho-hamburger {
+  display: flex;
+  flex-direction: column;
+  width: 22px;
+  height: 16px;
+  justify-content: space-between;
+
+  span {
+    display: block;
+    height: 2.5px;
+    width: 100%;
+    background: $saho-deep-heritage-red;
+    border-radius: 2px;
+    transition: transform 0.25s ease, opacity 0.25s ease;
+  }
+}
+
+// ==================================================
+// HAMBURGER VISIBILITY
+// <1200px: always visible (offcanvas is the nav)
+// ≥1200px: always hidden (nav items inline in primary bar)
+// No JS needed — no layout impact.
+// ==================================================
+
+@media (min-width: 1200px) {
+  .saho-hamburger-btn {
+    display: none;
+  }
+}
+
+// ==================================================
+// DRUPAL ADMIN TOOLBAR OFFSET
+// ==================================================
+//
+// Drupal's displace.js sets --drupal-displace-offset-top on <html>
+// to the exact combined height of all fixed displacing elements
+// (toolbar bar + any open trays). This is handled directly in the
+// .saho-primary-bar rule above — no additional rules needed.
+
+// ==================================================
+// SCROLL ANCHOR OFFSET — fixed primary bar compensation
+// ==================================================
+
+html {
+  scroll-padding-top: 75px; // 60px bar + 15px buffer
+}
+
+.page-title,
+h1.node__title,
+.article-header {
+  scroll-margin-top: 75px;
+}
+
+// ==================================================
+// SEARCH MODAL
+// ==================================================
+
 .saho-search-modal {
   .modal-dialog {
     margin: 0;
@@ -446,7 +454,7 @@ h1.node__title,
     border: none;
     border-radius: 0;
     min-height: 100vh;
-    background: linear-gradient(180deg, #ffffff 0%, #fafafa 100%);
+    background: linear-gradient(180deg, #fff 0%, #fafafa 100%);
   }
 
   .modal-header {
@@ -497,8 +505,8 @@ h1.node__title,
         border-right: none;
         padding: 1rem 1.25rem;
         font-size: 1.1rem;
-        background: #ffffff;
-        transition: all 0.3s ease;
+        background: #fff;
+        transition: border-color 0.2s ease;
 
         &:focus {
           border-color: $saho-muted-gold;
@@ -517,11 +525,11 @@ h1.node__title,
         padding: 1rem 2rem;
         font-weight: 600;
         font-size: 1.1rem;
-        transition: all 0.3s ease;
+        transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
 
         &:hover {
-          background: darken($saho-deep-heritage-red, 8%);
-          border-color: darken($saho-deep-heritage-red, 8%);
+          background: var(--saho-color-primary-dark);
+          border-color: var(--saho-color-primary-dark);
           transform: translateY(-1px);
           box-shadow: 0 4px 12px rgba(153, 0, 0, 0.25);
         }
@@ -533,17 +541,83 @@ h1.node__title,
       }
     }
   }
+}
 
-  // Smooth modal transitions
-  &.fade .modal-dialog {
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-                opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+// ==================================================
+// DONATE BUTTON
+// ==================================================
+
+.saho-donate-btn {
+  background: transparent;
+  color: $saho-deep-heritage-red;
+  border: 1.5px solid $saho-deep-heritage-red;
+  animation: saho-donate-ring 3s ease-in-out 2s infinite; // Delayed start, subtle repeat
+  text-decoration: none;
+  padding: 7px 14px;
+  border-radius: 25px;
+  font-weight: 700;
+  font-size: 0.8125rem;
+  letter-spacing: 0.02em;
+  transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+  margin-left: 0.5rem;
+
+  // Subtle left separator from icon group
+  &::before {
+    content: "";
+    display: block;
+    position: absolute;
+    left: -0.5rem;
+    height: 20px;
+    width: 1px;
+    background: rgba(0, 0, 0, 0.12);
   }
 
-  &.show .modal-dialog {
-    transform: scale(1);
-    opacity: 1;
+  position: relative;
+
+  &:hover {
+    background: $saho-deep-heritage-red;
+    color: #fff;
+    text-decoration: none;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(153, 0, 0, 0.25);
+    animation: none; // Stop pulse once engaged
+
+    .saho-donate-icon {
+      animation: saho-heartbeat 0.6s ease infinite alternate;
+    }
   }
+
+  &:focus-visible {
+    outline: 2px solid $saho-deep-heritage-red;
+    outline-offset: 2px;
+  }
+
+  // Label hidden on very small screens
+  .saho-donate-label {
+    @media (max-width: 380px) {
+      display: none;
+    }
+  }
+}
+
+.saho-donate-icon {
+  font-size: 0.85rem;
+}
+
+@keyframes saho-heartbeat {
+  from { transform: scale(1); }
+  to   { transform: scale(1.35); }
+}
+
+// Gentle ring pulse — draws eye without distracting from content
+@keyframes saho-donate-ring {
+  0%, 100%  { box-shadow: 0 0 0 0 rgba(153, 0, 0, 0); }
+  40%       { box-shadow: 0 0 0 4px rgba(153, 0, 0, 0.18); }
+  70%       { box-shadow: 0 0 0 7px rgba(153, 0, 0, 0); }
 }
 
 // ==================================================
@@ -554,83 +628,59 @@ h1.node__title,
   background: $saho-deep-heritage-red;
   color: var(--saho-color-white);
   text-decoration: none;
-  padding: 10px 18px;
+  padding: 9px 16px;
   border-radius: 25px;
   font-weight: 600;
-  font-size: 0.9rem;
-  transition: all 0.3s ease;
+  font-size: 0.875rem;
+  transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
   display: flex;
   align-items: center;
-  gap: 6px;
-  white-space: nowrap; /* Prevent text wrapping */
+  gap: 5px;
+  white-space: nowrap;
+  margin-left: 0.25rem;
 
   &:hover {
     color: var(--saho-color-white);
     text-decoration: none;
     background: var(--saho-color-primary-dark);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px var(--saho-color-primary-alpha-25);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px var(--saho-color-primary-alpha-25);
 
     .saho-contribute-icon {
-      animation: bounce 0.6s ease infinite alternate;
+      animation: saho-bounce 0.6s ease infinite alternate;
     }
   }
 
-  /* Show text on all screen sizes */
-  @media (max-width: 767px) {
-    padding: 8px 16px;
-    font-size: 0.85rem;
+  &:focus-visible {
+    outline: 2px solid $saho-muted-gold;
+    outline-offset: 2px;
   }
 }
 
 .saho-contribute-icon {
-  font-size: 1.1rem;
-  transition: all 0.3s ease;
+  font-size: 1rem;
 }
 
-/* Bounce animation for the icon */
-@keyframes bounce {
-  from {
-    transform: translateY(0);
-  }
-
-  to {
-    transform: translateY(-4px);
-  }
+@keyframes saho-bounce {
+  from { transform: translateY(0); }
+  to   { transform: translateY(-3px); }
 }
 
 // ==================================================
 // TOOLS DROPDOWN
 // ==================================================
 
-/* Enhance tools dropdown button */
 #toolsDropdown {
-  border-color: $saho-muted-gold;
-  color: $saho-dark-charcoal;
-  background-color: var(--saho-color-white);
-  font-weight: 600;
-
-  &:hover,
-  &:focus,
-  &.show {
-    background-color: $saho-aged-parchment;
-    border-color: $saho-deep-heritage-red;
-    color: $saho-deep-heritage-red;
-  }
-
-  /* Ensure icon is visible */
-  svg {
-    color: $saho-deep-heritage-red;
-  }
+  // Styling handled by .saho-icon-btn — no overrides needed.
 }
 
-/* Style dropdown items */
 .dropdown-menu {
   border: 1px solid $saho-aged-parchment;
-  box-shadow: 0 4px 15px rgb(0, 0, 0, 0.1);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 
   .dropdown-item {
     padding: 0.5rem 1rem;
+    font-size: 0.875rem;
 
     &:hover,
     &:focus {
@@ -640,64 +690,43 @@ h1.node__title,
 
     svg {
       color: $saho-deep-heritage-red;
+      flex-shrink: 0;
     }
   }
 }
 
-// ==================================================
-// MOBILE TOGGLE
-// ==================================================
-
-.saho-mobile-toggle {
-  background: none;
-  border: 2px solid transparent;
-  padding: 10px;
-  cursor: pointer;
-  border-radius: var(--saho-radius-sm);
-  transition: all 0.3s ease;
-  min-width: 44px;
-  min-height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  &:hover {
-    background: var(--saho-color-primary-alpha-10);
-    border-color: var(--saho-color-primary-alpha-25);
-  }
-
-  &:focus {
-    outline: none;
-    border-color: $saho-deep-heritage-red;
-    box-shadow: 0 0 0 3px var(--saho-color-primary-alpha-25);
-  }
+// Bootstrap dropdown submenu support
+.dropdown-submenu {
+  position: relative;
 }
 
-.saho-hamburger {
-  display: flex;
-  flex-direction: column;
-  width: 24px;
-  height: 18px;
-  justify-content: space-between;
+.dropdown-submenu > .dropdown-toggle::after {
+  display: inline-block;
+  margin-left: 0.5em;
+  vertical-align: 0.255em;
+  content: "";
+  border-top: 0.3em solid transparent;
+  border-right: 0;
+  border-bottom: 0.3em solid transparent;
+  border-left: 0.3em solid;
+}
 
-  span {
-    display: block;
-    height: 3px;
-    width: 100%;
-    background: $saho-deep-heritage-red;
-    border-radius: 2px;
-    transition: all 0.3s ease;
-  }
+.dropdown-submenu > .dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -0.5rem;
+  margin-left: 0.1rem;
+  border-radius: 0.25rem;
+  display: none;
+}
+
+.dropdown-submenu:hover > .dropdown-menu {
+  display: block;
 }
 
 // ==================================================
-// MOBILE MENU
+// MOBILE MENU OFFCANVAS
 // ==================================================
-
-/* Override Bootstrap's default collapse behavior for our mobile menu */
-.collapse.navbar-collapse {
-  display: block !important; /* Force display of the menu */
-}
 
 .saho-mobile-menu {
   width: 85%;
@@ -708,10 +737,11 @@ h1.node__title,
   bottom: 0;
   left: 0;
   transform: translateX(-100%);
-  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-              visibility 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    visibility 0.35s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 4px 0 16px rgba(0, 0, 0, 0.15);
-  background: #ffffff;
+  background: #fff;
   visibility: hidden;
 
   &.show {
@@ -719,13 +749,11 @@ h1.node__title,
     visibility: visible;
   }
 
-  // Ensure backdrop fades in/out in sync with menu
   &.show ~ .offcanvas-backdrop {
     opacity: 0.5;
     transition: opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
-  // Smooth backdrop fade out on close
   &:not(.show) ~ .offcanvas-backdrop {
     opacity: 0;
     transition: opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1);
@@ -778,9 +806,8 @@ h1.node__title,
     padding: 1.25rem;
     overflow-y: auto;
     height: calc(100% - 70px);
-    background: linear-gradient(180deg, #ffffff 0%, #fafafa 100%);
+    background: linear-gradient(180deg, #fff 0%, #fafafa 100%);
 
-    /* Custom scrollbar */
     &::-webkit-scrollbar {
       width: 6px;
     }
@@ -799,15 +826,13 @@ h1.node__title,
     }
   }
 
-
-  /* Responsive adjustments */
   @media (max-width: 576px) {
     width: 90%;
     max-width: 300px;
   }
 }
 
-/* Fix for offcanvas backdrop */
+// Offcanvas backdrop
 .offcanvas-backdrop {
   background-color: var(--saho-color-black);
   opacity: 0;
@@ -826,12 +851,10 @@ h1.node__title,
   }
 }
 
-/* Prevent body scrolling when offcanvas is open */
 body.offcanvas-open {
   overflow: hidden;
 }
 
-/* Fix for Bootstrap offcanvas on mobile */
 .offcanvas-start {
   top: 0;
   left: 0;
@@ -845,7 +868,10 @@ body.offcanvas-open {
   transform: translateX(0);
 }
 
-// Mobile search
+// ==================================================
+// MOBILE SEARCH (inside offcanvas)
+// ==================================================
+
 .saho-mobile-search {
   margin-bottom: 1.5rem;
 
@@ -860,8 +886,8 @@ body.offcanvas-open {
     border-right: none;
     padding: 0.75rem 1rem;
     font-size: 0.95rem;
-    background: #ffffff;
-    transition: all 0.3s ease;
+    background: #fff;
+    transition: border-color 0.2s ease;
 
     &::placeholder {
       color: rgba(44, 62, 80, 0.5);
@@ -879,9 +905,9 @@ body.offcanvas-open {
   .btn-outline-secondary {
     border: 2px solid $saho-aged-parchment;
     border-left: none;
-    background: #ffffff;
+    background: #fff;
     padding: 0.75rem 1.25rem;
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
     min-width: 56px;
 
     &:hover {
@@ -908,19 +934,31 @@ body.offcanvas-open {
   }
 }
 
-// Gold text utility class
 .text-gold {
   color: $saho-muted-gold !important;
 }
 
-// Mobile navigation
+// ==================================================
+// MOBILE NAVIGATION (offcanvas)
+// ==================================================
+//
+// Same saho:nav output as desktop, but rendered vertically inside offcanvas.
+// .saho-main-menu gets flex-column; .nav-link gets full-width tap targets.
+// Dropdown menus (when items have children) stack below their parent link.
+//
+
 .saho-mobile-nav {
-  .nav {
+  .saho-main-menu {
+    display: flex;
+    flex-direction: column;
+    list-style: none;
+    margin: 0;
+    padding: 0;
     gap: 0.25rem;
   }
 
   .nav-item {
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.125rem;
   }
 
   .nav-link {
@@ -929,196 +967,123 @@ body.offcanvas-open {
     font-size: 1rem;
     padding: 0.75rem 1rem;
     border-radius: 8px;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     border-left: 4px solid transparent;
-    margin-bottom: 0;
     min-height: 44px;
     display: flex;
     align-items: center;
-    position: relative;
+    text-decoration: none;
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
 
-    &:hover {
+    &:hover,
+    &:focus {
       background: $saho-aged-parchment;
       color: $saho-deep-heritage-red;
       border-left-color: $saho-deep-heritage-red;
-      transform: translateX(4px);
+      transform: translateX(3px);
     }
 
-    &.active {
-      background: linear-gradient(90deg, rgba(153, 0, 0, 0.08) 0%, rgba(153, 0, 0, 0.04) 100%);
+    &.active,
+    &.is-active {
+      background: rgba(153, 0, 0, 0.06);
       color: $saho-deep-heritage-red;
       border-left-color: $saho-deep-heritage-red;
       font-weight: 700;
     }
 
-    // Dropdown toggle chevron animation
-    &.dropdown-toggle {
-      .bi-chevron-down {
-        transition: transform 0.3s ease;
-        margin-left: auto;
-        flex-shrink: 0;
-      }
-
-      &[aria-expanded="true"] .bi-chevron-down {
-        transform: rotate(180deg);
-      }
+    // saho:nav inline dropdown toggle caret
+    .dropdown-toggle-icon {
+      margin-left: auto;
+      font-size: 1rem;
+      opacity: 0.6;
     }
   }
 
-  // Submenu styling - first level
-  .collapse {
-    margin-top: 0.25rem;
-    margin-bottom: 0.5rem;
+  // Active section highlight
+  .nav-item.active,
+  .nav-item.active-trail {
+    > .nav-link {
+      background: rgba(153, 0, 0, 0.06);
+      color: $saho-deep-heritage-red;
+      border-left-color: $saho-deep-heritage-red;
+      font-weight: 700;
+    }
+  }
 
-    .nav {
-      border-left: 3px solid rgba(153, 0, 0, 0.15);
-      margin-left: 0.75rem;
-      padding-left: 0.75rem;
-      padding-top: 0.5rem;
-      padding-bottom: 0.5rem;
-      background: linear-gradient(90deg, rgba(153, 0, 0, 0.02) 0%, transparent 20%);
-      border-radius: 0 8px 8px 0;
+  // Sub-menu — shown as indented block below parent
+  .dropdown-menu {
+    position: static;        // Override Bootstrap absolute positioning
+    float: none;
+    display: none;           // Hidden until Bootstrap JS opens it
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 0 0 0.5rem 1rem;
+    margin: 0;
+    border-left: 3px solid rgba(153, 0, 0, 0.15);
+    margin-left: 1rem;
+
+    &.show {
+      display: block;
     }
 
-    .nav-link {
-      font-size: 0.9rem;
-      font-weight: 500;
-      padding: 0.6rem 0.75rem;
+    .dropdown-item {
       color: $saho-slate-blue;
-      border-left-width: 3px;
+      font-weight: 500;
+      font-size: 0.9rem;
+      padding: 0.55rem 0.75rem;
+      border-radius: 6px;
       min-height: 40px;
+      display: flex;
+      align-items: center;
 
-      &:hover {
+      &:hover,
+      &:focus {
+        background: $saho-aged-parchment;
         color: $saho-deep-heritage-red;
-        background: rgba(153, 0, 0, 0.05);
       }
 
-      &.active {
+      &.active,
+      &.is-active {
         color: $saho-deep-heritage-red;
         font-weight: 600;
       }
     }
-  }
-
-  // Second level submenu
-  .collapse .collapse {
-    .nav {
-      border-left-color: rgba(184, 138, 46, 0.3);
-      background: linear-gradient(90deg, rgba(184, 138, 46, 0.03) 0%, transparent 20%);
-    }
-
-    .nav-link {
-      font-size: 0.85rem;
-      padding: 0.5rem 0.65rem;
-      min-height: 36px;
-      color: lighten($saho-slate-blue, 10%);
-
-      &:hover {
-        color: $saho-muted-gold;
-        background: rgba(184, 138, 46, 0.08);
-      }
-
-      &.active {
-        color: $saho-muted-gold;
-        border-left-color: $saho-muted-gold;
-      }
-    }
-  }
-}
-
-// ==================================================
-// RESPONSIVE BREAKPOINTS
-// ==================================================
-
-@media (max-width: 991px) {
-  .saho-desktop-nav {
-    display: none !important;
-  }
-}
-
-@media (max-width: 767px) {
-  .saho-search {
-    display: none !important;
-  }
-
-  .saho-header-content {
-    padding: 10px 0;
-  }
-}
-
-@media (max-width: 575px) {
-  .saho-logo-text {
-    display: none !important;
-  }
-
-  .saho-actions {
-    gap: 10px;
   }
 }
 
 // ==================================================
 // PRINT STYLES
 // ==================================================
-// Hide non-essential elements when printing for a clean output
-// suitable for researchers, teachers, and students
 
 @media print {
-  // Hide the entire header navigation and actions
-  .saho-header {
-    position: relative !important; // Remove sticky positioning
+  .saho-header-wrapper {
+    padding-top: 0; // Remove fixed bar offset for print
+  }
+
+  .saho-primary-bar {
+    position: relative !important;
     box-shadow: none !important;
-    border-bottom: 2px solid var(--saho-color-black) !important;
 
-    // Hide desktop navigation
-    .saho-desktop-nav {
-      display: none !important;
-    }
-
-    // Hide all action buttons (search, tools dropdown, contribute)
-    .saho-actions {
-      display: none !important;
-    }
-
-    // Hide the accent bar
-    .saho-accent-bar {
-      display: none !important;
+    &::after {
+      display: none;
     }
   }
 
-  // Hide mobile menu
+  .saho-primary-nav,
+  .saho-primary-actions,
   .saho-mobile-menu,
   .offcanvas,
-  .offcanvas-backdrop {
+  .offcanvas-backdrop,
+  .saho-contribute-btn {
     display: none !important;
   }
 
-  // Hide Tools dropdown specifically (in case it appears elsewhere)
   #toolsDropdown,
-  [aria-labelledby="toolsDropdown"] {
-    display: none !important;
-  }
-
-  // Hide any open dropdown menus
+  [aria-labelledby="toolsDropdown"],
   .dropdown-menu {
     display: none !important;
   }
 
-  // Hide footer navigation and social links (keep copyright)
-  footer .footer-links,
-  footer .social-links,
-  footer nav {
-    display: none !important;
-  }
-
-  // Hide share and citation buttons
-  .share-button,
-  .cite-button,
-  [data-citation-trigger],
-  [data-sharing-trigger] {
-    display: none !important;
-  }
-
-  // Hide modals
   .modal,
   .modal-backdrop,
   #citation-modal,
@@ -1126,13 +1091,19 @@ body.offcanvas-open {
     display: none !important;
   }
 
-  // Hide contribute CTAs
-  .saho-contribute-btn,
-  .saho-landing-cta {
+  footer .footer-links,
+  footer .social-links,
+  footer nav {
     display: none !important;
   }
 
-  // Ensure content prints well
+  .share-button,
+  .cite-button,
+  [data-citation-trigger],
+  [data-sharing-trigger] {
+    display: none !important;
+  }
+
   body {
     font-size: 12pt;
     line-height: 1.5;
@@ -1140,27 +1111,23 @@ body.offcanvas-open {
     background: var(--saho-color-white) !important;
   }
 
-  // Ensure links are visible in print
   a[href]::after {
     content: " (" attr(href) ")";
     font-size: 0.8em;
     color: var(--saho-color-text-muted);
   }
 
-  // But not for internal/anchor links or javascript
   a[href^="#"]::after,
   a[href^="javascript:"]::after,
   a[href^="/"]::after {
     content: "";
   }
 
-  // Make images print friendly
   img {
     max-width: 100% !important;
     break-inside: avoid;
   }
 
-  // Avoid breaking inside important elements
   h1, h2, h3, h4, h5, h6 {
     break-after: avoid;
   }
