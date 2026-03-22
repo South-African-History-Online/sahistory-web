@@ -327,6 +327,31 @@ ddev drush updb -y      # Run updates
 - Keep commit messages clear with SAHO-XX tags
 - Timeline app has separate build process in `/saho-timeline-svelte/`
 
+## MCP Browser Automation (Playwright)
+
+The project has Playwright MCP configured in `.mcp.json` for live browser control.
+
+### What it enables
+- Navigate to any page on the local site and take screenshots
+- Click elements, fill forms, inspect the DOM
+- Visual regression testing after CSS/Twig changes
+- Say: *"Navigate to the homepage and take a screenshot"* or *"Check the layout of /node/123"*
+
+### Configuration
+- **File**: `.mcp.json` (project root, checked into git)
+- **Server**: `npx @playwright/mcp@latest`
+- **Local URL**: `https://sahistory-web.ddev.site` (DDEV must be running)
+
+### Headed mode (show the browser window)
+Edit `.mcp.json` temporarily:
+```json
+"env": { "PLAYWRIGHT_HEADLESS": "false" }
+```
+
+### Skills available
+- `playwright-browser` — browser automation workflows for SAHO
+- `frontend-design` — Bootstrap 5, Svelte 5, SCSS, Radix components
+
 ## Support & Resources
 - GitHub Issues: https://github.com/South-African-History-Online/sahistory-web/issues
 - Drupal Docs: https://www.drupal.org/docs/11

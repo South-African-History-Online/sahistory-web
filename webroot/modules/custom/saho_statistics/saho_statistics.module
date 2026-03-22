@@ -122,6 +122,116 @@ function saho_statistics_entity_update(EntityInterface $entity) {
 }
 
 /**
+ * Implements hook_page_attachments().
+ *
+ * Passes real popular search queries (from saho_search_queries table) to
+ * drupalSettings so the search modal can render live data instead of
+ * hardcoded chips. Falls back gracefully to an empty array so the Twig
+ * fallback chips remain visible if no data exists yet.
+ */
+function saho_statistics_page_attachments(array &$attachments) {
+  $cid = 'saho_statistics:popular_searches';
+  $cache = \Drupal::cache()->get($cid);
+
+  if ($cache) {
+    $popular = $cache->data;
+  }
+  else {
+    $popular = _saho_statistics_get_popular_searches(8);
+    // Cache for 15 minutes so trending topics stay reasonably fresh.
+    \Drupal::cache()->set($cid, $popular, \Drupal::time()->getRequestTime() + 900);
+  }
+
+  $attachments['#attached']['drupalSettings']['sahoSearch']['popularSearches'] = $popular;
+}
+
+/**
+ * Returns the top N most-searched queries over the last 90 days.
+ *
+ * Performs a case-insensitive GROUP BY so "Mandela" and "mandela" merge.
+ * Only includes queries that returned at least one result.
+ *
+ * @param int $limit
+ *   Maximum number of results to return.
+ *
+ * @return array
+ *   Array of associative arrays with 'label' (original-case representative)
+ *   and 'url' keys, ordered by descending search count.
+ */
+function _saho_statistics_get_popular_searches(int $limit = 8): array {
+  $config = \Drupal::config('saho_statistics.settings');
+  if (!$config->get('track_searches')) {
+    return [];
+  }
+
+  try {
+    $cutoff = \Drupal::time()->getRequestTime() - (90 * 86400);
+
+    // Group by lowercase query text and pick one representative label.
+    $db = \Drupal::database();
+    $query = $db->select('saho_search_queries', 'q');
+    $query->addField('q', 'query_text', 'query_label');
+    $query->addExpression('COUNT(*)', 'search_count');
+    $query->condition('q.timestamp', $cutoff, '>');
+    // Only queries that returned meaningful results (≥5) are useful suggestions.
+    $query->condition('q.result_count', 5, '>=');
+    // utf8mb4 collation is case-insensitive — duplicates (Mandela/mandela) merge.
+    $query->groupBy('q.query_text');
+    // Require at least 2 searches to filter out one-off typos/junk.
+    $query->having('COUNT(*) >= 2');
+    $query->orderBy('search_count', 'DESC');
+    $query->range(0, $limit);
+
+    $rows = $query->execute()->fetchAll();
+
+    $popular = [];
+    foreach ($rows as $row) {
+      $raw = trim($row->query_label);
+      if ($raw === '') {
+        continue;
+      }
+
+      // query_text is stored as a JSON-serialised Search API condition array,
+      // e.g. {"#conjunction":"AND","0":"Nelson","1":"Mandela"}.
+      // Decode it and join the numeric-keyed values into a readable label.
+      $decoded = json_decode($raw, TRUE);
+      if (is_array($decoded)) {
+        $words = array_filter(
+          $decoded,
+          static fn($k) => is_numeric($k),
+          ARRAY_FILTER_USE_KEY
+        );
+        $label = implode(' ', $words);
+      }
+      else {
+        // Fallback: treat as plain text (legacy rows).
+        $label = $raw;
+      }
+
+      // Normalise to title-case so "mandela" and "Mandela" render identically.
+      $label = mb_convert_case(trim($label), MB_CASE_TITLE, 'UTF-8');
+      if ($label === '') {
+        continue;
+      }
+
+      $popular[] = [
+        'label' => $label,
+        'url'   => '/search?search_api_fulltext=' . rawurlencode($label),
+      ];
+    }
+
+    return $popular;
+  }
+  catch (\Exception $e) {
+    \Drupal::logger('saho_statistics')->error(
+      'Failed to retrieve popular searches: @msg',
+      ['@msg' => $e->getMessage()]
+    );
+    return [];
+  }
+}
+
+/**
  * Implements hook_cron().
  */
 function saho_statistics_cron() {

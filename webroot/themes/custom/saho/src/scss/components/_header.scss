@@ -442,7 +442,7 @@ h1.node__title,
 }
 
 // ==================================================
-// SEARCH MODAL
+// SEARCH MODAL — Research Discovery Centre
 // ==================================================
 
 .saho-search-modal {
@@ -453,92 +453,334 @@ h1.node__title,
   .modal-content {
     border: none;
     border-radius: 0;
-    min-height: 100vh;
-    background: linear-gradient(180deg, #fff 0%, #fafafa 100%);
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
   }
 
-  .modal-header {
-    background: linear-gradient(135deg, $saho-aged-parchment 0%, lighten($saho-aged-parchment, 3%) 100%);
-    border-bottom: 3px solid $saho-deep-heritage-red;
-    padding: 1.5rem;
-    min-height: 70px;
+  // ── Hero zone ────────────────────────────────────────────────────────────
 
-    .modal-title {
+  .saho-search-hero {
+    background:
+      radial-gradient(ellipse at 50% -5%, rgba(153, 0, 0, 0.22) 0%, transparent 60%),
+      linear-gradient(160deg, #0f1923 0%, #1a0505 55%, #0f1923 100%);
+    padding: 2.5rem 2rem 2.25rem;
+    position: relative;
+    flex-shrink: 0;
+
+    @include media-breakpoint-up(md) {
+      padding: 3.5rem 3rem 3rem;
+    }
+  }
+
+  .saho-search-close {
+    position: absolute;
+    top: 1.25rem;
+    right: 1.25rem;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: rgba(255, 255, 255, 0.65);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    z-index: 10;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.15);
+      color: #fff;
+      transform: rotate(90deg);
+    }
+
+    &:focus-visible {
+      outline: 2px solid $saho-deep-heritage-red;
+      outline-offset: 3px;
+    }
+  }
+
+  .saho-search-eyebrow {
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.4);
+    text-align: center;
+    margin-bottom: 0.375rem;
+
+    @include media-breakpoint-down(sm) {
+      display: none;
+    }
+  }
+
+  .saho-search-headline {
+    font-size: clamp(1.625rem, 3vw, 2.25rem);
+    font-weight: 800;
+    color: #fff;
+    text-align: center;
+    margin-bottom: 1.75rem;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+
+    em {
+      font-style: normal;
       color: $saho-deep-heritage-red;
+      text-decoration: underline;
+      text-decoration-color: rgba(153, 0, 0, 0.4);
+      text-underline-offset: 4px;
+    }
+
+    @include media-breakpoint-down(sm) {
+      font-size: 1.5rem;
+      margin-bottom: 1.25rem;
+    }
+  }
+
+  .saho-search-input-wrap {
+    position: relative;
+    max-width: 680px;
+    margin: 0 auto;
+  }
+
+  .saho-search-field-icon {
+    position: absolute;
+    left: 1.125rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #9ca3af;
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  .saho-search-input {
+    width: 100%;
+    padding: 1.125rem 2.5rem 1.125rem 3.125rem;
+    font-size: 1.0625rem;
+    border: 2px solid transparent;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.97);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45), 0 2px 8px rgba(153, 0, 0, 0.12);
+    color: #1a202c;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    appearance: none;
+
+    &::placeholder {
+      color: #a0aec0;
+    }
+
+    &:focus {
+      outline: none;
+      border-color: $saho-deep-heritage-red;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45), 0 0 0 4px rgba(153, 0, 0, 0.18);
+    }
+
+    @include media-breakpoint-down(sm) {
+      padding-right: 1rem;
+      font-size: 1rem;
+    }
+  }
+
+  .saho-search-actions {
+    text-align: center;
+    margin-top: 1.125rem;
+  }
+
+  .saho-search-submit-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: $saho-deep-heritage-red;
+    color: #fff;
+    border: none;
+    border-radius: 9999px;
+    padding: 0.75rem 2.25rem;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+
+    &:hover {
+      background: var(--saho-color-primary-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(153, 0, 0, 0.4);
+    }
+
+    &:focus-visible {
+      outline: 2px solid #fff;
+      outline-offset: 3px;
+    }
+  }
+
+  .saho-search-stats {
+    display: flex;
+    justify-content: center;
+    gap: 2.5rem;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+
+    @include media-breakpoint-down(sm) {
+      display: none;
+    }
+  }
+
+  .saho-search-stat {
+    text-align: center;
+
+    strong {
+      display: block;
+      font-size: 1.0625rem;
       font-weight: 700;
-      font-size: 1.25rem;
-      letter-spacing: 0.5px;
+      color: rgba(255, 255, 255, 0.88);
+      line-height: 1.2;
+    }
+
+    span {
+      font-size: 0.6875rem;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.4);
+    }
+  }
+
+  // ── Discovery zone ──────────────────────────────────────────────────────
+
+  .saho-search-discovery {
+    flex: 1;
+    background: #fff;
+    padding: 2rem 2rem 2.5rem;
+    overflow-y: auto;
+
+    @include media-breakpoint-up(md) {
+      padding: 2.25rem 3rem 3rem;
+    }
+  }
+
+  .saho-search-section {
+    margin-bottom: 1.75rem;
+
+    &:last-child {
       margin-bottom: 0;
     }
+  }
 
-    .btn-close {
-      opacity: 1;
-      padding: 0.75rem;
-      background: transparent url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23990000'%3e%3cpath d='M.293.293a1 1 0 011.414 0L8 6.586 14.293.293a1 1 0 111.414 1.414L9.414 8l6.293 6.293a1 1 0 01-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 01-1.414-1.414L6.586 8 .293 1.707a1 1 0 010-1.414z'/%3e%3c/svg%3e") center/1em auto no-repeat;
-      min-width: 44px;
-      min-height: 44px;
-      border-radius: var(--saho-radius-sm);
-      transition: all 0.3s ease;
+  .saho-search-section-label {
+    font-size: 0.6875rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: #9ca3af;
+    margin-bottom: 0.75rem;
+  }
 
-      &:hover {
-        background-color: rgba(153, 0, 0, 0.1);
-        transform: rotate(90deg);
-      }
+  .saho-search-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
 
-      &:focus {
-        box-shadow: 0 0 0 0.25rem var(--saho-color-primary-alpha-25);
-        outline: none;
-      }
+  .saho-search-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.4rem 0.9375rem;
+    background: rgba(153, 0, 0, 0.06);
+    color: $saho-deep-heritage-red;
+    border: 1px solid rgba(153, 0, 0, 0.18);
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.18s ease;
+
+    &:hover,
+    &:focus-visible {
+      background: $saho-deep-heritage-red;
+      color: #fff;
+      border-color: $saho-deep-heritage-red;
+      transform: translateY(-1px);
+      box-shadow: 0 3px 10px rgba(153, 0, 0, 0.28);
+      text-decoration: none;
     }
   }
 
-  .modal-body {
-    padding: 2rem 1.5rem;
+  .saho-search-chip--era {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.4rem 0.9375rem;
+    background: rgba(184, 138, 46, 0.09);
+    color: #7a5c12;
+    border: 1px solid rgba(184, 138, 46, 0.28);
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.18s ease;
 
-    .input-group {
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-      border-radius: 12px;
-      overflow: hidden;
+    &:hover,
+    &:focus-visible {
+      background: $saho-muted-gold;
+      color: #fff;
+      border-color: $saho-muted-gold;
+      transform: translateY(-1px);
+      box-shadow: 0 3px 10px rgba(184, 138, 46, 0.3);
+      text-decoration: none;
+    }
+  }
 
-      .form-control {
-        border: 2px solid $saho-aged-parchment;
-        border-right: none;
-        padding: 1rem 1.25rem;
-        font-size: 1.1rem;
-        background: #fff;
-        transition: border-color 0.2s ease;
+  .saho-search-chip--type {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.4rem 0.9375rem;
+    background: rgba(58, 74, 100, 0.06);
+    color: $saho-slate-blue;
+    border: 1px solid rgba(58, 74, 100, 0.2);
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.18s ease;
 
-        &:focus {
-          border-color: $saho-muted-gold;
-          box-shadow: none;
-          outline: none;
-        }
+    svg {
+      flex-shrink: 0;
+    }
 
-        &::placeholder {
-          color: rgba(0, 0, 0, 0.4);
-        }
-      }
+    &:hover,
+    &:focus-visible {
+      background: $saho-slate-blue;
+      color: #fff;
+      border-color: $saho-slate-blue;
+      transform: translateY(-1px);
+      box-shadow: 0 3px 10px rgba(58, 74, 100, 0.3);
+      text-decoration: none;
+    }
+  }
 
-      .btn-primary {
-        background: $saho-deep-heritage-red;
-        border: 2px solid $saho-deep-heritage-red;
-        padding: 1rem 2rem;
-        font-weight: 600;
-        font-size: 1.1rem;
-        transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  .saho-search-chip--recent {
+    padding-right: 0.5rem;
 
-        &:hover {
-          background: var(--saho-color-primary-dark);
-          border-color: var(--saho-color-primary-dark);
-          transform: translateY(-1px);
-          box-shadow: 0 4px 12px rgba(153, 0, 0, 0.25);
-        }
+    .saho-chip-dismiss {
+      margin-left: 0.125rem;
+      opacity: 0.55;
+      font-size: 0.8125rem;
+    }
 
-        &:focus {
-          box-shadow: 0 0 0 0.25rem var(--saho-color-primary-alpha-25);
-          outline: none;
-        }
-      }
+    &:hover .saho-chip-dismiss {
+      opacity: 1;
     }
   }
 }
@@ -759,54 +1001,143 @@ h1.node__title,
     transition: opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
-  .offcanvas-header {
-    background: linear-gradient(135deg, $saho-aged-parchment 0%, lighten($saho-aged-parchment, 3%) 100%);
-    border-bottom: 3px solid $saho-deep-heritage-red;
-    padding: 1rem 1.25rem;
-    min-height: 70px;
-    position: relative;
+  // ── Hero header (dark gradient, matching search modal) ──────────────────
 
-    h5 {
-      color: $saho-deep-heritage-red;
-      font-weight: 700;
-      font-size: 1.25rem;
-      letter-spacing: 0.5px;
-      margin-bottom: 0;
-    }
+  .offcanvas-header.saho-mobile-menu-hero {
+    background:
+      radial-gradient(ellipse at 50% -10%, rgba(153, 0, 0, 0.2) 0%, transparent 60%),
+      linear-gradient(160deg, #0f1923 0%, #1a0505 55%, #0f1923 100%);
+    border-bottom: none;
+    padding: 1rem 1.25rem 1.25rem;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.875rem;
+    min-height: auto;
+  }
 
-    .btn-close {
-      opacity: 1;
-      padding: 0.75rem;
-      margin: 0;
-      background: transparent url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23990000'%3e%3cpath d='M.293.293a1 1 0 011.414 0L8 6.586 14.293.293a1 1 0 111.414 1.414L9.414 8l6.293 6.293a1 1 0 01-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 01-1.414-1.414L6.586 8 .293 1.707a1 1 0 010-1.414z'/%3e%3c/svg%3e") center/1em auto no-repeat;
-      min-width: 44px;
-      min-height: 44px;
-      border-radius: var(--saho-radius-sm);
-      transition: all 0.3s ease;
-
-      &:hover {
-        background-color: rgba(153, 0, 0, 0.1);
-        transform: rotate(90deg);
-      }
-
-      &:focus {
-        box-shadow: 0 0 0 0.25rem var(--saho-color-primary-alpha-25);
-        outline: none;
-      }
-    }
+  .saho-mobile-menu-toprow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
   }
 
   .saho-mobile-logo {
     width: 36px;
     height: auto;
-    margin-right: 0.75rem;
+  }
+
+  .saho-mobile-menu-label {
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+
+  .saho-mobile-menu-close {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: rgba(255, 255, 255, 0.65);
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.15);
+      color: #fff;
+      transform: rotate(90deg);
+    }
+
+    &:focus-visible {
+      outline: 2px solid $saho-deep-heritage-red;
+      outline-offset: 2px;
+    }
+  }
+
+  // ── Search form inside hero ──────────────────────────────────────────────
+
+  .saho-mobile-search {
+    margin: 0;
+  }
+
+  .saho-mobile-search-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .saho-mobile-search-icon {
+    position: absolute;
+    left: 0.875rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #9ca3af;
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  .saho-mobile-search-input {
+    width: 100%;
+    padding: 0.875rem 2.75rem 0.875rem 2.75rem;
+    font-size: 0.9375rem;
+    border: 2px solid transparent;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.97);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+    color: #1a202c;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    appearance: none;
+
+    &::placeholder {
+      color: #a0aec0;
+    }
+
+    &:focus {
+      outline: none;
+      border-color: $saho-deep-heritage-red;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35), 0 0 0 3px rgba(153, 0, 0, 0.18);
+    }
+  }
+
+  .saho-mobile-search-submit {
+    position: absolute;
+    right: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: $saho-deep-heritage-red;
+    border: none;
+    border-radius: 8px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background-color 0.2s ease;
+
+    &:hover {
+      background: var(--saho-color-primary-dark);
+    }
+
+    &:focus-visible {
+      outline: 2px solid #fff;
+      outline-offset: 2px;
+    }
   }
 
   .offcanvas-body {
     padding: 1.25rem;
     overflow-y: auto;
-    height: calc(100% - 70px);
-    background: linear-gradient(180deg, #fff 0%, #fafafa 100%);
+    flex: 1;
+    background: #fff;
 
     &::-webkit-scrollbar {
       width: 6px;
@@ -866,72 +1197,6 @@ body.offcanvas-open {
 
 .offcanvas-start.show {
   transform: translateX(0);
-}
-
-// ==================================================
-// MOBILE SEARCH (inside offcanvas)
-// ==================================================
-
-.saho-mobile-search {
-  margin-bottom: 1.5rem;
-
-  .input-group {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    border-radius: 8px;
-    overflow: hidden;
-  }
-
-  .form-control {
-    border: 2px solid $saho-aged-parchment;
-    border-right: none;
-    padding: 0.75rem 1rem;
-    font-size: 0.95rem;
-    background: #fff;
-    transition: border-color 0.2s ease;
-
-    &::placeholder {
-      color: rgba(44, 62, 80, 0.5);
-      font-style: italic;
-    }
-
-    &:focus {
-      border-color: $saho-muted-gold;
-      box-shadow: none;
-      background: lighten($saho-aged-parchment, 5%);
-      outline: none;
-    }
-  }
-
-  .btn-outline-secondary {
-    border: 2px solid $saho-aged-parchment;
-    border-left: none;
-    background: #fff;
-    padding: 0.75rem 1.25rem;
-    transition: all 0.2s ease;
-    min-width: 56px;
-
-    &:hover {
-      background: $saho-aged-parchment;
-      border-color: $saho-aged-parchment;
-
-      &.text-gold {
-        color: darken($saho-muted-gold, 15%);
-      }
-    }
-
-    &:active {
-      background: darken($saho-aged-parchment, 5%);
-    }
-
-    &.text-gold {
-      color: $saho-muted-gold;
-    }
-
-    svg {
-      width: 18px;
-      height: 18px;
-    }
-  }
 }
 
 .text-gold {
