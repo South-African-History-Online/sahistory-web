@@ -1,0 +1,146 @@
+/**
+ * SAHO Button System - Canonical Classes
+ *
+ * Three authoritative button variants. All values trace to --saho-* tokens.
+ * Use these classes in Twig templates for consistent button styling.
+ *
+ * Usage:
+ *   .btn-saho-primary   - filled red, pill shape (primary CTA)
+ *   .btn-saho-secondary - slate-blue filled (secondary actions)
+ *   .btn-saho-outline   - transparent with red border (tertiary/ghost)
+ *
+ * These map .btn-primary → same visual as .btn-saho-primary via _bootstrap-overrides.scss.
+ */
+
+// ---------------------------------------------------------------------------
+// Base shared styles
+// ---------------------------------------------------------------------------
+
+.btn-saho-primary,
+.btn-saho-secondary,
+.btn-saho-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--saho-space-1);
+  padding: var(--saho-button-padding-md);
+  font-size: var(--saho-button-font-size-md);
+  font-weight: var(--saho-font-weight-semibold);
+  line-height: 1.5;
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  border: 1px solid transparent;
+  border-radius: var(--saho-button-radius-pill);
+  transition: all var(--saho-transition-base);
+  box-shadow: var(--saho-shadow-sm);
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--saho-shadow-hover);
+    text-decoration: none;
+  }
+
+  &:active {
+    transform: translateY(0);
+    box-shadow: var(--saho-shadow-sm);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--saho-color-primary);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--saho-button-focus-shadow);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Primary - filled red
+// ---------------------------------------------------------------------------
+
+.btn-saho-primary {
+  background: var(--saho-button-bg-primary);
+  color: var(--saho-button-text-primary);
+  border-color: var(--saho-button-bg-primary);
+
+  &:hover,
+  &:focus {
+    background: var(--saho-button-bg-primary-hover);
+    border-color: var(--saho-button-bg-primary-hover);
+    color: var(--saho-button-text-primary);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Secondary - filled slate-blue
+// ---------------------------------------------------------------------------
+
+.btn-saho-secondary {
+  background: var(--saho-color-secondary);
+  color: var(--saho-color-white);
+  border-color: var(--saho-color-secondary);
+
+  &:hover,
+  &:focus {
+    background: color-mix(in srgb, var(--saho-color-secondary) 85%, black);
+    border-color: color-mix(in srgb, var(--saho-color-secondary) 85%, black);
+    color: var(--saho-color-white);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Outline - transparent, red border
+// ---------------------------------------------------------------------------
+
+.btn-saho-outline {
+  background: transparent;
+  color: var(--saho-color-primary);
+  border-color: var(--saho-color-primary);
+
+  &:hover,
+  &:focus {
+    background: var(--saho-color-primary);
+    color: var(--saho-color-white);
+    border-color: var(--saho-color-primary);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Size modifiers - override padding/font-size only
+// ---------------------------------------------------------------------------
+
+.btn-saho-primary,
+.btn-saho-secondary,
+.btn-saho-outline {
+  &.btn-saho-sm {
+    padding: var(--saho-button-padding-sm);
+    font-size: var(--saho-button-font-size-sm);
+    border-radius: var(--saho-button-radius-sm);
+  }
+
+  &.btn-saho-lg {
+    padding: var(--saho-button-padding-lg);
+    font-size: var(--saho-button-font-size-lg);
+  }
+
+  &.btn-saho-square {
+    border-radius: var(--saho-button-radius-md);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Reduced motion
+// ---------------------------------------------------------------------------
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-saho-primary,
+  .btn-saho-secondary,
+  .btn-saho-outline {
+    transition: none;
+
+    &:hover,
+    &:focus {
+      transform: none;
+    }
+  }
+}

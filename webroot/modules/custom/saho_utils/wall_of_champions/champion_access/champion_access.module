@@ -1,0 +1,56 @@
+<?php
+
+/**
+ * @file
+ * Champion Access module.
+ *
+ * Syncs the 'champion' Drupal role from active Commerce subscriptions
+ * and gates nodes that have field_champion_access set to TRUE.
+ */
+
+use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Session\AccountInterface;
+use Drupal\node\NodeInterface;
+use Drupal\user\UserInterface;
+
+/**
+ * Implements hook_node_access().
+ *
+ * Restricts view access to nodes with field_champion_access = 1
+ * to users with the 'champion' role (or node administration permission).
+ */
+function champion_access_node_access(NodeInterface $node, $op, AccountInterface $account) {
+  if ($op !== 'view') {
+    return AccessResult::neutral();
+  }
+
+  if (!$node->hasField('field_champion_access')) {
+    return AccessResult::neutral();
+  }
+
+  if (!$node->get('field_champion_access')->value) {
+    return AccessResult::neutral();
+  }
+
+  if ($account->hasPermission('administer nodes') || in_array('champion', $account->getRoles())) {
+    return AccessResult::allowed()
+      ->cachePerUser()
+      ->addCacheableDependency($node);
+  }
+
+  return AccessResult::forbidden()
+    ->cachePerUser()
+    ->addCacheableDependency($node);
+}
+
+/**
+ * Implements hook_user_login().
+ *
+ * Syncs the champion role on each login in case the subscription
+ * status changed since the user last logged in.
+ */
+function champion_access_user_login(UserInterface $account) {
+  /** @var \Drupal\champion_access\Service\ChampionRoleService $service */
+  $service = \Drupal::service('champion_access.role_service');
+  $service->syncRole($account);
+}

@@ -1,0 +1,45 @@
+{#
+/**
+ * @file
+ * SAHO FAQ Listing - individual FAQ row template.
+ *
+ * Each FAQ item renders as a Bootstrap accordion item.
+ * Uses the question title to build unique accordion IDs.
+ *
+ * fields.title.content = the question (rendered, may have HTML)
+ * fields.body.content  = the answer
+ */
+#}
+
+{# Build a slug from the question text for unique, stable accordion IDs #}
+{% set q_text = fields.title.content|striptags|trim %}
+{% set faq_id = 'faq-' ~ q_text|lower
+    |replace({'?': '', "'": '', '"': '', ',': '', '.': '', ':': '', '/': '-', '&': 'and', ' ': '-'})
+    |slice(0, 60) %}
+
+<div class="accordion-item saho-faq-item">
+
+  <h3 class="accordion-header saho-faq-item__header" id="{{ faq_id }}-heading">
+    <button
+      class="accordion-button saho-faq-item__button collapsed"
+      type="button"
+      data-bs-toggle="collapse"
+      data-bs-target="#{{ faq_id }}-answer"
+      aria-expanded="false"
+      aria-controls="{{ faq_id }}-answer"
+    >
+      {{ q_text }}
+    </button>
+  </h3>
+
+  <div
+    id="{{ faq_id }}-answer"
+    class="accordion-collapse collapse saho-faq-item__collapse"
+    aria-labelledby="{{ faq_id }}-heading"
+  >
+    <div class="accordion-body saho-faq-item__body saho-page-body">
+      {{ fields.body.content }}
+    </div>
+  </div>
+
+</div>

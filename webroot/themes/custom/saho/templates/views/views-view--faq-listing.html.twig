@@ -1,0 +1,42 @@
+{#
+/**
+ * @file
+ * SAHO FAQ Listing - outer view wrapper.
+ *
+ * Wraps the entire FAQ listing page.
+ * The view title is rendered as the page heading (h1 is output
+ * by Drupal's page template, so we skip it here).
+ */
+#}
+
+<div{{ attributes.addClass('saho-faq-listing') }}>
+
+  {% if header %}
+    <div class="saho-faq-listing__header">
+      {{ header }}
+    </div>
+  {% endif %}
+
+  {% if exposed %}
+    <div class="saho-faq-listing__filters">
+      {{ exposed }}
+    </div>
+  {% endif %}
+
+  {% if rows %}
+    <div class="saho-faq-listing__content">
+      {{ rows }}
+    </div>
+  {% elseif empty %}
+    <div class="saho-faq-listing__empty">
+      {{ empty }}
+    </div>
+  {% endif %}
+
+  {% if footer %}
+    <div class="saho-faq-listing__footer">
+      {{ footer }}
+    </div>
+  {% endif %}
+
+</div>

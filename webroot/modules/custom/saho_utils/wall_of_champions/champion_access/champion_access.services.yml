@@ -1,0 +1,13 @@
+services:
+  champion_access.role_service:
+    class: Drupal\champion_access\Service\ChampionRoleService
+    arguments:
+      - '@database'
+    tags: []
+
+  champion_access.subscription_subscriber:
+    class: Drupal\champion_access\EventSubscriber\SubscriptionStateSubscriber
+    arguments:
+      - '@champion_access.role_service'
+    tags:
+      - { name: event_subscriber }

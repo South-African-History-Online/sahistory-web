@@ -1,0 +1,27 @@
+{#
+/**
+ * @file
+ * SAHO FAQ Listing - grouped category section template.
+ *
+ * Each category renders as a Bootstrap accordion group.
+ * The `title` variable is the rendered category term name.
+ * The `rows` variable is an array of rendered FAQ rows.
+ */
+#}
+
+{% set group_slug = title|striptags|trim|lower|replace({' ': '-', '&': 'and', '/': '-', "'": '', '"': ''}) %}
+{% set group_id = 'faq-cat-' ~ group_slug %}
+
+<div class="saho-faq-category mb-5">
+
+  <h2 class="saho-faq-category__heading" id="{{ group_id }}-heading">
+    <span>{{ title|striptags|trim ?: 'General'|t }}</span>
+  </h2>
+
+  <div class="accordion saho-faq-accordion" id="{{ group_id }}-accordion">
+    {% for row in rows %}
+      {{ row.content }}
+    {% endfor %}
+  </div>
+
+</div>
