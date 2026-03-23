@@ -6,6 +6,20 @@
  * not be constrained by the default max-width: 1200px setting.
  */
 
+/* Bootstrap Layout Builder: Fix oversized SVG tab icons in full-page fallback view.
+ * appearance.svg and settings.svg have hardcoded width/height="300"; the off-canvas
+ * dialog has its own scoped CSS, but the full-page (/layout_builder/configure/…)
+ * fallback has no size constraint. These rules cap the icons at 24 × 24 px.
+ * Covers both section configure and block configure full-page forms. */
+.layout-builder-configure-section .bs_nav-tabs a span[role="img"] svg,
+.layout-builder-configure-section .bs_nav-tabs a span[role="img"] img,
+.layout-builder-configure-block .bs_nav-tabs a span[role="img"] svg,
+.layout-builder-configure-block .bs_nav-tabs a span[role="img"] img {
+  width: 24px;
+  height: 24px;
+  display: block;
+}
+
 /* Bootstrap Grid: Allow blocks to fill their column width in ALL grid contexts */
 .layout-builder__layout.row > [class*="col-"] .block-section,
 .row > [class*="col-"] .block-section {

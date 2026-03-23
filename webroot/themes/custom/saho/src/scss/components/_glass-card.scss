@@ -2,20 +2,22 @@
 // A modern, translucent card with blur effects and subtle interactions
 
 .glass-card {
+  // Glass effect uses alpha values by design - kept as-is for visual fidelity.
+  // Non-glass properties use design tokens where applicable.
   background: rgb(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border: 1px solid rgb(255, 255, 255, 0.2);
-  border-radius: 1rem;
-  box-shadow: 
+  border-radius: var(--saho-radius-xl); // 1rem
+  box-shadow:
     0 8px 32px 0 rgb(31, 38, 135, 0.15),
     inset 0 0 0 1px rgb(255, 255, 255, 0.1);
-  transition: all 0.3s ease;
+  transition: all var(--saho-transition-slow);
 
   &:hover {
     background: rgb(255, 255, 255, 0.15);
     transform: translateY(-2px);
-    box-shadow: 
+    box-shadow:
       0 12px 40px 0 rgb(31, 38, 135, 0.25),
       inset 0 0 0 1px rgb(255, 255, 255, 0.15);
   }
@@ -23,14 +25,14 @@
   &--dark {
     background: rgb(0, 0, 0, 0.3);
     border-color: rgb(255, 255, 255, 0.1);
-    
+
     &:hover {
       background: rgb(0, 0, 0, 0.4);
     }
   }
 
   &__content {
-    padding: 2rem;
+    padding: var(--saho-space-4); // 2rem
     position: relative;
     z-index: 1;
   }

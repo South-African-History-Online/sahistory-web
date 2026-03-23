@@ -33,6 +33,10 @@ const purgeCSSConfig = {
       'section-title',
     ],
     deep: [
+      /^layout-builder/,  // Layout Builder admin UI classes (full-page configure fallback)
+      /^bs_nav-tabs/,     // Bootstrap Styles tab nav (block/section configure forms)
+      /^bs_tab-/,         // Bootstrap Styles tab pane classes
+      /^blb_/,            // Bootstrap Layout Builder UI classes
       /^modal/,
       /^dropdown/,
       /^collapse/,

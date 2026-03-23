@@ -231,17 +231,66 @@
 // DEPRECATED: Block button styling moved to saho-button SDC component
 // These legacy classes are kept for backwards compatibility during migration
 // All button styling now in components/utilities/saho-button/saho-button.css
-//
-// Migration notes:
-// - Old .block-button and .block-button-primary -> saho-button component (primary variant)
-// - Old .block-button-secondary -> saho-button component (primary variant - no outline variant)
-// - Variants removed: block-action, secondary, outline (consolidated to single primary style)
-//
-// TODO: Remove these empty classes after all templates migrated to saho-button component
 .block-section .block-button,
 .block-section .block-button-primary,
 .block-section .block-button-secondary {
   // Empty - all styling now in saho-button component
+}
+
+// ============================================================
+// INLINE BLOCK: button content type
+// Override enhanced_button_link formatter output to match the
+// saho-button--primary design token system (filled heritage red pill).
+// ============================================================
+.enhanced-button-link-inline .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  background: var(--saho-button-primary-bg) !important;
+  background-color: var(--saho-button-primary-bg) !important;
+  color: var(--saho-button-primary-text) !important;
+  border: var(--saho-button-border-width) solid var(--saho-button-primary-border) !important;
+  border-radius: var(--saho-button-radius-pill) !important;
+  padding: var(--saho-button-padding-md-y) var(--saho-button-padding-md-x) !important;
+  font-size: var(--saho-button-font-size-md);
+  font-weight: var(--saho-button-font-weight);
+  letter-spacing: 0.01em;
+  text-decoration: none !important;
+  transition: var(--saho-button-transition);
+
+  &:hover,
+  &:focus {
+    background: var(--saho-button-primary-bg-hover) !important;
+    background-color: var(--saho-button-primary-bg-hover) !important;
+    border-color: var(--saho-button-primary-border-hover) !important;
+    color: var(--saho-button-primary-text-hover) !important;
+    text-decoration: none !important;
+    transform: translateY(-1px);
+    box-shadow: var(--saho-shadow-sm);
+  }
+}
+
+// ============================================================
+// INLINE BLOCK: basic content type
+// Consistent prose container for rich-text body content.
+// ============================================================
+.saho-prose-block {
+  &__title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: $gray-900;
+    margin-bottom: var(--saho-space-2);
+    font-family: $headings-font-family;
+  }
+
+  &__body {
+    font-size: var(--saho-font-size-base);
+    line-height: var(--saho-line-height-relaxed);
+    color: $gray-800;
+
+    > *:first-child { margin-top: 0; }
+    > *:last-child { margin-bottom: 0; }
+  }
 }
 
 /* Entity overview block */
@@ -285,7 +334,7 @@
   transition: transform 0.3s ease;
 
   &:hover {
-    transform: translateY(-8px);
+    transform: translateY(-4px);
   }
 
   // Ensure saho-card-image works properly in entity overview
@@ -451,5 +500,18 @@
   
   .block-section .block-button::before {
     transition: none;
+  }
+}
+
+// ============================================================
+// LAYOUT BUILDER EDIT MODE
+// Suppress interactive hover states so editors don't think
+// block sections are clickable elements.
+// ============================================================
+.layout-builder .block-section,
+.layout-builder-block .block-section {
+  &:hover {
+    box-shadow: none;
+    border-color: $gray-200;
   }
 }

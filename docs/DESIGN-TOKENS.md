@@ -391,9 +391,10 @@ font-family: "Inter", -apple-system, BlinkMacSystemFont,
 .btn-primary {
   background: var(--saho-color-primary) !important;
   color: var(--saho-color-white) !important;
-  border-radius: 25px !important;  /* Pill shape */
+  border-radius: var(--saho-button-radius-pill) !important;
   font-weight: 600 !important;
   padding: 0.75rem 1.5rem !important;
+  transition: all var(--saho-transition-base) !important;
 }
 ```
 
@@ -426,8 +427,8 @@ font-family: "Inter", -apple-system, BlinkMacSystemFont,
 .saho-card {
   /* Component-scoped tokens - inherit from global system */
   --card-color-primary: var(--saho-color-primary);
-  --card-spacing: var(--saho-card-padding-compact);
-  --card-border-radius: var(--saho-card-radius);
+  --card-spacing: var(--saho-space-3);          /* 24px */
+  --card-border-radius: var(--saho-radius-md);  /* 8px */
 
   /* Apply styles using scoped tokens */
   background: var(--saho-color-white);
@@ -452,10 +453,10 @@ font-family: "Inter", -apple-system, BlinkMacSystemFont,
   background: var(--saho-color-primary) !important;
   color: var(--saho-color-white) !important;
   border-color: var(--saho-color-primary) !important;
-  border-radius: 25px !important;  /* Pill shape */
+  border-radius: var(--saho-button-radius-pill) !important;
   font-weight: 600 !important;
   padding: 0.75rem 1.5rem !important;
-  transition: all 0.2s ease !important;
+  transition: all var(--saho-transition-base) !important;
 
   &:hover {
     background: var(--saho-color-primary-dark) !important;
@@ -603,6 +604,127 @@ $font-size-base: 1rem;
 4. **Dark Mode Ready**: Easy to implement theme switching
 5. **Component Isolation**: Scope tokens to specific components
 6. **Performance**: No SCSS compilation needed for token changes
+
+---
+
+## Card Anatomy
+
+The canonical card structure uses `.saho-card` with optional sub-elements. All styles live in `components/content/saho-card/saho-card.css`.
+
+### Element Structure
+
+```html
+<div class="saho-card [variant]">
+  <div class="saho-card__image">        <!-- optional: image/placeholder -->
+    <img src="..." alt="...">
+  </div>
+  <div class="saho-card__body">
+    <span class="saho-card__type-badge">Category</span>  <!-- optional -->
+    <h3 class="saho-card__title"><a href="...">Title</a></h3>
+    <div class="saho-card__meta">Date · Author · Views</div>  <!-- optional -->
+    <p class="saho-card__content">Excerpt text…</p>          <!-- optional -->
+  </div>
+  <div class="saho-card__footer">       <!-- optional: CTA button -->
+    ...
+  </div>
+</div>
+```
+
+### Layout Variants
+
+| Class | Description | Use case |
+|---|---|---|
+| _(none)_ | Default — vertical card with image top | Standard card grids |
+| `.saho-card--horizontal` | Image left, body right | Top-read lists, search results |
+| `.saho-card--featured-layout` | Large hero image, bold title | Featured content highlights |
+| `.saho-card--compact` | No image, dense text | Sidebars, related content lists |
+
+### Color Variants
+
+| Class | Border accent |
+|---|---|
+| `.saho-card--primary` | `--saho-color-primary` (red) |
+| `.saho-card--secondary` | `--saho-color-secondary` (blue) |
+| `.saho-card--accent` | `--saho-color-accent` (gold) |
+| `.saho-card--highlight` | `--saho-color-highlight` (brick) |
+
+---
+
+## Button Variants
+
+Three canonical SAHO button classes are defined in `src/scss/components/_buttons.scss`. All values trace to `--saho-*` tokens.
+
+```css
+/* Primary — filled red, pill shape */
+.btn-saho-primary {
+  background: var(--saho-button-bg-primary);       /* --saho-color-primary */
+  border-radius: var(--saho-button-radius-pill);   /* 1.5625rem = 25px */
+  padding: var(--saho-button-padding-md);
+}
+
+/* Secondary — filled slate-blue */
+.btn-saho-secondary {
+  background: var(--saho-color-secondary);
+  border-radius: var(--saho-button-radius-pill);
+}
+
+/* Outline — transparent, red border */
+.btn-saho-outline {
+  background: transparent;
+  color: var(--saho-color-primary);
+  border-color: var(--saho-color-primary);
+}
+```
+
+Size modifiers: append `.btn-saho-sm`, `.btn-saho-lg`, or `.btn-saho-square` (non-pill radius).
+
+Bootstrap's `.btn-primary` is also mapped to the same token values via `_bootstrap-overrides.scss` and `_bootswatch.scss`.
+
+---
+
+## Using `var(--saho-*)` in Module CSS Files
+
+Module CSS files (`.css` in `webroot/modules/custom/*/css/`) **cannot** use SCSS variables or `@import`. However, CSS custom properties defined in the theme's `:root` block are available at runtime in every CSS file.
+
+### Pattern: component-scoped tokens
+
+```css
+/* At the top of your module CSS file */
+.my-module-wrapper {
+  /* Map global tokens to component-scoped tokens */
+  --my-color-primary: var(--saho-color-primary);
+  --my-radius: var(--saho-radius-md);
+  --my-shadow: var(--saho-shadow-md);
+  --my-transition: var(--saho-transition-base);
+}
+
+/* Use scoped tokens internally — never raw hex */
+.my-module-card {
+  border-radius: var(--my-radius);
+  box-shadow: var(--my-shadow);
+  transition: all var(--my-transition);
+}
+
+.my-module-card:hover {
+  color: var(--my-color-primary);
+}
+```
+
+### Token availability
+
+All `--saho-*` tokens from `_variables.scss` are declared in `:root` and inherited by every element, including those rendered by Drupal modules. No additional setup is needed.
+
+### Fallback values
+
+When writing module CSS, you may optionally include a fallback value after the token for robustness:
+
+```css
+/* With fallback (optional but robust) */
+background: var(--saho-color-primary, #990000);
+
+/* Preferred — no fallback needed when token system is loaded */
+background: var(--saho-color-primary);
+```
 
 ---
 

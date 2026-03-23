@@ -24,7 +24,7 @@
       {% for item in tdih_nodes %}
         {% if item.image %}
           <div class="block-image-wrapper">
-            <img src="{{ item.image }}" alt="{{ item.title|striptags }}" class="block-image" />
+            <img src="{{ item.image }}" alt="{{ item.title|striptags }}" class="block-image" loading="lazy" decoding="async" />
             <div class="block-label">{{ item.event_date|date('Y') }}</div>
           </div>
         {% endif %}
@@ -48,7 +48,10 @@
         {% include 'saho:saho-button' with {
           text: 'Read more'|t,
           url: item.url,
-          size: 'medium'
+          variant: 'text',
+          size: 'medium',
+          icon: 'arrow-right',
+          icon_position: 'after'
         } %}
       {% endfor %}
     </div>

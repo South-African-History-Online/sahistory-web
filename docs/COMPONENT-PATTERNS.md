@@ -8,13 +8,221 @@ This guide documents the component patterns established during the 2026 design s
 
 ## Table of Contents
 
-1. [Overview](#overview)
-2. [Inline Custom Property Pattern](#inline-custom-property-pattern)
-3. [Component Isolation](#component-isolation)
-4. [Token Inheritance](#token-inheritance)
-5. [Before/After Examples](#beforeafter-examples)
-6. [Best Practices](#best-practices)
-7. [Anti-Patterns](#anti-patterns)
+1. [Card Standard](#card-standard)
+2. [Module CSS Pattern](#module-css-pattern)
+3. [Common Token Mappings](#common-token-mappings)
+4. [SDC Component Inventory](#sdc-component-inventory)
+5. [Overview](#overview)
+6. [Inline Custom Property Pattern](#inline-custom-property-pattern)
+7. [Component Isolation](#component-isolation)
+8. [Token Inheritance](#token-inheritance)
+9. [Before/After Examples](#beforeafter-examples)
+10. [Best Practices](#best-practices)
+11. [Anti-Patterns](#anti-patterns)
+
+---
+
+---
+
+## Card Standard
+
+Every card block in every custom module **must** match this specification. Deviating from these values creates visual inconsistency across the site.
+
+### Canonical Card Spec
+
+| Property | Token | Value | Rule |
+|---|---|---|---|
+| `border-radius` | `--saho-radius-md` | 8px | NEVER use 12px (`--saho-radius-lg`) for cards |
+| `box-shadow` (default) | `--saho-shadow-sm` | `0 1px 3px …` | Use on card default state |
+| `box-shadow` (hover) | `--saho-shadow-xl` | `0 20px 60px …` | ALWAYS xl on hover — never lg or raw rgba |
+| `hover transform` | — | `translateY(-4px)` | NEVER -8px, -6px, -5px, -3px, -2px |
+| `image height` (desktop) | `--saho-block-image-height-desktop` | 200px | Modules may define `--module-image-height` |
+| `image height` (mobile) | `--saho-block-image-height-mobile` | 160px | `@media (max-width: 576px)` |
+| `image zoom` | — | `scale(1.05)` | On `.card:hover img` |
+| `transition` | `--saho-transition-slow` | `0.3s ease` | All card hover transitions |
+| Pill button `border-radius` | `--saho-button-radius-pill` | 9999px | Pill/CTA buttons |
+| Circular element `border-radius` | `--saho-radius-full` | 9999px | Avatars, carousel buttons, badges |
+| Modal/panel `border-radius` | `--saho-radius-lg` | 12px | NOT for cards |
+
+### Card Token Block (Required Boilerplate)
+
+Every module CSS file that renders cards must start with this block:
+
+```css
+.my-block-wrapper {
+  /* ===== CARD STANDARD TOKENS ===== */
+  --card-radius:              var(--saho-radius-md);             /* 8px — STANDARD */
+  --card-shadow:              var(--saho-shadow-sm);
+  --card-shadow-hover:        var(--saho-shadow-xl);             /* ALWAYS xl on hover */
+  --card-transition:          all var(--saho-transition-slow, 0.3s ease);
+  --card-hover-lift:          translateY(-4px);                  /* STANDARD — never change */
+  --card-image-height:        200px;                             /* desktop */
+  --card-image-height-mobile: 160px;                             /* ≤ 576px */
+  --card-image-zoom:          scale(1.05);
+}
+```
+
+### Required Hover Pattern
+
+```css
+.card {
+  border-radius: var(--card-radius);
+  box-shadow: var(--card-shadow);
+  transition: var(--card-transition);
+}
+
+.card:hover {
+  transform: var(--card-hover-lift);       /* translateY(-4px) */
+  box-shadow: var(--card-shadow-hover);    /* --saho-shadow-xl */
+}
+
+.card:hover img {
+  transform: var(--card-image-zoom);       /* scale(1.05) */
+}
+```
+
+---
+
+## Module CSS Pattern
+
+### Boilerplate Structure
+
+Every custom module CSS file should follow this structure:
+
+```css
+/**
+ * Module Name Block
+ * Brief description.
+ *
+ * Uses SAHO Design Token System.
+ * See docs/DESIGN-TOKENS.md for token reference.
+ */
+
+/* ===== COMPONENT TOKENS ===== */
+/* All design values inherit from the global --saho-* system.          */
+/* Module-specific overrides use the --module-* prefix.                */
+
+.module-wrapper {
+  /* --- Colors --- */
+  --module-color-primary:    var(--saho-color-primary);
+  --module-color-surface:    var(--saho-color-white);
+  --module-color-surface-alt: var(--saho-color-surface-alt);
+  --module-color-text:       var(--saho-color-text-primary);
+  --module-color-text-muted: var(--saho-color-text-muted);
+  --module-color-border:     var(--saho-color-border);
+
+  /* --- Card Standard (must match every other module) --- */
+  --card-radius:              var(--saho-radius-md);
+  --card-shadow:              var(--saho-shadow-sm);
+  --card-shadow-hover:        var(--saho-shadow-xl);
+  --card-transition:          all var(--saho-transition-slow, 0.3s ease);
+  --card-hover-lift:          translateY(-4px);
+  --card-image-height:        200px;
+  --card-image-height-mobile: 160px;
+  --card-image-zoom:          scale(1.05);
+
+  /* --- Module-specific values --- */
+  --module-image-height:     var(--saho-block-image-height-desktop, 200px);
+}
+```
+
+### Rules
+
+1. **No raw hex values** — every color must be a `var(--saho-*)` token
+2. **No raw rgba shadows** — use `var(--saho-shadow-sm/md/lg/xl)`
+3. **No raw pixel values for spacing** — use `var(--saho-space-*)` tokens
+4. **Hover transform is always `translateY(-4px)`** — the card standard
+5. **`darken()` is forbidden** — SCSS functions cannot process CSS custom properties; use `var(--saho-color-primary-dark)` instead
+6. **`border-radius: 50%`** — replace with `var(--saho-radius-full)` (semantically correct for circular elements)
+
+---
+
+## Common Token Mappings
+
+Reference table for migrating raw values to tokens:
+
+### Colors
+
+| Raw Value | Token | Notes |
+|---|---|---|
+| `#990000`, `#900` | `var(--saho-color-primary)` | SAHO heritage red |
+| `#8b0000`, `#7a0000` | `var(--saho-color-primary-dark)` | Hover/dark state |
+| `#b30000`, `#b22222` | `var(--saho-color-primary-dark)` | Closest token |
+| `#B22222` (fire-brick) | `var(--saho-color-primary-light)` | If lighter intent |
+| `rgba(153,0,0,0.1)` | `var(--saho-color-primary-alpha-10)` | |
+| `rgba(153,0,0,0.25)` | `var(--saho-color-primary-alpha-25)` | Focus rings |
+| `#2c3e50`, `#1e293b`, `#1a202c` | `var(--saho-color-text-primary)` | Dark text |
+| `#4a5568`, `#374151`, `#475569` | `var(--saho-color-text-secondary)` | |
+| `#6b7280`, `#6c757d`, `#718096` | `var(--saho-color-text-muted)` | Muted/caption text |
+| `#ffffff`, `white`, `#fff` | `var(--saho-color-white)` | Pure white |
+| `#f8f9fa`, `#f9fafb`, `#f3f4f6` | `var(--saho-color-surface-alt)` | Off-white backgrounds |
+| `#e9ecef`, `#e5e7eb`, `#dee2e6` | `var(--saho-color-border)` | Borders |
+| `#8b4513` (brown-earth) | `var(--saho-color-primary)` | **Brown is not a SAHO brand color** |
+
+### Shadows
+
+| Raw Value | Token | Context |
+|---|---|---|
+| `0 1px 3px rgba(0,0,0,0.1)` | `var(--saho-shadow-sm)` | Default card |
+| `0 2px 8px rgba(0,0,0,0.08)` | `var(--saho-shadow-md)` | Elevated elements |
+| `0 8px 24px rgba(0,0,0,0.12)` | `var(--saho-shadow-lg)` | Dropdowns, tooltips |
+| `0 20px 60px rgba(0,0,0,0.15)` | `var(--saho-shadow-xl)` | **Card hover — STANDARD** |
+| `rgba(0,0,0,0.05)` | `var(--saho-color-black-alpha-05)` | Subtle overlays |
+| `rgba(0,0,0,0.10)` | `var(--saho-color-black-alpha-10)` | |
+| `rgba(0,0,0,0.15)` | `var(--saho-color-black-alpha-15)` | |
+
+### Spacing
+
+| Raw Value | Token | px Value |
+|---|---|---|
+| `0.5rem` | `var(--saho-space-1)` | 8px |
+| `1rem` | `var(--saho-space-2)` | 16px |
+| `1.5rem` | `var(--saho-space-3)` | 24px |
+| `2rem` | `var(--saho-space-4)` | 32px |
+| `3rem` | `var(--saho-space-6)` | 48px |
+
+### Border Radius
+
+| Raw Value | Token | Use Case |
+|---|---|---|
+| `8px` | `var(--saho-radius-md)` | **Cards — STANDARD** |
+| `12px` | `var(--saho-radius-lg)` | Modals, panels only |
+| `25px`, `9999px`, `50%` (pill) | `var(--saho-button-radius-pill)` | Pill buttons |
+| `50%` (circle) | `var(--saho-radius-full)` | Avatar, carousel button |
+
+---
+
+## SDC Component Inventory
+
+Status of all Single Directory Components (SDC) in the theme:
+
+### Content Components
+
+| Component | Path | Token Status | Notes |
+|---|---|---|---|
+| `saho-card` | `components/content/saho-card/` | ✅ Fully tokenised | 3 layout variants: default, horizontal, feature |
+| `saho-button` | `components/utilities/saho-button/` | ✅ Fully tokenised | Uses `--saho-*` tokens |
+| `saho-hero-banner` | `components/layout/saho-hero-banner/` | ✅ | SDC component |
+| `saho-featured-grid` | `components/layout/saho-featured-grid/` | ✅ | SDC component |
+| `saho-card-grid` | `components/layout/saho-card-grid/` | ✅ | Grid layout wrapper |
+| `page-footer` | `components/page-footer/` | ✅ | Footer SDC |
+| `region` | `components/region/` | ✅ | Region wrapper |
+
+### Module Block CSS (Post-Audit Status)
+
+| Module CSS File | Token Status | Card Standard |
+|---|---|---|
+| `saho_statistics/css/top-read-content.css` | ✅ Excellent | ✅ |
+| `saho_statistics/css/history-through-pictures.css` | ✅ Full rewrite done | ✅ |
+| `saho_featured_articles/css/featured-articles.css` | ✅ Tokenised | ✅ `--saho-radius-md` (was 12px) |
+| `saho_utils/featured_biography/css/featured-biography.css` | ✅ Tokenised | ✅ hover `-4px` |
+| `saho_utils/entity_overview/css/entity-overview.css` | ✅ Tokenised | ✅ hover `-4px`, no brown |
+| `saho_upcoming_events/css/upcoming-events.css` | ✅ Tokenised | ✅ image 240px |
+| `saho_suggested_reading/css/suggested-reading.css` | ✅ Tokenised | ✅ hover `-4px` |
+| `saho_utils/tdih/css/tdih-block.css` | ✅ Tokenised | ✅ |
+| `saho_utils/tdih/css/tdih-page.css` | ✅ Tokenised | ✅ no brown border |
+| `saho_utils/educational_resources/css/educational-resources.css` | ✅ Tokenised | ✅ hover `-4px` |
+| `saho_utils/history_classroom/css/history-classroom.css` | ✅ Tokenised | ✅ hover `-4px` |
 
 ---
 
@@ -691,6 +899,6 @@ document.querySelector('.saho-card').style.setProperty('--card-spacing', '32px')
 
 ---
 
-**Last Updated**: February 2026
+**Last Updated**: March 2026 (Phase A–D design system unification)
 **Status**: Production
-**Version**: 1.0.0
+**Version**: 2.0.0

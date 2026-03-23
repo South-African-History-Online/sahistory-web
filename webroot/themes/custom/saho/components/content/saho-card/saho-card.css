@@ -36,16 +36,16 @@
   --card-text-white: var(--saho-color-white);
 
   /* Alpha colors for hover effects */
-  --card-primary-alpha-25: rgba(153, 0, 0, 0.25);
-  --card-secondary-alpha-25: rgba(58, 74, 100, 0.25);
-  --card-accent-alpha-25: rgba(212, 165, 116, 0.25);
-  --card-highlight-alpha-25: rgba(139, 35, 49, 0.25);
+  --card-primary-alpha-25: var(--saho-color-primary-alpha-25);
+  --card-secondary-alpha-25: rgba(58, 74, 100, 0.25); /* no global token */
+  --card-accent-alpha-25: var(--saho-color-accent-alpha-25);
+  --card-highlight-alpha-25: rgba(139, 35, 49, 0.25); /* no global token */
 
   /* Spacing - Inherit from unified token system (8px baseline grid) */
-  --card-border-radius: var(--saho-card-radius); /* 8px */
-  --card-spacing: var(--saho-card-padding-compact); /* 24px */
+  --card-border-radius: var(--saho-radius-md); /* 8px = --saho-radius-md */
+  --card-spacing: var(--saho-space-3); /* 24px */
   --card-spacing-mobile: var(--saho-space-2); /* 16px */
-  --card-gap: var(--saho-card-gap); /* 24px - internal spacing */
+  --card-gap: var(--saho-space-3); /* 24px - internal spacing */
 
   /* Image Heights - 8px baseline grid */
   --card-image-height: 200px;
@@ -77,7 +77,7 @@
 
 .saho-card:hover,
 .saho-card:focus-within {
-  transform: translateY(-8px);
+  transform: translateY(-4px);
   box-shadow: var(--saho-shadow-xl);
 }
 
@@ -98,7 +98,7 @@
   padding: var(--saho-space-2);
   border: 1px solid var(--card-border-light);
   border-radius: var(--card-border-radius);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px var(--saho-color-black-alpha-10);
   opacity: 0;
   visibility: hidden;
   transform: translateY(8px);
@@ -388,7 +388,7 @@
   padding: var(--saho-button-padding-sm-y) var(--saho-button-padding-sm-x); /* 8px 16px */
   background: var(--saho-button-secondary-bg); /* transparent */
   border: var(--saho-button-border-width) solid var(--saho-button-secondary-border);
-  border-radius: var(--saho-radius-pill); /* 9999px - pill shape */
+  border-radius: var(--saho-radius-full); /* 9999px - pill shape */
   color: var(--saho-button-secondary-text);
   font-size: var(--saho-button-font-size-sm);
   font-weight: var(--saho-button-font-weight);
@@ -422,34 +422,34 @@
 }
 
 .saho-card__staff-pick {
-  background: #fbbf24;
-  color: #92400e;
+  background: var(--saho-color-warning);
+  color: #92400e; /* amber-dark, no global token */
 }
 
 .saho-card__featured {
-  background: #3b82f6;
+  background: var(--saho-color-info);
   color: var(--card-text-white);
 }
 
 /* Card Type Variations - Badge colors */
 .saho-card--featured .saho-card-badge,
 .saho-card--featured .saho-card__type-badge {
-  background: #28a745;
+  background: var(--saho-color-success);
 }
 
 .saho-card--archive .saho-card-badge,
 .saho-card--archive .saho-card__type-badge {
-  background: #007bff;
+  background: var(--saho-color-info);
 }
 
 .saho-card--collection .saho-card-badge,
 .saho-card--collection .saho-card__type-badge {
-  background: #6f42c1;
+  background: #6f42c1; /* purple - no global token */
 }
 
 .saho-card--landing .saho-card-badge,
 .saho-card--landing .saho-card__type-badge {
-  background: #dc3545;
+  background: var(--saho-color-danger);
 }
 
 /* Content Type Specific Styling */
@@ -580,12 +580,109 @@
   }
 }
 
+/* ==========================================================================
+   Layout Variant: Horizontal - image left, body right
+   Replaces .saho-card.list-mode and similar horizontal patterns
+   ========================================================================== */
+
+.saho-card--horizontal {
+  flex-direction: row;
+  height: auto;
+}
+
+.saho-card--horizontal .saho-card__image,
+.saho-card--horizontal .saho-card-image {
+  flex-shrink: 0;
+  width: 240px;
+  height: 100%;
+  min-height: 140px;
+  border-radius: var(--saho-radius-md) 0 0 var(--saho-radius-md);
+}
+
+.saho-card--horizontal .saho-card__body,
+.saho-card--horizontal .saho-card-content {
+  flex: 1;
+  min-width: 0;
+}
+
+@media (max-width: 576px) {
+  .saho-card--horizontal {
+    flex-direction: column;
+  }
+
+  .saho-card--horizontal .saho-card__image,
+  .saho-card--horizontal .saho-card-image {
+    width: 100%;
+    height: var(--card-image-height-mobile);
+    border-radius: var(--saho-radius-md) var(--saho-radius-md) 0 0;
+  }
+}
+
+/* ==========================================================================
+   Layout Variant: Featured - large hero image, prominent title
+   Replaces bespoke featured-articles card patterns
+   ========================================================================== */
+
+.saho-card--featured-layout {
+  --card-image-height: 280px;
+  --card-title-size: var(--saho-font-size-xl);
+  --card-title-weight: var(--saho-font-weight-bold);
+}
+
+.saho-card--featured-layout .saho-card__title,
+.saho-card--featured-layout .saho-card-title {
+  font-size: var(--saho-font-size-xl);
+  font-weight: var(--saho-font-weight-bold);
+  line-height: var(--saho-line-height-snug);
+}
+
+.saho-card--featured-layout .saho-card__image,
+.saho-card--featured-layout .saho-card-image {
+  height: 280px;
+}
+
+@media (max-width: 768px) {
+  .saho-card--featured-layout .saho-card__image,
+  .saho-card--featured-layout .saho-card-image {
+    height: var(--card-image-height-mobile) !important;
+  }
+}
+
+/* ==========================================================================
+   Layout Variant: Compact - no image, dense text (sidebars/lists)
+   ========================================================================== */
+
+.saho-card--compact {
+  --card-spacing: var(--saho-space-2); /* 16px tighter padding */
+  --card-title-size: var(--saho-font-size-base);
+}
+
+.saho-card--compact .saho-card__image,
+.saho-card--compact .saho-card-image {
+  display: none; /* Compact cards are text-only */
+}
+
+.saho-card--compact .saho-card__body,
+.saho-card--compact .saho-card-content {
+  padding: var(--saho-space-2);
+}
+
+.saho-card--compact .saho-card__title,
+.saho-card--compact .saho-card-title {
+  font-size: var(--saho-font-size-base);
+  margin-bottom: var(--saho-space-1);
+}
+
+.saho-card--compact:hover {
+  transform: translateY(-4px);
+}
+
 /* Print Styles */
 @media print {
   .saho-card {
     break-inside: avoid;
     box-shadow: none;
-    border: 1px solid #cccccc;
+    border: 1px solid var(--saho-color-border);
   }
 
   .saho-card:hover {
@@ -608,7 +705,7 @@
   flex-direction: column;
   height: 100%;
   background: var(--saho-color-white);
-  border-radius: var(--saho-card-radius); /* 8px */
+  border-radius: var(--saho-radius-md); /* 8px */
   box-shadow: var(--saho-shadow-md); /* Unified shadow */
   overflow: hidden;
   transition: var(--saho-transition-base); /* 300ms ease */
@@ -616,7 +713,7 @@
 }
 
 .collection-card.saho-card:hover {
-  transform: translateY(-8px); /* 8px baseline */
+  transform: translateY(-4px);
   box-shadow: var(--saho-shadow-xl);
   text-decoration: none;
 }
@@ -652,7 +749,7 @@
   top: var(--saho-space-1) !important; /* 8px from top */
   right: auto !important;
   left: var(--saho-space-1) !important; /* 8px from LEFT */
-  background: var(--saho-color-primary-alpha-90);
+  background: var(--saho-color-primary-alpha-50);
   color: var(--saho-color-white);
   padding: var(--saho-space-1) var(--saho-space-2); /* 8px 16px - rounded from 4px 12px */
   border-radius: var(--saho-radius-sm); /* 4px */
@@ -729,13 +826,13 @@
 }
 
 .collection-card .btn:hover {
-  transform: translateY(-8px); /* 8px baseline - rounded from 1px */
+  transform: translateY(-2px);
 }
 
 /* Grid Layout - Unified Token System with STANDARD 32px gap */
 .saho-landing-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(var(--saho-grid-card-min-width), 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(var(--saho-card-grid-min-width), 1fr));
   gap: var(--saho-space-4); /* 32px - STANDARD for card grids */
   align-items: start;
 

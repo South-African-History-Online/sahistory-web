@@ -1,89 +1,132 @@
 {#
 /**
  * @file
- * Custom SAHO page template - matches article/event layout.
+ * SAHO Basic Page template.
  *
- * Uses the same two-column grid structure as other content types
- * for consistency across the site.
+ * Two-column layout: body content left, sticky sidebar right.
+ * Sidebar contains: file downloads, page info (dates).
+ * Hero banner from field_image when present.
+ *
+ * Available variables:
+ * - node: The node entity.
+ * - content: Rendered content fields.
+ * - attributes: HTML attributes for the article wrapper.
+ * - citation_button: Rendered citation button (saho_tools).
+ * - sharing_button: Rendered share button (saho_tools).
  */
 #}
 
-{# Variable to track if sidebar has content #}
-{% set sidebar_has_content = false %}
+{# ─── Pre-flight checks ──────────────────────────────────────────────────── #}
+{% set has_hero    = node.field_image.entity is not empty %}
+{% set has_files   = node.field_file_upload is not empty %}
+{% set has_comments = content.comment_node_page is defined and content.comment_node_page|render|trim %}
 
-<article{{ attributes.addClass('saho-article-wrapper') }}>
+<article{{ attributes.addClass('saho-article-wrapper', 'saho-page-wrapper') }}>
 
-  <div class="saho-article-grid">
+  {# ─── Hero Banner ─────────────────────────────────────────────────────── #}
+  {% if has_hero %}
+    <div class="saho-page-hero">
+      <img
+        src="{{ file_url(node.field_image.entity.uri.value) }}"
+        alt="{{ node.field_image.alt|default(node.label) }}"
+        class="saho-page-hero__image"
+        loading="eager"
+        decoding="async"
+        fetchpriority="high"
+      >
+      {% if node.field_image.title %}
+        <p class="saho-page-hero__caption">{{ node.field_image.title }}</p>
+      {% endif %}
+    </div>
+  {% endif %}
 
-    {# LEFT: Main content column #}
+  {# ─── Content Grid ────────────────────────────────────────────────────── #}
+  <div class="saho-article-grid saho-page-grid">
+
+    {# ─── Main Content ─────────────────────────────────────────────────── #}
     <div class="saho-main-content">
 
-      {# Article metadata (Published/Updated dates) #}
+      {# Meta row: dates + tools #}
       <div class="saho-article-meta">
-        {% if node.getCreatedTime() %}
-          <span>Published {{ node.getCreatedTime()|date("j F Y") }}</span>
-        {% endif %}
-        {% if node.getChangedTime() != node.getCreatedTime() %}
-          <span>Updated {{ node.getChangedTime()|date("j F Y") }}</span>
-        {% endif %}
+        <div class="saho-article-meta__dates">
+          {% if node.getCreatedTime() %}
+            <span>{{ 'Published'|t }} {{ node.getCreatedTime()|date("j F Y") }}</span>
+          {% endif %}
+          {% if node.getChangedTime() != node.getCreatedTime() %}
+            <span>{{ 'Updated'|t }} {{ node.getChangedTime()|date("j F Y") }}</span>
+          {% endif %}
+        </div>
         <div class="saho-tools-wrapper">
           {% if citation_button %}
-            <div class="saho-citation-wrapper">
-              {{ citation_button }}
-            </div>
+            <div class="saho-citation-wrapper">{{ citation_button }}</div>
           {% endif %}
           {% if sharing_button %}
-            <div class="saho-sharing-wrapper">
-              {{ sharing_button }}
-            </div>
+            <div class="saho-sharing-wrapper">{{ sharing_button }}</div>
           {% endif %}
         </div>
       </div>
 
-      {# Main content #}
-      <div class="saho-article-body">
-        {% if content.body %}
-          {# Remove the label by accessing the content directly #}
+      {# Body - .saho-page-body enables TOC/heading/section CSS rules #}
+      {% if content.body %}
+        <div class="saho-article-body saho-page-body">
           {{ content.body.0 }}
-        {% endif %}
-      </div>
+        </div>
+      {% endif %}
 
-      {# Comments if available #}
-      {% if content.comment_node_page %}
+      {# Comments - only when actual comments exist (not just the empty form) #}
+      {% if node.comment_node_page is defined and node.comment_node_page.comment_count.value > 0 %}
         <div class="saho-comments-section">
-          <h3>Comments</h3>
           {{ content.comment_node_page }}
         </div>
       {% endif %}
 
-      {# Render remaining fields not already shown manually #}
-      {{ content|without(
-        'body',
-        'field_image',
-        'comment_node_page',
-        'sharing_buttons'
-      ) }}
+    </div>{# /.saho-main-content #}
 
-    </div>
+    {# ─── Sidebar ──────────────────────────────────────────────────────── #}
+    <aside class="saho-article-sidebar saho-page-sidebar" aria-label="{{ 'Page information'|t }}">
 
-    {# RIGHT: Sidebar - check if there's an image #}
-    {% if content.field_image is defined and content.field_image|render|trim %}
-      {% set sidebar_has_content = true %}
-    {% endif %}
-
-    {% if sidebar_has_content %}
-    <aside class="saho-article-sidebar">
-
-      {# Display image if available #}
-      {% if content.field_image %}
-        <div class="saho-image-block mb-4">
-          {{ content.field_image }}
+      {# File attachments ──────────────────────────────────────────────── #}
+      {% if has_files %}
+        <div class="saho-page-attachments">
+          <h3 class="saho-page-attachments__title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+            </svg>
+            {{ 'Downloads'|t }}
+          </h3>
+          <ul class="saho-page-attachments__list">
+            {% for item in node.field_file_upload %}
+              {% if item.entity %}
+                {% set ext = item.entity.filename.value|split('.')|last|lower %}
+                <li class="saho-page-attachments__item saho-page-attachments__item--{{ ext }}">
+                  <a href="{{ file_url(item.entity.uri.value) }}"
+                     class="saho-page-attachments__link"
+                     target="_blank"
+                     rel="noopener noreferrer">
+                    <span class="saho-page-attachments__ext">{{ ext|upper }}</span>
+                    <span class="saho-page-attachments__filename">{{ item.entity.filename.value }}</span>
+                    {% if item.entity.filesize.value %}
+                      <span class="saho-page-attachments__size">
+                        {% if item.entity.filesize.value > 1048576 %}
+                          {{ (item.entity.filesize.value / 1048576)|round(1) }} MB
+                        {% else %}
+                          {{ (item.entity.filesize.value / 1024)|round(0) }} KB
+                        {% endif %}
+                      </span>
+                    {% endif %}
+                    <svg class="saho-page-attachments__arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                  </a>
+                </li>
+              {% endif %}
+            {% endfor %}
+          </ul>
         </div>
       {% endif %}
 
-    </aside>
-    {% endif %}
+    </aside>{# /.saho-page-sidebar #}
 
-  </div>
+  </div>{# /.saho-article-grid #}
 
 </article>

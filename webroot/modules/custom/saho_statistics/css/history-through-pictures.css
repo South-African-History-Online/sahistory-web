@@ -5,6 +5,18 @@
 
 /* Base block styles */
 .saho-history-pictures {
+  /* Component-scoped design tokens */
+  --pic-radius:          var(--saho-radius-md);          /* 8px - card standard */
+  --pic-shadow:          var(--saho-shadow-sm);
+  --pic-shadow-hover:    var(--saho-shadow-xl);
+  --pic-transition:      all var(--saho-transition-slow, 0.3s ease);
+  --pic-color-primary:   var(--saho-color-primary);
+  --pic-color-surface:   var(--saho-color-white);
+  --pic-color-surface-alt: var(--saho-color-surface-alt);
+  --pic-color-text:      var(--saho-color-text-primary);
+  --pic-color-gray-500:  var(--saho-color-gray-500);
+  --pic-color-gray-200:  var(--saho-color-gray-200);
+
   margin: 3rem 0;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
@@ -13,7 +25,7 @@
   font-size: 2rem;
   font-weight: 700;
   margin-bottom: 2.5rem;
-  color: #1a202c;
+  color: var(--pic-color-text);
   letter-spacing: -0.025em;
   position: relative;
   padding-bottom: 1rem;
@@ -28,7 +40,7 @@
   transform: translateX(-50%);
   width: 80px;
   height: 4px;
-  background: linear-gradient(90deg, #990000 0%, #B22222 100%);
+  background: linear-gradient(90deg, var(--pic-color-primary) 0%, var(--saho-color-primary-light, #b22222) 100%);
   border-radius: 2px;
 }
 
@@ -47,15 +59,15 @@
 
 .history-picture-item {
   position: relative;
-  border-radius: 12px;
+  border-radius: var(--pic-radius);
   overflow: hidden;
-  background: #fff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: var(--pic-color-surface);
+  box-shadow: var(--pic-shadow);
+  transition: var(--pic-transition);
 }
 
 .history-picture-item:hover {
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--pic-shadow-hover);
   transform: translateY(-4px);
 }
 
@@ -71,7 +83,7 @@
   width: 100%;
   padding-bottom: 75%;
   overflow: hidden;
-  background: #f3f4f6;
+  background: var(--pic-color-surface-alt);
 }
 
 .history-picture-image img {
@@ -124,11 +136,11 @@
 .history-picture-caption {
   padding: 1rem 1.5rem;
   font-size: 0.875rem;
-  color: #6b7280;
+  color: var(--pic-color-gray-500);
   line-height: 1.6;
-  background: #ffffff;
+  background: var(--pic-color-surface);
   font-style: italic;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid var(--pic-color-gray-200);
 }
 
 /* Hide captions by default if they look like URLs */
@@ -202,20 +214,20 @@
   border: none;
   width: 48px;
   height: 48px;
-  border-radius: 50%;
+  border-radius: var(--saho-radius-full);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   z-index: 10;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--saho-shadow-md);
   transition: all 0.2s ease;
 }
 
 .carousel-prev:hover,
 .carousel-next:hover {
-  background: #ffffff;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+  background: var(--pic-color-surface);
+  box-shadow: var(--saho-shadow-lg);
   transform: translateY(-50%) scale(1.1);
 }
 
@@ -231,7 +243,7 @@
 .carousel-next svg {
   width: 24px;
   height: 24px;
-  color: #1a202c;
+  color: var(--pic-color-text);
 }
 
 /* Responsive adjustments */
@@ -289,7 +301,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(135deg, rgba(153, 0, 0, 0) 0%, rgba(178, 34, 34, 0.1) 100%);
+    background: linear-gradient(135deg, transparent 0%, var(--saho-color-primary-alpha-10, rgba(153, 0, 0, 0.1)) 100%);
     opacity: 0;
     transition: opacity 0.3s ease;
     pointer-events: none;
@@ -303,14 +315,14 @@
 /* Dark mode support */
 @media (prefers-color-scheme: dark) {
   .history-picture-item {
-    background: #1f2937;
+    background: var(--saho-color-gray-800, #1f2937);
   }
 
   /* Title color removed - inherit from theme for consistency */
 
   .history-picture-caption {
-    background: #1f2937;
-    color: #d1d5db;
+    background: var(--saho-color-gray-800, #1f2937);
+    color: var(--saho-color-gray-300, #d1d5db);
   }
 
   .carousel-prev,
@@ -320,12 +332,12 @@
 
   .carousel-prev:hover,
   .carousel-next:hover {
-    background: #1f2937;
+    background: var(--saho-color-gray-800, #1f2937);
   }
 
   .carousel-prev svg,
   .carousel-next svg {
-    color: #f9fafb;
+    color: var(--saho-color-gray-100, #f9fafb);
   }
 }
 
@@ -340,7 +352,7 @@
 }
 
 .history-picture-item.loading {
-  background: linear-gradient(90deg, #f3f4f6 0%, #e5e7eb 50%, #f3f4f6 100%);
+  background: linear-gradient(90deg, var(--pic-color-surface-alt) 0%, var(--pic-color-gray-200) 50%, var(--pic-color-surface-alt) 100%);
   background-size: 1000px 100%;
   animation: shimmer 2s infinite;
 }
@@ -370,14 +382,14 @@
 }
 
 .gallery-icon {
-  color: #990000;
+  color: var(--pic-color-primary);
   flex-shrink: 0;
 }
 
 .gallery-title {
   font-size: 2.5rem;
   font-weight: 700;
-  color: #1a202c;
+  color: var(--pic-color-text);
   margin: 0;
   letter-spacing: -0.025em;
 }
@@ -392,20 +404,20 @@
   align-items: flex-start;
   gap: 1rem;
   padding: 1.5rem;
-  background: #f9fafb;
-  border-left: 4px solid #990000;
-  border-radius: 8px;
+  background: var(--pic-color-surface-alt);
+  border-left: 4px solid var(--pic-color-primary);
+  border-radius: var(--pic-radius);
 }
 
 .description-icon {
-  color: #990000;
+  color: var(--pic-color-primary);
   flex-shrink: 0;
   margin-top: 0.125rem;
 }
 
 .description-content p {
   font-size: 1.125rem;
-  color: #4a5568;
+  color: var(--saho-color-text-secondary, #4a5568);
   line-height: 1.7;
   margin: 0;
 }
@@ -417,9 +429,9 @@
   gap: 1rem;
   flex-wrap: wrap;
   padding: 1.5rem;
-  background: #f9fafb;
-  border-radius: 12px;
-  border: 1px solid #e5e7eb;
+  background: var(--pic-color-surface-alt);
+  border-radius: var(--saho-radius-lg);
+  border: 1px solid var(--pic-color-gray-200);
 }
 
 .sort-label {
@@ -427,14 +439,14 @@
   align-items: center;
   gap: 0.5rem;
   font-weight: 600;
-  color: #374151;
+  color: var(--saho-color-text-primary);
   font-size: 0.875rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 
 .sort-label svg {
-  color: #990000;
+  color: var(--pic-color-primary);
 }
 
 .sort-links {
@@ -448,13 +460,13 @@
   align-items: center;
   gap: 0.375rem;
   padding: 0.5rem 1rem;
-  border-radius: 8px;
-  background: #ffffff;
-  color: #4a5568;
+  border-radius: var(--pic-radius);
+  background: var(--pic-color-surface);
+  color: var(--saho-color-text-secondary, #4a5568);
   text-decoration: none;
   font-weight: 500;
   font-size: 0.875rem;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--pic-color-gray-200);
   transition: all 0.2s ease;
   white-space: nowrap;
 }
@@ -466,11 +478,11 @@
 }
 
 .sort-link:hover {
-  background: #f3f4f6;
-  color: #1a202c;
-  border-color: #d1d5db;
+  background: var(--pic-color-surface-alt);
+  color: var(--pic-color-text);
+  border-color: var(--saho-color-gray-300, #d1d5db);
   transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--saho-shadow-sm);
 }
 
 .sort-link:hover .sort-icon {
@@ -478,9 +490,9 @@
 }
 
 .sort-link.active {
-  background: #990000;
-  color: #ffffff;
-  border-color: #990000;
+  background: var(--pic-color-primary);
+  color: var(--pic-color-surface);
+  border-color: var(--pic-color-primary);
 }
 
 .sort-link.active .sort-icon {
@@ -488,8 +500,8 @@
 }
 
 .sort-link.active:hover {
-  background: #8b0000;
-  border-color: #8b0000;
+  background: var(--saho-color-primary-dark);
+  border-color: var(--saho-color-primary-dark);
 }
 
 /* Gallery grid - more columns for larger screens */
@@ -505,8 +517,8 @@
   gap: 0.375rem;
   margin-top: 0.5rem;
   padding: 0.25rem 0.625rem;
-  background: rgba(153, 0, 0, 0.9);
-  color: #ffffff;
+  background: var(--pic-color-primary);
+  color: var(--pic-color-surface);
   font-size: 0.75rem;
   font-weight: 600;
   border-radius: 4px;
@@ -580,14 +592,14 @@
 .glightbox-container .gclose,
 .glightbox-container .gprev,
 .glightbox-container .gnext {
-  background: rgba(153, 0, 0, 0.9);
-  border-radius: 8px;
+  background: var(--pic-color-primary);
+  border-radius: var(--pic-radius);
 }
 
 .glightbox-container .gclose:hover,
 .glightbox-container .gprev:hover,
 .glightbox-container .gnext:hover {
-  background: rgba(153, 0, 0, 1);
+  background: var(--saho-color-primary-dark);
 }
 
 .glightbox-container .gslide-title {
