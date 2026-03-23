@@ -1,0 +1,147 @@
+//
+// Tier Grid - shared component used on front page preview and champion page.
+// Requires $cp-* brand variables to be defined before @import.
+//
+
+// ==================================================
+// TIER GRID — clean divided panel
+// ==================================================
+
+.tier-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border: 1px solid $cp-border;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.tier-item {
+  padding: 2rem 1.75rem 1.75rem;
+  border-right: 1px solid $cp-border;
+  display: flex;
+  flex-direction: column;
+
+  &:last-child {
+    border-right: none;
+  }
+
+  &--featured {
+    position: relative;
+
+    &::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: $cp-primary;
+    }
+  }
+
+  &__label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: $cp-text-muted;
+    margin: 0 0 1.25rem;
+  }
+
+  &__price {
+    display: flex;
+    align-items: baseline;
+    gap: 0.15rem;
+    margin-bottom: 0.5rem;
+  }
+
+  &__currency {
+    font-size: 1rem;
+    font-weight: 600;
+    color: $cp-text-muted;
+    line-height: 1;
+    align-self: flex-start;
+    padding-top: 0.35rem;
+  }
+
+  &__amount {
+    font-size: 2.5rem;
+    font-weight: 800;
+    line-height: 1;
+    color: $cp-secondary;
+    letter-spacing: -0.02em;
+  }
+
+  &__period {
+    font-size: 0.8rem;
+    color: $cp-text-muted;
+    align-self: flex-end;
+    padding-bottom: 0.2rem;
+  }
+
+  &__note {
+    font-size: 0.8rem;
+    color: $cp-text-muted;
+    margin: 0 0 1.75rem;
+    flex: 1;
+    line-height: 1.5;
+  }
+
+  &__cta {
+    display: block;
+    text-align: center;
+    padding: 0.6rem 1rem;
+    border: 1.5px solid $cp-secondary;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: $cp-secondary;
+    text-decoration: none;
+    letter-spacing: 0.02em;
+    transition: background 0.15s ease, color 0.15s ease;
+
+    &:hover {
+      background: $cp-secondary;
+      color: #fff;
+      text-decoration: none;
+    }
+
+    .tier-item--featured & {
+      background: $cp-primary;
+      border-color: $cp-primary;
+      color: #fff;
+
+      &:hover {
+        background: $cp-primary-dark;
+        border-color: $cp-primary-dark;
+      }
+    }
+  }
+}
+
+// Mobile
+@media (width <= 767px) {
+  .tier-grid {
+    grid-template-columns: 1fr;
+    border-radius: 8px;
+  }
+
+  .tier-item {
+    border-right: none;
+    border-bottom: 1px solid $cp-border;
+    padding: 1.5rem 1.25rem;
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    &--featured::before {
+      width: 3px;
+      height: auto;
+      top: 0;
+      bottom: 0;
+      right: auto;
+    }
+  }
+}
