@@ -136,7 +136,9 @@ RewriteRule ^(.+)\.(jpe?g|png)$ $1.webp [T=image/webp,E=accept:1,L]
   RewriteRule ^sites/default/files/[Dd][Cc]/[^/]+/(.+)$ /sites/default/files/archive-files5/$1 [R=301,L,NC]
 
   # 1. Force HTTPS (if not already forced elsewhere)
+  # Skip redirect if X-Forwarded-Proto is https (e.g. DDEV/Traefik proxy)
   RewriteCond %{HTTPS} off
+  RewriteCond %{HTTP:X-Forwarded-Proto} !https
   RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
   # 2. Remove www (if you want www to redirect to non-www)
