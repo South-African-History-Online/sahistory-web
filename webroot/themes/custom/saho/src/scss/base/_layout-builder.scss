@@ -1,0 +1,23 @@
+// Layout Builder Admin UI Fixes
+// These styles target the Bootstrap Layout Builder/Bootstrap Styles admin UI.
+// They must compile into main.css (not layout-builder-overrides.css) because
+// the full-page section/block configure fallback pages load the admin theme
+// (Gin) which only picks up main.css from the SAHO theme.
+
+// ============================================================
+// Fix oversized SVG tab icons in section and block configure forms.
+// appearance.svg and settings.svg have hardcoded width/height="300".
+// The off-canvas dialog's own CSS constrains them, but the full-page
+// fallback URLs (/layout_builder/configure/section/… and
+// /layout_builder/update/block/…) have no constraint.
+// These rules cap both forms at 24 × 24 px.
+// ============================================================
+.layout-builder-configure-section,
+.layout-builder-configure-block {
+  .bs_nav-tabs a span[role="img"] svg,
+  .bs_nav-tabs a span[role="img"] img {
+    width: 24px;
+    height: 24px;
+    display: block;
+  }
+}

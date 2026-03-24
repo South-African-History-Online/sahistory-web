@@ -1,129 +1,408 @@
 //
-// Frontpage
-// Belgrade-inspired homepage styling for publications shop
+// Support Hub Front Page
+// "Support South African History" - three pathways: Champion, Donation, EFT
+// Replaces Belgrade slider layout with a focused support landing page.
 // ----------------------------
 //
 @import "../global";
+@import "../support-tokens";
+@import "../components/support-btn";
+@import "../components/tier-grid";
 
 :root {
   --footer-margin-top: 0;
 }
 
-// Frontpage wrapper
-.frontpage {
-  position: relative;
+// ==================================================
+// PAGE WRAPPER
+// ==================================================
+
+.support-hub-page {
+  font-family: Inter, -apple-system, blinkmacsystemfont, "Segoe UI", sans-serif;
 }
 
-// Hero section - contains header and slider
-.frontpage-hero {
-  position: relative;
-  width: 100%;
+// ==================================================
+// SHARED SECTION LABELS
+// ==================================================
+
+.support-section-title {
+  text-align: center;
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 700;
+  color: $cp-secondary;
+  margin-bottom: 0.75rem;
 }
 
-// Header region - positioned absolutely over slider
-.frontpage .region-header {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 100;
-  padding: 1rem 0;
-  color: $white;
+.support-section-subtitle {
+  text-align: center;
+  color: $cp-text-muted;
+  font-size: 1rem;
+  margin-bottom: 2.5rem;
+}
 
-  // Ensure all links in header are white
-  a {
-    color: $white;
-    text-decoration: none;
+// ==================================================
+// SECTION 1: HERO
+// ==================================================
 
-    &:hover,
-    &:focus {
-      color: rgba($white, 0.85);
-    }
+.support-hero {
+  background: linear-gradient(135deg, $cp-hero-start 0%, $cp-hero-end 100%);
+  color: #fff;
+  padding: 5rem 0 4.5rem;
+  text-align: center;
+
+  &__inner {
+    max-width: 700px;
+    margin: 0 auto;
   }
 
-  .nav-link {
-    color: $white;
-
-    &:hover,
-    &:focus {
-      color: rgba($white, 0.85);
-    }
+  &__icon {
+    font-size: 2.5rem;
+    margin-bottom: 1.25rem;
+    display: block;
+    color: $cp-accent;
   }
 
-  // Container inside header
-  .container,
-  .container-fluid {
+  &__title {
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 800;
+    margin-bottom: 1.25rem;
+    line-height: 1.15;
+    color: #fff;
+  }
+
+  &__subtitle {
+    font-size: 1.15rem;
+    line-height: 1.7;
+    color: rgb(255 255 255 / 88%);
+    margin-bottom: 2.5rem;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  &__actions {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
   }
 }
 
-// Navigation region
-.frontpage .region-navigation {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 99;
+// ==================================================
+// SECTION 2: THREE PATHWAYS
+// ==================================================
+
+.support-pathways {
+  padding: 4.5rem 0;
+  background: #fff;
 }
 
-// Highlighted region - full-width slider container
-.frontpage .region-highlighted {
-  position: relative;
-  width: 100%;
-  z-index: 1;
+.support-pathway-card {
+  background: #fff;
+  border: 1px solid $cp-border;
+  border-radius: 8px; // SAHO card standard
+  padding: 2rem 1.75rem 1.5rem;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
 
-  // Remove any container constraints for full-bleed slider
-  .block,
-  .block-views-blocksliderhomepage-block {
-    margin: 0;
+  &:hover {
+    transform: translateY(-4px); // SAHO card hover standard
+    box-shadow: 0 20px 40px rgb(0 0 0 / 12%);
+  }
+
+  &--champion {
+    border-color: $cp-accent;
+    border-width: 2px;
+    box-shadow: 0 4px 20px rgb(184 138 46 / 15%);
+  }
+
+  &__icon {
+    color: $cp-secondary;
+    margin-bottom: 1rem;
+
+    .support-pathway-card--champion & {
+      color: $cp-accent;
+    }
+  }
+
+  &__badge {
+    display: inline-block;
+    background: $cp-primary;
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 0.25rem 0.6rem;
+    border-radius: 25px;
+    margin-bottom: 0.75rem;
+  }
+
+  &__title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: $cp-secondary;
+    margin-bottom: 0.25rem;
+  }
+
+  &__price {
+    font-size: 0.95rem;
+    color: $cp-text-muted;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+  }
+
+  &__desc {
+    font-size: 0.9rem;
+    color: $cp-text-muted;
+    line-height: 1.6;
+    margin-bottom: 1rem;
+  }
+
+  &__benefits {
+    list-style: none;
     padding: 0;
+    margin: 0 0 1.5rem;
+    flex: 1;
 
-    > .content {
-      margin: 0;
-      padding: 0;
+    li {
+      padding: 0.3rem 0 0.3rem 1.5rem;
+      position: relative;
+      font-size: 0.875rem;
+      color: $cp-text;
+      line-height: 1.5;
+
+      &::before {
+        content: "✓";
+        position: absolute;
+        left: 0;
+        color: $cp-secondary;
+        font-weight: 700;
+
+        .support-pathway-card--champion & {
+          color: $cp-primary;
+        }
+      }
+    }
+  }
+
+  &__cta {
+    margin-top: auto;
+  }
+}
+
+// ==================================================
+// EFT BANKING DETAILS
+// ==================================================
+
+.support-eft-details {
+  margin-bottom: 1.25rem;
+  background: $cp-light-bg;
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+
+  &__list {
+    margin: 0;
+
+    dt {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: $cp-text-muted;
+      margin-top: 0.5rem;
+
+      &:first-child {
+        margin-top: 0;
+      }
+    }
+
+    dd {
+      font-size: 0.9rem;
+      color: $cp-text;
+      font-weight: 600;
+      margin-left: 0;
+      margin-bottom: 0.1rem;
     }
   }
 }
 
-// Hero Carousel - Full-width slider
-.view-slider {
-  margin: 0;
-  padding: 0;
+// ==================================================
+// SECTION 3: CHAMPION TIER PREVIEW
+// ==================================================
 
-  // Remove default view wrapper padding
-  &.view-display-id-homepage_block {
-    .view-content {
-      margin: 0;
-      padding: 0;
-    }
-  }
-}
+.support-tiers-preview {
+  padding: 4.5rem 0;
+  background: $cp-light-bg;
 
-// Layout Builder adjustments - when slider is in layout builder
-.cklb-slideshow {
-  .block-layout-builder > .content {
+  &__link {
+    text-align: center;
     margin-top: 2rem;
   }
 }
 
-// Commerce Demo Carousel (legacy)
-#carouselDemo {
-  img {
-    object-fit: cover;
-    height: 320px;
-    opacity: 0.54;
+// ==================================================
+// SECTION 4: WHY IT MATTERS
+// ==================================================
 
-    @include media-breakpoint-up(md) {
-      height: 640px;
+.support-impact {
+  padding: 4.5rem 0;
+  background: #fff;
+
+  .support-section-title,
+  .support-section-subtitle {
+    margin-bottom: 2rem;
+  }
+
+  &__stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1.5rem 1rem;
+  }
+
+  &__number {
+    font-size: clamp(2rem, 4vw, 2.75rem);
+    font-weight: 800;
+    color: $cp-primary;
+    line-height: 1;
+    margin-bottom: 0.5rem;
+  }
+
+  &__label {
+    font-size: 0.9rem;
+    color: $cp-text-muted;
+    text-align: center;
+    line-height: 1.4;
+  }
+
+  &__text {
+    max-width: 700px;
+    margin: 2rem auto 0;
+    text-align: center;
+    font-size: 1rem;
+    line-height: 1.7;
+    color: $cp-text-muted;
+  }
+}
+
+// ==================================================
+// SECTION 5: MARION INSTITUTE PARTNERSHIP
+// ==================================================
+
+.support-partner {
+  padding: 3rem 0;
+  background: $cp-light-bg;
+  border-top: 1px solid $cp-border;
+
+  &__inner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+    text-align: center;
+    max-width: 720px;
+    margin: 0 auto;
+  }
+
+  &__logo {
+    max-width: 220px;
+    height: auto;
+    opacity: 0.9;
+  }
+
+  &__text {
+    font-size: 0.9rem;
+    color: #555;
+    line-height: 1.7;
+    margin: 0;
+    max-width: 420px;
+    text-align: left;
+
+    a {
+      color: $cp-primary;
+      font-weight: 600;
+    }
+  }
+
+  &__heading {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: $cp-secondary;
+    margin-bottom: 0.5rem;
+  }
+}
+
+// ==================================================
+// TEXT LINK
+// ==================================================
+
+.support-text-link {
+  color: $cp-primary;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.95rem;
+
+  &:hover {
+    color: $cp-primary-dark;
+    text-decoration: underline;
+  }
+}
+
+// ==================================================
+// RESPONSIVE
+// ==================================================
+
+@media (width <= 767px) {
+  .support-hero {
+    padding: 3.5rem 0 3rem;
+
+    &__actions {
+      flex-direction: column;
+      align-items: center;
+
+      .support-btn {
+        width: 100%;
+        max-width: 300px;
+      }
+    }
+  }
+
+  .support-pathways {
+    padding: 3rem 0;
+  }
+
+  .support-pathway-card {
+    padding: 1.5rem 1.25rem 1.25rem;
+  }
+
+  .support-tiers-preview {
+    padding: 3rem 0;
+  }
+
+  .support-impact {
+    padding: 3rem 0;
+
+    &__stat {
+      padding: 1rem;
+    }
+  }
+
+  .support-partner {
+    &__inner {
+      flex-direction: column;
+    }
+
+    &__text {
+      text-align: center;
     }
   }
 }
 
-// Main content area after slider
-.frontpage main[role="main"] {
-  position: relative;
-  z-index: 2;
-  background: $white;
-}

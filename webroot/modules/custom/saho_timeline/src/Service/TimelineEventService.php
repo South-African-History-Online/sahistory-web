@@ -567,7 +567,7 @@ class TimelineEventService {
     }
 
     // Date ranges (1994-1996, extract start year)
-    if (preg_match('/^(\d{4})\s*[-–—]\s*(\d{4})/', $date_string, $matches)) {
+    if (preg_match('/^(\d{4})\s*[-–-]\s*(\d{4})/', $date_string, $matches)) {
       return $matches[1] . '-01-01';
     }
 
@@ -597,7 +597,7 @@ class TimelineEventService {
     // December 25th, 1994.
       '/([A-Za-z]+)\s+(\d{1,2})(?:st|nd|rd|th)?,?\s+(\d{4})/',
     // 1994-1996
-      '/(\d{4})\s*[-–—]\s*(\d{4})/',
+      '/(\d{4})\s*[-–-]\s*(\d{4})/',
     // Just a year.
       '/(\d{4})/',
     ];

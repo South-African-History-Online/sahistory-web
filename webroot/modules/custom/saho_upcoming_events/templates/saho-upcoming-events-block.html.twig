@@ -54,7 +54,8 @@
               <img src="{{ file_url(event.field_upcomingevent_image.entity.uri.value) }}"
                    alt="{{ event.field_upcomingevent_image.alt|default(event.getTitle()) }}"
                    class="saho-upcoming-events-card__img w-100 h-100"
-                   loading="lazy">
+                   loading="lazy"
+                   decoding="async">
             {% else %}
               <div class="saho-upcoming-events-card__placeholder bg-light d-flex align-items-center justify-content-center">
                 <i class="fas fa-calendar-alt fa-3x text-muted"></i>
@@ -145,9 +146,12 @@
     </div>
 
     {% if config.show_view_all_link %}
-      <div class="view-all-events text-center mt-4">
-        <a href="/all-upcoming-events" class="btn btn-primary">
-          View All Upcoming Events
+      <div class="view-all-events mt-4">
+        <a href="/all-upcoming-events" class="saho-button saho-button--text saho-button--medium saho-button--with-icon">
+          <span class="saho-button__text">View All Upcoming Events</span>
+          <svg class="saho-button__icon saho-button__icon--arrow-right" width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+            <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/>
+          </svg>
         </a>
       </div>
     {% endif %}

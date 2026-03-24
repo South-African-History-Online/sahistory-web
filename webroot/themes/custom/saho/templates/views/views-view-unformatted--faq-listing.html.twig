@@ -1,0 +1,32 @@
+{#
+/**
+ * @file
+ * SAHO FAQ Listing - grouped category section (unformatted style override).
+ *
+ * Called once per category group. Renders the category heading and
+ * wraps the accordion items in the correct semantic structure.
+ *
+ * Available variables:
+ * - title: Category term name (the grouping field value).
+ * - rows: Rendered FAQ accordion items for this category.
+ */
+#}
+
+{% set group_slug = title|striptags|trim|lower|replace({' ': '-', '&': 'and', '/': '-', "'": '', '"': ''}) %}
+{% set group_id = 'faq-cat-' ~ group_slug %}
+
+<div class="saho-faq-category mb-5">
+
+  {% if title %}
+    <h2 class="saho-faq-category__heading" id="{{ group_id }}-heading">
+      {{ title|striptags|trim }}
+    </h2>
+  {% endif %}
+
+  <div class="accordion saho-faq-accordion" id="{{ group_id }}-accordion">
+    {% for row in rows %}
+      {{- row.content -}}
+    {% endfor %}
+  </div>
+
+</div>

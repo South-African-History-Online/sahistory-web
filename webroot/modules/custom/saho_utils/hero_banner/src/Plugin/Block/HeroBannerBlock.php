@@ -300,7 +300,7 @@ class HeroBannerBlock extends BlockBase implements ContainerFactoryPluginInterfa
         $image_field = $media->get('field_media_image');
         if (!$image_field->isEmpty()) {
           $file = $image_field->entity;
-          if ($file && $file instanceof File) {
+          if ($file && $file instanceof File && file_exists($file->getFileUri())) {
             $file_uri = $file->getFileUri();
 
             // Get image dimensions for CLS prevention.

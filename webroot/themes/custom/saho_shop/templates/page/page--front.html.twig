@@ -1,0 +1,361 @@
+{#
+/**
+ * @file
+ * Support Hub front page - "Support South African History".
+ *
+ * Replaces the Belgrade slider homepage with a focused donation/support hub
+ * that clearly communicates all three support pathways:
+ *   1. SAHO Champion (recurring subscription)
+ *   2. PayPal (once-off, hosted_button_id=CZPNF5PNPW8SL)
+ *   3. Snapscan (QR code, https://pos.snapscan.io/qr/SAHO)
+ *
+ * @see template_preprocess_page()
+ * @see html.html.twig
+ */
+#}
+{% do attach_library('saho_shop/page.front') %}
+
+<div{{ attributes.addClass('support-hub-page') }}>
+  {% block skip_link %}
+    <a href="#main-content" class="visually-hidden-focusable">
+      {{ 'Skip to main content'|t }}
+    </a>
+  {% endblock %}
+
+  {# Top bar #}
+  {% block top_bar %}
+    {% if page.top_bar %}
+      {{ page.top_bar }}
+    {% endif %}
+  {% endblock %}
+
+  {# Header #}
+  {% block header %}
+    {% if page.header %}
+      <header role="banner">
+        {{ page.header }}
+      </header>
+    {% endif %}
+  {% endblock %}
+
+  {# Navigation #}
+  {% block navigation %}
+    {% if page.navigation %}
+      <nav role="navigation" aria-label="{{ 'Main navigation'|t }}">
+        {{ page.navigation }}
+      </nav>
+    {% endif %}
+  {% endblock %}
+
+  {# Drupal system messages only - highlighted region suppressed on front page (carousel lives there) #}
+  {% block messages %}
+    {% if page.help %}
+      <div class="region-help container">
+        {{ page.help }}
+      </div>
+    {% endif %}
+  {% endblock %}
+
+  {% block help %}{% endblock %}
+
+  {% block tabs %}
+    {% if primary_local_tasks %}{{ primary_local_tasks }}{% endif %}
+    {% if secondary_local_tasks %}{{ secondary_local_tasks }}{% endif %}
+  {% endblock %}
+
+  {% block action_links %}
+    {% if action_links %}{{ action_links }}{% endif %}
+  {% endblock %}
+
+  {# ============================================================ #}
+  {# SUPPORT HUB MAIN CONTENT #}
+  {# ============================================================ #}
+  <main id="main-content" class="support-hub" role="main">
+
+    {# ================================================== #}
+    {# SECTION 1: HERO #}
+    {# ================================================== #}
+    <section class="support-hero" aria-labelledby="support-hub-title">
+      <div class="container">
+        <div class="support-hero__inner">
+          <span class="support-hero__icon" aria-hidden="true">&#9733;</span>
+          <h1 id="support-hub-title" class="support-hero__title">
+            {{ 'Support South African History'|t }}
+          </h1>
+          <p class="support-hero__subtitle">
+            {{ 'SAHO is a free, independent resource serving millions of South Africans. Your support keeps our archive open, growing, and accessible to everyone - forever.'|t }}
+          </p>
+          <div class="support-hero__actions">
+            <a href="/champion" class="support-btn support-btn--gold">
+              {{ 'Become a Champion'|t }}
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true"><path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/></svg>
+            </a>
+            {# TODO: Update /donate to the correct once-off donation product URL #}
+            <a href="/donate" class="support-btn support-btn--outline-white">
+              {{ 'Make a Donation'|t }}
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    {# ================================================== #}
+    {# SECTION 2: THREE PATHWAYS #}
+    {# ================================================== #}
+    <section class="support-pathways" aria-labelledby="pathways-heading">
+      <div class="container">
+        <h2 id="pathways-heading" class="support-section-title">{{ 'Choose How You Support'|t }}</h2>
+        <p class="support-section-subtitle">{{ 'Every contribution - large or small - keeps South African history free and accessible.'|t }}</p>
+
+        <div class="row g-4">
+
+          {# --- CHAMPION --- #}
+          <div class="col-md-4">
+            <article class="support-pathway-card support-pathway-card--champion">
+              <div class="support-pathway-card__icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true"><path d="M2.866 14.85c-.078.444.36.791.746.593l4.39-2.256 4.389 2.256c.386.198.824-.149.746-.592l-.83-4.73 3.522-3.356c.33-.314.16-.888-.282-.95l-4.898-.696L8.465.792a.513.513 0 0 0-.927 0L5.354 5.12l-4.898.696c-.441.062-.612.636-.283.95l3.523 3.356-.83 4.73zm4.905-2.767-3.686 1.894.694-3.957a.565.565 0 0 0-.163-.505L1.71 6.745l4.052-.576a.525.525 0 0 0 .393-.288L8 2.223l1.847 3.658a.525.525 0 0 0 .393.288l4.052.575-2.906 2.77a.565.565 0 0 0-.163.506l.694 3.957-3.686-1.894a.503.503 0 0 0-.461 0z"/></svg>
+              </div>
+              <span class="support-pathway-card__badge">{{ 'Most Popular'|t }}</span>
+              <h3 class="support-pathway-card__title">{{ 'SAHO Champion'|t }}</h3>
+              <p class="support-pathway-card__price">{{ 'From R200/month'|t }}</p>
+              <p class="support-pathway-card__desc">
+                {{ 'Become a named Champion of South African history. Recurring support with exclusive benefits and recognition.'|t }}
+              </p>
+              <ul class="support-pathway-card__benefits">
+                <li>{{ 'Ad-free reading experience'|t }}</li>
+                <li>{{ 'Champion badge on your profile'|t }}</li>
+                <li>{{ 'Recognition on the Wall of Champions'|t }}</li>
+                <li>{{ 'Monthly new-content digest'|t }}</li>
+                <li>{{ 'Patron tier: tax certificate via Marion Institute'|t }}</li>
+              </ul>
+              <div class="support-pathway-card__cta">
+                <a href="/champion" class="support-btn support-btn--primary support-btn--full">
+                  {{ 'Explore Champion Tiers'|t }}
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true"><path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/></svg>
+                </a>
+              </div>
+            </article>
+          </div>
+
+          {# --- PAYPAL --- #}
+          <div class="col-md-4">
+            <article class="support-pathway-card">
+              <div class="support-pathway-card__icon">
+                {# PayPal icon #}
+                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true"><path d="M14.06 3.713c.12-1.071-.093-1.832-.702-2.526C12.628.356 11.312 0 9.626 0H4.734a.7.7 0 0 0-.691.59L2.005 13.509a.42.42 0 0 0 .415.486h2.756l-.202 1.28a.628.628 0 0 0 .62.726H8.14c.429 0 .793-.31.862-.731l.025-.13.48-3.043.03-.164.001-.007a.351.351 0 0 1 .348-.297h.38c1.266 0 2.425-.256 3.345-.91.379-.27.712-.603.993-1.005a4.942 4.942 0 0 0 .88-2.195c.242-1.246.13-2.356-.57-3.079a2.274 2.274 0 0 0-.57-.395z"/></svg>
+              </div>
+              <h3 class="support-pathway-card__title">{{ 'Donate via PayPal'|t }}</h3>
+              <p class="support-pathway-card__price">{{ 'Any amount'|t }}</p>
+              <p class="support-pathway-card__desc">
+                {{ 'Make a one-time or recurring contribution securely via PayPal. No PayPal account required - pay by card.'|t }}
+              </p>
+              <ul class="support-pathway-card__benefits">
+                <li>{{ 'Choose your own amount'|t }}</li>
+                <li>{{ 'Secure PayPal processing'|t }}</li>
+                <li>{{ 'Pay by card or PayPal balance'|t }}</li>
+                <li>{{ 'Email receipt provided'|t }}</li>
+              </ul>
+              <div class="support-pathway-card__cta">
+                <a href="https://www.paypal.com/donate?hosted_button_id=CZPNF5PNPW8SL" target="_blank" rel="noopener" class="support-btn support-btn--secondary support-btn--full">
+                  {{ 'Donate via PayPal'|t }}
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true"><path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/></svg>
+                </a>
+              </div>
+            </article>
+          </div>
+
+          {# --- SNAPSCAN --- #}
+          <div class="col-md-4">
+            <article class="support-pathway-card support-pathway-card--snapscan">
+              <div class="support-pathway-card__icon">
+                {# QR / mobile icon #}
+                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true"><path d="M0 .5A.5.5 0 0 1 .5 0h3a.5.5 0 0 1 0 1H1v2.5a.5.5 0 0 1-1 0zm12 0a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5v3a.5.5 0 0 1-1 0V1h-2.5a.5.5 0 0 1-.5-.5M.5 12a.5.5 0 0 1 .5.5V15h2.5a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5v-3a.5.5 0 0 1 .5-.5m15 0a.5.5 0 0 1 .5.5v3a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1 0-1H15v-2.5a.5.5 0 0 1 .5-.5M4 4h1v1H4z"/><path d="M7 2H2v5h5zM3 3h3v3H3zm2 8H4v1h1z"/><path d="M7 9H2v5h5zm-4 1h3v3H3zm8-6h1v1h-1z"/><path d="M9 2h5v5H9zm1 1v3h3V3zM8 8h1v1H8zm2 0h1v1h-1zm-1 2h1v1H9zm2 0h1v1h-1zm-3 2h1v1H8zm2 0h1v1h-1zm2-4h1v1h-1zm0 4h1v1h-1z"/></svg>
+              </div>
+              <h3 class="support-pathway-card__title">{{ 'Donate via Snapscan'|t }}</h3>
+              <p class="support-pathway-card__price">{{ 'Scan to donate'|t }}</p>
+              <p class="support-pathway-card__desc">
+                {{ 'Use the Snapscan app on your phone to donate instantly. Scan the QR code below or tap to open in the app.'|t }}
+              </p>
+              <div class="support-snapscan-qr">
+                <a href="https://pos.snapscan.io/qr/SAHO" target="_blank" rel="noopener" aria-label="{{ 'Open Snapscan donation page'|t }}">
+                  <img src="/sites/default/files/SAHO-snapscan-image-hi-res.jpg"
+                       alt="{{ 'Snapscan QR code to donate to SAHO'|t }}"
+                       class="support-snapscan-qr__image"
+                       loading="lazy">
+                </a>
+              </div>
+              <div class="support-pathway-card__cta">
+                <a href="https://pos.snapscan.io/qr/SAHO" target="_blank" rel="noopener" class="support-btn support-btn--outline support-btn--full">
+                  {{ 'Open Snapscan'|t }}
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true"><path fill-rule="evenodd" d="M8.636 3.5a.5.5 0 0 0-.5-.5H1.5A1.5 1.5 0 0 0 0 4.5v10A1.5 1.5 0 0 0 1.5 16h10a1.5 1.5 0 0 0 1.5-1.5V7.864a.5.5 0 0 0-1 0V14.5a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-10a.5.5 0 0 1 .5-.5h6.636a.5.5 0 0 0 .5-.5"/><path fill-rule="evenodd" d="M16 .5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0 0 1h3.793L6.146 9.146a.5.5 0 1 0 .708.708L15 1.707V5.5a.5.5 0 0 0 1 0z"/></svg>
+                </a>
+              </div>
+            </article>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    {# ================================================== #}
+    {# SECTION 3: CHAMPION TIER PREVIEW #}
+    {# ================================================== #}
+    <section class="support-tiers-preview" aria-labelledby="tiers-preview-heading">
+      <div class="container">
+        <h2 id="tiers-preview-heading" class="support-section-title">{{ 'Champion Membership'|t }}</h2>
+        <p class="support-section-subtitle">{{ 'All levels include ad-free access and recognition on the Wall of Champions.'|t }}</p>
+
+        {% include '@saho_shop/page/_champion-tiers.html.twig' %}
+
+      </div>
+    </section>
+
+    {# ================================================== #}
+    {# SECTION: LATEST PUBLICATIONS - Champion gift #}
+    {# ================================================== #}
+    {% if latest_publications %}
+    <section class="support-publications" aria-labelledby="publications-heading">
+      <div class="container">
+
+        <div class="row align-items-end mb-4">
+          <div class="col-lg-8">
+            <h2 id="publications-heading" class="support-section-title text-start mb-1">
+              {{- 'Latest Publications'|t -}}
+            </h2>
+            <p class="support-section-subtitle text-start mb-0">
+              {{- 'Exclusive SAHO histories, memoirs and reference works - produced by our editorial team.'|t -}}
+            </p>
+          </div>
+          <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+            <a href="/publications" class="support-text-link">
+              {{- 'View all publications'|t -}}
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true"><path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/></svg>
+            </a>
+          </div>
+        </div>
+
+        <div class="row g-4 mb-4">
+          {% for pub in latest_publications %}
+          <div class="col-sm-6 col-md-4">
+            <article class="support-pub-card">
+              <a href="{{ pub.url }}" class="support-pub-card__cover-link" tabindex="-1" aria-hidden="true">
+                {% if pub.image_url %}
+                  <img
+                    src="{{ pub.image_url }}"
+                    alt=""
+                    class="support-pub-card__cover"
+                    loading="lazy"
+                  />
+                {% else %}
+                  <img
+                    src="{{ base_path ~ directory ~ '/images/publication-placeholder.svg' }}"
+                    alt=""
+                    class="support-pub-card__cover support-pub-card__cover--placeholder"
+                    loading="lazy"
+                  />
+                {% endif %}
+              </a>
+              <div class="support-pub-card__body">
+                <h3 class="support-pub-card__title">
+                  <a href="{{ pub.url }}">{{ pub.title }}</a>
+                </h3>
+              </div>
+            </article>
+          </div>
+          {% endfor %}
+        </div>
+
+        {# Champion call-to-action strip #}
+        <div class="support-publications__champion-strip">
+          <div class="support-publications__champion-strip-inner">
+            <span class="support-publications__champion-badge" aria-hidden="true">★</span>
+            <div class="support-publications__champion-text">
+              <strong>{{ 'SAHO Champions receive a publication as a gift of appreciation.'|t }}</strong>
+              <span>{{ 'Sign up for Annual or Patron tier to claim yours.'|t }}</span>
+            </div>
+            <a href="/champion" class="support-btn support-btn--gold">
+              {{- 'Become a Champion'|t -}}
+              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true"><path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/></svg>
+            </a>
+          </div>
+        </div>
+
+      </div>
+    </section>
+    {% endif %}
+
+    {# ================================================== #}
+    {# SECTION 4: WHY YOUR SUPPORT MATTERS #}
+    {# ================================================== #}
+    <section class="support-impact" aria-labelledby="impact-heading">
+      <div class="container">
+        <h2 id="impact-heading" class="support-section-title">{{ 'Why Your Support Matters'|t }}</h2>
+
+        <div class="row g-0 justify-content-center">
+          <div class="col-sm-4 text-center">
+            <div class="support-impact__stat">
+              <span class="support-impact__number">Free</span>
+              <span class="support-impact__label">{{ 'Always free to access - no paywalls, ever'|t }}</span>
+            </div>
+          </div>
+          <div class="col-sm-4 text-center">
+            <div class="support-impact__stat">
+              <span class="support-impact__number">40 000+</span>
+              <span class="support-impact__label">{{ 'Articles, biographies &amp; historical records'|t }}</span>
+            </div>
+          </div>
+          <div class="col-sm-4 text-center">
+            <div class="support-impact__stat">
+              <span class="support-impact__number">25+ yrs</span>
+              <span class="support-impact__label">{{ 'Documenting South African history online'|t }}</span>
+            </div>
+          </div>
+        </div>
+
+        <p class="support-impact__text">
+          {{ 'SAHO is independently funded by readers like you. No advertising, no corporate sponsors, no paywalls. Every rand goes directly to maintaining and expanding South Africa\'s largest free online history archive.'|t }}
+        </p>
+      </div>
+    </section>
+
+    {# ================================================== #}
+    {# SECTION 5: MARION INSTITUTE PARTNERSHIP #}
+    {# ================================================== #}
+    <section class="support-partner" aria-labelledby="partner-heading">
+      <div class="container">
+        <div class="support-partner__inner">
+          <img
+            src="{{ base_path ~ directory ~ '/images/marion-institute.png' }}"
+            alt="{{ 'The Marion Institute - SAHO\'s fiscal sponsor'|t }}"
+            class="support-partner__logo"
+            width="220"
+            loading="lazy"
+          >
+          <div class="support-partner__text">
+            <h2 id="partner-heading" class="support-partner__heading">{{ 'Tax-Deductible Donations'|t }}</h2>
+            <p>
+              {{ 'SAHO is fiscally sponsored by the'|t }}
+              <a href="https://www.marioninstitute.org" target="_blank" rel="noopener noreferrer">{{ 'Marion Institute'|t }}</a>.
+              {{ 'Patron-level contributions qualify for a South African tax certificate. Contact us at'|t }}
+              <a href="mailto:info@sahistory.org.za">info@sahistory.org.za</a>
+              {{ 'for more information.'|t }}
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  {# Footer #}
+  {% block footer %}
+    {% include '@saho_shop/page/_footer-shared.html.twig' %}
+  {% endblock %}
+
+  {% block page_bottom %}
+    {% if page_bottom %}
+      {{ page_bottom }}
+    {% endif %}
+  {% endblock %}
+
+</div>

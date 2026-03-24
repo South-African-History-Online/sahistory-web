@@ -13,11 +13,11 @@
 
 /* Component-scoped design tokens */
 .saho-button {
-  /* SAHO Brand Colors - inline, no external dependencies */
-  --btn-color-primary: #990000; /* SAHO Deep Heritage Red */
-  --btn-color-primary-hover: #8b0000; /* Darker on hover */
-  --btn-color-text: #ffffff; /* White text */
-  --btn-color-focus: #990000; /* Focus outline */
+  /* SAHO Brand Colors - inherit from unified design token system */
+  --btn-color-primary: var(--saho-color-primary);
+  --btn-color-primary-hover: var(--saho-color-primary-dark);
+  --btn-color-text: var(--saho-color-white);
+  --btn-color-focus: var(--saho-color-primary);
 
   /* Sizing tokens - 8px baseline grid */
   --btn-padding-sm: 0.5rem 1rem; /* 8px 16px */
@@ -32,13 +32,13 @@
   --btn-radius-md: 24px; /* 24px - rounded from 25px (pill shape) */
   --btn-radius-lg: 24px; /* 24px - rounded from 25px (pill shape) */
 
-  /* Shadow tokens - 8px baseline grid */
-  --btn-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  --btn-shadow-hover: 0 4px 8px rgba(0, 0, 0, 0.1); /* Rounded 3px 10px to 4px 8px */
-  --btn-shadow-focus: 0 0 0 4px rgba(153, 0, 0, 0.25);
+  /* Shadow tokens - inherit from unified system */
+  --btn-shadow: var(--saho-shadow-sm);
+  --btn-shadow-hover: var(--saho-shadow-hover);
+  --btn-shadow-focus: 0 0 0 4px var(--saho-color-primary-alpha-25);
 
   /* Transition */
-  --btn-transition: all 0.2s ease;
+  --btn-transition: all var(--saho-transition-base);
 
   /* Base Layout */
   display: inline-flex;
@@ -208,6 +208,77 @@
   .saho-button:hover .saho-button__icon {
     transform: none;
   }
+}
+
+/* ============================================================
+ * Text link variant - Egmont-style editorial navigation
+ * "Read more →"  No box, no fill, no pill. Just text + arrow.
+ * Use for: Read more, More features, View all, View more links
+ * ============================================================ */
+
+.saho-button--text {
+  /* Reset filled-pill styles */
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+
+  /* Text link appearance */
+  color: var(--saho-color-primary) !important;
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+
+  /* Inline layout with gap for arrow */
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+
+  /* Animated underline on hover */
+  text-decoration: none;
+  border-bottom: 1px solid transparent !important;
+  padding-bottom: 1px;
+
+  transition:
+    gap 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease !important;
+}
+
+.saho-button--text:hover,
+.saho-button--text:focus {
+  background: transparent !important;
+  background-color: transparent !important;
+  border-color: transparent !important;
+  border-bottom-color: var(--saho-color-primary-dark) !important;
+  color: var(--saho-color-primary-dark) !important;
+  transform: none !important;
+  box-shadow: none !important;
+  text-decoration: none !important;
+  gap: 0.5rem; /* arrow nudges right */
+}
+
+.saho-button--text:active {
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.saho-button--text:focus-visible {
+  outline: 2px solid var(--saho-color-primary) !important;
+  outline-offset: 3px;
+  box-shadow: none !important;
+}
+
+/* Slide the arrow rightward on hover */
+.saho-button--text .saho-button__icon--arrow-right {
+  transition: transform 0.2s ease;
+}
+
+.saho-button--text:hover .saho-button__icon--arrow-right {
+  transform: translateX(0.25rem);
 }
 
 /* Print styles */

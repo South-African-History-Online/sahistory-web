@@ -1,0 +1,497 @@
+//
+// Champion Landing Page
+// Full-page marketing template for SAHO Champion membership.
+// Re-branded to match SAHO heritage design system.
+// ----------------------------
+//
+@import "../global";
+@import "../support-tokens";
+@import "../components/support-btn";
+@import "../components/tier-grid";
+
+// ==================================================
+// HERO
+// ==================================================
+
+.champion-hero {
+  background: linear-gradient(135deg, $cp-hero-start 0%, $cp-hero-end 100%);
+  color: #fff;
+  padding: 5rem 0 4rem;
+  text-align: center;
+
+  &__inner {
+    max-width: 700px;
+    margin: 0 auto;
+  }
+
+  &__icon {
+    font-size: 3rem;
+    margin-bottom: 1.25rem;
+    display: block;
+    color: $cp-accent;
+    animation: champion-star-pulse 3s ease-in-out infinite;
+  }
+
+  &__title {
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 800;
+    margin-bottom: 1.25rem;
+    line-height: 1.15;
+    color: #fff;
+  }
+
+  &__subtitle {
+    font-size: 1.15rem;
+    line-height: 1.7;
+    color: rgb(255 255 255 / 88%);
+    margin-bottom: 2.5rem;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  &__actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+}
+
+@keyframes champion-star-pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  50% {
+    transform: scale(1.1);
+    opacity: 0.9;
+  }
+}
+
+// ==================================================
+// VALUE PROPOSITION
+// ==================================================
+
+.champion-values {
+  padding: 4rem 0;
+  background: #fff;
+}
+
+.champion-value-card {
+  text-align: center;
+  padding: 2rem 1.5rem;
+  border: 1px solid $cp-border;
+  border-radius: 8px; // SAHO card standard
+  height: 100%;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+
+  &:hover {
+    box-shadow: 0 4px 20px rgb(0 0 0 / 8%);
+    transform: translateY(-3px);
+  }
+
+  &__icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    display: block;
+    color: $cp-secondary;
+  }
+
+  &__title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: $cp-secondary;
+    margin-bottom: 0.75rem;
+  }
+
+  &__text {
+    font-size: 0.95rem;
+    color: #555;
+    line-height: 1.6;
+    margin: 0;
+  }
+}
+
+// ==================================================
+// MEMBERSHIP TIERS
+// ==================================================
+
+.champion-tiers {
+  padding: 4rem 0;
+  background: $cp-light-bg;
+}
+
+.champion-section-title {
+  text-align: center;
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 700;
+  color: $cp-secondary;
+  margin-bottom: 0.75rem;
+}
+
+.champion-section-subtitle {
+  text-align: center;
+  color: #666;
+  font-size: 1rem;
+  margin-bottom: 2.5rem;
+}
+
+.champion-tier {
+  background: #fff;
+  border: 2px solid $cp-border;
+  border-radius: 8px; // SAHO card standard
+  overflow: hidden;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  transition: box-shadow 0.2s ease;
+
+  &:hover {
+    box-shadow: 0 8px 30px rgb(0 0 0 / 10%);
+  }
+
+  &--featured {
+    border-color: $cp-accent;
+    box-shadow: 0 4px 20px rgb(184 138 46 / 20%);
+
+    .champion-tier__header {
+      background: linear-gradient(135deg, $cp-secondary 0%, $cp-secondary-dark 100%);
+      color: #fff;
+    }
+
+    .champion-tier__name {
+      color: $cp-accent;
+    }
+
+    .champion-tier__price {
+      color: #fff;
+    }
+
+    .champion-tier__billing {
+      color: rgb(255 255 255 / 80%);
+    }
+  }
+
+  &__stars {
+    text-align: center;
+    padding: 0.75rem 0 0;
+    font-size: 1.1rem;
+    color: $cp-secondary;
+
+    &--gold { color: $cp-accent; }
+    &--patron { color: $cp-accent-dark; }
+  }
+
+  &__badge {
+    background: $cp-accent;
+    color: $cp-secondary-dark;
+    text-align: center;
+    font-size: 0.8rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 0.5rem;
+
+    &--patron {
+      background: linear-gradient(90deg, $cp-accent-dark 0%, $cp-accent 100%);
+      color: #1a1a1a;
+    }
+  }
+
+  &--patron {
+    border-color: $cp-accent-dark;
+    box-shadow: 0 4px 20px rgb(139 105 20 / 20%);
+
+    .champion-tier__header {
+      background: linear-gradient(135deg, #2a1a00 0%, $cp-accent-dark 100%);
+      color: #fff;
+    }
+
+    .champion-tier__name { color: $cp-accent; }
+
+    .champion-tier__price { color: #fff; }
+
+    .champion-tier__billing { color: rgb(255 255 255 / 80%); }
+  }
+
+  &__header {
+    padding: 2rem 1.75rem 1.5rem;
+    background: $cp-light-bg;
+    border-bottom: 1px solid $cp-border;
+    text-align: center;
+  }
+
+  &__name {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: $cp-secondary;
+    margin-bottom: 1rem;
+  }
+
+  &__price {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 0.25rem;
+    color: #1a1a1a;
+    margin-bottom: 0.5rem;
+  }
+
+  &__currency {
+    font-size: 1rem;
+    font-weight: 600;
+    opacity: 0.7;
+  }
+
+  &__amount {
+    font-size: 2.75rem;
+    font-weight: 800;
+    line-height: 1;
+  }
+
+  &__period {
+    font-size: 1rem;
+    opacity: 0.7;
+  }
+
+  &__billing {
+    font-size: 0.8rem;
+    color: #777;
+    margin: 0;
+  }
+
+  &__benefits {
+    padding: 1.5rem 1.75rem;
+    flex: 1;
+  }
+
+  &__cta {
+    padding: 0 1.75rem 1.75rem;
+  }
+}
+
+// Benefits list
+.champion-benefits-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+
+  li {
+    padding: 0.4rem 0 0.4rem 1.75rem;
+    position: relative;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: #333;
+    border-bottom: 1px solid #f0f0f0;
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    &::before {
+      content: "✓";
+      position: absolute;
+      left: 0;
+      color: $cp-secondary;
+      font-weight: 700;
+    }
+  }
+}
+
+// ==================================================
+// WALL OF CHAMPIONS TEASER
+// ==================================================
+
+.champion-wall-teaser {
+  padding: 3.5rem 0;
+  background: #fff;
+  text-align: center;
+
+  .champion-wall-icon {
+    display: block;
+    margin-bottom: 1rem;
+    color: $cp-accent;
+
+    svg {
+      width: 48px;
+      height: 48px;
+    }
+  }
+}
+
+.champion-link {
+  color: $cp-primary;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+
+  &:hover {
+    color: $cp-primary-dark;
+  }
+}
+
+// ==================================================
+// MARION INSTITUTE PARTNERSHIP
+// ==================================================
+
+.champion-partner {
+  padding: 3rem 0;
+  background: $cp-light-bg;
+  border-top: 1px solid $cp-border;
+
+  &__inner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+    text-align: center;
+    max-width: 700px;
+    margin: 0 auto;
+  }
+
+  &__logo {
+    max-width: 240px;
+    height: auto;
+    opacity: 0.9;
+  }
+
+  &__text {
+    font-size: 0.9rem;
+    color: #555;
+    line-height: 1.6;
+    margin: 0;
+    max-width: 380px;
+    text-align: left;
+
+    a {
+      color: $cp-primary;
+      font-weight: 600;
+    }
+  }
+}
+
+// ==================================================
+// FAQ
+// ==================================================
+
+.champion-faq {
+  padding: 4rem 0;
+  background: #fff;
+}
+
+.champion-accordion {
+  max-width: 720px;
+  margin: 0 auto;
+
+  .accordion-item {
+    border: 1px solid $cp-border;
+    margin-bottom: 0.5rem;
+    border-radius: 8px !important; // SAHO card standard
+    overflow: hidden;
+  }
+
+  .accordion-button {
+    font-weight: 600;
+    color: $cp-secondary;
+    background: $cp-light-bg;
+
+    &:not(.collapsed) {
+      background: $cp-secondary;
+      color: #fff;
+      box-shadow: none;
+    }
+
+    &:focus {
+      box-shadow: 0 0 0 3px rgb(153 0 0 / 25%);
+    }
+  }
+
+  .accordion-body {
+    font-size: 0.95rem;
+    color: #444;
+    line-height: 1.7;
+  }
+}
+
+// ==================================================
+// FINAL CTA
+// ==================================================
+
+.champion-final-cta {
+  padding: 5rem 0;
+  background: linear-gradient(135deg, $cp-hero-start 0%, $cp-hero-end 100%);
+  color: #fff;
+  text-align: center;
+
+  &__inner {
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  &__title {
+    font-size: clamp(1.5rem, 3.5vw, 2.25rem);
+    font-weight: 800;
+    margin-bottom: 1rem;
+    color: #fff;
+  }
+
+  &__text {
+    font-size: 1.05rem;
+    color: rgb(255 255 255 / 85%);
+    margin-bottom: 2rem;
+  }
+
+  &__actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+}
+
+// ==================================================
+// RESPONSIVE
+// ==================================================
+
+@media (width <= 767px) {
+  .champion-hero {
+    padding: 3.5rem 0 3rem;
+
+    &__actions {
+      flex-direction: column;
+      align-items: center;
+
+      .support-btn {
+        width: 100%;
+        max-width: 300px;
+      }
+    }
+  }
+
+  .champion-partner {
+    &__inner {
+      flex-direction: column;
+    }
+
+    &__text {
+      text-align: center;
+    }
+  }
+
+  .champion-final-cta {
+    padding: 3.5rem 0;
+
+    &__actions {
+      flex-direction: column;
+      align-items: center;
+
+      .support-btn {
+        width: 100%;
+        max-width: 300px;
+      }
+    }
+  }
+}

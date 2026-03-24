@@ -386,19 +386,18 @@ function saho_shop_form_alter(&$form, FormStateInterface $form_state, $form_id) 
       ];
       $form['actions']['footer'] = [
         '#type' => 'container',
-        '#title' => t('Sign up'),
         '#attributes' => [
           'class' => ['user-authenticate__footer'],
         ],
-        'signup_description' => [
+        'champion_description' => [
           '#type' => 'html_tag',
           '#tag' => 'p',
-          '#value' => t('Don\'t have an account?'),
+          '#value' => t('New supporter? Start here.'),
         ],
-        'signup' => [
+        'champion' => [
           '#type' => 'link',
-          '#title' => t('Sign up'),
-          '#url' => Url::fromRoute('user.register'),
+          '#title' => t('Become a Champion'),
+          '#url' => Url::fromUri('internal:/champion'),
           '#attributes' => [
             'class' => ['signup-link', 'btn', 'btn-outline-white'],
           ],

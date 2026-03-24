@@ -20,6 +20,11 @@ use Drupal\Core\Entity\ContentEntityInterface;
  * Implements hook_preprocess_HOOK() for page templates.
  */
 function saho_shop_preprocess_page(&$variables) {
+  // Front page: inject latest publications for the "Champion gift" section.
+  if (\Drupal::service('path.matcher')->isFrontPage()) {
+    $variables['latest_publications'] = _saho_shop_get_latest_publications(3);
+  }
+
   // Main container
   if (theme_get_setting('main_container_class')) {
     $main_container_class = explode(' ', theme_get_setting('main_container_class'));
@@ -207,6 +212,11 @@ function saho_shop_page_attachments_alter(array &$page) {
     $page['#attached']['library'][] = 'saho_shop/page.catalog';
   }
 
+  // Subscription detail page
+  if ($route_name === 'entity.commerce_subscription.customer_view') {
+    $page['#attached']['library'][] = 'saho_shop/page.subscription';
+  }
+
   // Font libraries attachments
   $font = theme_get_setting('font_set');
   if ($font) {
@@ -331,6 +341,60 @@ function _saho_shop_add_checkout_pane_settings(&$variables) {
   $variables['pane_variant'] = theme_get_setting('checkout_pane_variant');
   $variables['pane_collapsible'] = (bool) theme_get_setting('checkout_pane_collapsible');
   $variables['pane_show_icons'] = (bool) theme_get_setting('checkout_pane_show_icons');
+}
+
+/**
+ * Load the N latest published article nodes as publication data for the front page.
+ *
+ * @param int $count
+ *   Number of publications to return.
+ *
+ * @return array
+ *   Array of arrays with keys: nid, title, url, image_url.
+ */
+function _saho_shop_get_latest_publications(int $count): array {
+  $query = \Drupal::entityQuery('commerce_product')
+    ->condition('type', 'publication')
+    ->condition('status', 1)
+    ->condition('field_images', NULL, 'IS NOT NULL')
+    ->sort('created', 'DESC')
+    ->range(0, $count * 2)
+    ->accessCheck(FALSE);
+
+  $ids = $query->execute();
+  $publications = [];
+
+  foreach ($ids as $id) {
+    $product = \Drupal\commerce_product\Entity\Product::load($id);
+    if (!$product) {
+      continue;
+    }
+
+    $image_url = NULL;
+    if ($product->hasField('field_images') && !$product->get('field_images')->isEmpty()) {
+      $file = $product->get('field_images')->entity;
+      if ($file) {
+        $image_url = \Drupal::service('file_url_generator')->generateString($file->getFileUri());
+      }
+    }
+
+    if (empty($image_url)) {
+      continue;
+    }
+
+    $publications[] = [
+      'nid' => $id,
+      'title' => $product->getTitle(),
+      'url' => $product->toUrl()->toString(),
+      'image_url' => $image_url,
+    ];
+
+    if (count($publications) >= $count) {
+      break;
+    }
+  }
+
+  return $publications;
 }
 
 /**

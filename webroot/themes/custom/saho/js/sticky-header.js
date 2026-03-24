@@ -1,6 +1,6 @@
 /**
  * @file
- * SAHO Header — no-op stub.
+ * SAHO Header - no-op stub.
  *
  * The two-tier header has been replaced by a single fixed primary bar.
  * Nav items are always inline at ≥1200px; hamburger visibility is controlled

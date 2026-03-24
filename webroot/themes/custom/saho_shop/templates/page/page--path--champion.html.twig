@@ -1,0 +1,281 @@
+{#
+/**
+ * @file
+ * Champion landing page template for SAHO Shop.
+ *
+ * Full-page marketing template for the SAHO Champion membership program.
+ * Overrides the default page layout with a dedicated champion landing page.
+ *
+ * @see template_preprocess_page()
+ */
+#}
+{% do attach_library('saho_shop/page.champion') %}
+
+<div{{ attributes.addClass('champion-page') }}>
+  {% block skip_link %}
+    <a href="#main-content" class="visually-hidden-focusable">
+      {{ 'Skip to main content'|t }}
+    </a>
+  {% endblock %}
+
+  {% block top_bar %}
+    {% if page.top_bar %}{{ page.top_bar }}{% endif %}
+  {% endblock %}
+
+  {% block header %}
+    {% if page.header %}
+      <header role="banner">{{ page.header }}</header>
+    {% endif %}
+  {% endblock %}
+
+  {% block navigation %}
+    {% if page.navigation %}
+      <nav role="navigation" aria-label="{{ 'Main navigation'|t }}">
+        {{ page.navigation }}
+      </nav>
+    {% endif %}
+  {% endblock %}
+
+  {% block messages %}
+    {% if page_top %}{{ page_top }}{% endif %}
+  {% endblock %}
+
+  <main id="main-content" role="main">
+
+    {# ==========================================
+       HERO
+    ========================================== #}
+    <section class="champion-hero" aria-labelledby="champion-hero-heading">
+      <div class="container">
+        <div class="champion-hero__inner">
+          <h1 id="champion-hero-heading" class="champion-hero__title">
+            Become a SAHO Champion
+          </h1>
+          <p class="champion-hero__subtitle">
+            Your support keeps South African history free, accessible, and alive for everyone.
+            Join our growing community of champions who fund our mission.
+          </p>
+          <div class="champion-hero__actions">
+            <a href="#champion-tiers" class="support-btn support-btn--gold">
+              Choose your level
+            </a>
+            <a href="#champion-benefits" class="support-btn support-btn--outline-white">
+              See the benefits
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    {# ==========================================
+       VALUE PROPOSITION
+    ========================================== #}
+    <section class="champion-values" aria-label="Why become a champion">
+      <div class="container">
+        <div class="row g-4">
+          <div class="col-md-4">
+            <div class="champion-value-card">
+              <div class="champion-value-card__icon" aria-hidden="true">
+                <svg width="40" height="40" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M1 2.828c.885-.37 2.154-.769 3.388-.893 1.33-.134 2.458.063 3.112.752v9.746c-.935-.53-2.12-.603-3.213-.493-1.18.12-2.37.461-3.287.811V2.828zm7.5-.141c.654-.689 1.782-.886 3.112-.752 1.234.124 2.503.523 3.388.893v9.923c-.918-.35-2.107-.692-3.287-.81-1.094-.111-2.278-.039-3.213.492V2.687zM8 1.783C7.015.936 5.587.81 4.287.94c-1.514.153-3.042.672-3.994 1.105A.5.5 0 0 0 0 2.5v11a.5.5 0 0 0 .707.455c.882-.4 2.303-.881 3.68-1.02 1.409-.142 2.59.087 3.223.877a.5.5 0 0 0 .78 0c.633-.79 1.814-1.019 3.222-.877 1.378.139 2.8.62 3.681 1.02A.5.5 0 0 0 16 13.5v-11a.5.5 0 0 0-.293-.455c-.952-.433-2.48-.952-3.994-1.105C10.413.809 8.985.936 8 1.783z"/></svg>
+              </div>
+              <h2 class="champion-value-card__title">Support History</h2>
+              <p class="champion-value-card__text">
+                Your contribution funds research, content creation, and preservation
+                of South African history - keeping it free for all.
+              </p>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="champion-value-card">
+              <div class="champion-value-card__icon" aria-hidden="true">
+                <svg width="40" height="40" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm7.5-6.923c-.67.204-1.335.82-1.887 1.855A7.97 7.97 0 0 0 5.145 4H7.5V1.077zM4.09 4a9.267 9.267 0 0 1 .64-1.539 6.7 6.7 0 0 1 .597-.933A7.025 7.025 0 0 0 2.255 4H4.09zm-.582 3.5c.03-.877.138-1.718.312-2.5H1.674a6.958 6.958 0 0 0-.656 2.5h2.49zM4.847 5a12.5 12.5 0 0 0-.338 2.5H7.5V5H4.847zM8.5 5v2.5h2.99a12.495 12.495 0 0 0-.337-2.5H8.5zM4.51 8.5a12.5 12.5 0 0 0 .337 2.5H7.5V8.5H4.51zm3.99 0V11h2.653c.187-.765.306-1.608.338-2.5H8.5zM5.145 12c.138.386.295.744.468 1.068.552 1.035 1.218 1.65 1.887 1.855V12H5.145zm.182 2.472a6.696 6.696 0 0 1-.597-.933A9.268 9.268 0 0 1 4.09 12H2.255a7.024 7.024 0 0 0 3.072 2.472zM3.82 11a13.652 13.652 0 0 1-.312-2.5h-2.49c.062.89.291 1.733.656 2.5H3.82zm6.853 3.472A7.024 7.024 0 0 0 13.745 12H11.91a9.27 9.27 0 0 1-.64 1.539 6.688 6.688 0 0 1-.597.933zM8.5 12v2.923c.67-.204 1.335-.82 1.887-1.855.173-.324.33-.682.468-1.068H8.5zm3.68-1h2.146c.365-.767.594-1.61.656-2.5h-2.49a13.65 13.65 0 0 1-.312 2.5zm2.802-3.5a6.959 6.959 0 0 0-.656-2.5H12.18c.174.782.282 1.623.312 2.5h2.49zM11.27 2.461c.247.464.462.98.64 1.539h1.835a7.024 7.024 0 0 0-3.072-2.472c.218.284.418.598.597.933zM10.855 4a7.966 7.966 0 0 0-.468-1.068C9.835 1.897 9.17 1.282 8.5 1.077V4h2.355z"/></svg>
+              </div>
+              <h2 class="champion-value-card__title">Your Impact</h2>
+              <p class="champion-value-card__text">
+                SAHO reaches millions of learners, educators, and researchers.
+                As a champion, you make that reach possible.
+              </p>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="champion-value-card">
+              <div class="champion-value-card__icon" aria-hidden="true">
+                <svg width="40" height="40" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1H7zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path fill-rule="evenodd" d="M5.216 14A2.238 2.238 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.325 6.325 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1h4.216z"/><path d="M4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z"/></svg>
+              </div>
+              <h2 class="champion-value-card__title">Join the Community</h2>
+              <p class="champion-value-card__text">
+                Be recognised on our Wall of Champions, receive exclusive benefits,
+                and connect with fellow history advocates.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    {# ==========================================
+       MEMBERSHIP TIERS
+    ========================================== #}
+    <section class="champion-tiers" id="champion-tiers" aria-labelledby="tiers-heading">
+      <div class="container">
+        <h2 id="tiers-heading" class="champion-section-title">{{ 'Champion Membership'|t }}</h2>
+        <p class="champion-section-subtitle">{{ 'All levels include ad-free access and recognition on the Wall of Champions.'|t }}</p>
+        {% include '@saho_shop/page/_champion-tiers.html.twig' with { show_link: false } %}
+      </div>
+    </section>
+
+    {# ==========================================
+       WALL OF CHAMPIONS TEASER
+    ========================================== #}
+    <section class="champion-wall-teaser" aria-label="Wall of Champions">
+      <div class="container">
+        <h2 class="champion-section-title">Our Champions</h2>
+        <p class="champion-section-subtitle">
+          Join these remarkable people who make SAHO's mission possible.
+        </p>
+        <div class="champion-wall-placeholder">
+          <div class="champion-wall-icon" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" viewBox="0 0 16 16"><path d="M2.5.5A.5.5 0 0 1 3 0h10a.5.5 0 0 1 .5.5q0 .807-.034 1.536a3 3 0 1 1-1.133 5.89c-.79 1.865-1.878 2.777-2.833 3.011v2.173l1.425.356c.194.048.377.135.537.255L13.3 15.1a.5.5 0 0 1-.3.9H3a.5.5 0 0 1-.3-.9l1.838-1.379c.16-.12.343-.207.537-.255L6.5 13.11v-2.173c-.955-.234-2.043-1.146-2.833-3.012a3 3 0 1 1-1.132-5.89A33 33 0 0 1 2.5.5m.099 2.54a2 2 0 0 0 .72 3.935c-.333-1.05-.588-2.346-.72-3.935m10.083 3.935a2 2 0 0 0 .72-3.935c-.133 1.59-.388 2.885-.72 3.935"/></svg>
+          </div>
+          <p>
+            <a href="/champions" class="champion-link">
+              {{ 'View the full Wall of Champions'|t }} →
+            </a>
+          </p>
+        </div>
+      </div>
+    </section>
+
+    {# ==========================================
+       MARION INSTITUTE PARTNERSHIP
+    ========================================== #}
+    <section class="champion-partner" aria-label="Marion Institute partnership">
+      <div class="container">
+        <div class="champion-partner__inner">
+          <img
+            src="/themes/custom/saho_shop/images/marion-institute.png"
+            alt="We are a fiscal sponsorship of the Marion Institute - marioninstitute.org"
+            class="champion-partner__logo"
+          />
+          <p class="champion-partner__text">
+            SAHO is a fiscal sponsorship of the Marion Institute. Your Champion membership
+            is processed securely through our Marion Institute partnership.
+            <a href="https://www.marioninstitute.org" target="_blank" rel="noopener noreferrer">
+              Learn more about the Marion Institute
+            </a>.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    {# ==========================================
+       FAQ
+    ========================================== #}
+    <section class="champion-faq" aria-labelledby="faq-heading">
+      <div class="container">
+        <h2 id="faq-heading" class="champion-section-title">Frequently Asked Questions</h2>
+
+        <div class="accordion champion-accordion" id="championFaq">
+
+          <div class="accordion-item">
+            <h3 class="accordion-header">
+              <button class="accordion-button collapsed" type="button"
+                      data-bs-toggle="collapse" data-bs-target="#faq1"
+                      aria-expanded="false" aria-controls="faq1">
+                Can I cancel my membership?
+              </button>
+            </h3>
+            <div id="faq1" class="accordion-collapse collapse" data-bs-parent="#championFaq">
+              <div class="accordion-body">
+                Yes. Monthly memberships can be cancelled at any time - no questions asked.
+                Annual memberships run for the full year from your join date.
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <h3 class="accordion-header">
+              <button class="accordion-button collapsed" type="button"
+                      data-bs-toggle="collapse" data-bs-target="#faq2"
+                      aria-expanded="false" aria-controls="faq2">
+                How does billing work?
+              </button>
+            </h3>
+            <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#championFaq">
+              <div class="accordion-body">
+                Monthly Champions are billed on the same date each month. Annual Champions
+                are billed once a year. All payments are processed securely.
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <h3 class="accordion-header">
+              <button class="accordion-button collapsed" type="button"
+                      data-bs-toggle="collapse" data-bs-target="#faq3"
+                      aria-expanded="false" aria-controls="faq3">
+                How do I get my book discount?
+              </button>
+            </h3>
+            <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#championFaq">
+              <div class="accordion-body">
+                Your Champion discount is automatically applied when you are logged in
+                to the SAHO Shop. Monthly Champions receive 10%; Annual Champions receive 20%.
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <h3 class="accordion-header">
+              <button class="accordion-button collapsed" type="button"
+                      data-bs-toggle="collapse" data-bs-target="#faq4"
+                      aria-expanded="false" aria-controls="faq4">
+                Is my donation tax-deductible?
+              </button>
+            </h3>
+            <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#championFaq">
+              <div class="accordion-body">
+                SAHO is a registered NPO (037-117-NPO). For queries about tax deductibility,
+                please <a href="mailto:mediateam@sahistory.org.za">contact us</a>.
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    {# ==========================================
+       FINAL CTA
+    ========================================== #}
+    <section class="champion-final-cta" aria-label="Join as a Champion">
+      <div class="container">
+        <div class="champion-final-cta__inner">
+          <h2 class="champion-final-cta__title">Ready to become a SAHO Champion?</h2>
+          <p class="champion-final-cta__text">
+            Every rand you contribute helps keep South African history open and free.
+          </p>
+          <div class="champion-final-cta__actions">
+            <a href="/product/saho-champion-monthly-support-0"
+               class="support-btn support-btn--outline-white">
+              Join Monthly - R200/mo
+            </a>
+            <a href="/product/saho-champion-annual-support-0"
+               class="support-btn support-btn--gold">
+              Join Annual - R2,000/yr
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  {% block footer %}
+    {% include '@saho_shop/page/_footer-shared.html.twig' %}
+  {% endblock %}
+
+  {% block page_bottom %}
+    {% if page_bottom %}{{ page_bottom }}{% endif %}
+  {% endblock %}
+</div>

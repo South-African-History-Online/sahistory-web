@@ -1,11 +1,508 @@
 /**
- * Page Node Styling
+ * Basic Page Node Styles
  *
- * NOTE: Basic pages now use the same layout as articles (.saho-article-wrapper, .saho-article-grid)
- * defined in layout/_article-layout.scss for consistency across all content types.
- *
- * This file is kept for any page-specific overrides if needed in the future.
+ * Two-column layout: main body content + sticky sidebar.
+ * Sidebar carries: file downloads, page meta.
+ * TOC nav inside body gets styled as a crimson-bordered card.
  */
 
-// Currently no page-specific styles needed
-// Pages inherit all styling from article layout
+// ─── Page Wrapper ─────────────────────────────────────────────────────────────
+
+.saho-page-wrapper {
+  &.saho-article-wrapper {
+    max-width: var(--saho-container-standard);
+  }
+}
+
+// Two-column grid: body (wider) + sidebar
+.saho-page-grid {
+  align-items: flex-start;
+
+  .saho-main-content {
+    flex: 3;
+    min-width: 0;
+    max-width: none;
+  }
+
+  .saho-page-sidebar {
+    flex: 1;
+    min-width: 240px;
+    max-width: 300px;
+
+    @media (max-width: 767px) {
+      max-width: 100%;
+      min-width: 0;
+      // Move sidebar below content on mobile
+      order: 2;
+    }
+
+    @media (min-width: 768px) {
+      position: sticky;
+      top: 90px; // clear sticky header
+      max-height: calc(100vh - 110px);
+      overflow-y: auto;
+    }
+  }
+}
+
+// ─── Hero Banner ─────────────────────────────────────────────────────────────
+
+.saho-page-hero {
+  margin-bottom: var(--saho-space-5);
+  border-radius: var(--saho-radius-lg);
+  overflow: hidden;
+  position: relative;
+  box-shadow: var(--saho-shadow-md);
+
+  &__image {
+    width: 100%;
+    height: 280px;
+    object-fit: cover;
+    object-position: center top;
+    display: block;
+
+    @media (min-width: 768px) {
+      height: 420px;
+    }
+  }
+
+  &__caption {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: var(--saho-space-2) var(--saho-space-3);
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.6));
+    font-size: var(--saho-font-size-sm);
+    color: rgba(255, 255, 255, 0.85);
+    font-style: italic;
+    margin: 0;
+  }
+}
+
+// ─── Page Body - Typography & Section Rhythm ─────────────────────────────────
+
+.saho-page-body {
+  font-size: var(--saho-font-size-base);
+  line-height: var(--saho-line-height-relaxed);
+  color: var(--saho-color-text-primary);
+
+  // ─── In-page Table of Contents ──────────────────────────────────────────
+  // Editors drop a <nav> at the top of the body; render as a styled TOC card
+  > nav,
+  nav.toc,
+  .toc-nav,
+  .page-toc {
+    background: var(--saho-color-surface-alt, #f7f7f7);
+    border-left: 4px solid var(--saho-color-primary);
+    border-radius: 0 var(--saho-radius-md) var(--saho-radius-md) 0;
+    padding: var(--saho-space-3) var(--saho-space-4);
+    margin-bottom: var(--saho-space-5);
+
+    &::before {
+      content: "On this page";
+      display: block;
+      font-size: var(--saho-font-size-xs);
+      font-weight: var(--saho-font-weight-semibold);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--saho-color-primary);
+      margin-bottom: var(--saho-space-2);
+    }
+
+    ul,
+    ol {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      // Two-column TOC on wider screens
+      @media (min-width: 600px) {
+        columns: 2;
+        column-gap: var(--saho-space-4);
+      }
+    }
+
+    li {
+      margin-bottom: var(--saho-space-1);
+      break-inside: avoid;
+
+      &:last-child { margin-bottom: 0; }
+    }
+
+    a {
+      color: var(--saho-color-text-secondary);
+      text-decoration: none;
+      font-size: var(--saho-font-size-sm);
+      display: inline-flex;
+      align-items: center;
+      gap: var(--saho-space-1);
+      padding: 2px 0;
+      transition: color var(--saho-transition-fast);
+
+      &::before {
+        content: "→";
+        color: var(--saho-color-primary);
+        font-size: 0.75em;
+        flex-shrink: 0;
+      }
+
+      &:hover {
+        color: var(--saho-color-primary);
+        text-decoration: underline;
+      }
+    }
+  }
+
+  // Give anchored sections clearance for sticky header
+  section[id] {
+    scroll-margin-top: 90px;
+  }
+
+  // ─── Section Headings ───────────────────────────────────────────────────
+
+  h2 {
+    font-size: var(--saho-font-size-2xl);
+    font-weight: var(--saho-font-weight-bold);
+    color: var(--saho-color-primary);
+    margin-top: var(--saho-space-7, 3.5rem);
+    margin-bottom: var(--saho-space-3);
+    padding-bottom: var(--saho-space-2);
+    border-bottom: 2px solid var(--saho-color-border, #e5e7eb);
+    scroll-margin-top: 90px;
+
+    &:first-child {
+      margin-top: 0;
+    }
+  }
+
+  h3 {
+    font-size: var(--saho-font-size-xl);
+    font-weight: var(--saho-font-weight-semibold);
+    color: var(--saho-color-secondary, #3a4a64);
+    margin-top: var(--saho-space-5);
+    margin-bottom: var(--saho-space-2);
+    scroll-margin-top: 90px;
+  }
+
+  h4 {
+    font-size: var(--saho-font-size-lg);
+    font-weight: var(--saho-font-weight-semibold);
+    color: var(--saho-color-text-primary);
+    margin-top: var(--saho-space-4);
+    margin-bottom: var(--saho-space-2);
+    scroll-margin-top: 90px;
+  }
+
+  // ─── Registration / Legal Info Blocks ───────────────────────────────────
+  // CKEditor wraps org registration info in <footer class="text-align-center">
+
+  > footer,
+  footer.text-align-center {
+    background: var(--saho-color-surface-alt, #f7f7f7);
+    border: 1px solid var(--saho-color-border, #e5e7eb);
+    border-left: 4px solid var(--saho-color-accent, #b88a2e);
+    border-radius: 0 var(--saho-radius-md) var(--saho-radius-md) 0;
+    padding: var(--saho-space-3) var(--saho-space-5);
+    margin: var(--saho-space-5) 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--saho-space-2) var(--saho-space-6);
+    text-align: left;
+
+    h4 {
+      font-size: var(--saho-font-size-xs);
+      color: var(--saho-color-text-muted);
+      font-weight: var(--saho-font-weight-normal);
+      margin: 0;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      white-space: nowrap;
+      flex: 0 0 auto;
+
+      strong {
+        display: block;
+        font-size: var(--saho-font-size-sm);
+        font-weight: var(--saho-font-weight-semibold);
+        color: var(--saho-color-text-primary);
+        text-transform: none;
+        letter-spacing: 0;
+        margin-bottom: 2px;
+      }
+    }
+  }
+
+  .saho-info-box,
+  .info-box {
+    background: var(--saho-color-surface-alt, #f7f7f7);
+    border: 1px solid var(--saho-color-border, #e5e7eb);
+    border-left: 4px solid var(--saho-color-accent, #b88a2e);
+    border-radius: 0 var(--saho-radius-md) var(--saho-radius-md) 0;
+    padding: var(--saho-space-3) var(--saho-space-4);
+    margin: var(--saho-space-4) 0;
+
+    h4, h5 {
+      color: var(--saho-color-accent, #b88a2e);
+      margin-top: 0;
+    }
+  }
+
+  // ─── Lists ──────────────────────────────────────────────────────────────
+
+  ul:not([class]),
+  ol:not([class]) {
+    padding-left: var(--saho-space-4);
+    margin-bottom: var(--saho-space-3);
+
+    li {
+      margin-bottom: var(--saho-space-1);
+      line-height: var(--saho-line-height-relaxed);
+    }
+
+    li::marker {
+      color: var(--saho-color-primary);
+    }
+  }
+
+  // Partner / sponsor lists - opt-in pill layout via .saho-pill-list class
+  ul.saho-pill-list {
+    list-style: none;
+    padding-left: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--saho-space-2);
+    margin-bottom: var(--saho-space-3);
+
+    li {
+      margin-bottom: 0;
+      background: var(--saho-color-surface-alt, #f7f7f7);
+      border: 1px solid var(--saho-color-border, #e5e7eb);
+      border-radius: var(--saho-radius-full, 999px);
+      padding: 4px var(--saho-space-3);
+      font-size: var(--saho-font-size-sm);
+    }
+  }
+
+  // ─── Blockquotes ────────────────────────────────────────────────────────
+
+  blockquote {
+    border-left: 4px solid var(--saho-color-primary);
+    background: var(--saho-color-surface-alt, #f7f7f7);
+    padding: var(--saho-space-3) var(--saho-space-4);
+    margin: var(--saho-space-4) 0;
+    border-radius: 0 var(--saho-radius-md) var(--saho-radius-md) 0;
+    font-style: italic;
+    font-size: var(--saho-font-size-lg);
+    color: var(--saho-color-text-secondary);
+
+    p:last-child { margin-bottom: 0; }
+  }
+
+  // ─── Tables ─────────────────────────────────────────────────────────────
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: var(--saho-space-4) 0;
+    font-size: var(--saho-font-size-sm);
+    overflow-x: auto;
+    display: block;
+
+    @media (min-width: 768px) {
+      display: table;
+    }
+
+    th {
+      background: var(--saho-color-primary);
+      color: white;
+      padding: var(--saho-space-2) var(--saho-space-3);
+      text-align: left;
+      font-weight: var(--saho-font-weight-semibold);
+    }
+
+    td {
+      padding: var(--saho-space-2) var(--saho-space-3);
+      border-bottom: 1px solid var(--saho-color-border, #e5e7eb);
+    }
+
+    tr:nth-child(even) td {
+      background: var(--saho-color-surface-alt, #f7f7f7);
+    }
+
+    tr:hover td {
+      background: rgba(153, 0, 0, 0.04);
+    }
+  }
+
+  // ─── Inline images ──────────────────────────────────────────────────────
+
+  img {
+    max-width: 100%;
+    height: auto;
+    border-radius: var(--saho-radius-sm);
+  }
+
+  .align-left {
+    float: left;
+    margin: 0 var(--saho-space-3) var(--saho-space-3) 0;
+    max-width: 45%;
+  }
+
+  .align-right {
+    float: right;
+    margin: 0 0 var(--saho-space-3) var(--saho-space-3);
+    max-width: 45%;
+  }
+
+  .align-center {
+    display: block;
+    margin: var(--saho-space-3) auto;
+  }
+
+  // ─── Links ──────────────────────────────────────────────────────────────
+
+  a:not([class]) {
+    color: var(--saho-color-primary);
+    text-decoration: underline;
+    text-decoration-color: rgba(153, 0, 0, 0.3);
+    text-underline-offset: 3px;
+    transition: text-decoration-color var(--saho-transition-fast);
+
+    &:hover {
+      text-decoration-color: var(--saho-color-primary);
+    }
+  }
+
+  // ─── Paragraphs ─────────────────────────────────────────────────────────
+
+  p {
+    margin-bottom: var(--saho-space-3);
+
+    &:last-child { margin-bottom: 0; }
+  }
+}
+
+// ─── Sidebar - Page ───────────────────────────────────────────────────────────
+
+.saho-page-sidebar {
+  // Override the default article sidebar gold border with crimson on top
+  border-top: 4px solid var(--saho-color-primary) !important;
+  border-left: none !important;
+  background: var(--saho-color-surface-alt, #f8f8f8) !important;
+  padding: 0 !important;
+  border-radius: var(--saho-radius-md);
+  overflow: hidden;
+
+  @media (min-width: 768px) {
+    border-top: 4px solid var(--saho-color-primary) !important;
+    border-left: none !important;
+  }
+}
+
+// ─── File Attachments (sidebar) ───────────────────────────────────────────────
+
+.saho-page-attachments {
+  padding: var(--saho-space-3) var(--saho-space-3);
+
+  &__title {
+    font-size: var(--saho-font-size-sm);
+    font-weight: var(--saho-font-weight-semibold);
+    color: var(--saho-color-primary);
+    margin-bottom: var(--saho-space-2);
+    margin-top: 0;
+    display: flex;
+    align-items: center;
+    gap: var(--saho-space-1);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+
+    svg {
+      flex-shrink: 0;
+      color: var(--saho-color-primary);
+    }
+  }
+
+  &__list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--saho-space-1);
+  }
+
+  &__item {
+    &--pdf  .saho-page-attachments__ext { background: #e53e3e; }
+    &--doc,
+    &--docx .saho-page-attachments__ext { background: #2b6cb0; }
+    &--xls,
+    &--xlsx .saho-page-attachments__ext { background: #276749; }
+    &--ppt,
+    &--pptx .saho-page-attachments__ext { background: #c05621; }
+    &--jpg,
+    &--jpeg,
+    &--png .saho-page-attachments__ext { background: #553c9a; }
+  }
+
+  &__link {
+    display: flex;
+    align-items: center;
+    gap: var(--saho-space-2);
+    padding: var(--saho-space-2) var(--saho-space-2);
+    background: white;
+    border: 1px solid var(--saho-color-border, #e5e7eb);
+    border-radius: var(--saho-radius-sm);
+    text-decoration: none;
+    color: var(--saho-color-text-primary);
+    transition:
+      background var(--saho-transition-fast),
+      border-color var(--saho-transition-fast),
+      box-shadow var(--saho-transition-fast);
+
+    &:hover {
+      background: white;
+      border-color: var(--saho-color-primary);
+      box-shadow: var(--saho-shadow-sm);
+      color: var(--saho-color-primary);
+    }
+  }
+
+  &__ext {
+    font-size: 0.6rem;
+    font-weight: var(--saho-font-weight-bold);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: white;
+    background: var(--saho-color-secondary, #3a4a64);
+    padding: 2px 5px;
+    border-radius: var(--saho-radius-sm);
+    flex-shrink: 0;
+    min-width: 30px;
+    text-align: center;
+  }
+
+  &__filename {
+    flex: 1;
+    font-size: var(--saho-font-size-xs);
+    font-weight: var(--saho-font-weight-medium, 500);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__size {
+    font-size: 0.65rem;
+    color: var(--saho-color-text-muted);
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  &__arrow {
+    flex-shrink: 0;
+    color: var(--saho-color-text-muted);
+    transition: color var(--saho-transition-fast);
+
+    .saho-page-attachments__link:hover & {
+      color: var(--saho-color-primary);
+    }
+  }
+}

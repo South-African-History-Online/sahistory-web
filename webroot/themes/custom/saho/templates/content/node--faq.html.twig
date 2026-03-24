@@ -1,0 +1,41 @@
+{#
+/**
+ * @file
+ * SAHO FAQ node template - single FAQ item (full page view).
+ *
+ * Renders a single question and its full answer with
+ * breadcrumb context and a link back to the FAQ listing.
+ */
+#}
+
+<article{{ attributes.addClass('saho-article-wrapper', 'saho-faq-single') }}>
+  <div class="saho-faq-single__body saho-article-body saho-page-body">
+
+    {# Answer #}
+    {% if content.body %}
+      {{ content.body.0 }}
+    {% endif %}
+
+    {# Category tag #}
+    {% if content.field_faq_category is defined and content.field_faq_category|render|trim %}
+      <div class="saho-faq-single__category">
+        <span class="saho-faq-single__category-label">{{ 'Category'|t }}:</span>
+        {{ content.field_faq_category }}
+      </div>
+    {% endif %}
+
+  </div>
+
+  {# Back to FAQ listing #}
+  <div class="saho-faq-single__back mt-4">
+    {% include 'saho:saho-button' with {
+      text: 'Back to FAQ'|t,
+      url: '/faq',
+      variant: 'text',
+      size: 'medium',
+      icon: 'arrow-right',
+      icon_position: 'before'
+    } %}
+  </div>
+
+</article>

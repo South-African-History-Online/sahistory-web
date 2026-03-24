@@ -56,7 +56,9 @@
         <img src="{{ image.url }}"
              alt="{{ image.alt|default(title) }}"
              class="card-img-top w-100 h-100 saho-card__img"
-             loading="lazy">
+             loading="{{ loading|default('lazy') }}"
+             decoding="async"
+             {% if fetchpriority is defined and fetchpriority and fetchpriority != 'auto' %}fetchpriority="{{ fetchpriority }}"{% endif %}>
 
         {# Content Type Badge #}
         <span class="badge saho-card__type-badge">
