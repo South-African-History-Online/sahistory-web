@@ -1,0 +1,95 @@
+{#
+/**
+ * @file
+ * SAHO Shop theme override for the commerce_subscription customer view.
+ *
+ * Available variables (from saho_shop_preprocess_commerce_subscription):
+ * - sub_state: Raw state string (active, canceled, expired).
+ * - sub_is_active / sub_is_canceled / sub_is_expired: Boolean flags.
+ * - sub_product_title: Variation title string.
+ * - sub_product_url: Product canonical URL string (null if unavailable).
+ * - sub_price: Formatted price string, e.g. "R200".
+ * - sub_billing_label: Billing schedule label in lowercase, e.g. "monthly".
+ * - sub_start_date: Formatted start date string.
+ * - sub_end_date: Formatted end date string (null if open-ended).
+ */
+#}
+<div class="subscription-detail">
+
+  {# ── Status banner ── #}
+  <div class="subscription-status subscription-status--{{ sub_state }}">
+    <div class="subscription-status__inner">
+      {% if sub_is_active %}
+        <span class="subscription-status__badge subscription-status__badge--active">{{ 'Active'|t }}</span>
+        <span class="subscription-status__label">{{ 'Your Champion membership is active.'|t }}</span>
+      {% elseif sub_is_canceled %}
+        <span class="subscription-status__badge subscription-status__badge--canceled">{{ 'Canceled'|t }}</span>
+        <span class="subscription-status__label">
+          {% if sub_end_date %}
+            {{ 'Your membership ended on @date. Your history is still yours - rejoin anytime.'|t({'@date': sub_end_date}) }}
+          {% else %}
+            {{ 'Your membership has been canceled.'|t }}
+          {% endif %}
+        </span>
+      {% elseif sub_is_expired %}
+        <span class="subscription-status__badge subscription-status__badge--expired">{{ 'Expired'|t }}</span>
+        <span class="subscription-status__label">{{ 'Your membership has expired.'|t }}</span>
+      {% else %}
+        <span class="subscription-status__badge">{{ sub_state|capitalize }}</span>
+      {% endif %}
+    </div>
+  </div>
+
+  {# ── Membership card ── #}
+  <div class="subscription-card">
+    <div class="subscription-card__product">
+      <div class="subscription-card__icon">★</div>
+      <div class="subscription-card__info">
+        <h2 class="subscription-card__name">
+          {% if sub_product_url and sub_is_active %}
+            <a href="{{ sub_product_url }}">{{ sub_product_title }}</a>
+          {% else %}
+            {{ sub_product_title }}
+          {% endif %}
+        </h2>
+        <div class="subscription-card__meta">
+          {% if sub_price %}
+            <span class="subscription-card__price">{{ sub_price }}{% if sub_billing_label %} / {{ sub_billing_label }}{% endif %}</span>
+          {% endif %}
+          {% if sub_billing_label %}
+            <span class="subscription-card__billing">{{ sub_billing_label|capitalize }} {{ 'billing'|t }}</span>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="subscription-card__dates">
+      {% if sub_start_date %}
+        <div class="subscription-card__date">
+          <span class="subscription-card__date-label">{{ 'Started'|t }}</span>
+          <span class="subscription-card__date-value">{{ sub_start_date }}</span>
+        </div>
+      {% endif %}
+      {% if sub_end_date %}
+        <div class="subscription-card__date">
+          <span class="subscription-card__date-label">
+            {% if sub_is_active %}{{ 'Renews'|t }}{% else %}{{ 'Ended'|t }}{% endif %}
+          </span>
+          <span class="subscription-card__date-value">{{ sub_end_date }}</span>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  {# ── Canceled / Expired: rejoin CTA ── #}
+  {% if sub_is_canceled or sub_is_expired %}
+    <div class="subscription-rejoin">
+      <div class="subscription-rejoin__text">
+        <strong>{{ 'Miss being a Champion?'|t }}</strong>
+        {{ 'Rejoin anytime to restore your access, your Wall of Champions profile, and your discount on publications.'|t }}
+      </div>
+      <a href="/champion" class="subscription-rejoin__cta">{{ 'Become a Champion again'|t }}</a>
+    </div>
+  {% endif %}
+
+</div>

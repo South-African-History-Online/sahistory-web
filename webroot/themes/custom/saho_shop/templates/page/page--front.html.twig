@@ -147,7 +147,7 @@
               <h3 class="support-pathway-card__title">{{ 'Donate via PayPal'|t }}</h3>
               <p class="support-pathway-card__price">{{ 'Any amount'|t }}</p>
               <p class="support-pathway-card__desc">
-                {{ 'Make a one-time or recurring contribution securely via PayPal. No PayPal account required — pay by card.'|t }}
+                {{ 'Make a one-time or recurring contribution securely via PayPal. No PayPal account required - pay by card.'|t }}
               </p>
               <ul class="support-pathway-card__benefits">
                 <li>{{ 'Choose your own amount'|t }}</li>
@@ -209,6 +209,80 @@
 
       </div>
     </section>
+
+    {# ================================================== #}
+    {# SECTION: LATEST PUBLICATIONS - Champion gift #}
+    {# ================================================== #}
+    {% if latest_publications %}
+    <section class="support-publications" aria-labelledby="publications-heading">
+      <div class="container">
+
+        <div class="row align-items-end mb-4">
+          <div class="col-lg-8">
+            <h2 id="publications-heading" class="support-section-title text-start mb-1">
+              {{- 'Latest Publications'|t -}}
+            </h2>
+            <p class="support-section-subtitle text-start mb-0">
+              {{- 'Exclusive SAHO histories, memoirs and reference works - produced by our editorial team.'|t -}}
+            </p>
+          </div>
+          <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+            <a href="/publications" class="support-text-link">
+              {{- 'View all publications'|t -}}
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true"><path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/></svg>
+            </a>
+          </div>
+        </div>
+
+        <div class="row g-4 mb-4">
+          {% for pub in latest_publications %}
+          <div class="col-sm-6 col-md-4">
+            <article class="support-pub-card">
+              <a href="{{ pub.url }}" class="support-pub-card__cover-link" tabindex="-1" aria-hidden="true">
+                {% if pub.image_url %}
+                  <img
+                    src="{{ pub.image_url }}"
+                    alt=""
+                    class="support-pub-card__cover"
+                    loading="lazy"
+                  />
+                {% else %}
+                  <img
+                    src="{{ base_path ~ directory ~ '/images/publication-placeholder.svg' }}"
+                    alt=""
+                    class="support-pub-card__cover support-pub-card__cover--placeholder"
+                    loading="lazy"
+                  />
+                {% endif %}
+              </a>
+              <div class="support-pub-card__body">
+                <h3 class="support-pub-card__title">
+                  <a href="{{ pub.url }}">{{ pub.title }}</a>
+                </h3>
+              </div>
+            </article>
+          </div>
+          {% endfor %}
+        </div>
+
+        {# Champion call-to-action strip #}
+        <div class="support-publications__champion-strip">
+          <div class="support-publications__champion-strip-inner">
+            <span class="support-publications__champion-badge" aria-hidden="true">★</span>
+            <div class="support-publications__champion-text">
+              <strong>{{ 'SAHO Champions receive a publication as a gift of appreciation.'|t }}</strong>
+              <span>{{ 'Sign up for Annual or Patron tier to claim yours.'|t }}</span>
+            </div>
+            <a href="/champion" class="support-btn support-btn--gold">
+              {{- 'Become a Champion'|t -}}
+              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true"><path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/></svg>
+            </a>
+          </div>
+        </div>
+
+      </div>
+    </section>
+    {% endif %}
 
     {# ================================================== #}
     {# SECTION 4: WHY YOUR SUPPORT MATTERS #}

@@ -8,7 +8,7 @@ use Drupal\Core\Site\Settings;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Donation form — builds a PayFast POST payload and redirects.
+ * Donation form - builds a PayFast POST payload and redirects.
  */
 class DonateForm extends FormBase {
 
