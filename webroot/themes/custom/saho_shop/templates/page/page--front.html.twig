@@ -177,18 +177,17 @@
                 {{ 'Use the Snapscan app on your phone to donate instantly. Scan the QR code below or tap to open in the app.'|t }}
               </p>
               <div class="support-snapscan-qr">
-                <a href="https://pos.snapscan.io/qr/SAHO" target="_blank" rel="noopener" aria-label="{{ 'Open Snapscan donation page'|t }}">
+                <button type="button"
+                        class="support-snapscan-qr__btn"
+                        data-bs-toggle="modal"
+                        data-bs-target="#snapscanQrModal"
+                        aria-label="{{ 'View Snapscan QR code'|t }}">
                   <img src="/sites/default/files/SAHO-snapscan-image-hi-res.jpg"
-                       alt="{{ 'Snapscan QR code to donate to SAHO'|t }}"
+                       alt="{{ 'Snapscan QR code — tap to enlarge'|t }}"
                        class="support-snapscan-qr__image"
                        loading="lazy">
-                </a>
-              </div>
-              <div class="support-pathway-card__cta">
-                <a href="https://pos.snapscan.io/qr/SAHO" target="_blank" rel="noopener" class="support-btn support-btn--outline support-btn--full">
-                  {{ 'Open Snapscan'|t }}
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true"><path fill-rule="evenodd" d="M8.636 3.5a.5.5 0 0 0-.5-.5H1.5A1.5 1.5 0 0 0 0 4.5v10A1.5 1.5 0 0 0 1.5 16h10a1.5 1.5 0 0 0 1.5-1.5V7.864a.5.5 0 0 0-1 0V14.5a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-10a.5.5 0 0 1 .5-.5h6.636a.5.5 0 0 0 .5-.5"/><path fill-rule="evenodd" d="M16 .5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0 0 1h3.793L6.146 9.146a.5.5 0 1 0 .708.708L15 1.707V5.5a.5.5 0 0 0 1 0z"/></svg>
-                </a>
+                  <span class="support-snapscan-qr__hint" aria-hidden="true">{{ 'Tap to enlarge'|t }}</span>
+                </button>
               </div>
             </article>
           </div>
@@ -351,6 +350,24 @@
   {% block footer %}
     {% include '@saho_shop/page/_footer-shared.html.twig' %}
   {% endblock %}
+
+  {# Snapscan QR modal #}
+  <div class="modal fade" id="snapscanQrModal" tabindex="-1" aria-labelledby="snapscanQrModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+      <div class="modal-content snapscan-modal">
+        <div class="modal-header border-0 pb-0">
+          <h2 class="modal-title h6" id="snapscanQrModalLabel">{{ 'Scan to donate via Snapscan'|t }}</h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ 'Close'|t }}"></button>
+        </div>
+        <div class="modal-body text-center px-4 pb-4">
+          <img src="/sites/default/files/SAHO-snapscan-image-hi-res.jpg"
+               alt="{{ 'Snapscan QR code — scan with the Snapscan app to donate to SAHO'|t }}"
+               class="img-fluid snapscan-modal__qr">
+          <p class="text-muted small mt-3 mb-0">{{ 'Open the Snapscan app and scan this code.'|t }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
 
   {% block page_bottom %}
     {% if page_bottom %}

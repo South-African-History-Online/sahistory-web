@@ -421,63 +421,104 @@
    SNAPSCAN QR CODE WIDGET
    ============================================= */
 .donate-snapscan-qr {
-  margin: 0.25rem 0 0.5rem;
+  margin: 0.75rem 0 0.25rem;
+  display: flex;
+  justify-content: center;
 }
 
-.donate-snapscan-qr__link {
-  position: relative;
-  display: block;
+.donate-snapscan-qr__btn {
+  background: none;
+  border: 2px solid #d9d9d9;
   border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
-  transition: box-shadow 0.2s ease, transform 0.2s ease;
-  text-decoration: none;
+  padding: 0.5rem;
+  cursor: pointer;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
-.donate-snapscan-qr__link:hover {
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.18);
-  transform: scale(1.02);
+.donate-snapscan-qr__btn:hover,
+.donate-snapscan-qr__btn:focus-visible {
+  border-color: #900;
+  box-shadow: 0 0 0 3px rgba(153, 0, 0, 0.15);
+  outline: none;
 }
 
 .donate-snapscan-qr__image {
   display: block;
+  width: 140px;
+  height: 140px;
+  object-fit: contain;
+  border-radius: 4px;
+}
+
+.donate-snapscan-qr__hint {
+  font-size: 0.75rem;
+  color: #666;
+}
+
+/* Snapscan fullscreen overlay */
+.donate-snapscan-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1050;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.donate-snapscan-overlay[hidden] { display: none; }
+
+.donate-snapscan-overlay__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  cursor: pointer;
+}
+
+.donate-snapscan-overlay__box {
+  position: relative;
+  background: #fff;
+  border-radius: 12px;
+  padding: 2rem 2rem 1.5rem;
+  max-width: 320px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.donate-snapscan-overlay__close {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #666;
+  padding: 0.25rem;
+  line-height: 1;
+}
+.donate-snapscan-overlay__close:hover { color: #900; }
+
+.donate-snapscan-overlay__title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #3a4a64;
+  margin-bottom: 1rem;
+}
+
+.donate-snapscan-overlay__qr {
+  display: block;
   width: 100%;
-  height: auto;
+  max-width: 240px;
+  margin: 0 auto;
   border-radius: 6px;
 }
 
-.donate-snapscan-qr__overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(26, 41, 59, 0.82);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.4rem;
-  color: #fff;
+.donate-snapscan-overlay__note {
   font-size: 0.85rem;
-  font-weight: 700;
-  letter-spacing: 0.03em;
-  opacity: 0;
-  transition: opacity 0.18s ease;
-  border-radius: 10px;
-}
-.donate-snapscan-qr__link:hover .donate-snapscan-qr__overlay,
-.donate-snapscan-qr__link:focus .donate-snapscan-qr__overlay {
-  opacity: 1;
-}
-
-/* Snapscan outline button */
-.donate-btn--outline-snapscan {
-  background: transparent;
-  color: #1a7fc1;
-  border-color: #1a7fc1;
-}
-.donate-btn--outline-snapscan:hover {
-  background: #1a7fc1;
-  border-color: #1a7fc1;
-  color: #fff;
-  transform: translateY(-1px);
+  color: #666;
+  margin: 0.75rem 0 0;
 }
 
 /* =============================================

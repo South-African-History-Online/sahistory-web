@@ -63,32 +63,38 @@
         <h3 class="donate-pathway-card__title">{{ 'Donate via Snapscan'|t }}</h3>
         <p class="donate-pathway-card__text">{{ 'Scan the QR code with the Snapscan app on your phone to donate instantly.'|t }}</p>
 
-        {# QR code with copy overlay #}
+        {# QR code — opens overlay on click, no external link #}
         <div class="donate-snapscan-qr">
-          <a href="{{ snapscan_url }}"
-             class="donate-snapscan-qr__link"
-             target="_blank" rel="noopener noreferrer"
-             aria-label="{{ 'Open Snapscan donation page'|t }}">
+          <button type="button"
+                  class="donate-snapscan-qr__btn"
+                  data-donate-qr-modal
+                  aria-label="{{ 'View Snapscan QR code'|t }}">
             <img
               src="{{ snapscan_qr_image }}"
-              alt="{{ 'Snapscan QR code - scan to donate to SAHO'|t }}"
+              alt="{{ 'Snapscan QR code — tap to enlarge'|t }}"
               class="donate-snapscan-qr__image"
-              width="160"
-              height="160"
+              width="140"
+              height="140"
             />
-            <div class="donate-snapscan-qr__overlay" aria-hidden="true">
-              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M19 19H5V5h7V3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>
-              <span>{{ 'Open Snapscan'|t }}</span>
-            </div>
-          </a>
+            <span class="donate-snapscan-qr__hint" aria-hidden="true">{{ 'Tap to enlarge'|t }}</span>
+          </button>
         </div>
 
-        <div class="donate-pathway-card__cta">
-          <a href="{{ snapscan_url }}"
-             class="donate-btn donate-btn--outline-snapscan donate-btn--full"
-             target="_blank" rel="noopener noreferrer">
-            {{ 'Open Snapscan'|t }}
-          </a>
+        {# Inline overlay — shown on button click #}
+        <div class="donate-snapscan-overlay" role="dialog" aria-modal="true" aria-label="{{ 'Snapscan QR code'|t }}" hidden>
+          <div class="donate-snapscan-overlay__backdrop" data-donate-qr-close></div>
+          <div class="donate-snapscan-overlay__box">
+            <button type="button" class="donate-snapscan-overlay__close" data-donate-qr-close aria-label="{{ 'Close'|t }}">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true"><path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/></svg>
+            </button>
+            <h2 class="donate-snapscan-overlay__title">{{ 'Scan to donate'|t }}</h2>
+            <img
+              src="{{ snapscan_qr_image }}"
+              alt="{{ 'Snapscan QR code — scan with the Snapscan app to donate to SAHO'|t }}"
+              class="donate-snapscan-overlay__qr"
+            />
+            <p class="donate-snapscan-overlay__note">{{ 'Open the Snapscan app and scan this code.'|t }}</p>
+          </div>
         </div>
       </div>
     </div>
