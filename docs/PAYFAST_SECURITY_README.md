@@ -1,7 +1,26 @@
 # PayFast Security Configuration - SAHO Shop
 
-**Date**: 2026-01-29
-**Status**:  Configured with placeholder values
+**Date**: 2026-01-29 | **Updated**: 2026-03-25
+**Status**: Live — credentials managed via settings.php, ITN security enforced in v1.9.12
+
+---
+
+## ITN Security (v1.9.12+)
+
+`DonateController::notify()` now enforces three layers before processing any ITN:
+
+1. **IP allowlist** — request must originate from a PayFast CIDR range. Configure via `settings.php`:
+   ```php
+   // Optional override — defaults to PayFast's published ranges
+   $settings['payfast_valid_ips'] = [
+     '197.97.145.144/28',  // PayFast production
+     '196.33.227.224/27',  // PayFast sandbox
+     '41.74.179.194',      // Legacy PayFast IP
+   ];
+   ```
+2. **Passphrase required** — `payfast_passphrase` MUST be set in `settings.php`. If absent, all ITNs are rejected with HTTP 500 and a logger error. It is no longer optional.
+3. **Signature validation** — MD5 signature verified with timing-safe comparison (`hash_equals`).
+4. **POST-only route** — `/donate/notify` returns 405 for any non-POST request.
 
 ---
 
@@ -364,10 +383,9 @@ ddev drush --uri=https://shop.ddev.site wd-show --type=commerce_payment
 
 ---
 
-**Last Updated**: 2026-01-29
-**Status**: Configuration exported with abc123 placeholders
-**Next Step**: Add settings.php override with real credentials
-**Security**:  No credentials in git
+**Last Updated**: 2026-03-25
+**Status**: Live. Credentials in settings.php (not git). ITN security enforced (v1.9.12).
+**Security**: No credentials in git. IP allowlist + passphrase + POST-only enforced.
 
 ---
 

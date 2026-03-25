@@ -152,6 +152,27 @@ ddev drush -l shop.ddev.site cex -y
 **Both sites:**
 Enable on each site separately and export each config directory.
 
+## Twig Cache — Critical Gotcha
+
+Each site compiles Twig templates into its own cache directory:
+- Main site: `webroot/sites/default/files/php/twig/`
+- Shop site: `webroot/sites/shop.sahistory.org.za/files/php/twig/`
+
+**Running `ddev drush cr` without `--uri` clears the main site cache only.**
+Template changes on the shop site won't take effect until:
+
+```bash
+# CORRECT — clears shop site Twig + all caches
+ddev drush --uri=https://shop.ddev.site cr
+
+# WRONG — only clears main site, shop Twig cache stays stale
+ddev drush cr
+```
+
+This is particularly important after editing any template in `saho_shop` theme or shop-specific modules.
+
+---
+
 ## Common Mistakes to Avoid
 
 ### DO NOT: Export shop config without -l flag

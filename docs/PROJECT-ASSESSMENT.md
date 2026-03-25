@@ -54,7 +54,26 @@
 - **Issue:** `url-truncation.css` was loaded both in the global `style` library and the specific `url.truncation` library, causing double loading.
 - **Fix:** Removed from global `style` library; it is only loaded when the `url.truncation` library is attached.
 
-### 1.2 Remaining Security Recommendations
+### 1.2 March 2026 Security Audit — saho_donate & Shop (Fixed in v1.9.12)
+
+Full audit of the donate module, shop multisite, and wall of champions. All critical/high issues resolved.
+
+| # | Issue | Severity | Fix |
+|---|-------|----------|-----|
+| 1 | PayFast ITN: no passphrase enforcement | Critical | `DonateController::notify()` now rejects if `payfast_passphrase` not set |
+| 2 | PayFast ITN: no IP allowlist | Critical | IP validated against PayFast CIDR ranges before processing |
+| 3 | `/donate/notify` accepted GET | High | Route restricted to POST only (`_method: POST`) |
+| 4 | `cancelled()` used `#markup` with raw HTML | Critical | Replaced with `saho_donate_cancelled` theme hook + Twig template |
+| 5 | `$type_label` unescaped in RenderService HTML | Critical | Wrapped in `Html::escape()` |
+| 6 | `$e->getMessage()` in CitationController JSON | High | Removed — generic message returned instead |
+| 7 | Wall of Champions fell back to Drupal username | High | Falls back to `'SAHO Champion'` instead of account name |
+| 8 | ChampionPageController missing `user.roles` cache context | Medium | Added `user.roles` to cache contexts |
+| 9 | Timeline API cache disabled (debug code in prod) | Medium | `$this->cache->get/set()` re-enabled |
+| 10 | Timeline JS localStorage cache disabled (debug) | Medium | `localStorage.getItem/setItem` re-enabled |
+
+See `docs/PAYFAST_SECURITY_README.md` for credential and ITN setup.
+
+### 1.3 Remaining Security Recommendations
 
 These items require further discussion or larger refactoring effort:
 
