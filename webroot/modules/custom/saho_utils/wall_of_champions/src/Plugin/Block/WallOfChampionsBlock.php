@@ -8,8 +8,6 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Url;
 use Drupal\saho_utils\Service\CacheHelperService;
-use Drupal\saho_utils\Service\ConfigurationFormHelperService;
-use Drupal\saho_utils\Service\SortingService;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -31,20 +29,6 @@ class WallOfChampionsBlock extends BlockBase implements ContainerFactoryPluginIn
   protected $database;
 
   /**
-   * The sorting service.
-   *
-   * @var \Drupal\saho_utils\Service\SortingService
-   */
-  protected $sortingService;
-
-  /**
-   * The configuration form helper service.
-   *
-   * @var \Drupal\saho_utils\Service\ConfigurationFormHelperService
-   */
-  protected $configFormHelper;
-
-  /**
    * The cache helper service.
    *
    * @var \Drupal\saho_utils\Service\CacheHelperService
@@ -62,10 +46,6 @@ class WallOfChampionsBlock extends BlockBase implements ContainerFactoryPluginIn
    *   The plugin implementation definition.
    * @param \Drupal\Core\Database\Connection $database
    *   The database connection.
-   * @param \Drupal\saho_utils\Service\SortingService $sorting_service
-   *   The sorting service.
-   * @param \Drupal\saho_utils\Service\ConfigurationFormHelperService $config_form_helper
-   *   The configuration form helper service.
    * @param \Drupal\saho_utils\Service\CacheHelperService $cache_helper
    *   The cache helper service.
    */
@@ -74,14 +54,10 @@ class WallOfChampionsBlock extends BlockBase implements ContainerFactoryPluginIn
     $plugin_id,
     $plugin_definition,
     Connection $database,
-    SortingService $sorting_service,
-    ConfigurationFormHelperService $config_form_helper,
     CacheHelperService $cache_helper,
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->database = $database;
-    $this->sortingService = $sorting_service;
-    $this->configFormHelper = $config_form_helper;
     $this->cacheHelper = $cache_helper;
   }
 
@@ -94,8 +70,6 @@ class WallOfChampionsBlock extends BlockBase implements ContainerFactoryPluginIn
       $plugin_id,
       $plugin_definition,
       $container->get('database'),
-      $container->get('saho_utils.sorting'),
-      $container->get('saho_utils.config_form_helper'),
       $container->get('saho_utils.cache_helper'),
     );
   }
