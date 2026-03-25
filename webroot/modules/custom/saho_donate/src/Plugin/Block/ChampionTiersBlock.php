@@ -24,8 +24,8 @@ class ChampionTiersBlock extends BlockBase {
 
     return [
       '#theme' => 'saho_champion_tiers_block',
-      '#monthly_url' => $shop . '/product/saho-champion-monthly-support-0',
-      '#annual_url' => $shop . '/product/saho-champion-annual-support-0',
+      '#monthly_url' => $shop . '/product/saho-champion-monthly-support',
+      '#annual_url' => $shop . '/product/saho-champion-annual-support',
       '#patron_url' => $shop . '/champion#patron',
       '#attached' => [
         'library' => ['saho_donate/donate-page'],
