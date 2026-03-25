@@ -7,6 +7,7 @@ use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\Routing\UrlGeneratorInterface;
 use Drupal\Core\File\FileUrlGeneratorInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Component\Utility\Html;
 use Drupal\node\NodeInterface;
 
 /**
@@ -130,7 +131,7 @@ class RenderService {
       $node_title = $node->getTitle();
       $node_type = $node->bundle();
       $updated_date = $this->dateFormatter->format($node->getChangedTime(), 'custom', 'j M Y');
-      $type_label = ucfirst(str_replace('_', ' ', $node_type));
+      $type_label = Html::escape(ucfirst(str_replace('_', ' ', $node_type)));
 
       // Get image URL.
       $image_url = $this->getNodeImageUrl($node);

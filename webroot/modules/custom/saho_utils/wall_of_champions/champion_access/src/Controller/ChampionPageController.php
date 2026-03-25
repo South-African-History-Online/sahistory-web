@@ -22,7 +22,7 @@ class ChampionPageController extends ControllerBase {
     return [
       '#markup' => '',
       '#cache' => [
-        'contexts' => ['url.path'],
+        'contexts' => ['url.path', 'user.roles'],
         'max-age' => 3600,
       ],
     ];

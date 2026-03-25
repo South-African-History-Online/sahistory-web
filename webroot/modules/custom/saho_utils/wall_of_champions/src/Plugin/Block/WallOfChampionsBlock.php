@@ -213,7 +213,8 @@ class WallOfChampionsBlock extends BlockBase implements ContainerFactoryPluginIn
         $display_name = trim($row->first_name . ' ' . $row->last_name);
       }
       else {
-        $display_name = $row->name;
+        // Do not expose the Drupal account name (internal login) publicly.
+        $display_name = 'SAHO Champion';
       }
 
       // Sanitize and truncate testimonial.

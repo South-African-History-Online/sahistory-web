@@ -111,10 +111,8 @@ class TimelineApiController extends ControllerBase {
     ksort($query_params);
     $cache_id = 'timeline_api:' . md5(serialize($query_params));
 
-    // TEMPORARILY DISABLE API CACHE for debugging
-    // Try to get from cache first (1 hour cache)
-    // $this->cache->get($cache_id);
-    $cached = FALSE;
+    // Try to get from cache first (1 hour cache).
+    $cached = $this->cache->get($cache_id);
     if ($cached && $cached->valid) {
       // Add cache headers.
       $response = new JsonResponse($cached->data);
@@ -247,10 +245,9 @@ class TimelineApiController extends ControllerBase {
       $response_data['html'] = $html;
     }
 
-    // TEMPORARILY DISABLE API CACHE for debugging
     // Cache the response for 1 hour.
-    // $cache->set($cache_id, $response_data, time() + 3600,
-    // ['node_list:event']);
+    $this->cache->set($cache_id, $response_data, time() + 3600, ['node_list:event']);
+
     // Create response with cache headers.
     $response = new JsonResponse($response_data);
     $response->setMaxAge(3600);

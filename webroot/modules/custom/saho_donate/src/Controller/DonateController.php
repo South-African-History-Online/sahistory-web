@@ -110,25 +110,44 @@ class DonateController extends ControllerBase {
    */
   public function cancelled(): array {
     return [
-      '#markup' => $this->t(
-        '<div class="saho-donate-message container py-5 text-center"><h2>Donation Cancelled</h2><p>No payment was taken. You can <a href="/donate">try again</a> or <a href="/">return to SAHO</a>.</p></div>'
-      ),
+      '#theme' => 'saho_donate_cancelled',
+      '#attached' => [
+        'library' => ['saho_donate/donate'],
+      ],
     ];
   }
 
   /**
    * Handles PayFast ITN (Instant Transaction Notification) POST.
    *
-   * Validates the MD5 signature before logging the notification.
+   * Validates the source IP and MD5 signature before processing.
    *
    * @return \Symfony\Component\HttpFoundation\Response
-   *   200 OK on valid signature, 400 on failure.
+   *   200 OK on valid signature, 400/403 on failure.
    */
   public function notify(): Response {
     $request = $this->requestStack->getCurrentRequest();
+
+    // Validate source IP against PayFast allowlist.
+    $client_ip = $request->getClientIp() ?? '';
+    if (!$this->isValidPayfastIp($client_ip)) {
+      $this->getLogger('saho_donate')->warning(
+        'PayFast ITN: request from disallowed IP @ip rejected.',
+        ['@ip' => $client_ip]
+      );
+      return new Response('Forbidden', 403);
+    }
+
     $data = $request->request->all();
 
+    // Require passphrase to be configured — reject all ITNs otherwise.
     $passphrase = Settings::get('payfast_passphrase', '');
+    if ($passphrase === '') {
+      $this->getLogger('saho_donate')->error(
+        'PayFast ITN: payfast_passphrase is not set in settings.php — all ITN notifications rejected.'
+      );
+      return new Response('Configuration error', 500);
+    }
 
     if (!$this->validateItnSignature($data, $passphrase)) {
       $this->getLogger('saho_donate')->warning(
@@ -160,7 +179,7 @@ class DonateController extends ControllerBase {
    * @param array $data
    *   All POST fields received from PayFast.
    * @param string $passphrase
-   *   The PayFast passphrase configured in settings.
+   *   The PayFast passphrase configured in settings (must not be empty).
    *
    * @return bool
    *   TRUE if the signature is valid.
@@ -175,11 +194,65 @@ class DonateController extends ControllerBase {
     unset($data['signature']);
 
     $param_string = http_build_query($data);
-    if ($passphrase !== '') {
-      $param_string .= '&passphrase=' . urlencode(trim($passphrase));
-    }
+    $param_string .= '&passphrase=' . urlencode(trim($passphrase));
 
     return hash_equals(md5($param_string), $received);
+  }
+
+  /**
+   * Checks whether an IP address is in the PayFast allowlist.
+   *
+   * The allowlist is configurable via settings.php:
+   *   $settings['payfast_valid_ips'] = ['1.2.3.4', '10.0.0.0/8'];
+   * Defaults to PayFast's published production and sandbox CIDR ranges.
+   *
+   * @param string $ip
+   *   The client IP address to validate.
+   *
+   * @return bool
+   *   TRUE if the IP is in the allowlist.
+   */
+  private function isValidPayfastIp(string $ip): bool {
+    $allowed = Settings::get('payfast_valid_ips', [
+      // PayFast production range.
+      '197.97.145.144/28',
+      // PayFast sandbox range.
+      '196.33.227.224/27',
+      // Legacy PayFast IP.
+      '41.74.179.194',
+    ]);
+
+    foreach ($allowed as $range) {
+      if ($this->ipInRange($ip, $range)) {
+        return TRUE;
+      }
+    }
+    return FALSE;
+  }
+
+  /**
+   * Checks whether an IP falls within a CIDR range or equals a single IP.
+   *
+   * @param string $ip
+   *   The IP address to check.
+   * @param string $range
+   *   A CIDR range (e.g. '197.97.145.144/28') or single IP.
+   *
+   * @return bool
+   *   TRUE if the IP is within the range.
+   */
+  private function ipInRange(string $ip, string $range): bool {
+    if (strpos($range, '/') === FALSE) {
+      return $ip === $range;
+    }
+    [$subnet, $bits] = explode('/', $range, 2);
+    $ip_long = ip2long($ip);
+    $subnet_long = ip2long($subnet);
+    if ($ip_long === FALSE || $subnet_long === FALSE) {
+      return FALSE;
+    }
+    $mask = ~((1 << (32 - (int) $bits)) - 1);
+    return ($ip_long & $mask) === ($subnet_long & $mask);
   }
 
 }

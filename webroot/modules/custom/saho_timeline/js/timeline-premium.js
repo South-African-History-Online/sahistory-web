@@ -42,10 +42,9 @@
             return;
           }
 
-          // TEMPORARILY DISABLE CLIENT CACHE for debugging
-          // Check for cached data first (client-side cache for 30 minutes)
-          const cachedData = NULL; // localStorage.getItem(cacheKey);
-          const cacheTime = NULL; // localStorage.getItem(cacheKey + '_time');
+          // Check for cached data first (client-side cache for 30 minutes).
+          const cachedData = localStorage.getItem(cacheKey);
+          const cacheTime = localStorage.getItem(cacheKey + '_time');
           const cacheExpiry = 30 * 60 * 1000; // 30 minutes
 
           if (cachedData && cacheTime && (Date.now() - parseInt(cacheTime)) < cacheExpiry) {
@@ -97,8 +96,13 @@
                   return FALSE;
                 });
 
-                // TEMPORARILY DISABLE CACHE SAVING for debugging
-                // Cache a smaller subset for faster future loads (to avoid quota issues)
+                // Cache the response for 30 minutes to avoid repeated API calls.
+                try {
+                  localStorage.setItem(cacheKey, JSON.stringify(data));
+                  localStorage.setItem(cacheKey + '_time', Date.now().toString());
+                } catch (storageError) {
+                  // Ignore quota or security errors — caching is best-effort.
+                }
 
                 initializeTimelineJS(container, data.events);
               } else {
