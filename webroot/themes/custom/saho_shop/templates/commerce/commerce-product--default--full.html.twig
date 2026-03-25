@@ -1,0 +1,89 @@
+{#
+/**
+ * @file
+ * SAHO Champion product full display (default product type).
+ *
+ * Available variables:
+ * - attributes: HTML attributes for the wrapper.
+ * - product: The rendered product fields.
+ * - product_entity: The product entity.
+ * - product_url: The product URL.
+ */
+#}
+
+{%
+  set classes = [
+    'product-champion-page',
+    'pb-4',
+    'mb-5',
+]
+%}
+
+<article{{ attributes.addClass(classes) }}>
+  <div class="container py-5">
+    <div class="row justify-content-center">
+      <div class="col-lg-7 col-md-9">
+
+        <div class="text-center mb-4">
+          <a href="/champion" class="text-decoration-none d-inline-flex align-items-center gap-1 mb-4 product-champion-page__back">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true"><path fill-rule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"/></svg>
+            {{ 'All membership tiers'|t }}
+          </a>
+
+          <span class="champion-badge d-block mb-3">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-award me-1" viewBox="0 0 16 16" aria-hidden="true">
+              <path d="M9.669.864 8 0 6.331.864l-1.858.282-.842 1.68-1.337 1.32L2.6 6l-.306 1.854 1.337 1.32.842 1.68 1.858.282L8 12l1.669-.864 1.858-.282.842-1.68 1.337-1.32L13.4 6l.306-1.854-1.337-1.32-.842-1.68L9.669.864zm1.196 1.193.684 1.365 1.086 1.072L12.387 6l.248 1.506-1.086 1.072-.684 1.365-1.51.229L8 10.874l-1.355-.702-1.51-.229-.684-1.365-1.086-1.072L3.614 6l-.25-1.506 1.087-1.072.684-1.365 1.51-.229L8 1.126l1.356.702 1.509.229z"/>
+              <path d="M4 11.794V16l4-1 4 1v-4.206l-2.018.306L8 13.126 6.018 12.1 4 11.794z"/>
+            </svg>
+            {{ 'SAHO Champion'|t }}
+          </span>
+
+          <h1 class="product-champion-page__title h2 mb-3">
+            {{ product_entity.title.value }}
+          </h1>
+
+          {% if product.body|render is not empty %}
+            <div class="product-champion-page__description mb-4">
+              {{ product.body }}
+            </div>
+          {% endif %}
+        </div>
+
+        <div class="product-champion-page__card card border-0 shadow-sm mb-4">
+          <div class="card-body p-4 p-md-5 text-center">
+
+            <div class="product-champion-page__price mb-1">
+              {{ product.variation_price }}
+            </div>
+            <p class="text-muted small mb-4">{{ 'Recurring contribution — cancel anytime'|t }}</p>
+
+            <div class="product-champion-page__form">
+              {{ product.variations }}
+            </div>
+
+          </div>
+        </div>
+
+        <div class="product-champion-page__benefits">
+          <h2 class="h5 fw-semibold mb-3">{{ 'Champion benefits'|t }}</h2>
+          <ul class="champion-benefits-list">
+            <li>{{ 'Support preservation of South African history'|t }}</li>
+            <li>{{ 'Recognition on the Wall of Champions'|t }}</li>
+            <li>{{ 'Quarterly newsletter with exclusive content'|t }}</li>
+            <li>{{ 'Invitations to SAHO events and webinars'|t }}</li>
+            <li>{{ 'Early access to new publications'|t }}</li>
+            <li>{{ 'Cancel anytime from your account'|t }}</li>
+          </ul>
+        </div>
+
+        <div class="product-champion-page__tax-note mt-4 p-3 rounded">
+          <p class="mb-0 small">
+            <strong>{{ 'Patron Circle only:'|t }}</strong>
+            {{ 'Tax certificates issued via the Marion Institute (US fiscal sponsor). All tiers directly fund free access to South African history.'|t }}
+          </p>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</article>
