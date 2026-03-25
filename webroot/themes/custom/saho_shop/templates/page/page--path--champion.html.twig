@@ -70,7 +70,7 @@
     {# ==========================================
        VALUE PROPOSITION
     ========================================== #}
-    <section class="champion-values" aria-label="Why become a champion">
+    <section class="champion-values" id="champion-benefits" aria-label="Why become a champion">
       <div class="container">
         <div class="row g-4">
           <div class="col-md-4">
@@ -278,4 +278,26 @@
   {% block page_bottom %}
     {% if page_bottom %}{{ page_bottom }}{% endif %}
   {% endblock %}
+
+  <script>
+    (function () {
+      var STORE_KEY = 'saho_champion_last_tier';
+      var btns = document.querySelectorAll('.tier-item__cta, .champion-tier__cta, .support-btn[href*="/product/saho-champion"]');
+      // Restore highlight from previous visit.
+      var last = localStorage.getItem(STORE_KEY);
+      if (last) {
+        btns.forEach(function (btn) {
+          if (btn.getAttribute('href') === last) {
+            btn.classList.add('support-btn--selected');
+          }
+        });
+      }
+      // Save on click.
+      btns.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          localStorage.setItem(STORE_KEY, btn.getAttribute('href'));
+        });
+      });
+    })();
+  </script>
 </div>
