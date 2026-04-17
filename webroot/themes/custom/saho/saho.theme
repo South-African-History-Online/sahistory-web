@@ -570,21 +570,46 @@ function saho_preprocess_node(array &$variables) {
 }
 
 /**
+ * Parse a stored datetime/date field value into a DateTime in the given zone.
+ *
+ * The field_start_date / field_end_date fields are configured as datetime
+ * (Y-m-d\TH:i:s) but legacy rows contain date-only values (Y-m-d). Returns
+ * NULL if the value can't be parsed.
+ */
+function _saho_upcomingevent_parse_date($value, \DateTimeZone $tz): ?\DateTime {
+  if (empty($value)) {
+    return NULL;
+  }
+  $formats = ['Y-m-d\TH:i:s', 'Y-m-d H:i:s', 'Y-m-d'];
+  foreach ($formats as $format) {
+    // Datetime field values are stored in UTC.
+    $dt = \DateTime::createFromFormat('!' . $format, $value, new \DateTimeZone('UTC'));
+    if ($dt instanceof \DateTime) {
+      $dt->setTimezone($tz);
+      return $dt;
+    }
+  }
+  return NULL;
+}
+
+/**
  * Implements hook_preprocess_node() for upcoming events.
  */
 function saho_preprocess_node__upcomingevent(&$variables) {
   $node = $variables['node'];
 
   if ($node->hasField('field_start_date') && !$node->get('field_start_date')->isEmpty()) {
-    $today = new \DateTime('today', new \DateTimeZone('Africa/Johannesburg'));
-    $start_date = $node->get('field_start_date')->date;
-    $start_date->setTimezone(new \DateTimeZone('Africa/Johannesburg'));
+    $tz = new \DateTimeZone('Africa/Johannesburg');
+    $today = new \DateTime('today', $tz);
+    $start_date = _saho_upcomingevent_parse_date($node->get('field_start_date')->value, $tz);
+    if (!$start_date) {
+      return;
+    }
 
     // Calculate effective end date.
     $end_date = NULL;
     if ($node->hasField('field_end_date') && !$node->get('field_end_date')->isEmpty()) {
-      $end_date = $node->get('field_end_date')->date;
-      $end_date->setTimezone(new \DateTimeZone('Africa/Johannesburg'));
+      $end_date = _saho_upcomingevent_parse_date($node->get('field_end_date')->value, $tz);
     }
     $effective_end_date = $end_date ?? $start_date;
 
