@@ -7,7 +7,6 @@ use Drupal\Core\Database\Connection;
 use Drupal\Core\Database\Query\Select;
 use Drupal\Core\Database\StatementInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\entity_usage\EntityUsageInterface;
 use Drupal\saho_statistics\TermTracker;
 use Drupal\Tests\UnitTestCase;
@@ -56,13 +55,6 @@ class TermTrackerTest extends UnitTestCase {
   protected $cacheBackend;
 
   /**
-   * The module handler mock.
-   *
-   * @var \Drupal\Core\Extension\ModuleHandlerInterface|\PHPUnit\Framework\MockObject\MockObject
-   */
-  protected $moduleHandler;
-
-  /**
    * {@inheritdoc}
    */
   protected function setUp(): void {
@@ -72,41 +64,19 @@ class TermTrackerTest extends UnitTestCase {
     $this->entityTypeManager = $this->createMock(EntityTypeManagerInterface::class);
     $this->entityUsage = $this->createMock(EntityUsageInterface::class);
     $this->cacheBackend = $this->createMock(CacheBackendInterface::class);
-    $this->moduleHandler = $this->createMock(ModuleHandlerInterface::class);
 
     $this->termTracker = new TermTracker(
       $this->database,
       $this->entityTypeManager,
       $this->entityUsage,
-      $this->cacheBackend,
-      $this->moduleHandler
+      $this->cacheBackend
     );
   }
 
   /**
    * @covers ::getMostReadContent
    */
-  public function testGetMostReadContentWithoutStatisticsModule() {
-    $this->moduleHandler->expects($this->once())
-      ->method('moduleExists')
-      ->with('statistics')
-      ->willReturn(FALSE);
-
-    $result = $this->termTracker->getMostReadContent(10, 'all_time', []);
-
-    $this->assertIsArray($result);
-    $this->assertEmpty($result);
-  }
-
-  /**
-   * @covers ::getMostReadContent
-   */
   public function testGetMostReadContentWithCachedResults() {
-    $this->moduleHandler->expects($this->once())
-      ->method('moduleExists')
-      ->with('statistics')
-      ->willReturn(TRUE);
-
     $cached_data = [
       (object) [
         'nid' => 1,
@@ -130,11 +100,6 @@ class TermTrackerTest extends UnitTestCase {
    * @covers ::getMostReadContent
    */
   public function testGetMostReadContentAllTime() {
-    $this->moduleHandler->expects($this->once())
-      ->method('moduleExists')
-      ->with('statistics')
-      ->willReturn(TRUE);
-
     $this->cacheBackend->expects($this->once())
       ->method('get')
       ->willReturn(FALSE);
@@ -196,7 +161,7 @@ class TermTrackerTest extends UnitTestCase {
 
     $this->database->expects($this->once())
       ->method('select')
-      ->with('node_counter', 'nc')
+      ->with('saho_node_counter', 'nc')
       ->willReturn($query);
 
     $this->cacheBackend->expects($this->once())
@@ -205,7 +170,7 @@ class TermTrackerTest extends UnitTestCase {
         'saho_statistics:most_read:all_time::10',
         $results,
         $this->anything(),
-        ['node_list', 'node_counter']
+        ['node_list', 'saho_node_counter']
       );
 
     $result = $this->termTracker->getMostReadContent(10, 'all_time', []);
@@ -217,11 +182,6 @@ class TermTrackerTest extends UnitTestCase {
    * @covers ::getMostReadContent
    */
   public function testGetMostReadContentToday() {
-    $this->moduleHandler->expects($this->once())
-      ->method('moduleExists')
-      ->with('statistics')
-      ->willReturn(TRUE);
-
     $this->cacheBackend->expects($this->once())
       ->method('get')
       ->willReturn(FALSE);
@@ -284,11 +244,6 @@ class TermTrackerTest extends UnitTestCase {
    * @covers ::getMostReadContent
    */
   public function testGetMostReadContentWithContentTypeFilter() {
-    $this->moduleHandler->expects($this->once())
-      ->method('moduleExists')
-      ->with('statistics')
-      ->willReturn(TRUE);
-
     $this->cacheBackend->expects($this->once())
       ->method('get')
       ->willReturn(FALSE);
@@ -347,26 +302,7 @@ class TermTrackerTest extends UnitTestCase {
   /**
    * @covers ::getTotalPageViews
    */
-  public function testGetTotalPageViewsWithoutStatistics() {
-    $this->moduleHandler->expects($this->once())
-      ->method('moduleExists')
-      ->with('statistics')
-      ->willReturn(FALSE);
-
-    $result = $this->termTracker->getTotalPageViews();
-
-    $this->assertSame(0, $result);
-  }
-
-  /**
-   * @covers ::getTotalPageViews
-   */
-  public function testGetTotalPageViewsWithStatistics() {
-    $this->moduleHandler->expects($this->once())
-      ->method('moduleExists')
-      ->with('statistics')
-      ->willReturn(TRUE);
-
+  public function testGetTotalPageViews() {
     $query = $this->createMock(Select::class);
     $statement = $this->createMock(StatementInterface::class);
 
@@ -380,12 +316,37 @@ class TermTrackerTest extends UnitTestCase {
 
     $this->database->expects($this->once())
       ->method('select')
-      ->with('node_counter', 'nc')
+      ->with('saho_node_counter', 'nc')
       ->willReturn($query);
 
     $result = $this->termTracker->getTotalPageViews();
 
     $this->assertSame(5000, $result);
+  }
+
+  /**
+   * @covers ::getTotalPageViews
+   */
+  public function testGetTotalPageViewsReturnsZeroWhenEmpty() {
+    $query = $this->createMock(Select::class);
+    $statement = $this->createMock(StatementInterface::class);
+
+    $statement->expects($this->once())
+      ->method('fetchField')
+      ->willReturn(FALSE);
+
+    $query->expects($this->once())
+      ->method('execute')
+      ->willReturn($statement);
+
+    $this->database->expects($this->once())
+      ->method('select')
+      ->with('saho_node_counter', 'nc')
+      ->willReturn($query);
+
+    $result = $this->termTracker->getTotalPageViews();
+
+    $this->assertSame(0, $result);
   }
 
 }
