@@ -7,6 +7,7 @@
 
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Url;
 use Drupal\node\NodeInterface;
 use Drupal\taxonomy\TermInterface;
 
@@ -103,7 +104,7 @@ function saho_statistics_node_view(array &$build, NodeInterface $node, $display,
     return;
   }
 
-  $url = \Drupal::urlGenerator()->generateFromRoute('saho_statistics.node_view');
+  $url = Url::fromRoute('saho_statistics.node_view')->toString();
 
   $build['#attached']['library'][] = 'saho_statistics/node-view-counter';
   $build['#attached']['drupalSettings']['sahoNodeCounter'] = [
@@ -260,6 +261,7 @@ function saho_statistics_cron() {
   if (($now - $last_reset) >= 86400) {
     $db->update('saho_node_counter')
       ->fields(['daycount' => 0])
+      ->condition('daycount', 0, '>')
       ->execute();
     \Drupal::state()->set('saho_statistics.daycount_last_reset', $now);
   }

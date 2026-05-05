@@ -2,6 +2,7 @@
 
 namespace Drupal\saho_statistics\Controller;
 
+use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Database\Connection;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -28,13 +29,23 @@ class NodeViewCounterController extends ControllerBase {
   protected $database;
 
   /**
+   * The time service.
+   *
+   * @var \Drupal\Component\Datetime\TimeInterface
+   */
+  protected $time;
+
+  /**
    * Constructs a NodeViewCounterController.
    *
    * @param \Drupal\Core\Database\Connection $database
    *   The database connection.
+   * @param \Drupal\Component\Datetime\TimeInterface $time
+   *   The time service.
    */
-  public function __construct(Connection $database) {
+  public function __construct(Connection $database, TimeInterface $time) {
     $this->database = $database;
+    $this->time = $time;
   }
 
   /**
@@ -42,7 +53,8 @@ class NodeViewCounterController extends ControllerBase {
    */
   public static function create(ContainerInterface $container): static {
     return new static(
-      $container->get('database')
+      $container->get('database'),
+      $container->get('datetime.time')
     );
   }
 
@@ -67,9 +79,12 @@ class NodeViewCounterController extends ControllerBase {
     }
 
     try {
-      $timestamp = \Drupal::time()->getRequestTime();
+      $timestamp = $this->time->getRequestTime();
 
-      // Upsert: insert a new row or increment counters on conflict.
+      // Upsert the view counters.  The fields() call covers the INSERT case
+      // (new row: start counts at 1).  The expression() calls override the
+      // UPDATE case for totalcount and daycount only; timestamp is set from
+      // fields() in both INSERT and UPDATE paths.
       $this->database->merge('saho_node_counter')
         ->key('nid', $nid)
         ->fields([
@@ -79,13 +94,7 @@ class NodeViewCounterController extends ControllerBase {
         ])
         ->expression('totalcount', '[totalcount] + 1')
         ->expression('daycount', '[daycount] + 1')
-        ->expression('timestamp', ':ts', [':ts' => $timestamp])
         ->execute();
-
-      // Invalidate the saho_node_counter cache tag so blocks refresh
-      // on the next request after the max-age window expires naturally.
-      // We do NOT proactively invalidate on every hit to avoid cache
-      // stampedes; the max-age on each block provides the safety valve.
     }
     catch (\Exception $e) {
       // Log but swallow – a failed counter should never break page delivery.
