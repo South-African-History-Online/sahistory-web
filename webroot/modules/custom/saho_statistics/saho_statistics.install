@@ -82,6 +82,46 @@ function saho_statistics_schema() {
     ],
   ];
 
+  $schema['saho_node_counter'] = [
+    'description' => 'Per-node page-view counters managed by saho_statistics.',
+    'fields' => [
+      'nid' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'The {node}.nid for this view count.',
+      ],
+      'totalcount' => [
+        'type' => 'int',
+        'size' => 'big',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Total number of times this node has been viewed.',
+      ],
+      'daycount' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Total number of times this node has been viewed today.',
+      ],
+      'timestamp' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Timestamp of the last view.',
+      ],
+    ],
+    'primary key' => ['nid'],
+    'indexes' => [
+      'totalcount' => ['totalcount'],
+      'daycount' => ['daycount'],
+    ],
+  ];
+
   return $schema;
 }
 
@@ -109,3 +149,51 @@ function saho_statistics_update_9001() {
     \Drupal::database()->schema()->createTable('saho_search_queries', $schema['saho_search_queries']);
   }
 }
+
+/**
+ * Add saho_node_counter table and migrate data from statistics node_counter.
+ *
+ * This update hook creates the saho_node_counter table (which replaces the
+ * Statistics module's node_counter table) and, if node_counter exists,
+ * copies its data so historical view-count data is preserved.
+ */
+function saho_statistics_update_9002() {
+  $schema = \Drupal::database()->schema();
+  $db = \Drupal::database();
+
+  // Create the table if it does not already exist (idempotent).
+  if (!$schema->tableExists('saho_node_counter')) {
+    $table_spec = saho_statistics_schema()['saho_node_counter'];
+    $schema->createTable('saho_node_counter', $table_spec);
+  }
+
+  // Migrate existing data from the Statistics module's node_counter table
+  // so historical counts are preserved after uninstalling the Statistics module.
+  if ($schema->tableExists('node_counter')) {
+    $rows = $db->select('node_counter', 'nc')
+      ->fields('nc', ['nid', 'totalcount', 'daycount', 'timestamp'])
+      ->execute()
+      ->fetchAll();
+
+    foreach ($rows as $row) {
+      // Skip nids already present (module may have been partially activated).
+      $existing = $db->select('saho_node_counter', 's')
+        ->fields('s', ['nid'])
+        ->condition('nid', $row->nid)
+        ->execute()
+        ->fetchField();
+
+      if (!$existing) {
+        $db->insert('saho_node_counter')
+          ->fields([
+            'nid' => $row->nid,
+            'totalcount' => $row->totalcount,
+            'daycount' => $row->daycount,
+            'timestamp' => $row->timestamp,
+          ])
+          ->execute();
+      }
+    }
+  }
+}
+

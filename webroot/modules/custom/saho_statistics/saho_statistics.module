@@ -7,6 +7,7 @@
 
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Url;
 use Drupal\node\NodeInterface;
 use Drupal\taxonomy\TermInterface;
 
@@ -91,21 +92,35 @@ function saho_statistics_preprocess_views_view(&$variables) {
 }
 
 /**
+ * Implements hook_node_view().
+ *
+ * Attaches the lightweight view-counter JS for full-page node views.
+ * The page itself is served unmodified from Drupal's page cache; the
+ * JS fires a fire-and-forget AJAX POST after the page loads, writing
+ * to saho_node_counter without touching the cached response.
+ */
+function saho_statistics_node_view(array &$build, NodeInterface $node, $display, $view_mode) {
+  if ($view_mode !== 'full') {
+    return;
+  }
+
+  $url = Url::fromRoute('saho_statistics.node_view')->toString();
+
+  $build['#attached']['library'][] = 'saho_statistics/node-view-counter';
+  $build['#attached']['drupalSettings']['sahoNodeCounter'] = [
+    'nid' => (int) $node->id(),
+    'url' => $url,
+  ];
+}
+
+/**
  * Implements hook_entity_view().
  */
 function saho_statistics_entity_view(array &$build, EntityInterface $entity, $display, $view_mode) {
-  // Track page views for content entities.
+  // Track entity references for nodes if applicable.
   if ($entity->getEntityTypeId() == 'node' && $view_mode == 'full') {
-    // Track the pageview using Drupal's core statistics module functionality.
-    if (\Drupal::moduleHandler()->moduleExists('statistics')) {
-      // We could track page views here, but we'll rely on Drupal's built-in
-      // statistics tracking instead of calling a specific function.
-      // @see statistics.module
-    }
-
-    // Track entity references for this node if applicable.
     if ($entity instanceof NodeInterface && $entity->hasField('field_tags') && !$entity->get('field_tags')->isEmpty()) {
-      // We could add custom tracking logic here if needed.
+      // Custom tracking logic can be added here if needed.
     }
   }
 }
@@ -236,18 +251,32 @@ function _saho_statistics_get_popular_searches(int $limit = 8): array {
  */
 function saho_statistics_cron() {
   $config = \Drupal::config('saho_statistics.settings');
+  $db = \Drupal::database();
 
-  // Only run cleanup if search tracking is enabled.
+  // Reset the daily view counter once per day (same behaviour as the
+  // Statistics module's cron).  We store the last-reset timestamp in
+  // the Drupal state system so the reset only fires once per calendar day.
+  $last_reset = \Drupal::state()->get('saho_statistics.daycount_last_reset', 0);
+  $now = \Drupal::time()->getRequestTime();
+  if (($now - $last_reset) >= 86400) {
+    $db->update('saho_node_counter')
+      ->fields(['daycount' => 0])
+      ->condition('daycount', 0, '>')
+      ->execute();
+    \Drupal::state()->set('saho_statistics.daycount_last_reset', $now);
+  }
+
+  // Only run search-query cleanup if search tracking is enabled.
   if (!$config->get('track_searches')) {
     return;
   }
 
   // Get retention period in days (default 90).
   $retention_days = $config->get('search_query_retention') ?? 90;
-  $cutoff = \Drupal::time()->getRequestTime() - ($retention_days * 86400);
+  $cutoff = $now - ($retention_days * 86400);
 
   // Delete old search queries.
-  $deleted = \Drupal::database()->delete('saho_search_queries')
+  $deleted = $db->delete('saho_search_queries')
     ->condition('timestamp', $cutoff, '<')
     ->execute();
 
@@ -258,3 +287,4 @@ function saho_statistics_cron() {
     ]);
   }
 }
+
