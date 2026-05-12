@@ -474,8 +474,10 @@ class TdihBlock extends BlockBase implements ContainerFactoryPluginInterface {
    *   image, and rendered node.
    */
   protected function buildNodeItem($node) {
-    // Use EntityItemBuilderService for basic item building.
-    $item = $this->entityItemBuilder->buildItemWithImage($node, 'field_event_image');
+    // TDIH first item is the home-page LCP image (see PR #337 — block-image
+    // got fetchpriority=high). Route it through saho_hero_mobile so the
+    // browser fetches the 480w WebP variant instead of the raw 600+ KB jpg.
+    $item = $this->entityItemBuilder->buildItemWithImage($node, 'field_event_image', 'saho_hero_mobile');
 
     // Ensure backward compatibility with 'image' key.
     if (isset($item['image_url'])) {

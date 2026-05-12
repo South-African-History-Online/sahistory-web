@@ -254,8 +254,10 @@ class FeaturedArticleBlock extends BlockBase implements ContainerFactoryPluginIn
    *   - image: The image URL if available
    */
   protected function buildArticleItem(NodeInterface $node) {
-    // Use EntityItemBuilderService for consistent item building.
-    $item = $this->entityItemBuilder->buildItemWithImage($node, 'field_article_image');
+    // saho_hero_mobile is the home-page LCP-region style (480w WebP).
+    // Passing it routes the image through the image-style pipeline so the
+    // browser gets ~50 KB WebP instead of the raw 800+ KB source.
+    $item = $this->entityItemBuilder->buildItemWithImage($node, 'field_article_image', 'saho_hero_mobile');
 
     // Ensure backward compatibility with 'image' key.
     if (isset($item['image_url'])) {
