@@ -21,18 +21,12 @@ function saho_page_attachments_alter(array &$page) {
   // See: /admin/config/development/performance/critical-css
   // Critical CSS files are located in: themes/custom/saho/critical-css/
 
-  // Manually load AOS library to fix dependency issues
-  $page['#attached']['html_head'][] = [
-    [
-      '#type' => 'html_tag',
-      '#tag' => 'script',
-      '#attributes' => [
-        'src' => '/libraries/aos/dist/aos.js',
-        'defer' => FALSE,
-      ],
-    ],
-    'aos_library_manual',
-  ];
+  // AOS (animate-on-scroll) was previously force-loaded here with
+  // defer=FALSE, costing ~470-640ms of render-block per page. A
+  // codebase-wide grep for `data-aos` / `AOS.init` returned zero hits,
+  // so the library was downloading + parsing on every page for nothing.
+  // Removed. If a future template needs AOS, attach it via a proper
+  // Drupal library on the specific render path.
 
   // Add Organization Schema.org JSON-LD for site-wide recognition.
   // Only for anonymous users (not admin/editors).

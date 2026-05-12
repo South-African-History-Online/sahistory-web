@@ -24,7 +24,12 @@
       {% for item in tdih_nodes %}
         {% if item.image %}
           <div class="block-image-wrapper">
-            <img src="{{ item.image }}" alt="{{ item.title|striptags }}" class="block-image" loading="lazy" decoding="async" />
+            {# First TDIH item is the home-page LCP element — load eagerly + high priority. #}
+            {% if loop.first %}
+              <img src="{{ item.image }}" alt="{{ item.title|striptags }}" class="block-image" fetchpriority="high" decoding="async" />
+            {% else %}
+              <img src="{{ item.image }}" alt="{{ item.title|striptags }}" class="block-image" loading="lazy" decoding="async" />
+            {% endif %}
             <div class="block-label">{{ item.event_date|date('Y') }}</div>
           </div>
         {% endif %}
