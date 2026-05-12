@@ -20,9 +20,13 @@ history-through-pictures:
   css:
     theme:
       css/history-through-pictures.css: {}
-      https://cdn.jsdelivr.net/npm/glightbox@3.2.0/dist/css/glightbox.min.css: { type: external, minified: true }
+      # Self-hosted glightbox CSS (was loaded from jsdelivr CDN — added a
+      # render-blocking DNS+TLS handshake to every page that attached this
+      # library). Vendor copy is in module's vendor/glightbox/.
+      vendor/glightbox/css/glightbox.min.css: { minified: true }
   js:
-    https://cdn.jsdelivr.net/npm/glightbox@3.2.0/dist/js/glightbox.min.js: { type: external, minified: true, attributes: { defer: true } }
+    # Self-hosted glightbox JS (vendor/glightbox/js/glightbox.min.js).
+    vendor/glightbox/js/glightbox.min.js: { minified: true, attributes: { defer: true } }
     js/history-through-pictures-carousel.js: {}
     js/history-through-pictures-lightbox.js: {}
   dependencies:
