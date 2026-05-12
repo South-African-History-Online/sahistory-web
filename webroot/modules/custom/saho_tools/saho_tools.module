@@ -68,14 +68,25 @@ function saho_tools_page_attachments_alter(array &$attachments) {
   // Check if we're on an admin route.
   $is_admin = \Drupal::service('router.admin_context')->isAdminRoute();
 
-  // Only attach the citation and sharing libraries on non-admin routes.
   if (!$is_admin) {
-    // Attach modal libraries - these depend on Bootstrap which loads via saho/style.
-    $attachments['#attached']['library'][] = 'saho_tools/citation';
-    $attachments['#attached']['library'][] = 'saho_tools/sharing';
-
-    // Attach mobile enhancements for dropdown/offcanvas support.
+    // Mobile enhancements are theme-wide; always attach on the front end.
     $attachments['#attached']['library'][] = 'saho/mobile.enhancements';
+
+    // Citation + sharing buttons only render on a handful of content types
+    // (per saho.theme citation/sharing button visibility). Attaching their
+    // CSS on every page added ~500 ms of render-block to listings, taxonomy
+    // pages, the homepage, etc. Scope the libraries to the bundles that
+    // actually surface the buttons.
+    $node = \Drupal::routeMatch()->getParameter('node');
+    $bundles_with_tools = ['article', 'biography', 'archive', 'place', 'event'];
+    $on_tools_page = $node instanceof NodeInterface
+      && in_array($node->bundle(), $bundles_with_tools, TRUE);
+
+    if ($on_tools_page) {
+      // Modal libraries — depend on Bootstrap which loads via saho/style.
+      $attachments['#attached']['library'][] = 'saho_tools/citation';
+      $attachments['#attached']['library'][] = 'saho_tools/sharing';
+    }
 
     // Add debugging information to check if the library is loaded.
     $attachments['#attached']['drupalSettings']['sahoTools']['debug'] = [
@@ -85,7 +96,6 @@ function saho_tools_page_attachments_alter(array &$attachments) {
     ];
 
     // If we're on a node page, add node data.
-    $node = \Drupal::routeMatch()->getParameter('node');
     if ($node instanceof NodeInterface) {
       // Add node data as drupalSettings for JavaScript.
       $node_data = [
@@ -134,7 +144,15 @@ function saho_tools_preprocess_html(&$variables) {
   // Check if we're on an admin route.
   $is_admin = \Drupal::service('router.admin_context')->isAdminRoute();
 
-  // Only add the citation modal container on non-admin routes.
+  // Citation + sharing modals only render on the handful of content
+  // types that surface the buttons; scope here mirrors the
+  // page_attachments_alter scope so /featured, listings, taxonomy etc.
+  // don't drag in the saho_tools CSS via the modal's #attached library.
+  $node_for_tools = \Drupal::routeMatch()->getParameter('node');
+  $tools_bundles = ['article', 'biography', 'archive', 'place', 'event'];
+  $emit_tools_modals = $node_for_tools instanceof NodeInterface
+    && in_array($node_for_tools->bundle(), $tools_bundles, TRUE);
+
   if (!$is_admin) {
 
     // Schema.org JSON-LD injection.
@@ -224,6 +242,12 @@ function saho_tools_preprocess_html(&$variables) {
         ],
         'schema_org_breadcrumb',
       ];
+    }
+
+    if (!$emit_tools_modals) {
+      // Done — skip citation + sharing modal injection on pages that
+      // never surface the buttons. Saves ~500 ms of render-block CSS.
+      return;
     }
 
     // Add streamlined citation modal - minimal structure, content loaded via template/JS.

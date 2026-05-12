@@ -8,6 +8,7 @@ use Drupal\Core\Form\FormBuilderInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\File\FileUrlGeneratorInterface;
+use Drupal\image\Entity\ImageStyle;
 use Drupal\tdih\Service\NodeFetcher;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Ajax\AjaxResponse;
@@ -335,14 +336,16 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
         $event_timestamp = $dt->getTimestamp();
       }
 
-      // Get the image URL if available.
+      // Route through saho_hero_mobile (480w WebP) so the LCP-region TDIH
+      // image is ~50 KB instead of the raw 600+ KB jpg.
       $image_url = '';
       if ($node->hasField('field_event_image') && !$node->get('field_event_image')->isEmpty()) {
         /** @var \Drupal\file\FileInterface $file */
         $file = $node->get('field_event_image')->entity;
         if ($file) {
-          $file_url_generator = \Drupal::service('file_url_generator');
-          $image_url = $file_url_generator->generateAbsoluteString($file->getFileUri());
+          $uri = $file->getFileUri();
+          $style = ImageStyle::load('saho_hero_mobile');
+          $image_url = $style ? $style->buildUrl($uri) : \Drupal::service('file_url_generator')->generateAbsoluteString($uri);
         }
       }
 
@@ -480,13 +483,16 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
       $event_timestamp = $dt->getTimestamp();
     }
 
-    // If there's an image field named "field_event_image," generate a URL.
+    // Route through saho_hero_mobile (480w WebP) so the LCP-region TDIH
+    // image is ~50 KB instead of the raw 600+ KB jpg.
     $image_url = '';
     if ($node->hasField('field_event_image') && !$node->get('field_event_image')->isEmpty()) {
       /** @var \Drupal\file\FileInterface $file */
       $file = $node->get('field_event_image')->entity;
       if ($file) {
-        $image_url = $this->fileUrlGenerator->generateAbsoluteString($file->getFileUri());
+        $uri = $file->getFileUri();
+        $style = ImageStyle::load('saho_hero_mobile');
+        $image_url = $style ? $style->buildUrl($uri) : $this->fileUrlGenerator->generateAbsoluteString($uri);
       }
     }
 

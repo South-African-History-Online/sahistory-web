@@ -7,6 +7,7 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Url;
+use Drupal\image\Entity\ImageStyle;
 use Drupal\saho_statistics\TermTracker;
 use Drupal\saho_utils\Service\ImageExtractorService;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -319,12 +320,16 @@ class TopReadContentBlock extends BlockBase implements ContainerFactoryPluginInt
       return NULL;
     }
 
-    // Get the file URI and convert to relative URL.
+    // Route through the saho_thumbnail image style (400x225 WebP) so the
+    // browser fetches a ~30 KB derivative instead of the raw source file —
+    // a typical Top Read row only displays the thumbnail at 80x58.
     $uri = $file->getFileUri();
-    // Remove 'public://' and prepend '/sites/default/files/'.
-    $path = str_replace('public://', '/sites/default/files/', $uri);
-
-    return $path;
+    $style = ImageStyle::load('saho_thumbnail');
+    if ($style) {
+      return $style->buildUrl($uri);
+    }
+    // Fallback if the image style isn't configured: relative public URL.
+    return str_replace('public://', '/sites/default/files/', $uri);
   }
 
 }
