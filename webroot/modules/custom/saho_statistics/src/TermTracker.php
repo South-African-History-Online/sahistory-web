@@ -5,7 +5,6 @@ namespace Drupal\saho_statistics;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\entity_usage\EntityUsageInterface;
 
 /**
@@ -42,13 +41,6 @@ class TermTracker {
   protected $cacheBackend;
 
   /**
-   * The module handler.
-   *
-   * @var \Drupal\Core\Extension\ModuleHandlerInterface
-   */
-  protected $moduleHandler;
-
-  /**
    * Constructs a TermTracker object.
    *
    * @param \Drupal\Core\Database\Connection $database
@@ -59,21 +51,17 @@ class TermTracker {
    *   The entity usage service.
    * @param \Drupal\Core\Cache\CacheBackendInterface $cache_backend
    *   The cache backend.
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
-   *   The module handler.
    */
   public function __construct(
     Connection $database,
     EntityTypeManagerInterface $entity_type_manager,
     EntityUsageInterface $entity_usage,
     CacheBackendInterface $cache_backend,
-    ModuleHandlerInterface $module_handler,
   ) {
     $this->database = $database;
     $this->entityTypeManager = $entity_type_manager;
     $this->entityUsage = $entity_usage;
     $this->cacheBackend = $cache_backend;
-    $this->moduleHandler = $module_handler;
   }
 
   /**
@@ -152,17 +140,12 @@ class TermTracker {
    * Gets the total page views for the site.
    *
    * @return int
-   *   The total number of page views.
+   *   The total number of page views recorded in saho_node_counter.
    */
   public function getTotalPageViews() {
-    // This would likely use the statistics module if installed.
-    if ($this->moduleHandler->moduleExists('statistics')) {
-      $query = $this->database->select('node_counter', 'nc');
-      $query->addExpression('SUM(totalcount)', 'total_views');
-      return $query->execute()->fetchField() ?: 0;
-    }
-
-    return 0;
+    $query = $this->database->select('saho_node_counter', 'nc');
+    $query->addExpression('SUM(totalcount)', 'total_views');
+    return (int) ($query->execute()->fetchField() ?: 0);
   }
 
   /**
@@ -172,19 +155,14 @@ class TermTracker {
    *   The number of items to return.
    *
    * @return array
-   *   An array of node IDs with their view counts.
+   *   An array of node IDs keyed by nid with their total view counts.
    */
   public function getMostViewedContent($limit = 10) {
-    // This would use the statistics module if installed.
-    if ($this->moduleHandler->moduleExists('statistics')) {
-      $query = $this->database->select('node_counter', 'nc');
-      $query->fields('nc', ['nid', 'totalcount']);
-      $query->orderBy('totalcount', 'DESC');
-      $query->range(0, $limit);
-      return $query->execute()->fetchAllKeyed();
-    }
-
-    return [];
+    $query = $this->database->select('saho_node_counter', 'nc');
+    $query->fields('nc', ['nid', 'totalcount']);
+    $query->orderBy('totalcount', 'DESC');
+    $query->range(0, $limit);
+    return $query->execute()->fetchAllKeyed();
   }
 
   /**
@@ -207,11 +185,6 @@ class TermTracker {
    *   view count (totalcount or daycount), and timestamp.
    */
   public function getMostReadContent($limit = 10, $time_period = 'all_time', array $content_types = []) {
-    // Check if statistics module is installed.
-    if (!$this->moduleHandler->moduleExists('statistics')) {
-      return [];
-    }
-
     // Build cache ID based on parameters.
     $cid = 'saho_statistics:most_read:' . $time_period . ':' . implode('_', $content_types) . ':' . $limit;
 
@@ -220,8 +193,8 @@ class TermTracker {
       return $cache->data;
     }
 
-    // Build the query.
-    $query = $this->database->select('node_counter', 'nc');
+    // Build the query against our own counter table.
+    $query = $this->database->select('saho_node_counter', 'nc');
     $query->fields('nc', ['nid', 'totalcount', 'daycount', 'timestamp']);
 
     // Join with node_field_data to get node details.
@@ -259,7 +232,7 @@ class TermTracker {
     $results = $query->execute()->fetchAll();
 
     // Cache the result for 1 hour.
-    $this->cacheBackend->set($cid, $results, time() + 3600, ['node_list', 'node_counter']);
+    $this->cacheBackend->set($cid, $results, time() + 3600, ['node_list', 'saho_node_counter']);
 
     return $results;
   }

@@ -46,12 +46,13 @@ class StatisticsService {
     }
 
     try {
-      // Check if statistics module is enabled and table exists.
-      if (!$this->database->schema()->tableExists('node_counter')) {
+      // Bail out cleanly if the saho_statistics module hasn't created its
+      // counter table yet (e.g. mid-deploy or in a test environment).
+      if (!$this->database->schema()->tableExists('saho_node_counter')) {
         return $limit > 0 ? array_slice($featured_nids, 0, $limit) : $featured_nids;
       }
 
-      $query = $this->database->select('node_counter', 'nc');
+      $query = $this->database->select('saho_node_counter', 'nc');
       $query->fields('nc', ['nid', 'totalcount']);
       $query->condition('nc.nid', $featured_nids, 'IN');
       $query->orderBy('nc.totalcount', 'DESC');
@@ -92,11 +93,11 @@ class StatisticsService {
    */
   public function getNodeViewCount($nid) {
     try {
-      if (!$this->database->schema()->tableExists('node_counter')) {
+      if (!$this->database->schema()->tableExists('saho_node_counter')) {
         return 0;
       }
 
-      $count = $this->database->select('node_counter', 'nc')
+      $count = $this->database->select('saho_node_counter', 'nc')
         ->fields('nc', ['totalcount'])
         ->condition('nc.nid', $nid)
         ->execute()
@@ -116,7 +117,7 @@ class StatisticsService {
    *   TRUE if statistics are available, FALSE otherwise.
    */
   public function isStatisticsAvailable() {
-    return $this->database->schema()->tableExists('node_counter');
+    return $this->database->schema()->tableExists('saho_node_counter');
   }
 
 }

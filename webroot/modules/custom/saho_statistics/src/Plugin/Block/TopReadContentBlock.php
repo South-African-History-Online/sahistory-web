@@ -284,7 +284,7 @@ class TopReadContentBlock extends BlockBase implements ContainerFactoryPluginInt
       ],
       '#cache' => [
         'contexts' => ['url.query_args'],
-        'tags' => ['node_list', 'node_counter'],
+        'tags' => ['node_list', 'saho_node_counter'],
         'max-age' => 3600,
       ],
     ];

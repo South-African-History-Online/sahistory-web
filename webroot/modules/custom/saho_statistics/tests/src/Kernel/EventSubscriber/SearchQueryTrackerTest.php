@@ -49,7 +49,10 @@ class SearchQueryTrackerTest extends KernelTestBase {
   protected function setUp(): void {
     parent::setUp();
 
-    $this->installSchema('saho_statistics', ['saho_search_queries']);
+    // saho_statistics_cron() now updates saho_node_counter too — install both
+    // tables here so the cron path in testDataRetention() doesn't blow up on
+    // a missing table.
+    $this->installSchema('saho_statistics', ['saho_search_queries', 'saho_node_counter']);
     $this->installEntitySchema('user');
     $this->installEntitySchema('node');
     $this->installConfig(['saho_statistics', 'system']);
