@@ -114,18 +114,6 @@ function saho_statistics_node_view(array &$build, NodeInterface $node, $display,
 }
 
 /**
- * Implements hook_entity_view().
- */
-function saho_statistics_entity_view(array &$build, EntityInterface $entity, $display, $view_mode) {
-  // Track entity references for nodes if applicable.
-  if ($entity->getEntityTypeId() == 'node' && $view_mode == 'full') {
-    if ($entity instanceof NodeInterface && $entity->hasField('field_tags') && !$entity->get('field_tags')->isEmpty()) {
-      // Custom tracking logic can be added here if needed.
-    }
-  }
-}
-
-/**
  * Implements hook_entity_update().
  */
 function saho_statistics_entity_update(EntityInterface $entity) {
@@ -287,4 +275,3 @@ function saho_statistics_cron() {
     ]);
   }
 }
-

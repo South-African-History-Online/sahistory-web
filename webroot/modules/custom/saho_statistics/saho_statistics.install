@@ -167,33 +167,19 @@ function saho_statistics_update_9002() {
     $schema->createTable('saho_node_counter', $table_spec);
   }
 
-  // Migrate existing data from the Statistics module's node_counter table
-  // so historical counts are preserved after uninstalling the Statistics module.
+  // Migrate existing rows from the contrib Statistics module's node_counter
+  // table so historical counts are preserved after uninstall. One INSERT ...
+  // SELECT (with a NOT IN sub-select for rows that may already exist in
+  // saho_node_counter) — avoids the N+1 SELECT-per-row pattern that would
+  // time out on production-scale data.
   if ($schema->tableExists('node_counter')) {
-    $rows = $db->select('node_counter', 'nc')
+    $existing_nids = $db->select('saho_node_counter', 's')
+      ->fields('s', ['nid']);
+    $select = $db->select('node_counter', 'nc')
       ->fields('nc', ['nid', 'totalcount', 'daycount', 'timestamp'])
-      ->execute()
-      ->fetchAll();
-
-    foreach ($rows as $row) {
-      // Skip nids already present (module may have been partially activated).
-      $existing = $db->select('saho_node_counter', 's')
-        ->fields('s', ['nid'])
-        ->condition('nid', $row->nid)
-        ->execute()
-        ->fetchField();
-
-      if (!$existing) {
-        $db->insert('saho_node_counter')
-          ->fields([
-            'nid' => $row->nid,
-            'totalcount' => $row->totalcount,
-            'daycount' => $row->daycount,
-            'timestamp' => $row->timestamp,
-          ])
-          ->execute();
-      }
-    }
+      ->condition('nc.nid', $existing_nids, 'NOT IN');
+    $db->insert('saho_node_counter')
+      ->from($select)
+      ->execute();
   }
 }
-
