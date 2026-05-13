@@ -3,11 +3,20 @@ langcode: en
 status: true
 dependencies:
   module:
-    - commerce_recurring
+    - commerce_payment
 id: champion_membership
 label: 'SAHO Champion Membership'
-traits:
-  - purchasable_entity_subscription
+# Was: traits: [purchasable_entity_subscription] + orderItemType:
+# recurring_product_variation. That routed champion cart orders through
+# commerce_recurring, which filters out non-tokenizing payment gateways
+# at checkout - PayFast Offsite Redirect is a non-tokenizing gateway, so
+# Commerce showed "No payment gateway selected" and no checkout could
+# complete. PayFast Drupal contrib doesn't implement tokenization, so
+# the practical fix is to drop the recurring routing and treat champion
+# membership as a one-time payment that the supporter renews manually
+# (matching the existing UX on /donate and the champion landing page).
+# A future PR can re-introduce real recurring billing once the project
+# adopts a tokenizing gateway (Stripe or a tokenizing PayFast variant).
 locked: false
-orderItemType: recurring_product_variation
+orderItemType: default
 generateTitle: true
