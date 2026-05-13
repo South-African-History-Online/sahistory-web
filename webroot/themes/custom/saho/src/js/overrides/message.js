@@ -100,7 +100,7 @@
       optionsWithDefaults.type || 'status'
     );
 
-    if (optionsWithDefaults.dismissible === undefined || !!optionsWithDefaults.dismissible) {
+    if (optionsWithDefaults.dismissible === undefined || optionsWithDefaults.dismissible) {
       wrapper.classList.add('alert-dismissible', 'fade', 'show');
       wrapper.appendChild(Drupal.theme('messageClose'));
     }
