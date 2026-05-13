@@ -81,13 +81,13 @@ class SearchStatisticsSettingsForm extends ConfigFormBase {
     $form['privacy']['info'] = [
       '#type' => 'markup',
       '#markup' => '<p>' . $this->t('This module implements privacy-focused tracking:') . '</p>'
-      . '<ul>'
-      . '<li>' . $this->t('IP addresses are hashed using SHA-256 with site UUID as salt (cannot be reversed)') . '</li>'
-      . '<li>' . $this->t('Session IDs are anonymized (only 8 characters of hash stored)') . '</li>'
-      . '<li>' . $this->t('No user agent or referrer information is collected') . '</li>'
-      . '<li>' . $this->t('Data is automatically purged after the retention period') . '</li>'
-      . '<li>' . $this->t('GDPR compliant - no personally identifiable information (PII) is stored') . '</li>'
-      . '</ul>',
+        . '<ul>'
+        . '<li>' . $this->t('IP addresses are hashed using SHA-256 with site UUID as salt (cannot be reversed)') . '</li>'
+        . '<li>' . $this->t('Session IDs are anonymized (only 8 characters of hash stored)') . '</li>'
+        . '<li>' . $this->t('No user agent or referrer information is collected') . '</li>'
+        . '<li>' . $this->t('Data is automatically purged after the retention period') . '</li>'
+        . '<li>' . $this->t('GDPR compliant - no personally identifiable information (PII) is stored') . '</li>'
+        . '</ul>',
     ];
 
     return parent::buildForm($form, $form_state);

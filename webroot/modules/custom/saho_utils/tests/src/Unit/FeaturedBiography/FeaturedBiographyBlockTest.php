@@ -15,7 +15,6 @@ use Drupal\saho_utils\Service\EntityItemBuilderService;
 use Drupal\saho_utils\Service\ImageExtractorService;
 use Drupal\saho_utils\Service\SortingService;
 use Drupal\Tests\UnitTestCase;
-use PHPUnit\Framework\MockObject\MockObject;
 
 /**
  * Tests the Featured Biography Block plugin.
