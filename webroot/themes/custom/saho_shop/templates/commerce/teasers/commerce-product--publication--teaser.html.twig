@@ -29,11 +29,14 @@
         {{ product.field_images }}
       {% else %}
         <div class="product-placeholder">
+          {# Stable theme-relative path - `directory` isn't always defined
+             in commerce-product template context, so we hard-code rather
+             than rely on it. #}
           <img
-            src="{{ base_path ~ directory ~ '/images/publication-placeholder.svg' }}"
-            alt="{{ 'Publication cover placeholder'|t }}"
+            src="/themes/custom/saho_shop/images/publication-placeholder.svg"
+            alt="{{ product_entity.title.value }}"
             class="product-placeholder-img"
-            aria-hidden="true"
+            loading="lazy"
           />
         </div>
       {% endif %}

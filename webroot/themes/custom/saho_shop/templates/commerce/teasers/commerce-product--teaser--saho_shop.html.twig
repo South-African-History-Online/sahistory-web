@@ -30,8 +30,16 @@
       {% elseif product.variation_images|render is not empty %}
         {{ product.variation_images }}
       {% else %}
-        <div class="product-placeholder">
-          {{ svg.getIcon('book', 64, 64) }}
+        <div class="product-placeholder product-placeholder--cover">
+          {# Cover-sized placeholder so cards with no image still feel like
+             part of the catalog grid. Stable theme-relative path because
+             `directory` is not always resolved in commerce-product context. #}
+          <img
+            src="/themes/custom/saho_shop/images/publication-placeholder.svg"
+            alt="{{ product_entity.title.value }}"
+            class="product-placeholder-img"
+            loading="lazy"
+          />
         </div>
       {% endif %}
     </div>
