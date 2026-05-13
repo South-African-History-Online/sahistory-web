@@ -21,7 +21,9 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.3'
-          tools: composer:v2
+          # Pin to the patched Composer release that addresses
+          # GHSA-f9f8-rm49-7jv2 (token disclosure in error messages).
+          tools: composer:2.9.8
           coverage: none
 
       - name: Install dependencies
@@ -74,6 +76,9 @@ jobs:
         with:
           php-version: '8.3'
           extensions: gd, pdo_mysql, opcache
+          # Pin to the patched Composer release that addresses
+          # GHSA-f9f8-rm49-7jv2 (token disclosure in error messages).
+          tools: composer:2.9.8
           coverage: xdebug
 
       - name: Get Composer cache directory

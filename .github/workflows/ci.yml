@@ -46,7 +46,9 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php-versions }}
-          tools: composer:v2
+          # Pin to the patched Composer release that addresses
+          # GHSA-f9f8-rm49-7jv2 (token disclosure in error messages).
+          tools: composer:2.9.8
 
       - name: Get composer cache directory
         id: composer-cache
@@ -76,7 +78,9 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: 8.3
-          tools: composer:v2
+          # Pin to the patched Composer release that addresses
+          # GHSA-f9f8-rm49-7jv2 (token disclosure in error messages).
+          tools: composer:2.9.8
 
       - name: Get composer cache directory
         id: composer-cache
@@ -116,7 +120,9 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: 8.3
-          tools: composer:v2
+          # Pin to the patched Composer release that addresses
+          # GHSA-f9f8-rm49-7jv2 (token disclosure in error messages).
+          tools: composer:2.9.8
 
       - name: Install Drupal Check
         run: composer require mglaman/drupal-check --dev
