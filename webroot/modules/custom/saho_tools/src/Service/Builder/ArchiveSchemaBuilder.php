@@ -9,21 +9,16 @@ use Drupal\node\NodeInterface;
 use Drupal\saho_tools\Service\SchemaOrgBuilderInterface;
 
 /**
- * Builds Schema.org ArchiveComponent structured data for Archive nodes.
+ * Builds Schema.org structured data for Archive nodes.
  *
- * Maps SAHO archive materials (documents, publications, media) to
- * Schema.org ArchiveComponent vocabulary for archival discovery.
+ * Top-level @type is Book when an ISBN is present (matches GSC's Book
+ * enhancement report); otherwise CreativeWork. ArchiveComponent is kept
+ * as additionalType to preserve archival semantics. Bare ArchiveComponent
+ * has no Google rich-result template, which is why ~30k archive nodes
+ * have been invisible to GSC.
  */
 class ArchiveSchemaBuilder implements SchemaOrgBuilderInterface {
 
-  /**
-   * Constructs an ArchiveSchemaBuilder.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
-   *   The entity type manager.
-   * @param \Drupal\Core\File\FileUrlGeneratorInterface $fileUrlGenerator
-   *   The file URL generator service.
-   */
   public function __construct(
     protected EntityTypeManagerInterface $entityTypeManager,
     protected FileUrlGeneratorInterface $fileUrlGenerator,
@@ -44,22 +39,30 @@ class ArchiveSchemaBuilder implements SchemaOrgBuilderInterface {
       return [];
     }
 
+    $url = $node->toUrl()->setAbsolute()->toString();
+    $has_isbn = $node->hasField('field_isbn') && !$node->get('field_isbn')->isEmpty();
+
     $schema = [
       '@context' => 'https://schema.org',
-      '@type' => 'ArchiveComponent',
+      '@type' => $has_isbn ? 'Book' : 'CreativeWork',
+      'additionalType' => 'https://schema.org/ArchiveComponent',
       'name' => $node->getTitle(),
-      'url' => $node->toUrl()->setAbsolute()->toString(),
+      'url' => $url,
+      'mainEntityOfPage' => [
+        '@type' => 'WebPage',
+        '@id' => $url,
+      ],
       'dateModified' => date('c', $node->getChangedTime()),
     ];
 
-    // Add publication title (if different from node title).
+    // Prefer the publication title when set.
     if ($node->hasField('field_publication_title') && !$node->get('field_publication_title')->isEmpty()) {
       $schema['name'] = $node->get('field_publication_title')->value;
     }
 
-    // Add author.
+    // Authors (also surfaced as creator for GSC-friendly CreativeWork).
+    $authors = [];
     if ($node->hasField('field_author') && !$node->get('field_author')->isEmpty()) {
-      $authors = [];
       foreach ($node->get('field_author') as $author) {
         if (!empty($author->value)) {
           $authors[] = [
@@ -68,12 +71,22 @@ class ArchiveSchemaBuilder implements SchemaOrgBuilderInterface {
           ];
         }
       }
-      if (!empty($authors)) {
-        $schema['author'] = count($authors) === 1 ? $authors[0] : $authors;
-      }
+    }
+    if (!empty($authors)) {
+      $schema['author'] = count($authors) === 1 ? $authors[0] : $authors;
+      $schema['creator'] = $schema['author'];
+    }
+    else {
+      // Fall back to SAHO as institutional creator so the field is never
+      // empty (Google flags missing creator on CreativeWork-like items).
+      $schema['creator'] = [
+        '@type' => 'Organization',
+        'name' => 'South African History Online',
+        'url' => \Drupal::request()->getSchemeAndHttpHost(),
+      ];
     }
 
-    // Add publication date.
+    // Publication date.
     if ($node->hasField('field_archive_publication_date') && !$node->get('field_archive_publication_date')->isEmpty()) {
       $pub_date = $node->get('field_archive_publication_date')->value;
       if (!empty($pub_date)) {
@@ -87,40 +100,61 @@ class ArchiveSchemaBuilder implements SchemaOrgBuilderInterface {
       }
     }
 
-    // Add description from body.
+    // Description from body.
     if ($node->hasField('body') && !$node->get('body')->isEmpty()) {
       $body = $node->get('body')->value;
-      $description = strip_tags($body);
-      // Limit to 500 characters.
-      if (strlen($description) > 500) {
-        $description = substr($description, 0, 497) . '...';
-      }
+      $plain = strip_tags($body);
+      $description = strlen($plain) > 500 ? substr($plain, 0, 497) . '...' : $plain;
       $schema['description'] = $description;
     }
 
-    // Add archive image.
+    // Archive image.
     if ($node->hasField('field_archive_image') && !$node->get('field_archive_image')->isEmpty()) {
-      $field_value = $node->get('field_archive_image');
-      if ($field_value->entity instanceof File) {
-        $image_url = $this->fileUrlGenerator->generateAbsoluteString($field_value->entity->getFileUri());
-        $schema['image'] = [
+      $field_item = $node->get('field_archive_image')->first();
+      // @phpstan-ignore-next-line
+      $file = $field_item ? $field_item->entity : NULL;
+      if ($file instanceof File) {
+        $image_url = $this->fileUrlGenerator->generateAbsoluteString($file->getFileUri());
+        $image = [
           '@type' => 'ImageObject',
           'url' => $image_url,
           'contentUrl' => $image_url,
         ];
+        $w = $field_item->get('width')->getValue();
+        $h = $field_item->get('height')->getValue();
+        if ($w) {
+          $image['width'] = (int) $w;
+        }
+        if ($h) {
+          $image['height'] = (int) $h;
+        }
+        $schema['image'] = $image;
       }
     }
 
-    // Add ISBN if available.
-    if ($node->hasField('field_isbn') && !$node->get('field_isbn')->isEmpty()) {
+    if ($has_isbn) {
       $schema['isbn'] = $node->get('field_isbn')->value;
     }
 
-    // Add language.
+    // Keywords from tags.
+    if ($node->hasField('field_tags') && !$node->get('field_tags')->isEmpty()) {
+      $keywords = [];
+      foreach ($node->get('field_tags') as $tag) {
+        // @phpstan-ignore-next-line
+        $term = $tag->entity;
+        if ($term) {
+          $keywords[] = $term->getName();
+        }
+      }
+      if (!empty($keywords)) {
+        $schema['keywords'] = implode(', ', $keywords);
+      }
+    }
+
+    // Language.
     if ($node->hasField('field_language') && !$node->get('field_language')->isEmpty()) {
       $languages = [];
       foreach ($node->get('field_language') as $language) {
-        /** @var \Drupal\taxonomy\Entity\Term|null $term */
         // @phpstan-ignore-next-line
         $term = $language->entity;
         if ($term) {
@@ -135,7 +169,7 @@ class ArchiveSchemaBuilder implements SchemaOrgBuilderInterface {
       $schema['inLanguage'] = 'en-ZA';
     }
 
-    // Add source/provider.
+    // Original source (semantically a sourceOrganization, not a provider).
     if ($node->hasField('field_source') && !$node->get('field_source')->isEmpty()) {
       $sources = [];
       foreach ($node->get('field_source') as $source) {
@@ -147,21 +181,20 @@ class ArchiveSchemaBuilder implements SchemaOrgBuilderInterface {
         }
       }
       if (!empty($sources)) {
-        $schema['provider'] = count($sources) === 1 ? $sources[0] : $sources;
+        $schema['sourceOrganization'] = count($sources) === 1 ? $sources[0] : $sources;
       }
     }
 
-    // Add file upload as associatedMedia.
+    // File downloads as DataDownload (more specific than MediaObject).
     if ($node->hasField('field_file_upload') && !$node->get('field_file_upload')->isEmpty()) {
       $files = [];
       foreach ($node->get('field_file_upload') as $file_ref) {
-        /** @var \Drupal\file\Entity\File|null $file */
         // @phpstan-ignore-next-line
         $file = $file_ref->entity;
         if ($file instanceof File) {
           $file_url = $this->fileUrlGenerator->generateAbsoluteString($file->getFileUri());
           $files[] = [
-            '@type' => 'MediaObject',
+            '@type' => 'DataDownload',
             'contentUrl' => $file_url,
             'encodingFormat' => $file->getMimeType(),
             'name' => $file->getFilename(),
@@ -173,14 +206,29 @@ class ArchiveSchemaBuilder implements SchemaOrgBuilderInterface {
       }
     }
 
-    // Add holdings as part of SAHO archive.
-    $schema['holdingArchive'] = [
+    // Holdings, publisher, license.
+    $base_url = \Drupal::request()->getSchemeAndHttpHost();
+    $org = [
       '@type' => 'ArchiveOrganization',
       'name' => 'South African History Online',
-      'url' => \Drupal::request()->getSchemeAndHttpHost(),
+      'url' => $base_url,
     ];
-
-    // Add license.
+    $schema['holdingArchive'] = $org;
+    $schema['publisher'] = [
+      '@type' => 'Organization',
+      'name' => 'South African History Online',
+      'url' => $base_url,
+      'logo' => [
+        '@type' => 'ImageObject',
+        'url' => $base_url . '/themes/custom/saho/logo.png',
+        'width' => 600,
+        'height' => 60,
+      ],
+    ];
+    $schema['copyrightHolder'] = [
+      '@type' => 'Organization',
+      'name' => 'South African History Online',
+    ];
     $schema['license'] = 'https://creativecommons.org/licenses/by-nc-sa/4.0/';
     $schema['isAccessibleForFree'] = TRUE;
 

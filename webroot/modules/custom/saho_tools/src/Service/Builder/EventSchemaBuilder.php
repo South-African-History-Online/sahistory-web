@@ -10,21 +10,15 @@ use Drupal\node\NodeInterface;
 use Drupal\saho_tools\Service\SchemaOrgBuilderInterface;
 
 /**
- * Builds Schema.org Event structured data for Event nodes.
+ * Builds Schema.org Article structured data for historical Event nodes.
  *
- * Maps SAHO "This Day in History" (TDIH) events to Schema.org Event
- * vocabulary for optimal discovery by search engines and AI systems.
+ * "This Day in History" entries describe historical events; they are not
+ * attendable events. The page is therefore modeled as a Schema.org Article
+ * (a GSC-eligible type) with the historical event nested under `about` as
+ * a Schema.org Event with additionalType=HistoricalEvent.
  */
 class EventSchemaBuilder implements SchemaOrgBuilderInterface {
 
-  /**
-   * Constructs an EventSchemaBuilder.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
-   *   The entity type manager.
-   * @param \Drupal\Core\File\FileUrlGeneratorInterface $fileUrlGenerator
-   *   The file URL generator service.
-   */
   public function __construct(
     protected EntityTypeManagerInterface $entityTypeManager,
     protected FileUrlGeneratorInterface $fileUrlGenerator,
@@ -45,59 +39,51 @@ class EventSchemaBuilder implements SchemaOrgBuilderInterface {
       return [];
     }
 
+    $url = $node->toUrl()->setAbsolute()->toString();
+
     $schema = [
       '@context' => 'https://schema.org',
-      '@type' => 'Event',
-      'additionalType' => 'https://schema.org/HistoricalEvent',
-      'name' => $node->getTitle(),
-      'url' => $node->toUrl()->setAbsolute()->toString(),
+      '@type' => 'Article',
+      'additionalType' => 'https://schema.org/ScholarlyArticle',
+      'headline' => $node->getTitle(),
+      'url' => $url,
+      'mainEntityOfPage' => [
+        '@type' => 'WebPage',
+        '@id' => $url,
+      ],
+      'datePublished' => date('c', $node->getCreatedTime()),
+      'dateModified' => date('c', $node->getChangedTime()),
     ];
 
-    // Add event date as startDate and temporalCoverage.
+    // Event date drives the historical event's startDate.
     $event_date = NULL;
     if ($node->hasField('field_event_date') && !$node->get('field_event_date')->isEmpty()) {
       $event_date = $node->get('field_event_date')->value;
     }
 
-    // Fallback: Use node created date if event date is missing.
-    if (empty($event_date)) {
-      $event_date = date('c', $node->getCreatedTime());
-    }
-
-    $schema['startDate'] = $event_date;
-    $schema['endDate'] = $event_date;
-    $schema['temporalCoverage'] = $event_date;
-
-    // Add event description from body.
+    // Body becomes description + articleBody.
     if ($node->hasField('body') && !$node->get('body')->isEmpty()) {
       $body = $node->get('body')->value;
-      $description = strip_tags($body);
-      // Limit to 500 characters for description.
-      if (strlen($description) > 500) {
-        $description = substr($description, 0, 497) . '...';
-      }
+      $plain = strip_tags($body);
+      $description = strlen($plain) > 500 ? substr($plain, 0, 497) . '...' : $plain;
       $schema['description'] = $description;
+      $schema['articleBody'] = $plain;
+      $schema['wordCount'] = str_word_count($plain);
     }
     else {
-      // Fallback: Use generic description if body is missing.
       $schema['description'] = 'Historical event from South African History Online archives.';
     }
 
-    // Add event image (field_tdih_image or field_event_image).
-    $image_url = $this->getImageUrl($node, ['field_tdih_image', 'field_event_image', 'field_image']);
-    if ($image_url) {
-      $schema['image'] = [
-        '@type' => 'ImageObject',
-        'url' => $image_url,
-        'contentUrl' => $image_url,
-      ];
+    // Article image.
+    $image_data = $this->getImageData($node, ['field_tdih_image', 'field_event_image', 'field_image']);
+    if ($image_data) {
+      $schema['image'] = $image_data;
     }
 
-    // Add event type as additionalType.
+    // Keywords from event type taxonomy.
     if ($node->hasField('field_event_type') && !$node->get('field_event_type')->isEmpty()) {
       $event_types = [];
       foreach ($node->get('field_event_type') as $event_type) {
-        /** @var \Drupal\taxonomy\Entity\Term|null $term */
         // @phpstan-ignore-next-line
         $term = $event_type->entity;
         if ($term) {
@@ -105,114 +91,165 @@ class EventSchemaBuilder implements SchemaOrgBuilderInterface {
         }
       }
       if (!empty($event_types)) {
-        $schema['additionalType'] = count($event_types) === 1 ? $event_types[0] : $event_types;
+        $schema['keywords'] = implode(', ', $event_types);
+        $schema['articleSection'] = $event_types[0];
       }
     }
 
-    // Add location (African country).
+    // Spatial coverage from African country.
+    $places = $this->getPlaces($node);
+    if (!empty($places)) {
+      $schema['spatialCoverage'] = count($places) === 1 ? $places[0] : $places;
+    }
+
+    // Citations.
+    if ($node->hasField('field_ref_str') && !$node->get('field_ref_str')->isEmpty()) {
+      $ref_str = $node->get('field_ref_str')->value;
+      if (!empty($ref_str)) {
+        $citations = array_filter(array_map('trim', explode('|', $ref_str)));
+        if (!empty($citations)) {
+          $schema['citation'] = array_values($citations);
+        }
+      }
+    }
+
+    // Temporal coverage for the article itself (when did this describe).
+    if ($event_date) {
+      $schema['temporalCoverage'] = $event_date;
+    }
+
+    // Nested Event under `about` — the actual historical event the article
+    // describes. Uses Place (never VirtualLocation) so it validates cleanly.
+    $about_event = [
+      '@type' => 'Event',
+      'additionalType' => 'https://schema.org/HistoricalEvent',
+      'name' => $node->getTitle(),
+    ];
+    if ($event_date) {
+      $about_event['startDate'] = $event_date;
+      $about_event['endDate'] = $event_date;
+    }
+    if (!empty($places)) {
+      $about_event['location'] = count($places) === 1 ? $places[0] : $places;
+    }
+    else {
+      $about_event['location'] = [
+        '@type' => 'Place',
+        'name' => 'South Africa',
+        'address' => [
+          '@type' => 'PostalAddress',
+          'addressCountry' => 'ZA',
+        ],
+      ];
+    }
+    $schema['about'] = $about_event;
+
+    // Publisher, license, language.
+    $schema['publisher'] = $this->getPublisherSchema();
+    $schema['license'] = 'https://creativecommons.org/licenses/by-nc-sa/4.0/';
+    $schema['isAccessibleForFree'] = TRUE;
+    $schema['educationalUse'] = 'research';
+    $schema['inLanguage'] = 'en-ZA';
+
+    return $schema;
+  }
+
+  /**
+   * Build Place entities from field_african_country.
+   */
+  protected function getPlaces(NodeInterface $node): array {
+    $places = [];
     if ($node->hasField('field_african_country') && !$node->get('field_african_country')->isEmpty()) {
-      $countries = [];
       foreach ($node->get('field_african_country') as $country) {
-        /** @var \Drupal\taxonomy\Entity\Term|null $term */
         // @phpstan-ignore-next-line
         $term = $country->entity;
         if ($term) {
-          $countries[] = [
+          $places[] = [
             '@type' => 'Place',
             'name' => $term->getName(),
           ];
         }
       }
-      if (!empty($countries)) {
-        $schema['location'] = count($countries) === 1 ? $countries[0] : $countries;
-      }
     }
-
-    // Fallback: Use VirtualLocation if no physical location.
-    if (empty($schema['location'])) {
-      $schema['location'] = [
-        '@type' => 'VirtualLocation',
-        'url' => $node->toUrl()->setAbsolute()->toString(),
-      ];
-    }
-
-    // Add citations from field_ref_str (pipe-delimited).
-    if ($node->hasField('field_ref_str') && !$node->get('field_ref_str')->isEmpty()) {
-      $ref_str = $node->get('field_ref_str')->value;
-      if (!empty($ref_str)) {
-        $citations = array_filter(explode('|', $ref_str));
-        if (!empty($citations)) {
-          $schema['citation'] = array_map('trim', $citations);
-        }
-      }
-    }
-
-    // Add publisher (SAHO as curator/publisher of historical events).
-    $schema['publisher'] = $this->getOrganizationSchema();
-
-    // Add educational properties.
-    $schema['isAccessibleForFree'] = TRUE;
-    $schema['educationalUse'] = 'research';
-
-    // Add inLanguage.
-    $schema['inLanguage'] = 'en-ZA';
-
-    // Note: eventStatus and eventAttendanceMode removed.
-    // Not applicable to historical events.
-    return $schema;
+    return $places;
   }
 
   /**
-   * Get image URL from node image fields.
-   *
-   * @param \Drupal\node\NodeInterface $node
-   *   The node entity.
-   * @param array $field_names
-   *   Array of field names to check in priority order.
-   *
-   * @return string|null
-   *   The absolute image URL or NULL if not found.
+   * Build an ImageObject (with width/height when available).
    */
-  protected function getImageUrl(NodeInterface $node, array $field_names): ?string {
+  protected function getImageData(NodeInterface $node, array $field_names): ?array {
     foreach ($field_names as $field_name) {
-      if ($node->hasField($field_name) && !$node->get($field_name)->isEmpty()) {
-        $field_value = $node->get($field_name);
+      if (!$node->hasField($field_name) || $node->get($field_name)->isEmpty()) {
+        continue;
+      }
+      $field_item = $node->get($field_name)->first();
+      if (!$field_item) {
+        continue;
+      }
+      // @phpstan-ignore-next-line
+      $entity = $field_item->entity;
 
-        // Handle file fields.
-        if ($field_value->entity instanceof File) {
-          return $this->fileUrlGenerator->generateAbsoluteString($field_value->entity->getFileUri());
+      // Direct file field.
+      if ($entity instanceof File) {
+        $image = [
+          '@type' => 'ImageObject',
+          'url' => $this->fileUrlGenerator->generateAbsoluteString($entity->getFileUri()),
+        ];
+        $image['contentUrl'] = $image['url'];
+        $w = $field_item->get('width')->getValue();
+        $h = $field_item->get('height')->getValue();
+        if ($w) {
+          $image['width'] = (int) $w;
         }
+        if ($h) {
+          $image['height'] = (int) $h;
+        }
+        return $image;
+      }
 
-        // Handle media entity reference fields.
-        if ($field_value->entity instanceof ContentEntityInterface && $field_value->entity->hasField('field_media_image')) {
-          $media_entity = $field_value->entity;
-          if (!$media_entity->get('field_media_image')->isEmpty()) {
-            $file_entity = $media_entity->get('field_media_image')->entity;
-            if ($file_entity instanceof File) {
-              return $this->fileUrlGenerator->generateAbsoluteString($file_entity->getFileUri());
+      // Media reference.
+      if ($entity instanceof ContentEntityInterface && $entity->hasField('field_media_image')) {
+        if (!$entity->get('field_media_image')->isEmpty()) {
+          $media_item = $entity->get('field_media_image')->first();
+          // @phpstan-ignore-next-line
+          $file = $media_item ? $media_item->entity : NULL;
+          if ($file instanceof File) {
+            $image = [
+              '@type' => 'ImageObject',
+              'url' => $this->fileUrlGenerator->generateAbsoluteString($file->getFileUri()),
+            ];
+            $image['contentUrl'] = $image['url'];
+            $w = $media_item->get('width')->getValue();
+            $h = $media_item->get('height')->getValue();
+            if ($w) {
+              $image['width'] = (int) $w;
             }
+            if ($h) {
+              $image['height'] = (int) $h;
+            }
+            return $image;
           }
         }
       }
     }
-
     return NULL;
   }
 
   /**
-   * Get SAHO organization schema.
-   *
-   * @return array
-   *   Organization schema for publisher/curator.
+   * Get SAHO publisher schema with logo dimensions (Google AMP spec).
    */
-  protected function getOrganizationSchema(): array {
-    $request = \Drupal::request();
-    $base_url = $request->getSchemeAndHttpHost();
-
+  protected function getPublisherSchema(): array {
+    $base_url = \Drupal::request()->getSchemeAndHttpHost();
     return [
       '@type' => 'Organization',
       'name' => 'South African History Online',
       'url' => $base_url,
+      'logo' => [
+        '@type' => 'ImageObject',
+        'url' => $base_url . '/themes/custom/saho/logo.png',
+        'width' => 600,
+        'height' => 60,
+      ],
     ];
   }
 

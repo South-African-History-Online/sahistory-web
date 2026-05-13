@@ -107,27 +107,36 @@ class UpcomingEventSchemaBuilder implements SchemaOrgBuilderInterface {
       }
     }
 
-    // Add location (venue).
+    // Location (venue). Always emit a Place (Google rejects VirtualLocation
+    // for Event rich results). When no venue is set, fall back to a generic
+    // South Africa Place rather than a virtual URL placeholder.
     if ($node->hasField('field_upcoming_venue') && !$node->get('field_upcoming_venue')->isEmpty()) {
-      $venue = $node->get('field_upcoming_venue')->value;
+      $venue = trim(strip_tags($node->get('field_upcoming_venue')->value));
       if (!empty($venue)) {
         $schema['location'] = [
           '@type' => 'Place',
-          'name' => strip_tags($venue),
+          'name' => $venue,
+          'address' => [
+            '@type' => 'PostalAddress',
+            'addressCountry' => 'ZA',
+          ],
         ];
       }
     }
-
-    // Fallback: Use VirtualLocation if no physical location.
     if (empty($schema['location'])) {
       $schema['location'] = [
-        '@type' => 'VirtualLocation',
-        'url' => $node->toUrl()->setAbsolute()->toString(),
+        '@type' => 'Place',
+        'name' => 'South Africa',
+        'address' => [
+          '@type' => 'PostalAddress',
+          'addressCountry' => 'ZA',
+        ],
       ];
     }
 
-    // Add organizer (SAHO).
+    // Add organizer + performer (SAHO hosts these gatherings).
     $schema['organizer'] = $this->getOrganizationSchema();
+    $schema['performer'] = $this->getOrganizationSchema();
 
     // Add offers (free event).
     $schema['offers'] = [

@@ -10,21 +10,15 @@ use Drupal\node\NodeInterface;
 use Drupal\saho_tools\Service\SchemaOrgBuilderInterface;
 
 /**
- * Builds Schema.org ScholarlyArticle structured data for Article nodes.
+ * Builds Schema.org Article structured data for Article nodes.
  *
- * Maps SAHO article content to Schema.org ScholarlyArticle vocabulary
- * for optimal discovery by search engines and AI systems.
+ * Top-level @type is Article (Google Search Console's "Articles" report
+ * only counts Article/NewsArticle/BlogPosting; ScholarlyArticle is kept
+ * as additionalType to preserve semantics without sacrificing GSC
+ * visibility).
  */
 class ArticleSchemaBuilder implements SchemaOrgBuilderInterface {
 
-  /**
-   * Constructs an ArticleSchemaBuilder.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
-   *   The entity type manager.
-   * @param \Drupal\Core\File\FileUrlGeneratorInterface $fileUrlGenerator
-   *   The file URL generator service.
-   */
   public function __construct(
     protected EntityTypeManagerInterface $entityTypeManager,
     protected FileUrlGeneratorInterface $fileUrlGenerator,
@@ -45,28 +39,41 @@ class ArticleSchemaBuilder implements SchemaOrgBuilderInterface {
       return [];
     }
 
+    $url = $node->toUrl()->setAbsolute()->toString();
+
     $schema = [
       '@context' => 'https://schema.org',
-      '@type' => 'ScholarlyArticle',
+      '@type' => 'Article',
+      'additionalType' => 'https://schema.org/ScholarlyArticle',
       'headline' => $node->getTitle(),
-      'url' => $node->toUrl()->setAbsolute()->toString(),
+      'url' => $url,
+      'mainEntityOfPage' => [
+        '@type' => 'WebPage',
+        '@id' => $url,
+      ],
       'datePublished' => date('c', $node->getCreatedTime()),
       'dateModified' => date('c', $node->getChangedTime()),
     ];
 
-    // Add abstract/synopsis.
+    // Synopsis -> abstract; body -> articleBody + description + wordCount.
     if ($node->hasField('field_synopsis') && !$node->get('field_synopsis')->isEmpty()) {
       $schema['abstract'] = $node->get('field_synopsis')->value;
     }
-
-    // Add article body.
     if ($node->hasField('body') && !$node->get('body')->isEmpty()) {
       $body = $node->get('body')->value;
-      // Strip HTML tags for articleBody.
-      $schema['articleBody'] = strip_tags($body);
+      $plain = strip_tags($body);
+      $schema['articleBody'] = $plain;
+      $schema['wordCount'] = str_word_count($plain);
+      // Description: prefer synopsis if present, else first 500 chars of body.
+      if (isset($schema['abstract'])) {
+        $schema['description'] = $schema['abstract'];
+      }
+      else {
+        $schema['description'] = strlen($plain) > 500 ? substr($plain, 0, 497) . '...' : $plain;
+      }
     }
 
-    // Add contributors (authors).
+    // Authors.
     if ($node->hasField('field_article_author') && !$node->get('field_article_author')->isEmpty()) {
       $authors = [];
       foreach ($node->get('field_article_author') as $author) {
@@ -82,7 +89,7 @@ class ArticleSchemaBuilder implements SchemaOrgBuilderInterface {
       }
     }
 
-    // Add editors.
+    // Editors.
     if ($node->hasField('field_article_editors') && !$node->get('field_article_editors')->isEmpty()) {
       $editors = [];
       foreach ($node->get('field_article_editors') as $editor) {
@@ -98,21 +105,16 @@ class ArticleSchemaBuilder implements SchemaOrgBuilderInterface {
       }
     }
 
-    // Add main image.
-    $image_url = $this->getImageUrl($node, ['field_main_image', 'field_article_image', 'field_image']);
-    if ($image_url) {
-      $schema['image'] = [
-        '@type' => 'ImageObject',
-        'url' => $image_url,
-        'contentUrl' => $image_url,
-      ];
+    // Main image with dimensions when available (Google: >=1200px for rich).
+    $image_data = $this->getImageData($node, ['field_main_image', 'field_article_image', 'field_image']);
+    if ($image_data) {
+      $schema['image'] = $image_data;
     }
 
-    // Add keywords/tags.
+    // Keywords + articleSection from tags.
     if ($node->hasField('field_tags') && !$node->get('field_tags')->isEmpty()) {
       $keywords = [];
       foreach ($node->get('field_tags') as $tag) {
-        /** @var \Drupal\taxonomy\Entity\Term|null $term */
         // @phpstan-ignore-next-line
         $term = $tag->entity;
         if ($term) {
@@ -121,14 +123,14 @@ class ArticleSchemaBuilder implements SchemaOrgBuilderInterface {
       }
       if (!empty($keywords)) {
         $schema['keywords'] = implode(', ', $keywords);
+        $schema['articleSection'] = $keywords[0];
       }
     }
 
-    // Add spatial coverage (African countries).
+    // Spatial coverage.
     if ($node->hasField('field_african_country') && !$node->get('field_african_country')->isEmpty()) {
       $places = [];
       foreach ($node->get('field_african_country') as $country) {
-        /** @var \Drupal\taxonomy\Entity\Term|null $term */
         // @phpstan-ignore-next-line
         $term = $country->entity;
         if ($term) {
@@ -143,78 +145,92 @@ class ArticleSchemaBuilder implements SchemaOrgBuilderInterface {
       }
     }
 
-    // Add citations from field_ref_str (pipe-delimited).
+    // Citations.
     if ($node->hasField('field_ref_str') && !$node->get('field_ref_str')->isEmpty()) {
       $ref_str = $node->get('field_ref_str')->value;
       if (!empty($ref_str)) {
-        $citations = array_filter(explode('|', $ref_str));
+        $citations = array_filter(array_map('trim', explode('|', $ref_str)));
         if (!empty($citations)) {
-          $schema['citation'] = array_map('trim', $citations);
+          $schema['citation'] = array_values($citations);
         }
       }
     }
 
-    // Add publisher (SAHO organization).
     $schema['publisher'] = $this->getPublisherSchema();
-
-    // Add license and educational properties.
     $schema['license'] = 'https://creativecommons.org/licenses/by-nc-sa/4.0/';
     $schema['isAccessibleForFree'] = TRUE;
     $schema['educationalUse'] = 'research';
-
-    // Add inLanguage.
     $schema['inLanguage'] = 'en-ZA';
 
     return $schema;
   }
 
   /**
-   * Get image URL from node image fields.
-   *
-   * @param \Drupal\node\NodeInterface $node
-   *   The node entity.
-   * @param array $field_names
-   *   Array of field names to check in priority order.
-   *
-   * @return string|null
-   *   The absolute image URL or NULL if not found.
+   * Build an ImageObject with width/height when available.
    */
-  protected function getImageUrl(NodeInterface $node, array $field_names): ?string {
+  protected function getImageData(NodeInterface $node, array $field_names): ?array {
     foreach ($field_names as $field_name) {
-      if ($node->hasField($field_name) && !$node->get($field_name)->isEmpty()) {
-        $field_value = $node->get($field_name);
+      if (!$node->hasField($field_name) || $node->get($field_name)->isEmpty()) {
+        continue;
+      }
+      $field_item = $node->get($field_name)->first();
+      if (!$field_item) {
+        continue;
+      }
+      // @phpstan-ignore-next-line
+      $entity = $field_item->entity;
 
-        // Handle file fields.
-        if ($field_value->entity instanceof File) {
-          return $this->fileUrlGenerator->generateAbsoluteString($field_value->entity->getFileUri());
+      if ($entity instanceof File) {
+        $url = $this->fileUrlGenerator->generateAbsoluteString($entity->getFileUri());
+        $image = [
+          '@type' => 'ImageObject',
+          'url' => $url,
+          'contentUrl' => $url,
+        ];
+        $w = $field_item->get('width')->getValue();
+        $h = $field_item->get('height')->getValue();
+        if ($w) {
+          $image['width'] = (int) $w;
         }
+        if ($h) {
+          $image['height'] = (int) $h;
+        }
+        return $image;
+      }
 
-        // Handle media entity reference fields.
-        if ($field_value->entity instanceof ContentEntityInterface && $field_value->entity->hasField('field_media_image')) {
-          $media_entity = $field_value->entity;
-          if (!$media_entity->get('field_media_image')->isEmpty()) {
-            $file_entity = $media_entity->get('field_media_image')->entity;
-            if ($file_entity instanceof File) {
-              return $this->fileUrlGenerator->generateAbsoluteString($file_entity->getFileUri());
+      if ($entity instanceof ContentEntityInterface && $entity->hasField('field_media_image')) {
+        if (!$entity->get('field_media_image')->isEmpty()) {
+          $media_item = $entity->get('field_media_image')->first();
+          // @phpstan-ignore-next-line
+          $file = $media_item ? $media_item->entity : NULL;
+          if ($file instanceof File) {
+            $url = $this->fileUrlGenerator->generateAbsoluteString($file->getFileUri());
+            $image = [
+              '@type' => 'ImageObject',
+              'url' => $url,
+              'contentUrl' => $url,
+            ];
+            $w = $media_item->get('width')->getValue();
+            $h = $media_item->get('height')->getValue();
+            if ($w) {
+              $image['width'] = (int) $w;
             }
+            if ($h) {
+              $image['height'] = (int) $h;
+            }
+            return $image;
           }
         }
       }
     }
-
     return NULL;
   }
 
   /**
-   * Get SAHO publisher schema.
-   *
-   * @return array
-   *   Publisher organization schema.
+   * Publisher with logo dimensions (Google AMP/Article rich-result spec).
    */
   protected function getPublisherSchema(): array {
-    $request = \Drupal::request();
-    $base_url = $request->getSchemeAndHttpHost();
-
+    $base_url = \Drupal::request()->getSchemeAndHttpHost();
     return [
       '@type' => 'Organization',
       'name' => 'South African History Online',
@@ -222,6 +238,8 @@ class ArticleSchemaBuilder implements SchemaOrgBuilderInterface {
       'logo' => [
         '@type' => 'ImageObject',
         'url' => $base_url . '/themes/custom/saho/logo.png',
+        'width' => 600,
+        'height' => 60,
       ],
     ];
   }
