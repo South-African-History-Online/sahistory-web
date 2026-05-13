@@ -1,0 +1,89 @@
+{#
+/**
+ * @file
+ * SAHO Publications block - front-page discovery section.
+ *
+ * Available variables:
+ * - eyebrow: small uppercase kicker line above the title.
+ * - title: section heading.
+ * - subtitle: section lead paragraph.
+ * - items: array of publication rows. Each item supports:
+ *   - title (required), subtitle, author, year, price, url, cover.
+ * - shop_url: target for the "View all publications" CTA.
+ * - all_label: label for the "View all" CTA.
+ */
+#}
+<section class="saho-publications" aria-labelledby="saho-publications-heading">
+  <div class="container">
+
+    <header class="saho-publications__header">
+      {% if eyebrow %}
+        <p class="saho-publications__eyebrow" aria-hidden="true">
+          <span class="saho-publications__rule"></span>
+          <span>{{ eyebrow|t }}</span>
+          <span class="saho-publications__rule"></span>
+        </p>
+      {% endif %}
+      <h2 id="saho-publications-heading" class="saho-publications__title">{{ title|t }}</h2>
+      {% if subtitle %}
+        <p class="saho-publications__subtitle">{{ subtitle|t }}</p>
+      {% endif %}
+    </header>
+
+    {% if items %}
+      <div class="saho-publications__grid">
+        {% for item in items %}
+          <article class="saho-publication-card">
+            <a href="{{ item.url }}" class="saho-publication-card__cover-link" aria-label="{{ 'View'|t }} {{ item.title }} {{ 'on the SAHO Shop'|t }}">
+              <div class="saho-publication-card__cover">
+                {% if item.cover %}
+                  <img
+                    src="{{ item.cover }}"
+                    alt="{{ item.title }} {{ 'cover'|t }}"
+                    class="saho-publication-card__cover-img"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                {% else %}
+                  <div class="saho-publication-card__cover-fallback" aria-hidden="true">
+                    <span class="saho-publication-card__fallback-mark">SAHO</span>
+                    <span class="saho-publication-card__fallback-sub">{{ 'Press'|t }}</span>
+                  </div>
+                {% endif %}
+              </div>
+            </a>
+
+            <div class="saho-publication-card__body">
+              <h3 class="saho-publication-card__title">
+                <a href="{{ item.url }}">{{ item.title }}</a>
+              </h3>
+              {% if item.subtitle %}
+                <p class="saho-publication-card__subtitle">{{ item.subtitle }}</p>
+              {% endif %}
+              <p class="saho-publication-card__meta">
+                {% if item.author %}<span class="saho-publication-card__author">{{ item.author }}</span>{% endif %}
+                {% if item.author and item.year %} <span aria-hidden="true">·</span> {% endif %}
+                {% if item.year %}<span class="saho-publication-card__year">{{ item.year }}</span>{% endif %}
+              </p>
+              <div class="saho-publication-card__cta-row">
+                {% if item.price %}
+                  <span class="saho-publication-card__price">{{ item.price }}</span>
+                {% endif %}
+                <a href="{{ item.url }}" class="saho-publication-card__cta">
+                  {{ 'View in shop'|t }} →
+                </a>
+              </div>
+            </div>
+          </article>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <div class="saho-publications__footer">
+      <a href="{{ shop_url }}" class="saho-publications__view-all">
+        {{ all_label|t }} →
+      </a>
+    </div>
+
+  </div>
+</section>
