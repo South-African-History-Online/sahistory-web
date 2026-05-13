@@ -33,10 +33,41 @@
     <p class="checkout-completion__subtitle">{{ 'Thank you for your purchase'|t }}</p>
   </div>
 
+  {# Champion signup-gift note - only Annual + Patron tiers get one.
+     Detects by product bundle (`champion_subscription`) plus title match,
+     so the note survives SKU renames as long as the title still says
+     Annual or Patron. Fulfillment is manual: SAHO staff emails the buyer. #}
+  {% set has_signup_gift = false %}
+  {% if order_entity %}
+    {% for item in order_entity.getItems() %}
+      {% set variation = item.getPurchasedEntity() %}
+      {% if variation and variation.bundle() == 'champion_subscription' %}
+        {% set product_title = (variation.getTitle() ?: variation.getProduct().label())|lower %}
+        {% if 'annual' in product_title or 'patron' in product_title %}
+          {% set has_signup_gift = true %}
+        {% endif %}
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+
   <div class="checkout-completion__content">
     <div class="checkout-completion__message">
       {{ message }}
     </div>
+
+    {% if has_signup_gift %}
+      <div class="checkout-completion__signup-gift" role="status">
+        <div class="checkout-completion__signup-gift-icon" aria-hidden="true">★</div>
+        <div class="checkout-completion__signup-gift-body">
+          <strong class="checkout-completion__signup-gift-title">
+            {{ 'Your Champion signup gift'|t }}
+          </strong>
+          <p class="checkout-completion__signup-gift-text">
+            {{ 'A SAHO team member will email you within five working days to arrange delivery of your Champion signup gift. Thank you for supporting South African history.'|t }}
+          </p>
+        </div>
+      </div>
+    {% endif %}
 
     {% if order_entity %}
       <div class="checkout-completion__order-details">
