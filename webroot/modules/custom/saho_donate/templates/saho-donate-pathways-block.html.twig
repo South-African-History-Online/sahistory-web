@@ -1,19 +1,21 @@
 {#
 /**
  * @file
- * Block template: 3 donation pathways (Marion Institute, Champion, Snapscan).
+ * Block template: 4 donation pathways (Marion Institute, Champion, PayPal,
+ * Snapscan).
  *
  * Available variables:
  * - champion_url: URL to the SAHO Champion page on the shop.
  * - snapscan_url: Snapscan deep-link/QR URL.
  * - snapscan_qr_image: Path to the Snapscan QR code image.
+ * - paypal_url: PayPal hosted-button donate URL.
  */
 #}
 <div class="donate-pathways-block">
   <div class="row g-4">
 
     {# --- Card 1: Once-off via Marion Institute --- #}
-    <div class="col-md-4">
+    <div class="col-md-6 col-lg-3">
       <div class="donate-pathway-card donate-pathway-card--primary">
         <div class="donate-pathway-card__icon" aria-hidden="true">
           <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
@@ -33,7 +35,7 @@
     </div>
 
     {# --- Card 2: SAHO Champion (recurring) --- #}
-    <div class="col-md-4">
+    <div class="col-md-6 col-lg-3">
       <div class="donate-pathway-card donate-pathway-card--champion">
         <div class="donate-pathway-card__badge">{{ 'Most popular'|t }}</div>
         <div class="donate-pathway-card__icon donate-pathway-card__icon--gold" aria-hidden="true">
@@ -52,8 +54,28 @@
       </div>
     </div>
 
-    {# --- Card 3: Snapscan QR --- #}
-    <div class="col-md-4">
+    {# --- Card 3: PayPal --- #}
+    <div class="col-md-6 col-lg-3">
+      <div class="donate-pathway-card donate-pathway-card--paypal">
+        <div class="donate-pathway-card__icon" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 16 16" fill="currentColor">
+            <path d="M14.06 3.713c.12-1.071-.093-1.832-.702-2.526C12.628.356 11.312 0 9.626 0H4.734a.7.7 0 0 0-.691.59L2.005 13.509a.42.42 0 0 0 .415.486h2.756l-.202 1.28a.628.628 0 0 0 .62.726H8.14c.429 0 .793-.31.862-.731l.025-.13.48-3.043.03-.164.001-.007a.351.351 0 0 1 .348-.297h.38c1.266 0 2.425-.256 3.345-.91.379-.27.712-.603.993-1.005a4.942 4.942 0 0 0 .88-2.195c.242-1.246.13-2.356-.57-3.079a2.274 2.274 0 0 0-.57-.395z"/>
+          </svg>
+        </div>
+        <h3 class="donate-pathway-card__title">{{ 'Donate via PayPal'|t }}</h3>
+        <p class="donate-pathway-card__text">{{ 'Pay by card or PayPal balance - choose any amount, one-off or recurring. No PayPal account required. (Charged in USD via our international PayPal account.)'|t }}</p>
+        <div class="donate-pathway-card__cta">
+          <a href="{{ paypal_url }}"
+             class="donate-btn donate-btn--slate donate-btn--full"
+             target="_blank" rel="noopener noreferrer">
+            {{ 'Donate via PayPal'|t }}
+          </a>
+        </div>
+      </div>
+    </div>
+
+    {# --- Card 4: Snapscan QR --- #}
+    <div class="col-md-6 col-lg-3">
       <div class="donate-pathway-card donate-pathway-card--snapscan">
         <div class="donate-pathway-card__icon" aria-hidden="true">
           <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
@@ -63,7 +85,7 @@
         <h3 class="donate-pathway-card__title">{{ 'Donate via Snapscan'|t }}</h3>
         <p class="donate-pathway-card__text">{{ 'Scan the QR code with the Snapscan app on your phone to donate instantly.'|t }}</p>
 
-        {# QR code — opens overlay on click, no external link #}
+        {# QR code - opens overlay on click, no external link #}
         <div class="donate-snapscan-qr">
           <button type="button"
                   class="donate-snapscan-qr__btn"
@@ -71,7 +93,7 @@
                   aria-label="{{ 'View Snapscan QR code'|t }}">
             <img
               src="{{ snapscan_qr_image }}"
-              alt="{{ 'Snapscan QR code — tap to enlarge'|t }}"
+              alt="{{ 'Snapscan QR code - tap to enlarge'|t }}"
               class="donate-snapscan-qr__image"
               width="140"
               height="140"
@@ -80,7 +102,7 @@
           </button>
         </div>
 
-        {# Inline overlay — shown on button click #}
+        {# Inline overlay - shown on button click #}
         <div class="donate-snapscan-overlay" role="dialog" aria-modal="true" aria-label="{{ 'Snapscan QR code'|t }}" hidden>
           <div class="donate-snapscan-overlay__backdrop" data-donate-qr-close></div>
           <div class="donate-snapscan-overlay__box">
@@ -90,7 +112,7 @@
             <h2 class="donate-snapscan-overlay__title">{{ 'Scan to donate'|t }}</h2>
             <img
               src="{{ snapscan_qr_image }}"
-              alt="{{ 'Snapscan QR code — scan with the Snapscan app to donate to SAHO'|t }}"
+              alt="{{ 'Snapscan QR code - scan with the Snapscan app to donate to SAHO'|t }}"
               class="donate-snapscan-overlay__qr"
             />
             <p class="donate-snapscan-overlay__note">{{ 'Open the Snapscan app and scan this code.'|t }}</p>

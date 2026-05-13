@@ -142,6 +142,20 @@
   color: #fff;
 }
 
+/* Red outline - tertiary CTA on light surfaces (e.g. tier-grid custom-amount) */
+.donate-btn--outline-red {
+  background: transparent;
+  color: var(--donate-red);
+  border-color: var(--donate-red);
+}
+.donate-btn--outline-red:hover {
+  background: var(--donate-red);
+  color: #fff;
+  border-color: var(--donate-red);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(153, 0, 0, 0.25);
+}
+
 /* Kept for backward compat - maps to champion style */
 .donate-btn--gold {
   background: var(--donate-gold);
@@ -167,6 +181,45 @@
   border-color: var(--donate-slate-dark);
   color: #fff;
   transform: translateY(-1px);
+}
+
+/* Selected state - applied via JS when this pathway was last chosen.
+   Matches saho_shop .support-btn--selected so the visual feels uniform
+   across both the donate page and the champion landing page. */
+.donate-btn--selected,
+.footer-cta-primary--selected,
+.footer-cta-secondary--selected {
+  position: relative;
+  outline: 2px solid var(--donate-gold);
+  outline-offset: 3px;
+  box-shadow:
+    0 0 0 5px rgba(184, 138, 46, 0.18),
+    0 4px 14px rgba(184, 138, 46, 0.28);
+}
+.donate-btn--selected::after,
+.footer-cta-primary--selected::after,
+.footer-cta-secondary--selected::after {
+  content: "✓";
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--donate-gold);
+  color: #1a1a1a;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 22px;
+  text-align: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
+/* keep the visible-focus indicator inline with selected for keyboard users */
+.donate-btn:focus-visible,
+.donate-snapscan-qr__btn:focus-visible {
+  outline: 3px solid rgba(184, 138, 46, 0.6);
+  outline-offset: 3px;
 }
 
 /* =============================================
@@ -528,6 +581,22 @@
 .donate-tiers-block {
   padding: 4rem 0;
   background: #fff;
+}
+
+/* Custom-amount escape hatch beneath the tier grid - promoted from muted
+   fine print to a peer-weight outline CTA. */
+.donate-tiers-block__custom-amount {
+  margin-top: 2.5rem;
+  text-align: center;
+}
+.donate-tiers-block__custom-amount-lead {
+  margin: 0 0 0.75rem;
+  color: var(--donate-text);
+  font-size: 1rem;
+  font-weight: 500;
+}
+.donate-tiers-block__custom-amount .donate-btn {
+  min-width: 240px;
 }
 
 .donate-tier {

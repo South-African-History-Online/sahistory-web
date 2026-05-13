@@ -178,7 +178,7 @@ function _saho_statistics_get_popular_searches(int $limit = 8): array {
     $query->condition('q.timestamp', $cutoff, '>');
     // Only queries that returned meaningful results (≥5) are useful suggestions.
     $query->condition('q.result_count', 5, '>=');
-    // utf8mb4 collation is case-insensitive — duplicates (Mandela/mandela) merge.
+    // utf8mb4 collation is case-insensitive - duplicates (Mandela/mandela) merge.
     $query->groupBy('q.query_text');
     // Require at least 2 searches to filter out one-off typos/junk.
     $query->having('COUNT(*) >= 2');

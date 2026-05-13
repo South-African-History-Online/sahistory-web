@@ -176,7 +176,7 @@
               saveSearchQuery(modalInput.value.trim());
             }
           },
-          true // capture phase — fires before bubbling handlers
+          true // capture phase - fires before bubbling handlers
         );
       }
 
@@ -239,7 +239,7 @@
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
     } catch (_) {
-      // localStorage unavailable (private mode etc.) — silently skip
+      // localStorage unavailable (private mode etc.) - silently skip
     }
   }
 
@@ -279,7 +279,7 @@
       [];
 
     if (popular.length === 0) {
-      // No real data yet — keep Twig fallback chips as-is.
+      // No real data yet - keep Twig fallback chips as-is.
       return;
     }
 

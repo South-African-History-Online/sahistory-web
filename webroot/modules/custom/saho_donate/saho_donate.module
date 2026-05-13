@@ -5,6 +5,9 @@
  * SAHO Donate module hooks.
  */
 
+use Drupal\commerce_recurring\BillingPeriod;
+use Drupal\Core\Entity\FieldableEntityInterface;
+
 /**
  * Implements hook_theme().
  */
@@ -33,6 +36,7 @@ function saho_donate_theme(): array {
         'champion_url' => 'https://shop.sahistory.org.za/champion',
         'snapscan_url' => 'https://pos.snapscan.io/qr/SAHO',
         'snapscan_qr_image' => '/sites/default/files/saho_snapscan.gif',
+        'paypal_url' => 'https://www.paypal.com/donate?hosted_button_id=CZPNF5PNPW8SL',
       ],
     ],
     'saho_champion_tiers_block' => [
@@ -40,7 +44,49 @@ function saho_donate_theme(): array {
         'monthly_url' => 'https://shop.sahistory.org.za/product/saho-champion-monthly-support',
         'annual_url' => 'https://shop.sahistory.org.za/product/saho-champion-annual-support',
         'patron_url' => 'https://shop.sahistory.org.za/champion#patron',
+        'donate_url' => 'https://sahistory.org.za/donate',
       ],
     ],
   ];
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_presave() for commerce_order.
+ *
+ * Defensive guard for the prod-only Add-to-Cart fatal:
+ *   Error: Call to a member function toBillingPeriod() on null in
+ *   Drupal\commerce_recurring\RecurringOrderManager->refreshOrder()
+ *
+ * The crash happens when a `recurring` bundle order reaches OrderRefresh
+ * without a populated `billing_period` field. RecurringOrderManager assumes
+ * the field is always set and calls `->first()->toBillingPeriod()` on it.
+ *
+ * Root cause sits in prod config (likely the champion order_type mapping
+ * routes cart orders through `recurring` before commerce_recurring has had
+ * a chance to populate the field). Fix in config when we have access.
+ *
+ * Until then this hook seeds `billing_period` with a now->now+1month period
+ * on any `recurring` order that lacks one, so the cart save completes and
+ * the user can actually become a champion.
+ */
+function saho_donate_commerce_order_presave(FieldableEntityInterface $order): void {
+  if ($order->bundle() !== 'recurring') {
+    return;
+  }
+  if (!$order->hasField('billing_period')) {
+    return;
+  }
+  if (!$order->get('billing_period')->isEmpty()) {
+    return;
+  }
+  if (!class_exists(BillingPeriod::class)) {
+    return;
+  }
+
+  $start = new DateTimeImmutable('now');
+  $end = $start->modify('+1 month');
+  $order->set('billing_period', [
+    'starts' => $start->getTimestamp(),
+    'ends' => $end->getTimestamp(),
+  ]);
 }

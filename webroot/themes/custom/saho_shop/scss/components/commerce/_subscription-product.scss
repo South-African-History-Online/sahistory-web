@@ -190,9 +190,21 @@
   .container--edit-quantity-wrapper,
   .field--comment { display: none !important; }
 
-  // Style the Add to Cart button
+  // Style the Add to Cart button.
+  // The `.bi-btn-basket` class on the submit input adds a basket SVG as
+  // a background-image. The shorthand `background: #900` here used to reset
+  // it, but the `.btn-success.bi-btn-basket` rule still won for the image
+  // (tying in specificity but defined later in the cascade) - and because
+  // we weren't pinning `background-repeat`, the 16px basket tiled across
+  // the full-width button, which read as "the icon is duplicated many
+  // times". Pin colour, image, repeat, size explicitly so the basket is
+  // either invisible (this is a donation, not a purchase - no basket
+  // semantics) and never tiles.
   .button--add-to-cart {
-    background: #900;
+    background-color: #900;
+    background-image: none;
+    background-repeat: no-repeat;
+    background-size: auto;
     border-color: #900;
     color: #fff;
     font-weight: 700;
@@ -201,10 +213,11 @@
     letter-spacing: 0.02em;
     width: 100%;
     border-radius: 6px;
-    transition: background 0.2s ease;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
 
     &:hover, &:focus {
-      background: #8b0000;
+      background-color: #8b0000;
+      background-image: none;
       border-color: #8b0000;
     }
   }

@@ -9,6 +9,23 @@
 @import "../components/support-btn";
 @import "../components/tier-grid";
 
+// Smooth-scroll in-page anchors, gated by reduced-motion preference.
+// Applied to <html> because that's the scroll container; the champion CSS
+// is only loaded on champion pages so this stays scoped in practice.
+@media (prefers-reduced-motion: no-preference) {
+  html:has(.champion-page) {
+    scroll-behavior: smooth;
+  }
+}
+
+// Scroll-margin so anchored sections land just below the viewport top
+// rather than touching the very edge - feels intentional even without a
+// sticky header.
+#champion-benefits,
+#champion-tiers {
+  scroll-margin-top: 1rem;
+}
+
 // ==================================================
 // HERO
 // ==================================================
@@ -29,7 +46,13 @@
     margin-bottom: 1.25rem;
     display: block;
     color: $cp-accent;
-    animation: champion-star-pulse 3s ease-in-out infinite;
+
+    // Ambient star pulse - slowed to 5 s and gated by reduced-motion so
+    // it reads as a calm breath, not a flicker that looks like the icon
+    // multiplying.
+    @media (prefers-reduced-motion: no-preference) {
+      animation: champion-star-pulse 5s ease-in-out infinite;
+    }
   }
 
   &__title {

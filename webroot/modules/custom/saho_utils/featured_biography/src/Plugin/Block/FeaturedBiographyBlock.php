@@ -657,7 +657,7 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
    */
   protected function buildBiographyItem($node) {
     // saho_thumbnail (400x225, WebP) is right-sized for the 80x81 bio
-    // thumbnails the home-page block emits — saves ~75 KB per portrait.
+    // thumbnails the home-page block emits - saves ~75 KB per portrait.
     $item = $this->entityItemBuilder->buildItemWithImage($node, 'field_bio_pic', 'saho_thumbnail');
 
     // Ensure backward compatibility with 'nid' and 'image' keys.

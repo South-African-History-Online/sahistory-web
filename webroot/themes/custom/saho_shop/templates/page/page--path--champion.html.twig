@@ -10,6 +10,7 @@
  */
 #}
 {% do attach_library('saho_shop/page.champion') %}
+{% do attach_library('saho_donate/donate-page') %}
 
 <div{{ attributes.addClass('champion-page') }}>
   {% block skip_link %}
@@ -57,10 +58,10 @@
           </p>
           <div class="champion-hero__actions">
             <a href="#champion-tiers" class="support-btn support-btn--gold">
-              Choose your level
+              {{ 'See membership options'|t }}
             </a>
             <a href="#champion-benefits" class="support-btn support-btn--outline-white">
-              See the benefits
+              {{ 'See the benefits'|t }}
             </a>
           </div>
         </div>
@@ -258,13 +259,19 @@
           <div class="champion-final-cta__actions">
             <a href="/product/saho-champion-monthly-support"
                class="support-btn support-btn--outline-white">
-              Join Monthly - R200/mo
+              Join Monthly - R100/mo
             </a>
             <a href="/product/saho-champion-annual-support"
                class="support-btn support-btn--gold">
-              Join Annual - R2,000/yr
+              Join Annual - R1,000/yr
             </a>
           </div>
+          <p class="champion-final-cta__alt mt-4">
+            <a href="https://sahistory.org.za/donate"
+               class="support-btn support-btn--outline-white">
+              {{ 'Choose your own amount'|t }} →
+            </a>
+          </p>
         </div>
       </div>
     </section>
@@ -279,25 +286,6 @@
     {% if page_bottom %}{{ page_bottom }}{% endif %}
   {% endblock %}
 
-  <script>
-    (function () {
-      var STORE_KEY = 'saho_champion_last_tier';
-      var btns = document.querySelectorAll('.tier-item__cta, .champion-tier__cta, .support-btn[href*="/product/saho-champion"]');
-      // Restore highlight from previous visit.
-      var last = localStorage.getItem(STORE_KEY);
-      if (last) {
-        btns.forEach(function (btn) {
-          if (btn.getAttribute('href') === last) {
-            btn.classList.add('support-btn--selected');
-          }
-        });
-      }
-      // Save on click.
-      btns.forEach(function (btn) {
-        btn.addEventListener('click', function () {
-          localStorage.setItem(STORE_KEY, btn.getAttribute('href'));
-        });
-      });
-    })();
-  </script>
+  {# Selected-tier memory is now driven by Drupal.behaviors.sahoSupporterMemory
+     in saho_donate/js/donate.js - attached above via attach_library. #}
 </div>
