@@ -94,7 +94,9 @@ class ImageSchemaBuilder implements SchemaOrgBuilderInterface {
       $schema['description'] = $description;
     }
 
-    // Add creator/photographer if available.
+    // Add creator/photographer if available; fall back to SAHO as
+    // institutional creator so Google's Image Metadata report stops
+    // flagging missing-creator on ~2k images without an attributed person.
     if ($node->hasField('field_photographer') && !$node->get('field_photographer')->isEmpty()) {
       $schema['creator'] = [
         '@type' => 'Person',
@@ -105,6 +107,13 @@ class ImageSchemaBuilder implements SchemaOrgBuilderInterface {
       $schema['creator'] = [
         '@type' => 'Person',
         'name' => $node->get('field_author')->value,
+      ];
+    }
+    else {
+      $schema['creator'] = [
+        '@type' => 'Organization',
+        'name' => 'South African History Online',
+        'url' => \Drupal::request()->getSchemeAndHttpHost(),
       ];
     }
 
@@ -126,10 +135,10 @@ class ImageSchemaBuilder implements SchemaOrgBuilderInterface {
 
     $schema['copyrightNotice'] = '© ' . date('Y') . ' South African History Online. Licensed under CC BY-NC-SA 4.0.';
 
-    // Add creditText based on creator.
-    if (isset($schema['creator'])) {
-      $creator_name = $schema['creator']['name'];
-      $schema['creditText'] = 'Photo by ' . $creator_name . ' / SAHO';
+    // Credit text: only add the "Photo by" prefix when the creator is a
+    // named Person; if SAHO is the institutional creator, use the plain name.
+    if (($schema['creator']['@type'] ?? '') === 'Person') {
+      $schema['creditText'] = 'Photo by ' . $schema['creator']['name'] . ' / SAHO';
     }
     else {
       $schema['creditText'] = 'South African History Online (SAHO)';

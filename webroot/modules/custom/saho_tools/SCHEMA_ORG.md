@@ -11,23 +11,29 @@ South African History Online (SAHO) now includes comprehensive Schema.org JSON-L
 
 ## Content Type Mapping
 
-### 1. Articles (2,809 nodes) → ScholarlyArticle
+### 1. Articles (2,809 nodes) → Article (+ additionalType ScholarlyArticle)
 
-**Schema.org Type**: `https://schema.org/ScholarlyArticle`
+**Schema.org Type**: `https://schema.org/Article` (with `additionalType: ScholarlyArticle`)
 
-**Fields Mapped (51 total)**:
+> **Why Article and not ScholarlyArticle as top-level?** Google Search Console's "Articles" enhancement report only counts `Article`, `NewsArticle`, and `BlogPosting`. ScholarlyArticle is kept as `additionalType` to preserve semantic precision.
+
+**Fields Mapped**:
 - `headline` ← title
+- `mainEntityOfPage` ← canonical WebPage URL
 - `abstract` ← field_synopsis
+- `description` ← field_synopsis OR first 500 chars of body
 - `articleBody` ← body (HTML stripped)
+- `wordCount` ← computed
+- `articleSection` ← first tag
 - `author` ← field_article_author (Person array)
 - `editor` ← field_article_editors (Person array)
-- `image` ← field_main_image, field_article_image, field_image (ImageObject)
+- `image` ← field_main_image, field_article_image, field_image (ImageObject with width/height)
 - `keywords` ← field_tags
 - `spatialCoverage` ← field_african_country (Place array)
 - `citation` ← field_ref_str (pipe-delimited array)
 - `datePublished` ← created date (ISO 8601)
 - `dateModified` ← changed date (ISO 8601)
-- `publisher` ← SAHO Organization
+- `publisher` ← SAHO Organization (logo 600×60)
 - `license` ← CC BY-NC-SA 4.0 URL
 - `isAccessibleForFree` ← true
 - `educationalUse` ← "research"
@@ -52,61 +58,101 @@ South African History Online (SAHO) now includes comprehensive Schema.org JSON-L
 }
 ```
 
-### 2. Biographies (10,772 nodes) → Person
+### 2. Biographies (10,772 nodes) → ProfilePage wrapping Person
 
-**Schema.org Type**: `https://schema.org/Person`
+**Schema.org Type**: `https://schema.org/ProfilePage` (with `mainEntity: Person`)
 
-**Fields Mapped (60 total)**:
+> **Why ProfilePage?** Google's 2024+ ProfilePage rich result is GSC-reportable; bare Person is not. Person is nested under `mainEntity` so all biographical data is preserved.
+
+**ProfilePage fields**:
+- `url`, `dateCreated`, `dateModified`
+- `mainEntity` ← Person (below)
+
+**Nested Person fields**:
 - `name` ← Composite (field_firstname + field_middlename + field_lastnamebio)
 - `givenName` ← field_firstname
 - `familyName` ← field_lastnamebio
 - `additionalName` ← field_middlename
+- `mainEntityOfPage` ← canonical WebPage URL
 - `birthDate` ← field_drupal_birth_date (ISO 8601)
 - `deathDate` ← field_drupal_death_date (ISO 8601)
 - `birthPlace` ← field_birth_location (Place)
 - `deathPlace` ← field_death_location (Place)
-- `image` ← field_bio_pic (ImageObject)
+- `image` ← field_bio_pic (ImageObject with width/height)
 - `jobTitle` ← field_position (array)
 - `affiliation` ← field_affiliation (Organization array)
 - `nationality` ← field_african_country (Country array)
-- `description` ← body (first 200 chars, HTML stripped)
+- `knowsAbout` ← field_tags (topics)
+- `description` ← body (first 300 chars, HTML stripped)
 - `sameAs` ← field_url (URL array)
 
-### 3. Events (17,656 nodes) → Event
+### 3. Historical Events (17,656 nodes) → Article + `about: Event`
 
-**Schema.org Type**: `https://schema.org/Event`
+**Schema.org Type**: `https://schema.org/Article` (with `additionalType: ScholarlyArticle`)
 
-**Fields Mapped (19 total)**:
-- `name` ← title
-- `startDate` ← field_event_date (ISO 8601)
+> **Why Article and not Event?** "This Day in History" entries describe historical events; they are not attendable. Schema.org Event is meant for concerts/lectures/festivals — Google's Event rich result rejects historical entries (missing performer/offers/Place) and rejected `VirtualLocation` outright (3,662 invalid items). The page is now an Article whose `about` property nests a Schema.org Event with `additionalType: HistoricalEvent` for AI/Knowledge Graph semantics.
+
+**Article fields**:
+- `headline` ← title
+- `mainEntityOfPage` ← canonical WebPage URL
+- `description` ← body (first 500 chars) OR generic fallback
+- `articleBody` + `wordCount` ← body
+- `image` ← field_tdih_image, field_event_image, field_image (ImageObject with dimensions)
+- `keywords` + `articleSection` ← field_event_type taxonomy
+- `spatialCoverage` ← field_african_country (Place array)
+- `citation` ← field_ref_str (pipe-delimited)
 - `temporalCoverage` ← field_event_date
-- `description` ← body (first 500 chars)
-- `image` ← field_tdih_image, field_event_image (ImageObject)
-- `additionalType` ← field_event_type (taxonomy terms)
-- `location` ← field_african_country (Place array)
-- `citation` ← field_ref_str (pipe-delimited array)
-- `organizer` ← SAHO Organization
-- `eventStatus` ← "EventScheduled"
-- `eventAttendanceMode` ← "OfflineEventAttendanceMode"
-- `isAccessibleForFree` ← true
+- `datePublished` / `dateModified` ← node timestamps
+- `publisher` ← SAHO Organization (logo 600×60)
+- `license` ← CC BY-NC-SA 4.0
 - `educationalUse` ← "research"
 - `inLanguage` ← "en-ZA"
 
-### 4. Archives (29,986 nodes) → ArchiveComponent
+**Nested `about: Event`**:
+- `name` ← title
+- `additionalType` ← `https://schema.org/HistoricalEvent`
+- `startDate` / `endDate` ← field_event_date
+- `location` ← field_african_country Place(s), or `{Place name: "South Africa", addressCountry: "ZA"}` fallback (never VirtualLocation)
 
-**Schema.org Type**: `https://schema.org/ArchiveComponent`
+### 3b. Upcoming Events → Event
 
-**Fields Mapped (44 total)**:
+**Schema.org Type**: `https://schema.org/Event`
+
+**Fields Mapped**:
+- `name`, `url`, `description`
+- `startDate`, `endDate` (defaults to startDate)
+- `location` ← Place from field_upcoming_venue, fallback to South Africa Place (never VirtualLocation)
+- `organizer` + `performer` ← SAHO Organization
+- `offers` ← free Offer
+- `eventStatus` ← `EventScheduled`
+- `eventAttendanceMode` ← `OfflineEventAttendanceMode`
+- `image` ← field_upcomingevent_image
+- `isAccessibleForFree` ← true
+- `inLanguage` ← "en-ZA"
+
+### 4. Archives (29,986 nodes) → Book or CreativeWork
+
+**Schema.org Type**: `https://schema.org/Book` when `field_isbn` is present, else `https://schema.org/CreativeWork` (with `additionalType: ArchiveComponent`).
+
+> **Why Book/CreativeWork and not ArchiveComponent?** ArchiveComponent has no Google rich-result template — ~30k archives have been invisible to GSC. Book is the matching GSC enhancement type for archived publications with ISBNs; CreativeWork covers everything else while staying recognized.
+
+**Fields Mapped**:
 - `name` ← field_publication_title or title
+- `mainEntityOfPage` ← canonical WebPage URL
 - `author` ← field_author (Person array)
+- `creator` ← author array OR SAHO Organization fallback
 - `datePublished` ← field_archive_publication_date, field_publication_date_archive
+- `dateModified` ← changed
 - `description` ← body (first 500 chars)
-- `image` ← field_archive_image (ImageObject)
-- `isbn` ← field_isbn
+- `image` ← field_archive_image (ImageObject with dimensions)
+- `isbn` ← field_isbn (when present)
+- `keywords` ← field_tags
 - `inLanguage` ← field_language or "en-ZA"
-- `provider` ← field_source (Organization array)
-- `associatedMedia` ← field_file_upload (MediaObject array with URLs)
+- `sourceOrganization` ← field_source (Organization array) — semantically corrected from `provider`
+- `associatedMedia` ← field_file_upload as **DataDownload** (was MediaObject)
 - `holdingArchive` ← SAHO ArchiveOrganization
+- `publisher` ← SAHO Organization (logo 600×60)
+- `copyrightHolder` ← SAHO Organization
 - `license` ← CC BY-NC-SA 4.0
 - `isAccessibleForFree` ← true
 
