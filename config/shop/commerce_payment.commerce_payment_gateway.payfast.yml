@@ -14,8 +14,13 @@ configuration:
   payment_method_types:
     - credit_card
   collect_billing_information: false
-  merchant_id: abc123
-  merchant_key: abc123
+  # Credentials are managed via /admin/commerce/config/payment-gateways
+  # and protected from re-import by config_ignore.settings.yml.
+  # Leaving these empty in the exported YAML so even if config_ignore is
+  # disabled / mis-configured at deploy, a re-import cannot write false
+  # placeholder credentials (was "abc123" historically) into the DB.
+  merchant_id: ''
+  merchant_key: ''
   passphrase: ''
   redirect_method: post
   debug: 0
