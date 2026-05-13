@@ -1,0 +1,59 @@
+uuid: f641d536-f348-4ee8-805d-06475c13cd84
+langcode: en
+status: true
+dependencies:
+  config:
+    - commerce_shipping.commerce_shipment_type.default
+    - core.entity_view_mode.commerce_shipment.admin
+  module:
+    - commerce_price
+    - commerce_shipping
+    - entity_reference_revisions
+id: commerce_shipment.default.admin
+targetEntityType: commerce_shipment
+bundle: default
+mode: admin
+content:
+  amount:
+    type: commerce_price_default
+    label: inline
+    settings:
+      strip_trailing_zeroes: false
+      currency_display: symbol
+    third_party_settings: {  }
+    weight: 2
+    region: content
+  shipping_method:
+    type: commerce_shipping_method
+    label: inline
+    settings: {  }
+    third_party_settings: {  }
+    weight: 1
+    region: content
+  shipping_profile:
+    type: entity_reference_revisions_entity_view
+    label: hidden
+    settings:
+      view_mode: admin
+      link: ''
+    third_party_settings: {  }
+    weight: 0
+    region: content
+  tracking_code:
+    type: commerce_tracking_link
+    label: inline
+    settings: {  }
+    third_party_settings: {  }
+    weight: 3
+    region: content
+hidden:
+  amount: true
+  items: true
+  original_amount: true
+  package_type: true
+  search_api_excerpt: true
+  shipping_profile: true
+  state: true
+  title: true
+  tracking_code: true
+  weight: true
