@@ -4,7 +4,7 @@ namespace Drupal\saho_donate\Form;
 
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Site\Settings;
+use Drupal\saho_donate\PayfastCredentials;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -132,9 +132,24 @@ class DonateForm extends FormBase {
     $email  = $form_state->getValue('email');
     $name   = trim((string) ($form_state->getValue('name') ?? ''));
 
-    $merchant_id  = Settings::get('payfast_merchant_id', '');
-    $merchant_key = Settings::get('payfast_merchant_key', '');
-    $passphrase   = Settings::get('payfast_passphrase', '');
+    $creds        = PayfastCredentials::get();
+    $merchant_id  = $creds['merchant_id'];
+    $merchant_key = $creds['merchant_key'];
+    $passphrase   = $creds['passphrase'];
+
+    if ($merchant_id === '' || $merchant_key === '') {
+      // Fail fast with a friendly message rather than letting PayFast
+      // return a generic 400 about missing fields. Log to watchdog so
+      // operators see this in the admin error log.
+      \Drupal::logger('saho_donate')->error(
+        'PayFast credentials missing: set merchant_id / merchant_key via the commerce_payfast gateway admin form or via $settings[] in settings.php.'
+      );
+      $this->messenger()->addError(
+        $this->t('Donations are temporarily unavailable. The payment gateway is not configured. Please try again later or contact us at info@sahistory.org.za.')
+      );
+      $form_state->setRebuild(TRUE);
+      return;
+    }
 
     $request  = $this->requestStack->getCurrentRequest();
     $base_url = $request->getSchemeAndHttpHost();
