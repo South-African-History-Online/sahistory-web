@@ -19,9 +19,9 @@ use Symfony\Component\HttpFoundation\Response;
  *
  * The endpoint is anonymously accessible (the JS beacon fires for every
  * full-mode node view, including cached pages). Defence in depth:
- *  - The nid must reference a published node — unknown nids return 404 and
+ *  - The nid must reference a published node - unknown nids return 404 and
  *    never reach merge(), so the counter table cannot be polluted.
- *  - Server-side flood control caps writes per (client IP, nid) — JS-only
+ *  - Server-side flood control caps writes per (client IP, nid) - JS-only
  *    session dedup is not enough on an open endpoint.
  *  - After a successful merge, the saho_node_counter cache tag is
  *    invalidated so dependent caches (TopReadContentBlock, TermTracker)
@@ -130,7 +130,7 @@ class NodeViewCounterController extends ControllerBase {
     }
 
     // Reject unknown / unpublished nids so the counter table never accrues
-    // rows that don't reference real published content. Direct DB query —
+    // rows that don't reference real published content. Direct DB query -
     // cheaper than loading the full node entity for this hot path.
     $exists = $this->database->select('node_field_data', 'n')
       ->fields('n', ['nid'])
@@ -171,7 +171,7 @@ class NodeViewCounterController extends ControllerBase {
       $this->cacheTagsInvalidator->invalidateTags(['saho_node_counter']);
     }
     catch (\Exception $e) {
-      // Log but swallow — a failed counter must never break page delivery.
+      // Log but swallow - a failed counter must never break page delivery.
       $this->getLogger('saho_statistics')->error(
         'Failed to record node view for nid @nid: @msg',
         ['@nid' => $nid, '@msg' => $e->getMessage()]

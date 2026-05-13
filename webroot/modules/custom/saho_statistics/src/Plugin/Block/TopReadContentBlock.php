@@ -321,7 +321,7 @@ class TopReadContentBlock extends BlockBase implements ContainerFactoryPluginInt
     }
 
     // Route through the saho_thumbnail image style (400x225 WebP) so the
-    // browser fetches a ~30 KB derivative instead of the raw source file —
+    // browser fetches a ~30 KB derivative instead of the raw source file -
     // a typical Top Read row only displays the thumbnail at 80x58.
     $uri = $file->getFileUri();
     $style = ImageStyle::load('saho_thumbnail');

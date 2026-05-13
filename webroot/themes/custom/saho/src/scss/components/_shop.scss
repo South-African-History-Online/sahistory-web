@@ -34,11 +34,16 @@
   }
 }
 
-// Hide PayPal payment options (shop uses PayFast)
+// Hide PayPal *checkout payment gateway* options (shop uses PayFast).
+// Scoped to commerce/payment-method classes only so it does NOT swallow
+// legitimate site-wide PayPal CTAs such as `.footer-cta-paypal` which
+// link out to PayPal donations.
 .payment-method-paypal,
 .commerce-paypal,
-[class*="paypal"],
-[id*="paypal"] {
+[class*="payment-method-paypal"],
+[id*="payment-method-paypal"],
+[class*="commerce-paypal"],
+[id*="commerce-paypal"] {
   display: none !important;
 }
 

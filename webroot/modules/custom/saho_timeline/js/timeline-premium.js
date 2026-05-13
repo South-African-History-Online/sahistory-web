@@ -101,7 +101,7 @@
                   localStorage.setItem(cacheKey, JSON.stringify(data));
                   localStorage.setItem(cacheKey + '_time', Date.now().toString());
                 } catch (storageError) {
-                  // Ignore quota or security errors — caching is best-effort.
+                  // Ignore quota or security errors - caching is best-effort.
                 }
 
                 initializeTimelineJS(container, data.events);

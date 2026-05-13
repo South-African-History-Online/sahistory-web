@@ -140,11 +140,11 @@ class DonateController extends ControllerBase {
 
     $data = $request->request->all();
 
-    // Require passphrase to be configured — reject all ITNs otherwise.
+    // Require passphrase to be configured - reject all ITNs otherwise.
     $passphrase = Settings::get('payfast_passphrase', '');
     if ($passphrase === '') {
       $this->getLogger('saho_donate')->error(
-        'PayFast ITN: payfast_passphrase is not set in settings.php — all ITN notifications rejected.'
+        'PayFast ITN: payfast_passphrase is not set in settings.php - all ITN notifications rejected.'
       );
       return new Response('Configuration error', 500);
     }

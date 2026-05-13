@@ -170,7 +170,7 @@ function saho_statistics_update_9002() {
   // Migrate existing rows from the contrib Statistics module's node_counter
   // table so historical counts are preserved after uninstall. One INSERT ...
   // SELECT (with a NOT IN sub-select for rows that may already exist in
-  // saho_node_counter) — avoids the N+1 SELECT-per-row pattern that would
+  // saho_node_counter) - avoids the N+1 SELECT-per-row pattern that would
   // time out on production-scale data.
   if ($schema->tableExists('node_counter')) {
     $existing_nids = $db->select('saho_node_counter', 's')

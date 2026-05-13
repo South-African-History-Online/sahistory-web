@@ -57,7 +57,7 @@
           sessionStorage.setItem(sessionKey, '1');
         }
 
-        // Prefer navigator.sendBeacon() — designed for fire-and-forget
+        // Prefer navigator.sendBeacon() - designed for fire-and-forget
         // analytics, reliably fires even when the page is being unloaded.
         if (navigator.sendBeacon) {
           var data = new FormData();
