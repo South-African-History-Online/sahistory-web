@@ -9,6 +9,7 @@ dependencies:
     - field.field.commerce_order.recurring.commerce_recurring_queued
   module:
     - commerce_order
+    - commerce_payment
     - commerce_price
     - commerce_recurring
     - state_machine
@@ -21,114 +22,138 @@ bundle: recurring
 mode: default
 content:
   balance:
-    label: hidden
     type: commerce_price_default
-    weight: 0
-    region: content
+    label: hidden
     settings:
       strip_trailing_zeroes: false
       currency_display: symbol
     third_party_settings: {  }
-  billing_period:
-    type: commerce_billing_period_default
     weight: 0
     region: content
+  billing_period:
+    type: commerce_billing_period_default
     label: above
     settings: {  }
     third_party_settings: {  }
-  changed:
-    type: timestamp
+    weight: 0
+    region: content
+  billing_profile:
+    type: commerce_billing_information
+    label: hidden
+    settings:
+      profile_view_mode: admin
+      show_payment_information: true
+    third_party_settings: {  }
     weight: 5
     region: content
+  changed:
+    type: timestamp
     label: inline
     settings:
       date_format: short
       custom_date_format: ''
       timezone: ''
     third_party_settings: {  }
+    weight: 5
+    region: content
   completed:
-    label: inline
     type: timestamp
+    label: inline
+    settings:
+      date_format: short
+      custom_date_format: ''
+      timezone: ''
+    third_party_settings: {  }
     weight: 3
     region: content
+  coupons:
+    type: entity_reference_label
+    label: above
+    settings:
+      link: true
+    third_party_settings: {  }
+    weight: 11
+    region: content
+  created:
+    type: timestamp
+    label: inline
     settings:
       date_format: short
       custom_date_format: ''
       timezone: ''
+      tooltip:
+        date_format: long
+        custom_date_format: ''
+      time_diff:
+        enabled: false
+        future_format: '@interval hence'
+        past_format: '@interval ago'
+        granularity: 2
+        refresh: 60
     third_party_settings: {  }
-  coupons:
-    label: above
-    type: entity_reference_label
-    settings:
-      link: true
+    weight: 0
     region: content
-    weight: 11
-    third_party_settings: {  }
   customer_comments:
     type: string
     label: above
     settings:
       link_to_entity: false
-    region: content
-    weight: 10
     third_party_settings: {  }
-  ip_address:
-    label: inline
-    type: string
-    weight: 8
+    weight: 10
     region: content
+  ip_address:
+    type: string
+    label: inline
     settings:
       link_to_entity: false
     third_party_settings: {  }
+    weight: 8
+    region: content
   mail:
-    label: inline
     type: email_mailto
+    label: inline
+    settings: {  }
+    third_party_settings: {  }
     weight: 7
     region: content
-    settings: {  }
-    third_party_settings: {  }
   order_items:
     type: commerce_order_item_table
-    weight: 1
-    region: content
     label: hidden
-    settings: {  }
+    settings:
+      view: commerce_order_item_table_admin
+      show_add_items_link: true
     third_party_settings: {  }
-  placed:
-    label: inline
-    type: timestamp
-    weight: 4
+    weight: 13
     region: content
+  placed:
+    type: timestamp
+    label: inline
     settings:
       date_format: short
       custom_date_format: ''
       timezone: ''
     third_party_settings: {  }
+    weight: 4
+    region: content
   state:
-    label: hidden
     type: state_transition_form
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
     weight: 9
     region: content
-    settings: {  }
-    third_party_settings: {  }
-  total_price:
-    label: hidden
-    type: commerce_order_total_summary
-    weight: 2
-    region: content
-    settings: {  }
-    third_party_settings: {  }
   uid:
-    label: inline
     type: author
+    label: inline
+    settings: {  }
+    third_party_settings: {  }
     weight: 6
     region: content
-    settings: {  }
-    third_party_settings: {  }
 hidden:
-  billing_profile: true
   billing_schedule: true
   commerce_recurring_queued: true
   order_number: true
+  search_api_excerpt: true
   store_id: true
   total_paid: true
+  total_price: true

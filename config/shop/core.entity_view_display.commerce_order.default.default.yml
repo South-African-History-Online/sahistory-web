@@ -6,6 +6,7 @@ dependencies:
     - commerce_order.commerce_order_type.default
   module:
     - commerce_order
+    - commerce_payment
     - commerce_price
     - state_machine
     - user
@@ -18,89 +19,119 @@ mode: default
 content:
   balance:
     type: commerce_price_default
-    weight: 9
-    region: content
     label: inline
     settings:
       strip_trailing_zeroes: false
       currency_display: symbol
     third_party_settings: {  }
+    weight: 9
+    region: content
+  billing_profile:
+    type: commerce_billing_information
+    label: hidden
+    settings:
+      profile_view_mode: admin
+      show_payment_information: true
+    third_party_settings: {  }
+    weight: 5
+    region: content
   changed:
     type: timestamp
-    weight: 4
     label: inline
     settings:
       date_format: short
       custom_date_format: ''
       timezone: ''
     third_party_settings: {  }
+    weight: 4
     region: content
   completed:
-    label: inline
     type: timestamp
-    weight: 2
+    label: inline
     settings:
       date_format: short
       custom_date_format: ''
       timezone: ''
     third_party_settings: {  }
+    weight: 2
     region: content
   coupons:
-    label: above
     type: entity_reference_label
+    label: above
     settings:
       link: true
-    region: content
-    weight: 11
     third_party_settings: {  }
+    weight: 11
+    region: content
+  created:
+    type: timestamp
+    label: inline
+    settings:
+      date_format: short
+      custom_date_format: ''
+      timezone: ''
+      tooltip:
+        date_format: long
+        custom_date_format: ''
+      time_diff:
+        enabled: false
+        future_format: '@interval hence'
+        past_format: '@interval ago'
+        granularity: 2
+        refresh: 60
+    third_party_settings: {  }
+    weight: 0
+    region: content
   customer_comments:
     type: string
     label: above
     settings:
       link_to_entity: false
-    region: content
-    weight: 10
     third_party_settings: {  }
+    weight: 10
+    region: content
   ip_address:
-    label: inline
     type: string
-    weight: 7
+    label: inline
     settings:
       link_to_entity: false
     third_party_settings: {  }
+    weight: 7
     region: content
   mail:
-    label: inline
     type: basic_string
-    weight: 6
+    label: inline
     settings: {  }
     third_party_settings: {  }
+    weight: 6
     region: content
   order_items:
     type: commerce_order_item_table
-    weight: 0
-    settings: {  }
-    third_party_settings: {  }
     label: hidden
+    settings:
+      view: commerce_order_item_table_admin
+      show_add_items_link: true
+    third_party_settings: {  }
+    weight: 13
     region: content
   placed:
-    label: inline
     type: timestamp
-    weight: 3
+    label: inline
     settings:
       date_format: short
       custom_date_format: ''
       timezone: ''
     third_party_settings: {  }
+    weight: 3
     region: content
   state:
-    label: hidden
     type: state_transition_form
-    weight: 8
+    label: hidden
     settings:
       require_confirmation: true
       use_modal: true
     third_party_settings: {  }
+    weight: 8
     region: content
   store_id:
     type: entity_reference_label
@@ -110,21 +141,15 @@ content:
     third_party_settings: {  }
     weight: 5
     region: content
-  total_price:
-    type: commerce_order_total_summary
-    weight: 1
-    settings: {  }
-    third_party_settings: {  }
-    label: hidden
-    region: content
   uid:
-    label: inline
     type: author
-    weight: 5
+    label: inline
     settings: {  }
     third_party_settings: {  }
+    weight: 5
     region: content
 hidden:
-  billing_profile: true
   order_number: true
+  search_api_excerpt: true
   total_paid: true
+  total_price: true
