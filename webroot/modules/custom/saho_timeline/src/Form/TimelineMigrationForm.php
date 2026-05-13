@@ -94,8 +94,8 @@ class TimelineMigrationForm extends FormBase {
     $form['info'] = [
       '#type' => 'markup',
       '#markup' => '<div class="messages messages--status">' .
-      $this->t('This tool helps migrate timeline articles to the event content type. It will identify articles that appear to be timeline-related based on their titles, tags, and content.') .
-      '</div>',
+        $this->t('This tool helps migrate timeline articles to the event content type. It will identify articles that appear to be timeline-related based on their titles, tags, and content.') .
+        '</div>',
     ];
 
     $form['identification'] = [
@@ -214,10 +214,10 @@ class TimelineMigrationForm extends FormBase {
     $form['history']['stats'] = [
       '#type' => 'markup',
       '#markup' => '<ul>' .
-      '<li>' . $this->t('Total articles migrated: @count', ['@count' => $stats['total']]) . '</li>' .
-      '<li>' . $this->t('Last migration: @date', ['@date' => $stats['last_migration']]) . '</li>' .
-      '<li>' . $this->t('Failed migrations: @count', ['@count' => $stats['failed']]) . '</li>' .
-      '</ul>',
+        '<li>' . $this->t('Total articles migrated: @count', ['@count' => $stats['total']]) . '</li>' .
+        '<li>' . $this->t('Last migration: @date', ['@date' => $stats['last_migration']]) . '</li>' .
+        '<li>' . $this->t('Failed migrations: @count', ['@count' => $stats['failed']]) . '</li>' .
+        '</ul>',
     ];
 
     $form['history']['clear_history'] = [

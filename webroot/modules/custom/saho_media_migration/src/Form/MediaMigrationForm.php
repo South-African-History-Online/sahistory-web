@@ -300,7 +300,8 @@ class MediaMigrationForm extends FormBase {
     }
     catch (\Exception $e) {
       $this->messenger()->addError($this->t('CSV processing failed: @error', ['@error' => $e->getMessage()]));
-    } finally {
+    }
+    finally {
       // $file_uri is always defined at this point, no need for isset()
       $this->fileSystem->delete($file_uri);
     }
