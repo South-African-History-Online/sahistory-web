@@ -33,6 +33,37 @@
 .cart-block--offcanvas-contents__links {
   a {
     @extend .btn, .btn-outline-white, .w-100;
+
+    // SAHO 2026 polish: pill shape, emphasis-curve motion, gold focus ring.
+    border-radius: 9999px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    border-width: 2px;
+    padding: 0.65rem 1.5rem;
+    transition:
+      background-color 180ms var(--saho-motion-emphasis, ease),
+      color 180ms var(--saho-motion-emphasis, ease),
+      transform 180ms var(--saho-motion-emphasis, ease),
+      box-shadow 180ms var(--saho-motion-emphasis, ease);
+
+    &:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px rgba(255, 255, 255, 0.18);
+    }
+
+    &:focus-visible {
+      outline: none;
+      box-shadow: var(--saho-ring-focus, 0 0 0 3px rgba(184, 138, 46, 0.45));
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      transition: background-color 120ms ease, color 120ms ease;
+
+      &:hover {
+        transform: none;
+        box-shadow: none;
+      }
+    }
   }
 }
 

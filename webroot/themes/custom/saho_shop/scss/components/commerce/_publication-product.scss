@@ -104,18 +104,64 @@
         }
       }
 
-      // Add to cart button
+      // Add to cart button - SAHO heritage red pill matching the champion
+      // product page treatment. Override Bootstrap btn-success defaults
+      // (teal-green) that ship with .btn .btn-success on the submit input.
       .commerce-order-item-add-to-cart-form {
-        .form-submit {
+        .form-submit,
+        .button--add-to-cart {
           width: 100%;
-          padding: 0.75rem 1.5rem;
+          padding: 0.85rem 2rem;
           font-size: 1rem;
-          font-weight: 600;
+          font-weight: 700;
           min-height: 48px;
+          letter-spacing: 0.02em;
+          background-color: #900;
+          background-image: none;
+          background-repeat: no-repeat;
+          background-size: auto;
+          border: 2px solid #900;
+          border-radius: 9999px;
+          color: #fff;
+          cursor: pointer;
+          transition:
+            background-color 180ms var(--saho-motion-emphasis, ease),
+            border-color 180ms var(--saho-motion-emphasis, ease),
+            transform 180ms var(--saho-motion-emphasis, ease),
+            box-shadow 180ms var(--saho-motion-emphasis, ease);
+
+          &:hover, &:focus {
+            background-color: #8b0000;
+            background-image: none;
+            border-color: #8b0000;
+            color: #fff;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 18px rgba(153, 0, 0, 0.28);
+          }
+
+          &:focus-visible {
+            outline: none;
+            box-shadow:
+              0 6px 18px rgba(153, 0, 0, 0.28),
+              var(--saho-ring-focus, 0 0 0 3px rgba(184, 138, 46, 0.45));
+          }
+
+          &:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 8px rgba(153, 0, 0, 0.32);
+          }
+
+          @media (prefers-reduced-motion: reduce) {
+            transition: background-color 120ms ease, border-color 120ms ease;
+
+            &:hover, &:focus {
+              transform: none;
+            }
+          }
 
           @media (width >= 768px) {
             width: auto;
-            min-width: 200px;
+            min-width: 220px;
           }
         }
 
@@ -123,10 +169,26 @@
           label {
             font-weight: 600;
             margin-bottom: 0.5rem;
+            color: #1e293b;
           }
 
           input {
             max-width: 100px;
+            padding: 0.55rem 0.75rem;
+            border: 1.5px solid #d9d9d9;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            text-align: center;
+            transition:
+              border-color 150ms ease,
+              box-shadow 150ms ease;
+
+            &:focus, &:focus-visible {
+              outline: none;
+              border-color: #b88a2e;
+              box-shadow: var(--saho-ring-focus, 0 0 0 3px rgba(184, 138, 46, 0.45));
+            }
           }
         }
       }

@@ -148,11 +148,57 @@
 
 // Champion product page (default type, full view)
 .product-champion-page {
-  .product-champion-page__back {
-    font-size: 0.875rem;
-    color: #475569;
 
-    &:hover { color: #900; }
+  // Back-to-tiers link. Promoted from a plain coloured link to a small
+  // pill with a gold underline animation on hover so it reads as a
+  // discrete return action, not stray inline text. Visible focus ring
+  // for keyboard users via the shared --saho-ring-focus token.
+  .product-champion-page__back {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #475569;
+    padding: 0.35rem 0.6rem;
+    border-radius: 9999px;
+    text-decoration: none;
+    transition:
+      color 180ms var(--saho-motion-emphasis, ease),
+      background-color 180ms var(--saho-motion-emphasis, ease),
+      box-shadow 180ms var(--saho-motion-emphasis, ease);
+
+    svg {
+      transition: transform 180ms var(--saho-motion-emphasis, ease);
+    }
+
+    &:hover, &:focus-visible {
+      color: #900;
+      background-color: rgba(184, 138, 46, 0.08);
+      text-decoration: none;
+
+      svg {
+        transform: translateX(-2px);
+      }
+    }
+
+    &:focus-visible {
+      outline: none;
+      box-shadow: var(--saho-ring-focus, 0 0 0 3px rgba(184, 138, 46, 0.45));
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      transition: none;
+
+      svg {
+        transition: none;
+      }
+
+      &:hover svg, &:focus-visible svg {
+        transform: none;
+      }
+    }
   }
 
   .product-champion-page__title {
@@ -205,20 +251,48 @@
     background-image: none;
     background-repeat: no-repeat;
     background-size: auto;
-    border-color: #900;
+    border: 2px solid #900;
     color: #fff;
     font-weight: 700;
-    padding: 0.85rem 2.5rem;
+    padding: 0.95rem 2.5rem;
     font-size: 1.05rem;
     letter-spacing: 0.02em;
     width: 100%;
-    border-radius: 6px;
-    transition: background-color 0.2s ease, border-color 0.2s ease;
+    border-radius: 9999px;
+    cursor: pointer;
+    transition:
+      background-color 180ms var(--saho-motion-emphasis, ease),
+      border-color 180ms var(--saho-motion-emphasis, ease),
+      transform 180ms var(--saho-motion-emphasis, ease),
+      box-shadow 180ms var(--saho-motion-emphasis, ease);
 
     &:hover, &:focus {
       background-color: #8b0000;
       background-image: none;
       border-color: #8b0000;
+      color: #fff;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(153, 0, 0, 0.28);
+    }
+
+    &:focus-visible {
+      outline: none;
+      box-shadow:
+        0 6px 18px rgba(153, 0, 0, 0.28),
+        var(--saho-ring-focus, 0 0 0 3px rgba(184, 138, 46, 0.45));
+    }
+
+    &:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 8px rgba(153, 0, 0, 0.32);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      transition: background-color 120ms ease, border-color 120ms ease;
+
+      &:hover, &:focus {
+        transform: none;
+      }
     }
   }
 }
