@@ -47,11 +47,19 @@
 
 </div>
 
-<p class="tier-grid__custom-amount mt-3 text-center small text-muted">
-  {{ 'Or'|t }}
-  <a href="https://sahistory.org.za/donate" class="tier-grid__custom-amount-link">{{ 'choose your own amount'|t }}</a>
-  {{ 'via the main donate page.'|t }}
-</p>
+{# Custom-amount escape hatch promoted to a real button. The donate page
+   on the main site lets visitors enter any once-off or custom recurring
+   amount via PayFast or PayPal, so we point at it as a peer option to
+   the three preset tiers above. #}
+<div class="tier-grid__custom-amount mt-4 text-center">
+  <p class="tier-grid__custom-amount-lead">
+    {{ 'Prefer a different amount or a once-off donation?'|t }}
+  </p>
+  <a href="https://sahistory.org.za/donate"
+     class="support-btn support-btn--outline tier-grid__custom-amount-btn">
+    {{ 'Choose your own amount'|t }} →
+  </a>
+</div>
 
 {% if show_link %}
   <div class="support-tiers-preview__link">

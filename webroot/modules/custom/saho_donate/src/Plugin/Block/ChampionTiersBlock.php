@@ -27,6 +27,11 @@ class ChampionTiersBlock extends BlockBase {
       '#monthly_url' => $shop . '/product/saho-champion-monthly-support',
       '#annual_url' => $shop . '/product/saho-champion-annual-support',
       '#patron_url' => $shop . '/champion#patron',
+      // Custom-amount escape hatch points back at the main site donate page.
+      // Defaults to the prod URL but is overridable via settings.php so a
+      // local DDEV env can point at sahistory-web.ddev.site instead of
+      // exiting to the real prod site during testing.
+      '#donate_url' => Settings::get('saho_main_donate_url', 'https://sahistory.org.za/donate'),
       '#attached' => [
         'library' => ['saho_donate/donate-page'],
       ],
