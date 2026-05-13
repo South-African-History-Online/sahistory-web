@@ -6,6 +6,7 @@ use Drupal\Core\Block\BlockManagerInterface;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Site\Settings;
 use Drupal\saho_donate\Form\DonateForm;
+use Drupal\saho_donate\PayfastCredentials;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
@@ -141,10 +142,13 @@ class DonateController extends ControllerBase {
     $data = $request->request->all();
 
     // Require passphrase to be configured - reject all ITNs otherwise.
-    $passphrase = Settings::get('payfast_passphrase', '');
+    // PayfastCredentials::get() looks in $settings[] first, then falls
+    // back to the commerce_payment_gateway.payfast config entity so the
+    // admin UI can drive credentials without touching settings.php.
+    $passphrase = PayfastCredentials::get()['passphrase'];
     if ($passphrase === '') {
       $this->getLogger('saho_donate')->error(
-        'PayFast ITN: payfast_passphrase is not set in settings.php - all ITN notifications rejected.'
+        'PayFast ITN: passphrase not set in settings.php or in the commerce_payfast gateway admin form - all ITN notifications rejected.'
       );
       return new Response('Configuration error', 500);
     }
