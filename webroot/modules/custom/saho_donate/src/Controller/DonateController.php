@@ -8,6 +8,7 @@ use Drupal\Core\Site\Settings;
 use Drupal\saho_donate\Form\DonateForm;
 use Drupal\saho_donate\PayfastCredentials;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -42,10 +43,27 @@ class DonateController extends ControllerBase {
   /**
    * Renders the /donate page: PayFast form + alternative pathways below.
    *
-   * @return array
-   *   A render array.
+   * Site-level override: if $settings['saho_donate_redirect_url'] is set
+   * (e.g. on the multisite main site where commerce_payfast credentials
+   * don't reach), the controller short-circuits with a 302 to that URL.
+   * Set in settings.php like:
+   *
+   *   $settings['saho_donate_redirect_url'] = 'https://shop.sahistory.org.za/donate';
+   *
+   * Leave unset to render the in-page PayFast form (existing behaviour).
+   *
+   * @return array|\Symfony\Component\HttpFoundation\RedirectResponse
+   *   Render array, or a 302 redirect to the configured external donate
+   *   page.
    */
-  public function page(): array {
+  public function page(): array|RedirectResponse {
+    $redirect_url = (string) Settings::get('saho_donate_redirect_url', '');
+    if ($redirect_url !== '') {
+      // 302 so search engines don't permanently cache the indirection if
+      // the operator later flips back to the in-page form.
+      return new RedirectResponse($redirect_url, 302);
+    }
+
     $pathways_block = [];
     if ($this->blockManager->hasDefinition('saho_donate_pathways')) {
       $block = $this->blockManager->createInstance('saho_donate_pathways', []);
