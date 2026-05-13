@@ -320,21 +320,74 @@
     flex-direction: column;
     align-items: center;
     padding: 1.5rem 1rem;
+    text-align: center;
   }
 
   &__number {
-    font-size: clamp(2rem, 4vw, 2.75rem);
+    font-size: clamp(2.25rem, 5vw, 3.25rem);
     font-weight: 800;
     color: $cp-primary;
     line-height: 1;
-    margin-bottom: 0.5rem;
+    letter-spacing: -0.01em;
+    margin-bottom: 0.75rem;
+    // Tabular numerals so the digits hold their column while animating
+    // and don't shift width on each frame.
+    font-variant-numeric: tabular-nums;
+  }
+
+  // Small gold rule between number and label - SAHO accent across hero,
+  // publications-hero and now here for visual cohesion.
+  &__rule {
+    display: block;
+    width: 36px;
+    height: 2px;
+    background: $cp-accent;
+    border-radius: 2px;
+    margin: 0 auto 0.75rem;
+    opacity: 0.85;
   }
 
   &__label {
-    font-size: 0.9rem;
-    color: $cp-text-muted;
-    text-align: center;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: $cp-text;
+    line-height: 1.45;
+    max-width: 26ch;
+  }
+
+  // Breakdown row that backs up the number with the real bucket counts.
+  // Inline with thin separators on desktop, wraps gracefully on mobile.
+  &__breakdown {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: baseline;
+    gap: 0.35rem 0.5rem;
+    margin-top: 0.75rem;
+    font-size: 0.8rem;
     line-height: 1.4;
+    color: $cp-text-muted;
+
+    .support-impact__bucket {
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .support-impact__dot {
+      color: $cp-accent;
+      font-weight: 700;
+      user-select: none;
+    }
+  }
+
+  // Slightly emphasised treatment for the data-driven stat so the number
+  // and its supporting evidence read as one block.
+  &__stat--data {
+    .support-impact__number {
+      // Subtle weight bump and a tiny down-shift so the breakdown line
+      // sits close to it as a unit.
+      font-weight: 900;
+    }
   }
 
   &__text {
@@ -344,6 +397,18 @@
     font-size: 1rem;
     line-height: 1.7;
     color: $cp-text-muted;
+  }
+
+  // Mobile: breakdown line stacks vertically when it would wrap awkwardly.
+  @media (max-width: 480px) {
+    &__breakdown {
+      flex-direction: column;
+      gap: 0.15rem;
+
+      .support-impact__dot {
+        display: none;
+      }
+    }
   }
 }
 

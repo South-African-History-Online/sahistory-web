@@ -291,24 +291,51 @@
         <h2 id="impact-heading" class="support-section-title">{{ 'Why Your Support Matters'|t }}</h2>
 
         <div class="row g-0 justify-content-center">
+
+          {# Stat 1: Free #}
           <div class="col-sm-4 text-center">
             <div class="support-impact__stat">
-              <span class="support-impact__number">Free</span>
+              <span class="support-impact__number">{{ 'Free'|t }}</span>
+              <span class="support-impact__rule" aria-hidden="true"></span>
               <span class="support-impact__label">{{ 'Always free to access - no paywalls, ever'|t }}</span>
             </div>
           </div>
+
+          {# Stat 2: data-driven corpus stat. Server-rendered value is the
+             final state so no-JS / reader-mode users see the right number.
+             Drupal.behaviors.sahoShopImpactStats animates from 0 to target
+             on scroll-in via IntersectionObserver, gated by
+             prefers-reduced-motion. The breakdown line backs the number
+             with the real DB buckets so it never reads arbitrary. #}
           <div class="col-sm-4 text-center">
-            <div class="support-impact__stat">
-              <span class="support-impact__number">40 000+</span>
+            <div class="support-impact__stat support-impact__stat--data"
+                 role="group"
+                 aria-label="{{ '60,000 plus articles, biographies and historical records, including 30,000 archive items, 17,000 historical events, and 10,000 biographies'|t }}">
+              <span class="support-impact__number"
+                    data-count-target="60000"
+                    data-count-suffix="+"
+                    aria-hidden="true">60 000+</span>
+              <span class="support-impact__rule" aria-hidden="true"></span>
               <span class="support-impact__label">{{ 'Articles, biographies &amp; historical records'|t }}</span>
+              <span class="support-impact__breakdown" aria-hidden="true">
+                <span class="support-impact__bucket">{{ '30 000 archives'|t }}</span>
+                <span class="support-impact__dot">·</span>
+                <span class="support-impact__bucket">{{ '17 000 events'|t }}</span>
+                <span class="support-impact__dot">·</span>
+                <span class="support-impact__bucket">{{ '10 000 biographies'|t }}</span>
+              </span>
             </div>
           </div>
+
+          {# Stat 3: longevity #}
           <div class="col-sm-4 text-center">
             <div class="support-impact__stat">
-              <span class="support-impact__number">25+ yrs</span>
+              <span class="support-impact__number">{{ '25+ yrs'|t }}</span>
+              <span class="support-impact__rule" aria-hidden="true"></span>
               <span class="support-impact__label">{{ 'Documenting South African history online'|t }}</span>
             </div>
           </div>
+
         </div>
 
         <p class="support-impact__text">
