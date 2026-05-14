@@ -4,6 +4,7 @@ namespace Drupal\saho_donate\Controller;
 
 use Drupal\Core\Block\BlockManagerInterface;
 use Drupal\Core\Controller\ControllerBase;
+use Drupal\Core\Routing\TrustedRedirectResponse;
 use Drupal\Core\Site\Settings;
 use Drupal\saho_donate\Form\DonateForm;
 use Drupal\saho_donate\PayfastCredentials;
@@ -43,25 +44,46 @@ class DonateController extends ControllerBase {
   /**
    * Renders the /donate page: PayFast form + alternative pathways below.
    *
-   * Site-level override: if $settings['saho_donate_redirect_url'] is set
-   * (e.g. on the multisite main site where commerce_payfast credentials
-   * don't reach), the controller short-circuits with a 302 to that URL.
-   * Set in settings.php like:
+   * Multisite routing: the donation form is served from the shop site
+   * (the SAHO multisite member with Drupal Commerce installed). Every
+   * other site - i.e. the main content site - redirects /donate visitors
+   * to the shop.
    *
-   *   $settings['saho_donate_redirect_url'] = 'https://shop.sahistory.org.za/donate';
+   * The shop URL is resolved entirely in code so the redirect works on a
+   * fresh deploy with no settings.php entry (settings.php is not version
+   * controlled). An optional $settings['saho_donate_redirect_url']
+   * override is still honoured for non-standard environments.
    *
-   * Leave unset to render the in-page PayFast form (existing behaviour).
+   * Keying the redirect on the *absence* of the commerce module makes it
+   * self-correcting: the shop never redirects /donate away from itself,
+   * even if that setting leaks into a shared settings include. The host
+   * self-check is a second guard against redirect loops.
    *
    * @return array|\Symfony\Component\HttpFoundation\RedirectResponse
-   *   Render array, or a 302 redirect to the configured external donate
-   *   page.
+   *   Render array, or a 302 redirect to the shop's donate page.
    */
   public function page(): array|RedirectResponse {
-    $redirect_url = (string) Settings::get('saho_donate_redirect_url', '');
-    if ($redirect_url !== '') {
-      // 302 so search engines don't permanently cache the indirection if
-      // the operator later flips back to the in-page form.
-      return new RedirectResponse($redirect_url, 302);
+    // Only a non-commerce site (the main content site) ever redirects.
+    if (!$this->moduleHandler()->moduleExists('commerce')) {
+      // Explicit override wins; otherwise fall back to a code default so
+      // the redirect needs no settings.php entry on deploy.
+      $redirect_url = (string) Settings::get('saho_donate_redirect_url', '');
+      if ($redirect_url === '') {
+        $redirect_url = getenv('IS_DDEV_PROJECT') === 'true'
+          ? 'https://shop.ddev.site/donate'
+          : 'https://shop.sahistory.org.za/donate';
+      }
+      $current_host = (string) $this->requestStack->getCurrentRequest()->getHost();
+      $target_host = (string) (parse_url($redirect_url, PHP_URL_HOST) ?: '');
+      // Never redirect to our own host - that would just loop.
+      if ($target_host !== '' && strcasecmp($target_host, $current_host) !== 0) {
+        // TrustedRedirectResponse (not a plain RedirectResponse) is
+        // required: the shop is a different domain, and Drupal core
+        // blocks redirects to external URLs otherwise. 302 (not 301) so
+        // the indirection isn't permanently cached if the donate form is
+        // later moved back onto this site.
+        return new TrustedRedirectResponse($redirect_url, 302);
+      }
     }
 
     $pathways_block = [];
