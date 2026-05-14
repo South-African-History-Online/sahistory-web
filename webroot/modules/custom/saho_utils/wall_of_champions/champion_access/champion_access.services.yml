@@ -2,14 +2,13 @@ services:
   champion_access.role_service:
     class: Drupal\champion_access\Service\ChampionRoleService
     arguments:
-      - '@database'
+      - '@entity_type.manager'
     tags: []
 
-  champion_access.subscription_subscriber:
-    class: Drupal\champion_access\EventSubscriber\SubscriptionStateSubscriber
+  champion_access.order_subscriber:
+    class: Drupal\champion_access\EventSubscriber\ChampionOrderSubscriber
     arguments:
       - '@champion_access.role_service'
       - '@logger.factory'
-      - '@?saho_payfast.api'
     tags:
       - { name: event_subscriber }
