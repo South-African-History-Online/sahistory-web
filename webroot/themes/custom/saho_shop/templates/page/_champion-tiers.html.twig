@@ -6,6 +6,10 @@
  * Variables:
  * - show_link: boolean, show "Full membership benefits" link (default true).
  *              Set to false on the champion page where we are already there.
+ * - champion_prices: live tier prices from saho_shop_preprocess_page().
+ *   Keyed by 'monthly', 'annual', 'patron'; each has 'formatted', and
+ *   'annual' also has 'monthly_equivalent'. Falls back to the hard-coded
+ *   defaults below if not provided.
  */
 #}
 {% set show_link = show_link ?? true %}
@@ -16,7 +20,7 @@
     <p class="tier-item__label">{{ 'Monthly'|t }}</p>
     <div class="tier-item__price">
       <span class="tier-item__currency">R</span>
-      <span class="tier-item__amount">100</span>
+      <span class="tier-item__amount">{{ champion_prices.monthly.formatted|default('100') }}</span>
       <span class="tier-item__period">/{{ 'month'|t }}</span>
     </div>
     <p class="tier-item__note">{{ 'Cancel anytime'|t }}</p>
@@ -27,7 +31,7 @@
     <p class="tier-item__label">{{ 'Annual'|t }}</p>
     <div class="tier-item__price">
       <span class="tier-item__currency">R</span>
-      <span class="tier-item__amount">1 000</span>
+      <span class="tier-item__amount">{{ champion_prices.annual.formatted|default('1 000') }}</span>
       <span class="tier-item__period">/{{ 'year'|t }}</span>
     </div>
     <p class="tier-item__perk">
@@ -35,7 +39,7 @@
       <span class="tier-item__perk-label">{{ 'On signup'|t }}</span>
       <span class="tier-item__perk-text">{{ 'Free Lives of Courage publication'|t }}</span>
     </p>
-    <p class="tier-item__note">{{ 'Equivalent to about R83 per month'|t }}</p>
+    <p class="tier-item__note">{{ 'Equivalent to about R@amount per month'|t({'@amount': champion_prices.annual.monthly_equivalent|default('83')}) }}</p>
     <a href="/product/saho-champion-annual-support" class="tier-item__cta">{{ 'Support annually'|t }}</a>
   </div>
 
@@ -43,7 +47,7 @@
     <p class="tier-item__label">{{ 'Patron Circle'|t }}</p>
     <div class="tier-item__price">
       <span class="tier-item__currency">R</span>
-      <span class="tier-item__amount">2 500</span>
+      <span class="tier-item__amount">{{ champion_prices.patron.formatted|default('2 500') }}</span>
       <span class="tier-item__period">/{{ 'year'|t }}</span>
     </div>
     <p class="tier-item__perk">

@@ -22,11 +22,26 @@ class ChampionTiersBlock extends BlockBase {
   public function build(): array {
     $shop = rtrim(Settings::get('saho_shop_url', 'https://shop.sahistory.org.za'), '/');
 
+    // The main site has no commerce data, so the champion prices cannot be
+    // read from product variations here (the shop theme does that). They
+    // come from settings.php instead - overridable without a code deploy.
+    // Set $settings['saho_champion_prices'] to an array keyed by 'monthly',
+    // 'annual' and 'patron' to override; otherwise the shop fallbacks
+    // below are used. Keep them aligned with the shop's CHAMPION-* SKUs.
+    $prices = Settings::get('saho_champion_prices', []) + [
+      'monthly' => '100',
+      'annual' => '1,000',
+      'patron' => '2,500',
+    ];
+
     return [
       '#theme' => 'saho_champion_tiers_block',
       '#monthly_url' => $shop . '/product/saho-champion-monthly-support',
       '#annual_url' => $shop . '/product/saho-champion-annual-support',
-      '#patron_url' => $shop . '/champion#patron',
+      '#patron_url' => $shop . '/product/saho-champion-patron-support',
+      '#monthly_price' => $prices['monthly'],
+      '#annual_price' => $prices['annual'],
+      '#patron_price' => $prices['patron'],
       // Custom-amount escape hatch points back at the main site donate page.
       // Defaults to the prod URL but is overridable via settings.php so a
       // local DDEV env can point at sahistory-web.ddev.site instead of

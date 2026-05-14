@@ -10,6 +10,7 @@
  */
 
 use Drupal\Component\Utility\Html;
+use Drupal\Core\Cache\Cache;
 use Drupal\node\NodeInterface;
 use Drupal\commerce_product\Entity\ProductInterface;
 use Drupal\taxonomy\Entity\Term;
@@ -31,6 +32,24 @@ function saho_shop_preprocess_page(&$variables) {
   // at sahistory-web.ddev.site instead of the real prod site.
   $main_url = Settings::get('saho_main_url', 'https://sahistory.org.za');
   $variables['main_site_url'] = rtrim($main_url, '/');
+
+  // Champion pricing: the front page and the /champion landing page both
+  // render the tier grid (_champion-tiers.html.twig). Feed it the live
+  // variation prices so the displayed amounts can never drift from what
+  // checkout actually charges - that drift is what sent a stale amount
+  // to the payment gateway. /champion is a node served by
+  // entity.node.canonical, so it is matched on its path alias rather
+  // than a route name.
+  $current_path = \Drupal::service('path.current')->getPath();
+  $current_alias = \Drupal::service('path_alias.manager')->getAliasByPath($current_path);
+  if (\Drupal::service('path.matcher')->isFrontPage() || $current_alias === '/champion') {
+    $champion_prices = _saho_shop_get_champion_prices();
+    $variables['champion_prices'] = $champion_prices['prices'];
+    $variables['#cache']['tags'] = Cache::mergeTags(
+      $variables['#cache']['tags'] ?? [],
+      $champion_prices['cache_tags']
+    );
+  }
 
   // Main container
   if (theme_get_setting('main_container_class')) {
@@ -402,6 +421,76 @@ function _saho_shop_get_latest_publications(int $count): array {
   }
 
   return $publications;
+}
+
+/**
+ * Load the live champion membership prices for the tier grid.
+ *
+ * The Monthly, Annual and Patron tier amounts are shown on the front page
+ * and the /champion landing page. Reading them from the actual product
+ * variations keeps the displayed price in sync with what PayFast is asked
+ * to charge - hard-coded template prices had drifted from the shop
+ * database, and that mismatch is what reached the payment gateway.
+ *
+ * @return array
+ *   An array with two keys:
+ *   - prices: keyed by 'monthly', 'annual', 'patron'; each a sub-array of
+ *     'number' (int rand amount) and 'formatted' (space-grouped string).
+ *     The 'annual' entry also carries 'monthly_equivalent'.
+ *   - cache_tags: cache tags to bubble onto the page render array so a
+ *     price edit invalidates the cached page.
+ */
+function _saho_shop_get_champion_prices(): array {
+  // Sensible fallbacks so the tier grid still renders if a variation is
+  // missing or the query fails for any reason.
+  $numbers = [
+    'monthly' => 100,
+    'annual' => 1000,
+    'patron' => 2500,
+  ];
+  $sku_map = [
+    'CHAMPION-MONTHLY' => 'monthly',
+    'CHAMPION-ANNUAL' => 'annual',
+    'CHAMPION-PATRON' => 'patron',
+  ];
+  $cache_tags = ['commerce_product_variation_list'];
+
+  try {
+    $variations = \Drupal::entityTypeManager()
+      ->getStorage('commerce_product_variation')
+      ->loadByProperties(['sku' => array_keys($sku_map)]);
+    foreach ($variations as $variation) {
+      $key = $sku_map[$variation->getSku()] ?? NULL;
+      $price = $variation->getPrice();
+      if ($key && $price) {
+        $numbers[$key] = (int) round((float) $price->getNumber());
+        $cache_tags = Cache::mergeTags($cache_tags, $variation->getCacheTags());
+      }
+    }
+  }
+  catch (\Exception $e) {
+    // Commerce missing or query failed - fall back to the defaults above.
+  }
+
+  $prices = [];
+  foreach ($numbers as $key => $number) {
+    $prices[$key] = [
+      'number' => $number,
+      'formatted' => number_format($number, 0, '.', ' '),
+    ];
+  }
+  // The annual tier note shows an "about R<x> per month" equivalent.
+  $prices['annual']['monthly_equivalent'] = number_format(
+    (int) round($numbers['annual'] / 12),
+    0,
+    '.',
+    ' '
+  );
+
+  return [
+    'prices' => $prices,
+    'cache_tags' => $cache_tags,
+  ];
 }
 
 /**
