@@ -15,6 +15,7 @@ use Drupal\commerce_product\Entity\ProductInterface;
 use Drupal\taxonomy\Entity\Term;
 use Drupal\layout_builder\Entity\LayoutEntityDisplayInterface;
 use Drupal\Core\Entity\ContentEntityInterface;
+use Drupal\Core\Site\Settings;
 
 /**
  * Implements hook_preprocess_HOOK() for page templates.
@@ -24,6 +25,12 @@ function saho_shop_preprocess_page(&$variables) {
   if (\Drupal::service('path.matcher')->isFrontPage()) {
     $variables['latest_publications'] = _saho_shop_get_latest_publications(3);
   }
+
+  // Main archive site URL for cross-site footer links. Overridable via
+  // settings.php ($settings['saho_main_url']) so a local DDEV env can point
+  // at sahistory-web.ddev.site instead of the real prod site.
+  $main_url = Settings::get('saho_main_url', 'https://sahistory.org.za');
+  $variables['main_site_url'] = rtrim($main_url, '/');
 
   // Main container
   if (theme_get_setting('main_container_class')) {

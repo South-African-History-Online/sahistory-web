@@ -30,8 +30,11 @@ class ChampionTiersBlock extends BlockBase {
       // Custom-amount escape hatch points back at the main site donate page.
       // Defaults to the prod URL but is overridable via settings.php so a
       // local DDEV env can point at sahistory-web.ddev.site instead of
-      // exiting to the real prod site during testing.
-      '#donate_url' => Settings::get('saho_main_donate_url', 'https://sahistory.org.za/donate'),
+      // exiting to the real prod site during testing. The #donate-form
+      // fragment lands the visitor on the donation form with the "Other
+      // amount" field selected and focused (see saho_donate/js/donate.js);
+      // a URL fragment survives the main-site -> shop 302 redirect intact.
+      '#donate_url' => Settings::get('saho_main_donate_url', 'https://sahistory.org.za/donate') . '#donate-form',
       '#attached' => [
         'library' => ['saho_donate/donate-page'],
       ],
