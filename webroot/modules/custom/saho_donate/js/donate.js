@@ -161,4 +161,37 @@
     }
   };
 
+  /**
+   * Deep-link into the custom-amount field.
+   *
+   * When /donate is opened with the #donate-form fragment - e.g. from a
+   * "Choose your own amount" button - select the "Other amount" preset and
+   * focus the custom-amount input so the visitor lands ready to type.
+   * Setting `checked` covers the case where Drupal's states.js attaches
+   * after this behaviour; dispatching `change` covers the reverse ordering.
+   */
+  Drupal.behaviors.sahoDonateDeepLink = {
+    attach: function (context) {
+      if (window.location.hash !== '#donate-form') {
+        return;
+      }
+      once('saho-donate-deeplink', '#donate-form', context).forEach(function (card) {
+        var otherRadio = card.querySelector('input[name="preset"][value="0"]');
+        var customInput = card.querySelector('.saho-donate-custom-amount');
+        if (otherRadio && !otherRadio.checked) {
+          otherRadio.checked = true;
+          otherRadio.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+        // Defer a tick so states.js finishes revealing the custom-amount
+        // field before we scroll to it and move focus.
+        window.setTimeout(function () {
+          card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          if (customInput) {
+            customInput.focus({ preventScroll: true });
+          }
+        }, 0);
+      });
+    }
+  };
+
 })(Drupal, once);
