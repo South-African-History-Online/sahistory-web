@@ -4,7 +4,7 @@
  * @file
  * Champion Access module.
  *
- * Syncs the 'champion' Drupal role from active Commerce subscriptions
+ * Grants the 'champion' Drupal role from paid champion product orders
  * and gates nodes that have field_champion_access set to TRUE.
  */
 
@@ -46,11 +46,14 @@ function champion_access_node_access(NodeInterface $node, $op, AccountInterface 
 /**
  * Implements hook_user_login().
  *
- * Syncs the champion role on each login in case the subscription
- * status changed since the user last logged in.
+ * Backfill / safety net: grants the champion role on login if the user
+ * has a paid champion order but the order-paid event was missed (or
+ * predates this code). Additive only - never removes the role, and
+ * no-ops for users who already have it. The ChampionOrderSubscriber is
+ * the primary grant path.
  */
 function champion_access_user_login(UserInterface $account) {
   /** @var \Drupal\champion_access\Service\ChampionRoleService $service */
   $service = \Drupal::service('champion_access.role_service');
-  $service->syncRole($account);
+  $service->ensureChampionRole($account);
 }

@@ -2,6 +2,13 @@
 /**
  * @file
  * Block template: Champion tier comparison (for Layout Builder).
+ *
+ * Available variables:
+ * - monthly_url, annual_url, patron_url: shop product page links.
+ * - monthly_price, annual_price, patron_price: display amounts, sourced
+ *   from settings.php via ChampionTiersBlock (the main site has no
+ *   commerce data of its own).
+ * - donate_url: main-site custom-amount donate page.
  */
 #}
 <div class="donate-tiers-block">
@@ -14,7 +21,7 @@
           <h3 class="donate-tier__name">{{ 'Monthly Champion'|t }}</h3>
           <div class="donate-tier__price">
             <span class="donate-tier__currency">ZAR</span>
-            <span class="donate-tier__amount">100</span>
+            <span class="donate-tier__amount">{{ monthly_price|default('100') }}</span>
             <span class="donate-tier__period">/{{ 'month'|t }}</span>
           </div>
         </div>
@@ -39,7 +46,7 @@
           <h3 class="donate-tier__name">{{ 'Annual Champion'|t }}</h3>
           <div class="donate-tier__price">
             <span class="donate-tier__currency">ZAR</span>
-            <span class="donate-tier__amount">1,000</span>
+            <span class="donate-tier__amount">{{ annual_price|default('1,000') }}</span>
             <span class="donate-tier__period">/{{ 'year'|t }}</span>
           </div>
         </div>
@@ -66,7 +73,7 @@
           <h3 class="donate-tier__name">{{ 'Patron Champion'|t }}</h3>
           <div class="donate-tier__price">
             <span class="donate-tier__currency">ZAR</span>
-            <span class="donate-tier__amount">2,500</span>
+            <span class="donate-tier__amount">{{ patron_price|default('2,500') }}</span>
             <span class="donate-tier__period">/{{ 'year'|t }}</span>
           </div>
         </div>

@@ -6,6 +6,10 @@
  * Full-page marketing template for the SAHO Champion membership program.
  * Overrides the default page layout with a dedicated champion landing page.
  *
+ * Variables:
+ * - champion_prices: live tier prices from saho_shop_preprocess_page().
+ *   See _champion-tiers.html.twig for the structure.
+ *
  * @see template_preprocess_page()
  */
 #}
@@ -278,11 +282,11 @@
           <div class="champion-final-cta__actions">
             <a href="/product/saho-champion-monthly-support"
                class="support-btn support-btn--outline-white">
-              Join Monthly - R100/mo
+              Join Monthly - R{{ champion_prices.monthly.formatted|default('100') }}/mo
             </a>
             <a href="/product/saho-champion-annual-support"
                class="support-btn support-btn--gold">
-              Join Annual - R1,000/yr
+              Join Annual - R{{ champion_prices.annual.formatted|default('1 000') }}/yr
             </a>
           </div>
           <p class="champion-final-cta__alt mt-4">
