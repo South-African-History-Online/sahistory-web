@@ -52,7 +52,12 @@ class WallOfChampionsController extends ControllerBase {
       && $this->database->schema()->tableExists('user__field_last_name');
 
     $query = $this->database->select('commerce_subscription', 'cs');
-    $query->join('commerce_product_variation', 'cpv', 'cs.purchased_entity = cpv.variation_id');
+    // commerce_subscription stores its purchased_entity reference in the
+    // purchased_entity__target_id column (Drupal's storage convention for a
+    // single-value entity-reference base field) - there is no plain
+    // purchased_entity column. Joining the wrong column name left the Wall
+    // of Champions empty. ChampionRoleService uses the same correct join.
+    $query->join('commerce_product_variation', 'cpv', 'cs.purchased_entity__target_id = cpv.variation_id');
     $query->join('users_field_data', 'u', 'cs.uid = u.uid');
     $query->join('user__field_champion_wall_opt_in', 'opt', 'u.uid = opt.entity_id');
 

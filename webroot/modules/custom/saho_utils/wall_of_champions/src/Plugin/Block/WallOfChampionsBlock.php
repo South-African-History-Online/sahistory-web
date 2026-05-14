@@ -141,7 +141,9 @@ class WallOfChampionsBlock extends BlockBase implements ContainerFactoryPluginIn
       && $this->database->schema()->tableExists('user__field_last_name');
 
     $query = $this->database->select('commerce_subscription', 'cs');
-    $query->join('commerce_product_variation', 'cpv', 'cs.purchased_entity = cpv.variation_id');
+    // Join on purchased_entity__target_id - see WallOfChampionsController for
+    // the full explanation. A plain cs.purchased_entity column does not exist.
+    $query->join('commerce_product_variation', 'cpv', 'cs.purchased_entity__target_id = cpv.variation_id');
     $query->join('users_field_data', 'u', 'cs.uid = u.uid');
     $query->join('user__field_champion_wall_opt_in', 'opt', 'u.uid = opt.entity_id');
 
@@ -254,7 +256,8 @@ class WallOfChampionsBlock extends BlockBase implements ContainerFactoryPluginIn
 
     // Get total count for context.
     $total_query = $this->database->select('commerce_subscription', 'cs');
-    $total_query->join('commerce_product_variation', 'cpv', 'cs.purchased_entity = cpv.variation_id');
+    // Same purchased_entity__target_id join fix as getChampions() above.
+    $total_query->join('commerce_product_variation', 'cpv', 'cs.purchased_entity__target_id = cpv.variation_id');
     $total_query->join('users_field_data', 'u', 'cs.uid = u.uid');
     $total_query->join('user__field_champion_wall_opt_in', 'opt', 'u.uid = opt.entity_id');
     $total_query->condition('cs.state', 'active');
