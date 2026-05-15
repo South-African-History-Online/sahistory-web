@@ -7,8 +7,14 @@ dependencies:
       - commerce_product
 id: publication
 label: Publication
-traits:
-  - commerce_shipping_shippable
+traits: {  }
+# Note: the previous traits value (commerce_shipping_shippable) pointed at
+# a non-existent commerce trait plugin and was a silent no-op. Shippability
+# is now driven by the `weight` field on this bundle + the `shipments`
+# field on commerce_order, both managed by saho_shop_shipping. The proper
+# trait would be `purchasable_entity_shippable` but applying it via
+# config sync would conflict with the explicit weight field, so we
+# leave traits empty.
 locked: false
 orderItemType: default
 generateTitle: true
