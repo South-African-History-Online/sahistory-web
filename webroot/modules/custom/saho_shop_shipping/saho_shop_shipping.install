@@ -325,6 +325,18 @@ function _saho_shop_shipping_install_free_shipping_promotion(): void {
  * saved AFTER the field was added. We touch existing variations so
  * the weight conditions on shipping methods (<= 5 kg / <= 10 kg)
  * don't filter them out entirely.
+ *
+ * Important timing note: when this module is installed via
+ * `drush config:import`, the module-install step fires hook_install
+ * BEFORE the weight field's storage + instance configs have been
+ * imported. In that path, $variation->hasField('weight') returns
+ * FALSE and this routine is a no-op - but the matching
+ * hook_post_update_backfill_publication_weights() in
+ * saho_shop_shipping.post_update.php picks up the work during
+ * `drush deploy:hook`, which runs after config:import.
+ *
+ * For a manual `drush en saho_shop_shipping` install (where field
+ * configs already exist) this routine fills weights immediately.
  */
 function _saho_shop_shipping_backfill_publication_weights(): void {
   $storage = \Drupal::entityTypeManager()->getStorage('commerce_product_variation');
