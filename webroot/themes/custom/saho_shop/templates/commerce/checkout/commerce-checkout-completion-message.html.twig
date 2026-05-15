@@ -34,14 +34,14 @@
   </div>
 
   {# Champion signup-gift note - only Annual + Patron tiers get one.
-     Detects by product bundle (`champion_subscription`) plus title match,
+     Detects by variation bundle (`champion_membership`) plus title match,
      so the note survives SKU renames as long as the title still says
      Annual or Patron. Fulfillment is manual: SAHO staff emails the buyer. #}
   {% set has_signup_gift = false %}
   {% if order_entity %}
     {% for item in order_entity.getItems() %}
       {% set variation = item.getPurchasedEntity() %}
-      {% if variation and variation.bundle() == 'champion_subscription' %}
+      {% if variation and variation.bundle() == 'champion_membership' %}
         {% set product_title = (variation.getTitle() ?: variation.getProduct().label())|lower %}
         {% if 'annual' in product_title or 'patron' in product_title %}
           {% set has_signup_gift = true %}
@@ -65,6 +65,31 @@
           <p class="checkout-completion__signup-gift-text">
             {{ 'A SAHO team member will email you within five working days to arrange delivery of your Champion signup gift. Thank you for supporting South African history.'|t }}
           </p>
+        </div>
+      </div>
+    {% endif %}
+
+    {# Wall of Champions opt-in. Rendered by wall_of_champions module's
+       preprocess hook only when:
+       - the order contains a champion_membership variation,
+       - the buyer is authenticated, and
+       - they have not already opted in.
+       The link carries a CSRF token from the route's _csrf_token
+       requirement, so a single click flips field_champion_wall_opt_in
+       and redirects to /champions where they see themselves listed. #}
+    {% if wall_opt_in_url %}
+      <div class="checkout-completion__wall-opt-in" role="status">
+        <div class="checkout-completion__wall-opt-in-icon" aria-hidden="true">★</div>
+        <div class="checkout-completion__wall-opt-in-body">
+          <strong class="checkout-completion__wall-opt-in-title">
+            {{ 'Be recognised on our Wall of Champions'|t }}
+          </strong>
+          <p class="checkout-completion__wall-opt-in-text">
+            {{ 'Add your name to our public Wall of Champions. You can change this anytime in your profile.'|t }}
+          </p>
+          <a href="{{ wall_opt_in_url }}" class="btn btn-primary checkout-completion__wall-opt-in-cta">
+            {{ 'Yes, add me to the Wall'|t }}
+          </a>
         </div>
       </div>
     {% endif %}
