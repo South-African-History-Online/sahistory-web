@@ -156,24 +156,68 @@ South African History Online (SAHO) now includes comprehensive Schema.org JSON-L
 - `license` ← CC BY-NC-SA 4.0
 - `isAccessibleForFree` ← true
 
-### 5. Places (1,838 nodes) → Place/Museum/LandmarksOrHistoricalBuildings
+### 5. Places (1,847 nodes) → Place + structural subtypes + TouristAttraction
 
-**Schema.org Type**: `https://schema.org/Place` (or subtypes)
+**Schema.org Type**: depends on `field_place_type` taxonomy term. The
+builder maps ~60 SAHO place-type terms to Schema.org structural types
+(`LandmarksOrHistoricalBuildings`, `Park`, `Mountain`, `Landform`,
+`BodyOfWater`, `PlaceOfWorship`, `AdministrativeArea`, `City`,
+`Country`, `Bridge`, `TrainStation`, `Airport`, `Cemetery`, etc.).
 
-**Subtypes**:
-- `Museum` ← field_place_type = "museum"
-- `LandmarksOrHistoricalBuildings` ← field_place_type = "monument", "heritage_site", "building"
+> **Why no GSC rich-result bucket?** Google has no dedicated rich
+> result for generic `Place`, `TouristAttraction`, `Landform` or
+> `Park`. The only Place-adjacent rich result is `LocalBusiness`
+> (Hotel, Museum, Restaurant…) which requires phone, hours and street
+> address - data we don't store. Declaring `@type: Museum` without
+> those fields creates warnings, not rich results. So this builder
+> optimises for Knowledge Graph reconciliation, image-search context,
+> Maps/AI surfaces and breadcrumb signals on linked Article pages -
+> not for clearing a GSC "Places" bucket (there isn't one).
 
-**Fields Mapped (43 total)**:
+**Type resolution order**:
+1. `field_country = TRUE` → `Country`.
+2. First mapped `field_place_type` term (cardinality 5, so the first
+   matched term wins). Cultural-building terms (museum, hotel,
+   restaurant, theatre, library, college, school, wine estate, zoo,
+   prison, farm) become `Place` with `additionalType` pointing at
+   the LocalBusiness subtype - preserving semantics without taking
+   on LocalBusiness required fields.
+3. `TouristAttraction` is unioned in whenever any tagged term has it
+   OR `field_place_category` includes "Historical Site" / "World
+   Heritage Site". `@type` is emitted as an array in that case.
+4. Fallback: bare `Place` (or `[Place, TouristAttraction]` when
+   category implies visitor relevance).
+
+**Fields Mapped**:
 - `name` ← title
-- `description` ← body (first 500 chars)
-- `geo` ← field_geofield, field_geolocation (GeoCoordinates)
-  - `latitude` ← lat/lat
-  - `longitude` ← lon/lng
-- `address` ← field_african_country (PostalAddress)
-  - `addressCountry` ← country name
-- `image` ← field_place_image (ImageObject)
-- `isAccessibleForFree` ← true
+- `url` ← node URL
+- `mainEntityOfPage` ← WebPage @id
+- `dateModified` ← node changed time (ISO 8601)
+- `description` ← body, plain text + HTML entities decoded, 500 chars
+- `geo` ← `field_geolocation` (lat / lng) with `[-90,90]` × `[-180,180]`
+  bounds check; `0,0` rejected. `field_geofield` is not read - it
+  has zero populated rows on this site.
+- `address` ← `field_african_country` as `PostalAddress` with
+  ISO 3166-1 alpha-2 `addressCountry` (ZA, DZ, MZ, etc.) from a
+  built-in map; falls back to the term name when no ISO match.
+- `image` ← `field_place_image` as `ImageObject` with `width`,
+  `height` and `caption` (from `field_node_image_caption`, falling
+  back to image alt text).
+- `keywords` ← `field_place_category` terms + all `field_place_type`
+  terms, comma-joined.
+- `additionalType` ← `https://schema.org/<CulturalSubtype>` when the
+  primary `@type` is `Place` but the term is a Museum/Hotel/Library
+  etc.
+- `isAccessibleForFree` ← `true`
+- `inLanguage` ← `en-ZA`
+
+**What this builder deliberately does NOT do**:
+- Does not declare `LocalBusiness` subtypes (Museum, Hotel, Restaurant)
+  as `@type` - we have no `telephone` / `openingHours` / street
+  `streetAddress` to satisfy the LocalBusiness requirements.
+- Does not map `field_parent` to `containedInPlace` - it's a thematic
+  feature tag, not a parent-place reference.
+- Does not read `field_geofield` - it's empty across all 1,847 nodes.
 
 ### 6. Products (16 nodes) → Book
 
