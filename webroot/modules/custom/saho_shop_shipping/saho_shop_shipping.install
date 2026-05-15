@@ -188,13 +188,17 @@ function saho_shop_shipping_install(): void {
 /**
  * Provisions the `shipments` field on the default commerce_order bundle.
  *
- * Commerce Shipping adds the field via entity_bundle_field_info() when
- * the order type carries the third-party setting
- * commerce_shipping.shipment_type. Setting that flag via config sync
- * declares the field in entity definitions but does NOT create the
- * underlying storage table - that has to be installed explicitly.
- * Without this, isShippable() throws because the shipments column is
- * missing, and the shipping pane silently disappears at checkout.
+ * The SAHO shop manages `shipments` through config sync - both
+ * field.storage.commerce_order.shipments.yml AND
+ * field.field.commerce_order.default.shipments.yml exist in
+ * config/shop/. After cim runs, the FieldStorageConfig + FieldConfig
+ * pair is in place and this routine is a no-op.
+ *
+ * The safety net below handles the edge case where the field doesn't
+ * exist yet at hook_install time - e.g. someone manually disabled and
+ * re-enabled the module after deleting one of the config rows. In
+ * that case we fall back to commerce_shipping's BaseFieldDefinition
+ * via installFieldStorageDefinition().
  */
 function _saho_shop_shipping_install_shipments_field(): void {
   $update_manager = \Drupal::entityDefinitionUpdateManager();
