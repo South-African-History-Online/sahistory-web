@@ -5,3 +5,18 @@ wall_of_champions.page:
     _title: 'Wall of Champions'
   requirements:
     _permission: 'access content'
+
+# One-click opt-in to the Wall of Champions. Linked from the order
+# completion page after a Champion signup so the buyer can flip
+# field_champion_wall_opt_in without hunting for the profile form.
+# _csrf_token: the route requires a `token` query param matched against
+# the path; Url::fromRoute() generates one automatically.
+wall_of_champions.opt_in:
+  path: '/champions/opt-in'
+  defaults:
+    _controller: '\Drupal\wall_of_champions\Controller\OptInController::optIn'
+    _title: 'Opt in to the Wall of Champions'
+  requirements:
+    _user_is_logged_in: 'TRUE'
+    _csrf_token: 'TRUE'
+  methods: [GET]

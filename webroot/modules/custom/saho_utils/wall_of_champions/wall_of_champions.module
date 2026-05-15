@@ -6,6 +6,8 @@
  */
 
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Url;
+use Drupal\user\Entity\User;
 
 /**
  * Implements hook_form_FORM_ID_alter() for user_form.
@@ -41,6 +43,57 @@ function wall_of_champions_form_user_form_alter(&$form, FormStateInterface $form
       ],
     ];
   }
+}
+
+/**
+ * Implements hook_preprocess_HOOK() for commerce_checkout_completion_message.
+ *
+ * Injects a one-click Wall of Champions opt-in CTA into the order
+ * completion page when:
+ *   - the order contains a champion_membership variation,
+ *   - the buyer is authenticated, and
+ *   - they have not already opted in.
+ *
+ * The template renders `{{ wall_opt_in_url }}` if present. The URL points
+ * at the wall_of_champions.opt_in route, which requires _csrf_token, so
+ * the link cannot be forged from another site.
+ */
+function wall_of_champions_preprocess_commerce_checkout_completion_message(array &$variables): void {
+  $current = \Drupal::currentUser();
+  if ($current->isAnonymous()) {
+    return;
+  }
+
+  $order = $variables['order_entity'] ?? NULL;
+  if (!$order || !method_exists($order, 'getItems')) {
+    return;
+  }
+
+  // Only champion signups get the opt-in CTA.
+  $has_champion = FALSE;
+  foreach ($order->getItems() as $item) {
+    $variation = $item->getPurchasedEntity();
+    if ($variation && $variation->bundle() === 'champion_membership') {
+      $has_champion = TRUE;
+      break;
+    }
+  }
+  if (!$has_champion) {
+    return;
+  }
+
+  // Skip if already opted in - no point asking again.
+  $user = User::load($current->id());
+  if (!$user || !$user->hasField('field_champion_wall_opt_in')) {
+    return;
+  }
+  if ((int) $user->get('field_champion_wall_opt_in')->value === 1) {
+    return;
+  }
+
+  // Url::fromRoute automatically appends the CSRF token query for routes
+  // that declare `_csrf_token: 'TRUE'`.
+  $variables['wall_opt_in_url'] = Url::fromRoute('wall_of_champions.opt_in')->toString();
 }
 
 /**
