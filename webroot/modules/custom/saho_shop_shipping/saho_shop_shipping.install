@@ -1,0 +1,351 @@
+<?php
+
+/**
+ * @file
+ * Install hooks for SAHO Shop Shipping.
+ *
+ * commerce_shipping_method is a ContentEntity (not config-exportable),
+ * so the five shipping methods we ship to production are created here
+ * via the entity API rather than as YAML in config/shop/. Each method
+ * has an explicit UUID so the free-shipping promotion can reference
+ * them deterministically across sites.
+ */
+
+use Drupal\commerce_promotion\Entity\Promotion;
+use Drupal\commerce_shipping\Entity\Shipment;
+use Drupal\commerce_shipping\Entity\ShippingMethod;
+
+/**
+ * The five Phase 0 shipping methods, keyed by stable UUID.
+ *
+ * These UUIDs are referenced from the free-shipping promotion, so
+ * they must stay stable across environments. Editing prices, labels
+ * or conditions here will NOT regenerate existing entities - admins
+ * should edit them at /admin/commerce/shipping-methods after install.
+ */
+function _saho_shop_shipping_method_specs(): array {
+  return [
+    '13a5c927-e273-4115-ad0e-11e7669bdf0b' => [
+      'name' => 'Local pickup - SAHO offices, Cape Town',
+      'weight' => -10,
+      'rate' => '0.00',
+      'rate_label' => 'Free pickup at SAHO offices',
+      'service_label' => 'Free pickup at SAHO offices',
+      'description' => 'Collect from SAHO offices in Cape Town - free. We will email you when your order is ready, usually within 1-2 working days. Only choose this if you can actually collect from Cape Town: the SA address format does not have a province dropdown, so this option appears for every South African address - we trust you to pick what works.',
+      'service_description' => 'Free - collect from SAHO offices in Cape Town.',
+      'conditions' => [
+        [
+          'target_plugin_id' => 'shipment_address',
+          'target_plugin_configuration' => [
+            'zone' => ['territories' => [['country_code' => 'ZA']]],
+            'negate' => FALSE,
+          ],
+        ],
+      ],
+    ],
+    '2b11648f-cb74-40f3-8d04-121aa9929171' => [
+      'name' => 'Paxi to PEP store (cheapest)',
+      'weight' => 0,
+      'rate' => '59.95',
+      'rate_label' => 'Paxi to PEP store',
+      'service_label' => 'Paxi standard parcel (up to 10kg) - R59.95',
+      'description' => 'R59.95 flat to any of 3,500+ PEP stores nationwide. Allow 5-7 working days. The cheapest physical delivery option in South Africa - we will switch to live rates once Bob Go is integrated.',
+      'service_description' => '5-7 working days to your nominated PEP store.',
+      'conditions' => [
+        [
+          'target_plugin_id' => 'shipment_address',
+          'target_plugin_configuration' => [
+            'zone' => ['territories' => [['country_code' => 'ZA']]],
+            'negate' => FALSE,
+          ],
+        ],
+        [
+          'target_plugin_id' => 'shipment_weight',
+          'target_plugin_configuration' => [
+            'operator' => '<=',
+            'weight' => ['number' => '10', 'unit' => 'kg'],
+            'max_weight' => NULL,
+          ],
+        ],
+      ],
+    ],
+    'bdb12129-7fe6-42a1-bbd3-08092eb5f2f7' => [
+      'name' => 'Pargo pickup point',
+      'weight' => 5,
+      'rate' => '95.00',
+      'rate_label' => 'Pargo pickup point',
+      'service_label' => 'Pargo standard parcel (up to 5kg) - R95',
+      'description' => 'R95 flat to any of 4,500+ Pargo points (Pick n Pay, Engen, Caltex, BP). Allow 2-4 working days. Cheaper than door-to-door and avoids failed deliveries to informal addresses. Live Pargo rates will replace this flat fallback once Bob Go is integrated.',
+      'service_description' => '2-4 working days to your nominated Pargo pickup point.',
+      'conditions' => [
+        [
+          'target_plugin_id' => 'shipment_address',
+          'target_plugin_configuration' => [
+            'zone' => ['territories' => [['country_code' => 'ZA']]],
+            'negate' => FALSE,
+          ],
+        ],
+        [
+          'target_plugin_id' => 'shipment_weight',
+          'target_plugin_configuration' => [
+            'operator' => '<=',
+            'weight' => ['number' => '5', 'unit' => 'kg'],
+            'max_weight' => NULL,
+          ],
+        ],
+      ],
+    ],
+    '48b8b71e-09fa-4952-a99b-34a7065e47a4' => [
+      'name' => 'The Courier Guy - door-to-door',
+      'weight' => 10,
+      'rate' => '150.00',
+      'rate_label' => 'Door-to-door delivery',
+      'service_label' => 'Door-to-door (up to 5kg) - R150',
+      'description' => 'R150 flat for door-to-door delivery via The Courier Guy. 1-3 working days. Best for customers who cannot collect from a pickup point. Live rates will replace this flat fallback once Bob Go is integrated.',
+      'service_description' => '1-3 working days nationwide.',
+      'conditions' => [
+        [
+          'target_plugin_id' => 'shipment_address',
+          'target_plugin_configuration' => [
+            'zone' => ['territories' => [['country_code' => 'ZA']]],
+            'negate' => FALSE,
+          ],
+        ],
+        [
+          'target_plugin_id' => 'shipment_weight',
+          'target_plugin_configuration' => [
+            'operator' => '<=',
+            'weight' => ['number' => '5', 'unit' => 'kg'],
+            'max_weight' => NULL,
+          ],
+        ],
+      ],
+    ],
+    'd6b9ca65-0b51-4ffc-b49a-1a1e1695a04e' => [
+      'name' => 'International - small parcel',
+      'weight' => 50,
+      'rate' => '350.00',
+      'rate_label' => 'International small parcel',
+      'service_label' => 'International small parcel (up to 2kg) - R350',
+      'description' => 'R350 flat for small international parcels up to 2kg. 10-20 working days. SAHO does not profit from postage - this rate roughly covers DHL Global Mail / Aramex International. For heavier or rushed international orders, email shop@sahistory.org.za for a quote.',
+      'service_description' => '10-20 working days. Quote on request for heavier or expedited orders.',
+      'conditions' => [
+        [
+          'target_plugin_id' => 'shipment_address',
+          'target_plugin_configuration' => [
+            'zone' => ['territories' => [['country_code' => 'ZA']]],
+            'negate' => TRUE,
+          ],
+        ],
+        [
+          'target_plugin_id' => 'shipment_weight',
+          'target_plugin_configuration' => [
+            'operator' => '<=',
+            'weight' => ['number' => '2', 'unit' => 'kg'],
+            'max_weight' => NULL,
+          ],
+        ],
+      ],
+    ],
+  ];
+}
+
+/**
+ * Resolves the commerce_store IDs the shipping methods should attach to.
+ *
+ * In SAHO's multisite layout there's exactly one store ("SAHO Shop")
+ * but lookups go by integer entity ID, not by a machine name. We
+ * prefer to match by name to stay environment-agnostic and fall back
+ * to "all stores" if the named one isn't found.
+ *
+ * @return int[]
+ *   Store entity IDs.
+ */
+function _saho_shop_shipping_resolve_store_ids(): array {
+  $store_storage = \Drupal::entityTypeManager()->getStorage('commerce_store');
+  $by_name = $store_storage->loadByProperties(['name' => 'SAHO Shop']);
+  if (!empty($by_name)) {
+    return array_map(static fn($s) => (int) $s->id(), array_values($by_name));
+  }
+  return array_map(static fn($s) => (int) $s->id(), array_values($store_storage->loadMultiple()));
+}
+
+/**
+ * Implements hook_install().
+ *
+ * Provisions five Phase 0 shipping methods, a free-shipping-over-R750
+ * promotion that covers only the two cheapest options, and backfills
+ * weight = 0.5 kg on every existing publication variation. Every
+ * routine is idempotent - re-running this hook leaves existing
+ * entities alone.
+ */
+function saho_shop_shipping_install(): void {
+  _saho_shop_shipping_install_shipments_field();
+  _saho_shop_shipping_install_shipping_methods();
+  _saho_shop_shipping_install_free_shipping_promotion();
+  _saho_shop_shipping_backfill_publication_weights();
+}
+
+/**
+ * Provisions the `shipments` field on the default commerce_order bundle.
+ *
+ * commerce_shipping adds the field via entity_bundle_field_info() when
+ * the order type has the third-party setting
+ * commerce_shipping.shipment_type. Setting that flag via config sync
+ * declares the field in entity definitions but does NOT create the
+ * underlying storage table - that has to be installed explicitly.
+ * Without this, isShippable() throws because the shipments column is
+ * missing, and the shipping pane silently disappears at checkout.
+ */
+function _saho_shop_shipping_install_shipments_field(): void {
+  $update_manager = \Drupal::entityDefinitionUpdateManager();
+  if ($update_manager->getFieldStorageDefinition('shipments', 'commerce_order')) {
+    return;
+  }
+  $definition = Shipment::buildShipmentsFieldDefinition('default');
+  $update_manager->installFieldStorageDefinition('shipments', 'commerce_order', 'commerce_shipping', $definition);
+}
+
+/**
+ * Creates the five shipping methods if they don't already exist.
+ */
+function _saho_shop_shipping_install_shipping_methods(): void {
+  $storage = \Drupal::entityTypeManager()->getStorage('commerce_shipping_method');
+  $store_ids = _saho_shop_shipping_resolve_store_ids();
+  if (empty($store_ids)) {
+    \Drupal::logger('saho_shop_shipping')->warning('No commerce_store entities found - skipped installing shipping methods.');
+    return;
+  }
+
+  foreach (_saho_shop_shipping_method_specs() as $uuid => $spec) {
+    $existing = $storage->loadByProperties(['uuid' => $uuid]);
+    if (!empty($existing)) {
+      continue;
+    }
+    $method = $storage->create([
+      'uuid' => $uuid,
+      'stores' => $store_ids,
+      'name' => $spec['name'],
+      'status' => TRUE,
+      'weight' => $spec['weight'],
+      'plugin' => [
+        'target_plugin_id' => 'flat_rate',
+        'target_plugin_configuration' => [
+          'display_label' => $spec['name'],
+          'rate_label' => $spec['rate_label'],
+          'rate_description' => $spec['description'],
+          'rate_amount' => [
+            'number' => $spec['rate'],
+            'currency_code' => 'ZAR',
+          ],
+          'services' => [
+            'default' => [
+              'label' => $spec['service_label'],
+              'amount' => [
+                'number' => $spec['rate'],
+                'currency_code' => 'ZAR',
+              ],
+              'description' => $spec['service_description'],
+            ],
+          ],
+          'workflow' => 'shipment_default',
+        ],
+      ],
+      'conditions' => $spec['conditions'],
+      'condition_operator' => 'AND',
+    ]);
+    $method->save();
+  }
+}
+
+/**
+ * Creates the free-shipping-over-R750 promotion if it doesn't exist.
+ *
+ * The promotion is restricted to the two cheapest options (local
+ * pickup and Paxi) so a R750 order doesn't get free door-to-door
+ * courier delivery at SAHO's expense - the goal is to nudge multi-
+ * book carts, not subsidise premium delivery.
+ */
+function _saho_shop_shipping_install_free_shipping_promotion(): void {
+  $storage = \Drupal::entityTypeManager()->getStorage('commerce_promotion');
+  $existing = $storage->loadByProperties(['name' => 'Free shipping over R750']);
+  if (!empty($existing)) {
+    return;
+  }
+
+  $eligible_uuids = [
+    '13a5c927-e273-4115-ad0e-11e7669bdf0b',
+    '2b11648f-cb74-40f3-8d04-121aa9929171',
+  ];
+  $method_storage = \Drupal::entityTypeManager()->getStorage('commerce_shipping_method');
+  $eligible_loaded = $method_storage->loadByProperties(['uuid' => $eligible_uuids]);
+  if (empty($eligible_loaded)) {
+    \Drupal::logger('saho_shop_shipping')->warning('Skipped installing free shipping promotion - eligible shipping methods are missing. Re-run drush updb after the shipping methods are in place.');
+    return;
+  }
+
+  $promotion = Promotion::create([
+    'name' => 'Free shipping over R750',
+    'display_name' => 'Free shipping when you spend R750 or more',
+    'description' => 'Spend R750 or more and the cheapest shipping options (free Cape Town pickup, Paxi to PEP) are on us. SAHO is a non-profit and we keep door-to-door courier rates as they are so larger orders subsidise smaller ones rather than premium delivery.',
+    'order_types' => ['default'],
+    'stores' => _saho_shop_shipping_resolve_store_ids(),
+    'offer' => [
+      'target_plugin_id' => 'shipment_percentage_off',
+      'target_plugin_configuration' => [
+        'display_inclusive' => TRUE,
+        'percentage' => '1',
+        'filter' => 'include',
+        'shipping_methods' => $eligible_uuids,
+      ],
+    ],
+    'conditions' => [
+      [
+        'target_plugin_id' => 'order_total_price',
+        'target_plugin_configuration' => [
+          'operator' => '>=',
+          'amount' => ['number' => '750.00', 'currency_code' => 'ZAR'],
+        ],
+      ],
+    ],
+    'condition_operator' => 'AND',
+    'compatibility' => 'any',
+    'status' => TRUE,
+  ]);
+  $promotion->save();
+}
+
+/**
+ * Backfills weight = 0.5 kg on existing publication variations.
+ *
+ * The default value on the field config only applies to entities
+ * saved AFTER the field was added. We touch existing variations so
+ * the weight conditions on shipping methods (<= 5 kg / <= 10 kg)
+ * don't filter them out entirely.
+ */
+function _saho_shop_shipping_backfill_publication_weights(): void {
+  $storage = \Drupal::entityTypeManager()->getStorage('commerce_product_variation');
+  $ids = $storage->getQuery()
+    ->accessCheck(FALSE)
+    ->condition('type', 'publication')
+    ->execute();
+  foreach ($storage->loadMultiple($ids) as $variation) {
+    /** @var \Drupal\commerce_product\Entity\ProductVariationInterface $variation */
+    if ($variation->hasField('weight') && $variation->get('weight')->isEmpty()) {
+      $variation->set('weight', ['number' => '0.500', 'unit' => 'kg']);
+      $variation->save();
+    }
+  }
+}
+
+/**
+ * Implements hook_uninstall().
+ *
+ * Leaves the shipping methods, promotion, and weight values in place
+ * - removing them on uninstall would surprise an admin who installed
+ * this module to set up shipping and is now uninstalling for an
+ * unrelated reason.
+ */
+function saho_shop_shipping_uninstall(): void {
+  // Intentionally empty.
+}
