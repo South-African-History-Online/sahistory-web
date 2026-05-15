@@ -4,16 +4,15 @@
  * @file
  * Install hooks for SAHO Shop Shipping.
  *
- * commerce_shipping_method is a ContentEntity (not config-exportable),
- * so the five shipping methods we ship to production are created here
- * via the entity API rather than as YAML in config/shop/. Each method
- * has an explicit UUID so the free-shipping promotion can reference
- * them deterministically across sites.
+ * Shipping methods are ContentEntities (not config-exportable), so the
+ * five we ship to production are created here via the entity API
+ * rather than as YAML in config/shop/. Each method has an explicit
+ * UUID so the free-shipping promotion can reference them
+ * deterministically across sites.
  */
 
 use Drupal\commerce_promotion\Entity\Promotion;
 use Drupal\commerce_shipping\Entity\Shipment;
-use Drupal\commerce_shipping\Entity\ShippingMethod;
 
 /**
  * The five Phase 0 shipping methods, keyed by stable UUID.
@@ -189,8 +188,8 @@ function saho_shop_shipping_install(): void {
 /**
  * Provisions the `shipments` field on the default commerce_order bundle.
  *
- * commerce_shipping adds the field via entity_bundle_field_info() when
- * the order type has the third-party setting
+ * Commerce Shipping adds the field via entity_bundle_field_info() when
+ * the order type carries the third-party setting
  * commerce_shipping.shipment_type. Setting that flag via config sync
  * declares the field in entity definitions but does NOT create the
  * underlying storage table - that has to be installed explicitly.
@@ -336,16 +335,4 @@ function _saho_shop_shipping_backfill_publication_weights(): void {
       $variation->save();
     }
   }
-}
-
-/**
- * Implements hook_uninstall().
- *
- * Leaves the shipping methods, promotion, and weight values in place
- * - removing them on uninstall would surprise an admin who installed
- * this module to set up shipping and is now uninstalling for an
- * unrelated reason.
- */
-function saho_shop_shipping_uninstall(): void {
-  // Intentionally empty.
 }
