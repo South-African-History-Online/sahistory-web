@@ -2,7 +2,7 @@
 
 ## Project Overview
 South African History Online (SAHO) - sahistory.org.za
-- **Drupal Version**: 11.1.7
+- **Drupal Version**: 11.3.10
 - **PHP Version**: 8.3.10
 - **Local Environment**: DDEV
 - **Theme**: Radix with custom "saho" subtheme

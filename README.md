@@ -39,7 +39,7 @@ This is a Github project is currently supported and maintained by Mads Nørgaard
 
 ## Stack Overview
 The full stack is:
-- **Drupal 11.1.7** (Project started with Drupal 6 and upgraded)
+- **Drupal 11.3.10** (Project started with Drupal 6 and upgraded)
 - **PHP 8.3.10**
 - **Radix** theme framework with a custom subtheme called **"saho"**
 - **Bootstrap 5** for responsive design and UI components
