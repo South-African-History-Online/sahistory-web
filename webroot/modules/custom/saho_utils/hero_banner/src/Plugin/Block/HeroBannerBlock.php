@@ -115,7 +115,6 @@ class HeroBannerBlock extends BlockBase implements ContainerFactoryPluginInterfa
       '#type' => 'textfield',
       '#title' => $this->t('Title'),
       '#default_value' => $config['title'],
-      '#required' => TRUE,
       '#maxlength' => 255,
       '#states' => [
         'visible' => [
@@ -231,6 +230,19 @@ class HeroBannerBlock extends BlockBase implements ContainerFactoryPluginInterfa
     ];
 
     return $form;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function blockValidate($form, FormStateInterface $form_state) {
+    parent::blockValidate($form, $form_state);
+    // Title is only required in Standard mode. Graphic mode hides all text
+    // fields, so it must not trigger the required check (#states is
+    // client-side only and cannot relax #required on the server).
+    if ($form_state->getValue('display_mode') === 'standard' && trim((string) $form_state->getValue('title')) === '') {
+      $form_state->setErrorByName('title', $this->t('Title is required in Standard display mode.'));
+    }
   }
 
   /**
