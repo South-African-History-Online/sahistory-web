@@ -42,6 +42,30 @@ class ResponseSubscriber implements EventSubscriberInterface {
       $response->headers->set('Cache-Control', 'public, max-age=300, s-maxage=3600');
     }
 
+    // Normalize the Vary header so a CDN (Cloudflare) can actually cache
+    // anonymous HTML. Drupal emits "Vary: Cookie" (and a downstream layer adds
+    // "User-Agent"); Cloudflare refuses to cache any response whose Vary header
+    // contains anything other than Accept-Encoding, so those pages always hit
+    // the origin. We only collapse Vary to Accept-Encoding when the response is
+    // a public-cacheable GET with NO Drupal session cookie present, i.e. a true
+    // anonymous page. Authenticated users keep the original Vary, and the
+    // Cloudflare cache rule additionally bypasses cache on the SESS cookie, so
+    // logged-in visitors can never be served a shared cached page.
+    $cache_control = (string) $response->headers->get('Cache-Control', '');
+    $is_public = strpos($cache_control, 'public') !== FALSE
+      && strpos($cache_control, 'private') === FALSE
+      && strpos($cache_control, 'no-store') === FALSE;
+    $has_session = FALSE;
+    foreach ($request->cookies->keys() as $cookie_name) {
+      if (strpos($cookie_name, 'SESS') !== FALSE) {
+        $has_session = TRUE;
+        break;
+      }
+    }
+    if ($request->isMethodCacheable() && $is_public && !$has_session) {
+      $response->headers->set('Vary', 'Accept-Encoding');
+    }
+
     // Add performance hints.
     $this->addLinkHeaders($response, $request);
 
