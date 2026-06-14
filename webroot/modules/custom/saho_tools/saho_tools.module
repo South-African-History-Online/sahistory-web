@@ -197,6 +197,22 @@ function saho_tools_preprocess_html(&$variables) {
       ];
     }
 
+    // 1b. WebSite + SearchAction schema (site-wide). Emitted once per page so
+    // Google can surface the sitelinks search box. The SearchAction target
+    // uses the canonical /search view and its search_api_fulltext parameter.
+    $website_schema = \Drupal::service('saho_tools.schema_builder.website')->build();
+    if (!empty($website_schema)) {
+      $variables['#attached']['html_head'][] = [
+        [
+          '#type' => 'html_tag',
+          '#tag' => 'script',
+          '#attributes' => ['type' => 'application/ld+json'],
+          '#value' => json_encode($website_schema, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT),
+        ],
+        'schema_org_website',
+      ];
+    }
+
     // For nodes, use the canonical URL.
     $node = \Drupal::routeMatch()->getParameter('node');
     if ($node instanceof NodeInterface) {
