@@ -14,8 +14,15 @@ use Drupal\node\NodeInterface;
 function saho_suggested_reading_preprocess_node(array &$variables) {
   $node = $variables['node'];
 
-  // Only process full view mode for articles and archives.
-  if ($variables['view_mode'] !== 'full' || !in_array($node->bundle(), ['article', 'archive'])) {
+  // Only process full view mode for the supported content types.
+  $supported_bundles = [
+    'article',
+    'archive',
+    'biography',
+    'event',
+    'place',
+  ];
+  if ($variables['view_mode'] !== 'full' || !in_array($node->bundle(), $supported_bundles)) {
     return;
   }
 

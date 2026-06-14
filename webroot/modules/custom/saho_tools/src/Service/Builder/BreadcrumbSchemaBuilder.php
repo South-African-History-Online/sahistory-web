@@ -67,15 +67,18 @@ class BreadcrumbSchemaBuilder implements SchemaOrgBuilderInterface {
       // canonical landing page path. Google voids any BreadcrumbList item
       // whose 'item' URL is not a live 200 response, so the paths below are
       // verified-200 landing pages on production (not the bare node-type
-      // machine name, which 404s or 301s). Node types without a stable 200
-      // landing page (for example 'image') are intentionally omitted: it is
-      // better to drop one breadcrumb level than to void the entire
-      // BreadcrumbList with a 404/301 URL.
+      // machine name, which 404s or 301s). Image nodes have no dedicated
+      // images landing (the /images path 301s to the home page), so they
+      // share the verified-200 /archives landing alongside archive nodes.
+      // Node types without any stable 200 landing page are intentionally
+      // omitted: it is better to drop one breadcrumb level than to void the
+      // entire BreadcrumbList with a 404/301 URL.
       $type_landings = [
         'article' => ['name' => 'Politics & Society', 'path' => 'politics-society'],
         'biography' => ['name' => 'Biographies', 'path' => 'biographies'],
         'event' => ['name' => 'This Day in History', 'path' => 'this-day-in-history'],
         'archive' => ['name' => 'Archives', 'path' => 'archives'],
+        'image' => ['name' => 'Archives', 'path' => 'archives'],
         'place' => ['name' => 'Places', 'path' => 'places'],
       ];
 
