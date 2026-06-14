@@ -62,21 +62,29 @@ class BreadcrumbSchemaBuilder implements SchemaOrgBuilderInterface {
       $node_type = $node->getType();
 
       // Add content type as second level.
-      $type_labels = [
-        'article' => 'Articles',
-        'biography' => 'Biographies',
-        'event' => 'Events',
-        'archive' => 'Archives',
-        'place' => 'Places',
-        'product' => 'Products',
+      //
+      // Each entry maps a node type to its human-readable label and the
+      // canonical landing page path. Google voids any BreadcrumbList item
+      // whose 'item' URL is not a live 200 response, so the paths below are
+      // verified-200 landing pages on production (not the bare node-type
+      // machine name, which 404s or 301s). Node types without a stable 200
+      // landing page (for example 'image') are intentionally omitted: it is
+      // better to drop one breadcrumb level than to void the entire
+      // BreadcrumbList with a 404/301 URL.
+      $type_landings = [
+        'article' => ['name' => 'Politics & Society', 'path' => 'politics-society'],
+        'biography' => ['name' => 'Biographies', 'path' => 'biographies'],
+        'event' => ['name' => 'This Day in History', 'path' => 'this-day-in-history'],
+        'archive' => ['name' => 'Archives', 'path' => 'archives'],
+        'place' => ['name' => 'Places', 'path' => 'places'],
       ];
 
-      if (isset($type_labels[$node_type])) {
+      if (isset($type_landings[$node_type])) {
         $items[] = [
           '@type' => 'ListItem',
           'position' => $position++,
-          'name' => $type_labels[$node_type],
-          'item' => $base_url . '/' . $node_type,
+          'name' => $type_landings[$node_type]['name'],
+          'item' => $base_url . '/' . $type_landings[$node_type]['path'],
         ];
       }
 

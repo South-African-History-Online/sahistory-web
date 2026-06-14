@@ -20,6 +20,7 @@ services:
       - [registerBuilder, ['page', '@saho_tools.schema_builder.page']]
       - [registerBuilder, ['drag_and_drop_page', '@saho_tools.schema_builder.drag_and_drop_page']]
       - [registerBuilder, ['organization', '@saho_tools.schema_builder.organization']]
+      - [registerBuilder, ['website', '@saho_tools.schema_builder.website']]
       - [registerBuilder, ['breadcrumb', '@saho_tools.schema_builder.breadcrumb']]
 
   saho_tools.schema_builder.article:
@@ -56,6 +57,10 @@ services:
 
   saho_tools.schema_builder.organization:
     class: Drupal\saho_tools\Service\Builder\OrganizationSchemaBuilder
+    arguments: ['@entity_type.manager', '@file_url_generator']
+
+  saho_tools.schema_builder.website:
+    class: Drupal\saho_tools\Service\Builder\WebSiteSchemaBuilder
     arguments: ['@entity_type.manager', '@file_url_generator']
 
   saho_tools.schema_builder.breadcrumb:
