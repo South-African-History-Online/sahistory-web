@@ -353,3 +353,14 @@ RewriteRule ^(.+)\.(jpe?g|png)$ $1.webp [T=image/webp,E=accept:1,L]
   # any HTML (CDN only caches when Vary is absent or Accept-Encoding only). Do
   # not re-add it; anonymous-page caching at the edge depends on this being gone.
 </IfModule>
+
+# Strip "Vary: User-Agent" injected by the server-level (cPanel/EasyApache)
+# mod_deflate config, which .htaccess cannot delete. We cannot remove that
+# server directive, but mod_headers runs .htaccess edits AFTER server config,
+# so we surgically drop User-Agent from the final Vary value while preserving
+# Accept-Encoding (and Accept, for WebP negotiation). Without this, Cloudflare
+# refuses to cache anonymous HTML (every response stays cf-cache-status: DYNAMIC).
+<IfModule mod_headers.c>
+  Header edit Vary "(,\s*)?User-Agent" ""
+  Header always edit Vary "(,\s*)?User-Agent" ""
+</IfModule>
