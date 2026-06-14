@@ -1,0 +1,110 @@
+{#
+/**
+ * @file
+ * Custom SAHO node template for Image content type.
+ *
+ * Surfaces the relationship fields (field_feature_parent and
+ * field_people_related_tab) as crawlable <a> links so image nodes are no
+ * longer dead-end pages for users or search engines.
+ *
+ * Title is handled globally and not rendered here.
+ * Layout Builder is disabled - fields are output directly via Twig.
+ */
+#}
+
+{# Variable to track if sidebar has content #}
+{% set sidebar_has_content = false %}
+
+<article{{ attributes.addClass('saho-article-wrapper') }}>
+
+  <div class="saho-article-grid">
+
+    {# LEFT: Main content column #}
+    <div class="saho-main-content">
+
+      {% if content.field_image %}
+        <div class="saho-image-detail">
+          {{ content.field_image }}
+        </div>
+      {% endif %}
+
+      <div class="saho-article-meta">
+        {% if node.getCreatedTime() %}
+          <span>Published {{ node.getCreatedTime()|date("j F Y") }}</span>
+        {% endif %}
+        {% if node.getChangedTime() != node.getCreatedTime() %}
+          <span>Updated {{ node.getChangedTime()|date("j F Y") }}</span>
+        {% endif %}
+        <div class="saho-tools-wrapper">
+          {% if citation_button %}
+            <div class="saho-citation-wrapper">
+              {{ citation_button }}
+            </div>
+          {% endif %}
+          {% if sharing_button %}
+            <div class="saho-sharing-wrapper">
+              {{ sharing_button }}
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+      {% if content.body %}
+        <div class="saho-article-body">
+          {# Remove the label by accessing the content directly #}
+          {{ content.body.0 }}
+        </div>
+      {% endif %}
+
+      {% if content.field_source|render|trim %}
+        <div class="saho-image-source">
+          {{ content.field_source }}
+        </div>
+      {% endif %}
+
+      {# Render remaining fields not already shown manually #}
+      {{ content|without(
+        'body',
+        'field_image',
+        'field_source',
+        'field_feature_parent',
+        'field_people_related_tab'
+      ) }}
+
+    </div>
+
+    {# RIGHT: Sidebar #}
+    {% if content.field_feature_parent is defined and content.field_feature_parent|render|trim %}
+      {% set sidebar_has_content = true %}
+    {% endif %}
+
+    {% if content.field_people_related_tab is defined and content.field_people_related_tab|render|trim %}
+      {% set sidebar_has_content = true %}
+    {% endif %}
+
+    {% if sidebar_has_content %}
+    <aside class="saho-article-sidebar">
+
+      {# Featured in: link back to the parent feature/article this image
+         belongs to, keeping the image node connected to the wider archive. #}
+      {% if content.field_feature_parent is defined and content.field_feature_parent|render|trim %}
+        <div class="saho-taxonomy-group">
+          <h4>Featured in</h4>
+          {{ content.field_feature_parent }}
+        </div>
+      {% endif %}
+
+      {# Related people referenced by this image. #}
+      {% if content.field_people_related_tab is defined and content.field_people_related_tab|render|trim %}
+        <div class="saho-taxonomy-group">
+          <h4>Related People</h4>
+          {{ content.field_people_related_tab }}
+        </div>
+      {% endif %}
+
+    </aside>
+    {% endif %}
+
+  </div>
+
+</article>
