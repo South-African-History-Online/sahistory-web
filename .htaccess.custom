@@ -364,3 +364,14 @@ RewriteRule ^(.+)\.(jpe?g|png)$ $1.webp [T=image/webp,E=accept:1,L]
   Header edit Vary "(,\s*)?User-Agent" ""
   Header always edit Vary "(,\s*)?User-Agent" ""
 </IfModule>
+
+# Drupal emits "Expires: Sun, 19 Nov 1978" (a legacy "already stale" header) on
+# rendered HTML pages. Cloudflare honors that past Expires and refuses to edge-
+# cache the page even when the Cache Rule forces an Edge TTL ("Ignore cache-
+# control header" ignores Cache-Control but NOT Expires). Strip Expires on HTML
+# responses only, so the page's "Cache-Control: public, max-age=1800" governs;
+# static assets keep their own far-future Expires. This is what finally lets
+# anonymous HTML reach cf-cache-status: HIT.
+<IfModule mod_headers.c>
+  Header always unset Expires "expr=%{CONTENT_TYPE} =~ m#text/html#"
+</IfModule>
