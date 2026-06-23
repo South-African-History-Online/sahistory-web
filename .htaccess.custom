@@ -160,6 +160,12 @@ RewriteRule ^(.+)\.(jpe?g|png)$ $1.webp [T=image/webp,E=accept:1,L]
 
   # 7. Smart redirect for .htm/.html files to search
 
+  # Serve real .htm/.html files that physically exist on disk (e.g. domain-
+  # verification files like Facebook/Google/Bing). Only MISSING legacy .htm/.html
+  # URLs should fall through to the search redirects below.
+  RewriteCond %{REQUEST_FILENAME} -f
+  RewriteRule \.(html?)$ - [L]
+
   # Index files -> redirect to homepage
   RewriteRule ^index\.(htm|html)$ / [R=301,L]
 
