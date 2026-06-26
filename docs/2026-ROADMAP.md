@@ -18,7 +18,7 @@ full rationale (incl. what was deliberately rejected) is the approved plan.
 
 | # | Workstream | Status | Issue |
 |---|-----------|--------|-------|
-| W0 | Restore GA4 measurement | TODO (ops: create property + swap ID in `google_analytics.settings.yml`) | - |
+| W0 | Restore GA4 measurement | DONE - `account: G-W91HQEGETK` (GA4 property 384995578); local gtag.js loader verified 200; confirm in GA4 Realtime after deploy | - |
 | W1 | Internal `page_cache` safety net | DONE - `core.extension` `page_cache:1` | #327 |
 | W1 | `antibot` on forms (no CAPTCHA) | DONE - `core.extension` `antibot:1` | - |
 | W1 | `allow_insecure_derivatives:false` | DEFERRED - site emits itok-less derivative URLs; needs a precursor that tokenises URLs + staging verification | - |
