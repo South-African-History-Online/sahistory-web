@@ -62,9 +62,13 @@
         {% elseif item.url.options.attributes.class %}
           {% set nav_link_classes = nav_link_classes|merge([item.url.options.attributes.class]) %}
         {% endif %}
+        {# aria-current: 'page' for the exact current page, 'true' elsewhere in the
+           active trail (WCAG 4.1.2). in_active_trail is computed server-side with a
+           url cache context, so it is safe under page caching. #}
+        {% set aria_current = item.is_active ? 'page' : (item.in_active_trail ? 'true' : false) %}
         <li class="{{ nav_item_classes|join(' ') }}">
           {% if item.is_expanded and item.below %}
-            <a href="{{ item.url }}" class="{{ nav_link_classes|merge(['dropdown-toggle'])|join(' ') }}" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
+            <a href="{{ item.url }}" class="{{ nav_link_classes|merge(['dropdown-toggle'])|join(' ') }}" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false"{% if aria_current %} aria-current="{{ aria_current }}"{% endif %}>
               {{ item.title }}
               <span class="dropdown-toggle-icon ms-1">▾</span>
             </a>
@@ -95,7 +99,11 @@
             {% endif %}
           {% else %}
             {% if item.url %}
-              {{ link(item.title, item.url, { 'class': nav_link_classes }) }}
+              {% set nav_link_attributes = { 'class': nav_link_classes } %}
+              {% if aria_current %}
+                {% set nav_link_attributes = nav_link_attributes|merge({ 'aria-current': aria_current }) %}
+              {% endif %}
+              {{ link(item.title, item.url, nav_link_attributes) }}
             {% endif %}
           {% endif %}
         </li>

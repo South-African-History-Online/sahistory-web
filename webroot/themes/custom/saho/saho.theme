@@ -85,6 +85,50 @@ function saho_page_attachments_alter(array &$page) {
       'saho_organization_schema',
     ];
   }
+
+  // Preload the LCP image for the current node. Lives in this _alter hook
+  // because hook_page_attachments() is not invoked for themes.
+  _saho_attach_lcp_image_preload($page);
+
+  // Speculation Rules: make internal navigation feel instant ("app feel") by
+  // prefetching same-origin links the user is likely to click. Native browser
+  // feature, zero JS-library payload, degrades gracefully where unsupported.
+  //
+  // Deliberately prefetch-only (not prerender): prerender activation fires a
+  // premature page-view that would double-count in GA4, so it is left for a
+  // later phase once prerender-aware analytics gating is in place. "moderate"
+  // eagerness triggers on hover / pointer-down only, so it does not waste
+  // bandwidth speculatively crawling every link. Admin, user, edit and search
+  // routes are excluded. Implemented in hook_page_attachments_alter() because
+  // hook_page_attachments() is not invoked for themes.
+  $speculation_rules = [
+    'prefetch' => [
+      [
+        'source' => 'document',
+        'eagerness' => 'moderate',
+        'where' => [
+          'and' => [
+            ['href_matches' => '/*'],
+            ['not' => ['href_matches' => '/user/*']],
+            ['not' => ['href_matches' => '/admin/*']],
+            ['not' => ['href_matches' => '/node/*/edit']],
+            ['not' => ['href_matches' => '/search/*']],
+            ['not' => ['selector_matches' => '[rel~=nofollow]']],
+            ['not' => ['selector_matches' => '.no-prefetch']],
+          ],
+        ],
+      ],
+    ],
+  ];
+  $page['#attached']['html_head'][] = [
+    [
+      '#type' => 'html_tag',
+      '#tag' => 'script',
+      '#attributes' => ['type' => 'speculationrules'],
+      '#value' => json_encode($speculation_rules, JSON_UNESCAPED_SLASHES),
+    ],
+    'saho_speculation_rules',
+  ];
 }
 
 /**
@@ -1585,14 +1629,17 @@ function saho_get_responsive_image($file_entity, $alt = '', array $styles = ['sa
 }
 
 /**
- * Implements hook_page_attachments().
+ * Preloads the LCP (Largest Contentful Paint) image for the current node.
  *
- * Add critical performance optimizations:
- * - Preload LCP (Largest Contentful Paint) images
- * - Preload critical fonts
- * - Add resource hints for external domains
+ * Called from saho_page_attachments_alter(). NOTE: this logic previously lived
+ * in a hook_page_attachments() implementation, which Drupal does NOT invoke for
+ * themes (only modules) - so the LCP preload silently never rendered. It is now
+ * a helper invoked from the _alter hook, which themes do run.
+ *
+ * @param array $attachments
+ *   The page #attached array, passed by reference.
  */
-function saho_page_attachments(array &$attachments) {
+function _saho_attach_lcp_image_preload(array &$attachments) {
   $route_match = \Drupal::routeMatch();
   $node = $route_match->getParameter('node');
 

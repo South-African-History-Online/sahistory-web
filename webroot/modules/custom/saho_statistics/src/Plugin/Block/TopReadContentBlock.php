@@ -235,8 +235,14 @@ class TopReadContentBlock extends BlockBase implements ContainerFactoryPluginInt
     $items = [];
     $node_storage = $this->entityTypeManager->getStorage('node');
 
+    // Batch-load all nodes up front to avoid an N+1 query pattern (one entity
+    // load per result row). loadMultiple() resolves the whole set in a single
+    // round trip and primes the entity static cache.
+    $nids = array_map(static fn ($result) => $result->nid, $results);
+    $nodes = $node_storage->loadMultiple($nids);
+
     foreach ($results as $result) {
-      $node = $node_storage->load($result->nid);
+      $node = $nodes[$result->nid] ?? NULL;
       if (!$node) {
         continue;
       }

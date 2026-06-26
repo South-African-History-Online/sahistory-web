@@ -715,3 +715,22 @@ All components meet or exceed WCAG 2.5.5 minimum of 44×44px.
 
 **Report Generated:** February 2, 2026
 **Next Review:** August 2, 2026 (6-month cycle)
+
+---
+
+## 2026-06 update - gaps closed
+
+- **Skip link (WCAG 2.4.1).** Added a visible-on-focus "Skip to main content" link
+  as the first focusable element in `templates/content/header.html.twig` (shared by
+  all page variants), targeting `#main-content` (now `tabindex="-1"` in
+  `components/page-content/page-content.twig` so focus actually lands there). Styled
+  in `src/scss/base/_global-utilities.scss` (`.saho-skip-link`).
+- **`aria-current` on main nav (WCAG 4.1.2).** `components/nav/nav.twig` now sets
+  `aria-current="page"` on the exact current page and `"true"` elsewhere in the
+  active trail. Uses server-side `in_active_trail` (url cache context), so it is
+  safe under the newly-enabled page cache.
+
+### Still open
+- No automated a11y testing in CI - add `@axe-core/playwright` (Playwright already
+  in the stack) over a few representative URLs to lock in the above and catch
+  regressions.
