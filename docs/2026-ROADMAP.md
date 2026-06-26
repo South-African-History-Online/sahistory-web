@@ -31,7 +31,7 @@ full rationale (incl. what was deliberately rejected) is the approved plan.
 | W3 | Speculation Rules (instant nav) | DONE - prefetch-only (no prerender, avoids GA double-count) | #280 |
 | W3 | Revive dead LCP image preload | DONE - was in `hook_page_attachments()` which themes never run; moved to `_alter` | - |
 | W3 | Wire `responsive_image` into image fields | DEFERRED to staging - styles are sound, but would misalign the revived hero LCP preload and can't be verified on local image routing; apply to non-LCP in-page images | - |
-| W3 | axe/pa11y in CI | TODO | - |
+| W3 | axe/pa11y in CI | DONE - scheduled `a11y.yml` runs pa11y-ci/axe (WCAG2AA) vs the live site; per-URL ratchet thresholds freeze the legacy backlog | - |
 | W3 | PWA (manifest + install SW) | DEFERRED to Phase 2 - Speculation Rules covers ~80% of perceived speed now | #280 |
 | W4 | Interlink orphaned image nodes | DONE - `image` bundle added to saho_suggested_reading + shared partial in `node--image`; verified 6 internal links on an orphan node | #139 |
 | W4 | Extend contextual interlink quality + verify events render | TODO - many image nodes fall back to "Popular Content" (same links); add contextual relations; `event` already renders the block (verify data) | #139 |

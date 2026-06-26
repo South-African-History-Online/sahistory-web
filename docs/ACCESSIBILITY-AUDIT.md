@@ -730,7 +730,28 @@ All components meet or exceed WCAG 2.5.5 minimum of 44×44px.
   active trail. Uses server-side `in_active_trail` (url cache context), so it is
   safe under the newly-enabled page cache.
 
-### Still open
-- No automated a11y testing in CI - add `@axe-core/playwright` (Playwright already
-  in the stack) over a few representative URLs to lock in the above and catch
-  regressions.
+### Automated guardrail (added 2026-06)
+- `npm run a11y` (in the theme) and the scheduled `.github/workflows/a11y.yml` run
+  **pa11y-ci with the axe engine** (WCAG2AA) over representative URLs. Config:
+  `webroot/themes/custom/saho/tests/a11y/pa11yci.config.cjs`. The tool is invoked
+  via `npx` (not a committed dependency) so its puppeteer chain never enters the
+  lockfile. It scans the **live site** because CI never boots Drupal.
+- Per-URL **ratchet thresholds** freeze the current backlog and fail on new
+  regressions. Lower them as issues are fixed.
+
+### Legacy backlog surfaced by the first axe scan (to work down)
+Baseline axe error counts (NOT introduced by recent work - pre-existing debt):
+
+| URL | axe errors |
+|-----|-----------|
+| `/` (home) | 53 |
+| `/people/dr-abdullah-abdurahman` (biography) | 32 |
+| `/article/cradle-humankind` (article) | 26 |
+| `/biographies` (section) | 19 |
+| `/politics-society` (section) | 18 |
+| `/node/37872` (image) | 16 |
+
+Likely categories: colour contrast (accent/gold on light), images missing `alt`
+in migrated body content, ARIA on legacy/third-party widgets, form labels. Next
+step: triage the home page's 53 by axe rule id and fix the highest-frequency rules
+first, then ratchet the thresholds down.
