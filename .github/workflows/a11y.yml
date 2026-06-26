@@ -1,0 +1,37 @@
+name: Accessibility (pa11y / axe)
+
+# Why scheduled, not on PR: the build pipeline never boots Drupal, so there is no
+# rendered URL to scan inside a PR. This monitors the LIVE site for WCAG 2.1 AA
+# regressions on a cadence, plus on-demand via "Run workflow". The per-URL
+# thresholds in tests/a11y/pa11yci.config.cjs freeze the current backlog and fail
+# on any NEW regression above it.
+
+on:
+  schedule:
+    # Mondays 06:00 UTC.
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: 'Base URL to scan'
+        required: false
+        default: 'https://sahistory.org.za'
+
+jobs:
+  pa11y:
+    name: WCAG 2.1 AA scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run pa11y-ci (axe, WCAG2AA) against the live site
+        working-directory: webroot/themes/custom/saho
+        env:
+          A11Y_BASE_URL: ${{ github.event.inputs.base_url || 'https://sahistory.org.za' }}
+        run: npx --yes pa11y-ci@4.1.1 -c tests/a11y/pa11yci.config.cjs
