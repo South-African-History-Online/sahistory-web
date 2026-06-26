@@ -411,8 +411,12 @@ class EntityOverviewBlock extends BlockBase implements ContainerFactoryPluginInt
    *   The entity item data.
    */
   protected function buildEntityItem(NodeInterface $node) {
-    // Use EntityItemBuilderService for consistent item building.
-    $item = $this->entityItemBuilder->buildFullItem($node);
+    // Use EntityItemBuilderService for consistent item building. Pass a sized
+    // image style so cards render a ~650px derivative (covers 2x retina for the
+    // ~306px card slots) instead of the raw full-size original - the latter was
+    // shipping 0.5-2 MB images per card. The .htaccess WebP rewrite serves the
+    // WebP variant of the derivative on top.
+    $item = $this->entityItemBuilder->buildFullItem($node, ['image_style' => 'max_650x650']);
 
     // Ensure backward compatibility with legacy field names.
     if (isset($item['image_url'])) {
