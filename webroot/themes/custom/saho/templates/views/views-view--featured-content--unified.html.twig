@@ -48,8 +48,12 @@
       {% if not image_data and node.hasField(field_name) and not node.get(field_name).isEmpty() %}
         {% set file_entity = node.get(field_name).entity %}
         {% if file_entity %}
+          {# Use a sized image-style derivative, not the raw original. The cards
+             display ~306x204, so a 650px-max derivative (covers 2x retina) cuts
+             the worst offenders from ~550 KiB to ~50 KiB, and the .htaccess WebP
+             rewrite serves the WebP variant on top. #}
           {% set image_data = {
-            'url': file_url(file_entity.uri.value),
+            'url': file_entity.uri.value|image_style('max_650x650'),
             'alt': node_title
           } %}
         {% endif %}
