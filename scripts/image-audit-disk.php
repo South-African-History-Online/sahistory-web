@@ -17,7 +17,11 @@
  *
  * Output: scratch CSV path is printed at the end. Columns:
  *   fid,uri,db_size,disk_size,real_mime,verdict,referenced
- * Verdicts: ok | empty | html | truncated | not_image | missing
+ * Verdicts: ok | empty | html | truncated | missing
+ *
+ * Classification is driven by getimagesize() (reads image headers directly,
+ * no libmagic dependency); finfo is optional enrichment only, since it is
+ * unreliable on some production hosts.
  *
  * See docs/IMAGE-CORRUPTION-RESTORATION-PLAN.md.
  */
@@ -48,7 +52,6 @@ $stats = [
   'empty' => 0,
   'html' => 0,
   'truncated' => 0,
-  'not_image' => 0,
   'missing' => 0,
 ];
 
@@ -75,35 +78,44 @@ foreach ($query as $row) {
     continue;
   }
 
-  // Read a small header to detect HTML masquerading as an image.
-  $head = file_get_contents($real, FALSE, NULL, 0, 16);
-  $real_mime = $finfo ? finfo_file($finfo, $real) : 'unknown';
+  // Primary signal: getimagesize() reads the image header directly and does not
+  // depend on libmagic/finfo (which is unreliable on some hosts). A valid,
+  // decodable image returns [w, h, type, ...]; corrupt/truncated/non-image
+  // data returns FALSE. SVG is the exception (getimagesize cannot read it), so
+  // it is handled separately below.
+  $info = @getimagesize($real);
+  if ($info !== FALSE) {
+    $mime = $info['mime'] ?? ('image/' . image_type_to_extension($info[2] ?? 0, FALSE));
+    fputcsv($fh, [$row->fid, $row->uri, $db_size, $disk_size, $mime, 'ok', $ref]);
+    $stats['ok']++;
+    if ($n % 5000 === 0) {
+      echo "  scanned $n ...\n";
+    }
+    continue;
+  }
 
-  $is_html = (stripos($head, '<!') === 0) || (stripos($head, '<htm') !== FALSE) || (stripos($head, '<?xm') === 0 && stripos($real_mime, 'svg') === FALSE);
+  // Not a decodable raster image. Read the header bytes to classify.
+  $head = file_get_contents($real, FALSE, NULL, 0, 64);
+  $trim = ltrim($head);
 
-  if ($is_html || $real_mime === 'text/html') {
-    fputcsv($fh, [$row->fid, $row->uri, $db_size, $disk_size, $real_mime, 'html', $ref]);
+  // SVG is a valid image type that getimagesize cannot decode.
+  if (stripos($trim, '<svg') !== FALSE || (stripos($trim, '<?xml') === 0 && stripos($head, 'svg') !== FALSE)) {
+    fputcsv($fh, [$row->fid, $row->uri, $db_size, $disk_size, 'image/svg+xml', 'ok', $ref]);
+    $stats['ok']++;
+    continue;
+  }
+
+  // HTML masquerading as an image - the migration-corruption signature.
+  if (stripos($trim, '<!') === 0 || stripos($trim, '<html') !== FALSE || stripos($trim, '<?php') === 0 || stripos($trim, '<?xml') === 0) {
+    fputcsv($fh, [$row->fid, $row->uri, $db_size, $disk_size, 'text/html', 'html', $ref]);
     $stats['html']++;
     continue;
   }
 
-  if (strpos((string) $real_mime, 'image/') !== 0) {
-    fputcsv($fh, [$row->fid, $row->uri, $db_size, $disk_size, $real_mime, 'not_image', $ref]);
-    $stats['not_image']++;
-    continue;
-  }
-
-  // Real image mime, but is it actually decodable? getimagesize returns FALSE
-  // on truncated/corrupt image data.
-  $info = @getimagesize($real);
-  if ($info === FALSE) {
-    fputcsv($fh, [$row->fid, $row->uri, $db_size, $disk_size, $real_mime, 'truncated', $ref]);
-    $stats['truncated']++;
-    continue;
-  }
-
-  fputcsv($fh, [$row->fid, $row->uri, $db_size, $disk_size, $real_mime, 'ok', $ref]);
-  $stats['ok']++;
+  // Finfo is optional enrichment only - never used to gate classification.
+  $real_mime = $finfo ? (finfo_file($finfo, $real) ?: 'unknown') : 'unknown';
+  fputcsv($fh, [$row->fid, $row->uri, $db_size, $disk_size, $real_mime, 'truncated', $ref]);
+  $stats['truncated']++;
 
   if ($n % 5000 === 0) {
     echo "  scanned $n ...\n";
@@ -115,7 +127,7 @@ if ($finfo) {
   finfo_close($finfo);
 }
 
-$bad = $stats['empty'] + $stats['html'] + $stats['truncated'] + $stats['not_image'] + $stats['missing'];
+$bad = $stats['empty'] + $stats['html'] + $stats['truncated'] + $stats['missing'];
 echo "\n=== Image audit complete ===\n";
 echo "Total image entities scanned: $n\n";
 foreach ($stats as $k => $v) {
