@@ -1,8 +1,38 @@
 # Image Corruption Restoration Plan
 
-Status: PLAN (not yet executed)
+Status: IN PROGRESS - Phase A + B run on prod; Phase C (repair) built + validated
 Author: investigation 2026-06-27
 Trigger: dblog flooded with `image` errors - "ImageMagick error 1: identify: Not a JPEG file"
+
+## 0. Authoritative production numbers (Phase A + B, 2026-06-28)
+
+Phase A on-disk scan of all 119,617 image entities:
+
+| verdict   | count   | meaning                                            |
+|-----------|---------|----------------------------------------------------|
+| ok        | 102,702 | valid, decodable images                            |
+| html      | 2,493   | HTML error pages with image extension (log cause)  |
+| empty     | 58      | 0-byte files                                        |
+| truncated | 4       | corrupt/incomplete image bytes                      |
+| missing   | 14,360  | file_managed points to a path absent from disk     |
+
+Two distinct problems:
+- LOG SPAM = the 2,555 files that exist-but-are-bad-bytes (html+empty+truncated).
+  ImageMagick can only fail `identify` on a present file, so this exact set
+  drives the dblog clutter. (Much smaller than the 7,324 DB-filesize estimate.)
+- DATA LOSS = 14,360 missing files (~12% of refs point at nothing). Separate
+  track; does not cause ImageMagick errors.
+
+Phase B recovery-source scan of the 16,915 broken files:
+
+| source_method             | count | meaning                                  |
+|---------------------------|-------|------------------------------------------|
+| duplicate                 | 8,435 | healthy same-name image on disk - fix now |
+| needs_backup_or_reharvest | 8,480 | no on-disk copy - backup / re-harvest     |
+| derivative                | 0     | none (cannot derive from a corrupt source)|
+
+So ~half are recoverable from on-disk twins (the legacy/modern path redundancy),
+half are genuinely lost and need backups or Archive Factory re-harvest.
 
 ## 1. Summary
 
@@ -156,9 +186,15 @@ deleted until its replacement is verified.
 - `scripts/image-source-finder.php` - Phase B recovery-source mapper (read-only)
   BUILT + validated locally. Run:
   `drush php:script scripts/image-source-finder.php <audit.csv>`
-- `scripts/image-repair.php`         - Phase C staged repair executor (TO BUILD)
-  Design after the prod Phase B numbers are known. Dry-run by default,
-  `--apply` to write; min-dimension threshold to reject tiny "duplicates".
+- `scripts/image-repair.php`         - Phase C staged repair executor.
+  BUILT + validated locally (corrupt->healthy copy, metadata corrected,
+  derivative flush, reversible backup manifest). DRY-RUN by default; append
+  `apply` to write. Positional tokens: `apply`, `unreferenced`, `min=<int>`,
+  `limit=<int>`. Quality guards: min-dimension (default 200) rejects junk
+  same-name matches; post-write getimagesize verify with rollback; referenced
+  files only unless `unreferenced` given. Run:
+  `drush php:script scripts/image-repair.php <recovery-plan.csv>` (dry-run),
+  then `... <recovery-plan.csv> apply limit=200` for a careful first batch.
 
 ## 10. Validation status (2026-06-27, local DDEV)
 
