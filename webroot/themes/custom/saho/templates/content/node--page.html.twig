@@ -17,7 +17,10 @@
 #}
 
 {# ─── Pre-flight checks ──────────────────────────────────────────────────── #}
-{% set has_hero    = node.field_image.entity is not empty %}
+{# Index the first delta directly: node.field_image.entity triggers an
+   appendItem() side-effect on an empty field, which makes the guard wrongly
+   truthy and renders an empty <img src=""> hero (huge gap). #}
+{% set has_hero    = node.field_image.0.entity is not empty %}
 {% set has_files   = node.field_file_upload is not empty %}
 {% set has_comments = content.comment_node_page is defined and content.comment_node_page|render|trim %}
 
