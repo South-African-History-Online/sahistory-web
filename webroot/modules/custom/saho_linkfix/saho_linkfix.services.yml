@@ -1,0 +1,19 @@
+services:
+  saho_linkfix.resolver:
+    class: Drupal\saho_linkfix\Service\LegacyLinkResolver
+    arguments:
+      - '@database'
+  saho_linkfix.redirect_writer:
+    class: Drupal\saho_linkfix\Service\LegacyRedirectWriter
+    arguments:
+      - '@entity_type.manager'
+      - '@logger.factory'
+  saho_linkfix.body_rewriter:
+    class: Drupal\saho_linkfix\Service\BodyLinkRewriter
+    arguments:
+      - '@entity_type.manager'
+      - '@logger.factory'
+  saho_linkfix.legacy_htm_fallback_subscriber:
+    class: Drupal\saho_linkfix\EventSubscriber\LegacyHtmFallbackSubscriber
+    tags:
+      - { name: event_subscriber }
