@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Drupal\saho_linkfix\EventSubscriber;
 
-use Drupal\Core\Routing\TrustedRedirectResponse;
+use Drupal\Core\Routing\LocalRedirectResponse;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -52,7 +52,7 @@ final class LegacyHtmFallbackSubscriber implements EventSubscriberInterface {
 
     // index.htm anywhere -> homepage, mirroring the old Apache rule.
     if (strtolower($stem) === 'index') {
-      $event->setResponse(new TrustedRedirectResponse('/', 301));
+      $event->setResponse(new LocalRedirectResponse('/', 301));
       return;
     }
     if ($stem === '') {
@@ -86,7 +86,7 @@ final class LegacyHtmFallbackSubscriber implements EventSubscriberInterface {
     $query['sort_by'] = 'search_api_relevance';
 
     $url = '/search?' . http_build_query($query);
-    $response = new TrustedRedirectResponse($url, 301);
+    $response = new LocalRedirectResponse($url, 301);
     // Keep the 404 cacheable-by-path so Cloudflare can hold the redirect.
     $response->getCacheableMetadata()->setCacheMaxAge(86400);
     $event->setResponse($response);

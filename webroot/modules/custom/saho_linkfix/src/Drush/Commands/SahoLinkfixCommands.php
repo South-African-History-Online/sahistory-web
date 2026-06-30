@@ -256,11 +256,28 @@ final class SahoLinkfixCommands extends DrushCommands {
   }
 
   /**
-   * Ensure a directory exists.
+   * Ensure a work directory exists and is not web-accessible.
+   *
+   * The artifacts (candidates.json, gaps.csv, and especially the body rollback
+   * file, which holds pre-rewrite HTML) live under the public files directory,
+   * so a deny-all .htaccess is written to keep them off the web.
    */
   protected function ensureDir(string $dir): void {
     if (!is_dir($dir)) {
       mkdir($dir, 0775, TRUE);
+    }
+    $htaccess = $dir . '/.htaccess';
+    if (!is_file($htaccess)) {
+      file_put_contents($htaccess, implode("\n", [
+        '# Deny all web access to link-fix work artifacts.',
+        '<IfModule mod_authz_core.c>',
+        '  Require all denied',
+        '</IfModule>',
+        '<IfModule !mod_authz_core.c>',
+        '  Deny from all',
+        '</IfModule>',
+        '',
+      ]));
     }
   }
 
