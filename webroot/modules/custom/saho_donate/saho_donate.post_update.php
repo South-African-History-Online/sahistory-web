@@ -144,7 +144,7 @@ function saho_donate_post_update_create_patron_product(?array &$sandbox = NULL):
     . '<li>Permanent recognition on the Wall of Champions</li>' . "\n"
     . '<li>A personal thank you from SAHO leadership</li>' . "\n"
     . '</ul>' . "\n"
-    . '<p>Your patronage makes a lasting difference. A tax certificate is available via the Marion Institute.</p>';
+    . '<p>Your patronage makes a lasting difference.</p>';
 
   $product_storage = $entity_type_manager->getStorage('commerce_product');
   $product = $product_storage->create([
@@ -177,4 +177,54 @@ function saho_donate_post_update_create_patron_product(?array &$sandbox = NULL):
     $variation->id(),
     $alias
   );
+}
+
+/**
+ * Remove Marion Institute / tax-certificate references from product bodies.
+ *
+ * The Marion Institute is no longer SAHO's fiscal sponsor (issue #389). The
+ * Patron product body was seeded (by the create_patron_product hook above) with
+ * a "tax certificate via the Marion Institute" sentence that is now live on the
+ * shop. Editing the seed literal only affects fresh installs, so this hook
+ * scrubs the sentence from any existing commerce product body. Idempotent: a
+ * second run finds nothing to change.
+ */
+function saho_donate_post_update_remove_marion_references(?array &$sandbox = NULL): string {
+  $entity_type_manager = \Drupal::entityTypeManager();
+  if (!$entity_type_manager->hasDefinition('commerce_product')) {
+    return 'Skipped: commerce_product is not available on this site (expected except on the shop).';
+  }
+
+  $storage = $entity_type_manager->getStorage('commerce_product');
+  // Only products whose body actually mentions Marion need touching.
+  $ids = $storage->getQuery()
+    ->accessCheck(FALSE)
+    ->condition('body.value', '%Marion Institute%', 'LIKE')
+    ->execute();
+  if (empty($ids)) {
+    return 'No commerce products reference the Marion Institute - nothing to scrub.';
+  }
+
+  $changed = 0;
+  foreach ($storage->loadMultiple($ids) as $product) {
+    /** @var \Drupal\commerce_product\Entity\ProductInterface $product */
+    if (!$product->hasField('body') || $product->get('body')->isEmpty()) {
+      continue;
+    }
+    // Work on the raw field value array so the text format is preserved.
+    $items = $product->get('body')->getValue();
+    $original = (string) ($items[0]['value'] ?? '');
+    // Drop any sentence that mentions the Marion Institute (with its leading
+    // space), then tidy any double spaces left behind.
+    $new = preg_replace('/\s*[^.<>]*Marion Institute[^.<>]*\./u', '', $original);
+    $new = preg_replace('/[ ]{2,}/', ' ', (string) $new);
+    if ($new !== $original) {
+      $items[0]['value'] = $new;
+      $product->set('body', $items);
+      $product->save();
+      $changed++;
+    }
+  }
+
+  return sprintf('Scrubbed Marion Institute references from %d commerce product(s).', $changed);
 }
