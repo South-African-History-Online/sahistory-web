@@ -10,9 +10,13 @@
  * then `identify` it successfully, so the recurring image-error log spam stops,
  * and pages show a clean placeholder instead of a broken image.
  *
- * Only the present-but-corrupt verdicts are targeted (html, empty, truncated).
- * `missing` files are NOT touched - a non-existent file cannot spam the
- * ImageMagick log, and writing a placeholder for it would fabricate content.
+ * Default verdicts are the present-but-corrupt ones (html, empty, truncated),
+ * which are replaced in place. The `missing` verdict can also be requested
+ * (verdicts=missing): there is no file to fail identify, but a derived-image
+ * request still logs "source image does not exist", so a placeholder is
+ * CREATED at the path to stop that too. Creation is gated to REFERENCED files
+ * (file_usage > 0) so the thousands of unreferenced phantom D7-derivative
+ * entries are never materialized as junk (override with include-unreferenced).
  *
  * SAFE BY DEFAULT: with no "apply" token it only reports - changes nothing.
  * Every replaced file is first backed up (the corrupt original is preserved)
@@ -23,6 +27,8 @@
  *   # cap the batch, or restrict verdicts (default html,empty,truncated):
  *   ... <audit.csv> apply limit=200
  *   ... <audit.csv> apply verdicts=html
+ *   # mop up referenced 'missing' files (creates placeholders):
+ *   ... <audit.csv> apply verdicts=missing
  *
  * See docs/IMAGE-CORRUPTION-RESTORATION-PLAN.md.
  */
@@ -35,9 +41,13 @@ $audit = NULL;
 $apply = FALSE;
 $limit = 0;
 $verdicts = ['html' => 1, 'empty' => 1, 'truncated' => 1];
+$include_unreferenced = FALSE;
 foreach ($tokens as $t) {
   if ($t === 'apply') {
     $apply = TRUE;
+  }
+  elseif ($t === 'include-unreferenced') {
+    $include_unreferenced = TRUE;
   }
   elseif (strpos($t, 'limit=') === 0) {
     $limit = (int) substr($t, 6);
@@ -169,12 +179,20 @@ while (($r = fgetcsv($in)) !== FALSE) {
   }
   $rel = substr($uri, strlen('public://'));
   $target = $public_root . '/' . $rel;
+  $on_disk = is_file($target);
 
-  // Only present-but-corrupt files (the ones that actually fail identify).
-  if (!is_file($target)) {
-    fputcsv($action, [$r[$col['fid']], $uri, $verdict, $ref, 'skip_not_on_disk', '']);
-    $counts['skip_not_on_disk']++;
-    continue;
+  // Present-but-corrupt (html/empty/truncated) files are replaced in place.
+  // For the 'missing' verdict there is no file to fail identify, but a derived-
+  // image request still logs "source image does not exist"; we CREATE a
+  // placeholder so that stops too - but only for referenced files, so the
+  // thousands of unreferenced phantom entries are not materialized as junk.
+  if (!$on_disk) {
+    $creatable = ($verdict === 'missing') && ($ref > 0 || $include_unreferenced);
+    if (!$creatable) {
+      fputcsv($action, [$r[$col['fid']], $uri, $verdict, $ref, 'skip_not_on_disk', '']);
+      $counts['skip_not_on_disk']++;
+      continue;
+    }
   }
 
   $fid = $connection->query('SELECT fid FROM {file_managed} WHERE uri = :u', [':u' => $uri])->fetchField();
@@ -187,7 +205,7 @@ while (($r = fgetcsv($in)) !== FALSE) {
   $processed++;
 
   if (!$apply) {
-    fputcsv($action, [$fid, $uri, $verdict, $ref, 'would_neutralize', '']);
+    fputcsv($action, [$fid, $uri, $verdict, $ref, 'would_neutralize', $on_disk ? '' : 'create']);
     $counts['would_neutralize']++;
     continue;
   }
@@ -196,9 +214,19 @@ while (($r = fgetcsv($in)) !== FALSE) {
   [$fmt, $mime] = $fmt_for($target);
   $bytes = $make_placeholder($fmt);
 
-  $old_size = filesize($target);
-  $backup_abs = $backup_dir . '/' . $fid . '-' . basename($target);
-  @copy($target, $backup_abs);
+  // Back up the existing corrupt file (none to back up for missing/create).
+  $old_size = $on_disk ? filesize($target) : 0;
+  $backup_abs = '';
+  if ($on_disk) {
+    $backup_abs = $backup_dir . '/' . $fid . '-' . basename($target);
+    @copy($target, $backup_abs);
+  }
+  else {
+    $tdir = dirname($target);
+    if (!is_dir($tdir)) {
+      @mkdir($tdir, 0775, TRUE);
+    }
+  }
 
   if (@file_put_contents($target, $bytes) === FALSE) {
     fputcsv($action, [$fid, $uri, $verdict, $ref, 'failed', 'write failed']);
