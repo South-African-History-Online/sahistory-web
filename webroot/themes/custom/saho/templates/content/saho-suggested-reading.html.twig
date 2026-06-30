@@ -23,6 +23,9 @@
         <div class="saho-cards-grid">
           {% for item in items %}
             {% set entity = item.entity %}
+            {# Skip references whose target entity is missing/deleted so we
+               never render a /node/null (or /<type>/null) link. #}
+            {% if entity %}
             {% set image_url = null %}
 
 {# Get image URL based on content type and available fields #}
@@ -113,6 +116,7 @@
                 </div>
               </a>
             </div>
+            {% endif %}
           {% endfor %}
         </div>
       </div>
