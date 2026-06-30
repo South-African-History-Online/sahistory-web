@@ -48,8 +48,10 @@ drush saho:linkfix-redirects-rollback   # delete redirects a run created
 drush saho:linkfix-rewrite-rollback     # restore bodies a run changed
 ```
 
-Work artifacts live in `sites/default/files/saho_linkfix_work/`. Every `--apply`
-run writes a rollback file.
+Work artifacts live in `public://saho_linkfix_work/` (resolved per-environment
+via Drupal's stream wrapper, so the commands work on local and prod without a
+path override). A deny-all `.htaccess` is written into that directory on
+creation. Every `--apply` run writes a rollback file there.
 
 ## Safety guarantees (asserted by tests)
 
@@ -63,9 +65,17 @@ run writes a rollback file.
 
 ## Deployment
 
+The module is in exported config (`core.extension.yml`), so `drush cim` keeps it
+enabled - it will not be silently disabled by a config import on deploy.
+
 1. Deploy code; the `.htaccess.custom` change re-scaffolds to `webroot/.htaccess`
-   via `composer drupal:scaffold` (the live file is gitignored).
-2. `drush cr`, then dry-run `saho:linkfix-scan`/`-redirects`/`-rewrite`.
+   via `composer drupal:scaffold` (the live file is gitignored). Run
+   `drush cim` (or `drush en saho_linkfix -y`) in the same step so the module is
+   enabled the moment the `.htaccess` search-block is removed - otherwise legacy
+   `.htm` URLs hard-404 in the gap between deploy and enable.
+2. `drush cr`, then dry-run `saho:linkfix-scan`/`-redirects`/`-rewrite` (default
+   paths now resolve via `public://`, no override needed).
 3. Apply redirects, verify, apply rewrites; archive the rollback files.
 4. Confirm a sample legacy URL 301s to the exact node and an unmapped one falls
    back to typed search. Cloudflare caches the 301s.
+   `BASE_URL=https://sahistory.org.za bash scripts/linkfix/verify-legacy-urls.sh`

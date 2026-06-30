@@ -52,8 +52,8 @@ final class SahoLinkfixCommands extends DrushCommands {
   #[CLI\Option(name: 'gaps', description: 'Unmapped legacy links CSV output path.')]
   public function scan(
     array $options = [
-      'out' => '/var/www/html/webroot/sites/default/files/saho_linkfix_work/candidates.json',
-      'gaps' => '/var/www/html/webroot/sites/default/files/saho_linkfix_work/gaps.csv',
+      'out' => 'public://saho_linkfix_work/candidates.json',
+      'gaps' => 'public://saho_linkfix_work/gaps.csv',
     ],
   ): void {
     $this->ensureDir(dirname($options['out']));
@@ -131,9 +131,9 @@ final class SahoLinkfixCommands extends DrushCommands {
   #[CLI\Option(name: 'rollback-out', description: 'Where to write created redirect ids.')]
   public function redirects(
     array $options = [
-      'in' => '/var/www/html/webroot/sites/default/files/saho_linkfix_work/candidates.json',
+      'in' => 'public://saho_linkfix_work/candidates.json',
       'apply' => FALSE,
-      'rollback-out' => '/var/www/html/webroot/sites/default/files/saho_linkfix_work/redirects_rollback.json',
+      'rollback-out' => 'public://saho_linkfix_work/redirects_rollback.json',
     ],
   ): void {
     $candidates = $this->readJson($options['in']);
@@ -167,9 +167,9 @@ final class SahoLinkfixCommands extends DrushCommands {
   #[CLI\Option(name: 'rollback-out', description: 'Where to write the body snapshot rollback.')]
   public function rewrite(
     array $options = [
-      'in' => '/var/www/html/webroot/sites/default/files/saho_linkfix_work/candidates.json',
+      'in' => 'public://saho_linkfix_work/candidates.json',
       'apply' => FALSE,
-      'rollback-out' => '/var/www/html/webroot/sites/default/files/saho_linkfix_work/rewrite_rollback.json',
+      'rollback-out' => 'public://saho_linkfix_work/rewrite_rollback.json',
     ],
   ): void {
     $candidates = $this->readJson($options['in']);
@@ -205,7 +205,7 @@ final class SahoLinkfixCommands extends DrushCommands {
   #[CLI\Option(name: 'apply', description: 'Actually delete.')]
   public function redirectsRollback(
     array $options = [
-      'in' => '/var/www/html/webroot/sites/default/files/saho_linkfix_work/redirects_rollback.json',
+      'in' => 'public://saho_linkfix_work/redirects_rollback.json',
       'apply' => FALSE,
     ],
   ): void {
@@ -221,7 +221,7 @@ final class SahoLinkfixCommands extends DrushCommands {
   #[CLI\Option(name: 'apply', description: 'Actually restore bodies.')]
   public function rewriteRollback(
     array $options = [
-      'in' => '/var/www/html/webroot/sites/default/files/saho_linkfix_work/rewrite_rollback.json',
+      'in' => 'public://saho_linkfix_work/rewrite_rollback.json',
       'apply' => FALSE,
     ],
   ): void {
