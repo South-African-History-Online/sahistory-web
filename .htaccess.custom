@@ -148,10 +148,15 @@ RewriteRule ^(.+)\.(jpe?g|png)$ $1.webp [T=image/webp,E=accept:1,L]
   # 3. Redirect site-search to search
   RewriteRule ^site-search$ /search [R=301,L,QSA]
 
-  # 4. Redirect /places/ to /place/ (singular)
+  # 4. Redirect /places/ to /place/ (singular).
+  # Exempt legacy .htm/.html so those fall through to Drupal, where saho_linkfix
+  # has a precise redirect to the exact node (this section-rename rule would
+  # otherwise rewrite places/x.htm -> place/x.htm, which has no route).
+  RewriteCond %{REQUEST_URI} !\.html?$ [NC]
   RewriteRule ^places/(.*)$ /place/$1 [R=301,L]
 
-  # 5. Redirect /topics/ to /article/
+  # 5. Redirect /topics/ to /article/ (legacy .htm exempted, as above).
+  RewriteCond %{REQUEST_URI} !\.html?$ [NC]
   RewriteRule ^topics/(.*)$ /article/$1 [R=301,L]
   RewriteRule ^topic/(.*)$ /article/$1 [R=301,L]
 
