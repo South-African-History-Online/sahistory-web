@@ -158,38 +158,20 @@ RewriteRule ^(.+)\.(jpe?g|png)$ $1.webp [T=image/webp,E=accept:1,L]
   # 6. Redirect old captcha URLs to homepage
   RewriteRule ^image-captcha-generate/(.*)$ / [R=301,L]
 
-  # 7. Smart redirect for .htm/.html files to search
-
-  # Serve real .htm/.html files that physically exist on disk (e.g. domain-
-  # verification files like Facebook/Google/Bing). Only MISSING legacy .htm/.html
-  # URLs should fall through to the search redirects below.
+  # 7. Legacy .htm/.html handling now lives in Drupal, not Apache.
+  #
+  # Physical .htm/.html files that exist on disk (e.g. domain-verification
+  # files like Facebook/Google/Bing) are still served directly.
   RewriteCond %{REQUEST_FILENAME} -f
   RewriteRule \.(html?)$ - [L]
 
-  # Index files -> redirect to homepage
-  RewriteRule ^index\.(htm|html)$ / [R=301,L]
-
-  # Article content -> extract part after article\d+- (using same pattern as people)
-  RewriteCond %{REQUEST_URI} ^.*article.*?/(article\d+[-_](.+))\.(htm|html)$
-  RewriteRule ^.*article.*?/([^/]+)\.(htm|html)$ /search?search_api_fulltext=%2&type=article&sort_by=search_api_relevance [R=301,L]
-
-  # People/Biography pages -> biography search
-  RewriteRule ^.*people.*?/([^/]+)\.(htm|html)$ /search?search_api_fulltext=$1&search_api_fulltext_searched_fields%5B%5D=title&type=biography&sort_by=search_api_relevance [R=301,L]
-
-  # Places pages -> place search
-  RewriteRule ^.*places.*?/([^/]+)\.(htm|html)$ /search?search_api_fulltext=$1&type=place&sort_by=search_api_relevance [R=301,L]
-
-  # Archive content -> archive search
-  RewriteRule ^.*archive.*?/([^/]+)\.(htm|html)$ /search?search_api_fulltext=$1&type=archive&sort_by=search_api_relevance [R=301,L]
-
-  # Article/Page content -> article search (fallback for other article patterns)
-  RewriteRule ^.*(article|page).*?/([^/]+)\.(htm|html)$ /search?search_api_fulltext=$2&type=article&sort_by=search_api_relevance [R=301,L]
-
-  # Root-level .htm files (likely people) -> biography search  
-  RewriteRule ^([^/]+)\.(htm|html)$ /search?search_api_fulltext=$1&search_api_fulltext_searched_fields%5B%5D=title&type=biography&sort_by=search_api_relevance [R=301,L]
-
-  # Generic fallback for any remaining .htm/.html files (with paths)
-  RewriteRule ^.*?/([^/]+)\.(htm|html)$ /search?search_api_fulltext=$1&sort_by=search_api_relevance [R=301,L]
+  # Every other (missing) legacy .htm/.html URL now falls through to Drupal so
+  # that the redirect module can serve the PRECISE legacy redirect (mapped to
+  # the exact node via saho_linkfix). Only genuinely unmapped legacy URLs reach
+  # saho_linkfix's LegacyHtmFallbackSubscriber, which reproduces the previous
+  # "smart redirect to a typed search page" behaviour as a last resort. Keeping
+  # these rules in Apache would mask the precise redirects, so they were removed
+  # intentionally - do not reinstate them here.
 
   # 8. Redirect complex archive filter URLs to main archive
   RewriteRule ^archive-filter(.*)$ /archive [R=301,L]
