@@ -1,8 +1,34 @@
 # Image Corruption Restoration Plan
 
-Status: IN PROGRESS - Phase A + B run on prod; Phase C (repair) built + validated
+Status: PHASE C EXECUTED on prod 2026-06-30 (8,357 repaired); backup/re-harvest
+        track + log clear + re-audit remain
 Author: investigation 2026-06-27
 Trigger: dblog flooded with `image` errors - "ImageMagick error 1: identify: Not a JPEG file"
+
+## Execution log
+
+- 2026-06-27: Phase A + B run on prod. 119,617 image entities: 2,555
+  corrupt-bytes (html/empty/truncated), 14,360 missing-from-disk. Of 16,915
+  broken, 8,435 have a healthy on-disk twin, 8,480 need backup/re-harvest.
+- 2026-06-30: Phase C repair run on prod with `apply unreferenced min=100`.
+  Result: **8,357 repaired**, 78 skip_too_small. Two repaired files verified
+  on the live domain via Playwright (chris-hani.jpg 678x829; deklerk-fw3.jpg
+  renders the real portrait). Rollback manifests + per-file backups in prod
+  `private/` (image-repair-manifest-*.csv, image-repair-backup-*/).
+- PIVOT recorded: `file_usage` is the wrong usage filter here. The corrupt
+  files are legacy-path orphans (file_usage = 0) whose healthy twin carries the
+  usage record; the orphan path is still requested and spams the log. Hence the
+  repair must run with the `unreferenced` token (referenced-only fixed just 73).
+
+## Remaining
+
+1. Clear the log: `drush watchdog:delete --type=image` (prod).
+2. Re-run Phase A; corrupt-bytes count should fall from 2,555 to ~0 (only the
+   ~78 too-small still present-but-broken).
+3. The 8,480 needs_backup_or_reharvest (+ 78 too-small) have no on-disk twin:
+   pre-2019 files backup, else Archive Factory / Wayback re-harvest.
+4. The 14,360 `missing` entries (path absent on disk) are a separate data-loss
+   track, partly overlapping #3.
 
 ## 0. Authoritative production numbers (Phase A + B, 2026-06-28)
 
