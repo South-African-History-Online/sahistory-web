@@ -76,27 +76,21 @@ props:
       enum: [solid, ghost]
       default: solid
     image_width:
-      type: number
+      # Nullable: hero often renders without explicit dimensions (Drupal 11.4
+      # SDC validation rejects a bare `number` when null is passed).
+      type: [number, 'null']
       title: Image Width
       description: Image width for CLS prevention
     image_height:
-      type: number
+      type: [number, 'null']
       title: Image Height
       description: Image height for CLS prevention
     attributes:
-      type: object
+      # Accept the Drupal Attribute object or an empty string (11.4 passes the
+      # rendered attributes which can arrive as a string).
+      type: [object, string]
       title: HTML Attributes
       description: Additional HTML attributes (class, id, data-*, etc.)
-      properties:
-        class:
-          type: array
-          title: CSS Classes
-          description: Additional CSS classes
-          items:
-            type: string
-        id:
-          type: string
-          title: Element ID
   required:
     - title
     - background_image
