@@ -1,0 +1,24 @@
+{#
+/**
+ * @file SAHO Provenance block SDC. props: title, note, sources[], last_updated
+ */
+#}
+<section{{ attributes.addClass('saho-prov') }}>
+  <h3 class="saho-prov__title">{{ title|default('How we know this') }}</h3>
+  {% if note %}<p class="saho-prov__note">{{ note }}</p>{% endif %}
+  {% if sources %}
+    <ol class="saho-prov__sources">
+      {% for s in sources %}
+        <li class="saho-prov__source">
+          <span class="saho-prov__num">{{ '%02d'|format(loop.index) }}</span>
+          <span class="saho-prov__cite">
+            {%- if s.author %}<b>{{ s.author }}.</b> {% endif -%}
+            {%- if s.href %}<a href="{{ s.href }}">{{ s.title }}</a>{% else %}<i>{{ s.title }}</i>{% endif -%}
+            {%- if s.detail %}<span class="saho-prov__detail">. {{ s.detail }}</span>{% endif -%}
+          </span>
+        </li>
+      {% endfor %}
+    </ol>
+  {% endif %}
+  {% if last_updated %}<p class="saho-prov__updated">Last updated &middot; {{ last_updated }}</p>{% endif %}
+</section>

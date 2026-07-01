@@ -1,0 +1,64 @@
+/* ============================================================
+   SAHO 2027 · Effect tokens
+   The Record: a catalogue, not a consumer app. Corners are square — borders
+   and ruled hairlines do the structural work, not shadows. An archive feels
+   still and trustworthy.
+   ============================================================ */
+
+:root {
+  /* ---------- Border radius — square by default (catalogue/ledger) ---------- */
+  --radius-none: 0;
+  --radius-xs:   0;     /* tags, badges, inputs — square */
+  --radius-sm:   0;     /* buttons, small cards — square */
+  --radius-md:   0;     /* cards / records — square */
+  --radius-lg:   0;     /* modals, panels — square */
+  --radius-full: 9999px;/* genuine circles only: avatars, status dots */
+
+  /* ---------- Borders ---------- */
+  --bw-hair:   1px;   /* @kind spacing */ /* finding-aid hairline */
+  --bw-rule:   2px;   /* @kind spacing */ /* section rules */
+  --bw-accent: 3px;   /* @kind spacing */ /* content-type edge */
+
+  /* ---------- Shadows — borders do the work; shadows are a faint last resort ---------- */
+  --shadow-none: none;
+  --shadow-xs: none;
+  --shadow-sm: 0 1px 0 rgba(27, 28, 23, 0.05);
+  --shadow-md: 0 1px 2px rgba(27, 28, 23, 0.07);
+  --shadow-lg: 0 4px 14px rgba(27, 28, 23, 0.10);
+  --shadow-xl: 0 10px 30px rgba(27, 28, 23, 0.14);
+
+  /* Inset for sunk panels / wells */
+  --shadow-inset: inset 0 1px 2px rgba(27, 28, 23, 0.08);
+
+  /* Focus ring (keyboard) */
+  --focus-shadow: 0 0 0 3px var(--saho-oxblood-25); /* @kind shadow */
+
+  /* ---------- Transitions — purposeful, never bouncy ---------- */
+  --ease-standard: cubic-bezier(0.2, 0, 0.2, 1);    /* @kind other */
+  --ease-out:      cubic-bezier(0.16, 1, 0.3, 1);   /* @kind other */
+  --t-fast:   120ms var(--ease-standard);           /* @kind other */
+  --t-base:   180ms var(--ease-standard);           /* @kind other */
+  --t-slow:   260ms var(--ease-out);                /* @kind other */
+
+  /* ---------- Duotone treatment (unify disparate archival imagery) ---------- */
+  /* Apply as: filter: var(--duotone-*) on <img>, with a layered tint. */
+  --img-duotone:        grayscale(1) contrast(1.06) sepia(0.18) saturate(0.65) brightness(0.98); /* @kind other */
+  --img-duotone-shadow: var(--saho-ink);   /* @kind color */ /* darks → ink */
+  --img-duotone-light:  var(--saho-paper); /* @kind color */ /* lights → paper */
+
+  /* ---------- Z-index scale ---------- */
+  --z-base:     0;     /* @kind other */
+  --z-raised:   10;    /* @kind other */
+  --z-sticky:   1020;  /* @kind other */
+  --z-header:   1030;  /* @kind other */
+  --z-backdrop: 1040;  /* @kind other */
+  --z-modal:    1050;  /* @kind other */
+  --z-popover:  1060;  /* @kind other */
+  --z-tooltip:  1070;  /* @kind other */
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --t-fast: 0ms; /* @kind other */ --t-base: 0ms; /* @kind other */ --t-slow: 0ms; /* @kind other */
+  }
+}

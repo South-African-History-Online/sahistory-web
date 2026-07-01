@@ -1,0 +1,36 @@
+$schema: https://git.drupalcode.org/project/drupal/-/raw/HEAD/core/assets/schemas/v1/metadata.schema.json
+name: 'Record header'
+status: stable
+group: 'SAHO Content'
+description: 'Frames any archive entity as a catalogue record: a typed folder tab, an accession reference, status, the record title, and a ruled strip of key fields. The data structure made visible — every page is a record.'
+props:
+  type: object
+  properties:
+    type:
+      type: string
+      title: 'Content type'
+      enum: [article, biography, place, archive, event, topic]
+      default: article
+    reference:
+      type: string
+      title: 'Accession reference'
+    status:
+      type: string
+      title: Status
+    kicker:
+      type: string
+      title: Kicker
+    title:
+      type: string
+      title: Title
+    facts:
+      type: array
+      title: 'Key fields'
+      items:
+        type: object
+        properties:
+          label: { type: string }
+          value: { type: string }
+slots:
+  actions:
+    title: Actions

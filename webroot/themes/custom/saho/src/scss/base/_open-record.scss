@@ -1,0 +1,147 @@
+// =============================================================================
+// SAHO 2027 "Open Record" - Phase 0 sitewide hard-edged reskin
+// =============================================================================
+// The token layer (base/_variables.scss) flips palette + type + Bootstrap shape.
+// This partial catches the theme's OWN component literals during the migration:
+// square corners, remove hover-lift and glassmorphism. Later per-template phases
+// replace component internals with SDC; until then this guarantees the 2027 look.
+//
+// Imported LAST in main.style.scss so it wins the cascade.
+
+// --- Square by discipline --------------------------------------------------
+// Collapse literal radii on box/card/button/input families to 0. Genuine
+// circles (avatars, status dots, spinners) opt out via the :not() guards.
+.card,
+.btn,
+[class*="btn-"],
+.badge,
+.alert,
+.tile,
+.block,
+.panel,
+.form-control,
+.form-select,
+.input-group,
+.input-group-text,
+.dropdown-menu,
+.list-group,
+.list-group-item,
+.nav-tabs,
+.nav-pills .nav-link,
+.pagination,
+.page-link,
+.modal-content,
+.toast,
+.popover,
+.accordion,
+.accordion-item,
+.accordion-button,
+[class*="saho-"],
+[class*="-card"],
+[class*="card-"],
+[class*="-tile"] {
+  &:not(.rounded-circle):not(.spinner-border):not(.spinner-grow):not([class*="avatar"]):not([class*="dot"]) {
+    border-radius: 0 !important;
+  }
+}
+
+// --- Borders do the structural work, not shadows ---------------------------
+// Cards/records read as filed sheets: hairline frame, square, no elevation.
+.card,
+[class*="-card"],
+.glass-card,
+.tile {
+  &:not(.rounded-circle) {
+    box-shadow: none !important;
+    // A calm archival ground with a catalogue hairline frame.
+    background-color: var(--saho-paper-raised, #f1efe7);
+    border: var(--bw-hair, 1px) solid var(--border-default, #bdb9a6);
+  }
+}
+
+// --- No glassmorphism -------------------------------------------------------
+// An archive is opaque paper: kill blur/translucency; sit on raised paper.
+.glass-card,
+[class*="glass"],
+.saho-search-suggestions,
+.search-suggestions {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  background-color: var(--saho-paper-raised, #f1efe7) !important;
+}
+
+// --- Hover selects, it does not lift ---------------------------------------
+// The DS rule: on hover a record darkens its border to ink and drops to the
+// sunk ground; it never translates, scales, or glows. An archive is still.
+.card,
+[class*="-card"],
+.tile,
+.block-card,
+.saho-card,
+.glass-card {
+  &:hover,
+  &:focus-within {
+    transform: none !important;
+    box-shadow: none !important;
+    border-color: var(--saho-ink, #1b1c17) !important;
+    background-color: var(--saho-paper-sunk, #dad6c7) !important;
+  }
+}
+
+// --- Links: oxblood, thickening underline on hover -------------------------
+a:not(.btn):not(.nav-link):not(.page-link):not([class*="badge"]) {
+  color: var(--link-rest, #990000);
+  text-underline-offset: 0.15em;
+
+  &:hover,
+  &:focus {
+    color: var(--link-hover, #6e0000);
+    text-decoration-thickness: 2px;
+  }
+}
+
+// --- Focus: always-visible oxblood outline + ring --------------------------
+a,
+button,
+.btn,
+input,
+select,
+textarea,
+[tabindex]:not([tabindex="-1"]),
+summary {
+  &:focus-visible {
+    outline: var(--bw-rule, 2px) solid var(--focus-ring, #990000);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 3px var(--saho-oxblood-25, rgba(153, 0, 0, 0.25));
+  }
+}
+
+// --- Reference register: Caslon titles, mono apparatus ---------------------
+// Long-form article/prose body reads in Caslon Text; metadata rows in Plex Mono.
+.node__content .field--name-body,
+.article-body,
+.prose,
+.text-content {
+  font-family: var(--font-serif, "Libre Caslon Text", georgia, serif);
+}
+
+.saho-meta,
+.saho-eyebrow,
+.field--name-field-ref,
+time,
+.date,
+[class*="metadata"] {
+  font-family: var(--font-mono, "IBM Plex Mono", ui-monospace, monospace);
+}
+
+// --- Motion: calm and purposeful; none under reduced-motion ----------------
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

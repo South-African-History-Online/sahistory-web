@@ -1,0 +1,22 @@
+{#
+/**
+ * @file SAHO Related list SDC. props: title, items[]
+ */
+#}
+<section{{ attributes.addClass('saho-related') }}>
+  <h4 class="saho-related__title">{{ title|default('Related') }}</h4>
+  <ul class="saho-related__list">
+    {% for it in items %}
+      <li class="saho-related__item">
+        <a class="saho-related__link" href="{{ it.href|default('#') }}">
+          <span class="saho-related__dot saho-related__dot--{{ it.type|default('article') }}" aria-hidden="true"></span>
+          <span class="saho-related__text">
+            <span class="saho-related__label">{{ it.label }}</span>
+            {% if it.note %}<span class="saho-related__note">{{ it.note }}</span>{% endif %}
+          </span>
+          <span class="saho-related__type">{{ it.type|default('article') }}</span>
+        </a>
+      </li>
+    {% endfor %}
+  </ul>
+</section>
