@@ -21,8 +21,14 @@
 .layout--saho.is-prose { max-width: var(--container-narrow); }  // 832 long-form
 
 // ---- Vertical rhythm: consistent space between stacked sections ----
-.saho-page > * + * { margin-top: var(--space-7); }
-.layout-builder__region > * + * { margin-top: var(--space-6); }
+// Scoped to Open Record layout sections so it never adds spacing to arbitrary
+// legacy children of the shared .saho-page container.
+.saho-page > .layout--saho + .layout--saho { margin-top: var(--space-7); }
+// Block spacing within a region, EXCEPT the index grid region: its children are
+// promoted to grid items via display:contents and spaced by `gap`. The child
+// combinator still matches them (display:contents doesn't change selector
+// matching), so exclude it or every grid item after the first gets a stray margin.
+.layout-builder__region:not(.region--grid) > * + * { margin-top: var(--space-6); }
 
 // ============================================================
 // Named Layout Builder layouts (see saho.layouts.yml)

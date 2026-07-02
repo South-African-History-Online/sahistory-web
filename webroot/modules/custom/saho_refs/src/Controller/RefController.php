@@ -48,6 +48,11 @@ final class RefController extends ControllerBase {
     if (!$node instanceof NodeInterface || !$node->access('view')) {
       throw new NotFoundHttpException();
     }
+    // Only the node's own canonical reference resolves: reject a mismatched
+    // prefix, missing zero-padding, or a real-ref whose digits are not the nid.
+    if (strcasecmp($this->displayRef->getRef($node), $ref) !== 0) {
+      throw new NotFoundHttpException();
+    }
     return new RedirectResponse($node->toUrl('canonical', ['absolute' => TRUE])->toString(), 301);
   }
 
