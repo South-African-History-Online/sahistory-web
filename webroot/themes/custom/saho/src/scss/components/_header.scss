@@ -276,7 +276,7 @@
     // Bottom indicator - 8px above the bar base, clearing the 3px gradient accent.
     // Slides in on hover/active.
     &::after {
-      content: "" !important; // Override Bootstrap dropdown caret
+      content: ""; // Override Bootstrap dropdown caret
       position: absolute;
       bottom: 8px; // 3px gradient + 5px gap
       left: 0.5rem;
@@ -321,7 +321,7 @@
     margin: 0;
     list-style: none;
     // Override saho:nav's inline style="display: block" with visibility approach
-    display: block !important;
+    display: block;
     opacity: 0;
     visibility: hidden;
     transform: translateY(-6px);
@@ -800,7 +800,11 @@ h1.node__title,
   font-weight: 700;
   font-size: 0.8125rem;
   letter-spacing: 0.02em;
-  transition: background-color var(--saho-transition-base), color var(--saho-transition-base), transform var(--saho-transition-base), box-shadow var(--saho-transition-base);
+  transition:
+    background-color var(--saho-transition-base),
+    color var(--saho-transition-base),
+    transform var(--saho-transition-base),
+    box-shadow var(--saho-transition-base);
   display: flex;
   align-items: center;
   gap: 5px;
@@ -851,17 +855,28 @@ h1.node__title,
 }
 
 @keyframes saho-heartbeat {
-  from { transform: scale(1); }
-  to   { transform: scale(1.35); }
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.35);
+  }
 }
 
 // Gentle ring pulse - draws eye without distracting from content
 // NOTE: rgba() values kept literal here - animation requires exact 0-alpha transitions
 // that CSS custom properties cannot express (no `rgba(var(--token), 0)` syntax in CSS).
 @keyframes saho-donate-ring {
-  0%, 100%  { box-shadow: 0 0 0 0 rgba(153, 0, 0, 0); }
-  40%       { box-shadow: 0 0 0 4px rgba(153, 0, 0, 0.18); }
-  70%       { box-shadow: 0 0 0 7px rgba(153, 0, 0, 0); }
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(153, 0, 0, 0);
+  }
+  40% {
+    box-shadow: 0 0 0 4px rgba(153, 0, 0, 0.18);
+  }
+  70% {
+    box-shadow: 0 0 0 7px rgba(153, 0, 0, 0);
+  }
 }
 
 // ==================================================
@@ -876,7 +891,10 @@ h1.node__title,
   border-radius: var(--saho-button-radius-pill);
   font-weight: 600;
   font-size: 0.875rem;
-  transition: background-color var(--saho-transition-base), transform var(--saho-transition-base), box-shadow var(--saho-transition-base);
+  transition:
+    background-color var(--saho-transition-base),
+    transform var(--saho-transition-base),
+    box-shadow var(--saho-transition-base);
   display: flex;
   align-items: center;
   gap: 5px;
@@ -906,8 +924,12 @@ h1.node__title,
 }
 
 @keyframes saho-bounce {
-  from { transform: translateY(0); }
-  to   { transform: translateY(-3px); }
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-3px);
+  }
 }
 
 // ==================================================
@@ -1202,7 +1224,7 @@ body.offcanvas-open {
 }
 
 .text-gold {
-  color: var(--saho-color-accent) !important;
+  color: var(--saho-color-accent);
 }
 
 // ==================================================
@@ -1239,7 +1261,11 @@ body.offcanvas-open {
     display: flex;
     align-items: center;
     text-decoration: none;
-    transition: background-color var(--saho-transition-base), color var(--saho-transition-base), border-color var(--saho-transition-base), transform var(--saho-transition-base);
+    transition:
+      background-color var(--saho-transition-base),
+      color var(--saho-transition-base),
+      border-color var(--saho-transition-base),
+      transform var(--saho-transition-base);
 
     &:hover,
     &:focus {
@@ -1278,9 +1304,9 @@ body.offcanvas-open {
 
   // Sub-menu - shown as indented block below parent
   .dropdown-menu {
-    position: static;        // Override Bootstrap absolute positioning
+    position: static; // Override Bootstrap absolute positioning
     float: none;
-    display: none;           // Hidden until Bootstrap JS opens it
+    display: none; // Hidden until Bootstrap JS opens it
     background: transparent;
     border: none;
     box-shadow: none;
@@ -1328,8 +1354,8 @@ body.offcanvas-open {
   }
 
   .saho-primary-bar {
-    position: relative !important;
-    box-shadow: none !important;
+    position: relative;
+    box-shadow: none;
 
     &::after {
       display: none;
@@ -1342,40 +1368,40 @@ body.offcanvas-open {
   .offcanvas,
   .offcanvas-backdrop,
   .saho-contribute-btn {
-    display: none !important;
+    display: none;
   }
 
   #toolsDropdown,
   [aria-labelledby="toolsDropdown"],
   .dropdown-menu {
-    display: none !important;
+    display: none;
   }
 
   .modal,
   .modal-backdrop,
   #citation-modal,
   #sharing-modal {
-    display: none !important;
+    display: none;
   }
 
   footer .footer-links,
   footer .social-links,
   footer nav {
-    display: none !important;
+    display: none;
   }
 
   .share-button,
   .cite-button,
   [data-citation-trigger],
   [data-sharing-trigger] {
-    display: none !important;
+    display: none;
   }
 
   body {
     font-size: 12pt;
     line-height: 1.5;
-    color: var(--saho-color-black) !important;
-    background: var(--saho-color-white) !important;
+    color: var(--saho-color-black);
+    background: var(--saho-color-white);
   }
 
   a[href]::after {
@@ -1391,15 +1417,23 @@ body.offcanvas-open {
   }
 
   img {
-    max-width: 100% !important;
+    max-width: 100%;
     break-inside: avoid;
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     break-after: avoid;
   }
 
-  p, blockquote, ul, ol {
+  p,
+  blockquote,
+  ul,
+  ol {
     break-inside: avoid;
   }
 }
