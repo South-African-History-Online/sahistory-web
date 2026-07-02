@@ -1,0 +1,17 @@
+{#
+/**
+ * @file
+ * SAHO Section heading SDC (2027 "Open Record").
+ * props: title, kicker, level, href, link_label
+ */
+#}
+{% set level = level|default('h2') %}
+<div{{ attributes.addClass('saho-section-heading') }}>
+  {% if kicker %}<p class="saho-eyebrow saho-section-heading__kicker">{{ kicker }}</p>{% endif %}
+  <div class="saho-section-heading__row">
+    <{{ level }} class="saho-section-heading__title">{{ title }}</{{ level }}>
+    {% if href %}
+      <a class="saho-section-heading__link" href="{{ href }}">{{ link_label|default('View all') }} <span aria-hidden="true">&rarr;</span></a>
+    {% endif %}
+  </div>
+</div>
