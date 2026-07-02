@@ -1813,3 +1813,45 @@ function saho_preprocess_views_exposed_form(&$variables) {
     }
   }
 }
+
+/**
+ * Implements hook_preprocess_node__BUNDLE() for biography records.
+ *
+ * Builds the 2027 "Open Record" record-header props (typed folder tab, display
+ * reference, status and the ruled key-field strip) and flags the template to
+ * suppress the global page title (the record-header owns the H1).
+ */
+function saho_preprocess_node__biography(array &$variables) {
+  if (($variables['view_mode'] ?? '') !== 'full') {
+    return;
+  }
+  /** @var \Drupal\node\NodeInterface $node */
+  $node = $variables['node'];
+  /** @var \Drupal\saho_refs\DisplayRefService $refs */
+  $refs = \Drupal::service('saho_refs.display_ref');
+
+  $facts = [];
+  foreach (['Born' => 'field_dob', 'Died' => 'field_dod', 'Role' => 'field_position'] as $label => $field) {
+    if ($node->hasField($field) && !$node->get($field)->isEmpty()) {
+      $value = trim((string) $node->get($field)->value);
+      if ($value !== '') {
+        $facts[] = ['label' => $label, 'value' => $value];
+      }
+    }
+  }
+  $facts[] = [
+    'label' => 'Updated',
+    'value' => \Drupal::service('date.formatter')->format($node->getChangedTime(), 'custom', 'j M Y'),
+  ];
+
+  $variables['record'] = [
+    'type' => 'biography',
+    'reference' => $refs->getRef($node),
+    'status' => $refs->getStatus($node),
+    'kicker' => 'Biography record',
+    'title' => $node->label(),
+    'facts' => $facts,
+  ];
+  // The record-header renders the title as the page H1; hide the global one.
+  $variables['#attached']['library'][] = 'saho/saho-record-header';
+}

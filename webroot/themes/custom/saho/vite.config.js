@@ -52,6 +52,8 @@ const purgeCSSConfig = {
       /^saho-/,
       /^layout--/,   // 2027 Open Record LB layouts (layout--saho-*)
       /^region--/,   // LB region wrappers (region--main/rail/grid/lead/aside)
+      /^node-type--/,          // runtime body class (record-page title suppression)
+      /^block-page-title/,     // page-title block (hidden on Open Record record pages)
       /^drupal-/,
       /^js-/,
       /^form-/,

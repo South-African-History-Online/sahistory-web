@@ -126,6 +126,18 @@
 
 <article{{ attributes.addClass('saho-article-wrapper') }}>
 
+  {# 2027 "Open Record" record header (typed tab + display ref + status + key fields). #}
+  {% if record is defined %}
+    {{ include('saho:saho-record-header', {
+      type: record.type,
+      reference: record.reference,
+      status: record.status,
+      kicker: record.kicker,
+      title: record.title,
+      facts: record.facts,
+    }, with_context = false) }}
+  {% endif %}
+
   <div class="saho-article-grid">
 
     {# LEFT: Main content column #}
