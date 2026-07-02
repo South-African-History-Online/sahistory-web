@@ -1,0 +1,70 @@
+// =============================================================================
+// SAHO 2027 "Open Record" - /index/% content-type landing shell (wireframe wf02)
+// =============================================================================
+// The landing reuses the /search results shell (.saho-search-layout classes in
+// _search-results-open-record.scss); this file adds the landing header (type
+// chip + plural title + mono count) and the rail-less single-column variant
+// used until the era/place facet rail ships with the reindex follow-up.
+
+.saho-landing-page {
+  padding-block: var(--space-6) var(--space-8);
+
+  // .is-wide is defined for .layout--saho; honour it on the landing shell too.
+  &.is-wide { max-width: var(--container-wide); }
+
+  // The landing header owns the record count, so the results head only holds
+  // the table/cards toggle - keep it flush right.
+  .saho-search-head { justify-content: flex-end; }
+}
+
+// ---- Landing header ----
+.saho-landing-head {
+  margin-bottom: var(--space-6);
+  padding-bottom: var(--space-5);
+  border-bottom: var(--bw-hair) solid var(--border-default);
+}
+
+// Small-caps mono type chip with the content-type accent edge.
+.saho-landing-head__tab {
+  display: inline-block;
+  margin-bottom: var(--space-3);
+  padding: var(--space-1) var(--space-3);
+  border: var(--bw-hair) solid var(--border-default);
+  border-left: var(--bw-accent) solid var(--type-article);
+  background: var(--surface-card);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: var(--fw-semibold);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+// Content-type accent edges (mirrors the saho-archive-card map).
+.saho-landing-head__tab--article { border-left-color: var(--type-article); }
+.saho-landing-head__tab--biography { border-left-color: var(--type-biography); }
+.saho-landing-head__tab--place { border-left-color: var(--type-place); }
+.saho-landing-head__tab--archive { border-left-color: var(--type-archive); }
+.saho-landing-head__tab--event { border-left-color: var(--type-event); }
+.saho-landing-head__tab--topic { border-left-color: var(--type-topic); }
+
+.saho-landing-head__title { margin: 0 0 var(--space-2); }
+
+.saho-landing-head__count {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.saho-landing-intro {
+  margin-bottom: var(--space-5);
+  max-width: var(--measure);
+}
+
+// Rail-less landings: results take the full width.
+@media (min-width: 40rem) {
+  .saho-search-layout--single { grid-template-columns: minmax(0, 1fr); }
+}

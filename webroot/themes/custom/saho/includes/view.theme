@@ -5,18 +5,22 @@
  * Theme and preprocess functions for views.
  */
 
+use Drupal\Component\Utility\Unicode;
 use Drupal\file\Entity\File;
 use Drupal\image\Entity\ImageStyle;
 use Drupal\media\Entity\Media;
+use Drupal\node\NodeInterface;
 
 /**
- * Implements hook_preprocess_views_view_fields() for saho_global_search view.
+ * Resolves the node behind a search result row, if any.
+ *
+ * @param object $row
+ *   A views result row from a Search API index.
+ *
+ * @return \Drupal\node\NodeInterface|null
+ *   The node, or NULL when the row does not wrap a node.
  */
-function saho_preprocess_views_view_fields__saho_global_search(&$variables) {
-  $row = $variables['row'];
-
-  // Get the node entity from the search result.
-  // For Search API views, the entity is directly available on the row.
+function _saho_search_result_node($row): ?NodeInterface {
   $node = NULL;
   if (isset($row->_entity)) {
     $node = $row->_entity;
@@ -24,21 +28,24 @@ function saho_preprocess_views_view_fields__saho_global_search(&$variables) {
   elseif (isset($row->_item) && $row->_item->getOriginalObject()) {
     $node = $row->_item->getOriginalObject()->getValue();
   }
+  return $node instanceof NodeInterface ? $node : NULL;
+}
 
-  // Default placeholder image.
-  $placeholder = '/' . \Drupal::service('extension.list.theme')->getPath('saho') . '/images/placeholder-card.svg';
-  $variables['search_result_image'] = $placeholder;
-  $variables['search_result_image_alt'] = '';
-
-  if (!$node || !method_exists($node, 'bundle')) {
-    return;
-  }
-
-  $bundle = $node->bundle();
-  $image_url = NULL;
-  $image_alt = '';
-
-  // Define image field mappings per content type (in priority order).
+/**
+ * Resolves the display image for a search result node.
+ *
+ * Shared by the "Open Record" search shell (archive cards) and the legacy
+ * per-row fields preprocess: walks a per-bundle image-field map and returns
+ * the first usable image as a styled derivative URL.
+ *
+ * @param \Drupal\node\NodeInterface $node
+ *   The result node.
+ *
+ * @return array
+ *   Array with 'url' (string|NULL when no image was found) and 'alt' (string).
+ */
+function _saho_search_result_image(NodeInterface $node): array {
+  // Image field mappings per content type (in priority order).
   $image_field_map = [
     'article' => ['field_article_image', 'field_image', 'field_main_image'],
     'biography' => ['field_bio_pic'],
@@ -48,8 +55,7 @@ function saho_preprocess_views_view_fields__saho_global_search(&$variables) {
     'upcomingevent' => ['field_event_image'],
   ];
 
-  // Get the fields to check for this content type.
-  $fields_to_check = $image_field_map[$bundle] ?? ['field_image'];
+  $fields_to_check = $image_field_map[$node->bundle()] ?? ['field_image'];
 
   foreach ($fields_to_check as $field_name) {
     if (!$node->hasField($field_name)) {
@@ -73,9 +79,10 @@ function saho_preprocess_views_view_fields__saho_global_search(&$variables) {
           if (!$media_image->isEmpty()) {
             $file = File::load($media_image->target_id);
             if ($file) {
-              $image_url = _saho_get_styled_image_url($file->getFileUri(), 'saho_medium');
-              $image_alt = $media_image->alt ?? $node->label();
-              break;
+              return [
+                'url' => _saho_get_styled_image_url($file->getFileUri(), 'saho_medium'),
+                'alt' => $media_image->alt ?? $node->label(),
+              ];
             }
           }
         }
@@ -87,17 +94,157 @@ function saho_preprocess_views_view_fields__saho_global_search(&$variables) {
       if ($file_id) {
         $file = File::load($file_id);
         if ($file) {
-          $image_url = _saho_get_styled_image_url($file->getFileUri(), 'saho_medium');
-          $image_alt = $field->alt ?? $node->label();
-          break;
+          return [
+            'url' => _saho_get_styled_image_url($file->getFileUri(), 'saho_medium'),
+            'alt' => $field->alt ?? $node->label(),
+          ];
         }
       }
     }
   }
 
-  if ($image_url) {
-    $variables['search_result_image'] = $image_url;
-    $variables['search_result_image_alt'] = $image_alt;
+  return ['url' => NULL, 'alt' => ''];
+}
+
+/**
+ * Implements hook_preprocess_views_view() for the saho_global_search view.
+ *
+ * Builds the 2027 "Open Record" search shell (wireframe wf05): index-table
+ * columns/rows and archive-card props for every result, the total count and
+ * the server-side default layout honoring ?layout=. Rows render from these
+ * variables in the page template via SDCs - the per-row fields template is
+ * an empty stub.
+ */
+function saho_preprocess_views_view__saho_global_search__page_1(array &$variables) {
+  // The theme registry only runs base-hook + exact-suggestion preprocess when
+  // a more specific template exists, so the page display needs this wrapper.
+  saho_preprocess_views_view__saho_global_search($variables);
+}
+
+/**
+ * Builds the Open Record search shell variables (shared by all displays).
+ */
+function saho_preprocess_views_view__saho_global_search(array &$variables) {
+  /** @var \Drupal\saho_refs\DisplayRefService $refs */
+  $refs = \Drupal::service('saho_refs.display_ref');
+  $date_formatter = \Drupal::service('date.formatter');
+
+  // Bundles renamed for display; commerce products are skipped entirely.
+  $type_map = ['upcomingevent' => 'event', 'book' => 'archive'];
+  // Types the archive-card SDC accepts; anything else falls back to article.
+  $card_types = ['article', 'biography', 'place', 'archive', 'event', 'topic'];
+
+  $variables['record_columns'] = [
+    ['key' => 'ref', 'label' => 'Ref', 'mono' => TRUE, 'sortable' => TRUE, 'width' => '110px'],
+    ['key' => 'type', 'label' => 'Type', 'sortable' => TRUE, 'width' => '130px'],
+    ['key' => 'title', 'label' => 'Record', 'sortable' => TRUE],
+    ['key' => 'dates', 'label' => 'Dates', 'mono' => TRUE, 'muted' => TRUE, 'sortable' => TRUE, 'width' => '140px'],
+    ['key' => 'src', 'label' => 'Src', 'mono' => TRUE, 'muted' => TRUE, 'align' => 'center', 'width' => '70px'],
+  ];
+
+  $record_rows = [];
+  $record_cards = [];
+  foreach ($variables['view']->result as $row) {
+    $node = _saho_search_result_node($row);
+    if (!$node || !$node->isPublished()) {
+      continue;
+    }
+    $bundle = $node->bundle();
+    if ($bundle === 'product') {
+      continue;
+    }
+    $type = $type_map[$bundle] ?? $bundle;
+
+    // Dates: biography lifespans are verbatim free-text strings (never
+    // date-formatted); everything else shows the created date.
+    if ($bundle === 'biography') {
+      $span = [];
+      foreach (['field_dob', 'field_dod'] as $date_field) {
+        if ($node->hasField($date_field) && !$node->get($date_field)->isEmpty()) {
+          $value = trim((string) $node->get($date_field)->value);
+          if ($value !== '') {
+            $span[] = $value;
+          }
+        }
+      }
+      $dates = implode('-', $span);
+    }
+    else {
+      $dates = $date_formatter->format($node->getCreatedTime(), 'custom', 'j M Y');
+    }
+
+    // Src column: a mono check mark when the record cites a source.
+    $has_source = $node->hasField('field_ref_str')
+      && !$node->get('field_ref_str')->isEmpty()
+      && trim((string) $node->get('field_ref_str')->value) !== '';
+
+    $ref = $refs->getRef($node);
+    $href = $node->toUrl()->toString();
+
+    $record_rows[] = [
+      'ref' => $ref,
+      'type' => $type,
+      'title' => $node->label(),
+      'href' => $href,
+      'dates' => $dates,
+      'src' => $has_source ? "\u{2713}" : '-',
+    ];
+
+    // Excerpt: Solr highlight when available, else trimmed plain-text body.
+    $excerpt = trim(strip_tags((string) ($row->search_api_excerpt ?? '')));
+    if ($excerpt === '' && $node->hasField('body') && !$node->get('body')->isEmpty()) {
+      $excerpt = trim(strip_tags((string) $node->get('body')->value));
+    }
+    $excerpt = Unicode::truncate(html_entity_decode($excerpt, ENT_QUOTES), 160, TRUE, TRUE);
+
+    $image = _saho_search_result_image($node);
+    $record_cards[] = [
+      'type' => in_array($type, $card_types, TRUE) ? $type : 'article',
+      'title' => $node->label(),
+      'href' => $href,
+      'excerpt' => $excerpt,
+      'dates' => $dates,
+      'meta' => $ref,
+      'image' => $image['url'] ?? '',
+      'image_alt' => $image['alt'],
+      'duotone' => TRUE,
+    ];
+  }
+
+  $variables['record_rows'] = $record_rows;
+  $variables['record_cards'] = $record_cards;
+  $variables['result_total'] = number_format((int) ($variables['view']->total_rows ?? count($variables['view']->result)));
+  $variables['results_layout'] = \Drupal::request()->query->get('layout') === 'grid' ? 'grid' : 'table';
+
+  $variables['#attached']['library'][] = 'saho/saho-index-table';
+  $variables['#attached']['library'][] = 'saho/saho-archive-card';
+  $variables['#attached']['library'][] = 'saho/saho-search-field';
+  $variables['#cache']['contexts'][] = 'url.query_args:layout';
+}
+
+/**
+ * Implements hook_preprocess_views_view_fields() for saho_global_search view.
+ *
+ * Legacy per-row variables (image/alt/url). The row template is an empty
+ * stub under the "Open Record" search shell, but the variables stay wired
+ * for any display that still prints rows.
+ */
+function saho_preprocess_views_view_fields__saho_global_search(&$variables) {
+  $node = _saho_search_result_node($variables['row']);
+
+  // Default placeholder image.
+  $placeholder = '/' . \Drupal::service('extension.list.theme')->getPath('saho') . '/images/placeholder-card.svg';
+  $variables['search_result_image'] = $placeholder;
+  $variables['search_result_image_alt'] = '';
+
+  if (!$node) {
+    return;
+  }
+
+  $image = _saho_search_result_image($node);
+  if ($image['url']) {
+    $variables['search_result_image'] = $image['url'];
+    $variables['search_result_image_alt'] = $image['alt'];
   }
 
   // Add the node URL for the "Read more" link.
@@ -249,4 +396,144 @@ function _saho_get_styled_image_url($uri, $style_name = 'large') {
   // Fallback to original file URL.
   $url = $file_url_generator->generateAbsoluteString($uri);
   return $file_url_generator->transformRelative($url);
+}
+
+/**
+ * Implements hook_preprocess_views_view() for the saho_landing view (page_1).
+ */
+function saho_preprocess_views_view__saho_landing__page_1(array &$variables) {
+  // The theme registry only runs base-hook + exact-suggestion preprocess when
+  // a more specific template exists, so the page display needs this wrapper.
+  saho_preprocess_views_view__saho_landing($variables);
+}
+
+/**
+ * Builds the Open Record content-type landing shell (wireframe wf02).
+ *
+ * Same results contract as the /search shell: index-table columns/rows and
+ * archive-card props for every result behind a table/cards toggle, plus the
+ * landing header variables (type accent, plural label, record count) derived
+ * from the node-type contextual argument on /index/%.
+ */
+function saho_preprocess_views_view__saho_landing(array &$variables) {
+  /** @var \Drupal\saho_refs\DisplayRefService $refs */
+  $refs = \Drupal::service('saho_refs.display_ref');
+  $date_formatter = \Drupal::service('date.formatter');
+
+  // Bundles renamed for display accents.
+  $type_map = ['upcomingevent' => 'event', 'book' => 'archive'];
+  // Types the archive-card SDC accepts; anything else falls back to article.
+  $card_types = ['article', 'biography', 'place', 'archive', 'event', 'topic'];
+
+  // Landing header vars from the node-type contextual argument.
+  $arg = (string) ($variables['view']->args[0] ?? '');
+  $landing_type = $arg === '' ? 'article' : ($type_map[$arg] ?? $arg);
+  // Explicit archive vocabulary for the record bundles; bundle labels are
+  // unreliable here (event's label is "This day in history").
+  $label_map = [
+    'biography' => 'Biographies',
+    'article' => 'Articles',
+    'event' => 'Events',
+    'place' => 'Places',
+    'archive' => 'Archive',
+    'topic' => 'Topics',
+    'upcomingevent' => 'Events',
+    'book' => 'Archive',
+  ];
+  $landing_label = 'Records';
+  if ($arg !== '') {
+    if (isset($label_map[$arg])) {
+      $landing_label = $label_map[$arg];
+    }
+    else {
+      $node_type = \Drupal::entityTypeManager()->getStorage('node_type')->load($arg);
+      $landing_label = $node_type ? (string) $node_type->label() : ucfirst($arg);
+    }
+  }
+  $variables['landing_type'] = $landing_type;
+  $variables['landing_label'] = $landing_label;
+  $variables['landing_count'] = number_format((int) ($variables['view']->total_rows ?? count($variables['view']->result)));
+
+  $variables['record_columns'] = [
+    ['key' => 'ref', 'label' => 'Ref', 'mono' => TRUE, 'sortable' => TRUE, 'width' => '110px'],
+    ['key' => 'type', 'label' => 'Type', 'sortable' => TRUE, 'width' => '130px'],
+    ['key' => 'title', 'label' => 'Record', 'sortable' => TRUE],
+    ['key' => 'dates', 'label' => 'Dates', 'mono' => TRUE, 'muted' => TRUE, 'sortable' => TRUE, 'width' => '140px'],
+    ['key' => 'src', 'label' => 'Src', 'mono' => TRUE, 'muted' => TRUE, 'align' => 'center', 'width' => '70px'],
+  ];
+
+  $record_rows = [];
+  $record_cards = [];
+  foreach ($variables['view']->result as $row) {
+    $node = $row->_entity ?? NULL;
+    if (!$node instanceof NodeInterface || !$node->isPublished()) {
+      continue;
+    }
+    $bundle = $node->bundle();
+    $type = $type_map[$bundle] ?? $bundle;
+
+    // Dates: biography lifespans are verbatim free-text strings (never
+    // date-formatted); everything else shows the created date.
+    if ($bundle === 'biography') {
+      $span = [];
+      foreach (['field_dob', 'field_dod'] as $date_field) {
+        if ($node->hasField($date_field) && !$node->get($date_field)->isEmpty()) {
+          $value = trim((string) $node->get($date_field)->value);
+          if ($value !== '') {
+            $span[] = $value;
+          }
+        }
+      }
+      $dates = implode('-', $span);
+    }
+    else {
+      $dates = $date_formatter->format($node->getCreatedTime(), 'custom', 'j M Y');
+    }
+
+    // Src column: a mono check mark when the record cites a source.
+    $has_source = $node->hasField('field_ref_str')
+      && !$node->get('field_ref_str')->isEmpty()
+      && trim((string) $node->get('field_ref_str')->value) !== '';
+
+    $ref = $refs->getRef($node);
+    $href = $node->toUrl()->toString();
+
+    $record_rows[] = [
+      'ref' => $ref,
+      'type' => $type,
+      'title' => $node->label(),
+      'href' => $href,
+      'dates' => $dates,
+      'src' => $has_source ? "\u{2713}" : '-',
+    ];
+
+    // Excerpt: trimmed plain-text body (plain node rows have no Solr excerpt).
+    $excerpt = '';
+    if ($node->hasField('body') && !$node->get('body')->isEmpty()) {
+      $excerpt = trim(strip_tags((string) $node->get('body')->value));
+    }
+    $excerpt = Unicode::truncate(html_entity_decode($excerpt, ENT_QUOTES), 160, TRUE, TRUE);
+
+    $image = _saho_search_result_image($node);
+    $record_cards[] = [
+      'type' => in_array($type, $card_types, TRUE) ? $type : 'article',
+      'title' => $node->label(),
+      'href' => $href,
+      'excerpt' => $excerpt,
+      'dates' => $dates,
+      'meta' => $ref,
+      'image' => $image['url'] ?? '',
+      'image_alt' => $image['alt'],
+      'duotone' => TRUE,
+    ];
+  }
+
+  $variables['record_rows'] = $record_rows;
+  $variables['record_cards'] = $record_cards;
+  $variables['result_total'] = $variables['landing_count'];
+  $variables['results_layout'] = \Drupal::request()->query->get('layout') === 'grid' ? 'grid' : 'table';
+
+  $variables['#attached']['library'][] = 'saho/saho-index-table';
+  $variables['#attached']['library'][] = 'saho/saho-archive-card';
+  $variables['#cache']['contexts'][] = 'url.query_args:layout';
 }

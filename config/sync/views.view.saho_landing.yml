@@ -1,0 +1,124 @@
+uuid: 41b7eafc-9baf-44a8-9e5e-f9eba9c681fd
+langcode: en
+status: true
+dependencies:
+  module:
+    - node
+    - user
+id: saho_landing
+label: 'SAHO landing (Open Record)'
+module: views
+description: 'Parameterized content-type landing (wf02): one display drives the record-type indexes at /index/{type}.'
+tag: ''
+base_table: node_field_data
+base_field: nid
+display:
+  default:
+    id: default
+    display_title: Default
+    display_plugin: default
+    position: 0
+    display_options:
+      title: 'Browse the archive'
+      fields:
+        title:
+          id: title
+          table: node_field_data
+          field: title
+          entity_type: node
+          entity_field: title
+          plugin_id: field
+          label: ''
+          settings:
+            link_to_entity: true
+      pager:
+        type: full
+        options:
+          offset: 0
+          items_per_page: 24
+      access:
+        type: perm
+        options:
+          perm: 'access content'
+      cache:
+        type: tag
+        options: {  }
+      sorts:
+        changed:
+          id: changed
+          table: node_field_data
+          field: changed
+          entity_type: node
+          entity_field: changed
+          plugin_id: date
+          order: DESC
+          exposed: false
+      arguments:
+        type:
+          id: type
+          table: node_field_data
+          field: type
+          entity_type: node
+          entity_field: type
+          plugin_id: node_type
+          default_action: 'not found'
+          exception:
+            value: all
+          title_enable: true
+          title: '{{ arguments.type }}'
+          summary_options: {  }
+          summary:
+            format: default_summary
+          specify_validation: true
+          validate:
+            type: 'entity:node_type'
+            fail: 'not found'
+      filters:
+        status:
+          id: status
+          table: node_field_data
+          field: status
+          entity_type: node
+          entity_field: status
+          plugin_id: boolean
+          value: '1'
+          group: 1
+          expose:
+            operator: ''
+      style:
+        type: default
+      row:
+        type: fields
+      query:
+        type: views_query
+        options: {  }
+      use_ajax: false
+      display_extenders: {  }
+    cache_metadata:
+      max-age: -1
+      contexts:
+        - 'languages:language_content'
+        - 'languages:language_interface'
+        - url
+        - url.query_args
+        - 'user.node_grants:view'
+        - user.permissions
+      tags: {  }
+  page_1:
+    id: page_1
+    display_title: 'Landing page'
+    display_plugin: page
+    position: 1
+    display_options:
+      display_extenders: {  }
+      path: index/%
+    cache_metadata:
+      max-age: -1
+      contexts:
+        - 'languages:language_content'
+        - 'languages:language_interface'
+        - url
+        - url.query_args
+        - 'user.node_grants:view'
+        - user.permissions
+      tags: {  }

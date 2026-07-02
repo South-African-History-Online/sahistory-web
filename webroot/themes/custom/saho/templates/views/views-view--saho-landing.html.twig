@@ -1,61 +1,63 @@
 {#
 /**
  * @file
- * SAHO global search - 2027 "Open Record" search shell (wireframe wf05).
+ * SAHO content-type landing - 2027 "Open Record" shell (wireframe wf02).
  *
- * Rows are NOT printed via {{ rows }}: saho_preprocess_views_view__saho_global_search()
+ * Rows are NOT printed via {{ rows }}: saho_preprocess_views_view__saho_landing()
  * shapes every result into record_rows (saho-index-table SDC) and record_cards
- * (saho-archive-card SDC), and this template renders both containers behind a
- * table/cards toggle (saho-view-toggle.js in the saho-index-table library).
- * The server-rendered default honours ?layout=grid.
+ * (saho-archive-card SDC), rendered behind the shared table/cards toggle
+ * (saho-view-toggle.js in the saho-index-table library). Same results contract
+ * as the /search shell, minus the search field, plus a landing header.
  *
  * Available variables (beyond the standard views-view set):
- * - search_query: Active fulltext query string (set by saho_tools).
- * - spellcheck_suggestion: Solr "Did you mean" collation (set by saho_tools).
+ * - landing_type: Accent key for the content type (article, biography, ...).
+ * - landing_label: Human plural label for the type (e.g. Biographies).
+ * - landing_count: Total record count across all pages.
  * - record_columns: Column definitions for the index-table SDC.
  * - record_rows: One row per result (ref/type/title/href/dates/src).
  * - record_cards: One archive-card prop set per result.
  * - result_total: Total result count across all pages.
  * - results_layout: 'table' or 'grid' - the server-side default layout.
  *
- * The page title block provides the H1 on /search; headings here start at h2.
+ * The page title block provides the H1 on /index/%; headings here start at h2.
  */
 #}
-<div{{ attributes.addClass('saho-page', 'is-wide', 'saho-search-page') }}>
+<div{{ attributes.addClass('saho-page', 'is-wide', 'saho-landing-page', 'saho-landing--' ~ landing_type) }}>
 
-  {# Header zone: the big ledger search field, prefilled with the active query. #}
-  <div class="saho-search-page__header">
-    {% include 'saho:saho-search-field' with {
-      size: 'lg',
-      action: '/search',
-      placeholder: 'Search people, events, places, dates…',
-      value: search_query|default(''),
-      input_id: 'saho-search-page-input',
-    } only %}
-  </div>
+  {# Landing header (wf02): type chip, plural title, mono record count. #}
+  <header class="saho-landing-head">
+    <span class="saho-landing-head__tab saho-landing-head__tab--{{ landing_type }}">{{ landing_label }}</span>
+    <h2 class="saho-landing-head__title">{{ landing_label }}</h2>
+    <p class="saho-landing-head__count">{{ landing_count }} records</p>
+  </header>
 
   {% if header %}
-    <div class="saho-search-page__intro">
+    <div class="saho-landing-intro">
       {{ header }}
     </div>
   {% endif %}
 
-  {# Refine rail + results. #}
-  <div class="saho-search-layout">
+  {# The view ships without exposed filters for now (the era/place facet rail
+     arrives with the reindex follow-up), so the refine rail only renders when
+     the exposed form is non-empty; otherwise results run full width. #}
+  {% set exposed_markup = exposed|render %}
+  {% set has_rail = exposed_markup|trim is not empty %}
+  <div class="saho-search-layout{{ has_rail ? '' : ' saho-search-layout--single' }}">
 
-    <aside class="saho-search-rail" aria-label="Refine search">
-      <h2 class="saho-search-rail__title">Refine</h2>
-      {{ exposed }}
-      {% if feed_icons %}
-        <div class="saho-search-rail__feeds">{{ feed_icons }}</div>
-      {% endif %}
-    </aside>
+    {% if has_rail %}
+      <aside class="saho-search-rail" aria-label="Refine results">
+        <h2 class="saho-search-rail__title">Refine</h2>
+        {{ exposed_markup }}
+        {% if feed_icons %}
+          <div class="saho-search-rail__feeds">{{ feed_icons }}</div>
+        {% endif %}
+      </aside>
+    {% endif %}
 
     <section class="saho-search-results" data-saho-results>
 
-      {# Head row: mono record count + the table/cards layout toggle. #}
+      {# Head row: the table/cards layout toggle (the header owns the count). #}
       <div class="saho-search-head">
-        <p class="saho-search-count">{{ result_total }} records</p>
         <div class="saho-search-toolbar">
           <div class="saho-view-toggle" data-saho-view-toggle role="tablist" aria-label="Result layout">
             <button type="button" role="tab" data-view="table"
@@ -73,7 +75,7 @@
           {% include 'saho:saho-index-table' with {
             columns: record_columns,
             rows: record_rows,
-            caption: 'Search results',
+            caption: landing_label,
           } only %}
         </div>
         <div class="saho-results--grid"{% if results_layout == 'table' %} hidden{% endif %}>
@@ -88,17 +90,8 @@
           <div class="saho-view-empty">
             {{ empty }}
           </div>
-        {% elseif search_query %}
-          <p class="saho-search-empty">No results found for &ldquo;{{ search_query }}&rdquo;.</p>
-        {% endif %}
-
-        {% if spellcheck_suggestion and search_query %}
-          <p class="saho-spellcheck-suggestion">
-            Did you mean:
-            <a href="{{ path('view.saho_global_search.page_1', {}, {'query': {'search_api_fulltext': spellcheck_suggestion}}) }}" class="saho-spellcheck-link">
-              {{ spellcheck_suggestion }}
-            </a>?
-          </p>
+        {% else %}
+          <p class="saho-search-empty">No records found.</p>
         {% endif %}
       {% endif %}
 
@@ -118,7 +111,7 @@
   </div>
 
   {% if attachment_after %}
-    <div class="saho-search-attachment">
+    <div class="saho-landing-attachment">
       {{ attachment_after }}
     </div>
   {% endif %}

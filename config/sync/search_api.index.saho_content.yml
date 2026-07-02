@@ -15,11 +15,10 @@ dependencies:
     - field.storage.node.field_places_level3
     - field.storage.node.field_ref_str
     - field.storage.node.field_tags
-    - search_api.server.saho_prod
+    - search_api.server.local_solr
   module:
     - node
     - search_api_solr
-    - search_api_sort_priority
 third_party_settings:
   search_api_solr:
     finalize: false
@@ -81,6 +80,14 @@ field_settings:
     dependencies:
       config:
         - field.storage.node.body
+  changed:
+    label: Changed
+    datasource_id: 'entity:node'
+    property_path: changed
+    type: date
+    dependencies:
+      module:
+        - node
   field_african_country:
     label: 'African country'
     datasource_id: 'entity:node'
@@ -201,6 +208,14 @@ field_settings:
     dependencies:
       module:
         - node
+  type_string:
+    label: 'Content type (facet)'
+    datasource_id: 'entity:node'
+    property_path: type
+    type: string
+    dependencies:
+      module:
+        - node
 datasource_settings:
   'entity:node':
     bundles:
@@ -275,4 +290,4 @@ options:
   delete_on_fail: true
   index_directly: true
   track_changes_in_references: true
-server: saho_prod
+server: local_solr
