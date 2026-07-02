@@ -1844,6 +1844,33 @@ function saho_preprocess_node__biography(array &$variables) {
     'value' => \Drupal::service('date.formatter')->format($node->getChangedTime(), 'custom', 'j M Y'),
   ];
 
+  // Detention record: the apartheid state's own banning + incarceration
+  // paperwork, reproduced as evidence. Only populated groups are surfaced.
+  $field_value = function (string $field) use ($node): string {
+    return $node->hasField($field) && !$node->get($field)->isEmpty()
+      ? trim((string) $node->get($field)->value) : '';
+  };
+  $banning = array_filter([
+    'information' => $field_value('field_ban_information'),
+    'date_from' => $field_value('field_banning_date_from') ?: $field_value('field_banning_date_from_text_'),
+    'date_until' => $field_value('field_banning_date_until') ?: $field_value('field_banning_date_until_text_'),
+    'province' => $field_value('field_banning_province'),
+  ]);
+  $prison = array_filter([
+    'prison_name' => $field_value('field_prison_name'),
+    'prisoner_number' => $field_value('field_prison_number'),
+    'date_admitted' => $field_value('field_date_admitted') ?: $field_value('field_prison_admittance_date'),
+    'date_released' => $field_value('field_date_released') ?: $field_value('field_prison_release_date'),
+    'days_detained' => $field_value('field_days_detained'),
+  ]);
+  $detention = [];
+  if ($banning) {
+    $detention['banning'] = $banning;
+  }
+  if ($prison) {
+    $detention['prison'] = $prison;
+  }
+
   $variables['record'] = [
     'type' => 'biography',
     'reference' => $refs->getRef($node),
@@ -1851,7 +1878,11 @@ function saho_preprocess_node__biography(array &$variables) {
     'kicker' => 'Biography record',
     'title' => $node->label(),
     'facts' => $facts,
+    'detention' => $detention,
   ];
   // The record-header renders the title as the page H1; hide the global one.
   $variables['#attached']['library'][] = 'saho/saho-record-header';
+  if ($detention) {
+    $variables['#attached']['library'][] = 'saho/saho-detention-record';
+  }
 }
