@@ -1,6 +1,6 @@
 /**
  * Upcoming Events Component
- * 
+ *
  * Modern card styling for upcoming events view with responsive grid
  * Works with both Drupal's responsive grid and standard grid layouts
  */
@@ -8,38 +8,37 @@
 // Main view container and grid override
 .view-all-upcoming-events,
 .upcoming-events-grid {
-  
   // Grid containers (both standard and responsive)
   .views-view-grid,
   .views-view-responsive-grid {
     // Force CSS Grid layout
-    display: grid !important;
+    display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: var(--saho-space-3);  /* 24px - nearest 8px multiple */
+    gap: var(--saho-space-3); /* 24px - nearest 8px multiple */
     padding: var(--saho-space-3) 0;
-    
+
     @media (max-width: 1200px) {
       grid-template-columns: repeat(3, 1fr);
     }
-    
+
     @media (max-width: 768px) {
       grid-template-columns: repeat(2, 1fr);
-      gap: var(--saho-space-2);  /* 16px */
+      gap: var(--saho-space-2); /* 16px */
     }
-    
+
     @media (max-width: 480px) {
       grid-template-columns: 1fr;
-      gap: var(--saho-space-2);  /* 16px */
+      gap: var(--saho-space-2); /* 16px */
     }
-    
+
     // Grid rows and columns (both grid types)
     .views-row,
     .views-col,
     &__item {
-      width: 100% !important;
-      max-width: none !important;
-      flex: none !important;
-      padding: 0 !important;
+      width: 100%;
+      max-width: none;
+      flex: none;
+      padding: 0;
       background: var(--saho-color-white);
       border-radius: var(--saho-radius-md);
       box-shadow: var(--saho-shadow-sm);
@@ -49,43 +48,43 @@
       flex-direction: column;
       transition: all var(--saho-transition-base);
       border: 1px solid var(--saho-color-border-light);
-      
+
       &:hover {
         transform: translateY(-4px);
         box-shadow: var(--saho-shadow-xl);
-        
+
         .field--name-field-upcomingevent-image img,
         .views-field-field-upcomingevent-image img {
           transform: scale(1.08);
         }
       }
-        
+
       // Title field - styled as card header
       .field--name-title,
       .views-field-title {
         order: 2;
         padding: 16px 20px 8px;
-        
+
         .field__item,
         .field-content {
-          font-size: 1.25rem !important;
-          font-weight: 700 !important;
-          line-height: 1.3 !important;
-          color: var(--saho-color-text-primary) !important;
-          
+          font-size: 1.25rem;
+          font-weight: 700;
+          line-height: 1.3;
+          color: var(--saho-color-text-primary);
+
           a {
-            color: var(--saho-color-text-primary) !important;
-            text-decoration: none !important;
-            font-size: inherit !important;
-            font-weight: inherit !important;
-            line-height: inherit !important;
+            color: var(--saho-color-text-primary);
+            text-decoration: none;
+            font-size: inherit;
+            font-weight: inherit;
+            line-height: inherit;
             transition: color 0.2s;
-            
+
             &:hover {
-              color: var(--saho-color-primary-light, #B22222) !important;
+              color: var(--saho-color-primary-light, #b22222);
             }
           }
-          
+
           // Reset any HTML formatting that might be in titles
           *,
           em,
@@ -101,37 +100,41 @@
           h4,
           h5,
           h6 {
-            font-size: 1.25rem !important;
-            font-weight: 700 !important;
-            line-height: 1.3 !important;
-            color: var(--saho-color-text-primary) !important;
-            font-style: normal !important;
-            text-transform: none !important;
-            letter-spacing: normal !important;
-            margin: 0 !important;
-            padding: 0 !important;
+            font-size: 1.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            color: var(--saho-color-text-primary);
+            font-style: normal;
+            text-transform: none;
+            letter-spacing: normal;
+            margin: 0;
+            padding: 0;
           }
         }
       }
-        
+
       // Image field - hero image at top
       .field--name-field-upcomingevent-image,
       .views-field-field-upcomingevent-image {
         order: 1;
         position: relative;
-        height: 240px;  /* Card standard: 240px desktop */
+        height: 240px; /* Card standard: 240px desktop */
         overflow: hidden;
         margin: 0;
         padding: 0;
-        background: linear-gradient(135deg, var(--saho-color-secondary) 0%, var(--saho-color-primary-dark) 100%);
-        
+        background: linear-gradient(
+          135deg,
+          var(--saho-color-secondary) 0%,
+          var(--saho-color-primary-dark) 100%
+        );
+
         .field__item,
         .field-content {
           height: 100%;
           margin: 0;
           padding: 0;
           background: transparent;
-          
+
           a {
             display: block;
             height: 100%;
@@ -140,7 +143,7 @@
             padding: 0;
             background: transparent;
           }
-          
+
           img {
             width: 100%;
             height: 100%;
@@ -153,10 +156,10 @@
             background: transparent;
           }
         }
-        
+
         // Fallback when no image
         &:empty::after {
-          content: '';
+          content: "";
           position: absolute;
           top: 50%;
           left: 50%;
@@ -164,11 +167,12 @@
           width: 48px;
           height: 48px;
           background-color: rgb(255, 255, 255, 0.3);
-          mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor'%3E%3Cpath d='M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z'/%3E%3C/svg%3E") no-repeat;
+          mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor'%3E%3Cpath d='M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z'/%3E%3C/svg%3E")
+            no-repeat;
           mask-size: contain;
         }
       }
-        
+
       // Date fields
       .field--name-field-start-date,
       .field--name-field-end-date,
@@ -177,22 +181,23 @@
         order: 3;
         padding: 0 20px;
         font-size: 0.9rem;
-        color: var(--saho-color-primary-light, #B22222);
+        color: var(--saho-color-primary-light, #b22222);
         font-weight: 600;
         margin-bottom: 6px;
-        
+
         &::before {
-          content: '';
+          content: "";
           display: inline-block;
           width: 14px;
           height: 14px;
           margin-right: 6px;
           background-color: currentcolor;
-          mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor'%3E%3Cpath d='M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z'/%3E%3C/svg%3E") no-repeat;
+          mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor'%3E%3Cpath d='M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z'/%3E%3C/svg%3E")
+            no-repeat;
           mask-size: contain;
           vertical-align: middle;
         }
-        
+
         .field__label,
         .views-label {
           display: inline-block;
@@ -200,13 +205,13 @@
           margin-right: 4px;
           font-size: 0.85rem;
         }
-        
+
         .field__item,
         .field-content {
           display: inline;
         }
       }
-        
+
       // If we want to show venue or other fields
       .field--name-field-upcoming-venue,
       .views-field-field-upcoming-venue {
@@ -215,63 +220,64 @@
         font-size: 0.9rem;
         color: var(--saho-color-text-muted);
         margin-bottom: 8px;
-        
+
         &::before {
-          content: '';
+          content: "";
           display: inline-block;
           width: 14px;
           height: 14px;
           margin-right: 6px;
           background-color: currentcolor;
-          mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor'%3E%3Cpath d='M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z'/%3E%3C/svg%3E") no-repeat;
+          mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor'%3E%3Cpath d='M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z'/%3E%3C/svg%3E")
+            no-repeat;
           mask-size: contain;
           vertical-align: middle;
         }
-        
+
         .field__label,
         .views-label {
           display: none;
         }
-        
+
         .field__item,
         .field-content {
           display: inline;
           font-style: italic;
         }
       }
-        
+
       // Body field
       .field--name-body,
       .views-field-body {
         order: 5;
         padding: 8px 20px 16px;
         flex-grow: 1;
-        display: block !important;
-        visibility: visible !important;
-        
+        display: block;
+        visibility: visible;
+
         .field__label,
         .views-label {
-          display: none !important;
+          display: none;
         }
-        
+
         .field__item,
         .field-content {
-          font-size: 0.95rem !important;
-          color: var(--saho-color-text-secondary) !important;
+          font-size: 0.95rem;
+          color: var(--saho-color-text-secondary);
           line-height: 1.5;
-          display: -webkit-box !important;
+          display: -webkit-box;
           -webkit-line-clamp: 3;
           -webkit-box-orient: vertical;
           overflow: hidden;
-          
+
           p {
             margin: 0;
-            color: var(--saho-color-text-secondary) !important;
-            display: block !important;
+            color: var(--saho-color-text-secondary);
+            display: block;
           }
         }
       }
-        
+
       // Node links / Read more
       .node__links,
       .views-field-view-node {
@@ -280,72 +286,72 @@
         padding: 16px 20px;
         background: transparent;
         border-top: none;
-        
+
         a {
           display: inline-block;
           padding: 8px 20px;
-          background: var(--saho-color-primary-light, #B22222);
+          background: var(--saho-color-primary-light, #b22222);
           color: var(--saho-color-white);
           border-radius: var(--saho-button-radius-pill);
           font-size: 0.9rem;
           font-weight: 600;
           text-decoration: none;
           transition: all 0.3s;
-          
+
           &:hover {
             background: var(--saho-color-primary-dark);
             transform: translateY(-2px);
             box-shadow: var(--saho-shadow-md);
           }
-          
+
           &::after {
-            content: ' →';
+            content: " →";
             display: inline;
           }
         }
       }
     }
-    
+
     // Handle responsive grid nested structure
     &__item-inner {
       height: 100%;
     }
-    
-    // Remove any default Bootstrap or Drupal column styling  
+
+    // Remove any default Bootstrap or Drupal column styling
     .views-row,
     .views-col,
     &__item {
       .field,
       .views-field {
-        margin: 0 !important;
-        border: none !important;
-        background: none !important;
+        margin: 0;
+        border: none;
+        background: none;
       }
     }
   }
-  
-  
+
   // Page title
   .view-header {
     text-align: center;
     margin-bottom: 2rem;
-    
-    h1, h2 {
+
+    h1,
+    h2 {
       font-size: 2.5rem;
       font-weight: 800;
       color: var(--saho-color-text-primary);
       letter-spacing: -0.025em;
-      
+
       @media (max-width: 768px) {
         font-size: 2rem;
       }
     }
   }
-  
+
   // Pagination
   nav.pager {
     margin-top: 3rem;
-    
+
     .pager__items {
       display: flex;
       justify-content: center;
@@ -353,7 +359,7 @@
       list-style: none;
       padding: 0;
     }
-    
+
     .pager__item {
       a {
         display: inline-block;
@@ -364,34 +370,34 @@
         font-weight: 500;
         text-decoration: none;
         transition: all 0.3s;
-        
+
         &:hover {
-          background-color: var(--saho-color-primary-light, #B22222);
-          border-color: var(--saho-color-primary-light, #B22222);
+          background-color: var(--saho-color-primary-light, #b22222);
+          border-color: var(--saho-color-primary-light, #b22222);
           color: var(--saho-color-white);
         }
       }
-      
+
       &.is-active a,
       &.pager__item--current {
-        background-color: var(--saho-color-primary-light, #B22222);
-        border-color: var(--saho-color-primary-light, #B22222);
+        background-color: var(--saho-color-primary-light, #b22222);
+        border-color: var(--saho-color-primary-light, #b22222);
         color: var(--saho-color-white);
       }
     }
   }
-  
+
   // Empty view
   .view-empty {
     text-align: center;
     padding: 4rem 2rem;
-    
+
     h3 {
       color: var(--saho-color-text-primary);
       font-size: 1.5rem;
       margin-bottom: 1rem;
     }
-    
+
     p {
       color: var(--saho-color-text-muted);
       font-size: 1.1rem;
@@ -405,32 +411,36 @@
 // Styling for template-based upcoming event cards
 .upcoming-event-card {
   position: relative;
-  
+
   // Card content wrapper that contains the Drupal fields
   .card-content-wrapper {
     display: flex;
     flex-direction: column;
     height: 100%;
-    
+
     // Style the individual fields as card components
     .views-field {
       margin: 0;
-      
+
       // Hide field labels for cleaner look
       .field__label,
       .views-label {
         display: none;
       }
-      
+
       // Image field - make it the hero
       &.views-field-field-upcomingevent-image {
         order: 1;
         position: relative;
-        height: 240px;  /* Card standard: 240px desktop */
+        height: 240px; /* Card standard: 240px desktop */
         overflow: hidden;
         margin: 0;
-        background: linear-gradient(135deg, var(--saho-color-secondary) 0%, var(--saho-color-primary-dark) 100%);
-        
+        background: linear-gradient(
+          135deg,
+          var(--saho-color-secondary) 0%,
+          var(--saho-color-primary-dark) 100%
+        );
+
         .field-content img {
           width: 100%;
           height: 100%;
@@ -438,31 +448,31 @@
           transition: transform 0.5s ease;
         }
       }
-      
+
       // Title field
       &.views-field-title {
         order: 2;
         padding: 16px 20px 8px;
-        
+
         .field-content {
-          font-size: 1.25rem !important;
-          font-weight: 700 !important;
-          line-height: 1.3 !important;
-          color: var(--saho-color-text-primary) !important;
-          
+          font-size: 1.25rem;
+          font-weight: 700;
+          line-height: 1.3;
+          color: var(--saho-color-text-primary);
+
           a {
-            color: var(--saho-color-text-primary) !important;
-            text-decoration: none !important;
-            font-size: inherit !important;
-            font-weight: inherit !important;
-            line-height: inherit !important;
+            color: var(--saho-color-text-primary);
+            text-decoration: none;
+            font-size: inherit;
+            font-weight: inherit;
+            line-height: inherit;
             transition: color 0.2s;
-            
+
             &:hover {
-              color: var(--saho-color-primary-light, #B22222) !important;
+              color: var(--saho-color-primary-light, #b22222);
             }
           }
-          
+
           // Reset any HTML formatting that might be in titles
           *,
           em,
@@ -478,46 +488,47 @@
           h4,
           h5,
           h6 {
-            font-size: 1.25rem !important;
-            font-weight: 700 !important;
-            line-height: 1.3 !important;
-            color: var(--saho-color-text-primary) !important;
-            font-style: normal !important;
-            text-transform: none !important;
-            letter-spacing: normal !important;
-            margin: 0 !important;
-            padding: 0 !important;
+            font-size: 1.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            color: var(--saho-color-text-primary);
+            font-style: normal;
+            text-transform: none;
+            letter-spacing: normal;
+            margin: 0;
+            padding: 0;
           }
         }
       }
-      
+
       // Date fields
       &.views-field-field-start-date,
       &.views-field-field-end-date {
         order: 3;
         padding: 0 20px;
         font-size: 0.9rem;
-        color: var(--saho-color-primary-light, #B22222);
+        color: var(--saho-color-primary-light, #b22222);
         font-weight: 600;
         margin-bottom: 6px;
-        
+
         &::before {
-          content: '';
+          content: "";
           display: inline-block;
           width: 14px;
           height: 14px;
           margin-right: 6px;
           background-color: currentcolor;
-          mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor'%3E%3Cpath d='M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z'/%3E%3C/svg%3E") no-repeat;
+          mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor'%3E%3Cpath d='M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z'/%3E%3C/svg%3E")
+            no-repeat;
           mask-size: contain;
           vertical-align: middle;
         }
-        
+
         .field-content {
           display: inline;
         }
       }
-      
+
       // Venue field (if present)
       &.views-field-field-upcoming-venue {
         order: 4;
@@ -525,56 +536,57 @@
         font-size: 0.9rem;
         color: var(--saho-color-text-muted);
         margin-bottom: 8px;
-        
+
         &::before {
-          content: '';
+          content: "";
           display: inline-block;
           width: 14px;
           height: 14px;
           margin-right: 6px;
           background-color: currentcolor;
-          mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor'%3E%3Cpath d='M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z'/%3E%3C/svg%3E") no-repeat;
+          mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor'%3E%3Cpath d='M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z'/%3E%3C/svg%3E")
+            no-repeat;
           mask-size: contain;
           vertical-align: middle;
         }
-        
+
         .field-content {
           display: inline;
           font-style: italic;
         }
       }
-      
+
       // Body field (if present)
       &.views-field-body {
         order: 5;
         padding: 8px 20px 16px;
         flex-grow: 1;
-        display: block !important;
-        visibility: visible !important;
-        
+        display: block;
+        visibility: visible;
+
         .field-content {
-          font-size: 0.95rem !important;
-          color: var(--saho-color-text-secondary) !important;
+          font-size: 0.95rem;
+          color: var(--saho-color-text-secondary);
           line-height: 1.5;
-          display: -webkit-box !important;
+          display: -webkit-box;
           -webkit-line-clamp: 3;
           -webkit-box-orient: vertical;
           overflow: hidden;
-          
+
           p {
-            color: var(--saho-color-text-secondary) !important;
-            display: block !important;
+            color: var(--saho-color-text-secondary);
+            display: block;
           }
         }
       }
-      
+
       // Event type field (if present)
       &.views-field-field-type-of-event {
         position: absolute;
         top: 16px;
         right: 16px;
         z-index: 10;
-        
+
         .field-content {
           background: rgb(178, 34, 34, 0.95);
           color: var(--saho-color-white);
@@ -587,9 +599,17 @@
           backdrop-filter: blur(10px);
         }
       }
-      
+
       // Any other fields go at the bottom
-      &:not(.views-field-field-upcomingevent-image, .views-field-title, .views-field-field-start-date, .views-field-field-end-date, .views-field-field-upcoming-venue, .views-field-body, .views-field-field-type-of-event) {
+      &:not(
+          .views-field-field-upcomingevent-image,
+          .views-field-title,
+          .views-field-field-start-date,
+          .views-field-field-end-date,
+          .views-field-field-upcoming-venue,
+          .views-field-body,
+          .views-field-field-type-of-event
+        ) {
         order: 10;
         padding: 8px 20px;
         font-size: 0.9rem;
@@ -597,7 +617,7 @@
       }
     }
   }
-  
+
   // Hover effects
   &:hover {
     transform: translateY(-4px);
@@ -611,25 +631,25 @@
 
 // Force override any conflicting theme styles
 body .view-all-upcoming-events .views-row {
-  margin: 0 !important;
-  padding: 0 !important;
-  border: none !important;
-  
+  margin: 0;
+  padding: 0;
+  border: none;
+
   > .field,
   > .views-field {
-    margin: 0 !important;
-    border: none !important;
-    background: none !important;
-    
+    margin: 0;
+    border: none;
+    background: none;
+
     // Reset any theme label styling
     .field__label,
     .views-label {
-      font-weight: normal !important;
-      margin: 0 !important;
-      padding: 0 !important;
+      font-weight: normal;
+      margin: 0;
+      padding: 0;
     }
   }
-  
+
   // Extremely aggressive title reset for /all-upcoming-events page
   .field--name-title,
   .views-field-title {
@@ -638,14 +658,14 @@ body .view-all-upcoming-events .views-row {
       a,
       a *,
       * {
-        font-size: 1.25rem !important;
-        font-weight: 700 !important;
-        line-height: 1.3 !important;
-        color: var(--saho-color-text-primary) !important;
-        font-style: normal !important;
-        text-transform: none !important;
-        letter-spacing: normal !important;
-        font-family: inherit !important;
+        font-size: 1.25rem;
+        font-weight: 700;
+        line-height: 1.3;
+        color: var(--saho-color-text-primary);
+        font-style: normal;
+        text-transform: none;
+        letter-spacing: normal;
+        font-family: inherit;
       }
     }
   }
@@ -662,310 +682,317 @@ body .view-all-upcoming-events .views-row {
 .upcoming-events-header {
   .block-section-header .block-title-wrapper h2,
   h2 {
-    font-size: 1.5rem !important;
-    font-weight: 600 !important;
-    line-height: 1.3 !important;
+    font-size: 1.5rem;
+    font-weight: 600;
+    line-height: 1.3;
   }
 }
 
 .upcoming-events-grid-wrapper {
-    // 3-column grid for portrait cards
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 2rem;
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 1rem;
-    
-    @media (max-width: 992px) {
-      grid-template-columns: repeat(2, 1fr);
-      gap: 1.5rem;
-    }
-    
-    @media (max-width: 576px) {
-      grid-template-columns: 1fr;
-      gap: 1.5rem;
-    }
-    
-    // Individual event cards in portrait format
-    .views-row,
-    .upcoming-event-card {
-      background: var(--saho-color-white);
-      border-radius: var(--saho-radius-md);
-      box-shadow: var(--saho-shadow-lg);
-      overflow: hidden;
-      transition: all 0.3s ease;
-      border: 1px solid var(--saho-color-border-light);
-      display: flex;
-      flex-direction: column;
+  // 3-column grid for portrait cards
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
 
-      &:hover {
-        transform: translateY(-4px);
-        box-shadow: var(--saho-shadow-xl);
-        
-        .field--name-field-upcomingevent-image img,
-        .views-field-field-upcomingevent-image img {
-          transform: scale(1.05);
-        }
+  @media (max-width: 992px) {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
+
+  @media (max-width: 576px) {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  // Individual event cards in portrait format
+  .views-row,
+  .upcoming-event-card {
+    background: var(--saho-color-white);
+    border-radius: var(--saho-radius-md);
+    box-shadow: var(--saho-shadow-lg);
+    overflow: hidden;
+    transition: all 0.3s ease;
+    border: 1px solid var(--saho-color-border-light);
+    display: flex;
+    flex-direction: column;
+
+    &:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--saho-shadow-xl);
+
+      .field--name-field-upcomingevent-image img,
+      .views-field-field-upcomingevent-image img {
+        transform: scale(1.05);
       }
-      
-      // Image field - portrait format like event leaflet
-      .field--name-field-upcomingevent-image,
-      .views-field-field-upcomingevent-image {
-        order: 1;
-        position: relative;
-        height: 400px; // Taller for portrait format
-        overflow: hidden;
+    }
+
+    // Image field - portrait format like event leaflet
+    .field--name-field-upcomingevent-image,
+    .views-field-field-upcomingevent-image {
+      order: 1;
+      position: relative;
+      height: 400px; // Taller for portrait format
+      overflow: hidden;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(
+        135deg,
+        var(--saho-color-secondary) 0%,
+        var(--saho-color-primary-dark) 100%
+      );
+
+      .field__item,
+      .field-content {
+        height: 100%;
         margin: 0;
         padding: 0;
-        background: linear-gradient(135deg, var(--saho-color-secondary) 0%, var(--saho-color-primary-dark) 100%);
-        
-        .field__item,
-        .field-content {
+        background: transparent;
+
+        a {
+          display: block;
           height: 100%;
+          position: relative;
           margin: 0;
           padding: 0;
           background: transparent;
-          
-          a {
-            display: block;
-            height: 100%;
-            position: relative;
-            margin: 0;
-            padding: 0;
-            background: transparent;
-          }
-          
-          img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.5s ease;
-            margin: 0;
-            padding: 0;
-            background: transparent;
-          }
         }
-        
-        // Fallback when no image
-        &:empty::after {
-          content: '';
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-          width: 60px;
-          height: 60px;
-          background-color: rgb(255, 255, 255, 0.3);
-          mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor'%3E%3Cpath d='M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z'/%3E%3C/svg%3E") no-repeat;
-          mask-size: contain;
+
+        img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          transition: transform 0.5s ease;
+          margin: 0;
+          padding: 0;
+          background: transparent;
         }
       }
-      
-      // Card content area
-      .card-content {
-        padding: 1.5rem;
-        flex-grow: 1;
-        display: flex;
-        flex-direction: column;
-        
-        // Title field
-        .field--name-title,
-        .views-field-title {
-          order: 1;
-          margin-bottom: 1rem;
-          
-          .field__item,
-          .field-content {
-            font-size: 1.35rem !important;
-            font-weight: 800 !important;
-            line-height: 1.3 !important;
-            color: var(--saho-color-text-primary) !important;
-            
-            a {
-              color: var(--saho-color-text-primary) !important;
-              text-decoration: none !important;
-              font-size: inherit !important;
-              font-weight: inherit !important;
-              line-height: inherit !important;
-              transition: color 0.2s;
-              
-              &:hover {
-                color: var(--saho-color-primary-light, #B22222) !important;
-              }
-            }
-          }
-        }
-        
-        // Date field with icon
-        .field--name-field-start-date,
-        .field--name-field-end-date,
-        .views-field-field-start-date,
-        .views-field-field-end-date {
-          order: 2;
-          font-size: 1rem;
-          color: var(--saho-color-primary-light, #B22222);
-          font-weight: 600;
-          margin-bottom: 0.75rem;
-          display: flex;
-          align-items: center;
-          
-          &::before {
-            content: '';
-            display: inline-block;
-            width: 18px;
-            height: 18px;
-            margin-right: 8px;
-            background-color: currentcolor;
-            mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor'%3E%3Cpath d='M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z'/%3E%3C/svg%3E") no-repeat;
-            mask-size: contain;
-            flex-shrink: 0;
-          }
-          
-          .field__label,
-          .views-label {
-            display: none;
-          }
-          
-          .field__item,
-          .field-content {
-            font-size: inherit;
-            color: inherit;
-            font-weight: inherit;
-          }
-        }
-        
-        // Venue field with location icon
-        .field--name-field-upcoming-venue,
-        .views-field-field-upcoming-venue {
-          order: 3;
-          font-size: 0.95rem;
-          color: var(--saho-color-text-muted);
-          margin-bottom: 1rem;
-          display: flex;
-          align-items: flex-start;
-          line-height: 1.4;
-          
-          &::before {
-            content: '';
-            display: inline-block;
-            width: 16px;
-            height: 16px;
-            margin-right: 8px;
-            margin-top: 2px;
-            background-color: currentcolor;
-            mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor'%3E%3Cpath d='M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z'/%3E%3C/svg%3E") no-repeat;
-            mask-size: contain;
-            flex-shrink: 0;
-          }
-          
-          .field__label,
-          .views-label {
-            display: none;
-          }
-          
-          .field__item,
-          .field-content {
-            flex: 1;
-            font-style: italic;
-          }
-        }
-        
-        // Body field (brief description)
-        .field--name-body,
-        .views-field-body {
-          order: 4;
-          flex-grow: 1;
-          margin-bottom: 1.5rem;
-          
-          .field__label,
-          .views-label {
-            display: none;
-          }
-          
-          .field__item,
-          .field-content {
-            font-size: 0.95rem;
-            color: var(--saho-color-text-secondary);
-            line-height: 1.5;
-            display: -webkit-box;
-            -webkit-line-clamp: 4;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-            
-            p {
-              margin: 0 0 0.5rem;
-              color: inherit;
-              
-              &:last-child {
-                margin-bottom: 0;
-              }
-            }
-          }
-        }
-        
-        // Learn More button
-        .learn-more-button,
-        .node__links,
-        .views-field-view-node {
-          order: 10;
-          margin-top: auto;
-          
-          a {
-            display: inline-block;
-            padding: 12px 24px;
-            background: var(--saho-color-primary-light, #B22222);
-            color: white !important;
-            border-radius: 25px;
-            font-size: 0.95rem;
-            font-weight: 600;
-            text-decoration: none;
-            transition: all 0.3s;
-            border: none;
-            
-            &:hover {
-              background: var(--saho-color-primary-dark);
-              transform: translateY(-2px);
-              box-shadow: 0 8px 20px var(--saho-color-primary-alpha-25);
-            }
-            
-            &::after {
-              content: ' →';
-              display: inline;
-              font-weight: normal;
-            }
-          }
-        }
-      }
-      
-      // Event type badge (if present)
-      .field--name-field-type-of-event,
-      .views-field-field-type-of-event {
+
+      // Fallback when no image
+      &:empty::after {
+        content: "";
         position: absolute;
-        top: 1rem;
-        right: 1rem;
-        z-index: 10;
-        
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 60px;
+        height: 60px;
+        background-color: rgb(255, 255, 255, 0.3);
+        mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor'%3E%3Cpath d='M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z'/%3E%3C/svg%3E")
+          no-repeat;
+        mask-size: contain;
+      }
+    }
+
+    // Card content area
+    .card-content {
+      padding: 1.5rem;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+
+      // Title field
+      .field--name-title,
+      .views-field-title {
+        order: 1;
+        margin-bottom: 1rem;
+
+        .field__item,
+        .field-content {
+          font-size: 1.35rem;
+          font-weight: 800;
+          line-height: 1.3;
+          color: var(--saho-color-text-primary);
+
+          a {
+            color: var(--saho-color-text-primary);
+            text-decoration: none;
+            font-size: inherit;
+            font-weight: inherit;
+            line-height: inherit;
+            transition: color 0.2s;
+
+            &:hover {
+              color: var(--saho-color-primary-light, #b22222);
+            }
+          }
+        }
+      }
+
+      // Date field with icon
+      .field--name-field-start-date,
+      .field--name-field-end-date,
+      .views-field-field-start-date,
+      .views-field-field-end-date {
+        order: 2;
+        font-size: 1rem;
+        color: var(--saho-color-primary-light, #b22222);
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+        display: flex;
+        align-items: center;
+
+        &::before {
+          content: "";
+          display: inline-block;
+          width: 18px;
+          height: 18px;
+          margin-right: 8px;
+          background-color: currentcolor;
+          mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor'%3E%3Cpath d='M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z'/%3E%3C/svg%3E")
+            no-repeat;
+          mask-size: contain;
+          flex-shrink: 0;
+        }
+
         .field__label,
         .views-label {
           display: none;
         }
-        
+
         .field__item,
         .field-content {
-          background: rgb(178, 34, 34, 0.95);
-          color: var(--saho-color-white);
-          padding: 6px 14px;
-          border-radius: var(--saho-button-radius-pill);
-          font-size: 0.75rem;
-          font-weight: 700;
-          text-transform: uppercase;
-          letter-spacing: 0.05em;
-          backdrop-filter: blur(10px);
+          font-size: inherit;
+          color: inherit;
+          font-weight: inherit;
+        }
+      }
+
+      // Venue field with location icon
+      .field--name-field-upcoming-venue,
+      .views-field-field-upcoming-venue {
+        order: 3;
+        font-size: 0.95rem;
+        color: var(--saho-color-text-muted);
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: flex-start;
+        line-height: 1.4;
+
+        &::before {
+          content: "";
+          display: inline-block;
+          width: 16px;
+          height: 16px;
+          margin-right: 8px;
+          margin-top: 2px;
+          background-color: currentcolor;
+          mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor'%3E%3Cpath d='M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z'/%3E%3C/svg%3E")
+            no-repeat;
+          mask-size: contain;
+          flex-shrink: 0;
+        }
+
+        .field__label,
+        .views-label {
+          display: none;
+        }
+
+        .field__item,
+        .field-content {
+          flex: 1;
+          font-style: italic;
+        }
+      }
+
+      // Body field (brief description)
+      .field--name-body,
+      .views-field-body {
+        order: 4;
+        flex-grow: 1;
+        margin-bottom: 1.5rem;
+
+        .field__label,
+        .views-label {
+          display: none;
+        }
+
+        .field__item,
+        .field-content {
+          font-size: 0.95rem;
+          color: var(--saho-color-text-secondary);
+          line-height: 1.5;
+          display: -webkit-box;
+          -webkit-line-clamp: 4;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+
+          p {
+            margin: 0 0 0.5rem;
+            color: inherit;
+
+            &:last-child {
+              margin-bottom: 0;
+            }
+          }
+        }
+      }
+
+      // Learn More button
+      .learn-more-button,
+      .node__links,
+      .views-field-view-node {
+        order: 10;
+        margin-top: auto;
+
+        a {
+          display: inline-block;
+          padding: 12px 24px;
+          background: var(--saho-color-primary-light, #b22222);
+          color: white;
+          border-radius: 25px;
+          font-size: 0.95rem;
+          font-weight: 600;
+          text-decoration: none;
+          transition: all 0.3s;
+          border: none;
+
+          &:hover {
+            background: var(--saho-color-primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px var(--saho-color-primary-alpha-25);
+          }
+
+          &::after {
+            content: " →";
+            display: inline;
+            font-weight: normal;
+          }
         }
       }
     }
+
+    // Event type badge (if present)
+    .field--name-field-type-of-event,
+    .views-field-field-type-of-event {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      z-index: 10;
+
+      .field__label,
+      .views-label {
+        display: none;
+      }
+
+      .field__item,
+      .field-content {
+        background: rgb(178, 34, 34, 0.95);
+        color: var(--saho-color-white);
+        padding: 6px 14px;
+        border-radius: var(--saho-button-radius-pill);
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        backdrop-filter: blur(10px);
+      }
+    }
   }
+}
 
 // ============================================================
 // EVENT CARD STYLES (Teaser/Grid View)
@@ -1110,7 +1137,11 @@ body .view-all-upcoming-events .views-row {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, var(--saho-color-surface-alt) 0%, var(--saho-color-border) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--saho-color-surface-alt) 0%,
+    var(--saho-color-border) 100%
+  );
 }
 
 // Card body
@@ -1430,7 +1461,11 @@ body .view-all-upcoming-events .views-row {
 // ============================================================
 
 .saho-event-info-section {
-  background: linear-gradient(135deg, var(--saho-color-surface-alt) 0%, var(--saho-color-border) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--saho-color-surface-alt) 0%,
+    var(--saho-color-border) 100%
+  );
   border-left: 4px solid var(--saho-color-primary);
   border-radius: 8px;
   padding: 24px;
@@ -1456,7 +1491,8 @@ body .view-all-upcoming-events .views-row {
 }
 
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
     transform: scale(1);
   }
@@ -1583,11 +1619,12 @@ body .view-all-upcoming-events .views-row {
   // Fix: Prevent red-on-red hover for "Happening Now" badges
   // The saho-badge component with heritage-red variant
   .saho-badge--heritage-red {
-    a, button {
+    a,
+    button {
       color: var(--saho-color-white);
 
       &:hover {
-        color: white !important; // Keep white text on hover for red badges
+        color: white; // Keep white text on hover for red badges
         text-decoration: underline;
       }
     }
@@ -1610,7 +1647,8 @@ body .view-all-upcoming-events .views-row {
 }
 
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
     transform: translateY(-50%) scale(1);
   }
