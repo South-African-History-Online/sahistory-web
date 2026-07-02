@@ -134,6 +134,23 @@ time,
   font-family: var(--font-mono, "IBM Plex Mono", ui-monospace, monospace);
 }
 
+// --- Archival duotone: unify disparate content imagery ---------------------
+// The archive mixes photographs of every source and quality; a single warm
+// duotone (darks -> ink, lights -> paper) makes them sit together. Scoped to
+// content-card thumbnails + an opt-in utility; excludes logo, icons, social.
+.saho-card-image img,
+img.saho-duotone,
+.saho-duotone img {
+  filter: var(--img-duotone);
+  transition: filter var(--saho-transition-base, 200ms) ease;
+}
+
+// Reveal true colour when a card is engaged (a gentle exception to "still").
+.saho-card:hover .saho-card-image img,
+.saho-card:focus-within .saho-card-image img {
+  filter: none;
+}
+
 // --- Motion: calm and purposeful; none under reduced-motion ----------------
 @media (prefers-reduced-motion: reduce) {
   *,
