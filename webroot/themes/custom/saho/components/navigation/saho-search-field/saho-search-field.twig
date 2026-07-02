@@ -7,8 +7,9 @@
 <div{{ attributes.addClass(['saho-search', 'saho-search--' ~ (size|default('lg'))]) }}>
   <form class="saho-search__form" action="{{ action|default('/search') }}" method="get" role="search">
     <span class="saho-search__icon" aria-hidden="true">&#9906;</span>
-    <label class="visually-hidden" for="saho-search-input">{{ placeholder }}</label>
-    <input class="saho-search__input" id="saho-search-input" type="search" name="{{ input_name|default('search_api_fulltext') }}" placeholder="{{ placeholder|default('Search people, events, places, dates…') }}" />
+    {% set field_id = input_id|default('saho-search-input') %}
+    <label class="visually-hidden" for="{{ field_id }}">{{ placeholder }}</label>
+    <input class="saho-search__input" id="{{ field_id }}" type="search" name="{{ input_name|default('search_api_fulltext') }}" placeholder="{{ placeholder|default('Search people, events, places, dates…') }}" />
     <button class="saho-search__submit" type="submit">{{ button_label|default('Search') }}</button>
   </form>
   {% if scopes %}

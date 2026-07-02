@@ -13,7 +13,12 @@
 
 <div {{ page_attributes.addClass(page_classes) }}>
 	{% block page_navigation %}
-		{% include 'saho:page-navigation' %}
+		{# The legacy navbar region blocks are all disabled; skip the empty bar
+		   entirely unless a region actually has content (S2 chrome owns the
+		   header now). #}
+		{% if page.navbar_branding|render|trim or page.navbar_left|render|trim or page.navbar_right|render|trim %}
+			{% include 'saho:page-navigation' %}
+		{% endif %}
 	{% endblock %}
 
   {% block page_content %}
