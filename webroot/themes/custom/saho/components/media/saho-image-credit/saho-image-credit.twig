@@ -1,0 +1,19 @@
+{#
+/**
+ * @file SAHO Image credit SDC. props: src, alt, credit, source, caption, duotone, ratio
+ */
+#}
+<figure{{ attributes.addClass('saho-figure') }}>
+  <div class="saho-figure__frame" style="aspect-ratio: {{ ratio|default('4 / 3') }};">
+    {% if src %}
+      <img class="saho-figure__img{{ duotone ? ' saho-duotone' : '' }}" src="{{ src }}" alt="{{ alt|default('') }}" loading="lazy" />
+    {% endif %}
+  </div>
+  <figcaption class="saho-figure__caption">
+    {% if caption %}<p class="saho-figure__desc">{{ caption }}</p>{% endif %}
+    <p class="saho-figure__credit">
+      {%- if credit %}<span class="saho-figure__credit-label">Credit &mdash; </span>{{ credit }}{% endif -%}
+      {%- if source %}{% if credit %} &middot; {% endif %}{{ source }}{% endif -%}
+    </p>
+  </figcaption>
+</figure>

@@ -1,0 +1,35 @@
+'$schema': 'https://git.drupalcode.org/project/drupal/-/raw/11.0.x/core/modules/sdc/src/metadata.schema.json'
+name: 'Detention record'
+machine_name: saho_detention_record
+status: stable
+group: 'SAHO Provenance'
+description: 'Banning-order and incarceration data (biography fields) rendered as the archival document it is: the apartheid state''s own paperwork, reproduced as evidence. Typed ledger rows, mono values, no decoration. Dignity is the governing word.'
+props:
+  type: object
+  properties:
+    title:
+      type: string
+      default: 'State record'
+    note:
+      type: string
+      title: 'Context note'
+      default: 'Reproduced from the state record. Held as evidence of the apartheid security apparatus.'
+    banning:
+      type: object
+      title: 'Banning order (field_ban* group)'
+      properties:
+        information: { type: string }
+        date_from: { type: string }
+        date_until: { type: string }
+        province: { type: string }
+    prison:
+      type: object
+      title: 'Incarceration (field_prison* group)'
+      properties:
+        prison_name: { type: string }
+        prisoner_number: { type: string }
+        date_admitted: { type: string }
+        date_released: { type: string }
+        days_detained: { type: string }
+libraryDependencies:
+  - saho/saho-detention-record

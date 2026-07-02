@@ -1,0 +1,34 @@
+{#
+/**
+ * @file SAHO Related tabs SDC — the cross-reference engine.
+ * props: title, tabs[] (id, label, count, items[] {label, href, note, type})
+ * Maps to field_people_related_tab / field_organizations_related_tab /
+ * field_topics_related_tab / field_timelines_related_tab.
+ */
+#}
+<section{{ attributes.addClass('saho-reltabs') }} data-saho-reltabs>
+  <h4 class="saho-reltabs__title">{{ title|default('Cross-references') }}</h4>
+  <div class="saho-reltabs__bar" role="tablist">
+    {% for t in tabs %}
+      <button type="button" class="saho-reltabs__tab{{ loop.first ? ' is-active' : '' }}"
+              role="tab" aria-selected="{{ loop.first ? 'true' : 'false' }}" data-tab="{{ t.id }}">
+        {{ t.label }}{% if t.count is not null %}<span class="saho-reltabs__count">{{ t.count }}</span>{% endif %}
+      </button>
+    {% endfor %}
+  </div>
+  {% for t in tabs %}
+    <ul class="saho-reltabs__panel{{ loop.first ? ' is-active' : '' }}" data-panel="{{ t.id }}" role="tabpanel">
+      {% for it in t.items %}
+        <li class="saho-reltabs__item">
+          <a class="saho-reltabs__link" href="{{ it.href|default('#') }}">
+            <span class="saho-reltabs__dot saho-reltabs__dot--{{ it.type|default('article') }}" aria-hidden="true"></span>
+            <span class="saho-reltabs__text">
+              <span class="saho-reltabs__label">{{ it.label }}</span>
+              {% if it.note %}<span class="saho-reltabs__note">{{ it.note }}</span>{% endif %}
+            </span>
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+  {% endfor %}
+</section>

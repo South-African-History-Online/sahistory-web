@@ -1,0 +1,32 @@
+'$schema': 'https://git.drupalcode.org/project/drupal/-/raw/11.0.x/core/modules/sdc/src/metadata.schema.json'
+name: 'Index table'
+machine_name: saho_index_table
+status: stable
+group: 'SAHO Content'
+description: 'The archive pulled in as a ruled catalogue: rows are records, columns are fields. The primary way to browse and query the data. Sortable headers, a content-type swatch per row, mono accession refs. Typically fed by a View.'
+props:
+  type: object
+  properties:
+    columns:
+      type: array
+      title: Columns
+      items:
+        type: object
+        properties:
+          key: { type: string }
+          label: { type: string }
+          sortable: { type: boolean }
+          align: { type: string, enum: [left, right, center] }
+          mono: { type: boolean }
+          muted: { type: boolean }
+          width: { type: string }
+    rows:
+      type: array
+      title: Rows
+      items:
+        type: object
+    caption:
+      type: string
+      title: 'Caption (screen-reader / heading)'
+libraryDependencies:
+  - saho/saho-index-table

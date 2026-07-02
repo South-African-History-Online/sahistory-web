@@ -1,0 +1,42 @@
+{#
+/**
+ * @file SAHO Index table SDC. props: columns[], rows[], caption
+ * Sorting is progressive-enhancement (saho.behaviours.js); the server-rendered
+ * order is authoritative and works with JS off.
+ */
+#}
+<div{{ attributes.addClass('saho-index-table') }} data-saho-sortable>
+  <table class="saho-index-table__table">
+    {% if caption %}<caption class="saho-index-table__caption">{{ caption }}</caption>{% endif %}
+    <thead>
+      <tr>
+        {% for c in columns %}
+          <th scope="col"
+              class="saho-index-table__th{{ c.sortable ? ' is-sortable' : '' }}"
+              style="text-align: {{ c.align|default('left') }};{% if c.width %} width: {{ c.width }};{% endif %}"
+              {% if c.sortable %}data-sort-key="{{ c.key }}" aria-sort="none" tabindex="0" role="button"{% endif %}>
+            {{ c.label }}{% if c.sortable %}<span class="saho-index-table__arrow" aria-hidden="true"></span>{% endif %}
+          </th>
+        {% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in rows %}
+        <tr class="saho-index-table__tr">
+          {% for c in columns %}
+            <td class="saho-index-table__td{{ c.mono ? ' is-mono' : '' }}{{ c.muted ? ' is-muted' : '' }}{{ c.key == 'title' ? ' is-title' : '' }}"
+                style="text-align: {{ c.align|default('left') }};">
+              {%- if c.key == 'type' -%}
+                <span class="saho-index-table__type">
+                  <span class="saho-index-table__swatch saho-index-table__swatch--{{ r.type }}"></span>{{ r.type }}
+                </span>
+              {%- else -%}
+                {{ attribute(r, c.key) }}
+              {%- endif -%}
+            </td>
+          {% endfor %}
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>

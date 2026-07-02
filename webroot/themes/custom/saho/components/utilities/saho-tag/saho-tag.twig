@@ -1,0 +1,11 @@
+{#
+/**
+ * @file SAHO Tag SDC. props: href, active, count · slots: label
+ */
+#}
+{% set tag = href ? 'a' : 'span' %}
+{% set classes = ['saho-tag', active ? 'saho-tag--active' : ''] %}
+<{{ tag }}{{ attributes.addClass(classes) }}{% if href %} href="{{ href }}"{% endif %}>
+  <span class="saho-tag__label">{{ label }}</span>
+  {%- if count is not null %}<span class="saho-tag__count">{{ count }}</span>{% endif -%}
+</{{ tag }}>

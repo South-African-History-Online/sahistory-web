@@ -1,0 +1,19 @@
+{#
+/**
+ * @file SAHO Metadata block SDC. props: title, accent, items[]
+ */
+#}
+{% set classes = ['saho-meta-block', accent ? 'saho-meta-block--' ~ accent : ''] %}
+<section{{ attributes.addClass(classes) }}>
+  {% if title %}<h4 class="saho-meta-block__title">{{ title }}</h4>{% endif %}
+  <dl class="saho-meta-block__list">
+    {% for it in items %}
+      <div class="saho-meta-block__row">
+        <dt class="saho-meta-block__key">{{ it.label }}</dt>
+        <dd class="saho-meta-block__val">
+          {%- if it.href %}<a href="{{ it.href }}">{{ it.value }}</a>{% else %}{{ it.value }}{% endif -%}
+        </dd>
+      </div>
+    {% endfor %}
+  </dl>
+</section>
