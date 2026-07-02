@@ -1,13 +1,14 @@
 {#
 /**
- * @file SAHO Search field SDC. props: placeholder, action, size, button_label, scopes[]
+ * @file SAHO Search field SDC. props: placeholder, action, size, button_label, scopes[], input_name
+ * The site search view exposes its filter as "search_api_fulltext", hence the default.
  */
 #}
 <div{{ attributes.addClass(['saho-search', 'saho-search--' ~ (size|default('lg'))]) }}>
   <form class="saho-search__form" action="{{ action|default('/search') }}" method="get" role="search">
     <span class="saho-search__icon" aria-hidden="true">&#9906;</span>
     <label class="visually-hidden" for="saho-search-input">{{ placeholder }}</label>
-    <input class="saho-search__input" id="saho-search-input" type="search" name="q" placeholder="{{ placeholder|default('Search people, events, places, dates…') }}" />
+    <input class="saho-search__input" id="saho-search-input" type="search" name="{{ input_name|default('search_api_fulltext') }}" placeholder="{{ placeholder|default('Search people, events, places, dates…') }}" />
     <button class="saho-search__submit" type="submit">{{ button_label|default('Search') }}</button>
   </form>
   {% if scopes %}

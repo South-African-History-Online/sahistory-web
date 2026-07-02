@@ -1,0 +1,37 @@
+{#
+/**
+ * @file SAHO Home feature SDC. props: kicker, title, standfirst, href,
+ * cta_label, secondary_href, secondary_label, meta, heading_level.
+ * The editorial register: Archivo black on ink. Defaults to owning the H1
+ * (the front page suppresses the global page title).
+ */
+#}
+{% set heading = heading_level|default('h1') %}
+<article{{ attributes.addClass('saho-home-feature') }}>
+  {% if kicker %}
+    <span class="saho-home-feature__kicker">{{ kicker }}</span>
+  {% endif %}
+  <{{ heading }} class="saho-home-feature__title">
+    {%- if href -%}
+      <a class="saho-home-feature__title-link" href="{{ href }}">{{ title }}</a>
+    {%- else -%}
+      {{ title }}
+    {%- endif -%}
+  </{{ heading }}>
+  {% if standfirst %}
+    <p class="saho-home-feature__standfirst">{{ standfirst }}</p>
+  {% endif %}
+  {% if href or secondary_href %}
+    <div class="saho-home-feature__actions">
+      {% if href %}
+        <a class="saho-home-feature__cta" href="{{ href }}">{{ cta_label|default('Open the feature') }}</a>
+      {% endif %}
+      {% if secondary_href %}
+        <a class="saho-home-feature__cta saho-home-feature__cta--ghost" href="{{ secondary_href }}">{{ secondary_label|default('View chronology') }}</a>
+      {% endif %}
+    </div>
+  {% endif %}
+  {% if meta %}
+    <p class="saho-home-feature__meta">{{ meta }}</p>
+  {% endif %}
+</article>

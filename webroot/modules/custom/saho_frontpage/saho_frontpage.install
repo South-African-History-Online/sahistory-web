@@ -1,0 +1,32 @@
+<?php
+
+/**
+ * @file
+ * Install and uninstall hooks for saho_frontpage.
+ */
+
+declare(strict_types=1);
+
+use Drupal\layout_builder\Section;
+use Drupal\node\Entity\Node;
+
+/**
+ * Implements hook_uninstall().
+ *
+ * Restores the front page layout snapshotted by the rebuild post_update, so
+ * uninstalling the module is a full reversal.
+ */
+function saho_frontpage_uninstall(): void {
+  $state = \Drupal::state();
+  $backup = $state->get('saho_frontpage.node_144647_layout_backup');
+  if ($backup === NULL) {
+    return;
+  }
+  $node = Node::load(144647);
+  if ($node !== NULL && $node->hasField('layout_builder__layout')) {
+    $sections = array_map([Section::class, 'fromArray'], $backup);
+    $node->set('layout_builder__layout', $sections);
+    $node->save();
+  }
+  $state->delete('saho_frontpage.node_144647_layout_backup');
+}
