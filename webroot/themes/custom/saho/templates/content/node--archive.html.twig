@@ -8,15 +8,43 @@
  */
 #}
 
-{# Initialize sidebar content tracking #}
-{% set sidebar_has_content = true %}
+{# Variable to track if sidebar has content #}
+{% set sidebar_has_content = false %}
 
 <article{{ attributes.addClass('saho-article-wrapper') }}>
+
+  {# 2027 "Open Record" record header (typed tab + display ref + status + key fields). #}
+  {% if record is defined %}
+    {{ include('saho:saho-record-header', {
+      type: record.type,
+      reference: record.reference,
+      status: record.status,
+      kicker: record.kicker,
+      title: record.title,
+      facts: record.facts,
+    }, with_context = false) }}
+  {% endif %}
 
   <div class="saho-article-grid">
 
     {# LEFT: Main content column #}
     <div class="saho-main-content">
+
+      {% if node.field_feature_banner.entity %}
+        <div class="saho-feature-banner">
+          <img
+            src="{{ file_url(node.field_feature_banner.entity.uri.value) }}"
+            alt="{{ node.field_feature_banner.alt }}"
+            class="saho-feature-banner-image"
+            loading="eager"
+            decoding="async"
+            fetchpriority="high"
+          >
+        </div>
+      {% elseif record_image.src is defined and record_image.src %}
+        {# Open Record lead image: duotone image-credit figure (S3). #}
+        {{ include('saho:saho-image-credit', record_image, with_context = false) }}
+      {% endif %}
 
       <div class="saho-article-meta">
         {% if node.getCreatedTime() %}
@@ -100,6 +128,7 @@
         'field_copyright',
         'field_description',
         'field_publication_date_archive',
+        'field_archive_publication_date',
         'field_publication_place',
         'field_publication_title',
         'field_publishers',
@@ -113,188 +142,49 @@
         'sharing_buttons'
       ) }}
 
+      {# Provenance: "How we know this" from field_ref_str (S3). #}
+      {% if record_provenance %}
+        {{ include('saho:saho-provenance-block', record_provenance, with_context = false) }}
+      {% endif %}
+
+      {# Cite this entry (Harvard / APA / Oxford, from CitationService). #}
+      {% if record_citation %}
+        {{ include('saho:saho-citation', record_citation, with_context = false) }}
+      {% endif %}
+
     </div>
 
-    {# RIGHT: Sidebar with metadata #}
+    {# RIGHT: Sidebar (the Open Record rail - S3) #}
+    {% if record_meta or record_related or record_further or accordion_views is not empty or (node.field_feature_banner.entity and record_image.src is defined and record_image.src) %}
+      {% set sidebar_has_content = true %}
+    {% endif %}
+
+    {% if sidebar_has_content %}
     <aside class="saho-article-sidebar">
-      {# Main Image - Moved to top of sidebar #}
-      {% if node.field_feature_banner.entity %}
-        <div class="saho-image-block mb-4">
-          <img
-            src="{{ file_url(node.field_feature_banner.entity.uri.value) }}"
-            alt="{{ node.field_feature_banner.alt }}"
-            class="saho-image img-fluid saho-portrait-image"
-            loading="eager"
-            decoding="async"
-            fetchpriority="high"
-          >
-          {% if node.field_node_image_caption.value %}
-            <div class="caption mt-2 text-center">
-              {{ node.field_node_image_caption.value|striptags('<a><em><strong><i><b><br>')|raw }}
-            </div>
-          {% endif %}
-        </div>
-      {% elseif node.field_archive_image.entity %}
-        <div class="saho-image-block mb-4">
-          <img
-            src="{{ file_url(node.field_archive_image.entity.uri.value) }}"
-            alt="{{ node.field_archive_image.alt }}"
-            class="saho-image img-fluid saho-portrait-image"
-            loading="eager"
-            decoding="async"
-          >
-          {% if node.field_node_image_caption.value %}
-            <div class="caption mt-2 text-center">
-              {{ node.field_node_image_caption.value|striptags('<a><em><strong><i><b><br>')|raw }}
-            </div>
-          {% endif %}
-        </div>
-      {% elseif node.field_image.entity %}
-        <div class="saho-image-block mb-4">
-          <img
-            src="{{ file_url(node.field_image.entity.uri.value) }}"
-            alt="{{ node.field_image.alt }}"
-            class="saho-image img-fluid saho-portrait-image"
-            loading="eager"
-            decoding="async"
-          >
-          {% if node.field_node_image_caption.value %}
-            <div class="caption mt-2 text-center">
-              {{ node.field_node_image_caption.value|striptags('<a><em><strong><i><b><br>')|raw }}
-            </div>
-          {% endif %}
-        </div>
+
+      {# Lead image moves to the rail when a feature banner leads the main column. #}
+      {% if node.field_feature_banner.entity and record_image.src is defined and record_image.src %}
+        {{ include('saho:saho-image-credit', record_image, with_context = false) }}
       {% endif %}
-      
-      <div class="saho-metadata-container p-3 mb-4 border rounded bg-light">
-        <h3 class="border-bottom pb-2 mb-3">Archive Metadata</h3>
-        
-        {# Publication Information #}
-        {% if node.field_publication_title.value or node.field_subtitle.value or node.field_publication_place.value or node.field_publishers.value or node.field_isbn.value %}
-          <div class="saho-metadata-group mb-4">
-            <h4 class="h5 mb-2">Publication Details</h4>
-            {% if node.field_publication_title.value %}
-              <div class="saho-metadata-item mb-1">
-                <strong>Title:</strong> {{ node.field_publication_title.value }}
-              </div>
-            {% endif %}
-            {% if node.field_subtitle.value %}
-              <div class="saho-metadata-item mb-1">
-                <strong>Subtitle:</strong> {{ node.field_subtitle.value|striptags('<a><em><strong><i><b>')|raw }}
-              </div>
-            {% endif %}
-            {% if node.field_publication_place.value %}
-              <div class="saho-metadata-item mb-1">
-                <strong>Place:</strong> {{ node.field_publication_place.value }}
-              </div>
-            {% endif %}
-            {% if node.field_publishers.value %}
-              <div class="saho-metadata-item mb-1">
-                <strong>Publishers:</strong> {{ node.field_publishers.value }}
-              </div>
-            {% endif %}
-            {% if node.field_isbn.value %}
-              <div class="saho-metadata-item mb-1">
-                <strong>ISBN:</strong> {{ node.field_isbn.value }}
-              </div>
-            {% endif %}
-          </div>
-        {% endif %}
-        
-        {# Authorship Information #}
-        {% if node.field_author.value or node.field_contributor.value or node.field_editors.value %}
-          <div class="saho-metadata-group mb-4">
-            <h4 class="h5 mb-2">Authorship</h4>
-            {% if node.field_author.value %}
-              <div class="saho-metadata-item mb-1">
-                <strong>Author:</strong> {{ node.field_author.value }}
-              </div>
-            {% endif %}
-            {% if node.field_contributor.value %}
-              <div class="saho-metadata-item mb-1">
-                <strong>Contributor:</strong> {{ node.field_contributor.value }}
-              </div>
-            {% endif %}
-            {% if node.field_editors.value %}
-              <div class="saho-metadata-item mb-1">
-                <strong>Editors:</strong> {{ node.field_editors.value }}
-              </div>
-            {% endif %}
-          </div>
-        {% endif %}
-        
-        {# Dates and Source Information #}
-        <div class="saho-metadata-group mb-4">
-          {% if node.getCreatedTime() %}
-            <div class="saho-metadata-item mb-1">
-              <strong>Published:</strong> {{ node.getCreatedTime()|date("j F Y") }}
-            </div>
-          {% endif %}
-          {% if node.getChangedTime() != node.getCreatedTime() %}
-            <div class="saho-metadata-item mb-1">
-              <strong>Updated:</strong> {{ node.getChangedTime()|date("j F Y") }}
-            </div>
-          {% endif %}
-          {% if node.field_archive_publication_date.value %}
-            <div class="saho-metadata-item mb-1">
-              <strong>Archive Publication Date:</strong> {{ node.field_archive_publication_date.value|date("j F Y") }}
-            </div>
-          {% endif %}
-          {% if node.field_source.value %}
-            <div class="saho-metadata-item mb-1">
-              <strong>Source:</strong> {{ node.field_source.value|striptags('<a><em><strong><i><b>')|raw }}
-            </div>
-          {% endif %}
-          {% if node.field_copyright.value %}
-            <div class="saho-metadata-item mb-1">
-              <strong>Copyright:</strong> {{ node.field_copyright.value }}
-            </div>
-          {% endif %}
-        </div>
-        
-        {# Language and Location Information #}
-        {% if content.field_language is defined and content.field_language|render|trim or content.field_african_country is defined and content.field_african_country|render|trim or node.field_venue.value %}
-          <div class="saho-metadata-group mb-4">
-            <h4 class="h5 mb-2">Location & Language</h4>
-            {% if content.field_african_country is defined and content.field_african_country|render|trim %}
-              <div class="saho-metadata-item mb-1">
-                <strong>African Country:</strong> {{ content.field_african_country }}
-              </div>
-            {% endif %}
-            {% if node.field_venue.value %}
-              <div class="saho-metadata-item mb-1">
-                <strong>Venue:</strong> {{ node.field_venue.value }}
-              </div>
-            {% endif %}
-            {% if content.field_language is defined and content.field_language|render|trim %}
-              <div class="saho-metadata-item mb-1">
-                <strong>Language:</strong> {{ content.field_language }}
-              </div>
-            {% endif %}
-          </div>
-        {% endif %}
-        
-        {# Description and Synopsis #}
-        {% if node.field_description.value or content.field_synopsis is defined and content.field_synopsis|render|trim %}
-          <div class="saho-metadata-group mb-4">
-            <h4 class="h5 mb-2">Description</h4>
-            {% if node.field_description.value %}
-              <div class="saho-metadata-item mb-2">
-                {{ node.field_description.value }}
-              </div>
-            {% endif %}
-            {% if content.field_synopsis is defined and content.field_synopsis|render|trim %}
-              <div class="saho-metadata-item">
-                <strong>Synopsis:</strong>
-                {{ content.field_synopsis }}
-              </div>
-            {% endif %}
-          </div>
-        {% endif %}
-      </div>
-      
-      {# Secondary Image section removed as we're now showing all images at the top of the sidebar #}
-      
+
+      {# Archive record: the structured publication fields. #}
+      {% if record_meta %}
+        {{ include('saho:saho-metadata-block', record_meta, with_context = false) }}
+      {% endif %}
+
+      {# Cross-references: typed entity relations. #}
+      {% if record_related %}
+        {{ include('saho:saho-related-tabs', record_related, with_context = false) }}
+      {% endif %}
+
+      {# Further reading (kept crawlable). #}
+      {% if record_further %}
+        <section class="saho-meta-block saho-meta-block--archive">
+          <h4 class="saho-meta-block__title">Further reading</h4>
+          <div class="saho-meta-block__val">{{ record_further }}</div>
+        </section>
+      {% endif %}
+
       {# Taxonomy and Classification #}
       {% if content.field_media_library_type is defined and content.field_media_library_type|render|trim or content.field_archive_page_feature is defined and content.field_archive_page_feature|render|trim %}
         <div class="saho-taxonomy-container p-3 mb-4 border rounded bg-light">
@@ -324,39 +214,16 @@
         </div>
       {% endif %}
       
-      {# Further Reading #}
-      {% if content.field_further_reading is defined and content.field_further_reading|render|trim %}
-        <div class="saho-further-reading">
-          <h4>Further Reading</h4>
-          {{ content.field_further_reading }}
-        </div>
-      {% endif %}
-      
-      {# References #}
-      {% if node.field_ref_str.value or node.field_references_saho_source.value %}
+      {# SAHO source references (archive-specific surface). #}
+      {% if node.field_references_saho_source.value %}
         <div class="saho-references">
-          <h4>References</h4>
-
-          {% if node.field_ref_str.value %}
-            {% set refs = node.field_ref_str.value|split('|') %}
-            <ul class="saho-reference-list">
-              {% for ref in refs %}
-                {% if ref|trim %}
-                  <li>{{ ref|trim|striptags('<a><em><strong><i><b>')|raw }}</li>
-                {% endif %}
-              {% endfor %}
-            </ul>
-          {% endif %}
-
-          {% if node.field_references_saho_source.value %}
-            <div class="saho-saho-sources">
-              <h5>SAHO Sources</h5>
-              {{ node.field_references_saho_source.value|striptags('<a><em><strong><i><b><br><p>')|raw }}
-            </div>
-          {% endif %}
+          <div class="saho-saho-sources">
+            <h5>SAHO Sources</h5>
+            {{ node.field_references_saho_source.value|striptags('<a><em><strong><i><b><br><p>')|raw }}
+          </div>
         </div>
       {% endif %}
-      
+
       {# Accordion Views #}
       {% if accordion_views is not empty %}
         <div class="accordion saho-accordion mb-4" id="sahoFeatureAccordion">
@@ -378,7 +245,11 @@
           {% endfor %}
         </div>
       {% endif %}
+
+      {# References now render as the main-column provenance-block (S3). #}
+
     </aside>
+    {% endif %}
 
   </div>
 

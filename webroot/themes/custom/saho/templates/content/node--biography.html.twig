@@ -162,19 +162,12 @@
             fetchpriority="high"
           >
         </div>
-      {% else %}
-        {# Display bio portrait (with fallback to default) if no feature banner #}
+      {% elseif record_image.src is defined and record_image.src %}
+        {# Open Record portrait: duotone image-credit figure (S3). #}
+        {{ include('saho:saho-image-credit', record_image, with_context = false) }}
+      {% elseif biography_portrait_fallback_url %}
         <div class="saho-feature-banner">
-          {% if biography_portrait_main %}
-            {{ biography_portrait_main }}
-          {% elseif biography_portrait_fallback_url %}
-            <img src="{{ biography_portrait_fallback_url }}" alt="{{ node.title.value }} portrait" class="saho-feature-banner-image" loading="eager" decoding="async" />
-          {% endif %}
-          {% if node.field_node_image_caption.value %}
-            <div class="caption">
-              {{ node.field_node_image_caption.value|striptags('<a><em><strong><i><b><br>')|raw }}
-            </div>
-          {% endif %}
+          <img src="{{ biography_portrait_fallback_url }}" alt="{{ node.title.value }} portrait" class="saho-feature-banner-image" loading="eager" decoding="async" />
         </div>
       {% endif %}
 
@@ -199,73 +192,7 @@
         </div>
       </div>
 
-      {# Personal Information Box - Classic SAHO Style #}
-      {% if node.field_drupal_birth_date.value or node.field_dob.value or node.field_drupal_death_date.value or node.field_dod.value or node.field_position.value or node.field_position_held.value or node.field_affiliation.value or node.field_birth_location.value or node.field_death_location.value or node.field_title.value or node.field_firstname.value or node.field_middlename.value or node.field_lastnamebio.value %}
-        <div class="saho-personal-info-box">
-          <h3>Personal Information</h3>
-          
-          {# Full Name #}
-          {% if node.field_title.value or node.field_firstname.value or node.field_middlename.value or node.field_lastnamebio.value %}
-            <div class="saho-bio-fullname">
-              {% if node.field_title.value %}{{ node.field_title.value }} {% endif %}{% if node.field_firstname.value %}{{ node.field_firstname.value }} {% endif %}{% if node.field_middlename.value %}{{ node.field_middlename.value }} {% endif %}{% if node.field_lastnamebio.value %}{{ node.field_lastnamebio.value }}{% endif %}
-            </div>
-          {% endif %}
-          
-          {# Birth Information #}
-          {% if node.field_drupal_birth_date.value or node.field_dob.value %}
-            <div class="saho-bio-info-row">
-              <strong>Born:</strong>
-              {% if node.field_drupal_birth_date.value %}
-                {{ node.field_drupal_birth_date.value|date("j F Y") }}
-              {% elseif node.field_dob.value %}
-                {{ node.field_dob.value }}
-              {% endif %}
-              {% if node.field_birth_location.value %}
-                in {{ node.field_birth_location.value }}
-              {% endif %}
-            </div>
-          {% endif %}
-          
-          {# Death Information #}
-          {% if node.field_drupal_death_date.value or node.field_dod.value %}
-            <div class="saho-bio-info-row">
-              <strong>Died:</strong>
-              {% if node.field_drupal_death_date.value %}
-                {{ node.field_drupal_death_date.value|date("j F Y") }}
-              {% elseif node.field_dod.value %}
-                {{ node.field_dod.value }}
-              {% endif %}
-              {% if node.field_death_location.value %}
-                in {{ node.field_death_location.value }}
-              {% endif %}
-              {% if node.field_cod.value %}
-                ({{ node.field_cod.value }})
-              {% endif %}
-            </div>
-          {% endif %}
-          
-          {# Position Information #}
-          {% if node.field_position_held.value %}
-            <div class="saho-bio-info-row">
-              <strong>Position:</strong>
-              {{ node.field_position_held.value|striptags }}
-            </div>
-          {% elseif node.field_position.value %}
-            <div class="saho-bio-info-row">
-              <strong>Position:</strong>
-              {{ node.field_position.value|striptags }}
-            </div>
-          {% endif %}
-          
-          {# Affiliation Information #}
-          {% if node.field_affiliation.value %}
-            <div class="saho-bio-info-row">
-              <strong>Affiliation:</strong>
-              {{ node.field_affiliation.value }}
-            </div>
-          {% endif %}
-        </div>
-      {% endif %}
+      {# Personal information now lives in the rail metadata-block (S3). #}
 
       {% if content.body %}
         <div class="saho-article-body">
@@ -301,6 +228,8 @@
         'field_people_level3_cat',
         'field_people_related_tab',
         'field_organizations_related_tab',
+        'field_topics_related_tab',
+        'field_timelines_related_tab',
         'field_gallery_tag',
         'field_synopsis',
         'field_title',
@@ -327,70 +256,50 @@
         'sharing_buttons'
       ) }}
 
+      {# Provenance: "How we know this" from field_ref_str (S3). #}
+      {% if record_provenance %}
+        {{ include('saho:saho-provenance-block', record_provenance, with_context = false) }}
+      {% endif %}
+
+      {# Cite this entry (Harvard / APA / Oxford, from CitationService). #}
+      {% if record_citation %}
+        {{ include('saho:saho-citation', record_citation, with_context = false) }}
+      {% endif %}
+
     </div>
 
-    {# RIGHT: Sidebar #}
-    {% if node.field_bio_pic.entity and node.field_feature_banner.entity %}
-      {% set sidebar_has_content = true %}
-    {% endif %}
-    
-    {% if accordion_views is not empty %}
-      {% set sidebar_has_content = true %}
-    {% endif %}
-    
-    {% if content.field_people_category is defined and content.field_people_category|render|trim %}
-      {% set sidebar_has_content = true %}
-    {% endif %}
-    
-    {% if content.field_people_level3_cat is defined and content.field_people_level3_cat|render|trim %}
-      {% set sidebar_has_content = true %}
-    {% endif %}
-    
-    {% if content.field_african_country is defined and content.field_african_country|render|trim %}
-      {% set sidebar_has_content = true %}
-    {% endif %}
-    
-    {% if content.field_people_related_tab is defined and content.field_people_related_tab|render|trim %}
+    {# RIGHT: Sidebar (the Open Record rail - S3) #}
+    {% if record_meta or record_related or record_further or accordion_views is not empty or (node.field_feature_banner.entity and record_image.src is defined and record_image.src) %}
       {% set sidebar_has_content = true %}
     {% endif %}
 
-    {% if content.field_member_of_organisation is defined and content.field_member_of_organisation|render|trim %}
-      {% set sidebar_has_content = true %}
-    {% endif %}
-    
-    {% if content.field_synopsis is defined and content.field_synopsis|render|trim %}
-      {% set sidebar_has_content = true %}
-    {% endif %}
-    
-    {% if content.field_further_reading is defined and content.field_further_reading|render|trim %}
-      {% set sidebar_has_content = true %}
-    {% endif %}
-    
-    {% if node.field_ref_str.value %}
-      {% set sidebar_has_content = true %}
-    {% endif %}
-    
     {% if sidebar_has_content %}
     <aside class="saho-article-sidebar">
 
-      {# Profile Image Block - Always visible at top with fallback #}
-      {% if node.field_feature_banner.entity %}
-        {# Only show portrait in sidebar if there's a feature banner in main content #}
-        <div class="saho-image-block mb-4">
-          {% if biography_portrait_sidebar %}
-            {{ biography_portrait_sidebar }}
-          {% elseif biography_portrait_fallback_url %}
-            <img src="{{ biography_portrait_fallback_url }}" alt="{{ node.title.value }} portrait" class="saho-image" loading="lazy" decoding="async" />
-          {% endif %}
-          {% if node.field_node_image_caption.value %}
-            <div class="caption">
-              {{ node.field_node_image_caption.value|striptags('<a><em><strong><i><b><br>')|raw }}
-            </div>
-          {% endif %}
-        </div>
+      {# Portrait moves to the rail when a feature banner leads the main column. #}
+      {% if node.field_feature_banner.entity and record_image.src is defined and record_image.src %}
+        {{ include('saho:saho-image-credit', record_image, with_context = false) }}
       {% endif %}
 
-      {# Custom Accordion for feature_children views - First #}
+      {# Vital record: the structured biography fields. #}
+      {% if record_meta %}
+        {{ include('saho:saho-metadata-block', record_meta, with_context = false) }}
+      {% endif %}
+
+      {# Cross-references: typed entity relations. #}
+      {% if record_related %}
+        {{ include('saho:saho-related-tabs', record_related, with_context = false) }}
+      {% endif %}
+
+      {# Further reading (kept crawlable). #}
+      {% if record_further %}
+        <section class="saho-meta-block saho-meta-block--biography">
+          <h4 class="saho-meta-block__title">Further reading</h4>
+          <div class="saho-meta-block__val">{{ record_further }}</div>
+        </section>
+      {% endif %}
+
+      {# Custom Accordion for feature_children views #}
       {% if accordion_views is not empty %}
         <div class="saho-accordion mb-5" id="sahoFeatureAccordion">
           {% for item in accordion_views %}
@@ -416,20 +325,7 @@
         </div>
       {% endif %}
 
-      {# References section #}
-      {% if node.field_ref_str.value %}
-        {% set refs = node.field_ref_str.value|split('|') %}
-        <div class="saho-references">
-          <h4>References</h4>
-          <ul class="saho-reference-list">
-            {% for ref in refs %}
-              {% if ref|trim %}
-                <li>{{ ref|trim|striptags('<a><em><strong><i><b>')|raw }}</li>
-              {% endif %}
-            {% endfor %}
-          </ul>
-        </div>
-      {% endif %}
+      {# References now render as the main-column provenance-block (S3). #}
 
     </aside>
     {% endif %}
@@ -563,139 +459,5 @@
   {% endif %}
 {% endif %}
 
-{# Context & Related Information Accordion #}
-{% set has_context = content.field_people_related_tab|render|trim or content.field_feature_parent|render|trim or content.field_member_of_organisation|render|trim or content.field_people_category|render|trim or content.field_people_level3_cat|render|trim or content.field_african_country|render|trim or content.field_further_reading|render|trim or content.field_synopsis|render|trim %}
-
-{% if has_context %}
-  <div class="saho-accordion saho-context-accordion">
-    <h2>Context & Related Information</h2>
-    
-    {% if content.field_people_related_tab is defined and content.field_people_related_tab|render|trim %}
-      <div class="saho-accordion-item">
-        <h3 class="saho-accordion-header">
-          <button class="saho-accordion-button collapsed" type="button" data-target="#people-collapse" aria-expanded="false" aria-controls="people-collapse">
-            Related People
-          </button>
-        </h3>
-        <div id="people-collapse" class="saho-accordion-collapse" aria-labelledby="people-header">
-          <div class="saho-accordion-body">
-            {{ content.field_people_related_tab }}
-          </div>
-        </div>
-      </div>
-    {% endif %}
-
-    {% if content.field_people_category is defined and content.field_people_category|render|trim %}
-      <div class="saho-accordion-item">
-        <h3 class="saho-accordion-header">
-          <button class="saho-accordion-button collapsed" type="button" data-target="#category-collapse" aria-expanded="false" aria-controls="category-collapse">
-            People Category
-          </button>
-        </h3>
-        <div id="category-collapse" class="saho-accordion-collapse" aria-labelledby="category-header">
-          <div class="saho-accordion-body">
-            {{ content.field_people_category }}
-          </div>
-        </div>
-      </div>
-    {% endif %}
-
-    {% if content.field_people_level3_cat is defined and content.field_people_level3_cat|render|trim %}
-      <div class="saho-accordion-item">
-        <h3 class="saho-accordion-header">
-          <button class="saho-accordion-button collapsed" type="button" data-target="#subcategory-collapse" aria-expanded="false" aria-controls="subcategory-collapse">
-            People Subcategory
-          </button>
-        </h3>
-        <div id="subcategory-collapse" class="saho-accordion-collapse" aria-labelledby="subcategory-header">
-          <div class="saho-accordion-body">
-            {{ content.field_people_level3_cat }}
-          </div>
-        </div>
-      </div>
-    {% endif %}
-
-    {% if content.field_african_country is defined and content.field_african_country|render|trim %}
-      <div class="saho-accordion-item">
-        <h3 class="saho-accordion-header">
-          <button class="saho-accordion-button collapsed" type="button" data-target="#country-collapse" aria-expanded="false" aria-controls="country-collapse">
-            African Country
-          </button>
-        </h3>
-        <div id="country-collapse" class="saho-accordion-collapse" aria-labelledby="country-header">
-          <div class="saho-accordion-body">
-            {{ content.field_african_country }}
-          </div>
-        </div>
-      </div>
-    {% endif %}
-
-    {% if content.field_member_of_organisation is defined and content.field_member_of_organisation|render|trim %}
-      <div class="saho-accordion-item">
-        <h3 class="saho-accordion-header">
-          <button class="saho-accordion-button collapsed" type="button" data-target="#organizations-collapse" aria-expanded="false" aria-controls="organizations-collapse">
-            Member of Organizations
-          </button>
-        </h3>
-        <div id="organizations-collapse" class="saho-accordion-collapse" aria-labelledby="organizations-header">
-          <div class="saho-accordion-body">
-            {{ content.field_member_of_organisation }}
-          </div>
-        </div>
-      </div>
-    {% endif %}
-
-    {% if content.field_feature_parent is defined and content.field_feature_parent|render|trim %}
-      <div class="saho-accordion-item">
-        <h3 class="saho-accordion-header">
-          <button class="saho-accordion-button collapsed" type="button" data-target="#related-content-collapse" aria-expanded="false" aria-controls="related-content-collapse">
-            Related Content
-          </button>
-        </h3>
-        <div id="related-content-collapse" class="saho-accordion-collapse" aria-labelledby="related-content-header">
-          <div class="saho-accordion-body">
-            <ul class="saho-context-list">
-              {% for item in content.field_feature_parent['#items'] %}
-                <li>{{ content.field_feature_parent[loop.index0] }}</li>
-              {% endfor %}
-            </ul>
-          </div>
-        </div>
-      </div>
-    {% endif %}
-
-    {% if content.field_further_reading is defined and content.field_further_reading|render|trim %}
-      <div class="saho-accordion-item">
-        <h3 class="saho-accordion-header">
-          <button class="saho-accordion-button collapsed" type="button" data-target="#further-reading-collapse" aria-expanded="false" aria-controls="further-reading-collapse">
-            Further Reading
-          </button>
-        </h3>
-        <div id="further-reading-collapse" class="saho-accordion-collapse" aria-labelledby="further-reading-header">
-          <div class="saho-accordion-body">
-            <ul class="saho-context-list">
-              {% for item in content.field_further_reading['#items'] %}
-                <li>{{ content.field_further_reading[loop.index0] }}</li>
-              {% endfor %}
-            </ul>
-          </div>
-        </div>
-      </div>
-    {% endif %}
-
-    {% if content.field_synopsis is defined and content.field_synopsis|render|trim %}
-      <div class="saho-accordion-item">
-        <h3 class="saho-accordion-header">
-          <button class="saho-accordion-button collapsed" type="button" data-target="#synopsis-collapse" aria-expanded="false" aria-controls="synopsis-collapse">
-            Synopsis
-          </button>
-        </h3>
-        <div id="synopsis-collapse" class="saho-accordion-collapse" aria-labelledby="synopsis-header">
-          <div class="saho-accordion-body">
-            {{ content.field_synopsis }}
-          </div>
-        </div>
-      </div>
-    {% endif %}
-  </div>
-{% endif %}
+{# The Context & Related Information accordion is retired: entity relations
+   render in the rail related-tabs; further reading is a rail block (S3). #}

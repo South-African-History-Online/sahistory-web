@@ -1,7 +1,10 @@
 <?php
 
 use Drupal\node\Entity\Node;
+use Drupal\node\NodeInterface;
+use Drupal\Component\Utility\Unicode;
 use Drupal\Core\Datetime\DateFormatter;
+use Drupal\Core\Render\Markup;
 use Drupal\image\Entity\ImageStyle;
 use Drupal\file\Entity\File;
 
@@ -811,6 +814,34 @@ function saho_preprocess_page(array &$variables) {
       $variables['#attached']['library'][] = 'saho/article.layout';
     }
   }
+}
+
+/**
+ * Implements hook_preprocess_HOOK() for page-title.html.twig.
+ *
+ * On Open Record bundles the record-header SDC owns the page H1, so the
+ * global page title must not render a second one (it was only CSS-hidden
+ * before, which still left a duplicate H1 in the DOM).
+ */
+function saho_preprocess_page_title(array &$variables): void {
+  $route_match = \Drupal::routeMatch();
+  if ($route_match->getRouteName() !== 'entity.node.canonical') {
+    return;
+  }
+  $node = $route_match->getParameter('node');
+  if ($node instanceof NodeInterface && in_array($node->bundle(), _saho_record_header_bundles(), TRUE)) {
+    $variables['title'] = '';
+  }
+}
+
+/**
+ * Returns the bundles whose full view renders the record-header (owns H1).
+ *
+ * @return string[]
+ *   The bundle names.
+ */
+function _saho_record_header_bundles(): array {
+  return ['biography', 'article', 'event', 'place', 'archive'];
 }
 
 /**
@@ -1884,5 +1915,460 @@ function saho_preprocess_node__biography(array &$variables) {
   $variables['#attached']['library'][] = 'saho/saho-record-header';
   if ($detention) {
     $variables['#attached']['library'][] = 'saho/saho-detention-record';
+  }
+
+  // Rail + main-column record props (S3): vital record, cross-references,
+  // provenance, citation, portrait, further reading.
+  $name = implode(' ', array_filter([
+    $field_value('field_title'),
+    $field_value('field_firstname'),
+    $field_value('field_middlename'),
+    $field_value('field_lastnamebio'),
+  ]));
+  $born = trim($field_value('field_dob')
+    . ($field_value('field_birth_location') !== '' ? ' in ' . $field_value('field_birth_location') : ''));
+  $died = trim($field_value('field_dod')
+    . ($field_value('field_death_location') !== '' ? ' in ' . $field_value('field_death_location') : '')
+    . ($field_value('field_cod') !== '' ? ' (' . $field_value('field_cod') . ')' : ''));
+  $variables['record_meta'] = _saho_record_meta_props('Vital record', 'biography', [
+    'Full name' => $name,
+    'Born' => $born,
+    'Died' => $died,
+    'Position' => strip_tags($field_value('field_position_held') ?: $field_value('field_position')),
+    'Affiliation' => $field_value('field_affiliation'),
+  ]);
+  $variables['record_related'] = _saho_record_related_props($node);
+  $variables['record_provenance'] = _saho_record_provenance_props($node);
+  $variables['record_citation'] = _saho_record_citation_props($node);
+  $variables['record_image'] = _saho_record_image_props($node, 'field_bio_pic');
+  $variables['record_further'] = _saho_record_further_reading($node);
+  _saho_record_attach_libraries($variables);
+}
+
+/**
+ * Implements hook_preprocess_HOOK() for node--article.html.twig.
+ */
+function saho_preprocess_node__article(array &$variables): void {
+  if (($variables['view_mode'] ?? '') !== 'full') {
+    return;
+  }
+  /** @var \Drupal\node\NodeInterface $node */
+  $node = $variables['node'];
+  $value = _saho_record_field_value($node);
+  $date_formatter = \Drupal::service('date.formatter');
+  $published = $date_formatter->format($node->getCreatedTime(), 'custom', 'j M Y');
+
+  $facts = [];
+  if ($value('field_article_author') !== '') {
+    $facts[] = ['label' => 'Author', 'value' => strip_tags($value('field_article_author'))];
+  }
+  $facts[] = ['label' => 'Published', 'value' => $published];
+  $facts[] = [
+    'label' => 'Updated',
+    'value' => $date_formatter->format($node->getChangedTime(), 'custom', 'j M Y'),
+  ];
+  _saho_record_header_props($variables, $node, 'article', 'Article record', $facts);
+
+  $variables['record_meta'] = _saho_record_meta_props('Record details', 'article', [
+    'Author' => strip_tags($value('field_article_author')),
+    'Editors' => strip_tags($value('field_article_editors')),
+    'Published' => $published,
+  ]);
+  _saho_record_common_props($variables, $node, ['field_article_image', 'field_image']);
+}
+
+/**
+ * Implements hook_preprocess_HOOK() for node--event.html.twig.
+ */
+function saho_preprocess_node__event(array &$variables): void {
+  if (($variables['view_mode'] ?? '') !== 'full') {
+    return;
+  }
+  /** @var \Drupal\node\NodeInterface $node */
+  $node = $variables['node'];
+  $date_formatter = \Drupal::service('date.formatter');
+
+  // field_event_date is a real datetime field, so formatting is allowed.
+  $event_date = '';
+  if ($node->hasField('field_event_date') && !$node->get('field_event_date')->isEmpty()) {
+    $date = $node->get('field_event_date')->date;
+    $event_date = $date ? $date->format('j M Y') : trim((string) $node->get('field_event_date')->value);
+  }
+
+  $facts = [];
+  if ($event_date !== '') {
+    $facts[] = ['label' => 'Date', 'value' => $event_date];
+  }
+  $facts[] = [
+    'label' => 'Updated',
+    'value' => $date_formatter->format($node->getChangedTime(), 'custom', 'j M Y'),
+  ];
+  _saho_record_header_props($variables, $node, 'event', 'Event record', $facts);
+
+  $variables['record_meta'] = _saho_record_meta_props('Record details', 'event', [
+    'Date' => $event_date,
+  ]);
+  _saho_record_common_props($variables, $node, ['field_event_image', 'field_tdih_image']);
+}
+
+/**
+ * Implements hook_preprocess_HOOK() for node--place.html.twig.
+ */
+function saho_preprocess_node__place(array &$variables): void {
+  if (($variables['view_mode'] ?? '') !== 'full') {
+    return;
+  }
+  /** @var \Drupal\node\NodeInterface $node */
+  $node = $variables['node'];
+  $date_formatter = \Drupal::service('date.formatter');
+
+  $coordinates = '';
+  if ($node->hasField('field_geolocation') && !$node->get('field_geolocation')->isEmpty()) {
+    $item = $node->get('field_geolocation')->first();
+    $lat = $item?->get('lat')->getValue();
+    $lng = $item?->get('lng')->getValue();
+    if (is_numeric($lat) && is_numeric($lng)) {
+      $coordinates = sprintf('%.4f, %.4f', $lat, $lng);
+    }
+  }
+
+  $facts = [];
+  if ($coordinates !== '') {
+    $facts[] = ['label' => 'Coordinates', 'value' => $coordinates];
+  }
+  $facts[] = [
+    'label' => 'Updated',
+    'value' => $date_formatter->format($node->getChangedTime(), 'custom', 'j M Y'),
+  ];
+  _saho_record_header_props($variables, $node, 'place', 'Place record', $facts);
+
+  $variables['record_meta'] = _saho_record_meta_props('Record details', 'place', [
+    'Coordinates' => $coordinates,
+  ]);
+  _saho_record_common_props($variables, $node, ['field_place_image']);
+}
+
+/**
+ * Implements hook_preprocess_HOOK() for node--archive.html.twig.
+ */
+function saho_preprocess_node__archive(array &$variables): void {
+  if (($variables['view_mode'] ?? '') !== 'full') {
+    return;
+  }
+  /** @var \Drupal\node\NodeInterface $node */
+  $node = $variables['node'];
+  $value = _saho_record_field_value($node);
+  $date_formatter = \Drupal::service('date.formatter');
+  $refs = \Drupal::service('saho_refs.display_ref');
+
+  // field_archive_publication_date is datetime; the fallback field is a
+  // free-text string and stays verbatim.
+  $origin = '';
+  if ($node->hasField('field_archive_publication_date') && !$node->get('field_archive_publication_date')->isEmpty()) {
+    $date = $node->get('field_archive_publication_date')->date;
+    $origin = $date ? $date->format('j M Y') : '';
+  }
+  if ($origin === '') {
+    $origin = $value('field_publication_date_archive');
+  }
+
+  $facts = [];
+  if ($origin !== '') {
+    $facts[] = ['label' => 'Origin date', 'value' => $origin];
+  }
+  $facts[] = [
+    'label' => 'Updated',
+    'value' => $date_formatter->format($node->getChangedTime(), 'custom', 'j M Y'),
+  ];
+  _saho_record_header_props($variables, $node, 'archive', 'Archive record', $facts);
+
+  $variables['record_meta'] = _saho_record_meta_props('Record details', 'archive', [
+    'Origin date' => $origin,
+    'Holding ref' => $refs->getRef($node),
+  ]);
+  _saho_record_common_props($variables, $node, ['field_archive_image', 'field_image']);
+}
+
+/**
+ * Returns a closure giving a trimmed string field value (or '') for a node.
+ *
+ * @param \Drupal\node\NodeInterface $node
+ *   The node.
+ *
+ * @return \Closure
+ *   Closure(string $field): string.
+ */
+function _saho_record_field_value(NodeInterface $node): \Closure {
+  return static function (string $field) use ($node): string {
+    return $node->hasField($field) && !$node->get($field)->isEmpty()
+      ? trim((string) $node->get($field)->value) : '';
+  };
+}
+
+/**
+ * Sets the record-header variable + library for a record bundle.
+ *
+ * @param array $variables
+ *   The preprocess variables, by reference.
+ * @param \Drupal\node\NodeInterface $node
+ *   The node.
+ * @param string $type
+ *   The content-type accent key.
+ * @param string $kicker
+ *   The kicker line.
+ * @param array $facts
+ *   The key facts row.
+ */
+function _saho_record_header_props(array &$variables, NodeInterface $node, string $type, string $kicker, array $facts): void {
+  /** @var \Drupal\saho_refs\DisplayRefService $refs */
+  $refs = \Drupal::service('saho_refs.display_ref');
+  $variables['record'] = [
+    'type' => $type,
+    'reference' => $refs->getRef($node),
+    'status' => $refs->getStatus($node),
+    'kicker' => $kicker,
+    'title' => $node->label(),
+    'facts' => $facts,
+  ];
+  $variables['#attached']['library'][] = 'saho/saho-record-header';
+}
+
+/**
+ * Builds the shared record_* variables for a record bundle.
+ *
+ * @param array $variables
+ *   The preprocess variables, by reference.
+ * @param \Drupal\node\NodeInterface $node
+ *   The node.
+ * @param string[] $image_fields
+ *   Image field candidates, first populated one wins.
+ */
+function _saho_record_common_props(array &$variables, NodeInterface $node, array $image_fields): void {
+  $variables['record_related'] = _saho_record_related_props($node);
+  $variables['record_provenance'] = _saho_record_provenance_props($node);
+  $variables['record_citation'] = _saho_record_citation_props($node);
+  $variables['record_image'] = [];
+  foreach ($image_fields as $field) {
+    $props = _saho_record_image_props($node, $field, 'field_node_image_caption', '16 / 9');
+    if ($props !== []) {
+      $variables['record_image'] = $props;
+      break;
+    }
+  }
+  $variables['record_further'] = _saho_record_further_reading($node);
+  _saho_record_attach_libraries($variables);
+}
+
+/**
+ * Builds metadata-block props from a label => value map, dropping empties.
+ *
+ * @param string $title
+ *   The block title.
+ * @param string $accent
+ *   The content-type accent.
+ * @param array $rows
+ *   Label => value rows; empty values are omitted.
+ *
+ * @return array
+ *   saho:saho-metadata-block props, or [] when nothing survives.
+ */
+function _saho_record_meta_props(string $title, string $accent, array $rows): array {
+  $items = [];
+  foreach ($rows as $label => $value) {
+    $value = trim((string) $value);
+    if ($value !== '') {
+      $items[] = ['label' => $label, 'value' => $value];
+    }
+  }
+  return $items !== [] ? ['title' => $title, 'accent' => $accent, 'items' => $items] : [];
+}
+
+/**
+ * Builds related-tabs props from the *_related_tab entity-reference fields.
+ *
+ * Only fields that exist and are populated become tabs; referenced nodes the
+ * current user cannot view are skipped. Every item carries a real href (SEO).
+ *
+ * @param \Drupal\node\NodeInterface $node
+ *   The record node.
+ *
+ * @return array
+ *   saho:saho-related-tabs props, or [] when there are no relations.
+ */
+function _saho_record_related_props(NodeInterface $node): array {
+  $known_types = ['article', 'biography', 'place', 'archive', 'event', 'topic'];
+  $map = [
+    'field_people_related_tab' => ['id' => 'people', 'label' => 'People'],
+    'field_organizations_related_tab' => ['id' => 'organisations', 'label' => 'Organisations'],
+    'field_topics_related_tab' => ['id' => 'topics', 'label' => 'Topics'],
+    'field_timelines_related_tab' => ['id' => 'timelines', 'label' => 'Timelines'],
+  ];
+  $tabs = [];
+  foreach ($map as $field => $tab) {
+    if (!$node->hasField($field) || $node->get($field)->isEmpty()) {
+      continue;
+    }
+    $items = [];
+    foreach ($node->get($field)->referencedEntities() as $ref) {
+      if (!$ref instanceof NodeInterface || !$ref->access('view')) {
+        continue;
+      }
+      $note = '';
+      foreach (['field_synopsis', 'body'] as $note_field) {
+        if ($ref->hasField($note_field) && !$ref->get($note_field)->isEmpty()) {
+          $note = trim(html_entity_decode(strip_tags((string) $ref->get($note_field)->value), ENT_QUOTES | ENT_HTML5));
+          if ($note !== '') {
+            break;
+          }
+        }
+      }
+      $items[] = [
+        'label' => (string) $ref->label(),
+        'href' => $ref->toUrl()->toString(),
+        'note' => $note !== '' ? Unicode::truncate($note, 90, TRUE, TRUE) : '',
+        'type' => in_array($ref->bundle(), $known_types, TRUE) ? $ref->bundle() : 'article',
+      ];
+    }
+    if ($items !== []) {
+      $tabs[] = $tab + ['count' => count($items), 'items' => $items];
+    }
+  }
+  return $tabs !== [] ? ['title' => 'Cross-references', 'tabs' => $tabs] : [];
+}
+
+/**
+ * Builds provenance-block props from the pipe-delimited field_ref_str.
+ *
+ * Parsing mirrors the legacy sidebar References list (split on "|", trim,
+ * inline <a>/<em>/<strong>/<i>/<b> markup preserved via Markup).
+ *
+ * @param \Drupal\node\NodeInterface $node
+ *   The record node.
+ *
+ * @return array
+ *   saho:saho-provenance-block props, or [] without sources.
+ */
+function _saho_record_provenance_props(NodeInterface $node): array {
+  if (!$node->hasField('field_ref_str') || $node->get('field_ref_str')->isEmpty()) {
+    return [];
+  }
+  $sources = [];
+  foreach (explode('|', (string) $node->get('field_ref_str')->value) as $piece) {
+    $piece = trim(strip_tags($piece, '<a><em><strong><i><b>'));
+    if ($piece !== '') {
+      $sources[] = ['title' => Markup::create($piece)];
+    }
+  }
+  if ($sources === []) {
+    return [];
+  }
+  return [
+    'title' => 'How we know this',
+    'sources' => $sources,
+    'last_updated' => \Drupal::service('date.formatter')->format($node->getChangedTime(), 'custom', 'j M Y'),
+  ];
+}
+
+/**
+ * Builds citation props from the saho_tools citation service.
+ *
+ * The service produces Harvard/APA/Oxford (not Chicago/MLA), so the arbitrary
+ * "formats" object is used rather than the fixed chicago/apa/mla props.
+ *
+ * @param \Drupal\node\NodeInterface $node
+ *   The record node.
+ *
+ * @return array
+ *   saho:saho-citation props, or [] when the service is unavailable.
+ */
+function _saho_record_citation_props(NodeInterface $node): array {
+  if (!\Drupal::hasService('saho_tools.citation_service')) {
+    return [];
+  }
+  $cites = \Drupal::service('saho_tools.citation_service')->generateCitations($node);
+  $formats = [];
+  foreach (['harvard' => 'Harvard', 'apa' => 'APA', 'oxford' => 'Oxford'] as $key => $label) {
+    $text = trim(html_entity_decode(strip_tags((string) ($cites[$key] ?? '')), ENT_QUOTES | ENT_HTML5));
+    if ($text !== '') {
+      $formats[$label] = $text;
+    }
+  }
+  return $formats !== [] ? ['default_format' => 'Harvard', 'formats' => $formats] : [];
+}
+
+/**
+ * Builds image-credit props for a record image field.
+ *
+ * @param \Drupal\node\NodeInterface $node
+ *   The record node.
+ * @param string $image_field
+ *   The image field name.
+ * @param string $caption_field
+ *   The caption field name.
+ * @param string $ratio
+ *   The CSS aspect-ratio.
+ *
+ * @return array
+ *   saho:saho-image-credit props, or [] when there is no real image.
+ */
+function _saho_record_image_props(NodeInterface $node, string $image_field, string $caption_field = 'field_node_image_caption', string $ratio = '3 / 4'): array {
+  if (!$node->hasField($image_field) || $node->get($image_field)->isEmpty()) {
+    return [];
+  }
+  $item = $node->get($image_field)->first();
+  $file = $item ? $item->get('entity')->getValue() : NULL;
+  if (!$file instanceof File) {
+    return [];
+  }
+  $caption = '';
+  if ($node->hasField($caption_field) && !$node->get($caption_field)->isEmpty()) {
+    $caption = trim(strip_tags((string) $node->get($caption_field)->value, '<a><em><strong><i><b><br>'));
+  }
+  $alt = trim((string) $item->get('alt')->getValue());
+  return [
+    'src' => \Drupal::service('file_url_generator')->generateString($file->getFileUri()),
+    'alt' => $alt !== '' ? $alt : $node->label() . ' portrait',
+    'caption' => $caption !== '' ? Markup::create($caption) : '',
+    'duotone' => TRUE,
+    'ratio' => $ratio,
+  ];
+}
+
+/**
+ * Returns the processed further-reading markup for the rail, or NULL.
+ *
+ * @param \Drupal\node\NodeInterface $node
+ *   The record node.
+ *
+ * @return \Drupal\Component\Render\MarkupInterface|null
+ *   The processed text, or NULL when empty.
+ */
+function _saho_record_further_reading(NodeInterface $node) {
+  if (!$node->hasField('field_further_reading') || $node->get('field_further_reading')->isEmpty()) {
+    return NULL;
+  }
+  $processed = $node->get('field_further_reading')->processed;
+  return trim((string) $processed) !== '' ? $processed : NULL;
+}
+
+/**
+ * Attaches the record SDC libraries for whichever record_* props are set.
+ *
+ * @param array $variables
+ *   The preprocess variables, by reference.
+ */
+function _saho_record_attach_libraries(array &$variables): void {
+  $map = [
+    'record_meta' => 'saho/saho-metadata-block',
+    'record_related' => 'saho/saho-related-tabs',
+    'record_provenance' => 'saho/saho-provenance-block',
+    'record_citation' => 'saho/saho-citation',
+    'record_image' => 'saho/saho-image-credit',
+    'record_further' => 'saho/saho-metadata-block',
+  ];
+  foreach ($map as $key => $library) {
+    if (!empty($variables[$key])) {
+      $variables['#attached']['library'][] = $library;
+    }
   }
 }
