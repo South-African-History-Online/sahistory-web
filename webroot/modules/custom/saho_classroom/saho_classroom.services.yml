@@ -11,3 +11,13 @@ services:
       - '@entity_type.manager'
 
   Drupal\saho_classroom\TopicSpineInterface: '@saho_classroom.topic_spine'
+
+  # Reproducible content sync: builds presentation nodes from the committed
+  # slide-schema JSON files (source of truth). Invoked by the deploy hook so the
+  # classroom reproduces identically on local, staging and production.
+  saho_classroom.deck_sync:
+    class: Drupal\saho_classroom\DeckSync
+    arguments:
+      - '@entity_type.manager'
+      - '@extension.list.module'
+      - '@logger.factory'
