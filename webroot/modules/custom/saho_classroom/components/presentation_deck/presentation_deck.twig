@@ -1,0 +1,140 @@
+{#
+/**
+ * @file
+ * SAHO Classroom - presentation deck component.
+ *
+ * Renders a slide-schema deck (docs/classroom/20-html-format.md) as the same
+ * self-contained, accessible, print-friendly markup proven by the #436
+ * prototype. The engine CSS/JS are auto-attached by SDC from
+ * presentation_deck.css / presentation_deck.js.
+ *
+ * Props:
+ * - title: string. The lesson title.
+ * - aria_label: string. Accessible label for the deck region.
+ * - meta: object. { subject, grade, phase, caps_topic, duration, attribution }.
+ * - slides: array. Ordered slide objects (id, layout, eyebrow, title, lead,
+ *   blocks[], media, notes).
+ *
+ * SECURITY: text values are auto-escaped by Twig. Inline SVG (media.data with
+ * type "svg") is emitted with |raw and therefore MUST be sanitised upstream by
+ * the field formatter / content pipeline before it reaches this template.
+ */
+#}
+{% set label = aria_label ?: (title ? title ~ ' - SAHO Classroom presentation' : 'SAHO Classroom presentation') %}
+{% set total = slides|length %}
+<div class="saho-deck" role="application" aria-roledescription="slide presentation" aria-label="{{ label }}">
+  <a class="skip-link" href="#{{ slides.0.id ?? 'slide-1' }}">Skip to lesson content</a>
+  <div class="progress js-progress" aria-hidden="true"></div>
+
+  <div class="saho-deck__stage js-stage">
+    <p class="visually-hidden js-live" aria-live="polite"></p>
+
+    {% for slide in slides %}
+      {% set num = loop.index %}
+      {% set is_title = slide.layout == 'title' %}
+      {% set columnar = slide.layout in ['cards', 'two-column'] %}
+      <section
+        class="slide{{ is_title ? ' title-slide' : '' }}{{ loop.first ? ' is-active' : '' }}"
+        id="{{ slide.id ?? 'slide-' ~ num }}"
+        role="group"
+        aria-roledescription="slide"
+        aria-label="Slide {{ num }} of {{ total }}{{ slide.title ? ': ' ~ slide.title : '' }}">
+
+        {% if slide.eyebrow %}<span class="slide__eyebrow">{{ slide.eyebrow }}</span>{% endif %}
+
+        {% if is_title %}
+          <h1>{{ slide.title }}</h1>
+        {% else %}
+          <h2>{{ slide.title }}</h2>
+        {% endif %}
+
+        {% if slide.lead %}<p class="lead">{{ slide.lead }}</p>{% endif %}
+
+        {% if is_title and meta %}
+          <div class="meta">
+            {% if meta.subject %}<span class="pill">Subject: {{ meta.subject }}</span>{% endif %}
+            {% if meta.grade %}<span class="pill pill--green">Grade {{ meta.grade }}{{ meta.phase ? ' - ' ~ meta.phase ~ ' Phase' : '' }}</span>{% endif %}
+            {% if meta.caps_topic %}<span class="pill pill--gold">CAPS: {{ meta.caps_topic }}</span>{% endif %}
+            {% if meta.duration %}<span class="pill">Duration: ~{{ meta.duration }} min</span>{% endif %}
+          </div>
+        {% endif %}
+
+        {% if columnar %}<div class="cols">{% endif %}
+        {% for block in slide.blocks %}
+          {% if block.type == 'paragraph' %}
+            <p>{{ block.text }}</p>
+          {% elseif block.type == 'list' %}
+            {% if block.ordered %}<ol>{% else %}<ul>{% endif %}
+              {% for item in block.items %}<li>{{ item }}</li>{% endfor %}
+            {% if block.ordered %}</ol>{% else %}</ul>{% endif %}
+          {% elseif block.type == 'card' %}
+            <div class="card">
+              {% if block.heading %}<h3>{{ block.heading }}</h3>{% endif %}
+              {% if block.text %}<p>{{ block.text }}</p>{% endif %}
+            </div>
+          {% elseif block.type == 'quote' %}
+            <blockquote>
+              {{ block.text }}
+              {% if block.cite %}<cite>{{ block.cite }}</cite>{% endif %}
+            </blockquote>
+          {% elseif block.type == 'timeline' %}
+            <ol class="timeline">
+              {% for event in block.events %}
+                <li><strong>{{ event.year }}</strong> {{ event.label }}</li>
+              {% endfor %}
+            </ol>
+          {% elseif block.type == 'qa' %}
+            <div class="qa">
+              <p><b>Q.</b> {{ block.question }}{% if block.marks %} ({{ block.marks }} marks){% endif %}</p>
+            </div>
+          {% endif %}
+        {% endfor %}
+        {% if columnar %}</div>{% endif %}
+
+        {% if slide.media %}
+          <figure class="figure">
+            {% if slide.media.type == 'svg' %}
+              {# SECURITY: raw inline SVG - must be sanitised upstream. #}
+              {{ slide.media.data|raw }}
+            {% elseif slide.media.type == 'image' %}
+              <img src="{{ slide.media.data }}" alt="{{ slide.media.alt }}">
+            {% endif %}
+            {% if slide.media.caption %}<figcaption>{{ slide.media.caption }}</figcaption>{% endif %}
+          </figure>
+        {% endif %}
+
+        {% if slide.notes %}
+          <div class="notes" data-notes>
+            <h4>Speaker notes</h4>
+            <p>{{ slide.notes }}</p>
+          </div>
+        {% endif %}
+      </section>
+    {% endfor %}
+
+    <button class="edge edge--prev" type="button" data-action="prev" aria-label="Previous slide">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 4l-8 8 8 8" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <button class="edge edge--next" type="button" data-action="next" aria-label="Next slide">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4l8 8-8 8" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+
+    <div class="dots js-dots" role="tablist" aria-label="Slide navigation"></div>
+
+    <div class="hint js-hint" role="note">
+      Use <kbd>&larr;</kbd> <kbd>&rarr;</kbd> to move &middot; <kbd>F</kbd> present &middot; <kbd>S</kbd> notes &middot; <kbd>P</kbd> print
+    </div>
+  </div>
+
+  <aside class="notes js-notes-panel" aria-live="polite" aria-label="Speaker notes for the current slide"></aside>
+
+  <div class="toolbar" role="toolbar" aria-label="Presentation controls">
+    <span class="brand"><span class="mark">SA</span> SAHO Classroom <small>HTML deck</small></span>
+    <button class="btn btn--icon" type="button" data-action="prev" aria-label="Previous slide">&larr;</button>
+    <span class="counter js-counter" aria-hidden="true">1 / {{ total }}</span>
+    <button class="btn btn--icon" type="button" data-action="next" aria-label="Next slide">&rarr;</button>
+    <button class="btn" type="button" data-action="notes" aria-pressed="false">Notes <span class="visually-hidden">(S)</span></button>
+    <button class="btn" type="button" data-action="full" aria-pressed="false">Present <span class="visually-hidden">fullscreen (F)</span></button>
+    <button class="btn" type="button" data-action="print">Print / PDF <span class="visually-hidden">(P)</span></button>
+  </div>
+</div>

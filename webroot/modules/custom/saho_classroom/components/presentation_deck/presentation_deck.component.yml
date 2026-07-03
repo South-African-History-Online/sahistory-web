@@ -1,0 +1,49 @@
+$schema: https://git.drupalcode.org/project/drupal/-/raw/HEAD/core/assets/schemas/v1/metadata.schema.json
+name: Presentation deck
+status: experimental
+# Merge dependencies into the component's auto-generated asset library so the
+# deck behaviour can use Drupal.behaviors + once().
+libraryOverrides:
+  dependencies:
+    - core/drupal
+    - core/once
+description: >
+  Renders a Classroom 2.0 slide-schema deck (docs/classroom/20-html-format.md)
+  as a self-contained, keyboard-navigable, print-friendly HTML presentation.
+  The interactive engine (deck CSS + JS, extracted from the #436 prototype) is
+  auto-attached as the component library, so a single lightweight, dependency
+  -free deck ships with no build step.
+props:
+  type: object
+  properties:
+    title:
+      type: string
+      title: Deck title
+      description: The lesson title, shown on the title slide.
+    aria_label:
+      type: string
+      title: ARIA label
+      description: Accessible label for the deck application region.
+    meta:
+      type: object
+      title: Lesson metadata
+      description: Pills shown on the title slide.
+      properties:
+        subject:
+          type: string
+        grade:
+          type: string
+        phase:
+          type: string
+        caps_topic:
+          type: string
+        duration:
+          type: [integer, string, "null"]
+        attribution:
+          type: string
+    slides:
+      type: array
+      title: Slides
+      description: >
+        Ordered slide objects following the Classroom slide schema. Each slide
+        carries id, layout, eyebrow, title, lead, blocks[], media and notes.

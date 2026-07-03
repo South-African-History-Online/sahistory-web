@@ -1,0 +1,298 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sahistory.org.za/schemas/classroom/slide-schema-1.0.json",
+  "title": "SAHO Classroom presentation deck",
+  "description": "Canonical, renderer-agnostic schema for a Classroom 2.0 presentation deck (issue #436). Generation agents (#438-443) emit this JSON; render.php turns it into a single self-contained HTML deck, and a Twig template renders the same structure inside Drupal. Field names align with the saho_classroom content model (field_classroom_grade, field_classroom_subject, field_caps_topic, field_classroom_resource_type) and reconcile the proposal in docs/classroom/20-html-format.md. Where that proposal used flat top-level lesson fields plus `layout`/`title`/`media`, this schema nests lesson metadata under `meta` and prefers `type`/`heading`/`image`; the legacy aliases remain accepted so existing prototype JSON keeps validating.",
+  "type": "object",
+  "required": ["meta", "slides"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "description": "Semantic version of this schema.",
+      "default": "1.0"
+    },
+    "meta": {
+      "type": "object",
+      "description": "Lesson-level metadata. Drives the title slide, the deck aria-label, the document <title>, and (in Drupal) the entity fields.",
+      "required": ["title"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Machine name / URL slug for the lesson.",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
+        "title": {
+          "type": "string",
+          "description": "Lesson title; used on the title slide and in the document title.",
+          "minLength": 1
+        },
+        "subject": {
+          "type": "string",
+          "description": "CAPS subject; maps to the classroom_subject vocabulary (typically History or Geography).",
+          "examples": ["History", "Geography"]
+        },
+        "grade": {
+          "type": "string",
+          "description": "School grade, 4-12; maps to field_classroom_grade.",
+          "examples": ["9", "10"]
+        },
+        "phase": {
+          "type": "string",
+          "description": "CAPS phase; the classroom_grade parent.",
+          "enum": ["Intermediate", "Senior", "FET"]
+        },
+        "caps_topic": {
+          "type": "string",
+          "description": "CAPS topic; a term name in the caps_topic vocabulary (field_caps_topic)."
+        },
+        "language": {
+          "type": "string",
+          "description": "ISO 639-1 language code; enables the #437 multilingual variants.",
+          "pattern": "^[a-z]{2}(?:-[A-Za-z0-9]+)?$",
+          "default": "en"
+        },
+        "duration_minutes": {
+          "type": "integer",
+          "description": "Estimated teaching time in minutes.",
+          "minimum": 1
+        },
+        "attribution": {
+          "type": "string",
+          "description": "Rights / credit line shown on the title and closing slides."
+        },
+        "sources": {
+          "type": "array",
+          "description": "Sources and references backing the lesson. Rendered as a citations list and available for schema.org markup in Drupal.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["title"],
+            "properties": {
+              "title": { "type": "string", "description": "Source title." },
+              "author": { "type": "string", "description": "Author or publisher." },
+              "url": {
+                "type": "string",
+                "description": "Reference URL. NOTE: shown as citation text only; it is never fetched, so the rendered deck stays free of external requests.",
+                "format": "uri"
+              },
+              "citation": { "type": "string", "description": "Full free-form citation, if preferred over the structured fields." }
+            }
+          }
+        }
+      }
+    },
+    "slides": {
+      "type": "array",
+      "description": "Ordered slide objects.",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/slide" }
+    }
+  },
+  "$defs": {
+    "slide": {
+      "type": "object",
+      "description": "A single slide. `type` selects the layout; `heading` is the slide heading; `image` carries self-contained imagery.",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Stable per-slide id for anchors / deep links. If omitted, render.php assigns slide-N."
+        },
+        "type": {
+          "type": "string",
+          "description": "Layout that drives the sub-template. `layout` is accepted as a legacy alias.",
+          "enum": ["title", "content", "two-column", "cards", "quote", "image", "timeline", "summary"]
+        },
+        "layout": {
+          "type": "string",
+          "description": "Legacy alias for `type` (docs/classroom/20-html-format.md). Prefer `type`.",
+          "enum": ["title", "content", "two-column", "cards", "quote", "image", "timeline", "summary"]
+        },
+        "eyebrow": {
+          "type": "string",
+          "description": "Small kicker above the heading."
+        },
+        "heading": {
+          "type": "string",
+          "description": "Slide heading. `title` is accepted as a legacy alias."
+        },
+        "title": {
+          "type": "string",
+          "description": "Legacy alias for `heading`. Prefer `heading`."
+        },
+        "lead": {
+          "type": "string",
+          "description": "Optional emphasised intro line (inline Markdown allowed)."
+        },
+        "body": {
+          "type": "string",
+          "description": "One or more paragraphs of body copy. Blank lines separate paragraphs; inline Markdown (**bold**, *italic*, `code`, [text](url)) is supported."
+        },
+        "bullets": {
+          "type": "array",
+          "description": "Convenience unordered list; equivalent to a single `list` block.",
+          "items": { "type": "string" }
+        },
+        "blocks": {
+          "type": "array",
+          "description": "Ordered content blocks (see $defs/block).",
+          "items": { "$ref": "#/$defs/block" }
+        },
+        "columns": {
+          "type": "array",
+          "description": "Two-column layout: each entry is a list of blocks rendered in its own column. Collapses to one column under 720px.",
+          "minItems": 1,
+          "maxItems": 2,
+          "items": {
+            "type": "array",
+            "items": { "$ref": "#/$defs/block" }
+          }
+        },
+        "image": {
+          "$ref": "#/$defs/image",
+          "description": "Self-contained slide imagery. `media` is accepted as a legacy alias."
+        },
+        "media": {
+          "$ref": "#/$defs/image",
+          "description": "Legacy alias for `image`. Prefer `image`."
+        },
+        "notes": {
+          "type": "string",
+          "description": "Speaker notes (inline Markdown). Shown in the notes panel and printed as a handout beneath the slide."
+        }
+      }
+    },
+    "block": {
+      "type": "object",
+      "description": "A content block inside a slide or a column.",
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["paragraph", "list", "heading", "card", "quote", "timeline", "qa", "image"]
+        }
+      },
+      "oneOf": [
+        {
+          "properties": {
+            "type": { "const": "paragraph" },
+            "text": { "type": "string", "description": "Paragraph text (inline Markdown)." }
+          },
+          "required": ["text"],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "type": { "const": "list" },
+            "ordered": { "type": "boolean", "default": false },
+            "items": { "type": "array", "items": { "type": "string" } }
+          },
+          "required": ["items"],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "type": { "const": "heading" },
+            "text": { "type": "string" },
+            "level": { "type": "integer", "minimum": 2, "maximum": 4, "default": 3 }
+          },
+          "required": ["text"],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "type": { "const": "card" },
+            "heading": { "type": "string" },
+            "text": { "type": "string" }
+          },
+          "required": ["text"],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "type": { "const": "quote" },
+            "text": { "type": "string" },
+            "cite": { "type": "string" }
+          },
+          "required": ["text"],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "type": { "const": "timeline" },
+            "caption": { "type": "string", "description": "Optional figure caption." },
+            "alt": { "type": "string", "description": "Accessible description of the timeline for the generated SVG." },
+            "events": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "required": ["year", "label"],
+                "additionalProperties": false,
+                "properties": {
+                  "year": { "type": "string" },
+                  "label": { "type": "string" }
+                }
+              }
+            }
+          },
+          "required": ["events"],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "type": { "const": "qa" },
+            "question": { "type": "string" },
+            "label": { "type": "string", "description": "Question label, e.g. Q1. Auto-numbered if omitted." },
+            "marks": { "type": "integer", "minimum": 0 }
+          },
+          "required": ["question"],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "type": { "const": "image" },
+            "format": { "type": "string", "enum": ["svg", "data-uri"] },
+            "alt": { "type": "string" },
+            "caption": { "type": "string" },
+            "data": { "type": "string" }
+          },
+          "required": ["data"],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "image": {
+      "type": "object",
+      "description": "Self-contained imagery. Either inline SVG markup or a data: URI, so the deck makes zero external requests. External http(s) image URLs are rejected by the renderer.",
+      "required": ["data"],
+      "additionalProperties": false,
+      "properties": {
+        "format": {
+          "type": "string",
+          "description": "`svg` for inline <svg> markup in `data`; `data-uri` for a base64/utf8 data: URI. `type` (svg|image) is accepted as a legacy alias.",
+          "enum": ["svg", "data-uri"]
+        },
+        "type": {
+          "type": "string",
+          "description": "Legacy alias (docs proposal): `svg` inlines markup, `image` expects a data: URI in `data`.",
+          "enum": ["svg", "image"]
+        },
+        "alt": {
+          "type": "string",
+          "description": "Accessible alternative text / description."
+        },
+        "caption": {
+          "type": "string",
+          "description": "Optional visible figure caption."
+        },
+        "data": {
+          "type": "string",
+          "description": "Inline SVG markup (starts with <svg) or a data: URI (starts with data:). Any other value is treated as unsafe and dropped to preserve self-containment."
+        }
+      }
+    }
+  }
+}

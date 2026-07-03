@@ -1,0 +1,13 @@
+# Service wiring for the SAHO Classroom topic spine (issue #435 / #445).
+#
+# The module is not enabled yet; this file registers the read-only topic-spine
+# assembler so it is ready the moment the module is turned on. The interface is
+# aliased to the concrete service so consumers (blocks, controllers, JSON:API
+# resources) can type-hint TopicSpineInterface and get autowired.
+services:
+  saho_classroom.topic_spine:
+    class: Drupal\saho_classroom\TopicSpineBuilderImpl
+    arguments:
+      - '@entity_type.manager'
+
+  Drupal\saho_classroom\TopicSpineInterface: '@saho_classroom.topic_spine'
