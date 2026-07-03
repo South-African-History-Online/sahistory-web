@@ -1,0 +1,247 @@
+// =============================================================================
+// SAHO 2027 "Open Record" - /classroom/presentations browse (issue #444)
+// =============================================================================
+// Proposal partial for the saho theme. Styles the Classroom 2.0 presentation
+// BROWSE view (views.view.classroom_presentations): grade-grouped card grid with
+// BEF-links Grade + CAPS topic facets. Follows the same DS language as
+// components/_classroom-hub.scss - paper/ink, square corners, borders not
+// shadows, mono for labels/meta, Caslon for titles, an oxblood accent edge.
+//
+// Drop-in: copy to src/scss/components/_classroom-presentations.scss and add
+// `@import 'components/classroom-presentations';` to the theme entrypoint. All
+// custom properties below are already defined in base/_variables.scss and
+// base/_open-record-scale.scss (no new tokens introduced). See module README.
+
+// ---- Page frame -------------------------------------------------------------
+.saho-presentation-browse {
+  padding-block: var(--space-6) var(--space-8);
+}
+
+// Header: oxblood accent top edge, Caslon title, serif intro, mono count.
+.saho-presentation-browse__head {
+  margin-bottom: var(--space-6);
+  padding-top: var(--space-4);
+  border-top: var(--bw-accent) solid var(--type-article);
+}
+
+.saho-presentation-browse__title {
+  margin: 0 0 var(--space-3);
+}
+
+.saho-presentation-browse__intro {
+  margin: 0 0 var(--space-2);
+  max-width: 60ch;
+  font-family: var(--font-serif);
+  color: var(--text-muted);
+}
+
+.saho-presentation-browse__count {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+// ---- Exposed facets: BEF-links Grade + CAPS topic as square chips -----------
+// Mirrors .saho-classroom-hub__grades so the two classroom surfaces read alike.
+.saho-presentation-browse__filters {
+  margin-bottom: var(--space-6);
+  padding: var(--space-4);
+  border: var(--bw-hair) solid var(--border-default);
+  background: var(--surface-card);
+
+  .form-item {
+    margin: 0 0 var(--space-3);
+  }
+  .form-item:last-of-type {
+    margin-bottom: 0;
+  }
+
+  .form-label {
+    display: block;
+    margin-bottom: var(--space-2);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: var(--fw-semibold);
+    letter-spacing: var(--ls-wide);
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  // Flatten the (possibly nested) BEF link lists into one wrapping chip row.
+  .bef-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+  .bef-links ul,
+  .bef-links li {
+    display: contents;
+    list-style: none;
+  }
+
+  .bef-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2rem;
+    padding: var(--space-1) var(--space-3);
+    border: var(--bw-hair) solid var(--border-default);
+    background: var(--saho-paper);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: var(--ls-label);
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--text-primary);
+    transition: border-color var(--t-fast), background var(--t-fast);
+  }
+
+  .bef-link:hover {
+    border-color: var(--border-strong);
+    color: var(--text-primary);
+  }
+
+  .bef-link--selected,
+  .bef-link--selected:hover {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--text-on-accent);
+  }
+}
+
+// ---- Grade group + card grid ------------------------------------------------
+.saho-presentation-browse__group {
+  margin-bottom: var(--space-7);
+}
+
+.saho-presentation-browse__grade {
+  margin: 0 0 var(--space-4);
+  padding-bottom: var(--space-2);
+  border-bottom: var(--bw-hair) solid var(--border-default);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: var(--fw-semibold);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  color: var(--text-primary);
+}
+
+.saho-presentation-browse__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+  gap: var(--space-4);
+
+  // The unformatted style wraps each card row in .views-row; make it a cell.
+  .views-row {
+    display: flex;
+    height: 100%;
+  }
+}
+
+.saho-presentation-browse__pager {
+  margin-top: var(--space-6);
+}
+
+// Views' custom empty-area text.
+.saho-presentation-browse .view-empty {
+  margin: var(--space-4) 0 0;
+  font-family: var(--font-serif);
+  color: var(--text-muted);
+}
+
+// ---- Presentation card ------------------------------------------------------
+// Opaque paper sheet, square, hairline frame, oxblood accent edge. Borders do
+// the structural work; hover selects (border -> ink, ground -> sunk paper) and
+// never lifts, matching base/_open-record.scss.
+.saho-presentation-card {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding: var(--space-4);
+  border: var(--bw-hair) solid var(--border-default);
+  border-left: var(--bw-accent) solid var(--type-article);
+  background: var(--surface-card);
+  transition: border-color var(--t-fast), background var(--t-fast);
+
+  &:hover,
+  &:focus-within {
+    border-color: var(--saho-ink);
+    border-left-color: var(--type-article);
+    background: var(--saho-paper-sunk);
+  }
+}
+
+.saho-presentation-card__eyebrow {
+  margin: 0 0 var(--space-2);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: var(--fw-semibold);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.saho-presentation-card__title {
+  margin: 0 0 var(--space-2);
+  font-family: var(--font-serif);
+  font-size: 1.125rem;
+  line-height: 1.25;
+
+  a {
+    color: var(--text-primary);
+    text-decoration: none;
+
+    &:hover,
+    &:focus {
+      color: var(--link-hover, #6e0000);
+      text-decoration: underline;
+      text-underline-offset: 0.15em;
+    }
+
+    // Stretch the title link across the whole card for a large hit target.
+    &::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+    }
+  }
+}
+
+// Position context so the stretched title link covers the card.
+.saho-presentation-card {
+  position: relative;
+}
+
+.saho-presentation-card__summary {
+  margin: 0 0 var(--space-3);
+  font-family: var(--font-serif);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.saho-presentation-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-3);
+  margin: auto 0 0;
+  padding-top: var(--space-3);
+  border-top: var(--bw-hair) solid var(--border-default);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+// ---- Mobile: single column, >=44px chip hit targets -------------------------
+@media (max-width: 40rem) {
+  .saho-presentation-browse__grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .saho-presentation-browse__filters .bef-link {
+    min-height: 44px;
+  }
+}

@@ -1,0 +1,36 @@
+{#
+/**
+ * @file
+ * Grade group section for the Classroom presentations browse (#444).
+ *
+ * Proposal template - drops into the saho theme at
+ * templates/views/views-view-grouping--classroom-presentations.html.twig
+ * (see the module README). Styled by scss/_classroom-presentations.scss.
+ *
+ * One section per grade term (the view groups on field_classroom_grade). The
+ * grade name is the group heading; `content` is the rendered card rows, laid
+ * out by CSS grid on the .views-row children.
+ *
+ * Available variables:
+ * - view: The view object.
+ * - grouping: The grouping instruction.
+ * - grouping_level: Hierarchical level of the grouping (1 here).
+ * - title: The group heading (grade term name).
+ * - content: The rendered rows for this grade.
+ * - rows: The raw rows returned from the view.
+ *
+ * @see template_preprocess_views_view_grouping()
+ */
+#}
+{% set grade_label = title|striptags|trim %}
+{% set grade_slug = grade_label|lower|replace({' ': '-', '&': 'and', '/': '-', "'": '', '"': ''}) %}
+
+<section class="saho-presentation-browse__group" aria-labelledby="grade-{{ grade_slug }}">
+  <h2 class="saho-presentation-browse__grade" id="grade-{{ grade_slug }}">
+    <span class="saho-presentation-browse__grade-label">{{ grade_label ?: 'Ungraded'|t }}</span>
+  </h2>
+
+  <div class="saho-presentation-browse__grid">
+    {{ content }}
+  </div>
+</section>
