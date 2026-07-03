@@ -548,40 +548,9 @@ function saho_preprocess_node(array &$variables) {
  
   // Set the appropriate classes and accordion views with conditional logic.
 
-  // Add accordion views for article, archive, biography, and place content types
-  if (in_array($node->bundle(), ['article', 'archive', 'biography', 'place'])) {
-    $view_ids = [
-      'articles' => ['view' => 'feature_children', 'block' => 'block_1'],
-      'people' => ['view' => 'feature_children', 'block' => 'block_2'],
-      'places' => ['view' => 'feature_children', 'block' => 'block_9'],
-      'organisations' => ['view' => 'feature_children', 'block' => 'block_3'],
-      'timelines' => ['view' => 'feature_children', 'block' => 'block_4'],
-      'archive' => ['view' => 'feature_children', 'block' => 'block_5'],
-      'galleries' => ['view' => 'feature_children', 'block' => 'block_7'],
-    ];
-
-    $accordion_views = [];
-
-    foreach ($view_ids as $id => $data) {
-      $view = \Drupal\views\Views::getView($data['view']);
-      if ($view) {
-        $view->setDisplay($data['block']);
-        $view->setArguments([$node->id()]);
-        $view->execute();
-
-        if (!empty($view->result)) {
-          $accordion_views[] = [
-            'id' => $id,
-            'title' => ucfirst($id),
-            'view' => $data['view'],
-            'block' => $data['block'],
-          ];
-        }
-      }
-    }
-
-    $variables['accordion_views'] = $accordion_views;
-  }
+  // The curated feature_children listings now feed the related-tabs
+  // cross-reference engine (see _saho_record_curated_tabs()); the legacy
+  // rail accordion is retired.
 
   // Process field_feature_parent to group by content type
   if ($node->hasField('field_feature_parent') && !$node->get('field_feature_parent')->isEmpty()) {
@@ -2204,7 +2173,6 @@ function _saho_record_meta_props(string $title, string $accent, array $rows): ar
  *   saho:saho-related-tabs props, or [] when there are no relations.
  */
 function _saho_record_related_props(NodeInterface $node): array {
-  $known_types = ['article', 'biography', 'place', 'archive', 'event', 'topic'];
   $map = [
     'field_people_related_tab' => ['id' => 'people', 'label' => 'People'],
     'field_organizations_related_tab' => ['id' => 'organisations', 'label' => 'Organisations'],
@@ -2218,30 +2186,124 @@ function _saho_record_related_props(NodeInterface $node): array {
     }
     $items = [];
     foreach ($node->get($field)->referencedEntities() as $ref) {
-      if (!$ref instanceof NodeInterface || !$ref->access('view')) {
-        continue;
+      $item = _saho_record_related_item($ref);
+      if ($item !== NULL) {
+        $items[] = $item;
       }
-      $note = '';
-      foreach (['field_synopsis', 'body'] as $note_field) {
-        if ($ref->hasField($note_field) && !$ref->get($note_field)->isEmpty()) {
-          $note = trim(html_entity_decode(strip_tags((string) $ref->get($note_field)->value), ENT_QUOTES | ENT_HTML5));
-          if ($note !== '') {
-            break;
-          }
-        }
-      }
-      $items[] = [
-        'label' => (string) $ref->label(),
-        'href' => $ref->toUrl()->toString(),
-        'note' => $note !== '' ? Unicode::truncate($note, 90, TRUE, TRUE) : '',
-        'type' => in_array($ref->bundle(), $known_types, TRUE) ? $ref->bundle() : 'article',
-      ];
     }
     if ($items !== []) {
-      $tabs[] = $tab + ['count' => count($items), 'items' => $items];
+      $tabs[$tab['id']] = $tab + ['count' => count($items), 'items' => $items];
     }
   }
+
+  // The curated feature-children (the legacy rail accordion) join the same
+  // cross-reference engine as tabs, per wireframes wf03/wf04: one engine,
+  // typed dots, counts. Same-id tabs merge and dedupe by href.
+  foreach (_saho_record_curated_tabs($node) as $id => $tab) {
+    if (isset($tabs[$id])) {
+      $seen = array_column($tabs[$id]['items'], 'href');
+      foreach ($tab['items'] as $item) {
+        if (!in_array($item['href'], $seen, TRUE)) {
+          $tabs[$id]['items'][] = $item;
+        }
+      }
+      $tabs[$id]['count'] = count($tabs[$id]['items']);
+    }
+    else {
+      $tabs[$id] = $tab;
+    }
+  }
+
+  $tabs = array_values($tabs);
   return $tabs !== [] ? ['title' => 'Cross-references', 'tabs' => $tabs] : [];
+}
+
+/**
+ * Builds one related-tabs item from a referenced node, or NULL.
+ *
+ * @param mixed $ref
+ *   The candidate entity.
+ *
+ * @return array|null
+ *   Item props (label/href/note/type), or NULL when not viewable.
+ */
+function _saho_record_related_item($ref): ?array {
+  $known_types = ['article', 'biography', 'place', 'archive', 'event', 'topic'];
+  if (!$ref instanceof NodeInterface || !$ref->access('view')) {
+    return NULL;
+  }
+  $note = '';
+  foreach (['field_synopsis', 'body'] as $note_field) {
+    if ($ref->hasField($note_field) && !$ref->get($note_field)->isEmpty()) {
+      $note = trim(html_entity_decode(strip_tags((string) $ref->get($note_field)->value), ENT_QUOTES | ENT_HTML5));
+      if ($note !== '') {
+        break;
+      }
+    }
+  }
+  return [
+    'label' => (string) $ref->label(),
+    'href' => $ref->toUrl()->toString(),
+    'note' => $note !== '' ? Unicode::truncate($note, 90, TRUE, TRUE) : '',
+    'type' => in_array($ref->bundle(), $known_types, TRUE) ? $ref->bundle() : 'article',
+  ];
+}
+
+/**
+ * Builds cross-reference tabs from the curated feature_children views.
+ *
+ * These curated per-bundle child listings used to render as the rail
+ * accordion; the Open Record design folds them into related-tabs.
+ *
+ * @param \Drupal\node\NodeInterface $node
+ *   The record node.
+ *
+ * @return array
+ *   Tabs keyed by id.
+ */
+function _saho_record_curated_tabs(NodeInterface $node): array {
+  if (!in_array($node->bundle(), ['article', 'archive', 'biography', 'place'], TRUE)) {
+    return [];
+  }
+  $displays = [
+    'articles' => ['block' => 'block_1', 'label' => 'Articles'],
+    'people' => ['block' => 'block_2', 'label' => 'People'],
+    'places' => ['block' => 'block_9', 'label' => 'Places'],
+    'organisations' => ['block' => 'block_3', 'label' => 'Organisations'],
+    'timelines' => ['block' => 'block_4', 'label' => 'Timelines'],
+    'archive' => ['block' => 'block_5', 'label' => 'Archive'],
+    'galleries' => ['block' => 'block_7', 'label' => 'Galleries'],
+  ];
+  $tabs = [];
+  foreach ($displays as $id => $spec) {
+    $view = \Drupal\views\Views::getView('feature_children');
+    if ($view === NULL) {
+      break;
+    }
+    $view->setDisplay($spec['block']);
+    $view->setArguments([$node->id()]);
+    $view->setItemsPerPage(0);
+    $view->execute();
+    $items = [];
+    foreach ($view->result as $row) {
+      // The view's base row is the parent node; the child arrives through
+      // the reverse field_feature_parent relationship.
+      $ref = $row->_relationship_entities['reverse__node__field_feature_parent'] ?? $row->_entity ?? NULL;
+      $item = $ref !== NULL ? _saho_record_related_item($ref) : NULL;
+      if ($item !== NULL) {
+        $items[] = $item;
+      }
+    }
+    if ($items !== []) {
+      $tabs[$id] = [
+        'id' => $id,
+        'label' => $spec['label'],
+        'count' => count($items),
+        'items' => $items,
+      ];
+    }
+  }
+  return $tabs;
 }
 
 /**

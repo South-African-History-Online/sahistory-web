@@ -249,7 +249,7 @@
     </div>
 
     {# RIGHT: Sidebar (the Open Record rail - S3) #}
-    {% if record_meta or record_related or record_further or accordion_views is not empty or (node.field_feature_banner.entity and record_image.src is defined and record_image.src) %}
+    {% if record_meta or record_related or record_further or (node.field_feature_banner.entity and record_image.src is defined and record_image.src) %}
       {% set sidebar_has_content = true %}
     {% endif %}
 
@@ -279,24 +279,7 @@
         </section>
       {% endif %}
 
-      {% if accordion_views is not empty %}
-        <div class="accordion saho-accordion mb-5" id="sahoFeatureAccordion">
-          {% for item in accordion_views %}
-            <div class="accordion-item">
-              <h2 class="accordion-header" id="heading-{{ item.id }}">
-                <button class="accordion-button {% if not loop.first %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-{{ item.id }}" aria-expanded="{{ loop.first ? 'true' : 'false' }}" aria-controls="collapse-{{ item.id }}">
-                  {{ item.title }}
-                </button>
-              </h2>
-              <div id="collapse-{{ item.id }}" class="accordion-collapse collapse {% if loop.first %}show{% endif %}" aria-labelledby="heading-{{ item.id }}" data-bs-parent="#sahoFeatureAccordion">
-                <div class="accordion-body">
-                  {{ drupal_view(item.view, item.block, node.id()) }}
-                </div>
-              </div>
-            </div>
-          {% endfor %}
-        </div>
-      {% endif %}
+
 
       {# References now render as the main-column provenance-block (S3). #}
 
