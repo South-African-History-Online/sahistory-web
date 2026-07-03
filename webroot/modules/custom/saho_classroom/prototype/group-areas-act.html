@@ -1,0 +1,834 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Group Areas Act - SAHO Classroom (Grade 10 History)</title>
+<meta name="description" content="Grade 10 History lesson on the Group Areas Act of 1950. Self-contained HTML presentation prototype for SAHO Classroom.">
+<!--
+  SAHO Classroom - HTML presentation framework proof of concept (issue #436).
+
+  A single self-contained file: all CSS and JavaScript are inline and every
+  image is inline SVG. No external CDN, fonts, scripts or image URLs are used,
+  so the deck opens directly from file:// with no server and works fully
+  offline. This derisks the "HTML not PowerPoint" decision for Classroom 2.0.
+
+  Controls:
+    Right / Down / Space / PageDown  next slide
+    Left / Up / PageUp               previous slide
+    Home / End                       first / last slide
+    F                                toggle fullscreen present mode
+    S                                toggle speaker notes
+    P                                print / save as PDF
+    Esc                              leave fullscreen
+    On-screen arrows, dots and toolbar buttons mirror every shortcut.
+
+  The DOM mirrors the structured slide schema proposed in
+  docs/classroom/20-html-format.md. In production this markup is emitted by a
+  Twig template from a Presentation entity; here it is authored by hand so the
+  interaction model can be evaluated in isolation.
+-->
+<style>
+:root {
+  /* SAHO brand tokens (docs/COLOR-SYSTEM.md). */
+  --saho-red: #990000;
+  --saho-red-dark: #7a0000;
+  --saho-slate: #3a4a64;
+  --saho-gold: #b88a2e;
+  --saho-green: #2d5016;
+  --ink: #1e293b;
+  --ink-soft: #475569;
+  --paper: #ffffff;
+  --paper-tint: #f6f2ec;
+  --line: #d9cfc2;
+  --focus: #b88a2e;
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: #201a17;
+  color: var(--ink);
+  font-family: var(--font);
+  -webkit-text-size-adjust: 100%;
+}
+
+/* Skip link for keyboard / screen reader users. */
+.skip-link {
+  position: absolute;
+  left: -999px;
+  top: 0;
+  z-index: 100;
+  background: var(--saho-red);
+  color: #fff;
+  padding: 0.6rem 1rem;
+  border-radius: 0 0 6px 0;
+}
+.skip-link:focus { left: 0; }
+
+/* App shell -------------------------------------------------------------- */
+.deck {
+  position: relative;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.deck__stage {
+  flex: 1 1 auto;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(0.5rem, 2vw, 2rem);
+}
+
+/* One slide fills the stage. Aspect box keeps a 16:9 feel but wraps on
+   narrow screens so the deck stays responsive rather than clipping. */
+.slide {
+  display: none;
+  width: min(1120px, 100%);
+  max-height: 100%;
+  overflow-y: auto;
+  background: var(--paper);
+  border-radius: 14px;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+  padding: clamp(1.4rem, 3.4vw, 3rem);
+}
+.slide.is-active {
+  display: block;
+  animation: fade 0.28s ease;
+}
+@keyframes fade {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.slide__eyebrow {
+  display: inline-block;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--saho-red);
+  border-bottom: 3px solid var(--saho-gold);
+  padding-bottom: 0.2rem;
+  margin-bottom: 0.9rem;
+}
+
+.slide h1 {
+  font-size: clamp(1.9rem, 4.6vw, 3.2rem);
+  line-height: 1.08;
+  margin: 0 0 0.6rem;
+  color: var(--saho-red-dark);
+}
+.slide h2 {
+  font-size: clamp(1.4rem, 3.2vw, 2.2rem);
+  line-height: 1.15;
+  margin: 0 0 1rem;
+  color: var(--saho-slate);
+}
+.slide p { font-size: clamp(1rem, 1.7vw, 1.22rem); line-height: 1.55; margin: 0 0 0.9rem; }
+.slide ul { font-size: clamp(1rem, 1.7vw, 1.22rem); line-height: 1.5; padding-left: 1.2rem; }
+.slide li { margin-bottom: 0.55rem; }
+.lead { font-size: clamp(1.1rem, 2.1vw, 1.5rem); color: var(--ink-soft); }
+
+.cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(1rem, 3vw, 2.4rem);
+  align-items: start;
+}
+@media (max-width: 720px) { .cols { grid-template-columns: 1fr; } }
+
+.card {
+  background: var(--paper-tint);
+  border: 1px solid var(--line);
+  border-left: 5px solid var(--saho-gold);
+  border-radius: 8px;
+  padding: 1rem 1.2rem;
+}
+.card h3 { margin: 0 0 0.4rem; color: var(--saho-slate); font-size: 1.1rem; }
+
+blockquote {
+  margin: 0;
+  padding: 1.1rem 1.4rem;
+  background: var(--paper-tint);
+  border-left: 6px solid var(--saho-red);
+  border-radius: 0 8px 8px 0;
+  font-size: clamp(1.15rem, 2.4vw, 1.7rem);
+  font-style: italic;
+  color: var(--ink);
+}
+blockquote cite {
+  display: block;
+  margin-top: 0.7rem;
+  font-size: 0.95rem;
+  font-style: normal;
+  color: var(--ink-soft);
+}
+
+.figure { margin: 0; }
+.figure svg { width: 100%; height: auto; display: block; border-radius: 8px; }
+.figure figcaption {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+}
+
+.title-slide { text-align: left; }
+.title-slide .meta {
+  margin-top: 1.4rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.pill {
+  background: var(--saho-slate);
+  color: #fff;
+  border-radius: 999px;
+  padding: 0.32rem 0.85rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.pill--gold { background: var(--saho-gold); color: #23180a; }
+.pill--green { background: var(--saho-green); }
+
+.qa {
+  background: var(--paper-tint);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 1rem 1.2rem;
+  margin-top: 0.6rem;
+}
+.qa b { color: var(--saho-red); }
+
+/* Toolbar ---------------------------------------------------------------- */
+.toolbar {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem clamp(0.6rem, 2vw, 1.4rem);
+  background: #17120f;
+  color: #f4ece2;
+  border-top: 2px solid var(--saho-gold);
+}
+.brand {
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  margin-right: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-size: 0.95rem;
+}
+.brand .mark {
+  width: 26px; height: 26px;
+  display: inline-grid;
+  place-items: center;
+  background: var(--saho-red);
+  color: #fff;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 900;
+}
+.brand small { color: #c9bdae; font-weight: 500; }
+
+.btn {
+  appearance: none;
+  border: 1px solid #4a3f36;
+  background: #241d18;
+  color: #f4ece2;
+  font: inherit;
+  font-size: 0.85rem;
+  padding: 0.42rem 0.7rem;
+  border-radius: 6px;
+  cursor: pointer;
+  line-height: 1;
+}
+.btn:hover { background: #322820; }
+.btn:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.btn[aria-pressed="true"] { background: var(--saho-gold); color: #23180a; border-color: var(--saho-gold); }
+.btn--icon { min-width: 2.3rem; text-align: center; }
+
+.counter {
+  font-variant-numeric: tabular-nums;
+  font-size: 0.9rem;
+  padding: 0 0.6rem;
+  color: #d8ccbd;
+}
+
+/* Edge nav arrows -------------------------------------------------------- */
+.edge {
+  position: absolute;
+  top: 0; bottom: 0;
+  width: clamp(48px, 8vw, 90px);
+  border: 0;
+  background: transparent;
+  color: #fff;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  opacity: 0.55;
+  transition: opacity 0.15s, background 0.15s;
+}
+.edge:hover { opacity: 1; background: rgba(0, 0, 0, 0.22); }
+.edge:focus-visible { outline: 3px solid var(--focus); outline-offset: -6px; opacity: 1; }
+.edge--prev { left: 0; }
+.edge--next { right: 0; }
+.edge svg { width: 34px; height: 34px; filter: drop-shadow(0 1px 3px rgba(0,0,0,0.6)); }
+
+/* Progress dots ---------------------------------------------------------- */
+.dots {
+  position: absolute;
+  left: 0; right: 0; bottom: 0.6rem;
+  display: flex;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0 1rem;
+}
+.dot {
+  width: 11px; height: 11px;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.7);
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+}
+.dot.is-active { background: var(--saho-gold); border-color: var(--saho-gold); }
+.dot:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+
+/* Progress bar ----------------------------------------------------------- */
+.progress {
+  position: absolute;
+  left: 0; top: 0;
+  height: 4px;
+  background: var(--saho-gold);
+  width: 0;
+  transition: width 0.3s ease;
+}
+
+/* Speaker notes ---------------------------------------------------------- */
+.notes {
+  flex: 0 0 auto;
+  display: none;
+  background: #fbf7f0;
+  color: var(--ink);
+  border-top: 3px solid var(--saho-red);
+  padding: 0.9rem clamp(0.8rem, 3vw, 2rem);
+  max-height: 32vh;
+  overflow-y: auto;
+}
+.notes.is-open { display: block; }
+.notes h4 {
+  margin: 0 0 0.4rem;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--saho-red);
+}
+.notes p { margin: 0 0 0.5rem; line-height: 1.5; }
+
+/* On-load help hint ------------------------------------------------------ */
+.hint {
+  position: absolute;
+  bottom: 2.2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(23,18,15,0.92);
+  color: #f4ece2;
+  padding: 0.5rem 0.9rem;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  border: 1px solid var(--saho-gold);
+}
+.hint kbd {
+  background: #2c2018;
+  border: 1px solid #5a4a3a;
+  border-radius: 4px;
+  padding: 0.05rem 0.35rem;
+  font-family: inherit;
+}
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0);
+  white-space: nowrap; border: 0;
+}
+
+/* Print / save-as-PDF ---------------------------------------------------- */
+@media print {
+  html, body { background: #fff; height: auto; }
+  .toolbar, .edge, .dots, .progress, .hint, .skip-link { display: none !important; }
+  .deck, .deck__stage { display: block; height: auto; overflow: visible; padding: 0; }
+  .slide {
+    display: block !important;
+    width: 100%;
+    max-height: none;
+    box-shadow: none;
+    border: none;
+    border-radius: 0;
+    page-break-after: always;
+    break-after: page;
+    padding: 1.4cm;
+  }
+  .slide.is-active { animation: none; }
+  /* Speaker notes always print beneath their slide as a handout. */
+  .notes {
+    display: block !important;
+    max-height: none;
+    border-top: 1px dashed #999;
+    background: #fff;
+    page-break-inside: avoid;
+    margin-top: 0.6cm;
+  }
+  .slide svg, blockquote { break-inside: avoid; }
+  @page { margin: 1cm; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .slide.is-active { animation: none; }
+  .progress { transition: none; }
+}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#slide-1">Skip to lesson content</a>
+
+<div class="deck" id="deck" role="application" aria-roledescription="slide presentation" aria-label="The Group Areas Act, Grade 10 History">
+  <div class="progress" id="progress" aria-hidden="true"></div>
+
+  <div class="deck__stage" id="stage">
+
+    <!-- polite region announces the current slide to screen readers -->
+    <p class="visually-hidden" id="live" aria-live="polite"></p>
+
+    <!-- SLIDE 1: title -->
+    <section class="slide title-slide" id="slide-1" role="group" aria-roledescription="slide" aria-label="Slide 1 of 8: Title">
+      <span class="slide__eyebrow">Grade 10 History &middot; Apartheid legislation</span>
+      <h1>The Group Areas Act</h1>
+      <p class="lead">How the apartheid state used a single 1950 law to divide South Africa's cities by race and to force millions of people from their homes.</p>
+      <div class="meta">
+        <span class="pill">Subject: History</span>
+        <span class="pill pill--green">Grade 10 &middot; FET Phase</span>
+        <span class="pill pill--gold">CAPS: Apartheid in the 1950s</span>
+        <span class="pill">Duration: ~30 min</span>
+      </div>
+      <p style="margin-top:1.6rem;color:var(--ink-soft);font-size:0.95rem;">South African History Online &middot; Classroom. Prepared as an open educational resource.</p>
+      <div class="notes" data-notes>
+        <h4>Speaker notes</h4>
+        <p>Open by asking learners what they already know about where people were "allowed" to live under apartheid. Establish that this lesson looks at one law that reshaped every South African city.</p>
+        <p>Flag the two big ideas we will build toward: (1) segregation was made legal and bureaucratic, and (2) it had a deeply human cost measured in destroyed communities.</p>
+      </div>
+    </section>
+
+    <!-- SLIDE 2: context -->
+    <section class="slide" id="slide-2" role="group" aria-roledescription="slide" aria-label="Slide 2 of 8: Setting the scene">
+      <span class="slide__eyebrow">Setting the scene</span>
+      <h2>Apartheid was built law by law</h2>
+      <div class="cols">
+        <div>
+          <p>After the National Party won the 1948 election, it turned racial segregation into a formal legal system called <strong>apartheid</strong> ("apartness").</p>
+          <p>A cluster of laws passed in the early 1950s worked together:</p>
+          <ul>
+            <li>The <strong>Population Registration Act (1950)</strong> classified every person into a racial group.</li>
+            <li>The <strong>Group Areas Act (1950)</strong> decided <em>where</em> each group could live and trade.</li>
+            <li>Later removals were enforced under the <strong>Natives Resettlement Act (1954)</strong> and pass laws.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Key term</h3>
+          <p><strong>Segregation</strong> keeping racial groups physically apart in housing, schools and public space, backed by the power of the state.</p>
+        </div>
+      </div>
+      <div class="notes" data-notes>
+        <h4>Speaker notes</h4>
+        <p>Stress the "law by law" idea: no single act created apartheid; it was an interlocking system. The Group Areas Act only worked because the Population Registration Act had already labelled everyone.</p>
+        <p>Check understanding of "segregation" before moving on - ask for an example from learners' own town or city.</p>
+      </div>
+    </section>
+
+    <!-- SLIDE 3: what the act said -->
+    <section class="slide" id="slide-3" role="group" aria-roledescription="slide" aria-label="Slide 3 of 8: What the Act said">
+      <span class="slide__eyebrow">The law itself &middot; 1950</span>
+      <h2>What the Group Areas Act actually did</h2>
+      <div class="cols">
+        <div class="card">
+          <h3>1. Divided the map</h3>
+          <p>It let the government declare any urban area as reserved for a single racial group.</p>
+        </div>
+        <div class="card">
+          <h3>2. Controlled ownership</h3>
+          <p>People could only own or occupy property in the area assigned to their group.</p>
+        </div>
+        <div class="card">
+          <h3>3. Forced removals</h3>
+          <p>Anyone in the "wrong" area could be ordered to sell up and move out.</p>
+        </div>
+        <div class="card">
+          <h3>4. Punished non-compliance</h3>
+          <p>Staying put became a criminal offence, enforced by police and demolition.</p>
+        </div>
+      </div>
+      <p style="margin-top:1rem;"><strong>In short:</strong> the state gave itself the power to redraw the racial geography of every town and city in the country.</p>
+      <div class="notes" data-notes>
+        <h4>Speaker notes</h4>
+        <p>Walk the four cards in order - they escalate from "drawing lines" to "criminalising your own home". Emphasise that removal was not a side effect; it was the mechanism.</p>
+        <p>Ask: whose land and businesses tended to be declared for other groups? (Black, Coloured and Indian communities in valuable, central locations.)</p>
+      </div>
+    </section>
+
+    <!-- SLIDE 4: timeline (inline SVG) -->
+    <section class="slide" id="slide-4" role="group" aria-roledescription="slide" aria-label="Slide 4 of 8: Timeline of the law and removals">
+      <span class="slide__eyebrow">Chronology</span>
+      <h2>From statute to bulldozer</h2>
+      <figure class="figure">
+        <svg viewBox="0 0 1000 240" role="img" aria-labelledby="tl-title tl-desc">
+          <title id="tl-title">Timeline of the Group Areas Act, 1950 to 1991</title>
+          <desc id="tl-desc">A horizontal timeline marking 1950 the Act is passed, 1957 the Act is consolidated, 1966 District Six is declared white, 1968 to 1982 forced removals, and 1991 the Act is repealed.</desc>
+          <line x1="60" y1="120" x2="940" y2="120" stroke="#3a4a64" stroke-width="4"/>
+          <!-- nodes -->
+          <g font-family="sans-serif" text-anchor="middle">
+            <circle cx="120" cy="120" r="12" fill="#990000"/>
+            <text x="120" y="90" font-size="22" font-weight="700" fill="#7a0000">1950</text>
+            <text x="120" y="168" font-size="15" fill="#1e293b">Act passed</text>
+
+            <circle cx="330" cy="120" r="12" fill="#b88a2e"/>
+            <text x="330" y="90" font-size="22" font-weight="700" fill="#8a6a1e">1957</text>
+            <text x="330" y="168" font-size="15" fill="#1e293b">Law tightened</text>
+
+            <circle cx="540" cy="120" r="12" fill="#990000"/>
+            <text x="540" y="90" font-size="22" font-weight="700" fill="#7a0000">1966</text>
+            <text x="540" y="168" font-size="15" fill="#1e293b">District Six declared white</text>
+
+            <circle cx="750" cy="120" r="12" fill="#2d5016"/>
+            <text x="750" y="90" font-size="22" font-weight="700" fill="#2d5016">1968-82</text>
+            <text x="750" y="168" font-size="15" fill="#1e293b">Forced removals</text>
+
+            <circle cx="900" cy="120" r="12" fill="#3a4a64"/>
+            <text x="900" y="90" font-size="22" font-weight="700" fill="#3a4a64">1991</text>
+            <text x="900" y="168" font-size="15" fill="#1e293b">Act repealed</text>
+          </g>
+        </svg>
+        <figcaption>Timeline: the law stayed on the books for over 40 years. Removals peaked long after 1950.</figcaption>
+      </figure>
+      <div class="notes" data-notes>
+        <h4>Speaker notes</h4>
+        <p>Point out the gap between 1950 (the law) and 1968-82 (mass removals in places like District Six). Injustice was slow and administrative, which is part of what made it so total.</p>
+        <p>1991 repeal: note it took until the very end of apartheid to remove this law - a good hook for a later lesson on the transition.</p>
+      </div>
+    </section>
+
+    <!-- SLIDE 5: case study with map SVG -->
+    <section class="slide" id="slide-5" role="group" aria-roledescription="slide" aria-label="Slide 5 of 8: Case study, District Six">
+      <span class="slide__eyebrow">Case study &middot; Cape Town</span>
+      <h2>District Six: a community erased</h2>
+      <div class="cols">
+        <div>
+          <p>District Six was a lively, mixed neighbourhood near central Cape Town, home to about <strong>60,000 people</strong>.</p>
+          <ul>
+            <li>Declared a <strong>whites-only</strong> area in 1966.</li>
+            <li>Residents were forcibly moved to the distant Cape Flats.</li>
+            <li>Homes, shops and places of worship were <strong>bulldozed</strong>.</li>
+            <li>Little was ever rebuilt on the cleared land.</li>
+          </ul>
+        </div>
+        <figure class="figure">
+          <svg viewBox="0 0 360 240" role="img" aria-labelledby="map-title map-desc">
+            <title id="map-title">Simplified map of a forced removal</title>
+            <desc id="map-desc">A diagram showing residents being moved from a central district near the city to a distant township on the Cape Flats.</desc>
+            <rect x="0" y="0" width="360" height="240" fill="#f6f2ec"/>
+            <!-- city core -->
+            <circle cx="90" cy="90" r="46" fill="#3a4a64"/>
+            <text x="90" y="86" text-anchor="middle" font-size="13" fill="#fff" font-family="sans-serif">District</text>
+            <text x="90" y="102" text-anchor="middle" font-size="13" fill="#fff" font-family="sans-serif">Six</text>
+            <!-- arrow -->
+            <line x1="140" y1="120" x2="250" y2="180" stroke="#990000" stroke-width="6"/>
+            <polygon points="250,180 236,170 244,186" fill="#990000"/>
+            <!-- township -->
+            <circle cx="285" cy="185" r="40" fill="#2d5016"/>
+            <text x="285" y="182" text-anchor="middle" font-size="12" fill="#fff" font-family="sans-serif">Cape</text>
+            <text x="285" y="198" text-anchor="middle" font-size="12" fill="#fff" font-family="sans-serif">Flats</text>
+            <text x="182" y="120" font-size="12" fill="#7a0000" font-family="sans-serif" font-weight="700">forced move</text>
+          </svg>
+          <figcaption>Central land was cleared; families were relocated kilometres away from work and schools.</figcaption>
+        </figure>
+      </div>
+      <div class="notes" data-notes>
+        <h4>Speaker notes</h4>
+        <p>District Six is the classic teaching case because so much testimony survives. Emphasise distance: the Cape Flats move meant longer, costlier commutes and broken community networks.</p>
+        <p>Optional link: mention the District Six Museum as a place where this memory is preserved.</p>
+      </div>
+    </section>
+
+    <!-- SLIDE 6: testimony quote -->
+    <section class="slide" id="slide-6" role="group" aria-roledescription="slide" aria-label="Slide 6 of 8: Human impact">
+      <span class="slide__eyebrow">Human impact</span>
+      <h2>What removal felt like</h2>
+      <blockquote>
+        &ldquo;They took our houses, our streets, our neighbours - a whole world that could never be put back together in the same way.&rdquo;
+        <cite>Composite of District Six residents' testimonies (illustrative, for teaching)</cite>
+      </blockquote>
+      <p style="margin-top:1.2rem;">Behind every removal statistic was a family that lost a home, a business, a school route and a community. The Act treated people as units on a map; this is why we study the <strong>human cost</strong>, not only the legal text.</p>
+      <div class="notes" data-notes>
+        <h4>Speaker notes</h4>
+        <p>This quote is a teaching composite - be explicit with learners that it stands in for many real testimonies. In the production lesson we would cite a specific sourced oral history from the SAHO archive.</p>
+        <p>Pause here. Let the emotional weight land before moving to resistance and legacy.</p>
+      </div>
+    </section>
+
+    <!-- SLIDE 7: resistance and legacy -->
+    <section class="slide" id="slide-7" role="group" aria-roledescription="slide" aria-label="Slide 7 of 8: Resistance and legacy">
+      <span class="slide__eyebrow">Resistance &amp; legacy</span>
+      <h2>People did not simply accept it</h2>
+      <div class="cols">
+        <div>
+          <h3 style="color:var(--saho-slate);">Resistance</h3>
+          <ul>
+            <li>Communities petitioned, protested and went to court.</li>
+            <li>Removals fed anger that powered the wider anti-apartheid struggle.</li>
+            <li>Artists, writers and photographers recorded what was lost.</li>
+          </ul>
+        </div>
+        <div>
+          <h3 style="color:var(--saho-slate);">Legacy today</h3>
+          <ul>
+            <li>Many South African cities are still shaped by these old racial lines.</li>
+            <li>Land restitution claims continue for removed communities.</li>
+            <li>Museums and memory projects keep the history alive.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="notes" data-notes>
+        <h4>Speaker notes</h4>
+        <p>Balance the trauma with agency: people resisted and remembered. Draw the line from 1950s removals to present-day spatial inequality that learners can see around them.</p>
+        <p>Mention restitution to signal that this is unfinished history, not a closed chapter.</p>
+      </div>
+    </section>
+
+    <!-- SLIDE 8: summary + source-based question -->
+    <section class="slide" id="slide-8" role="group" aria-roledescription="slide" aria-label="Slide 8 of 8: Summary and assessment">
+      <span class="slide__eyebrow">Consolidation</span>
+      <h2>Summary &amp; source-based questions</h2>
+      <div class="cols">
+        <div>
+          <h3 style="color:var(--saho-slate);">Three things to remember</h3>
+          <ul>
+            <li>The Group Areas Act (1950) legalised racial zoning of cities.</li>
+            <li>It powered forced removals like District Six.</li>
+            <li>Its effects still shape South Africa today.</li>
+          </ul>
+        </div>
+        <div>
+          <div class="qa">
+            <p><b>Q1.</b> Explain, in your own words, how the Population Registration Act and the Group Areas Act depended on each other. (4 marks)</p>
+          </div>
+          <div class="qa">
+            <p><b>Q2.</b> Using the District Six example, describe two ways forced removal harmed a community. (6 marks)</p>
+          </div>
+        </div>
+      </div>
+      <p style="margin-top:1rem;color:var(--ink-soft);font-size:0.95rem;">End of lesson &middot; South African History Online Classroom.</p>
+      <div class="notes" data-notes>
+        <h4>Speaker notes</h4>
+        <p>Use Q1 to check the "law by law" concept from slide 2 and Q2 to check the case study. These map to CAPS source-based and extended-writing question types.</p>
+        <p>Set the reading of a primary source for homework, then collect the written answers next lesson.</p>
+      </div>
+    </section>
+
+    <!-- edge navigation -->
+    <button class="edge edge--prev" id="prev" type="button" aria-label="Previous slide">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 4l-8 8 8 8" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <button class="edge edge--next" id="next" type="button" aria-label="Next slide">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4l8 8-8 8" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+
+    <!-- progress dots -->
+    <div class="dots" id="dots" role="tablist" aria-label="Slide navigation"></div>
+
+    <!-- transient keyboard hint -->
+    <div class="hint" id="hint" role="note">
+      Use <kbd>&larr;</kbd> <kbd>&rarr;</kbd> to move &middot; <kbd>F</kbd> present &middot; <kbd>S</kbd> notes &middot; <kbd>P</kbd> print
+    </div>
+  </div>
+
+  <!-- speaker notes panel (mirror of the active slide's notes) -->
+  <aside class="notes" id="notesPanel" aria-live="polite" aria-label="Speaker notes for the current slide"></aside>
+
+  <!-- toolbar -->
+  <div class="toolbar" role="toolbar" aria-label="Presentation controls">
+    <span class="brand"><span class="mark">SA</span> SAHO Classroom <small>HTML deck prototype</small></span>
+    <button class="btn btn--icon" id="btnPrev" type="button" aria-label="Previous slide">&larr;</button>
+    <span class="counter" id="counter" aria-hidden="true">1 / 8</span>
+    <button class="btn btn--icon" id="btnNext" type="button" aria-label="Next slide">&rarr;</button>
+    <button class="btn" id="btnNotes" type="button" aria-pressed="false">Notes <span class="visually-hidden">(S)</span></button>
+    <button class="btn" id="btnFull" type="button" aria-pressed="false">Present <span class="visually-hidden">fullscreen (F)</span></button>
+    <button class="btn" id="btnPrint" type="button">Print / PDF <span class="visually-hidden">(P)</span></button>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var slides = Array.prototype.slice.call(document.querySelectorAll(".slide"));
+  var total = slides.length;
+  var current = 0;
+
+  var stage = document.getElementById("stage");
+  var counter = document.getElementById("counter");
+  var live = document.getElementById("live");
+  var progress = document.getElementById("progress");
+  var dotsWrap = document.getElementById("dots");
+  var notesPanel = document.getElementById("notesPanel");
+  var hint = document.getElementById("hint");
+  var deck = document.getElementById("deck");
+
+  var btnNotes = document.getElementById("btnNotes");
+  var btnFull = document.getElementById("btnFull");
+  var notesOpen = false;
+
+  // Build progress dots as real buttons (keyboard reachable).
+  var dots = slides.map(function (slide, i) {
+    var d = document.createElement("button");
+    d.className = "dot";
+    d.type = "button";
+    d.setAttribute("role", "tab");
+    d.setAttribute("aria-label", "Go to slide " + (i + 1) + " of " + total);
+    d.addEventListener("click", function () { go(i); });
+    dotsWrap.appendChild(d);
+    return d;
+  });
+
+  function currentNotesText() {
+    var host = slides[current].querySelector("[data-notes]");
+    return host ? host.innerHTML : "<h4>Speaker notes</h4><p>No notes for this slide.</p>";
+  }
+
+  function renderNotes() {
+    notesPanel.innerHTML = currentNotesText();
+  }
+
+  function go(index) {
+    if (index < 0) { index = 0; }
+    if (index > total - 1) { index = total - 1; }
+    slides[current].classList.remove("is-active");
+    dots[current].classList.remove("is-active");
+    dots[current].removeAttribute("aria-selected");
+    current = index;
+    slides[current].classList.add("is-active");
+    dots[current].classList.add("is-active");
+    dots[current].setAttribute("aria-selected", "true");
+
+    counter.textContent = (current + 1) + " / " + total;
+    progress.style.width = ((current + 1) / total * 100) + "%";
+    live.textContent = "Slide " + (current + 1) + " of " + total + ": " +
+      (slides[current].querySelector("h1, h2") || {}).textContent;
+
+    if (notesOpen) { renderNotes(); }
+    // Move keyboard focus to the active slide so screen readers land there.
+    slides[current].setAttribute("tabindex", "-1");
+    slides[current].focus({ preventScroll: true });
+  }
+
+  function next() { go(current + 1); }
+  function prev() { go(current - 1); }
+
+  function toggleNotes(force) {
+    notesOpen = (typeof force === "boolean") ? force : !notesOpen;
+    notesPanel.classList.toggle("is-open", notesOpen);
+    btnNotes.setAttribute("aria-pressed", String(notesOpen));
+    if (notesOpen) { renderNotes(); }
+  }
+
+  function isFullscreen() {
+    return document.fullscreenElement || document.webkitFullscreenElement;
+  }
+
+  function toggleFullscreen() {
+    if (isFullscreen()) {
+      (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+    } else {
+      var el = deck;
+      (el.requestFullscreen || el.webkitRequestFullscreen).call(el);
+    }
+  }
+
+  function syncFullscreenBtn() {
+    var on = !!isFullscreen();
+    btnFull.setAttribute("aria-pressed", String(on));
+    btnFull.firstChild.textContent = on ? "Exit " : "Present ";
+  }
+  document.addEventListener("fullscreenchange", syncFullscreenBtn);
+  document.addEventListener("webkitfullscreenchange", syncFullscreenBtn);
+
+  // Wire buttons.
+  document.getElementById("next").addEventListener("click", next);
+  document.getElementById("prev").addEventListener("click", prev);
+  document.getElementById("btnNext").addEventListener("click", next);
+  document.getElementById("btnPrev").addEventListener("click", prev);
+  document.getElementById("btnPrint").addEventListener("click", function () { window.print(); });
+  btnNotes.addEventListener("click", function () { toggleNotes(); });
+  btnFull.addEventListener("click", toggleFullscreen);
+
+  // Keyboard shortcuts.
+  document.addEventListener("keydown", function (e) {
+    // Ignore when typing in a field (future-proofing).
+    var t = e.target;
+    if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA")) { return; }
+    switch (e.key) {
+      case "ArrowRight": case "ArrowDown": case "PageDown": case " ":
+        e.preventDefault(); next(); break;
+      case "ArrowLeft": case "ArrowUp": case "PageUp":
+        e.preventDefault(); prev(); break;
+      case "Home": e.preventDefault(); go(0); break;
+      case "End": e.preventDefault(); go(total - 1); break;
+      case "f": case "F": e.preventDefault(); toggleFullscreen(); break;
+      case "s": case "S": e.preventDefault(); toggleNotes(); break;
+      case "p": case "P": e.preventDefault(); window.print(); break;
+      default: break;
+    }
+  });
+
+  // Touch / swipe navigation for tablets.
+  var startX = null;
+  stage.addEventListener("touchstart", function (e) {
+    startX = e.changedTouches[0].clientX;
+  }, { passive: true });
+  stage.addEventListener("touchend", function (e) {
+    if (startX === null) { return; }
+    var dx = e.changedTouches[0].clientX - startX;
+    if (Math.abs(dx) > 50) { dx < 0 ? next() : prev(); }
+    startX = null;
+  }, { passive: true });
+
+  // Deep link + restore position via the URL hash (offline friendly).
+  function fromHash() {
+    var m = /slide-(\d+)/.exec(window.location.hash);
+    if (m) {
+      var n = parseInt(m[1], 10) - 1;
+      if (n >= 0 && n < total) { current = n; }
+    }
+  }
+  fromHash();
+
+  // Fade out the keyboard hint after a few seconds.
+  setTimeout(function () {
+    if (hint) { hint.style.transition = "opacity .5s"; hint.style.opacity = "0"; }
+    setTimeout(function () { if (hint) { hint.style.display = "none"; } }, 600);
+  }, 4200);
+
+  go(current);
+})();
+</script>
+</body>
+</html>
