@@ -15,11 +15,14 @@ declare(strict_types=1);
  * matches nodes by a deterministic UUID and preserves editorial publish state.
  */
 function saho_classroom_deploy_sync_decks(array &$sandbox): string {
-  $summary = \Drupal::service('saho_classroom.deck_sync')->syncAll();
+  $terms = \Drupal::service('saho_classroom.term_seeder')->seed();
+  $decks = \Drupal::service('saho_classroom.deck_sync')->syncAll();
   return sprintf(
-    'Classroom decks synced: %d created, %d updated, %d skipped.',
-    $summary['created'],
-    $summary['updated'],
-    $summary['skipped'],
+    'Classroom: terms %d created / %d present; decks %d created, %d updated, %d skipped.',
+    $terms['created'],
+    $terms['existing'],
+    $decks['created'],
+    $decks['updated'],
+    $decks['skipped'],
   );
 }

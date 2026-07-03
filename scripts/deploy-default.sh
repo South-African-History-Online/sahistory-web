@@ -90,6 +90,16 @@ echo ""
 vendor/bin/drush deploy -y -v -l "${SITE_URI}" 2>&1 | tee -a "${LOG_FILE}" || error_exit "Deploy 2 failed"
 echo ""
 echo -e "${GREEN}✓ Deploy 2/2 complete${NC}"
+echo ""
+
+# Reproducible classroom content: seed taxonomy terms + sync presentation decks
+# from the committed JSON. Idempotent, and runs on every deploy so newly added or
+# edited decks always land (the deploy hook alone only fires once). Non-fatal so a
+# single bad deck never aborts the production deploy.
+echo -e "${YELLOW}Syncing classroom presentation decks...${NC}"
+vendor/bin/drush saho_classroom:sync-decks -l "${SITE_URI}" 2>&1 | tee -a "${LOG_FILE}" \
+    || echo -e "${YELLOW}⚠ Classroom deck sync skipped/failed (non-fatal)${NC}"
+echo -e "${GREEN}✓ Classroom decks synced${NC}"
 
 # Disable maintenance mode (production only, staging stays in maintenance)
 if [ "${ENVIRONMENT}" = "production" ]; then
