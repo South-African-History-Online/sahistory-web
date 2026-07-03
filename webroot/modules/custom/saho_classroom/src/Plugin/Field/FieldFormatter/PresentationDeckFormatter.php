@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace Drupal\saho_classroom\Plugin\Field\FieldFormatter;
 
+use Drupal\Component\Render\MarkupInterface;
+use Drupal\Component\Utility\Html;
 use Drupal\Core\Field\Attribute\FieldFormatter;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\FormatterBase;
+use Drupal\Core\Render\Markup;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 
 /**
@@ -71,12 +74,52 @@ final class PresentationDeckFormatter extends FormatterBase {
             'duration' => $deck['duration_minutes'] ?? NULL,
             'attribution' => (string) ($deck['attribution'] ?? ''),
           ],
-          'slides' => array_values($deck['slides']),
+          'slides' => $this->processInline(array_values($deck['slides'])),
         ],
       ];
     }
 
     return $elements;
+  }
+
+  /**
+   * Recursively converts the inline-markdown subset in deck text to Markup.
+   *
+   * Mirrors the standalone render.php: **bold**, *italic* and `code`. Skips the
+   * media "data" key (raw inline SVG must stay untouched). Strings with no
+   * markdown markers are left as plain strings so Twig escapes them normally.
+   *
+   * @param mixed $value
+   *   A slide-schema value (array, string or scalar).
+   * @param int|string $key
+   *   The key of $value within its parent (used to skip "data").
+   *
+   * @return mixed
+   *   The value with text fields converted to Markup where applicable.
+   */
+  private function processInline(mixed $value, int|string $key = ''): mixed {
+    if (is_array($value)) {
+      $out = [];
+      foreach ($value as $k => $v) {
+        $out[$k] = $this->processInline($v, $k);
+      }
+      return $out;
+    }
+    if (is_string($value) && $key !== 'data' && (str_contains($value, '*') || str_contains($value, '`'))) {
+      return $this->inlineMarkup($value);
+    }
+    return $value;
+  }
+
+  /**
+   * Escapes a string, then applies the inline-markdown subset, as safe Markup.
+   */
+  private function inlineMarkup(string $text): MarkupInterface {
+    $escaped = Html::escape($text);
+    $escaped = preg_replace('/\*\*(.+?)\*\*/s', '<strong>$1</strong>', $escaped);
+    $escaped = preg_replace('/`([^`]+)`/', '<code>$1</code>', $escaped);
+    $escaped = preg_replace('/(?<![\*\w])\*(?!\s)(.+?)(?<!\s)\*(?![\*\w])/s', '<em>$1</em>', $escaped);
+    return Markup::create($escaped);
   }
 
   /**
