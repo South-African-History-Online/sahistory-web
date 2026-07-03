@@ -1238,16 +1238,18 @@ function saho_theme($existing, $type, $theme, $path) {
 function saho_theme_suggestions_views_view_alter(array &$suggestions, array $variables) {
   $view = $variables['view'];
   
-  // Check if this is one of our main section landing pages
+  // Check if this is one of our main section landing pages.
+  // 'biographies' is intentionally absent: /biographies renders the Open
+  // Record shell via views-view--biographies.html.twig, which the appended
+  // views_view__landing_page suggestion would otherwise always outrank.
   $landing_page_views = [
     'politics_society',
     'art_culture',
-    'biographies',
     'africa',
     'places',
     'timelines'
   ];
-  
+
   // Add specific suggestions for specialized sections
   if ($view->id() == 'archives') {
     // Add archives-specific template suggestion

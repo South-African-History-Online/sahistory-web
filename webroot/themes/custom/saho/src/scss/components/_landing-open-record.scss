@@ -88,3 +88,139 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+// ---- /biographies filter rail: BEF checkboxes as square mono chips ----
+// Mirrors .saho-classroom-hub__grades: the checkbox input is visually
+// hidden and its label is the chip; BEF links degrade to the same chips.
+.saho-landing__filters {
+  margin-bottom: var(--space-5);
+  padding: var(--space-4);
+  border: var(--bw-hair) solid var(--border-default);
+  background: var(--surface-card);
+
+  // "Biography Categories" legend as a mono apparatus heading.
+  .fieldset-legend {
+    margin-bottom: var(--space-2);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: var(--fw-semibold);
+    letter-spacing: var(--ls-wide);
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  // Flatten the BEF checkbox (or link-list) tree into one wrapping row.
+  .bef-checkboxes,
+  .bef-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+  .bef-checkboxes .form-check,
+  .bef-links ul,
+  .bef-links li {
+    display: contents;
+  }
+
+  // Visually hide the checkbox; the label stays its accessible proxy.
+  .form-check-input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+
+  // Square mono chips (min 44px targets) for checkbox labels + BEF links.
+  .form-check-label,
+  .bef-link {
+    // A legacy rule forces label width 100%; chips shrink-wrap.
+    width: auto;
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: var(--space-1) var(--space-3);
+    border: var(--bw-hair) solid var(--border-default);
+    background: var(--saho-paper);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: var(--ls-label);
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: border-color var(--t-fast), background var(--t-fast);
+
+    &:hover {
+      border-color: var(--border-strong);
+    }
+  }
+  .form-check-input:checked + .form-check-label,
+  .bef-link--selected,
+  .bef-link--selected:hover {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--text-on-accent);
+  }
+  .form-check-input:focus-visible + .form-check-label {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+}
+
+// Legacy exposed-form chrome must not draw inside the filter rail: the
+// generic views-exposed-form card (white bg + padding) and the outer
+// .form-checkboxes grid otherwise stack the chips vertically in a box.
+.saho-landing__filters {
+  form,
+  .views-exposed-form {
+    background: none;
+    border: 0;
+    box-shadow: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  fieldset {
+    border: 0;
+    padding: 0;
+    margin: 0;
+    min-width: 0;
+    background: none;
+  }
+
+  .form-checkboxes:not(.bef-checkboxes),
+  fieldset > div {
+    display: block;
+    width: 100%;
+  }
+
+  .bef-checkboxes {
+    width: 100%;
+  }
+
+  // BEF soft-limit toggle joins the chip row.
+  .filter-show-more,
+  .bef-toggle {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: var(--space-1) var(--space-3);
+    border: var(--bw-hair) solid var(--border-default);
+    background: none;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: var(--ls-label);
+    text-transform: uppercase;
+    color: var(--text-muted);
+    cursor: pointer;
+    margin-top: var(--space-2);
+
+    &:hover,
+    &:focus-visible {
+      border-color: var(--saho-ink);
+      color: var(--text-primary);
+    }
+  }
+}

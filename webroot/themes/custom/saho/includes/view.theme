@@ -741,3 +741,107 @@ function saho_preprocess_views_view__saho_classroom_topic(array &$variables) {
   $variables['#attached']['library'][] = 'saho/saho-card-grid';
   $variables['#attached']['library'][] = 'saho/saho-section-heading';
 }
+
+/**
+ * Implements hook_preprocess_views_view() for the biographies view (page_1).
+ */
+function saho_preprocess_views_view__biographies__page_1(array &$variables) {
+  // The theme registry only runs base-hook + exact-suggestion preprocess when
+  // a more specific template exists, so the page display needs this wrapper.
+  saho_preprocess_views_view__biographies($variables);
+}
+
+/**
+ * Builds the Open Record landing shell for /biographies (wireframe wf02).
+ *
+ * Same results contract as saho_preprocess_views_view__saho_landing():
+ * index-table columns/rows plus archive-card props for every biography row
+ * behind the shared table/cards toggle. Deliberately duplicated from the
+ * saho_landing preprocess (a follow-up will unify the two into one shared
+ * builder); the exposed BEF category checkboxes render as a chip rail.
+ */
+function saho_preprocess_views_view__biographies(array &$variables) {
+  /** @var \Drupal\saho_refs\DisplayRefService $refs */
+  $refs = \Drupal::service('saho_refs.display_ref');
+
+  $variables['landing_type'] = 'biography';
+  $variables['landing_label'] = 'Biographies';
+  $variables['landing_count'] = number_format((int) ($variables['view']->total_rows ?? count($variables['view']->result)));
+
+  $variables['record_columns'] = [
+    ['key' => 'ref', 'label' => 'Ref', 'mono' => TRUE, 'sortable' => TRUE, 'width' => '110px'],
+    ['key' => 'type', 'label' => 'Type', 'sortable' => TRUE, 'width' => '130px'],
+    ['key' => 'title', 'label' => 'Record', 'sortable' => TRUE],
+    ['key' => 'dates', 'label' => 'Dates', 'mono' => TRUE, 'muted' => TRUE, 'sortable' => TRUE, 'width' => '140px'],
+    ['key' => 'src', 'label' => 'Src', 'mono' => TRUE, 'muted' => TRUE, 'align' => 'center', 'width' => '70px'],
+  ];
+
+  $record_rows = [];
+  $record_cards = [];
+  foreach ($variables['view']->result as $row) {
+    $node = $row->_entity ?? NULL;
+    if (!$node instanceof NodeInterface || !$node->isPublished()) {
+      continue;
+    }
+
+    // Dates: biography lifespans are verbatim free-text strings (never
+    // date-formatted).
+    $span = [];
+    foreach (['field_dob', 'field_dod'] as $date_field) {
+      if ($node->hasField($date_field) && !$node->get($date_field)->isEmpty()) {
+        $value = trim((string) $node->get($date_field)->value);
+        if ($value !== '') {
+          $span[] = $value;
+        }
+      }
+    }
+    $dates = implode('-', $span);
+
+    // Src column: a mono check mark when the record cites a source.
+    $has_source = $node->hasField('field_ref_str')
+      && !$node->get('field_ref_str')->isEmpty()
+      && trim((string) $node->get('field_ref_str')->value) !== '';
+
+    $ref = $refs->getRef($node);
+    $href = $node->toUrl()->toString();
+
+    $record_rows[] = [
+      'ref' => $ref,
+      'type' => 'biography',
+      'title' => $node->label(),
+      'href' => $href,
+      'dates' => $dates,
+      'src' => $has_source ? "\u{2713}" : '-',
+    ];
+
+    // Excerpt: trimmed plain-text body (plain node rows have no Solr excerpt).
+    $excerpt = '';
+    if ($node->hasField('body') && !$node->get('body')->isEmpty()) {
+      $excerpt = trim(strip_tags((string) $node->get('body')->value));
+    }
+    $excerpt = Unicode::truncate(html_entity_decode($excerpt, ENT_QUOTES), 140, TRUE, TRUE);
+
+    $image = _saho_search_result_image($node);
+    $record_cards[] = [
+      'type' => 'biography',
+      'title' => $node->label(),
+      'href' => $href,
+      'excerpt' => $excerpt,
+      'dates' => $dates,
+      'meta' => $ref,
+      'image' => $image['url'] ?? '',
+      'image_alt' => $image['alt'],
+      'duotone' => TRUE,
+    ];
+  }
+
+  $variables['record_rows'] = $record_rows;
+  $variables['record_cards'] = $record_cards;
+  $variables['result_total'] = $variables['landing_count'];
+  $variables['results_layout'] = \Drupal::request()->query->get('layout') === 'grid' ? 'grid' : 'table';
+
+  $variables['#attached']['library'][] = 'saho/saho-index-table';
+  $variables['#attached']['library'][] = 'saho/saho-archive-card';
+  $variables['#attached']['library'][] = 'saho/saho-card-grid';
+  $variables['#cache']['contexts'][] = 'url.query_args:layout';
+}
