@@ -310,3 +310,54 @@ function saho_classroom_post_update_retag_legacy_corpus(&$sandbox = NULL): strin
     $sandbox['skipped'],
   );
 }
+
+/**
+ * Redirects the retired per-grade classroom views to the wf08 hub.
+ *
+ * The legacy views (classroom_history_grade10, historyclassroom_grade4 and
+ * its per-grade displays, the technical-skills duplicate and
+ * latest_in_classroom) are deleted; their URLs 301 to /classroom with the
+ * matching grade preselected so bookmarks and search results keep working.
+ */
+function saho_classroom_post_update_redirect_retired_views(&$sandbox = NULL): string {
+  $term_storage = \Drupal::entityTypeManager()->getStorage('taxonomy_term');
+  $grade_tid = function (string $name) use ($term_storage): ?int {
+    $terms = $term_storage->loadByProperties(['vid' => 'classroom_grade', 'name' => $name]);
+    return $terms ? (int) reset($terms)->id() : NULL;
+  };
+  $map = [
+    'classroom-history-grade10' => 'Grade 10',
+    'historyclassroom-grade4' => 'Grade 4',
+    'historyclassroom-grade5' => 'Grade 5',
+    'historyclassroom-grade6' => 'Grade 6',
+    'historyclassroom-grade7' => 'Grade 7',
+    'historyclassroom-grade8' => 'Grade 8',
+    'historyclassroom-grade9' => 'Grade 9',
+    'historyclassroom-grade12' => 'Grade 12',
+  ];
+  $redirect_storage = \Drupal::entityTypeManager()->getStorage('redirect');
+  $created = 0;
+  $ensure = function (string $source, string $target_uri) use ($redirect_storage, &$created): void {
+    $existing = $redirect_storage->loadByProperties(['redirect_source__path' => $source]);
+    if ($existing !== []) {
+      return;
+    }
+    $redirect_storage->create([
+      'redirect_source' => ['path' => $source, 'query' => []],
+      'redirect_redirect' => ['uri' => $target_uri],
+      'status_code' => 301,
+      'language' => 'und',
+    ])->save();
+    $created++;
+  };
+  foreach ($map as $source => $grade_name) {
+    $tid = $grade_tid($grade_name);
+    $target = $tid !== NULL
+      ? 'internal:/classroom?grade%5B' . $tid . '%5D=' . $tid
+      : 'internal:/classroom';
+    $ensure($source, $target);
+  }
+  $ensure('classroom-technical-skills-sans-footnote', 'internal:/classroom-technical-skills');
+  $ensure('latest-in-classroom', 'internal:/classroom');
+  return "Created $created classroom redirects for retired view URLs.";
+}

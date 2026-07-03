@@ -1,0 +1,126 @@
+uuid: 0f54a3d0-f009-4ecc-9923-b79dcd206109
+langcode: en
+status: true
+dependencies:
+  config:
+    - taxonomy.vocabulary.caps_topic
+  module:
+    - node
+    - user
+id: saho_classroom_topic
+label: 'Classroom topic (spine)'
+module: views
+description: 'One CAPS topic, every resource type - the Classroom 2.0 topic spine (wf08/#444).'
+tag: ''
+base_table: node_field_data
+base_field: nid
+display:
+  default:
+    id: default
+    display_title: Default
+    display_plugin: default
+    position: 0
+    display_options:
+      title: 'Classroom topic'
+      fields:
+        title:
+          id: title
+          table: node_field_data
+          field: title
+          entity_type: node
+          entity_field: title
+          plugin_id: field
+          label: ''
+          settings:
+            link_to_entity: true
+      pager:
+        type: none
+        options:
+          offset: 0
+      access:
+        type: perm
+        options:
+          perm: 'access content'
+      cache:
+        type: tag
+        options: {  }
+      sorts:
+        changed:
+          id: changed
+          table: node_field_data
+          field: changed
+          entity_type: node
+          entity_field: changed
+          plugin_id: date
+          order: DESC
+          exposed: false
+      arguments:
+        field_caps_topic_target_id:
+          id: field_caps_topic_target_id
+          table: node__field_caps_topic
+          field: field_caps_topic_target_id
+          plugin_id: taxonomy
+          default_action: 'not found'
+          exception:
+            value: all
+          title_enable: true
+          title: '{{ arguments.field_caps_topic_target_id }}'
+          summary_options: {  }
+          summary:
+            format: default_summary
+          specify_validation: true
+          validate:
+            type: 'entity:taxonomy_term'
+            fail: 'not found'
+          validate_options:
+            bundles:
+              caps_topic: caps_topic
+            access: false
+            operation: view
+            multiple: 0
+      filters:
+        status:
+          id: status
+          table: node_field_data
+          field: status
+          entity_type: node
+          entity_field: status
+          plugin_id: boolean
+          value: '1'
+          group: 1
+          expose:
+            operator: ''
+      style:
+        type: default
+      row:
+        type: fields
+      query:
+        type: views_query
+        options: {  }
+      display_extenders: {  }
+    cache_metadata:
+      max-age: -1
+      contexts:
+        - 'languages:language_content'
+        - 'languages:language_interface'
+        - url
+        - 'user.node_grants:view'
+        - user.permissions
+      tags: {  }
+  page_1:
+    id: page_1
+    display_title: 'Topic page'
+    display_plugin: page
+    position: 1
+    display_options:
+      display_extenders: {  }
+      path: classroom/topic/%
+    cache_metadata:
+      max-age: -1
+      contexts:
+        - 'languages:language_content'
+        - 'languages:language_interface'
+        - url
+        - 'user.node_grants:view'
+        - user.permissions
+      tags: {  }

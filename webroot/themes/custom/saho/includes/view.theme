@@ -622,3 +622,122 @@ function saho_preprocess_views_view__classroom(array &$variables) {
   $variables['#attached']['library'][] = 'saho/saho-tag';
   $variables['#attached']['library'][] = 'saho/saho-section-heading';
 }
+
+/**
+ * Implements hook_preprocess_views_view() for the topic spine page display.
+ */
+function saho_preprocess_views_view__saho_classroom_topic__page_1(array &$variables) {
+  // The theme registry only runs base-hook + exact-suggestion preprocess when
+  // a more specific template exists, so the page display needs this wrapper.
+  saho_preprocess_views_view__saho_classroom_topic($variables);
+}
+
+/**
+ * Builds the Classroom 2.0 topic spine page (issue #444).
+ *
+ * One /classroom/topic/% page per caps_topic term: results are shaped into
+ * archive-card SDC props and grouped by resource type (the node's
+ * field_classroom_resource_type term label, bundle label otherwise) in a
+ * fixed pedagogical order - overview first, assessment material last.
+ */
+function saho_preprocess_views_view__saho_classroom_topic(array &$variables) {
+  $date_formatter = \Drupal::service('date.formatter');
+  $node_type_storage = \Drupal::entityTypeManager()->getStorage('node_type');
+
+  // Resolve the topic term from the view's contextual argument.
+  $variables['topic_label'] = '';
+  $variables['topic_grade'] = '';
+  $tid = $variables['view']->args[0] ?? NULL;
+  if ($tid) {
+    $topic = \Drupal::entityTypeManager()->getStorage('taxonomy_term')->load($tid);
+    if ($topic) {
+      $variables['topic_label'] = (string) $topic->label();
+      // caps_topic parents are grade terms (e.g. "Grade 10").
+      $grade = $topic->get('parent')->entity;
+      if ($grade) {
+        $variables['topic_grade'] = (string) $grade->label();
+      }
+    }
+  }
+
+  // Fixed spine order for resource-type groups; unknown labels sort last.
+  $group_weights = array_flip([
+    'Topic overview',
+    'Presentation',
+    'Clip',
+    'Worksheet',
+    'Activity',
+    'Quiz',
+    'Glossary',
+    'Source-based questions',
+    'Essay questions',
+    'Exam paper',
+    'Lesson pack',
+  ]);
+
+  // Bundles renamed for display accents.
+  $type_map = ['upcomingevent' => 'event', 'book' => 'archive'];
+  // Types the archive-card SDC accepts; anything else falls back to article.
+  $card_types = ['article', 'biography', 'place', 'archive', 'event', 'topic'];
+
+  $spine_groups = [];
+  $bundle_labels = [];
+  foreach ($variables['view']->result as $row) {
+    $node = _saho_search_result_node($row);
+    if (!$node || !$node->isPublished()) {
+      continue;
+    }
+    $bundle = $node->bundle();
+    $type = $type_map[$bundle] ?? $bundle;
+
+    // Group label: the resource-type term label when the field is populated,
+    // the bundle label otherwise (e.g. Presentation for the new types).
+    $group = '';
+    if ($node->hasField('field_classroom_resource_type') && !$node->get('field_classroom_resource_type')->isEmpty()) {
+      $term = $node->get('field_classroom_resource_type')->entity;
+      if ($term) {
+        $group = (string) $term->label();
+      }
+    }
+    if ($group === '') {
+      if (!isset($bundle_labels[$bundle])) {
+        $node_type = $node_type_storage->load($bundle);
+        $bundle_labels[$bundle] = $node_type ? (string) $node_type->label() : ucfirst($bundle);
+      }
+      $group = $bundle_labels[$bundle];
+    }
+
+    // Excerpt: trimmed plain-text body.
+    $excerpt = '';
+    if ($node->hasField('body') && !$node->get('body')->isEmpty()) {
+      $excerpt = trim(strip_tags((string) $node->get('body')->value));
+    }
+    $excerpt = Unicode::truncate(html_entity_decode($excerpt, ENT_QUOTES), 140, TRUE, TRUE);
+
+    $image = _saho_search_result_image($node);
+    $spine_groups[$group][] = [
+      'type' => in_array($type, $card_types, TRUE) ? $type : 'article',
+      'title' => $node->label(),
+      'href' => $node->toUrl()->toString(),
+      'excerpt' => $excerpt,
+      'dates' => $date_formatter->format($node->getCreatedTime(), 'custom', 'j M Y'),
+      'meta' => $group,
+      'image' => $image['url'] ?? '',
+      'image_alt' => $image['alt'],
+      'duotone' => TRUE,
+    ];
+  }
+
+  uksort($spine_groups, function (string $a, string $b) use ($group_weights): int {
+    $weight_a = $group_weights[$a] ?? count($group_weights);
+    $weight_b = $group_weights[$b] ?? count($group_weights);
+    return $weight_a <=> $weight_b ?: strcasecmp($a, $b);
+  });
+
+  $variables['spine_groups'] = $spine_groups;
+  $variables['result_total'] = number_format((int) ($variables['view']->total_rows ?? count($variables['view']->result)));
+
+  $variables['#attached']['library'][] = 'saho/saho-archive-card';
+  $variables['#attached']['library'][] = 'saho/saho-card-grid';
+  $variables['#attached']['library'][] = 'saho/saho-section-heading';
+}
