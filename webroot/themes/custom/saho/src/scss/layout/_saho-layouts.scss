@@ -13,33 +13,49 @@
   width: 100%;
   max-width: var(--container-standard); // 1200px reading/record width
   margin-inline: auto;
-  padding-inline: var(--gutter-page);   // fluid 16->48px, shared by ALL
+  padding-inline: var(--gutter-page); // fluid 16->48px, shared by ALL
 }
 .saho-page--wide,
-.layout--saho.is-wide { max-width: var(--container-wide); }     // 1440 index/gallery
+.layout--saho.is-wide {
+  max-width: var(--container-wide);
+} // 1440 index/gallery
 .saho-page--prose,
-.layout--saho.is-prose { max-width: var(--container-narrow); }  // 832 long-form
+.layout--saho.is-prose {
+  max-width: var(--container-narrow);
+} // 832 long-form
 
 // ---- Vertical rhythm: consistent space between stacked sections ----
 // Scoped to Open Record layout sections so it never adds spacing to arbitrary
 // legacy children of the shared .saho-page container.
-.saho-page > .layout--saho + .layout--saho { margin-top: var(--space-7); }
+.saho-page > .layout--saho + .layout--saho {
+  margin-top: var(--space-7);
+}
 // Block spacing within a region, EXCEPT the index grid region: its children are
 // promoted to grid items via display:contents and spaced by `gap`. The child
 // combinator still matches them (display:contents doesn't change selector
 // matching), so exclude it or every grid item after the first gets a stray margin.
-.layout-builder__region:not(.region--grid) > * + * { margin-top: var(--space-6); }
+.layout-builder__region:not(.region--grid) > * + * {
+  margin-top: var(--space-6);
+}
 
 // ============================================================
 // Named Layout Builder layouts (see saho.layouts.yml)
 // ============================================================
 
 // --- 1. Standard: single aligned column ---
-.layout--saho-standard { display: block; }
+.layout--saho-standard {
+  display: block;
+}
 
 // --- 2. Record: main + right rail (biography, article, event) ---
-.layout--saho-record { display: grid; grid-template-columns: 1fr; gap: var(--space-6); }
-.layout--saho-record > .region--rail { min-width: 0; }
+.layout--saho-record {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-6);
+}
+.layout--saho-record > .region--rail {
+  min-width: 0;
+}
 @media (min-width: 64rem) {
   .layout--saho-record {
     grid-template-columns: minmax(0, 1fr) var(--rail-width);
@@ -47,20 +63,36 @@
     align-items: start;
   }
   // Rail becomes sticky on desktop so provenance/chronology stays in view
-  .layout--saho-record > .region--rail { position: sticky; top: var(--space-5); }
+  .layout--saho-record > .region--rail {
+    position: sticky;
+    top: var(--space-5);
+  }
 }
 
 // --- 3. Index: responsive record/card grid (browse, search, home) ---
-.layout--saho-index { display: grid; grid-template-columns: 1fr; gap: var(--grid-gap-tight); }
+.layout--saho-index {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--grid-gap-tight);
+}
 @media (min-width: 40rem) {
-  .layout--saho-index { grid-template-columns: repeat(2, 1fr); gap: var(--grid-gap); }
+  .layout--saho-index {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--grid-gap);
+  }
 }
 @media (min-width: 64rem) {
-  .layout--saho-index { grid-template-columns: repeat(3, 1fr); }
+  .layout--saho-index {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
-.layout--saho-index.is-dense { grid-template-columns: 1fr; }
+.layout--saho-index.is-dense {
+  grid-template-columns: 1fr;
+}
 @media (min-width: 64rem) {
-  .layout--saho-index.is-dense { grid-template-columns: repeat(4, 1fr); }
+  .layout--saho-index.is-dense {
+    grid-template-columns: repeat(4, 1fr);
+  }
 }
 // Auto variant: fills columns by min card width, always aligned rows
 .layout--saho-index.is-auto {
@@ -68,10 +100,16 @@
 }
 // The grid region is a transparent wrapper so its children ARE the grid items.
 // (Design fix: this was passed as a bogus 3rd addClass() arg in the twig.)
-.layout--saho-index > .region--grid { display: contents; }
+.layout--saho-index > .region--grid {
+  display: contents;
+}
 
 // --- 4. Editorial: asymmetric feature (the people's-history register) ---
-.layout--saho-editorial { display: grid; grid-template-columns: 1fr; gap: var(--space-6); }
+.layout--saho-editorial {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-6);
+}
 @media (min-width: 64rem) {
   .layout--saho-editorial {
     grid-template-columns: 1.55fr 1fr;
@@ -81,16 +119,37 @@
 }
 
 // ---- Section band: full-bleed background, aligned inner content ----
-.saho-band { padding-block: var(--space-7); }
-.saho-band--ink { background: var(--surface-inverse); color: var(--text-on-dark); }
-.saho-band--sunk { background: var(--surface-sunk); }
-.saho-band--ruled { border-top: var(--bw-rule) solid var(--border-strong); }
-.saho-band > .saho-page { padding-block: 0; }
+.saho-band {
+  padding-block: var(--space-7);
+}
+.saho-band--ink {
+  background: var(--surface-inverse);
+  color: var(--text-on-dark);
+}
+.saho-band--sunk {
+  background: var(--surface-sunk);
+}
+.saho-band--ruled {
+  border-top: var(--bw-rule) solid var(--border-strong);
+}
+.saho-band > .saho-page {
+  padding-block: 0;
+}
 
 // ---- Equal-height alignment helpers ----
-.saho-stretch { display: grid; grid-auto-rows: 1fr; }
-.saho-cluster { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; }
-.saho-cluster--between { justify-content: space-between; }
+.saho-stretch {
+  display: grid;
+  grid-auto-rows: 1fr;
+}
+.saho-cluster {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: center;
+}
+.saho-cluster--between {
+  justify-content: space-between;
+}
 
 // ---- A hairline ruled divider between stacked records ----
 .saho-ruled > * + * {

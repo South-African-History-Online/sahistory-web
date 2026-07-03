@@ -1,140 +1,80 @@
 {#
 /**
  * @file
- * Template for the Classroom landing page.
+ * Classroom / educator landing - 2027 "Open Record" shell (wireframe wf08).
  *
- * Available variables:
- * - view: The view object.
- * - rows: A list of the view's row items.
- * - options: The view plugin style options.
- * - title: The title of the view.
- * - header: The view header.
- * - footer: The view footer.
- * - empty: The empty text to display if the view is empty.
- * - pager: The pager output.
- * - exposed: Exposed widget form/info to display.
- * - feed_icons: Feed icons to display, if any.
- * - more: An optional link to the next page of results.
- * - totals: The total rows and pages.
- * - rows_total: The total number of rows returned by the view.
- * - attachment_before: An optional attachment view to be displayed before the view.
- * - attachment_after: An optional attachment view to be displayed after the view.
- * - dom_id: Unique id for every view being printed to give unique class for Javascript.
+ * Rows are NOT printed via {{ rows }}: saho_preprocess_views_view__classroom()
+ * shapes every result into classroom_cards (saho-archive-card SDC props).
+ * The exposed BEF-links filters (grade, resource_type) render inside the
+ * grade/phase selector bar and are styled as square tag chips.
  *
- * @see template_preprocess_views_view()
+ * Available variables (beyond the standard views-view set):
+ * - classroom_cards: One archive-card prop set per result.
+ * - result_total: Total result count across all pages (formatted).
+ *
+ * The page title block provides the H1 on /classroom; headings start at h2.
  */
 #}
+<div{{ attributes.addClass('saho-page', 'saho-classroom-hub') }}>
 
-{# Define section-specific colors and classes #}
-{% set section_name = 'Classroom' %}
-{% set section_color = 'saho-deep-heritage-red' %}
-{% set section_bg_class = 'saho-bg-deep-heritage-red' %}
-{% set section_border_class = 'saho-border-deep-heritage-red' %}
-{% set section_text_class = 'saho-text-deep-heritage-red' %}
+  {# Header (wf08): Caslon title + educator intro on a 3px accent top edge.
+     This header owns the page H1 - the global page title is suppressed for
+     this route in saho_preprocess_page_title(). #}
+  <header class="saho-classroom-hub__head">
+    <h1 class="saho-classroom-hub__title">Classroom</h1>
+    <p class="saho-classroom-hub__intro">Grade-aligned doors into the record: CAPS-aligned overviews, sources and lesson material for South African history classrooms.</p>
+    <p class="saho-classroom-hub__count">{{ result_total }} resources</p>
+  </header>
 
-<div{{ attributes.addClass('saho-landing-page', 'saho-classroom-page', 'view-' ~ view.id|clean_class) }}>
-  {# Main Content Section with Sidebar #}
-  <section class="saho-classroom-content mb-5">
-    <div class="container">
-      <div class="row">
-        {# Sidebar with educational resources #}
-        <div class="col-lg-3 mb-4 mb-lg-0">
-          <div class="saho-classroom-sidebar {{ section_border_class }} border-top border-4 p-3 bg-light rounded">
-            <h2 class="h4 {{ section_text_class }} mb-3">Educational Resources</h2>
-            
-            {# Filters in sidebar #}
-            {% if exposed %}
-              <div class="saho-classroom-filters mb-4">
-                {{ exposed }}
-              </div>
-            {% endif %}
-            
-            <div class="saho-classroom-resources">
-              <ul class="list-unstyled">
-                <li class="mb-3">
-                  <a href="/classroom/worksheets" class="d-flex align-items-center text-decoration-none text-dark">
-                    <span class="me-2 {{ section_text_class }}"><i class="fas fa-file-alt"></i></span>
-                    <span>Worksheets</span>
-                  </a>
-                </li>
-                <li class="mb-3">
-                  <a href="/classroom/activities" class="d-flex align-items-center text-decoration-none text-dark">
-                    <span class="me-2 {{ section_text_class }}"><i class="fas fa-tasks"></i></span>
-                    <span>Activities</span>
-                  </a>
-                </li>
-                <li class="mb-3">
-                  <a href="/classroom/presentations" class="d-flex align-items-center text-decoration-none text-dark">
-                    <span class="me-2 {{ section_text_class }}"><i class="fas fa-desktop"></i></span>
-                    <span>Presentations</span>
-                  </a>
-                </li>
-                <li class="mb-3">
-                  <a href="/classroom/videos" class="d-flex align-items-center text-decoration-none text-dark">
-                    <span class="me-2 {{ section_text_class }}"><i class="fas fa-video"></i></span>
-                    <span>Educational Videos</span>
-                  </a>
-                </li>
-                <li class="mb-3">
-                  <a href="/classroom/quizzes" class="d-flex align-items-center text-decoration-none text-dark">
-                    <span class="me-2 {{ section_text_class }}"><i class="fas fa-question-circle"></i></span>
-                    <span>Quizzes & Tests</span>
-                  </a>
-                </li>
-              </ul>
-            </div>
-            
-            <h3 class="h5 {{ section_text_class }} mt-4 mb-3">Key Topics</h3>
-            <div class="saho-classroom-topics">
-              <div class="d-flex flex-wrap">
-                {% if popular_terms is defined and popular_terms is not empty %}
-                  {# Display dynamically generated popular terms based on entity usage statistics #}
-                  {% for term in popular_terms %}
-                    <a href="{{ path('entity.taxonomy_term.canonical', {'taxonomy_term': term.id}) }}" class="badge bg-light border {{ section_border_class }} {{ section_text_class }} m-1 text-decoration-none">{{ term.label }}</a>
-                  {% endfor %}
-                {% else %}
-                  {# Fallback to hardcoded links if no popular terms are available #}
-                  <a href="/classroom/topics/apartheid" class="badge bg-light border {{ section_border_class }} {{ section_text_class }} m-1 text-decoration-none">Apartheid</a>
-                  <a href="/classroom/topics/colonialism" class="badge bg-light border {{ section_border_class }} {{ section_text_class }} m-1 text-decoration-none">Colonialism</a>
-                  <a href="/classroom/topics/freedom-struggle" class="badge bg-light border {{ section_border_class }} {{ section_text_class }} m-1 text-decoration-none">Freedom Struggle</a>
-                  <a href="/classroom/topics/democracy" class="badge bg-light border {{ section_border_class }} {{ section_text_class }} m-1 text-decoration-none">Democracy</a>
-                  <a href="/classroom/topics/culture" class="badge bg-light border {{ section_border_class }} {{ section_text_class }} m-1 text-decoration-none">Culture</a>
-                  <a href="/classroom/topics/heritage" class="badge bg-light border {{ section_border_class }} {{ section_text_class }} m-1 text-decoration-none">Heritage</a>
-                {% endif %}
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        {# Main content grid #}
-        <div class="col-lg-9">
-          {% if title %}
-            <h2 class="h3 mb-4 {{ section_text_class }}">{{ title }}</h2>
-          {% endif %}
-          
-          {% if rows %}
-            <div class="saho-classroom-grid">
-              {{ rows }}
-            </div>
-          {% elseif empty %}
-            <div class="saho-classroom-empty alert alert-info">
-              {{ empty }}
-            </div>
-          {% endif %}
-          
-          {% if pager %}
-            <nav class="saho-landing-pager" role="navigation" aria-label="{{ 'Pagination'|t }}">
-              {{ pager }}
-            </nav>
-          {% endif %}
-          
-          {% if more %}
-            <div class="saho-classroom-more mt-4 text-center">
-              {{ more }}
-            </div>
-          {% endif %}
-        </div>
+  {# Grade / phase selector (wf08): BEF-links exposed filters as tag chips. #}
+  <nav class="saho-classroom-hub__grades" aria-label="Filter by grade">
+    {{ exposed }}
+  </nav>
+
+  {# Curriculum-aligned collections: ArchiveCard grid. #}
+  <section class="saho-classroom-hub__collections">
+    {% include 'saho:saho-section-heading' with {
+      title: 'Curriculum-aligned material',
+      level: 'h3',
+    } only %}
+
+    {% if classroom_cards is not empty %}
+      <div class="saho-card-grid saho-card-grid--columns-three">
+        {% for card in classroom_cards %}
+          {% include 'saho:saho-archive-card' with card only %}
+        {% endfor %}
       </div>
-    </div>
+    {% else %}
+      <p class="saho-classroom-hub__empty">No classroom material matches this filter yet.</p>
+      {% if empty %}
+        <div class="saho-classroom-hub__empty-view">{{ empty }}</div>
+      {% endif %}
+    {% endif %}
+
+    {% if pager %}
+      <div class="saho-classroom-hub__pager">
+        {{ pager }}
+      </div>
+    {% endif %}
   </section>
+
+  {# Two-up bottom row (wf08): classroom guidance + lesson packs. #}
+  <div class="saho-classroom-hub__extras">
+    <article class="saho-classroom-hub__extra">
+      <h3 class="saho-classroom-hub__extra-title">How to use the archive in class</h3>
+      <p class="saho-classroom-hub__extra-copy">Every record here cites its sources - ask learners to follow the citations and weigh who wrote them, and why. Set two records on the same event side by side and compare the accounts. Provenance matters: where a document comes from is part of what it says.</p>
+      <ul class="saho-classroom-hub__extra-links">
+        <li><a href="/archives">Browse the archive</a></li>
+      </ul>
+    </article>
+    <article class="saho-classroom-hub__extra">
+      <h3 class="saho-classroom-hub__extra-title">Downloadable lesson packs</h3>
+      <p class="saho-classroom-hub__extra-copy">CAPS curriculum documents and printable source packs, ready to take into the classroom.</p>
+      <ul class="saho-classroom-hub__extra-links">
+        <li><a href="/caps-documents">CAPS documents</a></li>
+        <li><a href="/aids-resources">Teaching and learning aids</a></li>
+      </ul>
+    </article>
+  </div>
+
 </div>

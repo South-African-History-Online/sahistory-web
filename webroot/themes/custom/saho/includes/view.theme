@@ -537,3 +537,88 @@ function saho_preprocess_views_view__saho_landing(array &$variables) {
   $variables['#attached']['library'][] = 'saho/saho-archive-card';
   $variables['#cache']['contexts'][] = 'url.query_args:layout';
 }
+
+/**
+ * Implements hook_preprocess_views_view() for the classroom view (page_1).
+ */
+function saho_preprocess_views_view__classroom__page_1(array &$variables) {
+  // The theme registry only runs base-hook + exact-suggestion preprocess when
+  // a more specific template exists, so the page display needs this wrapper.
+  saho_preprocess_views_view__classroom($variables);
+}
+
+/**
+ * Builds the Open Record classroom / educator landing (wireframe wf08).
+ *
+ * Shapes every result row into archive-card SDC props (classroom_cards):
+ * classroom resource bundles borrow the article accent, the meta line shows
+ * the resource-type term when set (bundle label otherwise), and images run
+ * through the shared per-bundle image resolver with the archival duotone.
+ */
+function saho_preprocess_views_view__classroom(array &$variables) {
+  $date_formatter = \Drupal::service('date.formatter');
+  $node_type_storage = \Drupal::entityTypeManager()->getStorage('node_type');
+
+  // Bundles renamed for display accents.
+  $type_map = ['upcomingevent' => 'event', 'book' => 'archive'];
+  // Types the archive-card SDC accepts; classroom resource bundles
+  // (presentation, worksheet, activity, quiz, classroom_clip) and anything
+  // else outside the enum fall back to the article accent for now.
+  $card_types = ['article', 'biography', 'place', 'archive', 'event', 'topic'];
+
+  $classroom_cards = [];
+  $bundle_labels = [];
+  foreach ($variables['view']->result as $row) {
+    $node = _saho_search_result_node($row);
+    if (!$node || !$node->isPublished()) {
+      continue;
+    }
+    $bundle = $node->bundle();
+    $type = $type_map[$bundle] ?? $bundle;
+
+    // Meta line: the resource-type term label when the field is populated,
+    // the bundle label otherwise.
+    $meta = '';
+    if ($node->hasField('field_classroom_resource_type') && !$node->get('field_classroom_resource_type')->isEmpty()) {
+      $term = $node->get('field_classroom_resource_type')->entity;
+      if ($term) {
+        $meta = (string) $term->label();
+      }
+    }
+    if ($meta === '') {
+      if (!isset($bundle_labels[$bundle])) {
+        $node_type = $node_type_storage->load($bundle);
+        $bundle_labels[$bundle] = $node_type ? (string) $node_type->label() : ucfirst($bundle);
+      }
+      $meta = $bundle_labels[$bundle];
+    }
+
+    // Excerpt: trimmed plain-text body.
+    $excerpt = '';
+    if ($node->hasField('body') && !$node->get('body')->isEmpty()) {
+      $excerpt = trim(strip_tags((string) $node->get('body')->value));
+    }
+    $excerpt = Unicode::truncate(html_entity_decode($excerpt, ENT_QUOTES), 140, TRUE, TRUE);
+
+    $image = _saho_search_result_image($node);
+    $classroom_cards[] = [
+      'type' => in_array($type, $card_types, TRUE) ? $type : 'article',
+      'title' => $node->label(),
+      'href' => $node->toUrl()->toString(),
+      'excerpt' => $excerpt,
+      'dates' => $date_formatter->format($node->getCreatedTime(), 'custom', 'j M Y'),
+      'meta' => $meta,
+      'image' => $image['url'] ?? '',
+      'image_alt' => $image['alt'],
+      'duotone' => TRUE,
+    ];
+  }
+
+  $variables['classroom_cards'] = $classroom_cards;
+  $variables['result_total'] = number_format((int) ($variables['view']->total_rows ?? count($variables['view']->result)));
+
+  $variables['#attached']['library'][] = 'saho/saho-archive-card';
+  $variables['#attached']['library'][] = 'saho/saho-card-grid';
+  $variables['#attached']['library'][] = 'saho/saho-tag';
+  $variables['#attached']['library'][] = 'saho/saho-section-heading';
+}

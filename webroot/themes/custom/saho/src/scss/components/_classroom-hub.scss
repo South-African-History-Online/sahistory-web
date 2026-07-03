@@ -1,0 +1,175 @@
+// =============================================================================
+// SAHO 2027 "Open Record" - /classroom educator landing (wireframe wf08)
+// =============================================================================
+// Header on a 3px --type-article accent edge, BEF-links exposed filters as
+// square tag chips, archive-card collections grid, two-up bordered extras.
+// Paper/ink, square corners, borders not shadows, mono for labels and meta.
+
+.saho-classroom-hub {
+  padding-block: var(--space-6) var(--space-8);
+}
+
+// ---- Header: accent top edge, Caslon title, serif intro, mono count ----
+.saho-classroom-hub__head {
+  margin-bottom: var(--space-6);
+  padding-top: var(--space-4);
+  border-top: var(--bw-accent) solid var(--type-article);
+}
+
+.saho-classroom-hub__title {
+  margin: 0 0 var(--space-3);
+}
+
+.saho-classroom-hub__intro {
+  margin: 0 0 var(--space-2);
+  max-width: 60ch;
+  font-family: var(--font-serif);
+  color: var(--text-muted);
+}
+
+.saho-classroom-hub__count {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+// ---- Grade / phase selector: BEF-links filters as square tag chips ----
+.saho-classroom-hub__grades {
+  margin-bottom: var(--space-6);
+  padding: var(--space-4);
+  border: var(--bw-hair) solid var(--border-default);
+  background: var(--surface-card);
+
+  .form-item {
+    margin: 0 0 var(--space-3);
+  }
+  .form-item:last-of-type {
+    margin-bottom: 0;
+  }
+
+  // Filter labels (Grade, Resource type) as mono apparatus headings.
+  .form-label {
+    display: block;
+    margin-bottom: var(--space-2);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: var(--fw-semibold);
+    letter-spacing: var(--ls-wide);
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  // Flatten the (nested) BEF link lists into one wrapping chip row.
+  .bef-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+  .bef-links ul,
+  .bef-links li {
+    display: contents;
+    list-style: none;
+  }
+
+  .bef-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2rem;
+    padding: var(--space-1) var(--space-3);
+    border: var(--bw-hair) solid var(--border-default);
+    background: var(--saho-paper);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: var(--ls-label);
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--text-primary);
+    transition: border-color var(--t-fast), background var(--t-fast);
+  }
+
+  .bef-link:hover {
+    border-color: var(--border-strong);
+    color: var(--text-primary);
+  }
+
+  .bef-link--selected,
+  .bef-link--selected:hover {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--text-on-accent);
+  }
+}
+
+// ---- Collections grid + pager ----
+.saho-classroom-hub__collections {
+  margin-bottom: var(--space-7);
+}
+.saho-classroom-hub__pager {
+  margin-top: var(--space-5);
+}
+
+.saho-classroom-hub__empty {
+  margin: var(--space-4) 0 0;
+  font-family: var(--font-serif);
+  color: var(--text-muted);
+}
+
+// ---- Two-up extras: square bordered paper cards, mono headings ----
+.saho-classroom-hub__extras {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+.saho-classroom-hub__extra {
+  padding: var(--space-4);
+  border: var(--bw-hair) solid var(--border-default);
+  background: var(--surface-card);
+}
+
+.saho-classroom-hub__extra-title {
+  margin: 0 0 var(--space-3);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: var(--fw-semibold);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.saho-classroom-hub__extra-copy {
+  margin: 0 0 var(--space-3);
+  font-family: var(--font-serif);
+  color: var(--text-primary);
+}
+
+.saho-classroom-hub__extra-links {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li + li {
+    margin-top: var(--space-2);
+  }
+
+  a {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--accent);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+}
+
+// ---- Mobile: one column, >=44px chip hit targets ----
+@media (max-width: 40rem) {
+  .saho-classroom-hub__extras {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .saho-classroom-hub__grades .bef-link {
+    min-height: 44px;
+  }
+}

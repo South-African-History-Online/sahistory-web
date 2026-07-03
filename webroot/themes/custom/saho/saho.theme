@@ -825,7 +825,13 @@ function saho_preprocess_page(array &$variables) {
  */
 function saho_preprocess_page_title(array &$variables): void {
   $route_match = \Drupal::routeMatch();
-  if ($route_match->getRouteName() !== 'entity.node.canonical') {
+  $route_name = $route_match->getRouteName();
+  // The wf08 classroom hub header owns its H1.
+  if ($route_name === 'view.classroom.page_1') {
+    $variables['title'] = '';
+    return;
+  }
+  if ($route_name !== 'entity.node.canonical') {
     return;
   }
   $node = $route_match->getParameter('node');
