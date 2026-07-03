@@ -158,7 +158,7 @@ display:
         options:
           offset: 0
           pagination_heading_level: h4
-          items_per_page: 15
+          items_per_page: 24
           total_pages: null
           id: 0
           tags:
@@ -178,15 +178,11 @@ display:
       exposed_form:
         type: bef
         options:
-          submit_button: Apply
-          reset_button: false
+          submit_button: Filter
+          reset_button: true
           reset_button_label: Reset
           exposed_sorts_label: 'Sort by'
-          expose_sort_order: true
-          sort_asc_label: Asc
-          sort_desc_label: Desc
-          text_input_required: 'Select any filter and click on Apply to see results'
-          text_input_required_format: full_html
+          expose_sort_order: false
           bef:
             general:
               autosubmit: true
@@ -200,10 +196,10 @@ display:
               secondary_open: false
               reset_button_always_show: false
             filter:
-              tid_1:
-                plugin_id: bef
+              grade:
+                plugin_id: bef_links
                 advanced:
-                  sort_options: true
+                  sort_options: false
                   rewrite:
                     filter_rewrite_values: ''
                     filter_rewrite_values_key: false
@@ -211,7 +207,23 @@ display:
                   collapsible_disable_automatic_open: false
                   is_secondary: false
                   hide_label: false
-                  sort_options_order: count_desc
+                select_all_none: false
+                select_all_none_nested: false
+                display_inline: true
+              resource_type:
+                plugin_id: bef_links
+                advanced:
+                  sort_options: false
+                  rewrite:
+                    filter_rewrite_values: ''
+                    filter_rewrite_values_key: false
+                  collapsible: false
+                  collapsible_disable_automatic_open: false
+                  is_secondary: false
+                  hide_label: false
+                select_all_none: false
+                select_all_none_nested: false
+                display_inline: true
       access:
         type: perm
         options:
@@ -225,18 +237,11 @@ display:
           id: changed
           table: node_field_data
           field: changed
-          relationship: none
-          group_type: group
-          admin_label: ''
           entity_type: node
           entity_field: changed
           plugin_id: date
           order: DESC
-          expose:
-            label: ''
-            field_identifier: ''
           exposed: false
-          granularity: second
       arguments: {  }
       filters:
         status:
@@ -250,123 +255,27 @@ display:
           group: 1
           expose:
             operator: ''
-        type:
-          id: type
-          table: node_field_data
-          field: type
-          relationship: none
-          group_type: group
-          admin_label: ''
-          entity_type: node
-          entity_field: type
-          plugin_id: bundle
-          operator: in
-          value:
-            article: article
-          group: 1
-          exposed: false
-          expose:
-            operator_id: ''
-            label: ''
-            description: ''
-            use_operator: false
-            operator: ''
-            operator_limit_selection: false
-            operator_list: {  }
-            identifier: ''
-            required: false
-            remember: false
-            multiple: false
-            remember_roles:
-              authenticated: authenticated
-            reduce: false
-          is_grouped: false
-          group_info:
-            label: ''
-            description: ''
-            identifier: ''
-            optional: true
-            widget: select
-            multiple: false
-            remember: false
-            default_group: All
-            default_group_multiple: {  }
-            group_items: {  }
-        tid:
-          id: tid
-          table: taxonomy_index
-          field: tid
+        field_classroom_grade_target_id:
+          id: field_classroom_grade_target_id
+          table: node__field_classroom_grade
+          field: field_classroom_grade_target_id
           relationship: none
           group_type: group
           admin_label: ''
           plugin_id: taxonomy_index_tid
-          operator: or
-          value:
-            35614: 35614
-            35615: 35615
-            35616: 35616
-            35617: 35617
-            35618: 35618
-            35619: 35619
-            35620: 35620
-            35621: 35621
-            35622: 35622
-          group: 1
-          exposed: false
-          expose:
-            operator_id: tid_op
-            label: 'Arts & Culture Categories'
-            description: ''
-            use_operator: false
-            operator: tid_op
-            operator_limit_selection: false
-            operator_list: {  }
-            identifier: tid
-            required: false
-            remember: false
-            multiple: true
-            remember_roles:
-              authenticated: authenticated
-            reduce: true
-          is_grouped: false
-          group_info:
-            label: ''
-            description: ''
-            identifier: ''
-            optional: true
-            widget: select
-            multiple: false
-            remember: false
-            default_group: All
-            default_group_multiple: {  }
-            group_items: {  }
-          reduce_duplicates: true
-          vid: classroom
-          type: select
-          hierarchy: false
-          limit: true
-          error_message: false
-        tid_1:
-          id: tid_1
-          table: taxonomy_index
-          field: tid
-          relationship: none
-          group_type: group
-          admin_label: ''
-          plugin_id: taxonomy_index_tid
-          operator: or
+          operator: 'not empty'
           value: {  }
           group: 1
-          exposed: true
+          exposed: false
           expose:
-            operator_id: tid_1_op
-            label: 'Classroom Categories'
+            operator_id: field_classroom_grade_target_id_op
+            label: ''
             description: ''
             use_operator: false
-            operator: tid_1_op
+            operator: field_classroom_grade_target_id_op
             operator_limit_selection: false
             operator_list: {  }
-            identifier: tid_1
+            identifier: field_classroom_grade_target_id
             required: false
             remember: false
             multiple: true
@@ -386,7 +295,97 @@ display:
             default_group_multiple: {  }
             group_items: {  }
           reduce_duplicates: false
-          vid: classroom
+          vid: classroom_grade
+          type: select
+          hierarchy: false
+          limit: true
+          error_message: false
+        grade:
+          id: grade
+          table: node__field_classroom_grade
+          field: field_classroom_grade_target_id
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: taxonomy_index_tid
+          operator: or
+          value: {  }
+          group: 1
+          exposed: true
+          expose:
+            operator_id: grade_op
+            label: Grade
+            description: ''
+            use_operator: false
+            operator: grade_op
+            operator_limit_selection: false
+            operator_list: {  }
+            identifier: grade
+            required: false
+            remember: false
+            multiple: true
+            remember_roles:
+              authenticated: authenticated
+            reduce: false
+          is_grouped: false
+          group_info:
+            label: ''
+            description: ''
+            identifier: ''
+            optional: true
+            widget: select
+            multiple: false
+            remember: false
+            default_group: All
+            default_group_multiple: {  }
+            group_items: {  }
+          reduce_duplicates: false
+          vid: classroom_grade
+          type: select
+          hierarchy: true
+          limit: true
+          error_message: false
+        resource_type:
+          id: resource_type
+          table: node__field_classroom_resource_type
+          field: field_classroom_resource_type_target_id
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: taxonomy_index_tid
+          operator: or
+          value: {  }
+          group: 1
+          exposed: true
+          expose:
+            operator_id: resource_type_op
+            label: 'Resource type'
+            description: ''
+            use_operator: false
+            operator: resource_type_op
+            operator_limit_selection: false
+            operator_list: {  }
+            identifier: resource_type
+            required: false
+            remember: false
+            multiple: true
+            remember_roles:
+              authenticated: authenticated
+            reduce: false
+          is_grouped: false
+          group_info:
+            label: ''
+            description: ''
+            identifier: ''
+            optional: true
+            widget: select
+            multiple: false
+            remember: false
+            default_group: All
+            default_group_multiple: {  }
+            group_items: {  }
+          reduce_duplicates: false
+          vid: classroom_resource_type
           type: select
           hierarchy: false
           limit: true
