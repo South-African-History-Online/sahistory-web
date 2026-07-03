@@ -34,7 +34,7 @@ final class RefController extends ControllerBase {
   }
 
   /**
-   * 301-redirects a display reference to the referenced node.
+   * Permanently redirects (301) a display reference to its node.
    *
    * @param string $ref
    *   The display reference (e.g. "B-0085550").
