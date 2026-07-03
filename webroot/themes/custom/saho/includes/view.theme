@@ -743,29 +743,21 @@ function saho_preprocess_views_view__saho_classroom_topic(array &$variables) {
 }
 
 /**
- * Implements hook_preprocess_views_view() for the biographies view (page_1).
- */
-function saho_preprocess_views_view__biographies__page_1(array &$variables) {
-  // The theme registry only runs base-hook + exact-suggestion preprocess when
-  // a more specific template exists, so the page display needs this wrapper.
-  saho_preprocess_views_view__biographies($variables);
-}
-
-/**
- * Builds the Open Record landing shell for /biographies (wireframe wf02).
+ * Exact-suggestion wrapper for the shared landing shell template.
  *
- * Same results contract as saho_preprocess_views_view__saho_landing():
- * index-table columns/rows plus archive-card props for every biography row
- * behind the shared table/cards toggle. Deliberately duplicated from the
- * saho_landing preprocess (a follow-up will unify the two into one shared
- * builder); the exposed BEF category checkboxes render as a chip rail.
+ * The theme registry only runs base-hook + exact-suggestion preprocess when
+ * a more specific template exists.
  */
-function saho_preprocess_views_view__biographies(array &$variables) {
+function saho_preprocess_views_view__saho_landing_shell(array &$variables): void {
   /** @var \Drupal\saho_refs\DisplayRefService $refs */
   $refs = \Drupal::service('saho_refs.display_ref');
+  $date_formatter = \Drupal::service('date.formatter');
+  $known_types = ['article', 'biography', 'place', 'archive', 'event', 'topic'];
+  $bundle_map = ['upcomingevent' => 'event', 'book' => 'archive'];
 
-  $variables['landing_type'] = 'biography';
-  $variables['landing_label'] = 'Biographies';
+  [$type, $label] = _saho_landing_shell_map()[$variables['view']->id()] ?? ['article', 'Records'];
+  $variables['landing_type'] = $type;
+  $variables['landing_label'] = $label;
   $variables['landing_count'] = number_format((int) ($variables['view']->total_rows ?? count($variables['view']->result)));
 
   $variables['record_columns'] = [
@@ -780,24 +772,30 @@ function saho_preprocess_views_view__biographies(array &$variables) {
   $record_cards = [];
   foreach ($variables['view']->result as $row) {
     $node = $row->_entity ?? NULL;
-    if (!$node instanceof NodeInterface || !$node->isPublished()) {
+    if (!$node instanceof NodeInterface || !$node->isPublished() || $node->bundle() === 'product') {
       continue;
     }
+    $bundle = $bundle_map[$node->bundle()] ?? $node->bundle();
+    $row_type = in_array($bundle, $known_types, TRUE) ? $bundle : 'article';
 
-    // Dates: biography lifespans are verbatim free-text strings (never
-    // date-formatted).
-    $span = [];
-    foreach (['field_dob', 'field_dod'] as $date_field) {
-      if ($node->hasField($date_field) && !$node->get($date_field)->isEmpty()) {
-        $value = trim((string) $node->get($date_field)->value);
-        if ($value !== '') {
-          $span[] = $value;
+    // Dates: biography lifespans stay verbatim free-text strings (never
+    // date-formatted); everything else shows the created date.
+    if ($node->bundle() === 'biography') {
+      $span = [];
+      foreach (['field_dob', 'field_dod'] as $date_field) {
+        if ($node->hasField($date_field) && !$node->get($date_field)->isEmpty()) {
+          $value = trim((string) $node->get($date_field)->value);
+          if ($value !== '') {
+            $span[] = $value;
+          }
         }
       }
+      $dates = implode('-', $span);
     }
-    $dates = implode('-', $span);
+    else {
+      $dates = $date_formatter->format((int) $node->getCreatedTime(), 'custom', 'j M Y');
+    }
 
-    // Src column: a mono check mark when the record cites a source.
     $has_source = $node->hasField('field_ref_str')
       && !$node->get('field_ref_str')->isEmpty()
       && trim((string) $node->get('field_ref_str')->value) !== '';
@@ -807,14 +805,13 @@ function saho_preprocess_views_view__biographies(array &$variables) {
 
     $record_rows[] = [
       'ref' => $ref,
-      'type' => 'biography',
+      'type' => $row_type,
       'title' => $node->label(),
       'href' => $href,
       'dates' => $dates,
       'src' => $has_source ? "\u{2713}" : '-',
     ];
 
-    // Excerpt: trimmed plain-text body (plain node rows have no Solr excerpt).
     $excerpt = '';
     if ($node->hasField('body') && !$node->get('body')->isEmpty()) {
       $excerpt = trim(strip_tags((string) $node->get('body')->value));
@@ -823,7 +820,7 @@ function saho_preprocess_views_view__biographies(array &$variables) {
 
     $image = _saho_search_result_image($node);
     $record_cards[] = [
-      'type' => 'biography',
+      'type' => $row_type,
       'title' => $node->label(),
       'href' => $href,
       'excerpt' => $excerpt,
@@ -844,4 +841,22 @@ function saho_preprocess_views_view__biographies(array &$variables) {
   $variables['#attached']['library'][] = 'saho/saho-archive-card';
   $variables['#attached']['library'][] = 'saho/saho-card-grid';
   $variables['#cache']['contexts'][] = 'url.query_args:layout';
+}
+
+/**
+ * Section landings rendered through the shared Open Record shell.
+ *
+ * @return array
+ *   View id => [accent type, section label].
+ */
+function _saho_landing_shell_map(): array {
+  return [
+    'biographies' => ['biography', 'Biographies'],
+    'timelines' => ['event', 'Timelines'],
+    'places' => ['place', 'Places'],
+    'politics_society' => ['topic', 'Politics & Society'],
+    'art_culture' => ['topic', 'Art & Culture'],
+    'africa' => ['topic', 'Africa'],
+    'archive_pages' => ['archive', 'Archive'],
+  ];
 }

@@ -1206,31 +1206,22 @@ function saho_theme($existing, $type, $theme, $path) {
  */
 function saho_theme_suggestions_views_view_alter(array &$suggestions, array $variables) {
   $view = $variables['view'];
-  
-  // Check if this is one of our main section landing pages.
-  // 'biographies' is intentionally absent: /biographies renders the Open
-  // Record shell via views-view--biographies.html.twig, which the appended
-  // views_view__landing_page suggestion would otherwise always outrank.
-  $landing_page_views = [
-    'politics_society',
-    'art_culture',
-    'africa',
-    'places',
-    'timelines'
-  ];
 
-  // Add specific suggestions for specialized sections
+  // Section landings share the Open Record shell (wf02): one template, one
+  // preprocess, per-view accent/label from _saho_landing_shell_map(). Only
+  // the page_1 displays roll on; other displays (blocks, collections/%)
+  // keep their own templates.
+  if (array_key_exists($view->id(), _saho_landing_shell_map()) && $view->current_display === 'page_1') {
+    $suggestions[] = 'views_view__saho_landing_shell';
+    return;
+  }
+
+  // Specific suggestions for specialized sections.
   if ($view->id() == 'archives') {
-    // Add archives-specific template suggestion
     $suggestions[] = 'views_view__archives';
   }
   elseif ($view->id() == 'classroom') {
-    // Add classroom-specific template suggestion
     $suggestions[] = 'views_view__classroom';
-  }
-  elseif (in_array($view->id(), $landing_page_views)) {
-    // Add our generic landing page template suggestion for other sections
-    $suggestions[] = 'views_view__landing_page';
   }
 }
 
