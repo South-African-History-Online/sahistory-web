@@ -449,7 +449,7 @@ function saho_classroom_render_list(array $items, bool $ordered, string $indent 
   }
   $tag = $ordered ? 'ol' : 'ul';
   $lis = array_map(static fn($i) => $indent . '  <li>' . saho_classroom_inline($i) . '</li>', $items);
-  return $indent . "<{$tag}>" . "\n" . implode("\n", $lis) . "\n" . $indent . "</{$tag}>";
+  return $indent . "<{$tag}>\n" . implode("\n", $lis) . "\n" . $indent . "</{$tag}>";
 }
 
 /**
@@ -617,7 +617,7 @@ function saho_classroom_inline(string $text): string {
     $label = $m[1];
     $url = $m[2];
     // Only allow safe schemes; reject javascript: and friends.
-    if (!preg_match('#^(https?:|mailto:|#|/|\.)#i', html_entity_decode($url, ENT_QUOTES, 'UTF-8'))) {
+    if (!preg_match('~^(https?:|mailto:|#|/|\.)~i', html_entity_decode($url, ENT_QUOTES, 'UTF-8'))) {
       return $label;
     }
     return '<a href="' . $url . '">' . $label . '</a>';
