@@ -6,6 +6,7 @@ namespace Drupal\saho_classroom;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Extension\ModuleExtensionList;
+use Drupal\Core\Language\LanguageManagerInterface;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\Logger\LoggerChannelInterface;
 use Drupal\node\NodeInterface;
@@ -50,11 +51,14 @@ final class DeckSync {
    *   The module extension list.
    * @param \Drupal\Core\Logger\LoggerChannelFactoryInterface $loggerFactory
    *   The logger channel factory.
+   * @param \Drupal\Core\Language\LanguageManagerInterface $languageManager
+   *   The language manager.
    */
   public function __construct(
     private readonly EntityTypeManagerInterface $entityTypeManager,
     ModuleExtensionList $moduleList,
     LoggerChannelFactoryInterface $loggerFactory,
+    private readonly LanguageManagerInterface $languageManager,
   ) {
     $this->logger = $loggerFactory->get('saho_classroom');
     $this->modulePath = $moduleList->getPath('saho_classroom');
@@ -101,11 +105,25 @@ final class DeckSync {
    */
   private function findDecks(string $dir): array {
     $found = [];
+    // Language-variant files (<name>.<langcode>.slides.json) are translations of
+    // a base deck, handled in applyTranslations - not standalone decks.
+    $langcodes = array_keys($this->languageManager->getLanguages());
     $iterator = new \RecursiveIteratorIterator(
       new \RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS)
     );
     foreach ($iterator as $file) {
-      if ($file->isFile() && str_ends_with($file->getFilename(), '.slides.json')) {
+      if (!$file->isFile() || !str_ends_with($file->getFilename(), '.slides.json')) {
+        continue;
+      }
+      $stem = substr($file->getFilename(), 0, -strlen('.slides.json'));
+      $is_variant = FALSE;
+      foreach ($langcodes as $lc) {
+        if (str_ends_with($stem, '.' . $lc)) {
+          $is_variant = TRUE;
+          break;
+        }
+      }
+      if (!$is_variant) {
         $found[] = $file->getPathname();
       }
     }
@@ -137,7 +155,12 @@ final class DeckSync {
     $is_new = $node === NULL;
 
     if ($is_new) {
-      $node = $storage->create(['type' => 'presentation', 'uuid' => $uuid, 'uid' => 1]);
+      $node = $storage->create([
+        'type' => 'presentation',
+        'uuid' => $uuid,
+        'uid' => 1,
+        'langcode' => $data['language'] ?? 'en',
+      ]);
     }
 
     $node->set('title', (string) ($data['title'] ?? $id));
@@ -154,7 +177,51 @@ final class DeckSync {
     $node->set('status', $approved ? NodeInterface::PUBLISHED : NodeInterface::NOT_PUBLISHED);
     $node->save();
 
+    $this->applyTranslations($node, $path);
+
     return $is_new ? 'created' : 'updated';
+  }
+
+  /**
+   * Attaches <deck>.<langcode>.slides.json variants as node translations.
+   *
+   * @param \Drupal\node\NodeInterface $node
+   *   The base (source-language) presentation node.
+   * @param string $basePath
+   *   Absolute path to the base deck's .slides.json file.
+   */
+  private function applyTranslations(NodeInterface $node, string $basePath): void {
+    $dir = dirname($basePath);
+    $stem = basename($basePath, '.slides.json');
+    $source = $node->language()->getId();
+    $changed = FALSE;
+    foreach ($this->languageManager->getLanguages() as $langcode => $language) {
+      if ($langcode === $source) {
+        continue;
+      }
+      $file = $dir . '/' . $stem . '.' . $langcode . '.slides.json';
+      if (!is_file($file)) {
+        continue;
+      }
+      try {
+        $raw = file_get_contents($file);
+        $data = json_decode($raw, TRUE, 512, JSON_THROW_ON_ERROR);
+      }
+      catch (\Throwable $e) {
+        $this->logger->error('Translation @file invalid: @m', ['@file' => $file, '@m' => $e->getMessage()]);
+        continue;
+      }
+      $translation = $node->hasTranslation($langcode)
+        ? $node->getTranslation($langcode)
+        : $node->addTranslation($langcode);
+      $translation->set('title', (string) ($data['title'] ?? $node->getTitle()));
+      $translation->set('field_slide_schema', $raw);
+      $translation->set('status', $node->isPublished());
+      $changed = TRUE;
+    }
+    if ($changed) {
+      $node->save();
+    }
   }
 
   /**
