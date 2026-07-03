@@ -21,28 +21,17 @@
 .saho-context-sections {
   margin: var(--saho-space-6) 0;
 
-  > h2 {
-    font-size: var(--saho-font-size-2xl);
-    font-weight: 600;
-    color: var(--saho-color-text-primary);
-    margin-bottom: 2rem;
-    padding-bottom: 0.75rem;
-    border-bottom: 3px solid var(--saho-color-primary);
-    position: relative;
-
-    &::after {
-      content: "";
-      position: absolute;
-      bottom: -3px;
-      left: 0;
-      width: 60px;
-      height: 3px;
-      background: linear-gradient(
-        135deg,
-        var(--saho-color-primary) 0%,
-        var(--saho-color-primary-dark) 100%
-      );
-    }
+  // Open Record heading: Caslon over a plain ink rule, no gradient snippet.
+  > h2,
+  > h3 {
+    font-family: var(--font-display);
+    font-size: var(--fs-h3, 1.6rem);
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--border-strong, var(--saho-ink));
+    position: static;
   }
 }
 
@@ -736,30 +725,29 @@
   }
 
   // Related content section specific styling
+  // Open Record: an unboxed section with a ruled Caslon heading - the cards
+  // carry their own frames.
   .saho-related-content-section {
     margin: 2.5rem 0;
-    background: var(--saho-color-white);
-    border-radius: 0.75rem;
-    box-shadow: 0 2px 12px var(--saho-color-black-alpha-10);
-    border: 1px solid var(--saho-color-border);
-    overflow: hidden;
+    background: none;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    overflow: visible;
 
     h4 {
-      font-size: 1.5rem;
+      font-family: var(--font-display);
+      font-size: 1.4rem;
       font-weight: 700;
-      color: var(--saho-color-primary);
-      margin: 0;
-      padding: 1.25rem 1.5rem;
-      background: linear-gradient(
-        135deg,
-        var(--saho-color-primary-alpha-05, #fef2f2) 0%,
-        var(--saho-color-primary-alpha-03, #fef7f7) 100%
-      );
-      border-bottom: 1px solid var(--saho-color-border);
+      color: var(--text-primary);
+      margin: 0 0 1rem;
+      padding: 0 0 0.5rem;
+      background: none;
+      border-bottom: 2px solid var(--border-strong, var(--saho-ink));
     }
 
     .saho-cards-grid {
-      padding: 1.5rem;
+      padding: 0;
     }
   }
 
@@ -771,17 +759,19 @@
     margin: 0;
 
     .saho-card {
-      background: var(--saho-color-white);
-      border-radius: 0.5rem;
+      background: var(--surface-card, var(--saho-paper-raised));
+      border-radius: 0;
       overflow: hidden;
-      box-shadow: 0 2px 8px var(--saho-color-black-alpha-10);
-      border: 1px solid var(--saho-color-border);
-      transition: all 0.3s ease;
+      box-shadow: none;
+      border: 1px solid var(--border-default);
+      transition: border-color 0.2s ease, background-color 0.2s ease;
 
+      // Hover selects, it does not lift.
       &:hover {
-        transform: translateY(-4px);
-        box-shadow: var(--saho-shadow-xl);
-        border-color: var(--saho-color-primary);
+        transform: none;
+        box-shadow: none;
+        border-color: var(--saho-ink);
+        background-color: var(--saho-paper-sunk, #dad6c7);
       }
 
       .saho-card-link {

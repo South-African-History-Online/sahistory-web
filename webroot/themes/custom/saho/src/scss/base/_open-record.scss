@@ -49,8 +49,11 @@
 
 // --- Borders do the structural work, not shadows ---------------------------
 // Cards/records read as filed sheets: hairline frame, square, no elevation.
+// Only card ROOTS get the frame: descendants whose class merely contains
+// "-card" (title/description/footer/image wrappers) and grid containers
+// must not each grow their own box.
 .card,
-[class*="-card"],
+[class*="-card"]:not([class*="-card"] *):not([class*="grid"]),
 .glass-card,
 .tile {
   &:not(.rounded-circle) {
@@ -76,7 +79,7 @@
 // The DS rule: on hover a record darkens its border to ink and drops to the
 // sunk ground; it never translates, scales, or glows. An archive is still.
 .card,
-[class*="-card"],
+[class*="-card"]:not([class*="-card"] *):not([class*="grid"]),
 .tile,
 .block-card,
 .saho-card,
