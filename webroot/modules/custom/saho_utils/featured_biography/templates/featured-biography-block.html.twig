@@ -2,81 +2,88 @@
 /**
  * @file
  * Featured biography block template.
+ *
+ * Open Record 2027 idiom: archive index cards on paper with the biography
+ * accent edge, duotone portraits, mono dates line and a display-font title.
+ * When a portrait is missing we show a plain sunk surface with a mono
+ * initial - never a gradient placeholder.
+ *
+ * JS hooks preserved (featured-biography.js): .featured-biography-block,
+ * .enable-carousel, .saho-cards-grid, .saho-card, .saho-card--demo,
+ * .featured-biography-carousel-controls, .featured-bio-prev-btn,
+ * .featured-bio-next-btn, .featured-bio-indicators, .featured-bio-indicator.
  */
 #}
-<div class="featured-biography-block{% if enable_carousel %} enable-carousel{% endif %}">
-  {# Add block title #}
-  <h2 class="block-title">{{ display_title }}</h2>
-  
+<div class="featured-biography-block saho-fbio{% if enable_carousel %} enable-carousel{% endif %}">
+  {% if display_title %}
+    <div class="saho-fbio__heading">
+      <h2 class="saho-fbio__title">{{ display_title }}</h2>
+    </div>
+  {% endif %}
+
   {% if block_description is not empty %}
-    <p class="block-description">{{ block_description }}</p>
+    <p class="saho-fbio__description">{{ block_description }}</p>
   {% endif %}
 
   {% if biography_data is defined and biography_data is not empty and biography_data.items is defined and biography_data.items is not empty %}
     {# Multiple biographies display #}
     <div class="saho-cards-grid">
       {% for item in biography_data.items %}
-        <div class="saho-card{% if item.is_demo %} saho-card--demo{% endif %}">
-          <a href="{{ item.url }}" class="saho-card-link">
-            <div class="saho-card-image">
-              {% if item.image %}
+        <div class="saho-card saho-fbio__card{% if item.is_demo %} saho-card--demo{% endif %}">
+          <a href="{{ item.url }}" class="saho-fbio__link">
+            {% if item.image %}
+              <div class="saho-fbio__media saho-duotone">
                 <img src="{{ item.image }}" alt="{{ item.title|striptags }}" loading="lazy" decoding="async" />
-              {% else %}
-                <div class="saho-card-image--placeholder">
-                  <i class="fas fa-user-circle fa-3x"></i>
-                </div>
-              {% endif %}
-            </div>
-            <div class="saho-card-content">
+              </div>
+            {% else %}
+              <div class="saho-fbio__media saho-fbio__media--empty" aria-hidden="true">
+                <span class="saho-fbio__initial">{{ item.title|striptags|trim|slice(0, 1)|upper }}</span>
+              </div>
+            {% endif %}
+            <div class="saho-fbio__body">
               {% if item.categories is defined and item.categories is not empty %}
                 {% for category in item.categories|slice(0, 1) %}
-                  <div class="saho-card-badge">{{ category.name }}</div>
+                  <p class="saho-fbio__eyebrow">{{ category.name }}</p>
                 {% endfor %}
+              {% else %}
+                <p class="saho-fbio__eyebrow">{{ 'Biography'|t }}</p>
               {% endif %}
-              <h3 class="saho-card-title">{{ item.title }}</h3>
+              <h3 class="saho-fbio__card-title">{{ item.title }}</h3>
               {% if item.dates %}
-                <div class="saho-card-subtitle">{{ item.dates }}</div>
+                <p class="saho-fbio__dates">{{ item.dates }}</p>
               {% endif %}
               {% if item.body %}
-                <div class="saho-card-description">
-                  {{ item.body|striptags|truncate(150, true, '...') }}
-                </div>
+                <p class="saho-fbio__excerpt">{{ item.body|striptags|truncate(150, true, '...') }}</p>
               {% endif %}
-              <div class="saho-card-footer">
-                <span class="saho-card-button">
-                  {{ 'Read biography'|t }}
-                  <i class="fas fa-arrow-right ml-2"></i>
-                </span>
-              </div>
             </div>
           </a>
         </div>
       {% endfor %}
     </div>
-    
+
     {% if enable_carousel and biography_data.items|length > 1 %}
       <div class="featured-biography-carousel-controls">
         <button class="featured-bio-prev-btn carousel-button" type="button"
           aria-label="{{ 'Previous biography'|t }}">
-          <i class="fas fa-chevron-left"></i>
+          <span aria-hidden="true">&larr;</span>
         </button>
         <div class="featured-bio-indicators">
           {% for i in 0..((biography_data.items|length / 3)|round(0, 'ceil') - 1) %}
-            <button 
-              class="featured-bio-indicator{% if loop.first %} active{% endif %}" 
+            <button
+              class="featured-bio-indicator{% if loop.first %} active{% endif %}"
               type="button"
-              data-slide-to="{{ i }}" 
+              data-slide-to="{{ i }}"
               aria-label="{{ 'Biography'|t }} {{ i + 1 }}"
             ></button>
           {% endfor %}
         </div>
         <button class="featured-bio-next-btn carousel-button" type="button"
           aria-label="{{ 'Next biography'|t }}">
-          <i class="fas fa-chevron-right"></i>
+          <span aria-hidden="true">&rarr;</span>
         </button>
       </div>
     {% endif %}
-    
+
   {% elseif biography_item is defined and biography_item is not empty %}
     {# Single biography display #}
     <div class="featured-biography-content">
@@ -84,12 +91,13 @@
         <div class="featured-biography-image">
           <a href="{{ biography_item.url }}">
             {% if biography_item.image %}
-              <img src="{{ biography_item.image }}" alt="{{ biography_item.title|striptags }}" loading="lazy" decoding="async" />
+              <span class="saho-duotone">
+                <img src="{{ biography_item.image }}" alt="{{ biography_item.title|striptags }}" loading="lazy" decoding="async" />
+              </span>
             {% else %}
-              {# Fallback placeholder for single biography #}
-              <div class="saho-card-image--placeholder" style="min-height: 200px; display: flex; align-items: center; justify-content: center; background: #f8f9fa;">
-                <i class="fas fa-user-circle fa-5x text-muted"></i>
-              </div>
+              <span class="saho-fbio__media saho-fbio__media--empty saho-fbio__media--single" aria-hidden="true">
+                <span class="saho-fbio__initial">{{ biography_item.title|striptags|trim|slice(0, 1)|upper }}</span>
+              </span>
             {% endif %}
           </a>
         </div>
@@ -117,9 +125,6 @@
               {{ biography_item.body|striptags|truncate(300, true, '...') }}
             </div>
           {% endif %}
-          <div class="featured-biography-read-more">
-            <a href="{{ biography_item.url }}" class="featured-biography-link">{{ 'Read biography'|t }}</a>
-          </div>
         </div>
       </div>
     </div>
@@ -129,7 +134,7 @@
       <p>{{ 'No featured biography available at this time.'|t }}</p>
     </div>
   {% endif %}
-  
+
   {% if show_admin_info %}
     <div class="featured-biography-admin-info">
       <h4>{{ 'Admin Information'|t }}</h4>

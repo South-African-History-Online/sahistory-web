@@ -1,15 +1,19 @@
 {#
 /**
  * @file
- * Theme implementation for the Educational Resources block.
+ * Theme implementation for the Educational Resources block (Open Record 2027).
+ *
+ * Resource types read as filed catalogue cards: square paper sheets with a
+ * hairline frame, the article (oxblood) accent edge, Caslon titles, serif
+ * descriptions and mono counts/labels. No icons, no gradients, no shadows.
  *
  * Available variables:
  * - resources: Array of resource data:
  *   - id: Resource type ID
  *   - label: Display label (e.g., "CAPS Documents")
  *   - description: Resource type description
- *   - icon: FontAwesome icon class
- *   - color: Hex color for resource type
+ *   - icon: FontAwesome icon class (unused in the Open Record idiom)
+ *   - color: Hex color for resource type (unused in the Open Record idiom)
  *   - count: Number of articles
  *   - featured_item: Featured/recent article title
  *   - url: Link to resource search/listing
@@ -24,17 +28,23 @@
 #}
 <div class="educational-resources-block">
   {% if block_title %}
-    <h2 class="block-title mb-3">{{ block_title }}</h2>
-  {% endif %}
-
-  {% if intro_text %}
-    <p class="block-intro text-muted mb-4">{{ intro_text }}</p>
+    <header class="edu-resources__header">
+      <p class="edu-resources__kicker">{{ 'For the classroom'|t }}</p>
+      <div class="edu-resources__header-row">
+        <h2 class="edu-resources__title">{{ block_title }}</h2>
+      </div>
+      {% if intro_text %}
+        <p class="edu-resources__intro">{{ intro_text }}</p>
+      {% endif %}
+    </header>
+  {% elseif intro_text %}
+    <p class="edu-resources__intro">{{ intro_text }}</p>
   {% endif %}
 
   {% if resources %}
     <div class="resources-wrapper display-mode-{{ display_mode }}">
       {% if display_mode == 'carousel' %}
-        {# Carousel mode for mobile-friendly browsing #}
+        {# Carousel mode for mobile-friendly browsing (Bootstrap JS hooks preserved) #}
         <div id="resourcesCarousel" class="carousel slide" data-bs-ride="carousel">
           <div class="carousel-indicators">
             {% for resource in resources %}
@@ -71,7 +81,7 @@
 
       {% else %}
         {# Grid mode (default) #}
-        <div class="saho-cards-grid resources-grid">
+        <div class="resources-grid">
           {% for resource in resources %}
             {{ _self.resource_card(resource, show_content_count, show_featured_item) }}
           {% endfor %}
@@ -79,10 +89,7 @@
       {% endif %}
     </div>
   {% else %}
-    <div class="alert alert-info">
-      <i class="fas fa-info-circle me-2"></i>
-      {{ 'No educational resources available.'|t }}
-    </div>
+    <p class="edu-resources__empty">{{ 'No educational resources available.'|t }}</p>
   {% endif %}
 </div>
 
@@ -92,115 +99,29 @@
  */
 #}
 {% macro resource_card(resource, show_count, show_featured) %}
-  <div class="saho-card resource-card resource-{{ resource.id }}" style="--resource-color: {{ resource.color }}">
-    <a href="{{ resource.url }}" class="saho-card-link">
-      <div class="saho-card-image resource-image">
-        {# Resource icon badge #}
-        <div class="resource-badge">
-          {% if resource.label == 'CAPS Documents' %}
-            {# Certificate/official document with seal #}
-            <svg class="resource-icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-              <polyline points="14 2 14 8 20 8"></polyline>
-              <path d="M12 18h.01"></path>
-              <circle cx="12" cy="15" r="3"></circle>
-              <path d="M9 12h6"></path>
-            </svg>
-          {% elseif resource.label == 'Lecture Materials' %}
-            {# Chalkboard with teacher pointer #}
-            <svg class="resource-icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-              <rect x="3" y="4" width="18" height="12" rx="2"></rect>
-              <path d="M7 20h10"></path>
-              <path d="M12 16v4"></path>
-              <path d="M8 8l3 3 5-5"></path>
-            </svg>
-          {% elseif resource.label == 'Life Orientation and School Books' %}
-            {# Bookmark in book #}
-            <svg class="resource-icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-              <path d="M12 6v7l2.5-1.5L17 13V6"></path>
-            </svg>
-          {% elseif resource.label == 'Aids & Resources' %}
-            {# Toolbox (educational aids and resources) #}
-            <svg class="resource-icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-              <path d="M16 8h4a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h4"></path>
-              <path d="M8 8V6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-              <path d="M8 14h8"></path>
-            </svg>
-          {% elseif resource.label == 'Technical Skills' %}
-            {# Gear/cog (technical and vocational skills) #}
-            <svg class="resource-icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-              <circle cx="12" cy="12" r="3"></circle>
-              <path d="M12 1v6m0 6v6"></path>
-              <path d="M19.07 4.93l-4.24 4.24m0 5.66l4.24 4.24"></path>
-              <path d="M4.93 4.93l4.24 4.24m5.66 0l4.24-4.24"></path>
-              <path d="M4.93 19.07l4.24-4.24m5.66 0l4.24 4.24"></path>
-            </svg>
-          {% elseif resource.label == 'Lecture Materials' %}
-            {# Chalkboard with teacher pointer #}
-            <svg class="resource-icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-              <rect x="3" y="4" width="18" height="12" rx="2"></rect>
-              <path d="M7 20h10"></path>
-              <path d="M12 16v4"></path>
-              <path d="M8 8l3 3 5-5"></path>
-            </svg>
-          {% elseif resource.label == 'Policy Documents' %}
-            {# Gavel (policy/law) #}
-            <svg class="resource-icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-              <path d="M14 13l-7.5 7.5c-.83.83-2.17.83-3 0 0 0 0 0 0 0-.83-.83-.83-2.17 0-3L11 10"></path>
-              <path d="M16 16l6-6"></path>
-              <path d="M8 8l6-6"></path>
-              <path d="M9 7l8 8"></path>
-              <path d="M21 11l-8-8"></path>
-            </svg>
-          {% else %}
-            {# Graduation cap (education default) #}
-            <svg class="resource-icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-              <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
-              <path d="M6 12v5c0 3 4 3 6 3s6 0 6-3v-5"></path>
-            </svg>
-          {% endif %}
-        </div>
-        {# Decorative background pattern #}
-        <div class="resource-pattern"></div>
-      </div>
-
-      <div class="saho-card-content">
-        <h3 class="saho-card-title">{{ resource.label }}</h3>
-
-        <p class="resource-description text-muted mb-3">{{ resource.description }}</p>
-
-        {% if show_featured and resource.featured_item %}
-          <div class="featured-item">
-            <svg class="featured-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-            </svg>
-            <span class="item-text">{{ resource.featured_item|truncate(60, true) }}</span>
-          </div>
-        {% endif %}
-
+  <article class="edu-resources__card resource-{{ resource.id }}">
+    <a href="{{ resource.url }}" class="edu-resources__card-link">
+      <p class="edu-resources__card-apparatus">
+        <span class="edu-resources__card-label">{{ 'Educational resource'|t }}</span>
         {% if show_count %}
-          <div class="resource-count">
-            <svg class="count-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-              <polyline points="14 2 14 8 20 8"></polyline>
-            </svg>
-            <span class="count-number">{{ resource.count }}</span>
-            <span class="count-label">{{ resource.count == 1 ? 'resource'|t : 'resources'|t }}</span>
-          </div>
+          <span class="edu-resources__card-count">{{ resource.count }} {{ resource.count == 1 ? 'resource'|t : 'resources'|t }}</span>
         {% endif %}
+      </p>
 
-        <div class="saho-card-footer">
-          <span class="saho-card-button">
-            {{ 'View Resources'|t }}
-            <svg class="button-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-              <polyline points="12 5 19 12 12 19"></polyline>
-            </svg>
-          </span>
-        </div>
-      </div>
+      <h3 class="edu-resources__card-title"><span class="edu-resources__card-title-text">{{ resource.label }}</span></h3>
+
+      <p class="edu-resources__card-desc">{{ resource.description }}</p>
+
+      {% if show_featured and resource.featured_item %}
+        <p class="edu-resources__featured">
+          <span class="edu-resources__featured-label">{{ 'Featured'|t }}</span>
+          <span class="edu-resources__featured-text">{{ resource.featured_item|truncate(60, true) }}</span>
+        </p>
+      {% endif %}
+
+      <p class="edu-resources__card-cta">
+        <span class="edu-resources__card-cta-text">{{ 'View resources'|t }} <span aria-hidden="true">&rarr;</span></span>
+      </p>
     </a>
-  </div>
+  </article>
 {% endmacro %}

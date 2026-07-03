@@ -1,62 +1,71 @@
-// Breadcrumb styles
+// Breadcrumb - Open Record register: an unboxed mono provenance trail.
 // -----------------------------------------------------------------------------
 
 .breadcrumb-container {
-  background-color: transparent;
-  margin-bottom: 1rem;
-  padding: 0.5rem 0;
+  background: none;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  margin: 0 0 var(--space-3, 0.75rem);
+  padding: 0;
 }
 
-.breadcrumb {
-  margin-bottom: 0;
+ol.breadcrumb,
+.breadcrumb-container .breadcrumb {
+  margin: 0;
   padding: 0;
-  background-color: transparent;
-  font-size: 0.875rem;
+  background: none;
+  border: 0;
+  border-radius: 0;
   display: flex;
   flex-wrap: wrap;
   list-style: none;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
 
   .breadcrumb-item {
     display: flex;
     align-items: center;
 
     + .breadcrumb-item {
-      padding-left: 0.5rem;
+      padding-left: 0.6em;
 
       &::before {
         display: inline-block;
-        padding-right: 0.5rem;
-        content: ">";
-        color: #6c757d;
+        padding-right: 0.6em;
+        content: "/";
+        color: var(--border-default);
       }
     }
 
     a {
-      color: var(--saho-color-primary); // SAHO deep heritage red
+      color: var(--text-muted);
       text-decoration: none;
-      padding-left: 5px;
+      padding: 0;
 
       &:hover,
       &:focus {
+        color: var(--link-rest, var(--saho-oxblood));
         text-decoration: underline;
-        outline: none;
+        text-underline-offset: 3px;
       }
 
-      // Simple focus state for accessibility
-      &:focus {
-        outline: 1px dotted var(--saho-color-primary);
+      &:focus-visible {
+        outline: 2px solid var(--saho-oxblood);
+        outline-offset: 2px;
       }
     }
 
     &.active {
-      color: #6c757d;
+      color: var(--text-primary);
     }
-  }
-}
 
-// Responsive adjustments
-@media (max-width: 767.98px) {
-  .breadcrumb {
-    font-size: 0.75rem;
+    // A trail of just "Home" says nothing - drop it.
+    &:only-child {
+      display: none;
+    }
   }
 }

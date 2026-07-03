@@ -24,11 +24,12 @@ final class SearchFrontBlock extends BlockBase {
     return [
       '#type' => 'component',
       '#component' => 'saho:saho-search-field',
+      // No scope chips: they are presentational-only (no JS wiring) and the
+      // browse index right below already gives the typed doors.
       '#props' => [
         'placeholder' => 'Search people, events, places, dates…',
         'action' => '/search',
         'size' => 'lg',
-        'scopes' => ['All', 'People', 'Events', 'Places', 'Archive'],
       ],
     ];
   }

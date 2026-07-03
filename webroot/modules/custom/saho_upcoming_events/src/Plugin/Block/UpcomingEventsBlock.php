@@ -169,6 +169,10 @@ class UpcomingEventsBlock extends BlockBase implements ContainerFactoryPluginInt
       return [
         '#type' => 'markup',
         '#markup' => '<div class="upcoming-events-empty">' . $this->t('No upcoming events at this time.') . '</div>',
+        // The empty state must carry the block styling too.
+        '#attached' => [
+          'library' => ['saho_upcoming_events/upcoming_events'],
+        ],
         '#cache' => [
           'tags' => ['node_list:upcomingevent'],
           'max-age' => 3600,
