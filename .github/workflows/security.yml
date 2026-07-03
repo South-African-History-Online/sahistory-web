@@ -1,0 +1,163 @@
+name: Security Audit
+
+# CVE gating (#392) + Trivy scanning (#395).
+#
+# Gates merges on HIGH/CRITICAL dependency vulnerabilities and scans the
+# repository filesystem with Trivy. This repo builds NO container image in
+# CI (deploys are git + composer over SSH; .ddev images are local-only and
+# maintained upstream by DDEV), so Trivy runs in filesystem mode over the
+# checkout (lockfile vulns + secret detection) instead of scanning an image.
+#
+# The weekly run catches advisory drift on unchanged lockfiles. The monthly
+# security-update window asked for in #392 is a team process, not CI - see
+# the issue for scheduling.
+
+on:
+  pull_request:
+    paths:
+      - 'composer.json'
+      - 'composer.lock'
+      - 'webroot/themes/custom/saho/package-lock.json'
+      - 'webroot/themes/custom/saho_shop/package-lock.json'
+      - 'saho-timeline-svelte/package-lock.json'
+      - '.github/workflows/security.yml'
+      - '.trivyignore'
+  push:
+    branches:
+      - main
+    paths:
+      - 'composer.json'
+      - 'composer.lock'
+      - 'webroot/themes/custom/saho/package-lock.json'
+      - 'webroot/themes/custom/saho_shop/package-lock.json'
+      - 'saho-timeline-svelte/package-lock.json'
+      - '.github/workflows/security.yml'
+      - '.trivyignore'
+  schedule:
+    # Mondays 05:00 UTC - advisory drift check, before the a11y run.
+    - cron: '0 5 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: security-audit-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  composer-audit:
+    name: Composer Audit (PHP dependencies)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup PHP, with Composer
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          # Pin to the patched Composer release that addresses
+          # GHSA-f9f8-rm49-7jv2 (token disclosure in error messages).
+          tools: composer:2.9.8
+          coverage: none
+
+      # Audits composer.lock directly (--locked), so no composer install or
+      # dependency cache is needed. --no-dev matches production deploys
+      # (scripts/deploy-default.sh runs composer install --no-dev).
+      # Threshold: fail on severity high/critical. Drupal.org advisories
+      # carry no severity field in the audit JSON, only a risk label in the
+      # title, so advisories with an unknown severity fail too UNLESS the
+      # title marks them "Moderately critical", "Less critical" or
+      # "Not critical" (i.e. below the HIGH bar). Unknown = fail is the
+      # safe default. Abandoned packages are reported but do not gate.
+      - name: Composer audit (report)
+        run: composer audit --locked --no-dev --abandoned=report || true
+
+      - name: Composer audit (gate on HIGH/CRITICAL)
+        run: |
+          composer audit --locked --no-dev --abandoned=report --format=json > /tmp/composer-audit.json || true
+          COUNT=$(jq '[.advisories // {} | to_entries[] | .value[] | select(
+              (.severity == "high" or .severity == "critical")
+              or (((.severity // "") == "")
+                  and (((.title // "") | test("Moderately critical|Less critical|Not critical")) | not))
+            )] | length' /tmp/composer-audit.json)
+          echo "HIGH/CRITICAL (or unknown-severity) advisories: ${COUNT}"
+          if [ "${COUNT}" -gt 0 ]; then
+            echo "::error::composer audit found ${COUNT} advisory(ies) at or above HIGH severity"
+            exit 1
+          fi
+
+  npm-audit:
+    name: npm Audit (${{ matrix.package }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        package:
+          - webroot/themes/custom/saho
+          - webroot/themes/custom/saho_shop
+          - saho-timeline-svelte
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # npm audit reads package-lock.json directly - no npm ci needed, so
+      # there is nothing to cache. Dev dependencies are included on purpose:
+      # theme packages are build tooling whose compiled output is committed
+      # and shipped to production. Threshold: fail on high or critical.
+      - name: npm audit (gate on HIGH/CRITICAL)
+        working-directory: ${{ matrix.package }}
+        run: npm audit --audit-level=high
+
+  trivy-scan:
+    name: Trivy Filesystem Scan
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Filesystem mode: no container image is built in CI (see header).
+      # Scans lockfiles for vulnerable dependencies and the tree for
+      # committed secrets. False positives go in .trivyignore (repo root,
+      # picked up automatically). Threshold: fail on HIGH,CRITICAL.
+      - name: Trivy scan (gate on HIGH/CRITICAL)
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          scanners: vuln,secret
+          severity: HIGH,CRITICAL
+          exit-code: '1'
+          format: table
+
+      - name: Trivy scan (SARIF for code scanning)
+        if: always()
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          scanners: vuln,secret
+          severity: HIGH,CRITICAL
+          exit-code: '0'
+          format: sarif
+          output: trivy-results.sarif
+
+      # Fork PRs get a read-only token that cannot write security events,
+      # so only upload from same-repo refs.
+      - name: Upload SARIF to GitHub code scanning
+        if: >-
+          always() &&
+          (github.event_name != 'pull_request' ||
+           github.event.pull_request.head.repo.full_name == github.repository)
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: trivy-results.sarif
