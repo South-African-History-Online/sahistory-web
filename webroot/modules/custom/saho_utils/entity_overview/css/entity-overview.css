@@ -4,7 +4,8 @@
  * Focused on content display only.
  *
  * Uses component-scoped inline CSS custom properties for complete independence.
- * No external SCSS variables or dependencies.
+ * Values target the Open Record design language (paper/ink, square corners,
+ * no shadows, no gradients).
  */
 
 /* ==========================================================================
@@ -12,17 +13,17 @@
    ========================================================================== */
 
 .entity-overview-block {
-  /* Inline design tokens - NO external dependencies */
-  --entity-color-primary: var(--saho-color-primary);         /* SAHO Deep Heritage Red */
-  --entity-color-primary-dark: var(--saho-color-primary-dark); /* Darker red for interactions */
-  --entity-color-white: var(--saho-color-white);             /* White */
+  /* Inline design tokens - retargeted to Open Record */
+  --entity-color-primary: var(--saho-oxblood, #990000);        /* SAHO oxblood accent */
+  --entity-color-primary-dark: var(--saho-ink, #1b1c17);       /* Ink for interactions */
+  --entity-color-white: var(--saho-paper-raised, #f1efe7);     /* Raised paper */
 
-  /* Gray scale */
-  --entity-gray-800: var(--saho-color-text-primary);
-  --entity-gray-700: var(--saho-color-text-secondary);
-  --entity-gray-600: var(--saho-color-gray-500);
-  --entity-gray-300: var(--saho-color-border);
-  --entity-gray-200: var(--saho-color-border);
+  /* Ink scale on paper */
+  --entity-gray-800: var(--saho-ink, #1b1c17);
+  --entity-gray-700: var(--saho-ink, #1b1c17);
+  --entity-gray-600: var(--text-muted, #6d6a5c);
+  --entity-gray-300: var(--border-default, #bdb9a6);
+  --entity-gray-200: var(--border-default, #bdb9a6);
 
   /* Spacing */
   --entity-spacing-xs: 0.5rem;
@@ -37,13 +38,13 @@
   --entity-font-size-xs: 0.9rem;
   --entity-font-size-lg: 1.75rem;
 
-  /* Effects */
-  --entity-shadow-base: var(--saho-shadow-xl);
-  --entity-focus-ring: 0 0 0 0.25rem var(--saho-color-primary-alpha-25);
+  /* Effects - Open Record: no shadows */
+  --entity-shadow-base: none;
+  --entity-focus-ring: none;
 
-  /* Border radius */
-  --entity-radius-md: var(--saho-radius-md);
-  --entity-radius-sm: var(--saho-radius-sm);
+  /* Border radius - Open Record: square corners */
+  --entity-radius-md: 0;
+  --entity-radius-sm: 0;
 
   /* Transitions */
   --entity-transition-fast: 0.2s ease;
@@ -54,7 +55,7 @@
 }
 
 .entity-overview-block * {
-  border-color: var(--entity-gray-300) !important; /* Override any blue borders with neutral gray */
+  border-color: var(--entity-gray-300) !important; /* Override any blue borders with paper-line neutral */
 }
 
 .entity-overview-block .saho-card {
@@ -91,13 +92,14 @@
    ========================================================================== */
 
 .entity-overview-block .saho-card {
-  transition: transform var(--entity-transition-fast), box-shadow var(--entity-transition-fast);
+  transition: background-color var(--entity-transition-fast), border-color var(--entity-transition-fast);
   height: fit-content;
 }
 
+/* Hover = selection, not lift */
 .entity-overview-block .saho-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--saho-shadow-xl);
+  background-color: var(--saho-paper-sunk, #dad6c7);
+  border-color: var(--saho-ink, #1b1c17) !important;
 }
 
 /* Ensure card links are clickable - including in Layout Builder inline blocks */
@@ -153,9 +155,13 @@
   margin: 0;
 }
 
+/* Meta reads as a mono kicker */
 .entity-overview-block .saho-card-meta {
-  color: var(--entity-gray-600);
-  font-size: var(--entity-font-size-sm);
+  color: var(--text-muted, #6d6a5c);
+  font-family: var(--font-mono, "IBM Plex Mono", monospace);
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
   margin-bottom: var(--entity-spacing-md);
 }
 
@@ -169,18 +175,18 @@
   align-items: center;
   border-radius: var(--entity-radius-sm);
   font-weight: 500;
-  transition: all var(--entity-transition-fast);
+  transition: background-color var(--entity-transition-fast), border-color var(--entity-transition-fast), color var(--entity-transition-fast);
 }
 
 .entity-overview-block .saho-card-actions .btn svg {
-  transition: transform var(--entity-transition-fast);
+  transition: none;
 }
 
 .entity-overview-block .saho-card-actions .btn:hover svg {
-  transform: translateX(2px);
+  transform: none;
 }
 
-/* Simple card animations */
+/* Simple card state transitions */
 .entity-overview-item {
   transition: all var(--entity-transition-base);
 }
@@ -224,7 +230,7 @@
   outline: 2px solid var(--entity-color-primary) !important;
   outline-offset: 2px;
   border-color: var(--entity-color-primary) !important;
-  box-shadow: var(--entity-focus-ring) !important;
+  box-shadow: none !important;
 }
 
 .entity-overview-block .saho-card:focus-within {
@@ -232,7 +238,7 @@
   outline-offset: 2px;
   border-radius: var(--entity-radius-md);
   border-color: var(--entity-color-primary) !important;
-  box-shadow: var(--entity-focus-ring) !important;
+  box-shadow: none !important;
 }
 
 /* Override any Bootstrap focus states that might be causing blue borders */
@@ -240,7 +246,7 @@
 .entity-overview-block *:focus-visible {
   outline-color: var(--entity-color-primary) !important;
   border-color: var(--entity-color-primary) !important;
-  box-shadow: var(--entity-focus-ring) !important;
+  box-shadow: none !important;
 }
 
 /* ==========================================================================
@@ -248,7 +254,7 @@
    ========================================================================== */
 
 .entity-overview-load-more-button {
-  /* Match saho-button component styling */
+  /* Open Record: square, flat, ink-on-paper */
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -256,11 +262,11 @@
   background-color: var(--entity-color-primary) !important;
   color: var(--entity-color-white) !important;
   border: 1px solid var(--entity-color-primary) !important;
-  border-radius: var(--saho-button-radius-pill) !important;
+  border-radius: 0 !important;
   font-weight: 600;
   font-size: var(--entity-font-size-base);
   text-decoration: none;
-  transition: all var(--entity-transition-fast);
+  transition: background-color var(--entity-transition-fast), border-color var(--entity-transition-fast);
   cursor: pointer;
   box-shadow: none !important;
 }
@@ -270,19 +276,19 @@
   background-color: var(--entity-color-primary-dark) !important;
   border-color: var(--entity-color-primary-dark) !important;
   color: var(--entity-color-white) !important;
-  transform: translateY(-1px);
-  box-shadow: var(--saho-shadow-md) !important;
+  transform: none;
+  box-shadow: none !important;
 }
 
 .entity-overview-load-more-button:active {
-  transform: translateY(0);
-  box-shadow: var(--saho-shadow-sm) !important;
+  transform: none;
+  box-shadow: none !important;
 }
 
 .entity-overview-load-more-button:focus-visible {
   outline: 2px solid var(--entity-color-primary) !important;
   outline-offset: 2px;
-  box-shadow: 0 0 0 4px var(--saho-color-primary-alpha-25) !important;
+  box-shadow: none !important;
 }
 
 /* Reduce motion for users who prefer it */
@@ -318,13 +324,13 @@
 
 .entity-overview-block .block-title {
   font-size: var(--saho-font-size-xl);
-  color: var(--saho-color-accent);
+  color: var(--saho-ink, #1b1c17);
   margin-bottom: var(--saho-space-1);
 }
 
 .entity-overview-block .intro-text {
   font-size: var(--saho-font-size-sm);
-  color: var(--saho-color-text-secondary);
+  color: var(--text-muted, #6d6a5c);
   margin-bottom: var(--saho-space-2);
 }
 
@@ -343,14 +349,14 @@
 .entity-overview-image {
   width: 100%;
   height: auto;
-  border-radius: var(--saho-radius-sm);
+  border-radius: 0;
   margin-bottom: var(--saho-space-1);
 }
 
 .entity-overview-item h3 {
   font-size: var(--saho-font-size-base);
   margin: 0 0 var(--saho-space-1);
-  color: var(--saho-color-accent);
+  color: var(--saho-ink, #1b1c17);
 }
 
 .entity-overview-item h3 a {
@@ -359,6 +365,9 @@
 }
 
 .entity-overview-item .date {
-  font-size: var(--saho-font-size-sm);
-  color: var(--saho-color-text-muted);
+  font-family: var(--font-mono, "IBM Plex Mono", monospace);
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-muted, #6d6a5c);
 }
