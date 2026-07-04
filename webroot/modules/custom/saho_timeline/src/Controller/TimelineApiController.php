@@ -2,6 +2,7 @@
 
 namespace Drupal\saho_timeline\Controller;
 
+use Drupal\Component\Utility\Html;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Entity\ContentEntityInterface;
@@ -385,16 +386,12 @@ class TimelineApiController extends ControllerBase {
 
     if ($event instanceof ContentEntityInterface) {
       $data['id'] = $event->id();
-      $title = $event->label();
-      // More robust UTF-8 cleaning.
-      $title = @iconv('UTF-8', 'UTF-8//IGNORE', $title);
-      if ($title === FALSE) {
-        $title = mb_convert_encoding($event->label(), 'UTF-8', 'UTF-8');
-      }
-      // Remove any remaining invalid characters.
-      $title = htmlspecialchars($title, ENT_QUOTES | ENT_HTML5, 'UTF-8', FALSE);
-      $title = preg_replace('/[\x00-\x1F\x7F-\xFF]/', '', $title);
-      $data['title'] = trim(strip_tags($title));
+      // The API carries PLAIN TEXT: decode entities first (so stored
+      // "&lt;em&gt;" cannot survive as markup), strip tags, then drop only
+      // control characters. The previous htmlspecialchars() pass shipped
+      // pre-escaped entities (&amp;amp;, &amp;#039;) to every consumer, and
+      // the \x7F-\xFF byte strip destroyed multibyte UTF-8.
+      $data['title'] = $this->toPlainText($event->label());
       $data['url'] = $event->toUrl('canonical', ['absolute' => TRUE])->toString();
       $data['type'] = $event->bundle();
 
@@ -418,21 +415,10 @@ class TimelineApiController extends ControllerBase {
         $data['date'] = date('Y-m-d', $event->getCreatedTime());
       }
 
-      // Get body with robust UTF-8 cleaning.
+      // Get body as plain text (same pipeline as the title).
       if ($event->hasField('body') && !$event->get('body')->isEmpty()) {
-        $body = $event->get('body')->value;
-        // More robust UTF-8 cleaning for body text.
-        $body = @iconv('UTF-8', 'UTF-8//IGNORE', $body);
-        if ($body === FALSE) {
-          $body = mb_convert_encoding($event->get('body')->value, 'UTF-8', 'UTF-8');
-        }
-        // Strip HTML tags first to avoid breaking UTF-8 sequences.
-        $body = strip_tags($body);
-        // Remove invalid characters using modern approach.
-        $body = htmlspecialchars($body, ENT_QUOTES | ENT_HTML5, 'UTF-8', FALSE);
-        $body = preg_replace('/[\x00-\x1F\x7F-\xFF]/', '', $body);
-        $body = trim(strip_tags($body));
-        $data['body'] = !empty($body) ? substr($body, 0, 300) . '...' : '';
+        $body = $this->toPlainText($event->get('body')->value);
+        $data['body'] = $body !== '' ? mb_substr($body, 0, 300) . '...' : '';
       }
 
       // Get image from multiple possible fields.
@@ -735,6 +721,33 @@ class TimelineApiController extends ControllerBase {
     }
 
     return FALSE;
+  }
+
+  /**
+   * Reduces stored (possibly HTML) text to clean plain text for the API.
+   *
+   * Decodes entities BEFORE stripping tags so encoded markup ("&lt;em&gt;")
+   * cannot survive as live markup in consumers that render via innerHTML
+   * (TimelineJS3), then removes control characters only - multibyte UTF-8
+   * passes through intact.
+   *
+   * @param string|null $text
+   *   The stored value.
+   *
+   * @return string
+   *   Plain text, trimmed; '' when nothing survives.
+   */
+  protected function toPlainText(?string $text): string {
+    if ($text === NULL || $text === '') {
+      return '';
+    }
+    $clean = @iconv('UTF-8', 'UTF-8//IGNORE', $text);
+    if ($clean === FALSE) {
+      $clean = mb_convert_encoding($text, 'UTF-8', 'UTF-8');
+    }
+    $clean = strip_tags(Html::decodeEntities($clean));
+    $clean = preg_replace('/[\x00-\x1F\x7F]/u', ' ', $clean);
+    return trim(preg_replace('/\s+/u', ' ', $clean));
   }
 
 }

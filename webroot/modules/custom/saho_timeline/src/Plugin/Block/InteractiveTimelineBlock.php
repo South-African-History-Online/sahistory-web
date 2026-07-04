@@ -147,8 +147,8 @@ class InteractiveTimelineBlock extends BlockBase implements BlockPluginInterface
   public function build() {
     $config = $this->getConfiguration();
 
-    // Get events for interactive display.
-    $events = $this->timelineEventService->getAllTimelineEvents();
+    // Get events for interactive display, capped in the query.
+    $events = $this->timelineEventService->getAllTimelineEvents(TRUE, TRUE, $config['event_limit'] ?: NULL);
 
     // Apply event limit.
     if ($config['event_limit'] && count($events) > $config['event_limit']) {

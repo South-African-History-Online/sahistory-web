@@ -156,7 +156,9 @@ class TimelineBlock extends BlockBase implements BlockPluginInterface, Container
       $events = $this->timelineEventService->getEventsGroupedByPeriod($config['group_by']);
     }
     else {
-      $events = $this->timelineEventService->getAllTimelineEvents();
+      // Push the block's limit into the query so the service never loads
+      // more nodes than the block can show.
+      $events = $this->timelineEventService->getAllTimelineEvents(TRUE, TRUE, $config['event_limit'] ?: NULL);
     }
 
     // Apply event limit.

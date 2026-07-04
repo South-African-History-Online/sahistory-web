@@ -138,18 +138,29 @@ class TimelineEventService {
   }
 
   /**
-   * Get all timeline events including TDIH events.
+   * Get timeline events including TDIH events, bounded by a result cap.
    *
    * @param bool $include_tdih
    *   Whether to include TDIH events.
    * @param bool $use_cache
    *   Whether to use caching.
+   * @param int|null $limit
+   *   Optional caller cap; the effective cap is the smaller of this and the
+   *   max_api_results setting. Loading the full ~17k event corpus needs
+   *   hundreds of MB - callers wanting complete coverage should use
+   *   getAllTimelineEventsSegregated() instead.
    *
    * @return array
-   *   Array of all published event nodes.
+   *   Array of published event nodes, oldest first.
    */
-  public function getAllTimelineEvents($include_tdih = TRUE, $use_cache = TRUE) {
-    $cache_id = 'saho_timeline:all_events:' . ($include_tdih ? 'with_tdih' : 'no_tdih');
+  public function getAllTimelineEvents($include_tdih = TRUE, $use_cache = TRUE, $limit = NULL) {
+    $config = $this->configFactory->get('saho_timeline.settings');
+    $max_results = (int) ($config->get('max_api_results') ?: 1000);
+    if ($limit !== NULL && (int) $limit > 0) {
+      $max_results = min((int) $limit, $max_results);
+    }
+
+    $cache_id = 'saho_timeline:all_events:' . ($include_tdih ? 'with_tdih' : 'no_tdih') . ':' . $max_results;
 
     // Try to get from cache first.
     if ($use_cache && $cached = $this->cache->get($cache_id)) {
@@ -157,45 +168,24 @@ class TimelineEventService {
     }
 
     try {
-      // Temporarily use a simpler approach to debug the issue.
       $storage = $this->entityTypeManager->getStorage('node');
       $query = $storage->getQuery()
         ->condition('type', 'event')
         ->condition('status', NodeInterface::PUBLISHED)
-        ->accessCheck(TRUE);
+        ->accessCheck(TRUE)
+        // Bounded and deterministic: newest changes first, capped in the
+        // database. The unbounded variant loaded every event node into
+        // memory (~600MB render).
+        ->sort('changed', 'DESC')
+        ->range(0, $max_results);
 
-      // Get ALL event nodes - we'll separate them into dated vs dateless later
-      // This ensures we include all events but handle them appropriately.
-      // For now, let's get ALL events and separate them by date availability
-      // No date filtering in query - we'll handle this in PHP.
-      // Get a larger sample with better time distribution.
-      $config = $this->configFactory->get('saho_timeline.settings');
-      $max_results = $config->get('max_api_results') ?: 10000;
-
-      // Don't limit here - we'll sample later
-      // $query->range(0, $max_results);.
-      // Don't sort in database query - let API handle date sorting
-      // This ensures we get events from ALL date fields.
       $nids = $query->execute();
 
       if (empty($nids)) {
         return [];
       }
 
-      // Convert to array if needed and sample events for better performance.
-      $nids_array = is_array($nids) ? array_values($nids) : [$nids];
-      $total_events = count($nids_array);
-
-      // Load ALL events and let API do comprehensive date-based sampling
-      // This ensures we don't miss recent events due to random sampling.
-      $events = $storage->loadMultiple($nids_array);
-
-      // Sort by date for timeline display.
-      usort($events, function ($a, $b) {
-        $date_a = $this->getEventDate($a);
-        $date_b = $this->getEventDate($b);
-        return strcmp($date_a, $date_b);
-      });
+      $events = $storage->loadMultiple(array_values($nids));
 
       // Also include timeline HTML entities if configured.
       if ($include_tdih && $config->get('parse_html_timelines')) {
@@ -247,6 +237,9 @@ class TimelineEventService {
     $or_group->condition('body', 'data-timeline', 'CONTAINS');
     $or_group->condition('title', 'timeline', 'CONTAINS');
     $query->condition($or_group);
+
+    // The CONTAINS conditions can match broadly; cap the parse workload.
+    $query->sort('changed', 'DESC')->range(0, 100);
 
     $nids = $query->execute();
     $nodes = $storage->loadMultiple($nids);
@@ -358,9 +351,11 @@ class TimelineEventService {
         'field_publication_date_archive',
       // Archive dates.
         'field_archive_publication_date',
-      // Fallback to creation date.
-        'created',
       ];
+      // NOTE: 'created' must NOT be in the list above - its raw value is a
+      // Unix timestamp, and substr($timestamp, 0, 4) reads e.g. "1710" as a
+      // year, bucketing present-day nodes into the 1710s. The formatted
+      // fallback below handles creation time correctly.
 
       foreach ($date_fields as $field_name) {
         if ($event->hasField($field_name) && !$event->get($field_name)->isEmpty()) {
@@ -400,8 +395,13 @@ class TimelineEventService {
 
       switch ($period_type) {
         case 'century':
-          $century = ceil($year / 100);
-          return $century . 'th Century';
+          // 1900 belongs to the 19th century, 1901 opens the 20th.
+          $century = intdiv($year - 1, 100) + 1;
+          $suffixes = [1 => 'st', 2 => 'nd', 3 => 'rd'];
+          $suffix = ($century % 100 >= 11 && $century % 100 <= 13)
+            ? 'th'
+            : ($suffixes[$century % 10] ?? 'th');
+          return $century . $suffix . ' Century';
 
         case 'decade':
           $decade = floor($year / 10) * 10;

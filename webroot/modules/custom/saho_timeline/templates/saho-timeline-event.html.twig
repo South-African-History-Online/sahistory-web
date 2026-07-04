@@ -4,28 +4,33 @@
  * Default theme implementation for a timeline event.
  *
  * Available variables:
- * - event: The event node entity.
+ * - event: The event node entity, or a parsed pseudo-event (stdClass from
+ *   TimelineEventService::parseTimelineHtml()) that has NO id - links must
+ *   only render when an id exists or path() fatals on the NULL parameter.
  * - display_mode: The display mode for the event.
  * - attributes: HTML attributes for the event container.
  *
  * @ingroup themeable
  */
 #}
-{% set event_date = event.field_event_date.value ? event.field_event_date.value|date('F j, Y') : 'Date Unknown' %}
+{% set event_date = event.field_event_date.value ? event.field_event_date.value|date('F j, Y') : (event.date|default('Date Unknown')) %}
 {% set event_image = event.field_tdih_image.entity %}
+{% set event_url = event.id is defined and event.id ? path('entity.node.canonical', {'node': event.id}) : null %}
 
 <article{{ attributes.addClass('saho-timeline-event', 'saho-timeline-event--' ~ display_mode) }}>
   <div class="saho-timeline-event__marker"></div>
-  
+
   <div class="saho-timeline-event__content">
     <header class="saho-timeline-event__header">
       <time class="saho-timeline-event__date" datetime="{{ event.field_event_date.value }}">
         {{ event_date }}
       </time>
       <h4 class="saho-timeline-event__title">
-        <a href="{{ path('entity.node.canonical', {'node': event.id}) }}">
-          {{ event.label }}
-        </a>
+        {% if event_url %}
+          <a href="{{ event_url }}">{{ event.label ?? event.title }}</a>
+        {% else %}
+          {{ event.label ?? event.title }}
+        {% endif %}
       </h4>
     </header>
 
@@ -37,16 +42,20 @@
 
     {% if event.body.value and display_mode != 'compact' %}
       <div class="saho-timeline-event__body">
-        {{ event.body.summary|default(event.body.value|striptags|slice(0, 200) ~ '...') }}
+        {# Summaries carry markup; strip both branches so neither renders
+           as escaped tag soup. #}
+        {{ (event.body.summary|default(event.body.value))|striptags|slice(0, 200) ~ '...' }}
       </div>
     {% endif %}
 
     {# Tags section - will check for actual tag fields that exist #}
 
-    <footer class="saho-timeline-event__footer">
-      <a href="{{ path('entity.node.canonical', {'node': event.id}) }}" class="btn btn-sm btn-outline-primary">
-        {{ 'Read more'|t }}
-      </a>
-    </footer>
+    {% if event_url %}
+      <footer class="saho-timeline-event__footer">
+        <a href="{{ event_url }}" class="btn btn-sm btn-outline-primary">
+          {{ 'Read more'|t }}
+        </a>
+      </footer>
+    {% endif %}
   </div>
 </article>
