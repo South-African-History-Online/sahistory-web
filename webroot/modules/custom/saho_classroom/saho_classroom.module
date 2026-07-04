@@ -14,8 +14,7 @@ use Drupal\node\NodeInterface;
 /**
  * Implements hook_preprocess_node().
  *
- * Attaches the resource-type badge styling to presentation nodes so the
- * "Presentation" badge renders consistently on teasers, grids and cards.
+ * Attaches the resource-type badge styling to presentation nodes.
  */
 function saho_classroom_preprocess_node(array &$variables): void {
   $node = $variables['node'] ?? NULL;
@@ -27,8 +26,7 @@ function saho_classroom_preprocess_node(array &$variables): void {
 /**
  * Implements hook_preprocess_views_view().
  *
- * Loads the resource-type badge styling on the classroom presentations browse
- * so its cards show the same "Presentation" pill as teaser grids.
+ * Loads the badge styling on the classroom presentations browse.
  */
 function saho_classroom_preprocess_views_view(array &$variables): void {
   $view = $variables['view'] ?? NULL;
@@ -40,8 +38,11 @@ function saho_classroom_preprocess_views_view(array &$variables): void {
 /**
  * Implements hook_node_view().
  *
- * Adds a prominent "quick link for teachers" call-out at the top of legacy
- * classroom content, pointing to the interactive SAHO Classroom presentations.
+ * Adds a prominent teacher quick-link to legacy classroom content. When a
+ * presentation deck matches the topic (by comparing the article title with each
+ * deck's caps_topic), it links straight to that deck; otherwise it links to the
+ * presentations browse. The match is computed in code from the committed decks,
+ * so it reproduces identically on every environment.
  */
 function saho_classroom_node_view(array &$build, EntityInterface $node, $display, $view_mode): void {
   if ($view_mode !== 'full' || !$node instanceof NodeInterface || $node->bundle() === 'presentation') {
@@ -57,13 +58,21 @@ function saho_classroom_node_view(array &$build, EntityInterface $node, $display
   if (!$is_classroom) {
     return;
   }
+
+  $deck = _saho_classroom_match_deck($node);
+  $url = $deck ? $deck->toUrl() : Url::fromUserInput('/classroom/presentations');
+  $link_text = $deck ? t('Open the presentation') : t('Open presentations');
+  $title = $deck
+    ? t('Teach this topic with a ready-made, print-friendly presentation deck.')
+    : t('Teach this in the classroom - interactive, print-ready presentations.');
+
   $build['saho_classroom_presentations_cta'] = [
     '#type' => 'container',
-    // Very low weight so it renders ahead of the body wherever {{ content }} is
-    // printed.
     '#weight' => -100,
     '#attributes' => ['class' => ['saho-classroom-cta']],
     '#attached' => ['library' => ['saho_classroom/badge']],
+    // Recompute if the set of presentation decks changes.
+    '#cache' => ['tags' => ['node_list']],
     'text' => [
       '#type' => 'html_tag',
       '#tag' => 'div',
@@ -78,14 +87,92 @@ function saho_classroom_node_view(array &$build, EntityInterface $node, $display
         '#type' => 'html_tag',
         '#tag' => 'span',
         '#attributes' => ['class' => ['saho-classroom-cta__title']],
-        '#value' => t('Teach this in the classroom - interactive, print-ready presentations'),
+        '#value' => $title,
       ],
     ],
     'link' => [
       '#type' => 'link',
-      '#title' => t('Open presentations'),
-      '#url' => Url::fromUserInput('/classroom/presentations'),
+      '#title' => $link_text,
+      '#url' => $url,
       '#attributes' => ['class' => ['saho-classroom-cta__btn']],
     ],
   ];
+}
+
+/**
+ * Finds the presentation deck whose topic best matches an article, if any.
+ *
+ * Deterministic token overlap between the article title and each published
+ * deck's caps_topic term (falling back to the deck title). Pure code + a
+ * runtime query - no stored mapping - so it reproduces on any environment.
+ *
+ * @param \Drupal\node\NodeInterface $article
+ *   The legacy classroom article.
+ *
+ * @return \Drupal\node\NodeInterface|null
+ *   The best-matching presentation node, or NULL when none is confident.
+ */
+function _saho_classroom_match_deck(NodeInterface $article): ?NodeInterface {
+  $storage = \Drupal::entityTypeManager()->getStorage('node');
+  $ids = $storage->getQuery()
+    ->accessCheck(TRUE)
+    ->condition('type', 'presentation')
+    ->condition('status', 1)
+    ->execute();
+  if (!$ids) {
+    return NULL;
+  }
+  $article_tokens = _saho_classroom_tokens($article->label());
+  if (!$article_tokens) {
+    return NULL;
+  }
+
+  $best = NULL;
+  $best_score = 0.0;
+  foreach ($storage->loadMultiple($ids) as $deck) {
+    $topic = '';
+    if ($deck->hasField('field_caps_topic') && !$deck->get('field_caps_topic')->isEmpty()) {
+      $term = $deck->get('field_caps_topic')->entity;
+      if ($term) {
+        $topic = (string) $term->label();
+      }
+    }
+    if ($topic === '') {
+      $topic = (string) $deck->label();
+    }
+    $topic_tokens = _saho_classroom_tokens($topic);
+    if (!$topic_tokens) {
+      continue;
+    }
+    $hits = count(array_intersect_key($topic_tokens, $article_tokens));
+    $score = $hits / count($topic_tokens);
+    if ($score > $best_score) {
+      $best_score = $score;
+      $best = $deck;
+    }
+  }
+
+  // Require a strong overlap so we never link to a loosely-related deck.
+  return $best_score >= 0.6 ? $best : NULL;
+}
+
+/**
+ * Tokenises a title into a set of significant lowercase words.
+ */
+function _saho_classroom_tokens(string $text): array {
+  $text = strtolower($text);
+  // Drop "Grade N" / "Term N" scaffolding that legacy titles carry.
+  $text = preg_replace('/\bgrade\s*\d+\b|\bterm\s*\d+\b/', ' ', $text);
+  $text = preg_replace('/[^a-z0-9\s]/', ' ', $text);
+  $stop = [
+    'the' => 1, 'and' => 1, 'for' => 1, 'from' => 1, 'with' => 1, 'into' => 1,
+    'history' => 1, 'south' => 1, 'african' => 1, 'africa' => 1,
+  ];
+  $tokens = [];
+  foreach (preg_split('/\s+/', trim($text)) as $t) {
+    if (strlen($t) >= 3 && empty($stop[$t])) {
+      $tokens[$t] = TRUE;
+    }
+  }
+  return $tokens;
 }
