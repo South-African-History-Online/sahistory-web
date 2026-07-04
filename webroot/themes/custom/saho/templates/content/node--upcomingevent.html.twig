@@ -3,24 +3,35 @@
  * @file
  * Custom SAHO node template for Upcoming Event content type.
  *
- * Title is handled globally and not rendered here.
+ * 2027 "Open Record" record family (S3): the record-header SDC owns the
+ * page H1 (the global page title is suppressed for record bundles), the
+ * rail carries the event details, image and cross-references.
  * Layout Builder is disabled - fields are output directly via Twig.
  */
 #}
 
-{# Variable to track if sidebar has content #}
 {% set sidebar_has_content = false %}
 
 <article{{ attributes.addClass('saho-article-wrapper') }}>
+
+  {# Record header: typed tab + display ref + live event status + key facts. #}
+  {% if record is defined %}
+    {{ include('saho:saho-record-header', {
+      type: record.type,
+      reference: record.reference,
+      status: record.status,
+      kicker: record.kicker,
+      title: record.title,
+      facts: record.facts,
+    }, with_context = false) }}
+  {% endif %}
 
   <div class="saho-article-grid">
 
     {# LEFT: Main content column #}
     <div class="saho-main-content">
 
-      {# No feature banner or images in main content for upcoming events - images go to sidebar #}
-
-      {# Tools only (no published/updated dates for events - those are shown in event details box) #}
+      {# Tools only (dates live in the record header + rail). #}
       <div class="saho-article-meta">
         <div class="saho-tools-wrapper">
           {% if citation_button %}
@@ -34,72 +45,6 @@
             </div>
           {% endif %}
         </div>
-      </div>
-
-      {# Event Status & Information Section #}
-      <div class="saho-event-info-section">
-
-        {# Event Status Badge #}
-        {% if event_status %}
-          <div class="saho-event-status-wrapper">
-            {% include 'saho:saho-badge' with {
-              text: event_status_label,
-              variant: event_badge_variant,
-              size: 'large',
-              icon: event_status == 'in-progress' ? 'circle' : (event_status == 'upcoming' ? 'calendar-alt' : 'calendar-check'),
-              rounded: true,
-              uppercase: true
-            } %}
-
-            {# Animated pulse for happening now #}
-            {% if show_pulse %}
-              <span class="badge-pulse" aria-hidden="true"></span>
-            {% endif %}
-          </div>
-        {% endif %}
-
-        {# Event Details Box #}
-        <div class="saho-event-details-box">
-
-          {# Date Information #}
-          {% if formatted_start_date %}
-            <div class="saho-event-detail-row">
-              <svg class="saho-event-icon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/>
-              </svg>
-              <div class="saho-event-detail-content">
-                {% if is_multiday %}
-                  <strong>Event Dates:</strong>
-                  <span>{{ formatted_start_date }} – {{ formatted_end_date }}</span>
-                  {% if event_times %}
-                    <br><span class="saho-event-times">Daily: {{ event_times }}</span>
-                  {% endif %}
-                {% else %}
-                  <strong>Date:</strong>
-                  <span>{{ formatted_start_date }}</span>
-                  {% if event_times %}
-                    <br><span class="saho-event-times">Time: {{ event_times }}</span>
-                  {% endif %}
-                {% endif %}
-              </div>
-            </div>
-          {% endif %}
-
-          {# Venue Information #}
-          {% if node.field_upcoming_venue.value %}
-            <div class="saho-event-detail-row">
-              <svg class="saho-event-icon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-              </svg>
-              <div class="saho-event-detail-content">
-                <strong>Venue:</strong>
-                <span>{{ node.field_upcoming_venue.value|striptags|trim }}</span>
-              </div>
-            </div>
-          {% endif %}
-
-        </div>
-
       </div>
 
       {# Main content with ID for TOC linking #}
@@ -124,95 +69,71 @@
         'sharing_buttons'
       ) }}
 
+      {# Cite this entry (Harvard / APA / Oxford, from CitationService). #}
+      {% if record_citation %}
+        {{ include('saho:saho-citation', record_citation, with_context = false) }}
+      {% endif %}
+
     </div>
 
-    {# RIGHT: Sidebar - always has content if there's an image #}
-    {% if node.field_upcomingevent_image.entity %}
+    {# RIGHT: Sidebar (the Open Record rail - S3) #}
+    {% if record_image.src is defined and record_image.src %}
       {% set sidebar_has_content = true %}
     {% endif %}
-    
-    {% if accordion_views is not empty %}
+    {% if record_meta or record_related %}
       {% set sidebar_has_content = true %}
     {% endif %}
-    
     {% if content.field_parent is defined and content.field_parent|render|trim %}
       {% set sidebar_has_content = true %}
     {% endif %}
-    
     {% if content.field_file_upload is defined and content.field_file_upload|render|trim %}
       {% set sidebar_has_content = true %}
     {% endif %}
-    
     {% if content.field_type_of_event is defined and content.field_type_of_event|render|trim %}
       {% set sidebar_has_content = true %}
     {% endif %}
-    
+
     {% if sidebar_has_content %}
     <aside class="saho-article-sidebar">
 
-      {# Display upcoming event image if available #}
-      {% if node.field_upcomingevent_image.entity %}
-        <div class="saho-image-block mb-4">
-          <img
-            src="{{ file_url(node.field_upcomingevent_image.entity.uri.value) }}"
-            alt="{{ node.field_upcomingevent_image.alt|default(node.getTitle()) }}"
-            class="saho-image"
-            loading="lazy"
-            decoding="async"
-          >
-        </div>
+      {# Event image: duotone image-credit figure (S3). #}
+      {% if record_image.src is defined and record_image.src %}
+        {{ include('saho:saho-image-credit', record_image, with_context = false) }}
       {% endif %}
 
-      {# Custom Accordion for feature_children views #}
-      {% if accordion_views is not empty %}
-        <div class="saho-accordion mb-5" id="sahoFeatureAccordion">
-          {% for item in accordion_views %}
-            <div class="saho-accordion-item">
-              <h4 class="saho-accordion-header">
-                <button class="saho-accordion-button {% if not loop.first %}collapsed{% endif %}"
-                        type="button"
-                        aria-expanded="{{ loop.first ? 'true' : 'false' }}"
-                        aria-controls="collapse-{{ item.id }}"
-                        data-target="#collapse-{{ item.id }}">
-                  {{ item.title }}
-                </button>
-              </h4>
-              <div id="collapse-{{ item.id }}"
-                   class="saho-accordion-collapse {% if loop.first %}show{% endif %}"
-                   aria-hidden="{{ loop.first ? 'false' : 'true' }}">
-                <div class="saho-accordion-body">
-                  {{ drupal_view(item.view, item.block, node.id()) }}
-                </div>
-              </div>
-            </div>
-          {% endfor %}
-        </div>
+      {# Event record: date, time, venue. #}
+      {% if record_meta %}
+        {{ include('saho:saho-metadata-block', record_meta, with_context = false) }}
+      {% endif %}
+
+      {# Cross-references: typed entity relations. #}
+      {% if record_related %}
+        {{ include('saho:saho-related-tabs', record_related, with_context = false) }}
       {% endif %}
 
       {# Display Event Type #}
       {% if content.field_type_of_event %}
-        <div class="saho-taxonomy-group">
-          <h4>Type of Event</h4>
-          {{ content.field_type_of_event }}
-        </div>
+        <section class="saho-meta-block saho-meta-block--event">
+          <h4 class="saho-meta-block__title">Type of event</h4>
+          <div class="saho-meta-block__val">{{ content.field_type_of_event }}</div>
+        </section>
       {% endif %}
 
       {# Display file uploads if available #}
       {% if content.field_file_upload %}
-        <div class="saho-taxonomy-group">
-          <h4>Downloads</h4>
-          {{ content.field_file_upload }}
-        </div>
+        <section class="saho-meta-block saho-meta-block--event">
+          <h4 class="saho-meta-block__title">Downloads</h4>
+          <div class="saho-meta-block__val">{{ content.field_file_upload }}</div>
+        </section>
       {% endif %}
 
       {# Display parent field if available #}
       {% if content.field_parent %}
-        <div class="saho-taxonomy-group">
-          <h4>Related</h4>
-          {{ content.field_parent }}
-        </div>
+        <section class="saho-meta-block saho-meta-block--event">
+          <h4 class="saho-meta-block__title">Related</h4>
+          <div class="saho-meta-block__val">{{ content.field_parent }}</div>
+        </section>
       {% endif %}
-
 
     </aside>
     {% endif %}

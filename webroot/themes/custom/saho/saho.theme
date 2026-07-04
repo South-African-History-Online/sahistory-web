@@ -630,6 +630,55 @@ function _saho_upcomingevent_parse_date($value, \DateTimeZone $tz): ?\DateTime {
 function saho_preprocess_node__upcomingevent(&$variables) {
   $node = $variables['node'];
 
+  _saho_upcomingevent_status_props($node, $variables);
+
+  // Set card format based on view mode.
+  // Portrait format for inline blocks (home page), standard for page views.
+  $view_mode = $variables['view_mode'] ?? 'default';
+  $variables['view_mode_card_format'] = ($view_mode === 'teaser') ? 'portrait' : 'standard';
+
+  // 2027 "Open Record": record-header + rail on the full page (S3 family).
+  if ($view_mode === 'full') {
+    $value = _saho_record_field_value($node);
+    $venue = trim(strip_tags($value('field_upcoming_venue')));
+    $when = $variables['formatted_start_date'] ?? '';
+    if (!empty($variables['is_multiday']) && !empty($variables['formatted_end_date'])) {
+      $when .= ' - ' . $variables['formatted_end_date'];
+    }
+    $facts = [];
+    if ($when !== '') {
+      $facts[] = ['label' => 'Date', 'value' => $when];
+    }
+    if (!empty($variables['event_times'])) {
+      $facts[] = ['label' => 'Time', 'value' => $variables['event_times']];
+    }
+    if ($venue !== '') {
+      $facts[] = ['label' => 'Venue', 'value' => $venue];
+    }
+    _saho_record_header_props($variables, $node, 'event', 'Upcoming event', $facts);
+    // The live status (Happening Now / In N days / Past Event) is the
+    // record's status line, not the holding ref's OPEN/DIGITISED.
+    if (!empty($variables['event_status_label'])) {
+      $variables['record']['status'] = $variables['event_status_label'];
+    }
+    $variables['record_meta'] = _saho_record_meta_props('Event details', 'event', [
+      'Date' => $when,
+      'Time' => $variables['event_times'] ?? '',
+      'Venue' => $venue,
+    ]);
+    _saho_record_common_props($variables, $node, ['field_upcomingevent_image']);
+  }
+}
+
+/**
+ * Computes event status, countdown and formatted dates for an upcoming event.
+ *
+ * @param \Drupal\node\NodeInterface $node
+ *   The upcomingevent node.
+ * @param array $variables
+ *   The preprocess variables, by reference.
+ */
+function _saho_upcomingevent_status_props(NodeInterface $node, array &$variables): void {
   if ($node->hasField('field_start_date') && !$node->get('field_start_date')->isEmpty()) {
     $tz = new \DateTimeZone('Africa/Johannesburg');
     $today = new \DateTime('today', $tz);
@@ -735,11 +784,6 @@ function saho_preprocess_node__upcomingevent(&$variables) {
       }
     }
   }
-
-  // Set card format based on view mode.
-  // Portrait format for inline blocks (home page), standard for page views.
-  $view_mode = $variables['view_mode'] ?? 'default';
-  $variables['view_mode_card_format'] = ($view_mode === 'teaser') ? 'portrait' : 'standard';
 }
 
 function saho_preprocess_page(array &$variables) {
@@ -795,8 +839,19 @@ function saho_preprocess_page(array &$variables) {
 function saho_preprocess_page_title(array &$variables): void {
   $route_match = \Drupal::routeMatch();
   $route_name = $route_match->getRouteName();
-  // The wf08 classroom hub header owns its H1.
-  if ($route_name === 'view.classroom.page_1') {
+  // Views whose Open Record shell header owns the H1: the wf08 classroom
+  // hub, the classroom topic spine, and the /index/% type landing.
+  $shell_routes = [
+    'view.classroom.page_1',
+    'view.saho_classroom_topic.page_1',
+    'view.saho_landing.page_1',
+  ];
+  if (in_array($route_name, $shell_routes, TRUE)) {
+    $variables['title'] = '';
+    return;
+  }
+  // Full taxonomy-term pages: the term header owns the H1 (#457).
+  if ($route_name === 'entity.taxonomy_term.canonical') {
     $variables['title'] = '';
     return;
   }
@@ -816,7 +871,7 @@ function saho_preprocess_page_title(array &$variables): void {
  *   The bundle names.
  */
 function _saho_record_header_bundles(): array {
-  return ['biography', 'article', 'event', 'place', 'archive'];
+  return ['biography', 'article', 'event', 'place', 'archive', 'upcomingevent'];
 }
 
 /**
@@ -1834,7 +1889,7 @@ function saho_preprocess_node__biography(array &$variables) {
     if ($node->hasField($field) && !$node->get($field)->isEmpty()) {
       $value = trim((string) $node->get($field)->value);
       if ($value !== '') {
-        $facts[] = ['label' => $label, 'value' => $value];
+        $facts[] = ['label' => $label, 'value' => _saho_record_date($value)];
       }
     }
   }
@@ -1851,15 +1906,15 @@ function saho_preprocess_node__biography(array &$variables) {
   };
   $banning = array_filter([
     'information' => $field_value('field_ban_information'),
-    'date_from' => $field_value('field_banning_date_from') ?: $field_value('field_banning_date_from_text_'),
-    'date_until' => $field_value('field_banning_date_until') ?: $field_value('field_banning_date_until_text_'),
+    'date_from' => _saho_record_date($field_value('field_banning_date_from') ?: $field_value('field_banning_date_from_text_')),
+    'date_until' => _saho_record_date($field_value('field_banning_date_until') ?: $field_value('field_banning_date_until_text_')),
     'province' => $field_value('field_banning_province'),
   ]);
   $prison = array_filter([
     'prison_name' => $field_value('field_prison_name'),
     'prisoner_number' => $field_value('field_prison_number'),
-    'date_admitted' => $field_value('field_date_admitted') ?: $field_value('field_prison_admittance_date'),
-    'date_released' => $field_value('field_date_released') ?: $field_value('field_prison_release_date'),
+    'date_admitted' => _saho_record_date($field_value('field_date_admitted') ?: $field_value('field_prison_admittance_date')),
+    'date_released' => _saho_record_date($field_value('field_date_released') ?: $field_value('field_prison_release_date')),
     'days_detained' => $field_value('field_days_detained'),
   ]);
   $detention = [];
@@ -1893,9 +1948,9 @@ function saho_preprocess_node__biography(array &$variables) {
     $field_value('field_middlename'),
     $field_value('field_lastnamebio'),
   ]));
-  $born = trim($field_value('field_dob')
+  $born = trim(_saho_record_date($field_value('field_dob'))
     . ($field_value('field_birth_location') !== '' ? ' in ' . $field_value('field_birth_location') : ''));
-  $died = trim($field_value('field_dod')
+  $died = trim(_saho_record_date($field_value('field_dod'))
     . ($field_value('field_death_location') !== '' ? ' in ' . $field_value('field_death_location') : '')
     . ($field_value('field_cod') !== '' ? ' (' . $field_value('field_cod') . ')' : ''));
   $variables['record_meta'] = _saho_record_meta_props('Vital record', 'biography', [
@@ -2037,7 +2092,7 @@ function saho_preprocess_node__archive(array &$variables): void {
     $origin = $date ? $date->format('j M Y') : '';
   }
   if ($origin === '') {
-    $origin = $value('field_publication_date_archive');
+    $origin = _saho_record_date($value('field_publication_date_archive'));
   }
 
   $facts = [];
@@ -2071,6 +2126,51 @@ function _saho_record_field_value(NodeInterface $node): \Closure {
     return $node->hasField($field) && !$node->get($field)->isEmpty()
       ? trim((string) $node->get($field)->value) : '';
   };
+}
+
+/**
+ * Formats a stored date string for display on record surfaces.
+ *
+ * Legacy date fields are free text holding a mix of shapes: prose ("circa
+ * 1918", "early 1960s") that must render verbatim, machine dates
+ * ("1918-07-18T00:00:00", "1918-07-18", "19-September-1925"), partial ISO
+ * dates with zeroed segments ("1993-12-00"), and outright junk
+ * ("0000-00-00"). Machine shapes are humanised, junk is dropped, and
+ * anything unrecognised passes through untouched.
+ *
+ * @param string $value
+ *   The stored field value.
+ *
+ * @return string
+ *   A human-readable date ("18 July 1918"), '' for junk, or the original.
+ */
+function _saho_record_date(string $value): string {
+  $value = trim($value);
+  // Placeholder rows from the 2007-era migration carry no information.
+  if (preg_match('/^0{2,4}(-00){0,2}$/', $value)) {
+    return '';
+  }
+  // ISO date, optionally with a (midnight) time suffix.
+  if (preg_match('/^(\d{4})-(\d{2})-(\d{2})(?:[T ]\d{2}:\d{2}:\d{2}.*)?$/', $value, $m)) {
+    if (checkdate((int) $m[2], (int) $m[3], (int) $m[1])) {
+      return date('j F Y', mktime(12, 0, 0, (int) $m[2], (int) $m[3], (int) $m[1]));
+    }
+    // Partial ISO: zeroed day ("1993-12-00") or month ("1993-00-00").
+    if ($m[3] === '00' && (int) $m[2] >= 1 && (int) $m[2] <= 12) {
+      return date('F Y', mktime(12, 0, 0, (int) $m[2], 1, (int) $m[1]));
+    }
+    if ($m[2] === '00') {
+      return $m[1];
+    }
+  }
+  // Hyphenated legacy form: "19-September-1925".
+  if (preg_match('/^(\d{1,2})-([A-Za-z]+)-(\d{4})$/', $value, $m)) {
+    $dt = \DateTime::createFromFormat('!j-F-Y', $m[1] . '-' . ucfirst(strtolower($m[2])) . '-' . $m[3]);
+    if ($dt instanceof \DateTime) {
+      return $dt->format('j F Y');
+    }
+  }
+  return $value;
 }
 
 /**

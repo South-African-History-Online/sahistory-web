@@ -10,6 +10,7 @@ use Drupal\file\Entity\File;
 use Drupal\image\Entity\ImageStyle;
 use Drupal\media\Entity\Media;
 use Drupal\node\NodeInterface;
+use Drupal\taxonomy\TermInterface;
 
 /**
  * Resolves the node behind a search result row, if any.
@@ -155,15 +156,17 @@ function saho_preprocess_views_view__saho_global_search(array &$variables) {
     }
     $type = $type_map[$bundle] ?? $bundle;
 
-    // Dates: biography lifespans are verbatim free-text strings (never
-    // date-formatted); everything else shows the created date.
+    // Dates: biography lifespans compact to year spans (machine shapes
+    // humanised first, prose verbatim); everything else shows created.
     if ($bundle === 'biography') {
       $span = [];
       foreach (['field_dob', 'field_dod'] as $date_field) {
         if ($node->hasField($date_field) && !$node->get($date_field)->isEmpty()) {
-          $value = trim((string) $node->get($date_field)->value);
+          $value = _saho_record_date(trim((string) $node->get($date_field)->value));
           if ($value !== '') {
-            $span[] = $value;
+            // The ledger column is narrow: a year span reads as the
+            // catalogue register; prose values pass through verbatim.
+            $span[] = preg_match('/\b(\d{4})\b/', $value, $m) ? $m[1] : $value;
           }
         }
       }
@@ -472,15 +475,17 @@ function saho_preprocess_views_view__saho_landing(array &$variables) {
     $bundle = $node->bundle();
     $type = $type_map[$bundle] ?? $bundle;
 
-    // Dates: biography lifespans are verbatim free-text strings (never
-    // date-formatted); everything else shows the created date.
+    // Dates: biography lifespans compact to year spans (machine shapes
+    // humanised first, prose verbatim); everything else shows created.
     if ($bundle === 'biography') {
       $span = [];
       foreach (['field_dob', 'field_dod'] as $date_field) {
         if ($node->hasField($date_field) && !$node->get($date_field)->isEmpty()) {
-          $value = trim((string) $node->get($date_field)->value);
+          $value = _saho_record_date(trim((string) $node->get($date_field)->value));
           if ($value !== '') {
-            $span[] = $value;
+            // The ledger column is narrow: a year span reads as the
+            // catalogue register; prose values pass through verbatim.
+            $span[] = preg_match('/\b(\d{4})\b/', $value, $m) ? $m[1] : $value;
           }
         }
       }
@@ -784,9 +789,11 @@ function saho_preprocess_views_view__saho_landing_shell(array &$variables): void
       $span = [];
       foreach (['field_dob', 'field_dod'] as $date_field) {
         if ($node->hasField($date_field) && !$node->get($date_field)->isEmpty()) {
-          $value = trim((string) $node->get($date_field)->value);
+          $value = _saho_record_date(trim((string) $node->get($date_field)->value));
           if ($value !== '') {
-            $span[] = $value;
+            // The ledger column is narrow: a year span reads as the
+            // catalogue register; prose values pass through verbatim.
+            $span[] = preg_match('/\b(\d{4})\b/', $value, $m) ? $m[1] : $value;
           }
         }
       }
@@ -859,4 +866,31 @@ function _saho_landing_shell_map(): array {
     'africa' => ['topic', 'Africa'],
     'archive_pages' => ['archive', 'Archive'],
   ];
+}
+
+/**
+ * Implements hook_preprocess_HOOK() for views-view--taxonomy-term.html.twig.
+ *
+ * Supplies the Open Record term head (#457): vocabulary kicker and the
+ * processed term description, read from the canonical term route.
+ */
+function saho_preprocess_views_view__taxonomy_term(array &$variables): void {
+  $variables['term_vocab'] = '';
+  $variables['term_label'] = '';
+  $variables['term_description'] = NULL;
+  $term = \Drupal::routeMatch()->getParameter('taxonomy_term');
+  if ($term instanceof TermInterface) {
+    $vocab = \Drupal::entityTypeManager()->getStorage('taxonomy_vocabulary')->load($term->bundle());
+    $variables['term_vocab'] = $vocab ? $vocab->label() : '';
+    $variables['term_label'] = $term->label();
+    $description = $term->getDescription();
+    if (is_string($description) && trim($description) !== '') {
+      $variables['term_description'] = [
+        '#type' => 'processed_text',
+        '#text' => $description,
+        '#format' => $term->get('description')->format ?? 'basic_html',
+      ];
+    }
+  }
+  $variables['#cache']['contexts'][] = 'route';
 }
