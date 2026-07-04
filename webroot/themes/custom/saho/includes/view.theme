@@ -608,6 +608,9 @@ function saho_preprocess_views_view__classroom(array &$variables) {
     $image = _saho_search_result_image($node);
     $classroom_cards[] = [
       'type' => in_array($type, $card_types, TRUE) ? $type : 'article',
+      // Label the badge with the resource type ("Presentation", "Worksheet", ...)
+      // instead of the fallback accent's name ("Article").
+      'badge_label' => $meta,
       'title' => $node->label(),
       'href' => $node->toUrl()->toString(),
       'excerpt' => $excerpt,

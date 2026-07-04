@@ -10,13 +10,13 @@
     <div class="saho-acard__media">
       <img class="saho-acard__img{{ duotone ? ' saho-duotone' : '' }}" src="{{ image }}" alt="{{ image_alt|default('') }}" loading="lazy" />
       <span class="saho-acard__badge">
-        {% include 'saho:badge' with { type: type, on_image: true } only %}
+        {% include 'saho:badge' with { type: type, label: badge_label|default(''), on_image: true } only %}
       </span>
     </div>
   {% endif %}
   <div class="saho-acard__body">
     {% if not image %}
-      <div class="saho-acard__badge-inline">{% include 'saho:badge' with { type: type } only %}</div>
+      <div class="saho-acard__badge-inline">{% include 'saho:badge' with { type: type, label: badge_label|default('') } only %}</div>
     {% endif %}
     {% if dates %}<p class="saho-acard__dates saho-meta">{{ dates }}</p>{% endif %}
     <h3 class="saho-acard__title">{{ title }}</h3>
