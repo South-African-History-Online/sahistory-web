@@ -117,12 +117,14 @@ class TimelineEventService {
    *
    * @param string $period_type
    *   Type of period (decade, century, year).
+   * @param int|null $limit
+   *   Optional cap on how many events to load before grouping.
    *
    * @return array
    *   Events grouped by period.
    */
-  public function getEventsGroupedByPeriod($period_type = 'decade') {
-    $events = $this->getAllTimelineEvents();
+  public function getEventsGroupedByPeriod($period_type = 'decade', $limit = NULL) {
+    $events = $this->getAllTimelineEvents(TRUE, TRUE, $limit);
     $grouped = [];
 
     foreach ($events as $event) {

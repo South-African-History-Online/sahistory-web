@@ -92,7 +92,9 @@ props:
             - _parent
             - _top
         rel:
-          type: string
+          # Nullable: hero_banner passes NULL when no rel is configured
+          # (Drupal 11.4 SDC validation fatals on schema misses).
+          type: [string, 'null']
           title: Link Relationship
           description: Link rel attribute (noopener, noreferrer, etc.)
         aria-label:
