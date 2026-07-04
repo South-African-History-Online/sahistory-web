@@ -64,24 +64,27 @@ class HistoryClassroomBlock extends BlockBase implements ContainerFactoryPluginI
    * @var array
    */
   protected const GRADE_COLORS = [
-  // Deep Heritage Red.
+    // Intermediate phase: the oxblood family.
+    // Oxblood.
     4 => '#990000',
-  // Firebrick Red.
-    5 => '#B22222',
-  // Faded Brick Red.
+    // Oxblood deep.
+    5 => '#7a0000',
+    // Topic maroon.
     6 => '#8b2331',
-  // Dark Red.
-    7 => '#8B0000',
-  // Slate Blue.
+    // Ink.
+    7 => '#1b1c17',
+    // Senior phase: slate + green.
+    // Place slate.
     8 => '#3a4a64',
-  // Lighter Slate.
-    9 => '#4a5a74',
-  // Muted Gold.
+    // Biography green.
+    9 => '#2d5016',
+    // FET phase: the ochre family.
+    // Ochre.
     10 => '#b88a2e',
-  // Lighter Gold.
-    11 => '#c89a3e',
-  // Dark Gold.
-    12 => '#8B6914',
+    // Archive gold.
+    11 => '#8a6420',
+    // Muted ink.
+    12 => '#6d6a5c',
   ];
 
   /**
@@ -290,7 +293,7 @@ class HistoryClassroomBlock extends BlockBase implements ContainerFactoryPluginI
         'count' => $count,
         'featured_topic' => $featured_topic,
         'url' => $term->toUrl()->toString(),
-        'color' => self::GRADE_COLORS[$grade_number] ?? '#6C757D',
+        'color' => self::GRADE_COLORS[$grade_number] ?? '#6d6a5c',
       ];
     }
 

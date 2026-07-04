@@ -70,7 +70,7 @@ class SaProvincesBlock extends BlockBase implements ContainerFactoryPluginInterf
     'free_state' => [
       'name' => 'Free State',
       'description' => 'Heart of South Africa\'s goldfields',
-      'color' => '#8B0000',
+      'color' => '#3a4a64',
       'icon_letter' => 'FS',
     ],
     'gauteng' => [
@@ -82,37 +82,37 @@ class SaProvincesBlock extends BlockBase implements ContainerFactoryPluginInterf
     'kwazulu_natal' => [
       'name' => 'KwaZulu-Natal',
       'description' => 'Rich Zulu heritage and coastal beauty',
-      'color' => '#3a4a64',
+      'color' => '#8b2331',
       'icon_letter' => 'KZN',
     ],
     'limpopo' => [
       'name' => 'Limpopo',
       'description' => 'Ancient kingdoms and Mapungubwe',
-      'color' => '#4a5a74',
+      'color' => '#2d5016',
       'icon_letter' => 'LP',
     ],
     'mpumalanga' => [
       'name' => 'Mpumalanga',
       'description' => 'Land of the rising sun',
-      'color' => '#c89a3e',
+      'color' => '#8a6420',
       'icon_letter' => 'MP',
     ],
     'north_west' => [
       'name' => 'North West',
       'description' => 'Cradle of humankind region',
-      'color' => '#8b2331',
+      'color' => '#1b1c17',
       'icon_letter' => 'NW',
     ],
     'northern_cape' => [
       'name' => 'Northern Cape',
       'description' => 'Diamond fields and vast landscapes',
-      'color' => '#B22222',
+      'color' => '#7a0000',
       'icon_letter' => 'NC',
     ],
     'western_cape' => [
       'name' => 'Western Cape',
       'description' => 'Cape of Good Hope and rich colonial history',
-      'color' => '#8B6914',
+      'color' => '#6d6a5c',
       'icon_letter' => 'WC',
     ],
   ];
