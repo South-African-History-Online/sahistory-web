@@ -1,0 +1,84 @@
+name: Post-deploy smoke test
+description: >
+  Curl key pages on the deployed site and fail on HTTP 5xx or PHP fatal
+  error text in the response body. Catches render-time crashes (e.g.
+  typed-property mismatches in formatter overrides) that static analysis
+  and unit tests cannot detect.
+
+inputs:
+  base_url:
+    description: Base URL of the site to test (e.g. https://sahistory.org.za)
+    required: true
+  mode:
+    description: >
+      "full" checks multiple content pages including image/media-heavy ones
+      (use after production deploys). "maintenance" checks a single URL and
+      accepts HTTP 503 as a valid response (use after staging deploys that
+      keep maintenance mode enabled).
+    required: false
+    default: full
+
+runs:
+  using: composite
+  steps:
+    - name: Run smoke test
+      shell: bash
+      env:
+        BASE_URL: ${{ inputs.base_url }}
+        MODE: ${{ inputs.mode }}
+        # Pages that exercise image/media rendering — the class of failure that
+        # triggered the file_entity + ImageFormatter outage (Drupal 11.4).
+        SMOKE_URLS: |
+          /
+          /politics-society
+          /biographies
+          /people/dr-abdullah-abdurahman
+          /article/cradle-humankind
+        ERROR_PATTERN: 'Fatal error|PHP Fatal|The website encountered an unexpected error'
+      run: |
+        if [[ -z "$BASE_URL" ]]; then
+          echo "::warning::base_url not set — skipping smoke test"
+          exit 0
+        fi
+
+        echo "Running ${MODE} smoke test against ${BASE_URL}..."
+        FAIL=0
+        SMOKE_FILE=$(mktemp)
+        trap 'rm -f "$SMOKE_FILE"' EXIT
+
+        if [[ "$MODE" == "maintenance" ]]; then
+          STATUS=$(curl -s -o "$SMOKE_FILE" -w "%{http_code}" \
+            --max-time 30 --retry 2 --retry-delay 5 "${BASE_URL}/")
+          if grep -qiE "$ERROR_PATTERN" "$SMOKE_FILE" 2>/dev/null; then
+            echo "::error::Smoke test FAILED — PHP fatal in response body (HTTP ${STATUS})"
+            exit 1
+          elif [[ "$STATUS" -ge 500 && "$STATUS" -ne 503 ]]; then
+            echo "::error::Smoke test FAILED — unexpected HTTP ${STATUS} (expected 200 or 503)"
+            exit 1
+          else
+            echo "✓ HTTP ${STATUS} (maintenance mode active)"
+          fi
+          exit 0
+        fi
+
+        while IFS= read -r path; do
+          [[ -z "$path" ]] && continue
+          : > "$SMOKE_FILE"
+          STATUS=$(curl -s -o "$SMOKE_FILE" -w "%{http_code}" \
+            --max-time 30 --retry 2 --retry-delay 5 "${BASE_URL}${path}")
+          if grep -qiE "$ERROR_PATTERN" "$SMOKE_FILE" 2>/dev/null; then
+            echo "::error::${path} — HTTP ${STATUS} — PHP fatal in response body"
+            FAIL=1
+          elif [[ "$STATUS" -ge 500 ]]; then
+            echo "::error::${path} — HTTP ${STATUS}"
+            FAIL=1
+          else
+            echo "✓ ${path} — HTTP ${STATUS}"
+          fi
+        done <<< "$SMOKE_URLS"
+
+        if [[ $FAIL -ne 0 ]]; then
+          echo "::error::One or more smoke tests failed — check deploy output"
+          exit 1
+        fi
+        echo "All smoke tests passed"

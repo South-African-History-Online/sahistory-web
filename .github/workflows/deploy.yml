@@ -59,6 +59,12 @@ jobs:
         run: |
           rm -f ~/.ssh/deploy_key
 
+      - name: Post-deploy smoke test
+        uses: ./.github/actions/smoke-test
+        with:
+          base_url: ${{ secrets.STAGING_BASE_URL }}
+          mode: maintenance
+
       - name: Notify on Success
         if: success()
         run: |
@@ -107,6 +113,11 @@ jobs:
         if: always()
         run: |
           rm -f ~/.ssh/deploy_key
+
+      - name: Post-deploy smoke test
+        uses: ./.github/actions/smoke-test
+        with:
+          base_url: https://sahistory.org.za
 
       - name: Notify on Success
         if: success()
@@ -172,6 +183,19 @@ jobs:
         if: always()
         run: |
           rm -f ~/.ssh/deploy_key
+
+      - name: Post-deploy smoke test (production)
+        if: github.event.inputs.environment == 'production'
+        uses: ./.github/actions/smoke-test
+        with:
+          base_url: https://sahistory.org.za
+
+      - name: Post-deploy smoke test (staging)
+        if: github.event.inputs.environment == 'staging'
+        uses: ./.github/actions/smoke-test
+        with:
+          base_url: ${{ secrets.STAGING_BASE_URL }}
+          mode: maintenance
 
       - name: Notify on Success
         if: success()
