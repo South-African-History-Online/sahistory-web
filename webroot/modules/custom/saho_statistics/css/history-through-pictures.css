@@ -5,20 +5,21 @@
 
 /* Base block styles */
 .saho-history-pictures {
-  /* Component-scoped design tokens */
-  --pic-radius:          var(--saho-radius-md);          /* 8px - card standard */
-  --pic-shadow:          var(--saho-shadow-sm);
-  --pic-shadow-hover:    var(--saho-shadow-xl);
-  --pic-transition:      all var(--saho-transition-slow, 0.3s ease);
-  --pic-color-primary:   var(--saho-color-primary);
-  --pic-color-surface:   var(--saho-color-white);
-  --pic-color-surface-alt: var(--saho-color-surface-alt);
-  --pic-color-text:      var(--saho-color-text-primary);
-  --pic-color-gray-500:  var(--saho-color-gray-500);
-  --pic-color-gray-200:  var(--saho-color-gray-200);
+  /* Component-scoped design tokens - "Open Record" sweep (#453 batch 2.2):
+     squared corners, hairline borders instead of shadows, flat color. */
+  --pic-radius:          0;
+  --pic-shadow:          none;
+  --pic-shadow-hover:    none;
+  --pic-border:          var(--bw-hair, 1px) solid var(--border-default, #bdb9a6);
+  --pic-transition:      all var(--saho-transition-base, 0.2s ease);
+  --pic-color-primary:   var(--saho-oxblood, #990000);
+  --pic-color-surface:   var(--surface-card, #f1efe7);
+  --pic-color-surface-alt: var(--saho-paper-sunk, #dad6c7);
+  --pic-color-text:      var(--text-primary, #1b1c17);
+  --pic-color-gray-500:  var(--text-muted, #6d6a5c);
+  --pic-color-gray-200:  var(--border-default, #bdb9a6);
 
   margin: 3rem 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
 .history-pictures-title {
@@ -39,9 +40,9 @@
   left: 50%;
   transform: translateX(-50%);
   width: 80px;
-  height: 4px;
-  background: linear-gradient(90deg, var(--pic-color-primary) 0%, var(--saho-color-primary-light, #b22222) 100%);
-  border-radius: 2px;
+  height: var(--bw-accent, 3px);
+  background: var(--pic-color-primary);
+  border-radius: 0;
 }
 
 /* View all link */
@@ -62,13 +63,14 @@
   border-radius: var(--pic-radius);
   overflow: hidden;
   background: var(--pic-color-surface);
+  border: var(--pic-border);
   box-shadow: var(--pic-shadow);
   transition: var(--pic-transition);
 }
 
 .history-picture-item:hover {
   box-shadow: var(--pic-shadow-hover);
-  transform: translateY(-4px);
+  border-color: var(--border-strong, #1b1c17);
 }
 
 .history-picture-link {
@@ -94,38 +96,36 @@
   height: 100%;
   object-fit: cover;
   object-position: center;
-  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  transform: scale(1.02);
+  transition: filter var(--saho-transition-base, 0.2s) ease;
+  transform: none;
 }
 
 .history-picture-item:hover .history-picture-image img {
-  transform: scale(1.08);
+  transform: none;
 }
 
-/* Title overlay */
+/* Title overlay - flat ink scrim, squared */
 .history-picture-overlay {
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.65) 50%, transparent 100%);
-  padding: 4rem 1.5rem 1.25rem;
+  background: rgba(27, 28, 23, 0.82);
+  padding: 1rem 1.25rem;
   transform: translateY(0);
-  transition: all 0.3s ease;
+  transition: background 0.2s ease;
 }
 
 .history-picture-item:hover .history-picture-overlay {
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.92) 0%, rgba(0, 0, 0, 0.75) 60%, transparent 100%);
-  padding-bottom: 1.5rem;
+  background: rgba(27, 28, 23, 0.92);
 }
 
 .history-picture-item-title {
-  color: #ffffff;
+  color: #f1efe7;
   font-size: 1rem;
   font-weight: 600;
   margin: 0;
   line-height: 1.5;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
@@ -210,25 +210,25 @@
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  background: rgba(255, 255, 255, 0.95);
-  border: none;
+  background: var(--pic-color-surface);
+  border: 1px solid var(--border-strong, #1b1c17);
   width: 48px;
   height: 48px;
-  border-radius: var(--saho-radius-full);
+  border-radius: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   z-index: 10;
-  box-shadow: var(--saho-shadow-md);
+  box-shadow: none;
   transition: all 0.2s ease;
 }
 
 .carousel-prev:hover,
 .carousel-next:hover {
-  background: var(--pic-color-surface);
-  box-shadow: var(--saho-shadow-lg);
-  transform: translateY(-50%) scale(1.1);
+  background: var(--pic-color-surface-alt);
+  box-shadow: none;
+  transform: translateY(-50%);
 }
 
 .carousel-prev {
@@ -301,7 +301,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(135deg, transparent 0%, var(--saho-color-primary-alpha-10, rgba(153, 0, 0, 0.1)) 100%);
+    background: rgba(153, 0, 0, 0.06);
     opacity: 0;
     transition: opacity 0.3s ease;
     pointer-events: none;
@@ -352,7 +352,7 @@
 }
 
 .history-picture-item.loading {
-  background: linear-gradient(90deg, var(--pic-color-surface-alt) 0%, var(--pic-color-gray-200) 50%, var(--pic-color-surface-alt) 100%);
+  background: var(--pic-color-surface-alt);
   background-size: 1000px 100%;
   animation: shimmer 2s infinite;
 }
@@ -405,8 +405,8 @@
   gap: 1rem;
   padding: 1.5rem;
   background: var(--pic-color-surface-alt);
-  border-left: 4px solid var(--pic-color-primary);
-  border-radius: var(--pic-radius);
+  border-left: var(--bw-accent, 3px) solid var(--pic-color-primary);
+  border-radius: 0;
 }
 
 .description-icon {
@@ -430,8 +430,8 @@
   flex-wrap: wrap;
   padding: 1.5rem;
   background: var(--pic-color-surface-alt);
-  border-radius: var(--saho-radius-lg);
-  border: 1px solid var(--pic-color-gray-200);
+  border-radius: 0;
+  border: var(--pic-border);
 }
 
 .sort-label {
@@ -480,9 +480,9 @@
 .sort-link:hover {
   background: var(--pic-color-surface-alt);
   color: var(--pic-color-text);
-  border-color: var(--saho-color-gray-300, #d1d5db);
-  transform: translateY(-1px);
-  box-shadow: var(--saho-shadow-sm);
+  border-color: var(--border-strong, #1b1c17);
+  transform: none;
+  box-shadow: none;
 }
 
 .sort-link:hover .sort-icon {
@@ -500,8 +500,8 @@
 }
 
 .sort-link.active:hover {
-  background: var(--saho-color-primary-dark);
-  border-color: var(--saho-color-primary-dark);
+  background: var(--saho-oxblood-deep, #6e0000);
+  border-color: var(--saho-oxblood-deep, #6e0000);
 }
 
 /* Gallery grid - more columns for larger screens */
@@ -521,7 +521,7 @@
   color: var(--pic-color-surface);
   font-size: 0.75rem;
   font-weight: 600;
-  border-radius: 4px;
+  border-radius: 0;
   text-transform: uppercase;
   letter-spacing: 0.025em;
 }
@@ -588,18 +588,20 @@
   }
 }
 
-/* GLightbox customization for SAHO theme */
+/* GLightbox customization for SAHO theme.
+   Note: the lightbox mounts on <body>, outside .saho-history-pictures,
+   so the --pic-* scoped tokens do not reach here - use theme tokens. */
 .glightbox-container .gclose,
 .glightbox-container .gprev,
 .glightbox-container .gnext {
-  background: var(--pic-color-primary);
-  border-radius: var(--pic-radius);
+  background: var(--saho-oxblood, #990000);
+  border-radius: 0;
 }
 
 .glightbox-container .gclose:hover,
 .glightbox-container .gprev:hover,
 .glightbox-container .gnext:hover {
-  background: var(--saho-color-primary-dark);
+  background: var(--saho-oxblood-deep, #6e0000);
 }
 
 .glightbox-container .gslide-title {

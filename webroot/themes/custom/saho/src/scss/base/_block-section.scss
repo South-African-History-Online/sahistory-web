@@ -1,246 +1,154 @@
-// Block Section Styling
-// Modern and professional styling for block sections using design token system
-// Uses centralized design tokens from abstracts/_design-tokens.scss
+// Block Section - "Open Record" band (2027 relook, GitHub #453 batch 2.2).
+//
+// Consumers:
+// - templates/block/featured-article-block.html.twig (.block-section band)
+// - templates/block/block--inline-block--basic.html.twig (.saho-prose-block)
+// - templates/block/block--inline-block--button.html.twig (.enhanced-button-link-inline)
+// - templates/block/entity-overview-block.html.twig (.entity-overview-block/-item)
+//
+// The band sits directly on the paper ground: no card background, no radius,
+// no shadow, no hover lift. An oxblood accent rule marks the section start;
+// a hairline closes the header (see saho-section-heading component).
 
-// Featured topics and TDIH blocks container
-.two-blocks-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax($saho-grid-two-col-min-width, 1fr));
-  gap: var(--saho-space-6);
-  justify-content: center;
-  align-items: start;
-  margin: var(--saho-space-4) 0;
-  max-width: var(--saho-container-wide);
-  margin-left: auto;
-  margin-right: auto;
-  padding: 0 var(--saho-space-3);
-
-  // Allow blocks to fill their 50% grid allocation
-  .block-section {
-    max-width: none;
-    width: 100%;
-  }
+// ============================================================
+// THE BAND
+// ============================================================
+.block-section {
+  position: relative;
+  width: 100%;
+  max-width: var(--saho-container-standard, 1200px);
+  margin: 0 auto;
+  padding-top: var(--saho-space-3, 1.5rem);
+  border-top: var(--bw-accent, 3px) solid var(--saho-oxblood, #990000);
+  background: transparent;
+  color: var(--text-primary, #1b1c17);
+  text-align: left;
 }
 
-// Layout Builder two-column sections: Allow blocks to fill their region
+// Layout Builder two-column sections: let the band fill its region.
 .layout--twocol-section .layout__region .block-section {
   max-width: none;
-  width: 100%;
 }
 
-// Clean modern block section styling - matching TDIH design
-// Default uses standard container width (1200px)
-.block-section {
-  background: $white;
-  border-radius: var(--saho-radius-md);
-  border: 1px solid $gray-200;
-  padding: var(--block-padding);
-  font-family: $font-family-base;
-  color: $gray-800;
-  transition: all 0.3s ease;
-  position: relative;
-
-  // Default container width - standard (1200px)
-  max-width: var(--saho-container-standard);
-  width: 100%;
-  margin: 0 auto;
-  text-align: left;
-
-  // Clean hover effect
-  &:hover {
-    box-shadow: var(--saho-shadow-hover);
-    border-color: $gray-300;
-  }
-}
-
-// Container width modifiers using design token system
-.block-section--narrow {
-  max-width: var(--saho-container-narrow); // 700px - Single column content
-}
-
-.block-section--wide {
-  max-width: var(--saho-container-wide); // 1600px - Multi-column grids
-}
-
-.block-section--full {
-  max-width: var(--saho-container-full); // 100% - Full-width sections
-}
-
-/* Clean heading with left accent bar - TDIH style */
+// Header: title in the global Caslon, mono kicker on the right,
+// closed by a hairline rule.
 .block-section-header {
   display: flex;
-  align-items: flex-start;
+  align-items: baseline;
   justify-content: space-between;
-  margin-bottom: var(--saho-space-3);
-  padding-bottom: var(--saho-space-2);
-  border-bottom: 1px solid $gray-200;
+  gap: var(--saho-space-2, 1rem);
+  margin-bottom: var(--saho-space-3, 1.5rem);
+  padding-bottom: var(--saho-space-2, 1rem);
+  border-bottom: var(--bw-hair, 1px) solid var(--border-default, #bdb9a6);
 
-  .block-title-wrapper {
-    display: flex;
-    align-items: flex-start;
-    gap: var(--saho-space-1);
-
-    // Left accent bar
-    &::before {
-      content: "";
-      width: 4px;
-      height: var(--saho-space-4);
-      background: $saho-deep-heritage-red;
-      flex-shrink: 0;
-      margin-top: 0;
-    }
-
-    h2 {
-      font-size: 1.5rem;
-      color: $gray-800;
-      margin: 0;
-      font-family: $headings-font-family;
-      font-weight: 600;
-      line-height: 1.3;
-    }
+  .block-title-wrapper h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    line-height: 1.3;
+    color: var(--text-primary, #1b1c17);
   }
 
   .block-meta {
-    font-size: 0.9rem;
-    color: $gray-600;
-    font-weight: 500;
     flex-shrink: 0;
+    font-family: var(--font-mono, ui-monospace, monospace);
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--text-muted, #6d6a5c);
   }
 }
 
-/* Clean intro text */
+// Intro line under the header.
 .block-section .intro-text {
+  margin-bottom: var(--saho-space-3, 1.5rem);
   font-size: 0.9rem;
-  color: $gray-600;
   line-height: 1.5;
-  margin-bottom: var(--saho-space-3);
-  font-weight: 400;
+  color: var(--text-muted, #6d6a5c);
 }
 
-/* Clean content area */
 .block-section .block-content {
-  margin-bottom: var(--saho-space-3);
+  margin-bottom: var(--saho-space-3, 1.5rem);
 }
 
-/* Clean image styling - TDIH style */
-.block-section .block-image {
-  width: 100%;
-  height: var(--block-image-height);
-  border-radius: var(--saho-radius-md);
-  margin-bottom: var(--saho-space-2);
-  position: relative;
-  overflow: hidden;
-
-  img {
-    width: 100%;
-    height: 100%;
-    border-radius: var(--saho-radius-md);
-    display: block;
-    object-fit: cover;
-    object-position: center;
-  }
-}
-
-/* Clean overlay label - TDIH style */
+// Image: squared, archival duotone; engaging the band reveals true colour
+// (mirrors .saho-card-image img in base/_open-record.scss).
 .block-section .block-image-wrapper {
   position: relative;
-  margin-bottom: var(--saho-space-2);
   width: 100%;
-  height: var(--block-image-height);
-  border-radius: var(--saho-radius-md);
+  height: var(--saho-block-image-height, 250px);
+  margin-bottom: var(--saho-space-2, 1rem);
   overflow: hidden;
 
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: center;
-    border-radius: var(--saho-radius-md);
-    display: block;
-  }
-
+  // Year / kind chip: square, mono, ink-on-paper tag.
   .block-label {
     position: absolute;
-    top: var(--saho-space-1);
-    right: var(--saho-space-1);
-    background: $saho-deep-heritage-red;
-    color: $white;
-    font-size: 0.75rem;
-    font-weight: 600;
-    padding: 0 var(--saho-space-1);
-    border-radius: var(--saho-radius-sm);
-    text-transform: uppercase;
-    letter-spacing: 0;
+    top: var(--saho-space-1, 0.5rem);
+    right: var(--saho-space-1, 0.5rem);
     z-index: 2;
+    padding: 2px 8px;
+    border: 1px solid var(--border-strong, #1b1c17);
+    background: var(--surface-card, #f1efe7);
+    color: var(--text-primary, #1b1c17);
+    font-family: var(--font-mono, ui-monospace, monospace);
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
   }
 }
 
-/* Clean title styling - TDIH style */
+.block-section .block-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  filter: var(--img-duotone);
+  transition: filter var(--saho-transition-base, 200ms) ease;
+}
+
+.block-section:hover .block-image,
+.block-section:focus-within .block-image {
+  filter: none;
+}
+
+// Item title + link.
 .block-section h3 {
+  margin: 0 0 var(--saho-space-1, 0.5rem);
   font-size: 1.25rem;
-  margin: 0 0 var(--saho-space-1);
   line-height: 1.4;
-  font-family: $headings-font-family;
-  font-weight: 600;
-  color: $gray-900;
-}
+  color: var(--text-primary, #1b1c17);
 
-/* Date/meta info */
-.block-section .block-date {
-  font-size: 0.9rem;
-  color: $gray-600;
-  margin-bottom: var(--saho-space-2);
-  font-weight: 500;
-}
-
-/* Description text */
-.block-section .block-description {
-  font-size: 0.95rem;
-  color: $gray-700;
-  line-height: 1.5;
-  margin-bottom: var(--saho-space-3);
-}
-
-/* Title link */
-.block-section h3 a {
-  color: $saho-deep-heritage-red;
-  text-decoration: none;
-  transition: color 0.2s ease;
-
-  &:hover {
-    color: darken($saho-deep-heritage-red, 10%);
+  a {
+    color: var(--link-rest, #990000);
     text-decoration: none;
+
+    &:hover {
+      color: var(--link-hover, #6e0000);
+      text-decoration: underline;
+      text-underline-offset: 0.14em;
+    }
   }
 }
 
-/* Optional main text below the subheading */
+// Fallback / plain text.
 .block-section p.block-main-text {
+  margin: 0 0 var(--saho-space-2, 1rem);
   font-size: 0.95rem;
-  margin: 0 0 var(--saho-space-2);
   line-height: 1.5;
-  color: $gray-700;
+  color: var(--text-primary, #1b1c17);
 }
 
-/* Clean button styling - TDIH style */
+// Buttons: layout only - button chrome lives in the saho-button component.
 .block-section .block-buttons {
   display: flex;
   flex-direction: column;
-  gap: var(--saho-space-1);
-}
-
-// DEPRECATED: Block button styling moved to saho-button SDC component
-// These legacy classes are kept for backwards compatibility during migration
-// All button styling now in components/utilities/saho-button/saho-button.css
-.block-section .block-button,
-.block-section .block-button-primary,
-.block-section .block-button-secondary {
-  // Empty - all styling now in saho-button component
+  gap: var(--saho-space-1, 0.5rem);
 }
 
 // ============================================================
 // INLINE BLOCK: button content type
 // Override enhanced_button_link formatter output to match the
-// saho-button--primary design token system (filled heritage red pill).
+// saho-button--primary design token system.
 // ============================================================
 .enhanced-button-link-inline .btn {
   display: inline-flex;
@@ -265,8 +173,6 @@
     border-color: var(--saho-button-primary-border-hover);
     color: var(--saho-button-primary-text-hover);
     text-decoration: none;
-    transform: translateY(-1px);
-    box-shadow: var(--saho-shadow-sm);
   }
 }
 
@@ -276,17 +182,15 @@
 // ============================================================
 .saho-prose-block {
   &__title {
+    margin-bottom: var(--saho-space-2, 1rem);
     font-size: 1.25rem;
-    font-weight: 600;
-    color: $gray-900;
-    margin-bottom: var(--saho-space-2);
-    font-family: $headings-font-family;
+    color: var(--text-primary, #1b1c17);
   }
 
   &__body {
-    font-size: var(--saho-font-size-base);
-    line-height: var(--saho-line-height-relaxed);
-    color: $gray-800;
+    font-size: var(--saho-font-size-base, 1rem);
+    line-height: var(--saho-line-height-relaxed, 1.7);
+    color: var(--text-primary, #1b1c17);
 
     > *:first-child {
       margin-top: 0;
@@ -297,51 +201,23 @@
   }
 }
 
-/* Entity overview block */
+// ============================================================
+// ENTITY OVERVIEW BLOCK
+// Wrapper only - the items render through the saho-card system.
+// ============================================================
 .entity-overview-block {
-  margin: var(--saho-block-margin) 0;
+  margin: var(--saho-block-margin, 2rem) 0;
   text-align: center;
-  padding: var(--saho-space-3);
-  background-color: #fff;
-  border-radius: var(--saho-radius-md);
-  box-shadow: var(--saho-shadow-md);
-}
 
-.entity-overview-block .block-title {
-  font-size: 1.5rem;
-  color: $saho-deep-heritage-red;
-  margin-bottom: var(--saho-space-1);
-  font-family: $headings-font-family;
-  font-weight: $headings-font-weight;
-}
-
-.entity-overview-block .intro-text {
-  font-size: 0.9rem;
-  color: $gray-700;
-  margin-bottom: var(--saho-space-3);
-  max-width: 600px;
-  margin-left: auto;
-  margin-right: auto;
-  line-height: 1.5;
-}
-
-.entity-overview-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--saho-space-3);
-  justify-content: center;
+  .block-title {
+    margin-bottom: var(--saho-space-1, 0.5rem);
+    font-size: 1.5rem;
+    color: var(--saho-oxblood, #990000);
+  }
 }
 
 .entity-overview-item {
-  max-width: 300px;
-  text-align: center;
-  transition: transform 0.3s ease;
-
-  &:hover {
-    transform: translateY(-4px);
-  }
-
-  // Ensure saho-card-image works properly in entity overview
+  // Ensure saho-card-image fills its frame inside entity overview grids.
   .saho-card-image {
     a,
     picture {
@@ -351,172 +227,44 @@
     }
 
     img {
+      display: block;
       width: 100%;
       height: 100%;
-      min-width: 100%;
-      min-height: 100%;
-      display: block;
     }
   }
 }
 
-.entity-overview-image {
-  width: 100%;
-  height: auto;
-  border-radius: var(--saho-radius-md);
-  margin-bottom: var(--saho-space-1);
-  box-shadow: var(--saho-shadow-md);
-  transition: transform 0.3s ease;
-
-  &:hover {
-    transform: scale(1.02);
-  }
-}
-
-.entity-overview-item h3 {
-  font-size: 1.1rem;
-  margin: 0 0 var(--saho-space-1);
-  color: $saho-deep-heritage-red;
-  font-family: $headings-font-family;
-  font-weight: $headings-font-weight;
-}
-
-.entity-overview-item h3 a {
-  text-decoration: none;
-  color: inherit;
-  transition: color 0.2s ease;
-
-  &:hover {
-    color: darken($saho-deep-heritage-red, 10%);
-  }
-}
-
-.entity-overview-item .date {
-  font-size: 0.9rem;
-  color: $gray-600;
-  font-style: italic;
-}
-
-// Enhanced responsive design to complement TDIH block
-@include media-breakpoint-down(lg) {
-  .two-blocks-container {
-    grid-template-columns: 1fr;
-    max-width: 1000px;
-    gap: var(--saho-space-4);
-  }
-
-  .block-section {
-    max-width: none;
-    width: 100%;
-  }
-}
-
+// ============================================================
+// RESPONSIVE
+// ============================================================
 @include media-breakpoint-down(md) {
-  .two-blocks-container {
-    gap: var(--saho-space-4);
-    padding: 0 var(--saho-space-2);
-    margin: var(--saho-space-3) auto;
-    max-width: 90%;
-  }
-
   .block-section {
-    padding: var(--block-padding);
-
-    h2 {
-      font-size: 1.5rem;
+    .block-section-header .block-title-wrapper h2 {
+      font-size: 1.35rem;
     }
 
-    .intro-text {
-      font-size: 0.95rem;
-      max-width: none;
-    }
-
-    .block-image,
     .block-image-wrapper {
-      height: var(--block-image-height);
-    }
-
-    .block-button {
-      padding: var(--saho-space-1) var(--saho-space-3);
-      font-size: 0.9rem;
+      height: var(--saho-block-image-height-tablet, 200px);
     }
   }
 }
 
 @include media-breakpoint-down(sm) {
-  .block-section {
-    padding: var(--block-padding);
-
-    h2 {
-      font-size: 1.4rem;
-
-      &::after {
-        width: 48px;
-      }
-    }
-
-    .block-image,
-    .block-image-wrapper {
-      height: var(--block-image-height);
-      border-radius: var(--saho-radius-md);
-    }
-
-    .block-button {
-      padding: var(--saho-space-1) var(--saho-space-2);
-      font-size: 0.85rem;
-      letter-spacing: 0;
-    }
-
-    .featured-content {
-      padding: var(--saho-space-2);
-    }
+  .block-section .block-image-wrapper {
+    height: var(--saho-block-image-height-mobile, 180px);
   }
 }
 
 // High contrast mode support
 @media (prefers-contrast: high) {
   .block-section {
-    border: 2px solid $gray-700;
-
-    &::before {
-      background: $saho-deep-heritage-red;
-    }
-
-    .block-button {
-      border: 2px solid $saho-deep-heritage-red;
-    }
+    border-top-color: var(--border-strong, #1b1c17);
   }
 }
 
 // Reduced motion support
 @media (prefers-reduced-motion: reduce) {
-  .block-section,
-  .block-section *,
-  .block-section .block-image,
-  .block-section .block-button,
-  .block-section .featured-content {
+  .block-section .block-image {
     transition: none;
-    animation: none;
-  }
-
-  .block-section:hover {
-    transform: none;
-  }
-
-  .block-section .block-button::before {
-    transition: none;
-  }
-}
-
-// ============================================================
-// LAYOUT BUILDER EDIT MODE
-// Suppress interactive hover states so editors don't think
-// block sections are clickable elements.
-// ============================================================
-.layout-builder .block-section,
-.layout-builder-block .block-section {
-  &:hover {
-    box-shadow: none;
-    border-color: $gray-200;
   }
 }

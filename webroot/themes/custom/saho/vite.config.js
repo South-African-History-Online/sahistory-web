@@ -19,6 +19,9 @@ const purgeCSSConfig = {
     './components/**/*.js',
     './js/**/*.js',
     '../../../contrib/radix/templates/**/*.twig',
+    // tdih's block template emits theme-styled .block-section band classes
+    // (the theme copy was a dead override and got removed - #453).
+    '../../../modules/custom/saho_utils/tdih/templates/**/*.twig',
   ],
   safelist: {
     standard: [
