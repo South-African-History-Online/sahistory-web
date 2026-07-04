@@ -1,40 +1,50 @@
 /**
  * SAHO Donate Page Styles
- * Aligned with SAHO brand identity - heritage red, charcoal, slate, gold.
+ * Open Record design language - flat paper surfaces, square corners,
+ * hairline borders instead of shadows, oxblood + ochre accents.
+ *
+ * NOTE: this file must stay self-contained. It is loaded on the shop
+ * multisite where the main theme's :root tokens do not exist, so only
+ * literal values or the local --donate-* properties below may be used.
  */
 
 /* =============================================
-   DESIGN TOKENS
+   DESIGN TOKENS (local, literal - no theme deps)
    ============================================= */
 .donate-page,
 .donate-pathways-block,
 .donate-tiers-block {
-  --donate-red: #990000;
+  --donate-paper: #e7e4d8;        /* page background */
+  --donate-raised: #f1efe7;       /* raised card surface */
+  --donate-sunk: #dad6c7;         /* sunk / hover surface */
+  --donate-ink: #1b1c17;          /* primary text + dark surfaces */
+  --donate-red: #990000;          /* oxblood accent */
   --donate-red-dark: #7a0000;
-  --donate-slate: #3a4a64;
-  --donate-slate-dark: #2c3a50;
-  --donate-charcoal: #1e293b;
-  --donate-gold: #b88a2e;
+  --donate-slate: #1b1c17;        /* legacy name - now ink */
+  --donate-slate-dark: #32332c;
+  --donate-charcoal: #1b1c17;     /* legacy name - now ink */
+  --donate-gold: #b88a2e;         /* ochre accent */
   --donate-gold-dark: #8b6914;
-  --donate-patron-gold: #7a5a18;
-  --donate-light-bg: #f8f6f3;
-  --donate-border: #e2ddd6;
-  --donate-parchment: #fdf8f0;
-  --donate-parchment-border: #e8d5a3;
-  --donate-text: #1e293b;
-  --donate-text-muted: #5c6370;
-  --donate-radius: 10px;
+  --donate-patron-gold: #8b6914;
+  --donate-light-bg: #e7e4d8;     /* legacy name - now paper */
+  --donate-border: #bdb9a6;       /* hairline */
+  --donate-parchment: #f1efe7;    /* flat parchment panel */
+  --donate-parchment-border: #bdb9a6;
+  --donate-text: #1b1c17;
+  --donate-text-muted: #6d6a5c;
+  --donate-radius: 0;
+  --donate-mono: "IBM Plex Mono", ui-monospace, monospace;
 }
 
 /* =============================================
    SHARED BUTTONS
    Button hierarchy:
-   --primary     = solid red  → main donate CTA
-   --champion    = solid gold → champion CTA
-   --slate       = solid slate → secondary tier CTA
-   --patron      = gold gradient → patron CTA
-   --outline-red = red outline  → ghost/light contexts
-   --white       = solid white  → CTA on dark bg
+   --primary     = solid oxblood -> main donate CTA
+   --champion    = solid ochre   -> champion CTA
+   --slate       = solid ink     -> secondary tier CTA
+   --patron      = solid dark ochre -> patron CTA
+   --outline-red = oxblood outline  -> ghost/light contexts
+   --white       = solid paper      -> CTA on dark bg
    ============================================= */
 .donate-btn {
   display: inline-flex;
@@ -42,12 +52,11 @@
   justify-content: center;
   gap: 0.5rem;
   padding: 0.75rem 1.75rem;
-  border-radius: 6px;
+  border-radius: 0;
   font-weight: 700;
   font-size: 0.95rem;
   text-decoration: none;
-  transition: background 0.18s ease, border-color 0.18s ease,
-              transform 0.18s ease, box-shadow 0.18s ease;
+  transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
   border: 2px solid transparent;
   white-space: nowrap;
   cursor: pointer;
@@ -62,7 +71,7 @@
   display: flex;
 }
 
-/* Solid red - primary donate action */
+/* Solid oxblood - primary donate action */
 .donate-btn--primary {
   background: var(--donate-red);
   color: #fff;
@@ -72,25 +81,21 @@
   background: var(--donate-red-dark);
   border-color: var(--donate-red-dark);
   color: #fff;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 14px rgba(153, 0, 0, 0.3);
 }
 
-/* Solid gold - champion subscription CTA */
+/* Solid ochre - champion subscription CTA */
 .donate-btn--champion {
   background: var(--donate-gold);
-  color: #1a1a1a;
+  color: #1b1c17;
   border-color: var(--donate-gold);
 }
 .donate-btn--champion:hover {
   background: var(--donate-gold-dark);
   border-color: var(--donate-gold-dark);
-  color: #1a1a1a;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 16px rgba(184, 138, 46, 0.35);
+  color: #fff;
 }
 
-/* Solid slate blue - secondary tier CTA (Monthly) */
+/* Solid ink - secondary tier CTA (Monthly) */
 .donate-btn--slate {
   background: var(--donate-slate);
   color: #fff;
@@ -100,49 +105,45 @@
   background: var(--donate-slate-dark);
   border-color: var(--donate-slate-dark);
   color: #fff;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 14px rgba(58, 74, 100, 0.3);
 }
 
-/* Gold gradient - Patron tier CTA */
+/* Solid dark ochre - Patron tier CTA */
 .donate-btn--patron {
-  background: linear-gradient(135deg, var(--donate-patron-gold) 0%, var(--donate-gold) 100%);
-  color: #1a1a1a;
-  border-color: var(--donate-gold);
+  background: var(--donate-patron-gold);
+  color: #fff;
+  border-color: var(--donate-patron-gold);
 }
 .donate-btn--patron:hover {
-  filter: brightness(1.08);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 16px rgba(122, 90, 24, 0.35);
-  color: #1a1a1a;
+  background: #6d5310;
+  border-color: #6d5310;
+  color: #fff;
 }
 
-/* Solid white - primary CTA on dark gradient sections */
+/* Solid paper - primary CTA on dark ink sections */
 .donate-btn--white {
-  background: #fff;
+  background: #e7e4d8;
   color: var(--donate-red);
-  border-color: #fff;
+  border-color: #e7e4d8;
 }
 .donate-btn--white:hover {
-  background: #f0f0f0;
-  border-color: #f0f0f0;
+  background: #dad6c7;
+  border-color: #dad6c7;
   color: var(--donate-red-dark);
-  transform: translateY(-1px);
 }
 
-/* White outline - secondary CTA on dark gradient sections */
+/* Paper outline - secondary CTA on dark ink sections */
 .donate-btn--outline-white {
   background: transparent;
-  color: #fff;
-  border-color: rgba(255, 255, 255, 0.6);
+  color: #e7e4d8;
+  border-color: rgba(231, 228, 216, 0.6);
 }
 .donate-btn--outline-white:hover {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.9);
-  color: #fff;
+  background: rgba(231, 228, 216, 0.12);
+  border-color: #e7e4d8;
+  color: #e7e4d8;
 }
 
-/* Red outline - tertiary CTA on light surfaces (e.g. tier-grid custom-amount) */
+/* Oxblood outline - tertiary CTA on light surfaces (e.g. tier-grid custom-amount) */
 .donate-btn--outline-red {
   background: transparent;
   color: var(--donate-red);
@@ -152,25 +153,21 @@
   background: var(--donate-red);
   color: #fff;
   border-color: var(--donate-red);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 14px rgba(153, 0, 0, 0.25);
 }
 
 /* Kept for backward compat - maps to champion style */
 .donate-btn--gold {
   background: var(--donate-gold);
-  color: #1a1a1a;
+  color: #1b1c17;
   border-color: var(--donate-gold);
 }
 .donate-btn--gold:hover {
   background: var(--donate-gold-dark);
   border-color: var(--donate-gold-dark);
-  color: #1a1a1a;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 16px rgba(184, 138, 46, 0.35);
+  color: #fff;
 }
 
-/* Kept for backward compat - maps to slate style */
+/* Kept for backward compat - maps to slate/ink style */
 .donate-btn--outline-violet {
   background: var(--donate-slate);
   color: #fff;
@@ -180,21 +177,16 @@
   background: var(--donate-slate-dark);
   border-color: var(--donate-slate-dark);
   color: #fff;
-  transform: translateY(-1px);
 }
 
 /* Selected state - applied via JS when this pathway was last chosen.
-   Matches saho_shop .support-btn--selected so the visual feels uniform
-   across both the donate page and the champion landing page. */
+   Square check marker, ochre outline - no glow. */
 .donate-btn--selected,
 .footer-cta-primary--selected,
 .footer-cta-secondary--selected {
   position: relative;
   outline: 2px solid var(--donate-gold);
   outline-offset: 3px;
-  box-shadow:
-    0 0 0 5px rgba(184, 138, 46, 0.18),
-    0 4px 14px rgba(184, 138, 46, 0.28);
 }
 .donate-btn--selected::after,
 .footer-cta-primary--selected::after,
@@ -205,32 +197,32 @@
   right: -10px;
   width: 22px;
   height: 22px;
-  border-radius: 50%;
+  border-radius: 0;
   background: var(--donate-gold);
-  color: #1a1a1a;
+  color: #1b1c17;
   font-size: 0.75rem;
   font-weight: 700;
   line-height: 22px;
   text-align: center;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  border: 1px solid #1b1c17;
 }
 
 /* keep the visible-focus indicator inline with selected for keyboard users */
 .donate-btn:focus-visible,
 .donate-snapscan-qr__btn:focus-visible {
-  outline: 3px solid rgba(184, 138, 46, 0.6);
+  outline: 3px solid #b88a2e;
   outline-offset: 3px;
 }
 
 /* =============================================
    SECTION HEADINGS
-   Charcoal for authority; red used as accent only
+   Ink for authority; oxblood used as accent only
    ============================================= */
 .donate-section-title {
   text-align: center;
   font-size: clamp(1.5rem, 3vw, 2rem);
   font-weight: 700;
-  color: var(--donate-charcoal);
+  color: var(--donate-ink);
   margin-bottom: 0.5rem;
   position: relative;
   padding-bottom: 0.75rem;
@@ -241,7 +233,7 @@
   width: 48px;
   height: 3px;
   background: var(--donate-red);
-  border-radius: 2px;
+  border-radius: 0;
   margin: 0.6rem auto 0;
 }
 
@@ -259,10 +251,11 @@
    HERO
    ============================================= */
 .donate-hero {
-  background: linear-gradient(135deg, #1e293b 0%, #6b0000 100%);
-  color: #fff;
+  background: #1b1c17;
+  color: #e7e4d8;
   padding: 5rem 0 4rem;
   text-align: center;
+  border-bottom: 3px solid #990000;
 }
 
 .donate-hero__inner {
@@ -281,13 +274,13 @@
   font-weight: 800;
   margin-bottom: 1.25rem;
   line-height: 1.15;
-  color: #fff;
+  color: #f1efe7;
 }
 
 .donate-hero__subtitle {
   font-size: 1.1rem;
   line-height: 1.75;
-  color: rgba(255, 255, 255, 0.85);
+  color: rgba(231, 228, 216, 0.85);
   margin-bottom: 2.5rem;
   max-width: 620px;
   margin-left: auto;
@@ -301,31 +294,28 @@
   flex-wrap: wrap;
 }
 
-/* Hero primary = solid white (most legible on dark bg) */
+/* Hero primary = solid paper (most legible on dark bg) */
 .donate-hero .donate-btn--primary {
-  background: #fff;
+  background: #e7e4d8;
   color: var(--donate-red);
-  border-color: #fff;
+  border-color: #e7e4d8;
 }
 .donate-hero .donate-btn--primary:hover {
-  background: #f5f5f5;
-  border-color: #f5f5f5;
+  background: #dad6c7;
+  border-color: #dad6c7;
   color: var(--donate-red-dark);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 14px rgba(255, 255, 255, 0.2);
 }
 
-/* Hero secondary = solid gold (premium champion CTA) */
+/* Hero secondary = solid ochre (premium champion CTA) */
 .donate-hero .donate-btn--outline-white {
   background: var(--donate-gold);
-  color: #1a1a1a;
+  color: #1b1c17;
   border-color: var(--donate-gold);
 }
 .donate-hero .donate-btn--outline-white:hover {
   background: var(--donate-gold-dark);
   border-color: var(--donate-gold-dark);
-  color: #1a1a1a;
-  transform: translateY(-1px);
+  color: #fff;
 }
 
 /* =============================================
@@ -333,20 +323,20 @@
    ============================================= */
 .donate-impact {
   padding: 4rem 0;
-  background: #fff;
+  background: var(--donate-paper);
 }
 
 .donate-impact-card {
   text-align: center;
   padding: 2rem 1.5rem;
+  background: var(--donate-raised);
   border: 1px solid var(--donate-border);
   border-radius: var(--donate-radius);
   height: 100%;
-  transition: box-shadow 0.2s ease, transform 0.2s ease;
+  transition: border-color 0.2s ease, background 0.2s ease;
 }
 .donate-impact-card:hover {
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  transform: translateY(-2px);
+  border-color: #1b1c17;
 }
 
 .donate-impact-card__icon {
@@ -358,7 +348,7 @@
 .donate-impact-card__title {
   font-size: 1.05rem;
   font-weight: 700;
-  color: var(--donate-charcoal);
+  color: var(--donate-ink);
   margin-bottom: 0.6rem;
 }
 
@@ -374,7 +364,7 @@
    ============================================= */
 .donate-pathways {
   padding: 4rem 0;
-  background: var(--donate-light-bg);
+  background: var(--donate-paper);
 }
 
 /* When the pathways block is embedded inline (e.g. on /donate), no section padding */
@@ -384,7 +374,7 @@
 }
 
 .donate-pathway-card {
-  background: #fff;
+  background: var(--donate-raised);
   border: 1px solid var(--donate-border);
   border-radius: var(--donate-radius);
   padding: 2rem 1.75rem;
@@ -393,16 +383,16 @@
   flex-direction: column;
   gap: 0.875rem;
   position: relative;
-  transition: box-shadow 0.2s ease, transform 0.2s ease;
+  transition: border-color 0.2s ease, background 0.2s ease;
 }
 .donate-pathway-card:hover {
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.09);
-  transform: translateY(-2px);
+  border-color: #1b1c17;
 }
 
+/* Champion pathway - ochre top accent instead of shadow halo */
 .donate-pathway-card--champion {
-  border: 2px solid var(--donate-gold);
-  box-shadow: 0 2px 16px rgba(184, 138, 46, 0.12);
+  border: 1px solid var(--donate-border);
+  border-top: 3px solid var(--donate-gold);
 }
 
 .donate-pathway-card__badge {
@@ -412,12 +402,13 @@
   transform: translateX(-50%);
   background: var(--donate-red);
   color: #fff;
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.06em;
+  font-family: var(--donate-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
   padding: 0.25rem 1rem;
-  border-radius: 0 0 6px 6px;
+  border-radius: 0;
   white-space: nowrap;
 }
 
@@ -436,7 +427,7 @@
 .donate-pathway-card__title {
   font-size: 1.15rem;
   font-weight: 700;
-  color: var(--donate-charcoal);
+  color: var(--donate-ink);
   text-align: center;
   margin: 0;
 }
@@ -460,10 +451,11 @@
   margin: 0.5rem 0 0;
 }
 
-/* Snapscan pathway card accent */
+/* Snapscan pathway card accent - oxblood top accent */
 .donate-pathway-card--snapscan {
-  border-color: #1a7fc1;
-  border-width: 1.5px;
+  border-color: var(--donate-border);
+  border-width: 1px;
+  border-top: 3px solid var(--donate-red);
 }
 
 .donate-pathway-card__icon--gold {
@@ -481,20 +473,20 @@
 
 .donate-snapscan-qr__btn {
   background: none;
-  border: 2px solid #d9d9d9;
-  border-radius: 8px;
+  border: 1px solid #bdb9a6;
+  border-radius: 0;
   padding: 0.5rem;
   cursor: pointer;
   display: inline-flex;
   flex-direction: column;
   align-items: center;
   gap: 0.35rem;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition: border-color 0.2s ease, background 0.2s ease;
 }
 .donate-snapscan-qr__btn:hover,
 .donate-snapscan-qr__btn:focus-visible {
-  border-color: #900;
-  box-shadow: 0 0 0 3px rgba(153, 0, 0, 0.15);
+  border-color: #1b1c17;
+  background: #dad6c7;
   outline: none;
 }
 
@@ -503,12 +495,12 @@
   width: 200px;
   height: 200px;
   object-fit: contain;
-  border-radius: 4px;
+  border-radius: 0;
 }
 
 .donate-snapscan-qr__hint {
   font-size: 0.75rem;
-  color: #666;
+  color: #6d6a5c;
 }
 
 /* Snapscan fullscreen overlay */
@@ -525,19 +517,20 @@
 .donate-snapscan-overlay__backdrop {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(27, 28, 23, 0.7);
   cursor: pointer;
 }
 
 .donate-snapscan-overlay__box {
   position: relative;
-  background: #fff;
-  border-radius: 12px;
+  background: #f1efe7;
+  border: 1px solid #bdb9a6;
+  border-top: 3px solid #990000;
+  border-radius: 0;
   padding: 1.5rem 1.25rem 1.25rem;
   max-width: min(90vw, 700px);
   width: 90%;
   text-align: center;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
 }
 
 .donate-snapscan-overlay__close {
@@ -547,16 +540,16 @@
   background: none;
   border: none;
   cursor: pointer;
-  color: #666;
+  color: #6d6a5c;
   padding: 0.25rem;
   line-height: 1;
 }
-.donate-snapscan-overlay__close:hover { color: #900; }
+.donate-snapscan-overlay__close:hover { color: #990000; }
 
 .donate-snapscan-overlay__title {
   font-size: 1.1rem;
   font-weight: 700;
-  color: #3a4a64;
+  color: #1b1c17;
   margin-bottom: 1rem;
 }
 
@@ -565,12 +558,12 @@
   width: 100%;
   max-width: 100%;
   margin: 0 auto;
-  border-radius: 6px;
+  border-radius: 0;
 }
 
 .donate-snapscan-overlay__note {
   font-size: 0.85rem;
-  color: #666;
+  color: #6d6a5c;
   margin: 0.75rem 0 0;
 }
 
@@ -580,7 +573,7 @@
 .donate-tiers,
 .donate-tiers-block {
   padding: 4rem 0;
-  background: #fff;
+  background: var(--donate-paper);
 }
 
 /* Custom-amount escape hatch beneath the tier grid - promoted from muted
@@ -600,19 +593,18 @@
 }
 
 .donate-tier {
-  background: #fff;
+  background: var(--donate-raised);
   border: 1px solid var(--donate-border);
   border-radius: var(--donate-radius);
   overflow: hidden;
   height: 100%;
   display: flex;
   flex-direction: column;
-  transition: box-shadow 0.2s ease, transform 0.2s ease;
+  transition: border-color 0.2s ease;
   position: relative;
 }
 .donate-tier:hover {
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.1);
-  transform: translateY(-2px);
+  border-color: #1b1c17;
 }
 
 .donate-tier__stars {
@@ -625,48 +617,49 @@
 .donate-tier__stars--gold { color: var(--donate-gold); }
 .donate-tier__stars--patron { color: var(--donate-patron-gold); }
 
-/* Featured (Annual) tier */
+/* Featured (Annual) tier - oxblood top accent, flat oxblood header */
 .donate-tier--featured {
-  border: 2px solid var(--donate-red);
-  box-shadow: 0 4px 20px rgba(153, 0, 0, 0.12);
+  border: 1px solid var(--donate-border);
+  border-top: 3px solid var(--donate-red);
 }
 .donate-tier--featured .donate-tier__header {
-  background: linear-gradient(160deg, var(--donate-charcoal) 0%, var(--donate-red-dark) 100%);
+  background: var(--donate-red);
 }
 .donate-tier--featured .donate-tier__name { color: #fff; }
 .donate-tier--featured .donate-tier__price { color: #fff; }
 .donate-tier--featured .donate-tier__currency { opacity: 0.8; }
 .donate-tier--featured .donate-tier__period { opacity: 0.8; }
-.donate-tier--featured .donate-tier__billing { color: rgba(255, 255, 255, 0.7); }
+.donate-tier--featured .donate-tier__billing { color: rgba(241, 239, 231, 0.75); }
 
-/* Patron tier */
+/* Patron tier - ochre top accent, flat ink header */
 .donate-tier--patron {
-  border: 2px solid var(--donate-patron-gold);
-  box-shadow: 0 4px 20px rgba(122, 90, 24, 0.15);
+  border: 1px solid var(--donate-border);
+  border-top: 3px solid var(--donate-gold);
 }
 .donate-tier--patron .donate-tier__header {
-  background: linear-gradient(160deg, #2a1a00 0%, var(--donate-patron-gold) 100%);
+  background: #1b1c17;
 }
-.donate-tier--patron .donate-tier__name { color: #f5e6c0; }
-.donate-tier--patron .donate-tier__price { color: #fff; }
+.donate-tier--patron .donate-tier__name { color: #b88a2e; }
+.donate-tier--patron .donate-tier__price { color: #f1efe7; }
 .donate-tier--patron .donate-tier__currency { opacity: 0.8; }
 .donate-tier--patron .donate-tier__period { opacity: 0.8; }
-.donate-tier--patron .donate-tier__billing { color: rgba(255, 255, 255, 0.7); }
+.donate-tier--patron .donate-tier__billing { color: rgba(241, 239, 231, 0.75); }
 
 .donate-tier__badge {
   background: var(--donate-red);
   color: #fff;
   text-align: center;
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.06em;
+  font-family: var(--donate-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
   padding: 0.4rem;
 }
 
 .donate-tier__header {
   padding: 1.25rem 1.5rem;
-  background: var(--donate-light-bg);
+  background: var(--donate-sunk);
   border-bottom: 1px solid var(--donate-border);
   text-align: center;
 }
@@ -674,7 +667,7 @@
 .donate-tier__name {
   font-size: 1.1rem;
   font-weight: 700;
-  color: var(--donate-charcoal);
+  color: var(--donate-ink);
   margin-bottom: 0.75rem;
 }
 
@@ -683,7 +676,7 @@
   align-items: baseline;
   justify-content: center;
   gap: 0.2rem;
-  color: var(--donate-charcoal);
+  color: var(--donate-ink);
   margin-bottom: 0.4rem;
 }
 
@@ -705,7 +698,10 @@
 }
 
 .donate-tier__billing {
-  font-size: 0.78rem;
+  font-family: var(--donate-mono);
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
   color: var(--donate-text-muted);
   margin: 0;
 }
@@ -721,8 +717,8 @@
   position: relative;
   font-size: 0.875rem;
   line-height: 1.5;
-  color: #444;
-  border-bottom: 1px solid #f0ede8;
+  color: #1b1c17;
+  border-bottom: 1px solid #dad6c7;
 }
 .donate-benefits-list li:last-child {
   border-bottom: none;
@@ -737,13 +733,13 @@
 
 /* Signup-gift line - one-time perk, visually distinct from recurring benefits. */
 .donate-benefits-list__signup-gift {
-  background: rgba(184, 138, 46, 0.08);
+  background: rgba(184, 138, 46, 0.1);
   border-left: 3px solid #b88a2e;
   margin: 0.35rem -1.5rem 0.35rem -1.5rem;
   padding-left: 1.5rem !important;
   padding-right: 1.5rem;
   font-weight: 500;
-  color: #1e293b !important;
+  color: #1b1c17 !important;
 }
 .donate-benefits-list__signup-gift::before {
   content: "★" !important;
@@ -751,11 +747,12 @@
 }
 .donate-benefits-list__signup-gift-label {
   display: block;
-  font-size: 0.7rem;
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
-  color: #b88a2e;
+  color: #8b6914;
   margin-bottom: 0.1rem;
 }
 
@@ -774,8 +771,8 @@
 }
 
 .donate-book-card {
-  background: #fff;
-  border: 1px solid var(--donate-parchment-border);
+  background: var(--donate-paper);
+  border: 1px solid var(--donate-border);
   border-radius: var(--donate-radius);
   padding: 2rem 1.5rem;
   text-align: center;
@@ -784,21 +781,20 @@
   flex-direction: column;
   align-items: center;
   gap: 0.75rem;
-  transition: box-shadow 0.2s ease, transform 0.2s ease;
+  transition: border-color 0.2s ease;
 }
 .donate-book-card:hover {
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.07);
-  transform: translateY(-2px);
+  border-color: #1b1c17;
 }
 
 .donate-book-card--highlighted {
-  border-color: var(--donate-gold);
-  box-shadow: 0 2px 12px rgba(184, 138, 46, 0.12);
+  border-color: var(--donate-border);
+  border-top: 3px solid var(--donate-gold);
 }
 
 .donate-book-card--patron {
-  border-color: var(--donate-patron-gold);
-  box-shadow: 0 2px 12px rgba(122, 90, 24, 0.12);
+  border-color: var(--donate-border);
+  border-top: 3px solid var(--donate-patron-gold);
 }
 
 .donate-book-card__icon {
@@ -806,28 +802,29 @@
 }
 
 .donate-book-card__tier {
-  font-size: 0.72rem;
+  font-family: var(--donate-mono);
+  font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.07em;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
   color: var(--donate-text-muted);
-  background: var(--donate-light-bg);
-  border-radius: 9999px;
+  background: var(--donate-sunk);
+  border-radius: 0;
   padding: 0.2rem 0.75rem;
 }
 .donate-book-card__tier--gold {
-  background: #fffbeb;
+  background: var(--donate-sunk);
   color: var(--donate-gold-dark);
 }
 .donate-book-card__tier--patron {
-  background: #fdf3e0;
+  background: var(--donate-sunk);
   color: var(--donate-patron-gold);
 }
 
 .donate-book-card__title {
   font-size: 1.05rem;
   font-weight: 700;
-  color: var(--donate-charcoal);
+  color: var(--donate-ink);
   margin: 0;
 }
 
@@ -851,7 +848,7 @@
    ============================================= */
 .donate-wall-teaser {
   padding: 4rem 0;
-  background: #fff;
+  background: var(--donate-paper);
   text-align: center;
 }
 
@@ -860,7 +857,7 @@
    ============================================= */
 .donate-trust {
   padding: 2.5rem 0;
-  background: var(--donate-light-bg);
+  background: var(--donate-paper);
   border-top: 1px solid var(--donate-border);
 }
 
@@ -889,10 +886,10 @@
   text-align: center;
 }
 .donate-trust__badge svg {
-  color: var(--donate-slate);
+  color: var(--donate-ink);
 }
 .donate-trust__badge strong {
-  color: var(--donate-charcoal);
+  color: var(--donate-ink);
   font-size: 0.9rem;
 }
 
@@ -901,7 +898,7 @@
    ============================================= */
 .donate-faq {
   padding: 4rem 0;
-  background: var(--donate-light-bg);
+  background: var(--donate-paper);
 }
 
 .donate-accordion {
@@ -912,21 +909,21 @@
 .donate-accordion .accordion-item {
   border: 1px solid var(--donate-border);
   margin-bottom: 0.5rem;
-  border-radius: 8px !important;
+  border-radius: 0 !important;
   overflow: hidden;
-  background: #fff;
+  background: var(--donate-raised);
 }
 
 .donate-accordion .accordion-button {
   font-weight: 600;
   font-size: 0.95rem;
-  color: var(--donate-charcoal);
-  background: #fff;
+  color: var(--donate-ink);
+  background: var(--donate-raised);
   padding: 1rem 1.25rem;
 }
 .donate-accordion .accordion-button:not(.collapsed) {
-  background: var(--donate-charcoal);
-  color: #fff;
+  background: var(--donate-ink);
+  color: #f1efe7;
   box-shadow: none;
 }
 .donate-accordion .accordion-button::after {
@@ -936,11 +933,13 @@
   filter: invert(1) brightness(2);
 }
 .donate-accordion .accordion-button:focus {
-  box-shadow: 0 0 0 3px rgba(153, 0, 0, 0.2);
+  box-shadow: none;
+  outline: 2px solid #990000;
+  outline-offset: -2px;
 }
 .donate-accordion .accordion-body {
   font-size: 0.93rem;
-  color: #444;
+  color: #1b1c17;
   line-height: 1.75;
   padding: 1rem 1.25rem 1.25rem;
 }
@@ -950,9 +949,10 @@
    ============================================= */
 .donate-final-cta {
   padding: 5rem 0;
-  background: linear-gradient(135deg, #1e293b 0%, #6b0000 100%);
-  color: #fff;
+  background: #1b1c17;
+  color: #e7e4d8;
   text-align: center;
+  border-top: 3px solid #990000;
 }
 
 .donate-final-cta__inner {
@@ -963,13 +963,13 @@
 .donate-final-cta__title {
   font-size: clamp(1.5rem, 3.5vw, 2.25rem);
   font-weight: 800;
-  color: #fff;
+  color: #f1efe7;
   margin-bottom: 1rem;
 }
 
 .donate-final-cta__text {
   font-size: 1.05rem;
-  color: rgba(255, 255, 255, 0.82);
+  color: rgba(231, 228, 216, 0.82);
   margin-bottom: 2rem;
   line-height: 1.7;
 }
@@ -981,28 +981,26 @@
   flex-wrap: wrap;
 }
 
-/* Final CTA: primary = solid white, secondary = gold */
+/* Final CTA: primary = solid paper, secondary = ochre */
 .donate-final-cta .donate-btn--outline-white {
-  background: #fff;
-  color: var(--donate-charcoal);
-  border-color: #fff;
+  background: #e7e4d8;
+  color: #1b1c17;
+  border-color: #e7e4d8;
 }
 .donate-final-cta .donate-btn--outline-white:hover {
-  background: #f0f0f0;
-  border-color: #f0f0f0;
-  color: var(--donate-charcoal);
-  transform: translateY(-1px);
+  background: #dad6c7;
+  border-color: #dad6c7;
+  color: #1b1c17;
 }
 .donate-final-cta .donate-btn--gold {
   background: var(--donate-gold);
-  color: #1a1a1a;
+  color: #1b1c17;
   border-color: var(--donate-gold);
 }
 .donate-final-cta .donate-btn--gold:hover {
   background: var(--donate-gold-dark);
   border-color: var(--donate-gold-dark);
-  color: #1a1a1a;
-  transform: translateY(-1px);
+  color: #fff;
 }
 
 /* =============================================
