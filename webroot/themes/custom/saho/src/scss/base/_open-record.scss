@@ -52,8 +52,12 @@
 // Only card ROOTS get the frame: descendants whose class merely contains
 // "-card" (title/description/footer/image wrappers) and grid containers
 // must not each grow their own box.
+// TRAP: the descendant-excluder also skips card ROOTS inside a
+// .saho-cards-grid wrapper, because "saho-cards-grid" itself contains the
+// substring "-card" - so those roots are matched explicitly below.
 .card,
 [class*="-card"]:not([class*="-card"] *):not([class*="grid"]),
+.saho-cards-grid > [class*="-card"],
 .glass-card,
 .tile {
   &:not(.rounded-circle) {
@@ -80,6 +84,7 @@
 // sunk ground; it never translates, scales, or glows. An archive is still.
 .card,
 [class*="-card"]:not([class*="-card"] *):not([class*="grid"]),
+.saho-cards-grid > [class*="-card"],
 .tile,
 .block-card,
 .saho-card,
