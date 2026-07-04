@@ -40,9 +40,8 @@ function saho_classroom_preprocess_views_view(array &$variables): void {
 /**
  * Implements hook_node_view().
  *
- * Surfaces the interactive presentations from legacy classroom content: adds a
- * call-to-action linking to /classroom/presentations so the original classroom
- * entities point at the new presentation decks.
+ * Adds a prominent "quick link for teachers" call-out at the top of legacy
+ * classroom content, pointing to the interactive SAHO Classroom presentations.
  */
 function saho_classroom_node_view(array &$build, EntityInterface $node, $display, $view_mode): void {
   if ($view_mode !== 'full' || !$node instanceof NodeInterface || $node->bundle() === 'presentation') {
@@ -60,14 +59,33 @@ function saho_classroom_node_view(array &$build, EntityInterface $node, $display
   }
   $build['saho_classroom_presentations_cta'] = [
     '#type' => 'container',
-    '#weight' => -50,
+    // Very low weight so it renders ahead of the body wherever {{ content }} is
+    // printed.
+    '#weight' => -100,
     '#attributes' => ['class' => ['saho-classroom-cta']],
     '#attached' => ['library' => ['saho_classroom/badge']],
+    'text' => [
+      '#type' => 'html_tag',
+      '#tag' => 'div',
+      '#attributes' => ['class' => ['saho-classroom-cta__text']],
+      'eyebrow' => [
+        '#type' => 'html_tag',
+        '#tag' => 'span',
+        '#attributes' => ['class' => ['saho-classroom-cta__eyebrow']],
+        '#value' => t('For teachers'),
+      ],
+      'title' => [
+        '#type' => 'html_tag',
+        '#tag' => 'span',
+        '#attributes' => ['class' => ['saho-classroom-cta__title']],
+        '#value' => t('Teach this in the classroom - interactive, print-ready presentations'),
+      ],
+    ],
     'link' => [
       '#type' => 'link',
-      '#title' => t('Explore this in the SAHO Classroom presentations'),
+      '#title' => t('Open presentations'),
       '#url' => Url::fromUserInput('/classroom/presentations'),
-      '#attributes' => ['class' => ['saho-resource-badge']],
+      '#attributes' => ['class' => ['saho-classroom-cta__btn']],
     ],
   ];
 }
