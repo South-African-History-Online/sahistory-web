@@ -34,6 +34,9 @@ runs:
           /biographies
           /people/dr-abdullah-abdurahman
           /article/cradle-humankind
+        # Drupal's generic 500 page always contains "The website encountered an
+        # unexpected error". "Fatal error" and "PHP Fatal" cover display_errors=On
+        # environments and any formatter/renderer that bubbles the raw PHP message.
         ERROR_PATTERN: 'Fatal error|PHP Fatal|The website encountered an unexpected error'
       run: |
         if [[ -z "$BASE_URL" ]]; then
@@ -41,15 +44,26 @@ runs:
           exit 0
         fi
 
-        echo "Running ${MODE} smoke test against ${BASE_URL}..."
-        FAIL=0
         SMOKE_FILE=$(mktemp)
         trap 'rm -f "$SMOKE_FILE"' EXIT
 
+        # Fetch a URL into $SMOKE_FILE and return the HTTP status code.
+        fetch_url() {
+          curl -s -o "$SMOKE_FILE" -w "%{http_code}" \
+            --max-time 30 --retry 2 --retry-delay 5 "$1"
+        }
+
+        # Return 0 (true) when the last fetched response contains a PHP/Drupal
+        # fatal-error marker that indicates a render crash.
+        has_fatal_error() {
+          grep -qiE "$ERROR_PATTERN" "$SMOKE_FILE" 2>/dev/null
+        }
+
+        echo "Running ${MODE} smoke test against ${BASE_URL}..."
+
         if [[ "$MODE" == "maintenance" ]]; then
-          STATUS=$(curl -s -o "$SMOKE_FILE" -w "%{http_code}" \
-            --max-time 30 --retry 2 --retry-delay 5 "${BASE_URL}/")
-          if grep -qiE "$ERROR_PATTERN" "$SMOKE_FILE" 2>/dev/null; then
+          STATUS=$(fetch_url "${BASE_URL}/")
+          if has_fatal_error; then
             echo "::error::Smoke test FAILED — PHP fatal in response body (HTTP ${STATUS})"
             exit 1
           elif [[ "$STATUS" -ge 500 && "$STATUS" -ne 503 ]]; then
@@ -61,12 +75,12 @@ runs:
           exit 0
         fi
 
+        FAIL=0
         while IFS= read -r path; do
           [[ -z "$path" ]] && continue
           : > "$SMOKE_FILE"
-          STATUS=$(curl -s -o "$SMOKE_FILE" -w "%{http_code}" \
-            --max-time 30 --retry 2 --retry-delay 5 "${BASE_URL}${path}")
-          if grep -qiE "$ERROR_PATTERN" "$SMOKE_FILE" 2>/dev/null; then
+          STATUS=$(fetch_url "${BASE_URL}${path}")
+          if has_fatal_error; then
             echo "::error::${path} — HTTP ${STATUS} — PHP fatal in response body"
             FAIL=1
           elif [[ "$STATUS" -ge 500 ]]; then
