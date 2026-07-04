@@ -8,6 +8,8 @@
 declare(strict_types=1);
 
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Url;
+use Drupal\node\NodeInterface;
 
 /**
  * Implements hook_preprocess_node().
@@ -33,4 +35,39 @@ function saho_classroom_preprocess_views_view(array &$variables): void {
   if ($view && $view->id() === 'classroom_presentations') {
     $variables['#attached']['library'][] = 'saho_classroom/badge';
   }
+}
+
+/**
+ * Implements hook_node_view().
+ *
+ * Surfaces the interactive presentations from legacy classroom content: adds a
+ * call-to-action linking to /classroom/presentations so the original classroom
+ * entities point at the new presentation decks.
+ */
+function saho_classroom_node_view(array &$build, EntityInterface $node, $display, $view_mode): void {
+  if ($view_mode !== 'full' || !$node instanceof NodeInterface || $node->bundle() === 'presentation') {
+    return;
+  }
+  $is_classroom = FALSE;
+  foreach (['field_classroom_categories', 'field_classroom'] as $field) {
+    if ($node->hasField($field) && !$node->get($field)->isEmpty()) {
+      $is_classroom = TRUE;
+      break;
+    }
+  }
+  if (!$is_classroom) {
+    return;
+  }
+  $build['saho_classroom_presentations_cta'] = [
+    '#type' => 'container',
+    '#weight' => 50,
+    '#attributes' => ['class' => ['saho-classroom-cta']],
+    '#attached' => ['library' => ['saho_classroom/badge']],
+    'link' => [
+      '#type' => 'link',
+      '#title' => t('Explore this in the SAHO Classroom presentations'),
+      '#url' => Url::fromUserInput('/classroom/presentations'),
+      '#attributes' => ['class' => ['saho-resource-badge']],
+    ],
+  ];
 }
