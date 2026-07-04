@@ -1,0 +1,36 @@
+<?php
+
+/**
+ * @file
+ * Hook implementations for the SAHO Classroom module.
+ */
+
+declare(strict_types=1);
+
+use Drupal\Core\Entity\EntityInterface;
+
+/**
+ * Implements hook_preprocess_node().
+ *
+ * Attaches the resource-type badge styling to presentation nodes so the
+ * "Presentation" badge renders consistently on teasers, grids and cards.
+ */
+function saho_classroom_preprocess_node(array &$variables): void {
+  $node = $variables['node'] ?? NULL;
+  if ($node instanceof EntityInterface && $node->bundle() === 'presentation') {
+    $variables['#attached']['library'][] = 'saho_classroom/badge';
+  }
+}
+
+/**
+ * Implements hook_preprocess_views_view().
+ *
+ * Loads the resource-type badge styling on the classroom presentations browse
+ * so its cards show the same "Presentation" pill as teaser grids.
+ */
+function saho_classroom_preprocess_views_view(array &$variables): void {
+  $view = $variables['view'] ?? NULL;
+  if ($view && $view->id() === 'classroom_presentations') {
+    $variables['#attached']['library'][] = 'saho_classroom/badge';
+  }
+}
