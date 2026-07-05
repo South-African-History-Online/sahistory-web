@@ -25,8 +25,37 @@ function saho_classroom_views_pre_view(ViewExecutable $view, $display_id, array 
     return;
   }
   $input = $view->getExposedInput();
+  $changed = FALSE;
   if (empty($input['grade']) && isset($input['caps_topic'])) {
     unset($input['caps_topic']);
+    $changed = TRUE;
+  }
+  // Selecting a phase means its grades (#466): expand phase terms into
+  // their grade children so the OR-group actually returns results (content
+  // is tagged with grades, not phases).
+  if (!empty($input['grade']) && is_array($input['grade'])) {
+    $term_storage = \Drupal::entityTypeManager()->getStorage('taxonomy_term');
+    $expanded = [];
+    foreach ($input['grade'] as $tid) {
+      if (!is_numeric($tid)) {
+        continue;
+      }
+      $children = $term_storage->loadChildren((int) $tid, 'classroom_grade');
+      if ($children) {
+        foreach ($children as $child) {
+          $expanded[(int) $child->id()] = (int) $child->id();
+        }
+        $changed = TRUE;
+      }
+      else {
+        $expanded[(int) $tid] = (int) $tid;
+      }
+    }
+    if ($changed) {
+      $input['grade'] = $expanded;
+    }
+  }
+  if ($changed) {
     $view->setExposedInput($input);
   }
 }
@@ -44,8 +73,29 @@ function saho_classroom_views_pre_view(ViewExecutable $view, $display_id, array 
  * means all of its grade children.
  */
 function saho_classroom_form_views_exposed_form_alter(array &$form, FormStateInterface $form_state, string $form_id): void {
-  if (($form['#id'] ?? '') !== 'views-exposed-form-classroom-page-1'
-    || empty($form['caps_topic']['#options'])) {
+  if (($form['#id'] ?? '') !== 'views-exposed-form-classroom-page-1') {
+    return;
+  }
+
+  // wf08 composition (#466): grade (and topic) lead; resource type and
+  // subject fold into a collapsed Refine row so resources render above the
+  // fold. The details wrapper stays flat (#tree off) so input names and the
+  // view's exposed identifiers keep matching.
+  $form['refine'] = [
+    '#type' => 'details',
+    '#title' => t('Refine'),
+    '#open' => FALSE,
+    '#weight' => 40,
+    '#attributes' => ['class' => ['saho-classroom-refine']],
+  ];
+  foreach (['resource_type', 'subject'] as $key) {
+    if (isset($form[$key])) {
+      $form['refine'][$key] = $form[$key];
+      unset($form[$key]);
+    }
+  }
+
+  if (empty($form['caps_topic']['#options'])) {
     return;
   }
 

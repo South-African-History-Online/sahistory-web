@@ -6,12 +6,12 @@
 // Paper/ink, square corners, borders not shadows, mono for labels and meta.
 
 .saho-classroom-hub {
-  padding-block: var(--space-6) var(--space-8);
+  padding-block: var(--space-4) var(--space-8);
 }
 
 // ---- Header: accent top edge, Caslon title, serif intro, mono count ----
 .saho-classroom-hub__head {
-  margin-bottom: var(--space-6);
+  margin-bottom: var(--space-4);
   padding-top: var(--space-4);
   border-top: var(--bw-accent) solid var(--type-article);
 }
@@ -44,10 +44,21 @@
   --link-rest: var(--text-primary);
   --link-hover: var(--text-primary);
 
-  margin-bottom: var(--space-6);
-  padding: var(--space-4);
-  border: var(--bw-hair) solid var(--border-default);
-  background: var(--surface-card);
+  // One slim ruled band, not a raised box-in-a-frame (#466).
+  margin-bottom: var(--space-5);
+  padding: var(--space-4) 0;
+  border-top: var(--bw-hair) solid var(--border-default);
+  border-bottom: var(--bw-hair) solid var(--border-default);
+  background: transparent;
+
+  // The generic exposed-form panel chrome would put a raised white box
+  // inside the band - one border does the job here.
+  .views-exposed-form {
+    margin-bottom: 0;
+    padding: 0;
+    background: transparent;
+    box-shadow: none;
+  }
 
   .form-item {
     margin: 0 0 var(--space-3);
@@ -109,6 +120,82 @@
     background: var(--accent);
     border-color: var(--accent);
     color: var(--text-on-accent);
+  }
+
+  // Grade widget hierarchy (#466): the classroom_grade vocabulary nests
+  // grades under phase terms, and BEF renders that as nested lists. Phases
+  // read as mono group headings; their grades chip beneath. Selecting a
+  // phase still works - the view expands it to its grade children.
+  .js-form-item-grade .bef-links > ul {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .js-form-item-grade .bef-links > ul > li {
+    display: block;
+  }
+  .js-form-item-grade .bef-links > ul > li > .bef-link {
+    display: inline-block;
+    min-height: 0;
+    margin-bottom: var(--space-2);
+    padding: 0;
+    border: 0;
+    background: transparent;
+    font-size: 11px;
+    letter-spacing: var(--ls-wide);
+    color: var(--text-muted);
+  }
+  .js-form-item-grade .bef-links > ul > li > .bef-link:hover {
+    color: var(--text-primary);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .js-form-item-grade .bef-links > ul > li > .bef-link--selected,
+  .js-form-item-grade .bef-links > ul > li > .bef-link--selected:hover {
+    --link-rest: var(--accent);
+    --link-hover: var(--accent);
+
+    background: transparent;
+    border: 0;
+    color: var(--accent);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .js-form-item-grade .bef-links li > ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .js-form-item-grade .bef-links li li {
+    display: block;
+  }
+
+  // Collapsed Refine group: quiet mono summary over a hairline (#466).
+  .saho-classroom-refine {
+    margin-top: var(--space-3);
+    border: 0;
+    border-top: var(--bw-hair) solid var(--border-faint);
+    background: transparent;
+    padding: var(--space-3) 0 0;
+  }
+  .saho-classroom-refine > summary {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: var(--fw-semibold);
+    letter-spacing: var(--ls-wide);
+    text-transform: uppercase;
+    color: var(--text-muted);
+    cursor: pointer;
+    list-style-position: outside;
+  }
+  .saho-classroom-refine[open] > summary {
+    margin-bottom: var(--space-3);
   }
 }
 
