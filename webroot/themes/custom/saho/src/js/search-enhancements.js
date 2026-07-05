@@ -8,9 +8,7 @@
  * popular/recent chips (localStorage).
  */
 
-(function (Drupal, once) {
-  'use strict';
-
+((Drupal, once) => {
   const STORAGE_KEY = 'sahoSearchHistory';
   const MAX_HISTORY = 5;
 

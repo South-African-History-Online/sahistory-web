@@ -402,6 +402,8 @@ class HistoryThroughPicturesBlock extends BlockBase implements ContainerFactoryP
    *
    * @param \Drupal\node\NodeInterface $node
    *   The node entity.
+   * @param string $style
+   *   The image style to derive (grid default; max_1300x1300 for lightbox).
    *
    * @return string|null
    *   The relative image URL or NULL if not available.

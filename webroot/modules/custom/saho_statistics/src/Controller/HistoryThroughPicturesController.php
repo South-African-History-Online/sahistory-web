@@ -206,6 +206,7 @@ class HistoryThroughPicturesController extends ControllerBase {
    * @return string|null
    *   The relative image URL or NULL if not available.
    */
+
   /**
    * Builds the sorted list of image-node ids whose files exist on disk.
    *
@@ -256,6 +257,17 @@ class HistoryThroughPicturesController extends ControllerBase {
     return $nids;
   }
 
+  /**
+   * Builds a styled image URL for a picture node.
+   *
+   * @param \Drupal\node\NodeInterface $node
+   *   The image node.
+   * @param string $style
+   *   The image style to derive (grid default; max_1300x1300 for lightbox).
+   *
+   * @return string|null
+   *   The derivative URL, or NULL when no valid file exists on disk.
+   */
   protected function getNodeImageUrl($node, string $style = 'max_650x650') {
     // Serve WebP image-style derivatives, not raw originals (#453 perf).
     // Files missing on disk (the pre-2019 loss class) are skipped entirely
