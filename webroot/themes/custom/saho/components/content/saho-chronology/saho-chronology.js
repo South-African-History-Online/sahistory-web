@@ -17,7 +17,7 @@
           [...index.querySelectorAll('.saho-chron-index__link')].map((a) => [
             a.getAttribute('data-decade'),
             a,
-          ]),
+          ])
         );
         const entries = [...root.querySelectorAll('[data-decade]')];
         if (!entries.length) {
@@ -25,7 +25,9 @@
         }
 
         const setCurrent = (decade) => {
-          links.forEach((a, key) => a.classList.toggle('is-current', key === decade));
+          links.forEach((a, key) => {
+            a.classList.toggle('is-current', key === decade);
+          });
         };
 
         // The topmost visible entry wins; rootMargin biases to the band
@@ -45,9 +47,11 @@
               setCurrent(top.getAttribute('data-decade'));
             }
           },
-          { rootMargin: '-10% 0px -70% 0px' },
+          { rootMargin: '-10% 0px -70% 0px' }
         );
-        entries.forEach((e) => observer.observe(e));
+        entries.forEach((e) => {
+          observer.observe(e);
+        });
       });
     },
   };
