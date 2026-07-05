@@ -1,0 +1,89 @@
+// =============================================================================
+// SAHO 2027 "Open Record" - /archives landing (wf05 shell applied)
+// =============================================================================
+// The archive landing reuses the /search shell classes (.saho-search-layout,
+// .saho-search-rail, .saho-search-head, toggle) from
+// _search-results-open-record.scss; this file adds only what differs:
+// the page frame, the quiet sort control, and the rail cleanup that hides
+// the exposed-form widgets the shell replaces (duplicate query input, BEF
+// sort blocks, items-per-page, Apply).
+
+.saho-archive-index {
+  padding-block: var(--space-6) var(--space-8);
+
+  &.is-wide {
+    max-width: var(--container-wide);
+  }
+}
+
+.saho-archive-index__header {
+  margin-bottom: var(--space-6);
+}
+
+.saho-archive-index__intro {
+  margin-bottom: var(--space-5);
+  max-width: var(--measure);
+}
+
+// ---- The one quiet sort control (results head) ----
+.saho-search-toolbar {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.saho-archive-sort {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+}
+
+.saho-archive-sort__label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.saho-archive-sort__select {
+  height: 32px;
+  padding: 0 var(--space-2);
+  border: var(--bw-hair) solid var(--border-default);
+  border-radius: 0;
+  background: var(--surface-card);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--text-primary);
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 2px solid var(--saho-oxblood, #990000);
+    outline-offset: 2px;
+  }
+}
+
+// ---- Rail cleanup ----
+// The shell owns query (top band) and sort (head row); the rail is facets
+// only. BEF autosubmit applies changes, so Apply never needs to render.
+.saho-archive-index .saho-search-rail {
+  .form-item-combine,
+  .form-item-sort-by,
+  .form-item-sort-order,
+  .form-item-items-per-page,
+  [data-drupal-selector="edit-sort-by"],
+  [data-drupal-selector="edit-sort-order"],
+  .form-actions {
+    display: none;
+  }
+}
+
+// Stacked rows replace the table under the stack breakpoint - no toggle.
+@media (max-width: 26rem) {
+  .saho-archive-index .saho-view-toggle {
+    display: none;
+  }
+}

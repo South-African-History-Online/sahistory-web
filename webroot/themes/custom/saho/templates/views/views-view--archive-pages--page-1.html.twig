@@ -1,553 +1,117 @@
 {#
 /**
  * @file
- * Template for the Archives landing page.
+ * SAHO archive landing - the wf05 search shell applied to /archives.
  *
- * This template implements a modern card-based layout specifically for the Archives section,
- * making the content more approachable for learners, students, and researchers.
+ * Rows are NOT printed via {{ rows }}: saho_preprocess_views_view__archive_pages__page_1()
+ * shapes every result into record_rows (saho-index-table SDC) and record_cards
+ * (saho-archive-card SDC). The query band at the top is a standalone GET form
+ * (same pattern as /search); the exposed form in the rail carries the facets -
+ * its own combine input, BEF sort widgets, items-per-page and Apply are hidden
+ * in _archive-index.scss (BEF autosubmit applies facet changes, archive-sort.js
+ * drives the one quiet sort control in the results head).
  *
- * Available variables:
- * - view: The view object.
- * - rows: A list of the view's row items.
- * - options: The view plugin style options.
- * - title: The title of the view.
- * - header: The view header.
- * - footer: The view footer.
- * - empty: The empty text to display if the view is empty.
- * - pager: The pager output.
- * - exposed: Exposed widget form/info to display.
- * - feed_icons: Feed icons to display, if any.
- * - more: An optional link to the next page of results.
- * - totals: The total rows and pages.
- * - rows_total: The total number of rows returned by the view.
- * - attachment_before: An optional attachment view to be displayed before the view.
- * - attachment_after: An optional attachment view to be displayed after the view.
- * - dom_id: Unique id for every view being printed to give unique class for Javascript.
+ * Available variables (beyond the standard views-view set):
+ * - search_query: Active ?combine= query string.
+ * - record_columns: Column definitions for the index-table SDC.
+ * - record_rows: One row per result (ref/title/href/dates/src).
+ * - record_cards: One archive-card prop set per result.
+ * - result_total: Total result count across all pages.
+ * - results_layout: 'table' or 'grid' - the server-side default layout.
+ * - archive_sort: { current: 'changed|DESC', options: {value: label} }.
  *
- * @see template_preprocess_views_view()
+ * The page title block provides the H1 on /archives; headings here start at h2.
  */
 #}
+<div{{ attributes.addClass('saho-page', 'is-wide', 'saho-archive-index') }}>
 
-{# Define section-specific colors and classes #}
-{% set section_name = 'Archives' %}
-{% set section_colors = {
-  'Politics & Society': 'saho-deep-heritage-red',
-  'Art & Culture': 'saho-muted-gold',
-  'Biographies': 'saho-slate-blue',
-  'Africa': 'saho-faded-brick-red',
-  'Classroom': 'saho-deep-heritage-red',
-  'Places': 'saho-slate-blue',
-  'Timelines': 'saho-muted-gold',
-  'Archives': 'saho-dark-charcoal'
-} %}
+  {# The archive's front door is the query - first interactive element. #}
+  <div class="saho-archive-index__header">
+    {% include 'saho:saho-search-field' with {
+      size: 'lg',
+      action: '/archives',
+      input_name: 'combine',
+      placeholder: 'Search the archive by title, author, ISBN…',
+      value: search_query|default(''),
+      input_id: 'saho-archive-query',
+    } only %}
+  </div>
 
-{% set section_color = section_colors[section_name] ?? 'saho-dark-charcoal' %}
-{% set section_bg_class = 'bg-' ~ (section_color|replace({'saho-': ''})) %}
-{% set section_border_class = 'border-' ~ (section_color|replace({'saho-': ''})) %}
-{% set section_text_class = 'text-' ~ (section_color|replace({'saho-': ''})) %}
-
-{# Add modern card styling #}
-<style>
-  /* Grid layout for unformatted list view */
-  .saho-cards-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 2rem;
-  }
-  
-  /* Ensure cards have consistent height */
-  .saho-cards-grid > * {
-    height: 100%;
-    margin-bottom: 0 !important;
-  }
-  
-  /* Fix image display */
-  .saho-card-image img {
-    display: block;
-    width: 100%;
-    height: 180px;
-    object-fit: cover;
-  }
-  
-  /* Entity rendering fixes */
-  .views-field img {
-    max-width: 100%;
-    height: auto;
-  }
-  
-  /* Card styling */
-  .saho-card {
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    border-radius: 8px;
-    overflow: hidden;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    background-color: #fff;
-    border: 1px solid rgba(0,0,0,.125);
-  }
-  
-  .saho-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.15) !important;
-  }
-  
-  .saho-card .card-img-top-wrapper img,
-  .saho-card .saho-placeholder {
-    transition: transform 0.5s ease;
-    transform-origin: center;
-  }
-  
-  .saho-card:hover .card-img-top-wrapper img,
-  .saho-card:hover .saho-placeholder {
-    transform: scale(1.05);
-  }
-  
-  .card-img-top-wrapper {
-    overflow: hidden;
-    border-top-left-radius: 8px;
-    border-top-right-radius: 8px;
-  }
-  
-  .resource-badge {
-    border-radius: 4px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-  }
-  
-  .resource-type {
-    position: absolute;
-    top: 0;
-    right: 0;
-    margin: 0.75rem;
-    z-index: 10;
-  }
-  
-  .saho-metadata {
-    font-size: 0.85rem;
-    color: #6c757d;
-  }
-  
-  .saho-metadata i {
-    width: 16px;
-    text-align: center;
-    margin-right: 5px;
-  }
-  
-  .saho-read-more-btn {
-    border-radius: 20px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    transition: all 0.2s ease;
-  }
-  
-  .saho-read-more-btn:hover {
-    transform: translateX(3px);
-  }
-  
-  .saho-placeholder {
-    background-color: #f8f9fa;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #6c757d;
-    height: 180px;
-  }
-  
-  .saho-placeholder::before {
-    content: '📄';
-    font-size: 2rem;
-    opacity: 0.5;
-  }
-  
-  .saho-placeholder.saho-placeholder--document::before {
-    content: '📄';
-  }
-  
-  .saho-placeholder.saho-placeholder--photo::before,
-  .saho-placeholder.saho-placeholder--image::before {
-    content: '📷';
-  }
-  
-  .saho-placeholder.saho-placeholder--audio::before {
-    content: '🔊';
-  }
-  
-  .saho-placeholder.saho-placeholder--video::before {
-    content: '🎬';
-  }
-  
-  .saho-placeholder.saho-placeholder--pdf::before {
-    content: '📑';
-  }
-  
-  /* Additional styles for saho-card elements */
-  .saho-card-link {
-    display: block;
-    text-decoration: none;
-    color: inherit;
-    height: 100%;
-  }
-  
-  .saho-card-link:hover {
-    text-decoration: none;
-    color: inherit;
-  }
-  
-  .saho-card-image {
-    position: relative;
-    overflow: hidden;
-  }
-  
-  .saho-card-image--placeholder {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: #f8f9fa;
-    height: 180px;
-    color: #6c757d;
-    font-size: 2rem;
-  }
-  
-  .saho-card-badge {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    padding: 0.25rem 0.5rem;
-    background-color: #dc3545;
-    color: white;
-    font-size: 0.75rem;
-    border-radius: 4px;
-    font-weight: 600;
-  }
-  
-  .saho-card-content {
-    padding: 1rem;
-    display: flex;
-    flex-direction: column;
-    flex-grow: 1;
-  }
-  
-  .saho-card-title {
-    font-size: 1.25rem;
-    font-weight: 600;
-    margin-bottom: 0.5rem;
-    color: #212529;
-  }
-  
-  .saho-card-subtitle {
-    font-size: 0.875rem;
-    color: #6c757d;
-    margin-bottom: 0.75rem;
-  }
-  
-  .saho-card-description {
-    font-size: 0.9rem;
-    color: #495057;
-    margin-bottom: 1rem;
-  }
-  
-  .saho-card-footer {
-    margin-top: auto;
-    display: flex;
-    justify-content: flex-end;
-  }
-  
-  .saho-card-button {
-    display: inline-flex;
-    align-items: center;
-    color: #dc3545;
-    font-weight: 600;
-    font-size: 0.9rem;
-  }
-  
-  .saho-card-button svg {
-    margin-left: 0.25rem;
-    transition: transform 0.2s ease;
-  }
-  
-  .saho-card-link:hover .saho-card-button svg {
-    transform: translateX(3px);
-  }
-  
-  /* Fix for entity rendering issues */
-  .field-content img {
-    max-width: 100%;
-    height: auto;
-  }
-  
-  /* Fix layout for unformatted list view */
-  .view-content > div {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 2rem;
-  }
-  
-  /* Archives header styling */
-  .archives-page-header {
-    position: relative;
-    margin-bottom: 2rem;
-  }
-
-  .archives-page-header::after {
-    content: '';
-    position: absolute;
-    bottom: -10px;
-    left: 0;
-    width: 100%;
-    height: 3px;
-    background-color: #c00;
-    border-radius: 2px;
-  }
-
-  /* Mobile filter improvements */
-  @media (max-width: 991.98px) {
-    .saho-mobile-filter-toggle {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      width: 100%;
-      padding: 0.75rem 1rem;
-      background-color: #f8f9fa;
-      border: 1px solid #dee2e6;
-      border-radius: 8px;
-      cursor: pointer;
-      margin-bottom: 1rem;
-    }
-
-    .saho-mobile-filter-toggle .filter-icon {
-      transition: transform 0.3s ease;
-    }
-
-    .saho-mobile-filter-toggle.active .filter-icon {
-      transform: rotate(180deg);
-    }
-
-    .saho-landing-sidebar {
-      position: relative;
-    }
-
-    .saho-filter-collapse {
-      display: none;
-    }
-
-    .saho-filter-collapse.show {
-      display: block;
-    }
-
-    .saho-landing-filters {
-      background: #fff;
-      border-radius: 8px;
-      padding: 1rem;
-      margin-bottom: 1rem;
-    }
-  }
-
-  @media (min-width: 992px) {
-    .saho-mobile-filter-toggle {
-      display: none;
-    }
-
-    .saho-filter-collapse {
-      display: block !important;
-    }
-  }
-
-  /* Better search input styling */
-  .saho-landing-filters input[type="text"],
-  .saho-landing-filters input[type="search"] {
-    width: 100%;
-    padding: 0.75rem 1rem;
-    border: 1px solid #dee2e6;
-    border-radius: 8px;
-    font-size: 1rem;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
-  }
-
-  .saho-landing-filters input[type="text"]:focus,
-  .saho-landing-filters input[type="search"]:focus {
-    border-color: #c00;
-    box-shadow: 0 0 0 3px rgba(204, 0, 0, 0.1);
-    outline: none;
-  }
-
-  /* Results count styling */
-  .saho-results-summary {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-    padding-bottom: 1rem;
-    border-bottom: 1px solid #dee2e6;
-  }
-
-  .saho-results-count {
-    font-size: 0.95rem;
-    color: #6c757d;
-  }
-
-  .saho-results-count strong {
-    color: #212529;
-  }
-</style>
-
-<div{{ attributes.addClass('saho-landing-page', 'view-' ~ view.id|clean_class) }}>
-  
-  {# Hero Section with enhanced title styling #}
-  <section class="saho-landing-hero mb-5">
-    <div class="container">
-      <div class="row">
-        <div class="col-lg-12">
-          <div class="archives-page-header">
-            <h1 class="display-4 {{ section_text_class }}">{{ section_name }}</h1>
-            <p class="lead">Browse the SAHO Archives, featuring historical documents, images, and resources for researchers and history enthusiasts.</p>
-          </div>
-          
-          {# Custom header - skip any "Latest in the archive" content #}
-          {% if header and 'Latest in the archive' not in header|render %}
-            <div class="saho-landing-description mb-4">
-              {{ header }}
-            </div>
-          {% endif %}
-        </div>
-      </div>
+  {% if header %}
+    <div class="saho-archive-index__intro">
+      {{ header }}
     </div>
-  </section>
-  
-  {# Main Content Section #}
-  <section class="saho-landing-content mb-5">
-    <div class="container">
-      <div class="row">
-        
-        {# Sidebar with modernized filters #}
-        <div class="col-lg-3 mb-4 mb-lg-0">
-          <div class="saho-landing-sidebar p-3 rounded shadow-sm">
-
-            {# Mobile filter toggle button #}
-            <button class="saho-mobile-filter-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#archiveFilters" aria-expanded="false" aria-controls="archiveFilters">
-              <span><i class="fas fa-filter me-2"></i>Filter & Search</span>
-              <span class="filter-icon"><i class="fas fa-chevron-down"></i></span>
-            </button>
-
-            <div class="saho-filter-collapse collapse show" id="archiveFilters">
-              {% if exposed %}
-                <div class="saho-landing-filters mb-4">
-                  {{ exposed }}
-
-                  {% if feed_icons %}
-                    <div class="saho-landing-feeds mt-3 text-end">
-                      {{ feed_icons }}
-                    </div>
-                  {% endif %}
-                </div>
-              {% endif %}
-
-              <div class="sidebar-header {{ section_bg_class }} text-white p-3 rounded-top mb-3 mt-4">
-                <h2 class="h5 m-0">Research Tools</h2>
-              </div>
-
-              <div class="saho-landing-categories">
-                <ul class="list-unstyled">
-                  <li class="mb-3">
-                    <a href="/archive/collections" class="d-flex align-items-center text-decoration-none text-dark">
-                      <span class="me-2 {{ section_text_class }}"><i class="fas fa-folder"></i></span>
-                      <span>Browse Collections</span>
-                    </a>
-                  </li>
-                  <li class="mb-3">
-                    <a href="/archives-by-type" class="d-flex align-items-center text-decoration-none text-dark">
-                      <span class="me-2 {{ section_text_class }}"><i class="fas fa-tags"></i></span>
-                      <span>Browse by Type</span>
-                    </a>
-                  </li>
-                  <li class="mb-3">
-                    <a href="/archives-alpha-pagination" class="d-flex align-items-center text-decoration-none text-dark">
-                      <span class="me-2 {{ section_text_class }}"><i class="fas fa-sort-alpha-down"></i></span>
-                      <span>A-Z Index</span>
-                    </a>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        {# Main content grid #}
-        <div class="col-lg-9">
-          {# Skip "Latest in the archive" title and use a more appropriate one if needed #}
-          {% if title and 'Latest in the archive' not in title %}
-            <h2 class="h3 mb-4 {{ section_text_class }}">{{ title }}</h2>
-          {% endif %}
-
-          {# Results summary with count #}
-          {% if rows %}
-            <div class="saho-results-summary">
-              <div class="saho-results-count">
-                {% if view.total_rows is defined %}
-                  Showing <strong>{{ view.total_rows|number_format }}</strong> archive items
-                {% endif %}
-              </div>
-            </div>
-            {{ rows }}
-          {% elseif empty %}
-            <div class="saho-landing-empty">
-              <div class="alert alert-info">
-                <h4 class="alert-heading"><i class="fas fa-search me-2"></i>No results found</h4>
-                <p class="mb-0">Try adjusting your search terms or filters to find what you're looking for.</p>
-              </div>
-              <div class="mt-4">
-                <h5>Suggestions:</h5>
-                <ul>
-                  <li>Check your spelling</li>
-                  <li>Try more general keywords</li>
-                  <li>Remove some filters</li>
-                  <li><a href="/archives">Browse all archives</a></li>
-                </ul>
-              </div>
-            </div>
-          {% endif %}
-          
-          {% if pager %}
-            <div class="saho-landing-pager mt-4">
-              {{ pager }}
-            </div>
-          {% endif %}
-          
-          {% if more %}
-            <div class="saho-landing-more mt-4 text-center">
-              {{ more }}
-            </div>
-          {% endif %}
-        </div>
-      </div>
-    </div>
-  </section>
-  
-  {# Additional Content Section - if available #}
-  {% if attachment_after %}
-    <section class="saho-landing-additional py-4 mb-5 bg-light">
-      <div class="container">
-        <h2 class="h3 mb-4 {{ section_text_class }}">Related Resources</h2>
-        <div class="saho-additional-content">
-          {{ attachment_after }}
-        </div>
-      </div>
-    </section>
   {% endif %}
-  
-  {# Call to Action Section #}
-  <section class="saho-landing-cta py-5 {{ section_bg_class }}">
-    <div class="container text-center">
-      <h2 class="h3 text-white mb-3">Contribute to the Archives</h2>
-      <p class="text-white mb-4">Help us preserve South African history by contributing your documents, photographs, or oral histories to our archives.</p>
-      <a href="/form/contribute" class="btn btn-light {{ section_text_class }} px-4 py-2">
-        <span class="me-2">✦</span> Contribute Now
-      </a>
+
+  {# Facet rail + results. #}
+  <div class="saho-search-layout">
+
+    <aside class="saho-search-rail" aria-label="Refine the archive">
+      <h2 class="saho-search-rail__title">Refine</h2>
+      {{ exposed }}
+    </aside>
+
+    <section class="saho-search-results" data-saho-results>
+
+      {# Head row: mono record count + quiet sort control + layout toggle. #}
+      <div class="saho-search-head">
+        <p class="saho-search-count">{{ result_total }} records</p>
+        <div class="saho-search-toolbar">
+          <label class="saho-archive-sort">
+            <span class="saho-archive-sort__label">Sort:</span>
+            <select class="saho-archive-sort__select" data-saho-archive-sort>
+              {% for value, label in archive_sort.options %}
+                <option value="{{ value }}"{{ value == archive_sort.current ? ' selected' : '' }}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          </label>
+          <div class="saho-view-toggle" data-saho-view-toggle role="tablist" aria-label="Result layout">
+            <button type="button" role="tab" data-view="table"
+                    class="saho-view-toggle__btn{{ results_layout == 'table' ? ' is-active' : '' }}"
+                    aria-selected="{{ results_layout == 'table' ? 'true' : 'false' }}">Table</button>
+            <button type="button" role="tab" data-view="grid"
+                    class="saho-view-toggle__btn{{ results_layout == 'grid' ? ' is-active' : '' }}"
+                    aria-selected="{{ results_layout == 'grid' ? 'true' : 'false' }}">Cards</button>
+          </div>
+        </div>
+      </div>
+
+      {% if record_rows is not empty %}
+        <div class="saho-results--table saho-results--stack"{% if results_layout == 'grid' %} hidden{% endif %}>
+          {% include 'saho:saho-index-table' with {
+            columns: record_columns,
+            rows: record_rows,
+            caption: 'Archive records',
+          } only %}
+        </div>
+        <div class="saho-results--grid"{% if results_layout == 'table' %} hidden{% endif %}>
+          <div class="saho-card-grid saho-card-grid--columns-three">
+            {% for card in record_cards %}
+              {% include 'saho:saho-archive-card' with card only %}
+            {% endfor %}
+          </div>
+        </div>
+      {% elseif empty %}
+        <div class="saho-view-empty">
+          {{ empty }}
+        </div>
+      {% elseif search_query %}
+        <p class="saho-search-empty">No records found for &ldquo;{{ search_query }}&rdquo;.</p>
+      {% endif %}
+
+      {% if pager %}
+        <div class="saho-search-pager">
+          {{ pager }}
+        </div>
+      {% endif %}
+
+    </section>
+  </div>
+
+  {% if attachment_after %}
+    <div class="saho-archive-index__attachment">
+      {{ attachment_after }}
     </div>
-  </section>
+  {% endif %}
+
 </div>
