@@ -69,3 +69,31 @@ ol.breadcrumb,
     }
   }
 }
+
+// Mobile: one line, no wrap. The terminal crumb (current page) is redundant
+// with the H1 beneath it - visually hidden, kept in the list for AT (#463).
+@media (max-width: 480px) {
+  ol.breadcrumb,
+  .breadcrumb-container .breadcrumb {
+    flex-wrap: nowrap;
+    overflow: hidden;
+
+    .breadcrumb-item {
+      white-space: nowrap;
+
+      &:not(.active):last-of-type {
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      &.active {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        margin: -1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+      }
+    }
+  }
+}

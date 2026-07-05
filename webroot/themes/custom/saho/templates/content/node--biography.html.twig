@@ -25,14 +25,6 @@
     }, with_context = false) }}
   {% endif %}
 
-  {# The state's own banning / incarceration paperwork, rendered as evidence. #}
-  {% if record.detention.banning is defined or record.detention.prison is defined %}
-    {{ include('saho:saho-detention-record', {
-      banning: record.detention.banning|default(null),
-      prison: record.detention.prison|default(null),
-    }, with_context = false) }}
-  {% endif %}
-
   <div class="saho-article-grid">
 
     {# LEFT: Main content column #}
@@ -86,6 +78,16 @@
           {# Remove the label by accessing the content directly #}
           {{ content.body.0 }}
         </div>
+      {% endif %}
+
+      {# The state's own banning / incarceration paperwork, rendered as a
+         document within the record - after the person's story, never before
+         it (dignity first, #463). #}
+      {% if record.detention.banning is defined or record.detention.prison is defined %}
+        {{ include('saho:saho-detention-record', {
+          banning: record.detention.banning|default(null),
+          prison: record.detention.prison|default(null),
+        }, with_context = false) }}
       {% endif %}
 
       {% if content.field_highlight %}
