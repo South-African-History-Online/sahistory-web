@@ -961,6 +961,12 @@ function saho_preprocess_views_view__saho_landing_shell(array &$variables): void
     $card_meta = $ref . ' · UPD ' . mb_strtoupper($date_formatter->format((int) $node->getChangedTime(), 'custom', 'j M Y'));
 
     $image = _saho_search_result_image($node);
+    $image_url = $image['url'] ?? '';
+    // Portrait-less biographies get the DS placeholder so every card in
+    // a row shares the image slot - no third anatomy for sparse records.
+    if ($image_url === '' && $node->bundle() === 'biography') {
+      $image_url = '/' . \Drupal::service('extension.list.theme')->getPath('saho') . '/images/default-portrait.svg';
+    }
     $record_cards[] = [
       'type' => $row_type,
       'title' => $node->label(),
@@ -968,7 +974,7 @@ function saho_preprocess_views_view__saho_landing_shell(array &$variables): void
       'excerpt' => $excerpt,
       'dates' => $card_dates,
       'meta' => $card_meta,
-      'image' => $image['url'] ?? '',
+      'image' => $image_url,
       'image_alt' => $image['alt'],
       'duotone' => TRUE,
       'hide_badge' => $single_type,

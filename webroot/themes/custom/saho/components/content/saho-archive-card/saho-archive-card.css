@@ -1,6 +1,9 @@
 /* SAHO Archive card — the workhorse record index card. Mobile-first. */
 .saho-acard {
-  display: block;
+  /* Flex column so the meta foot can pin to the card base: every card in
+     a grid row shares one anatomy regardless of how sparse its record is. */
+  display: flex;
+  flex-direction: column;
   text-decoration: none;
   background: var(--surface-card);
   border: var(--bw-hair) solid var(--border-default);
@@ -70,6 +73,9 @@
 }
 
 .saho-acard__body {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
   padding: var(--space-4);
 }
 .saho-acard__badge-inline {
@@ -99,8 +105,15 @@
   line-height: 1.55;
   color: var(--text-secondary);
   max-width: none;
+  /* Three lines, then the ref foot - excerpts never push the grid ragged. */
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 .saho-acard__meta {
-  margin: 12px 0 0;
+  /* Pinned to the card foot; the padding keeps a floor gap when short. */
+  margin: auto 0 0;
+  padding-top: 12px;
   color: var(--text-muted);
 }

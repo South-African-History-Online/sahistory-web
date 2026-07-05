@@ -93,20 +93,64 @@
 // Mirrors .saho-classroom-hub__grades: the checkbox input is visually
 // hidden and its label is the chip; BEF links degrade to the same chips.
 .saho-landing__filters {
+  // One slim ruled band, not a raised box (same register as the
+  // classroom grade band): hairline top + bottom, transparent ground.
+  // Each facet group is its own hairline-ruled row.
   margin-bottom: var(--space-5);
-  padding: var(--space-4);
-  border: var(--bw-hair) solid var(--border-default);
-  background: var(--surface-card);
+  padding: var(--space-4) 0;
+  border-top: var(--bw-hair) solid var(--border-default);
+  border-bottom: var(--bw-hair) solid var(--border-default);
+  background: transparent;
 
-  // "Biography Categories" legend as a mono apparatus heading.
+  fieldset + fieldset {
+    margin-top: var(--space-2);
+    padding-top: var(--space-2);
+    border-top: var(--bw-hair) solid var(--border-default);
+  }
+
+  // Each facet group is one ruled row: LABEL - chips - SHOW MORE.
+  fieldset {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-3);
+    margin: 0;
+
+    // The chips wrapper (Bootstrap .mb-3 div) rides the row; content
+    // width only, so the SHOW MORE link packs beside it. Bootstrap's
+    // margin utilities carry !important, hence the counter here.
+    > div {
+      flex: 0 1 auto;
+      min-width: 0;
+      margin: 0 !important;
+    }
+  }
+
+  // BEF autosubmit applies chip changes; Apply never renders in the band.
+  .form-actions {
+    display: none;
+  }
+
+  // "Biography Categories" legend as a mono apparatus heading, inline
+  // on the row (float strips the fieldset-legend special placement).
+  legend {
+    float: left;
+    width: auto;
+    flex: 0 0 auto;
+    margin: 0 !important;
+  }
   .fieldset-legend {
-    margin-bottom: var(--space-2);
+    margin-bottom: 0;
     font-family: var(--font-mono);
     font-size: 11px;
     font-weight: var(--fw-semibold);
     letter-spacing: var(--ls-wide);
     text-transform: uppercase;
     color: var(--text-muted);
+  }
+
+  .filter-show-more {
+    flex: 0 0 auto;
   }
 
   // Flatten the BEF checkbox (or link-list) tree into one wrapping row.
@@ -120,6 +164,15 @@
   .bef-links ul,
   .bef-links li {
     display: contents;
+  }
+
+  // One chip row per group: five visible + the mono SHOW MORE link
+  // (exposed-filters.js toggles .show-all). display:contents above beats
+  // the generic nth-child hiding, so re-assert it here; chips carrying a
+  // checked value stay visible regardless of position.
+  .bef-checkboxes:not(.show-all) .form-check:nth-child(n + 6):not(:has(input:checked)),
+  .bef-links:not(.show-all) li:nth-child(n + 6) {
+    display: none;
   }
 
   // Visually hide the checkbox; the label stays its accessible proxy.
@@ -196,31 +249,28 @@
     width: 100%;
   }
 
-  .bef-checkboxes {
-    width: 100%;
-  }
-
-  // BEF soft-limit toggle joins the chip row.
+  // BEF soft-limit toggle joins the chip row as the quiet mono text
+  // link (#465) - never a boxed button.
   .filter-show-more,
   .bef-toggle {
     display: inline-flex;
     align-items: center;
-    min-height: 44px;
-    padding: var(--space-1) var(--space-3);
-    border: var(--bw-hair) solid var(--border-default);
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
     background: none;
     font-family: var(--font-mono);
-    font-size: 12px;
+    font-size: 11px;
     letter-spacing: var(--ls-label);
     text-transform: uppercase;
-    color: var(--text-muted);
+    color: var(--saho-oxblood, #990000);
     cursor: pointer;
-    margin-top: var(--space-2);
 
     &:hover,
     &:focus-visible {
-      border-color: var(--saho-ink);
       color: var(--text-primary);
+      text-decoration: underline;
     }
   }
 }
