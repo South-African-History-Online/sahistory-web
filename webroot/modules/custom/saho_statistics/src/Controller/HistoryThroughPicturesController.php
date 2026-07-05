@@ -5,7 +5,6 @@ namespace Drupal\saho_statistics\Controller;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Url;
-use Drupal\file\FileInterface;
 use Drupal\saho_utils\Service\ImageExtractorService;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -140,6 +139,7 @@ class HistoryThroughPicturesController extends ControllerBase {
         'title' => $node->getTitle(),
         'url' => $target_url,
         'image' => $image_url,
+        'image_large' => $this->getNodeImageUrl($node, 'max_1300x1300'),
         'has_feature_link' => $this->hasFeatureLink($node),
       ];
 
@@ -229,28 +229,15 @@ class HistoryThroughPicturesController extends ControllerBase {
    * @return string|null
    *   The relative image URL or NULL if not available.
    */
-  protected function getNodeImageUrl($node) {
-    $image_fields = ['field_image', 'field_archive_image'];
-
-    foreach ($image_fields as $field_name) {
-      if (!$node->hasField($field_name) || $node->get($field_name)->isEmpty()) {
-        continue;
+  protected function getNodeImageUrl($node, string $style = 'max_650x650') {
+    // Serve WebP image-style derivatives, not raw originals (#453 perf).
+    // The extractor prefers the {style}_webp variant and falls back to the
+    // original file URL if derivative generation fails.
+    foreach (['field_image', 'field_archive_image'] as $field_name) {
+      $url = $this->imageExtractor->extractImageWithDerivatives($node, $style, $field_name);
+      if ($url) {
+        return $url;
       }
-
-      $field_value = $node->get($field_name)->first();
-      if (!$field_value) {
-        continue;
-      }
-
-      // Fix: Access file entity properly using ->entity property.
-      $file = $field_value->entity;
-      if (!$file || !$file instanceof FileInterface) {
-        continue;
-      }
-
-      $uri = $file->getFileUri();
-      $path = str_replace('public://', '/sites/default/files/', $uri);
-      return $path;
     }
 
     return NULL;
