@@ -359,11 +359,8 @@ class TdihBlock extends BlockBase implements ContainerFactoryPluginInterface {
       '#theme' => 'tdih_block',
       '#tdih_nodes' => $tdih_nodes,
       // Attach the TDIH block CSS library.
-      '#attached' => [
-        'library' => [
-          'tdih/tdih-block',
-        ],
-      ],
+      // Styling comes from the theme's .block-section band; the legacy
+      // tdih-block library is retired (#453).
       // Add cache metadata to ensure the block updates at midnight.
       '#cache' => [
         'keys' => ['tdih_block', $sort_by, $cache_date],
