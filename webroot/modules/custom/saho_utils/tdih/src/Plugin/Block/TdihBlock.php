@@ -314,38 +314,32 @@ class TdihBlock extends BlockBase implements ContainerFactoryPluginInterface {
         }
 
         if (!empty($filtered_nodes)) {
-          // Apply sorting configuration.
+          // Apply sorting configuration, then emit up to three entries so the
+          // aside holds its column as a chronology, not a lone teaser (#460).
           $sort_by = $this->configuration['sort_by'] ?? 'none';
-          $selected_node = NULL;
+          $selected_nodes = [];
 
-          // Handle random_with_images option.
           if ($sort_by === 'random_with_images') {
-            // Filter nodes to only those with images.
+            // Prefer nodes with images (the first entry carries the LCP
+            // image), then pad with the rest.
             $nodes_with_images = array_filter($filtered_nodes, function ($node) {
               return $this->imageExtractor->hasImage($node, 'field_event_image');
             });
-
-            if (!empty($nodes_with_images)) {
-              // Random selection from nodes with images.
-              $selected_node = $nodes_with_images[array_rand($nodes_with_images)];
-            }
-            else {
-              // Fallback to random selection if none have images.
-              $selected_node = $filtered_nodes[array_rand($filtered_nodes)];
-            }
+            $nodes_without = array_diff_key($filtered_nodes, $nodes_with_images);
+            shuffle($nodes_with_images);
+            shuffle($nodes_without);
+            $selected_nodes = array_merge($nodes_with_images, $nodes_without);
           }
           elseif ($sort_by === 'none') {
-            // Random selection (existing behavior).
-            $selected_node = $filtered_nodes[array_rand($filtered_nodes)];
+            $selected_nodes = $filtered_nodes;
+            shuffle($selected_nodes);
           }
           else {
             // Use SortingService for consistent sorting.
-            $sorted_nodes = $this->sortingService->sortLoadedEntities($filtered_nodes, $sort_by);
-            // Select the first node after sorting.
-            $selected_node = reset($sorted_nodes);
+            $selected_nodes = $this->sortingService->sortLoadedEntities($filtered_nodes, $sort_by);
           }
 
-          if ($selected_node) {
+          foreach (array_slice($selected_nodes, 0, 3) as $selected_node) {
             $tdih_nodes[] = $this->buildNodeItem($selected_node);
           }
         }

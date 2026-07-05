@@ -412,10 +412,11 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
           }
         }
 
-        // Limit to only one random event for display.
-        if (count($all_events) > 1) {
-          $random_event = $all_events[array_rand($all_events)];
-          $all_events = [$random_event];
+        // Show up to three ruled chronology entries so the aside holds its
+        // column (#460); shuffle so the pick still rotates day to day.
+        if (count($all_events) > 3) {
+          shuffle($all_events);
+          $all_events = array_slice($all_events, 0, 3);
         }
       }
     }
