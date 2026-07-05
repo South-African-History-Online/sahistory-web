@@ -1187,7 +1187,7 @@
                 e.preventDefault();
                 e.stopPropagation();
                 self.copyAllCitations();
-                return FALSE;
+                return false;
             });
         },
 
@@ -1254,7 +1254,7 @@
                     this.fallbackCopyAllText(allCitationsText);
                 }
             } else {
-                this.showCopyAllFeedback('No citations available', TRUE);
+                this.showCopyAllFeedback('No citations available', true);
             }
         },
 
@@ -1280,10 +1280,10 @@
                 if (successful) {
                     this.showCopyAllFeedback('All formats copied!');
                 } else {
-                    this.showCopyAllFeedback('Copy failed', TRUE);
+                    this.showCopyAllFeedback('Copy failed', true);
                 }
             } catch (err) {
-                this.showCopyAllFeedback('Copy failed', TRUE);
+                this.showCopyAllFeedback('Copy failed', true);
             }
 
             // Clean up
@@ -1354,7 +1354,7 @@
             allCitationsText = allCitationsText.trim();
 
             // Copy the text and show feedback, auto-close the modal
-            this.copyTextToClipboard(allCitationsText, $('.citation-format'), TRUE);
+            this.copyTextToClipboard(allCitationsText, $('.citation-format'), true);
 
             // Update the button text temporarily
             const $button = $('.copy-citation');
