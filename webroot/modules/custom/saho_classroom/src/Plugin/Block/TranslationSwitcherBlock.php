@@ -85,17 +85,18 @@ final class TranslationSwitcherBlock extends BlockBase implements ContainerFacto
     $links = [];
     foreach ($languages as $langcode => $language) {
       try {
-        $url = $entity->getTranslation($langcode)->toUrl('canonical', ['language' => $language]);
+        $url = $entity->getTranslation($langcode)
+          ->toUrl('canonical', ['language' => $language])
+          ->toString();
       }
       catch (\Throwable $e) {
         continue;
       }
-      $links[$langcode] = [
+      $links[] = [
+        'langcode' => $langcode,
         'title' => $language->getName(),
         'url' => $url,
-        'attributes' => $langcode === $current
-          ? ['class' => ['is-active'], 'aria-current' => 'true']
-          : [],
+        'active' => $langcode === $current,
       ];
     }
     if (count($links) < 2) {
@@ -103,9 +104,10 @@ final class TranslationSwitcherBlock extends BlockBase implements ContainerFacto
     }
 
     return [
-      '#theme' => 'links',
+      '#theme' => 'saho_translation_switcher',
       '#links' => $links,
-      '#attributes' => ['class' => ['saho-translation-switcher', 'nav']],
+      '#count' => count($links),
+      '#attached' => ['library' => ['saho_classroom/translation_switcher']],
       '#cache' => [
         'contexts' => ['route', 'languages:language_interface'],
         'tags' => $entity->getCacheTags(),

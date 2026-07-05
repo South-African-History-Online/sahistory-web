@@ -10,6 +10,7 @@ use Drupal\Core\Language\LanguageManagerInterface;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\Logger\LoggerChannelInterface;
 use Drupal\node\NodeInterface;
+use Drupal\pathauto\PathautoGeneratorInterface;
 
 /**
  * Reproducibly syncs presentation decks from module JSON files into nodes.
@@ -53,12 +54,15 @@ final class DeckSync {
    *   The logger channel factory.
    * @param \Drupal\Core\Language\LanguageManagerInterface $languageManager
    *   The language manager.
+   * @param \Drupal\pathauto\PathautoGeneratorInterface|null $pathautoGenerator
+   *   The pathauto generator, when the module is installed.
    */
   public function __construct(
     private readonly EntityTypeManagerInterface $entityTypeManager,
     ModuleExtensionList $moduleList,
     LoggerChannelFactoryInterface $loggerFactory,
     private readonly LanguageManagerInterface $languageManager,
+    private readonly ?PathautoGeneratorInterface $pathautoGenerator = NULL,
   ) {
     $this->logger = $loggerFactory->get('saho_classroom');
     $this->modulePath = $moduleList->getPath('saho_classroom');
@@ -178,8 +182,38 @@ final class DeckSync {
     $node->save();
 
     $this->applyTranslations($node, $path);
+    $this->refreshAliases($node);
 
     return $is_new ? 'created' : 'updated';
+  }
+
+  /**
+   * Regenerates the pathauto alias for a node and each of its translations.
+   *
+   * Runs on every sync so pretty /classroom/... URLs reproduce on any
+   * environment the moment the decks do, including translation aliases for
+   * the per-language deck pages. Cheap when nothing changed: pathauto
+   * returns early if the alias already matches the pattern.
+   *
+   * @param \Drupal\node\NodeInterface $node
+   *   The base presentation node, translations included.
+   */
+  private function refreshAliases(NodeInterface $node): void {
+    if ($this->pathautoGenerator === NULL) {
+      return;
+    }
+    foreach (array_keys($node->getTranslationLanguages()) as $langcode) {
+      try {
+        $this->pathautoGenerator->updateEntityAlias($node->getTranslation($langcode), 'bulkupdate');
+      }
+      catch (\Throwable $e) {
+        $this->logger->warning('Alias refresh failed for @title (@langcode): @message', [
+          '@title' => $node->label(),
+          '@langcode' => $langcode,
+          '@message' => $e->getMessage(),
+        ]);
+      }
+    }
   }
 
   /**

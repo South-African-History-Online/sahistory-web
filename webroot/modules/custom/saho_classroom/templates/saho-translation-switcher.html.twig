@@ -1,0 +1,31 @@
+{#
+/**
+ * @file
+ * Prominent language bar for content that has translations.
+ *
+ * Available variables:
+ * - links: List of language links, each with:
+ *   - langcode: The language code (e.g. "zu").
+ *   - title: The language name (e.g. "isiZulu").
+ *   - url: The URL of that translation as a string.
+ *   - active: TRUE when this is the language being viewed.
+ * - count: The number of languages available.
+ */
+#}
+<nav class="saho-translation-switcher" aria-label="{{ 'Languages this page is available in'|t }}">
+  <div class="saho-translation-switcher__label">
+    <span class="saho-translation-switcher__eyebrow">{{ 'Read in your language'|t }}</span>
+    <span class="saho-translation-switcher__count">{{ 'Available in @count languages'|t({'@count': count}) }}</span>
+  </div>
+  <ul class="saho-translation-switcher__list">
+    {% for link in links %}
+      <li class="saho-translation-switcher__item">
+        <a href="{{ link.url }}"
+           lang="{{ link.langcode }}"
+           hreflang="{{ link.langcode }}"
+           class="saho-translation-switcher__pill{{ link.active ? ' is-active' }}"
+           {{ link.active ? 'aria-current="page"' }}>{{ link.title }}</a>
+      </li>
+    {% endfor %}
+  </ul>
+</nav>

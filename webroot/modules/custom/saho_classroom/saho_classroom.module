@@ -7,11 +7,26 @@
 
 declare(strict_types=1);
 
+use Drupal\Core\Cache\Cache;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 use Drupal\node\NodeInterface;
 use Drupal\views\ViewExecutable;
+
+/**
+ * Implements hook_theme().
+ */
+function saho_classroom_theme(): array {
+  return [
+    'saho_translation_switcher' => [
+      'variables' => [
+        'links' => [],
+        'count' => 0,
+      ],
+    ],
+  ];
+}
 
 /**
  * Implements hook_views_pre_view().
@@ -181,7 +196,12 @@ function saho_classroom_preprocess_views_view(array &$variables): void {
  * so it reproduces identically on every environment.
  */
 function saho_classroom_node_view(array &$build, EntityInterface $node, $display, $view_mode): void {
-  if ($view_mode !== 'full' || !$node instanceof NodeInterface || $node->bundle() === 'presentation') {
+  if ($view_mode !== 'full' || !$node instanceof NodeInterface) {
+    return;
+  }
+  // Presentations get the reverse link: back to the article they came from.
+  if ($node->bundle() === 'presentation') {
+    _saho_classroom_add_origin_link($build, $node);
     return;
   }
   $is_classroom = FALSE;
@@ -233,6 +253,128 @@ function saho_classroom_node_view(array &$build, EntityInterface $node, $display
       '#attributes' => ['class' => ['saho-classroom-cta__btn']],
     ],
   ];
+}
+
+/**
+ * Adds a strip under a presentation deck linking back to its origin article.
+ *
+ * The reverse of the teacher CTA on legacy articles: learners and teachers
+ * arriving at a deck can step back into the full SAHO article the lesson
+ * covers, with its sources and further reading.
+ */
+function _saho_classroom_add_origin_link(array &$build, NodeInterface $deck): void {
+  $article = _saho_classroom_match_article($deck);
+  if (!$article) {
+    return;
+  }
+  $build['saho_classroom_origin'] = [
+    '#type' => 'container',
+    // Directly under the deck (weight 0), above sharing/body/meta fields.
+    '#weight' => 10,
+    '#attributes' => ['class' => ['saho-classroom-origin']],
+    '#attached' => ['library' => ['saho_classroom/badge']],
+    // Recompute when articles change so the match stays current.
+    '#cache' => ['tags' => Cache::mergeTags(['node_list'], $article->getCacheTags())],
+    'text' => [
+      '#type' => 'html_tag',
+      '#tag' => 'div',
+      '#attributes' => ['class' => ['saho-classroom-origin__text']],
+      'eyebrow' => [
+        '#type' => 'html_tag',
+        '#tag' => 'span',
+        '#attributes' => ['class' => ['saho-classroom-origin__eyebrow']],
+        '#value' => t('Go deeper'),
+      ],
+      'title' => [
+        '#type' => 'html_tag',
+        '#tag' => 'span',
+        '#attributes' => ['class' => ['saho-classroom-origin__title']],
+        '#value' => t('This lesson is based on the article "@title".', ['@title' => $article->label()]),
+      ],
+    ],
+    'link' => [
+      '#type' => 'link',
+      '#title' => t('Read the full article'),
+      '#url' => $article->toUrl(),
+      '#attributes' => ['class' => ['saho-classroom-origin__btn']],
+    ],
+  ];
+}
+
+/**
+ * Finds the article a presentation deck was made from, if any.
+ *
+ * Reverse of _saho_classroom_match_deck(): the same deterministic token
+ * overlap between the deck's caps_topic term (falling back to the deck's
+ * source-language title, since translated titles share no tokens with the
+ * English article titles) and each published classroom article's title.
+ * Pure code + a runtime query - no stored mapping - so it reproduces on
+ * any environment.
+ *
+ * @param \Drupal\node\NodeInterface $deck
+ *   The presentation node (any translation).
+ *
+ * @return \Drupal\node\NodeInterface|null
+ *   The best-matching classroom article, or NULL when none is confident.
+ */
+function _saho_classroom_match_article(NodeInterface $deck): ?NodeInterface {
+  $topic = '';
+  if ($deck->hasField('field_caps_topic') && !$deck->get('field_caps_topic')->isEmpty()) {
+    $term = $deck->get('field_caps_topic')->entity;
+    if ($term) {
+      $topic = (string) $term->label();
+    }
+  }
+  if ($topic === '') {
+    $topic = (string) $deck->getUntranslated()->label();
+  }
+  $topic_tokens = _saho_classroom_tokens($topic);
+  if (!$topic_tokens) {
+    return NULL;
+  }
+
+  $storage = \Drupal::entityTypeManager()->getStorage('node');
+  $query = $storage->getQuery()
+    ->accessCheck(TRUE)
+    ->condition('type', 'article')
+    ->condition('status', 1);
+  $query->condition($query->orConditionGroup()
+    ->exists('field_classroom_categories')
+    ->exists('field_classroom'));
+  $ids = $query->execute();
+  if (!$ids) {
+    return NULL;
+  }
+
+  // Titles only - matching every classroom article does not need full loads.
+  $titles = \Drupal::database()->select('node_field_data', 'n')
+    ->fields('n', ['nid', 'title'])
+    ->condition('n.nid', $ids, 'IN')
+    ->condition('n.default_langcode', 1)
+    ->execute()
+    ->fetchAllKeyed();
+
+  $best_nid = NULL;
+  $best_score = 0.0;
+  foreach ($titles as $nid => $title) {
+    $article_tokens = _saho_classroom_tokens((string) $title);
+    if (!$article_tokens) {
+      continue;
+    }
+    $hits = count(array_intersect_key($topic_tokens, $article_tokens));
+    $score = $hits / count($topic_tokens);
+    if ($score > $best_score) {
+      $best_score = $score;
+      $best_nid = (int) $nid;
+    }
+  }
+
+  // Same confidence bar as the forward match: never link loosely.
+  if ($best_nid === NULL || $best_score < 0.6) {
+    return NULL;
+  }
+  $article = $storage->load($best_nid);
+  return $article instanceof NodeInterface ? $article : NULL;
 }
 
 /**
