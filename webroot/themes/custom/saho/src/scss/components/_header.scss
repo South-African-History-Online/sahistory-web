@@ -480,10 +480,9 @@ h1.node__title,
   // ── Hero zone ────────────────────────────────────────────────────────────
 
   .saho-search-hero {
-    // Open Record ink surface with a faint oxblood cast at the top
-    background:
-      radial-gradient(ellipse at 50% -5%, var(--saho-oxblood-25) 0%, transparent 60%),
-      var(--saho-ink);
+    // Open Record ink surface - flat; legibility and drama come from the
+    // ground and the type, never a scrim (#453).
+    background: var(--saho-ink);
     padding: 2.5rem 2rem 2.25rem;
     position: relative;
     flex-shrink: 0;
@@ -524,23 +523,22 @@ h1.node__title,
     position: absolute;
     top: 1.25rem;
     right: 1.25rem;
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    color: rgba(255, 255, 255, 0.65);
+    background: transparent;
+    border: var(--bw-hair, 1px) solid rgba(243, 236, 221, 0.35);
+    color: rgba(243, 236, 221, 0.75);
     width: 40px;
     height: 40px;
-    border-radius: 50%;
+    border-radius: 0;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: border-color 0.2s ease, color 0.2s ease;
     z-index: 10;
 
     &:hover {
-      background: rgba(255, 255, 255, 0.15);
-      color: #fff;
-      transform: rotate(90deg);
+      border-color: var(--text-on-dark, #f3ecdd);
+      color: var(--text-on-dark, #f3ecdd);
     }
 
     &:focus-visible {
@@ -623,6 +621,11 @@ h1.node__title,
   // ── Discovery zone ──────────────────────────────────────────────────────
 
   .saho-search-discovery {
+    // The global link rule paints anchors via --link-rest at higher
+    // specificity than the chip classes; re-scope for the chip register.
+    --link-rest: var(--text-primary);
+    --link-hover: var(--text-primary);
+
     flex: 1;
     background: var(--saho-paper);
     padding: 2rem 2rem 2.5rem;
@@ -657,75 +660,30 @@ h1.node__title,
     gap: 0.5rem;
   }
 
-  .saho-search-chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.25rem;
-    padding: 0.4rem 0.9375rem;
-    background: var(--saho-oxblood-10);
-    color: var(--saho-oxblood);
-    border: 1px solid var(--saho-oxblood-16);
-    border-radius: var(--radius-sm);
-    font-size: 0.875rem;
-    font-weight: 500;
-    text-decoration: none;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: all 0.18s ease;
-
-    &:hover,
-    &:focus-visible {
-      background: var(--saho-oxblood);
-      color: var(--text-on-accent);
-      border-color: var(--saho-oxblood);
-      transform: translateY(-1px);
-      box-shadow: 0 3px 10px var(--saho-oxblood-25);
-      text-decoration: none;
-    }
-  }
-
-  .saho-search-chip--era {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.25rem;
-    padding: 0.4rem 0.9375rem;
-    background: var(--saho-ochre-10);
-    color: var(--saho-ochre-deep);
-    border: 1px solid var(--saho-ochre-20);
-    border-radius: var(--radius-sm);
-    font-size: 0.875rem;
-    font-weight: 500;
-    text-decoration: none;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: all 0.18s ease;
-
-    &:hover,
-    &:focus-visible {
-      background: var(--saho-ochre);
-      color: var(--saho-ink);
-      border-color: var(--saho-ochre);
-      transform: translateY(-1px);
-      box-shadow: 0 3px 10px var(--saho-ochre-20);
-      text-decoration: none;
-    }
-  }
-
+  // Discovery chips: the classroom chip register - square mono tags on
+  // paper, hover darkens the hairline, press fills oxblood. No tinted
+  // fills, no lift, no shadow (#453).
+  .saho-search-chip,
+  .saho-search-chip--era,
   .saho-search-chip--type {
     display: inline-flex;
     align-items: center;
     gap: 0.375rem;
-    padding: 0.4rem 0.9375rem;
-    background: transparent;
-    color: var(--saho-ink-soft);
-    border: 1px solid var(--border-default);
-    border-radius: var(--radius-sm);
-    font-size: 0.875rem;
+    min-height: 2rem;
+    padding: 0.3rem 0.75rem;
+    background: var(--saho-paper);
+    color: var(--text-primary);
+    border: var(--bw-hair, 1px) solid var(--border-default);
+    border-radius: 0;
+    font-family: var(--font-mono);
+    font-size: 12px;
     font-weight: 500;
+    letter-spacing: var(--ls-label, 0.04em);
+    text-transform: uppercase;
     text-decoration: none;
     cursor: pointer;
     white-space: nowrap;
-    transition: all 0.18s ease;
+    transition: border-color 0.18s ease, background 0.18s ease;
 
     svg {
       flex-shrink: 0;
@@ -733,12 +691,15 @@ h1.node__title,
 
     &:hover,
     &:focus-visible {
-      background: var(--saho-ink);
-      color: var(--text-on-dark);
-      border-color: var(--saho-ink);
-      transform: translateY(-1px);
-      box-shadow: 0 3px 10px rgba(27, 28, 23, 0.3);
+      border-color: var(--border-strong, #1b1c17);
+      color: var(--text-primary);
       text-decoration: none;
+    }
+
+    &:active {
+      background: var(--accent, #990000);
+      border-color: var(--accent, #990000);
+      color: var(--text-on-accent, #fbf3ee);
     }
   }
 
@@ -1004,9 +965,7 @@ h1.node__title,
   // ── Hero header (Open Record ink surface, matching search modal) ────────
 
   .offcanvas-header.saho-mobile-menu-hero {
-    background:
-      radial-gradient(ellipse at 50% -10%, var(--saho-oxblood-25) 0%, transparent 60%),
-      var(--saho-ink);
+    background: var(--saho-ink);
     border-bottom: none;
     padding: 1rem 1.25rem 1.25rem;
     flex-direction: column;
