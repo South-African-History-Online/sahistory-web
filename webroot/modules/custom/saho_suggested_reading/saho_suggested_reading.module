@@ -14,14 +14,11 @@ use Drupal\node\NodeInterface;
 function saho_suggested_reading_preprocess_node(array &$variables) {
   $node = $variables['node'];
 
-  // Only process full view mode for the supported content types.
+  // Only process full view mode for the supported content types. Record
+  // bundles (article/archive/biography/event/place) left this list with
+  // #463: their single cross-reference surface is the rail related-tabs.
   $supported_bundles = [
-    'article',
-    'archive',
-    'biography',
-    'event',
     'image',
-    'place',
   ];
   if ($variables['view_mode'] !== 'full' || !in_array($node->bundle(), $supported_bundles)) {
     return;

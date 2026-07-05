@@ -547,59 +547,10 @@ function saho_preprocess_node(array &$variables) {
     }
   }
  
-  // Set the appropriate classes and accordion views with conditional logic.
-
-  // The curated feature_children listings now feed the related-tabs
-  // cross-reference engine (see _saho_record_curated_tabs()); the legacy
-  // rail accordion is retired.
-
-  // Process field_feature_parent to group by content type
-  if ($node->hasField('field_feature_parent') && !$node->get('field_feature_parent')->isEmpty()) {
-    $grouped_parents = [
-      'articles' => [],
-      'people' => [],
-      'places' => [],
-      'organisations' => [],
-      'timelines' => [],
-      'archive' => [],
-    ];
-
-    foreach ($node->get('field_feature_parent') as $item) {
-      $referenced_node = $item->entity;
-      if ($referenced_node) {
-        $bundle = $referenced_node->bundle();
-
-        // Map bundle to display category
-        switch ($bundle) {
-          case 'article':
-            $grouped_parents['articles'][] = $referenced_node;
-            break;
-          case 'biography':
-            $grouped_parents['people'][] = $referenced_node;
-            break;
-          case 'place':
-            $grouped_parents['places'][] = $referenced_node;
-            break;
-          case 'organisation':
-            $grouped_parents['organisations'][] = $referenced_node;
-            break;
-          case 'event':
-            $grouped_parents['timelines'][] = $referenced_node;
-            break;
-          case 'archive':
-            $grouped_parents['archive'][] = $referenced_node;
-            break;
-        }
-      }
-    }
-
-    // Remove empty categories
-    $grouped_parents = array_filter($grouped_parents, function($items) {
-      return !empty($items);
-    });
-
-    $variables['grouped_feature_parents'] = $grouped_parents;
-  }
+  // The curated feature_children listings and the *_related_tab fields feed
+  // the rail related-tabs (_saho_record_related_props()), the single
+  // cross-reference surface on record pages (#463). The legacy
+  // grouped_feature_parents card wall is retired.
 }
 
 /**
