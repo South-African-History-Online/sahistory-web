@@ -2016,7 +2016,23 @@ function saho_preprocess_node__article(array &$variables): void {
     'label' => 'Updated',
     'value' => $date_formatter->format($node->getChangedTime(), 'custom', 'j M Y'),
   ];
-  _saho_record_header_props($variables, $node, 'article', 'Article record', $facts);
+
+  // Timeline-genre articles set their year-by-year entries in the
+  // chronology register and declare the genre in the kicker. Articles
+  // whose body does not parse (fewer than 3 dated entries) render the
+  // plain body exactly as before.
+  $kicker = 'Article record';
+  if ($node->hasField('field_timeline_categories_type') && !$node->get('field_timeline_categories_type')->isEmpty()) {
+    $chronology = _saho_article_chronology($node);
+    if ($chronology !== []) {
+      $variables['chronology'] = ['entries' => $chronology['entries']];
+      $variables['chronology_decades'] = count($chronology['decades']) > 1 ? $chronology['decades'] : [];
+      $variables['#attached']['library'][] = 'saho/saho-chronology';
+      $span = _saho_timeline_period($node->label());
+      $kicker = 'Timeline · ' . ($span !== '' ? $span : $chronology['span']);
+    }
+  }
+  _saho_record_header_props($variables, $node, 'article', $kicker, $facts);
 
   $variables['record_meta'] = _saho_record_meta_props('Record details', 'article', [
     'Author' => strip_tags($value('field_article_author')),
@@ -2032,6 +2048,156 @@ function saho_preprocess_node__article(array &$variables): void {
   if ($variables['is_collection_head'] && $variables['record_image'] !== [] && empty($variables['record_image']['credit'])) {
     $variables['record_image']['credit'] = 'Unrecorded';
   }
+}
+
+/**
+ * Parses a timeline article body into chronology-register entries.
+ *
+ * Two source shapes are recognised in the processed (format-sanitised)
+ * body HTML: definition lists (<dt>1919</dt> + <dd> entries - the
+ * dominant shape) and paragraphs whose leading text node opens with a
+ * year. Everything else interleaves as untouched prose in source order.
+ * Fewer than three dated entries aborts the transform - prose-heavy
+ * articles must never be mangled.
+ *
+ * @param \Drupal\node\NodeInterface $node
+ *   The article node.
+ *
+ * @return array
+ *   ['entries' => [...], 'decades' => [{label, anchor}], 'span' =>
+ *   '1919–1989'], or [] when the body does not parse as a chronology.
+ */
+function _saho_article_chronology(NodeInterface $node): array {
+  if (!$node->hasField('body') || $node->get('body')->isEmpty()) {
+    return [];
+  }
+  $body = $node->get('body')->first();
+  $processed = (string) check_markup((string) $body->value, $body->format ?? 'basic_html');
+  if (trim($processed) === '') {
+    return [];
+  }
+
+  $doc = new \DOMDocument();
+  if (!@$doc->loadHTML('<?xml encoding="utf-8"?><div id="saho-chron-root">' . $processed . '</div>', LIBXML_NOERROR | LIBXML_NOWARNING)) {
+    return [];
+  }
+  $root = (new \DOMXPath($doc))->query('//div[@id="saho-chron-root"]')->item(0);
+  if ($root === NULL) {
+    return [];
+  }
+
+  $inner = static function (\DOMNode $element) use ($doc): string {
+    $html = '';
+    foreach ($element->childNodes as $child) {
+      $html .= $doc->saveHTML($child);
+    }
+    return $html;
+  };
+
+  $year_re = '(1[0-9]{3}|20[0-9]{2})';
+  $entries = [];
+  $entry_count = 0;
+  $sequence = 0;
+
+  $push_entry = static function (string $year, string $date, string $html) use (&$entries, &$entry_count, &$sequence): void {
+    if (trim(strip_tags($html)) === '') {
+      return;
+    }
+    $sequence++;
+    $entries[] = [
+      'kind' => 'entry',
+      'year' => $year,
+      'date' => $date,
+      'anchor' => 'y-' . $year . '-' . $sequence,
+      'decade' => (string) (intdiv((int) $year, 10) * 10) . 's',
+      'html' => $html,
+    ];
+    $entry_count++;
+  };
+  $push_prose = static function (string $html) use (&$entries): void {
+    if (trim(strip_tags($html, '<img><iframe>')) !== '') {
+      $entries[] = ['kind' => 'prose', 'html' => $html];
+    }
+  };
+
+  foreach (iterator_to_array($root->childNodes) as $child) {
+    if (!$child instanceof \DOMElement) {
+      if ($child instanceof \DOMText && trim($child->nodeValue) !== '') {
+        $push_prose('<p>' . htmlspecialchars($child->nodeValue) . '</p>');
+      }
+      continue;
+    }
+    $tag = strtolower($child->nodeName);
+
+    if ($tag === 'dl') {
+      $year = '';
+      $date = '';
+      foreach (iterator_to_array($child->childNodes) as $part) {
+        if (!$part instanceof \DOMElement) {
+          continue;
+        }
+        $part_tag = strtolower($part->nodeName);
+        if ($part_tag === 'dt') {
+          $text = trim($part->textContent);
+          if (preg_match('/' . $year_re . '/', $text, $m)) {
+            $year = $m[1];
+            $date = trim(str_replace($m[1], '', $text), " \t\n,.;:–—-");
+          }
+          else {
+            $year = '';
+            $push_prose('<p>' . htmlspecialchars($text) . '</p>');
+          }
+        }
+        elseif ($part_tag === 'dd') {
+          if ($year !== '') {
+            $push_entry($year, $date, $inner($part));
+            // The dt's sub-year label belongs to its first entry only.
+            $date = '';
+          }
+          else {
+            $push_prose('<p>' . $inner($part) . '</p>');
+          }
+        }
+      }
+    }
+    elseif ($tag === 'p') {
+      // Only paragraphs whose leading TEXT node opens with a year join
+      // the register - markup-led paragraphs stay prose.
+      $first = $child->firstChild;
+      $lead = $first instanceof \DOMText ? $first->nodeValue : '';
+      if (preg_match('/^\s*' . $year_re . '((?:\s*[-–—]\s*' . $year_re . ')|(?:[,.:]?\s+\d{1,2}\s+[A-Za-z]+)|(?:[,.:]?\s+[A-Za-z]+\s+\d{1,2}))?[,.:]?\s*/u', $lead, $m)) {
+        $first->nodeValue = (string) substr($lead, strlen($m[0]));
+        $push_entry($m[1], trim((string) ($m[2] ?? ''), " \t,.:;–—-"), $inner($child));
+      }
+      else {
+        $push_prose($doc->saveHTML($child));
+      }
+    }
+    else {
+      $push_prose($doc->saveHTML($child));
+    }
+  }
+
+  if ($entry_count < 3) {
+    return [];
+  }
+
+  $decades = [];
+  $years = [];
+  foreach ($entries as $entry) {
+    if ($entry['kind'] === 'entry') {
+      $years[] = (int) $entry['year'];
+      if (!isset($decades[$entry['decade']])) {
+        $decades[$entry['decade']] = ['label' => $entry['decade'], 'anchor' => $entry['anchor']];
+      }
+    }
+  }
+
+  return [
+    'entries' => $entries,
+    'decades' => array_values($decades),
+    'span' => min($years) . "\u{2013}" . max($years),
+  ];
 }
 
 /**

@@ -79,8 +79,14 @@
           {# Teacher quick-link to the interactive classroom presentations. #}
           {{ content.saho_classroom_presentations_cta }}
 
-          {# Main body content #}
-          {{ content.body.0 }}
+          {# Main body content: timeline-genre articles set their dated
+             entries in the chronology register (saho_preprocess_node__article
+             builds it; unparsed bodies fall through untouched). #}
+          {% if chronology %}
+            {{ include('saho:saho-chronology', chronology, with_context = false) }}
+          {% else %}
+            {{ content.body.0 }}
+          {% endif %}
         </div>
       {% endif %}
 
@@ -152,7 +158,7 @@
 
     {# RIGHT: Sidebar (the Open Record rail - S3) #}
     {% set rail_image = record_image.src is defined and record_image.src and (node.field_feature_banner.entity or is_collection_head) %}
-    {% if record_meta or record_related or record_further or rail_image %}
+    {% if record_meta or record_related or record_further or rail_image or chronology_decades %}
       {% set sidebar_has_content = true %}
     {% endif %}
 
@@ -183,6 +189,21 @@
       {% endif %}
 
       {# References now render as the main-column provenance-block (S3). #}
+
+      {# Sticky decade index, last in the rail so sticking never overlaps
+         rail siblings: orientation for long chronologies. #}
+      {% if chronology_decades %}
+        <nav class="saho-chron-index" data-saho-chron-index aria-label="Decade index">
+          <h4 class="saho-chron-index__title">Decades</h4>
+          <ul class="saho-chron-index__list">
+            {% for d in chronology_decades %}
+              <li class="saho-chron-index__item">
+                <a class="saho-chron-index__link" href="#{{ d.anchor }}" data-decade="{{ d.label }}">{{ d.label }}</a>
+              </li>
+            {% endfor %}
+          </ul>
+        </nav>
+      {% endif %}
 
     </aside>
     {% endif %}

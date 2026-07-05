@@ -1,0 +1,25 @@
+{#
+/**
+ * @file SAHO Chronology SDC - the timeline-article register.
+ * props: entries[] {kind: entry|prose, year, date, anchor, decade, html}
+ * html is body markup already sanitised by the node's text format,
+ * hence the raw print. Entries carry data-decade for the decade-index
+ * scrollspy (saho-chronology.js).
+ */
+#}
+<div{{ attributes.addClass('saho-chron') }} data-saho-chronology>
+  {% for e in entries %}
+    {% if e.kind == 'entry' %}
+      <div class="saho-chron__entry"{% if e.anchor %} id="{{ e.anchor }}"{% endif %}{% if e.decade %} data-decade="{{ e.decade }}"{% endif %}>
+        <span class="saho-chron__year">{{ e.year }}</span>
+        <span class="saho-chron__marker" aria-hidden="true"></span>
+        <div class="saho-chron__body">
+          {% if e.date %}<span class="saho-chron__date">{{ e.date }}</span>{% endif %}
+          {{ e.html|raw }}
+        </div>
+      </div>
+    {% else %}
+      <div class="saho-chron__prose">{{ e.html|raw }}</div>
+    {% endif %}
+  {% endfor %}
+</div>
