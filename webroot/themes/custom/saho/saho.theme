@@ -2024,6 +2024,14 @@ function saho_preprocess_node__article(array &$variables): void {
     'Published' => $published,
   ]);
   _saho_record_common_props($variables, $node, ['field_article_image', 'field_image']);
+
+  // Collection heads (articles with archive children, e.g. DISA): the
+  // image is an identity mark, not editorial imagery - it rides the rail
+  // as the sole image slot and provenance demands a visible credit line.
+  $variables['is_collection_head'] = _saho_record_collection_count((int) $node->id()) > 0;
+  if ($variables['is_collection_head'] && $variables['record_image'] !== [] && empty($variables['record_image']['credit'])) {
+    $variables['record_image']['credit'] = 'Unrecorded';
+  }
 }
 
 /**
@@ -2131,11 +2139,161 @@ function saho_preprocess_node__archive(array &$variables): void {
   ];
   _saho_record_header_props($variables, $node, 'archive', 'Archive record', $facts);
 
-  $variables['record_meta'] = _saho_record_meta_props('Record details', 'archive', [
+  // The physical record: format / creator / language / source join the
+  // holding data so an archive item carries full record anatomy.
+  $term_labels = static function (string $field) use ($node): string {
+    if (!$node->hasField($field) || $node->get($field)->isEmpty()) {
+      return '';
+    }
+    $labels = [];
+    foreach ($node->get($field)->referencedEntities() as $term) {
+      $labels[] = (string) $term->label();
+    }
+    return implode(', ', $labels);
+  };
+  $language = $term_labels('field_language');
+  $rows = [
     'Origin date' => $origin,
+    'Format' => $term_labels('field_media_library_type'),
+    'Creator' => $value('field_author'),
+    'Language' => $language !== '' ? [
+      'value' => $language,
+      'lang' => _saho_record_lang_code($language),
+    ] : '',
+    'Source' => trim(strip_tags((string) ($node->hasField('field_source') && !$node->get('field_source')->isEmpty() ? $node->get('field_source')->value : ''))),
     'Holding ref' => $refs->getRef($node),
-  ]);
+  ];
+
+  // Collection membership: PART OF . <COLLECTION> (N ITEMS) back-link to
+  // the pre-filtered index - the item side of the collection flow.
+  if ($node->hasField('field_feature_parent') && !$node->get('field_feature_parent')->isEmpty()) {
+    $parent = $node->get('field_feature_parent')->entity;
+    if ($parent instanceof NodeInterface && $parent->access('view')) {
+      $sibling_count = _saho_record_collection_count((int) $parent->id());
+      $rows['Part of'] = [
+        'value' => $parent->label() . ' (' . number_format($sibling_count) . ' items)',
+        'href' => Url::fromUserInput('/archives', ['query' => ['collection' => $parent->id()]])->toString(),
+      ];
+    }
+  }
+
+  $variables['record_meta'] = _saho_record_meta_props('Record details', 'archive', $rows);
+  $variables['record_collection_nav'] = _saho_record_collection_nav($node);
   _saho_record_common_props($variables, $node, ['field_archive_image', 'field_image']);
+}
+
+/**
+ * Prev/next apparatus within a collection, or [] outside one.
+ *
+ * Two O(1) queries - never a sibling list. Order is by nid, which matches
+ * the ref sequence (refs are zero-padded nids in DisplayRefService); a
+ * promotion path to a saho_refs service exists if a second consumer
+ * (e.g. JSON:API) appears.
+ *
+ * @param \Drupal\node\NodeInterface $node
+ *   The archive item.
+ *
+ * @return array
+ *   ['prev' => ['ref', 'label', 'href'], 'next' => [...]] (keys optional).
+ */
+function _saho_record_collection_nav(NodeInterface $node): array {
+  if (!$node->hasField('field_feature_parent') || $node->get('field_feature_parent')->isEmpty()) {
+    return [];
+  }
+  $parent_id = (int) $node->get('field_feature_parent')->target_id;
+  if ($parent_id <= 0) {
+    return [];
+  }
+  /** @var \Drupal\saho_refs\DisplayRefService $refs */
+  $refs = \Drupal::service('saho_refs.display_ref');
+  $storage = \Drupal::entityTypeManager()->getStorage('node');
+  $nav = [];
+  foreach (['prev' => ['<', 'DESC'], 'next' => ['>', 'ASC']] as $key => [$op, $direction]) {
+    $ids = \Drupal::entityQuery('node')
+      ->accessCheck(TRUE)
+      ->condition('type', 'archive')
+      ->condition('status', 1)
+      ->condition('field_feature_parent', $parent_id)
+      ->condition('nid', $node->id(), $op)
+      ->sort('nid', $direction)
+      ->range(0, 1)
+      ->execute();
+    if ($ids !== []) {
+      $sibling = $storage->load(reset($ids));
+      if ($sibling instanceof NodeInterface) {
+        $nav[$key] = [
+          'ref' => $refs->getRef($sibling),
+          'label' => (string) $sibling->label(),
+          'href' => $sibling->toUrl()->toString(),
+        ];
+      }
+    }
+  }
+  return $nav;
+}
+
+/**
+ * Counts published archive items in a collection (statically cached).
+ *
+ * @param int $parent_id
+ *   The collection head node id.
+ *
+ * @return int
+ *   Number of published archive children.
+ */
+function _saho_record_collection_count(int $parent_id): int {
+  $counts = &drupal_static(__FUNCTION__, []);
+  if (!isset($counts[$parent_id])) {
+    $counts[$parent_id] = (int) \Drupal::entityQuery('node')
+      ->accessCheck(TRUE)
+      ->condition('type', 'archive')
+      ->condition('status', 1)
+      ->condition('field_feature_parent', $parent_id)
+      ->count()
+      ->execute();
+  }
+  return $counts[$parent_id];
+}
+
+/**
+ * Maps a stored language label to a BCP 47 code, or '' when unknown.
+ *
+ * Multi-valued labels ("English, Afrikaans") and languages without a
+ * two-letter code (Khoisan) return '' - a wrong lang attribute is worse
+ * than none.
+ *
+ * @param string $label
+ *   The language term label.
+ *
+ * @return string
+ *   The language code, or ''.
+ */
+function _saho_record_lang_code(string $label): string {
+  $map = [
+    'english' => 'en',
+    'afrikaans' => 'af',
+    'zulu' => 'zu',
+    'isizulu' => 'zu',
+    'xhosa' => 'xh',
+    'isixhosa' => 'xh',
+    'portuguese' => 'pt',
+    'french' => 'fr',
+    'german' => 'de',
+    'dutch' => 'nl',
+    'sotho' => 'st',
+    'sesotho' => 'st',
+    'setswana' => 'tn',
+    'tswana' => 'tn',
+    'venda' => 've',
+    'tshivenda' => 've',
+    'tsonga' => 'ts',
+    'xitsonga' => 'ts',
+    'swati' => 'ss',
+    'siswati' => 'ss',
+    'ndebele' => 'nr',
+    'sepedi' => 'nso',
+  ];
+  return $map[strtolower(trim($label))] ?? '';
 }
 
 /**
@@ -2269,6 +2427,15 @@ function _saho_record_common_props(array &$variables, NodeInterface $node, array
 function _saho_record_meta_props(string $title, string $accent, array $rows): array {
   $items = [];
   foreach ($rows as $label => $value) {
+    // A row is either a plain string or ['value' =>, 'href' =>, 'lang' =>].
+    if (is_array($value)) {
+      $row = $value;
+      $row['value'] = trim((string) ($row['value'] ?? ''));
+      if ($row['value'] !== '') {
+        $items[] = ['label' => $label] + $row;
+      }
+      continue;
+    }
     $value = trim((string) $value);
     if ($value !== '') {
       $items[] = ['label' => $label, 'value' => $value];

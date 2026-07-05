@@ -152,6 +152,24 @@
         {{ include('saho:saho-citation', record_citation, with_context = false) }}
       {% endif %}
 
+      {# Sequential flow within the collection: walk item to item without
+         returning to the index. #}
+      {% if record_collection_nav %}
+        <nav class="saho-collection-nav" aria-label="Collection navigation">
+          {% if record_collection_nav.prev %}
+            <a class="saho-collection-nav__link" href="{{ record_collection_nav.prev.href }}"
+               title="{{ record_collection_nav.prev.label }}">&#8592; {{ record_collection_nav.prev.ref }}</a>
+          {% endif %}
+          {% if record_collection_nav.prev and record_collection_nav.next %}
+            <span class="saho-collection-nav__sep" aria-hidden="true">&#183;</span>
+          {% endif %}
+          {% if record_collection_nav.next %}
+            <a class="saho-collection-nav__link" href="{{ record_collection_nav.next.href }}"
+               title="{{ record_collection_nav.next.label }}">{{ record_collection_nav.next.ref }} &#8594;</a>
+          {% endif %}
+        </nav>
+      {% endif %}
+
     </div>
 
     {# RIGHT: Sidebar (the Open Record rail - S3) #}
@@ -206,14 +224,9 @@
         </div>
       {% endif %}
       
-      {# Related Content #}
-      {% if content.field_feature_parent is defined and content.field_feature_parent|render|trim %}
-        <div class="saho-related-content p-3 mb-4 border rounded bg-light">
-          <h3 class="border-bottom pb-2 mb-3">Related Content</h3>
-          {{ content.field_feature_parent }}
-        </div>
-      {% endif %}
-      
+      {# Collection membership renders as the PART OF row in Record
+         details (record_meta) - no legacy Related Content box. #}
+
       {# SAHO source references (archive-specific surface). #}
       {% if node.field_references_saho_source.value %}
         <div class="saho-references">

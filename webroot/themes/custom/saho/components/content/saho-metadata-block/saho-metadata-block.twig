@@ -1,6 +1,6 @@
 {#
 /**
- * @file SAHO Metadata block SDC. props: title, accent, items[]
+ * @file SAHO Metadata block SDC. props: title, accent, items[] {label, value, href?, lang?}
  */
 #}
 {% set classes = ['saho-meta-block', accent ? 'saho-meta-block--' ~ accent : ''] %}
@@ -10,7 +10,7 @@
     {% for it in items %}
       <div class="saho-meta-block__row">
         <dt class="saho-meta-block__key">{{ it.label }}</dt>
-        <dd class="saho-meta-block__val">
+        <dd class="saho-meta-block__val"{% if it.lang %} lang="{{ it.lang }}"{% endif %}>
           {%- if it.href %}<a href="{{ it.href }}">{{ it.value }}</a>{% else %}{{ it.value }}{% endif -%}
         </dd>
       </div>
