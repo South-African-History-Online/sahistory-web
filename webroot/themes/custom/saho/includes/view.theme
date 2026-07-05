@@ -6,6 +6,7 @@
  */
 
 use Drupal\Component\Utility\Unicode;
+use Drupal\Core\Url;
 use Drupal\file\Entity\File;
 use Drupal\image\Entity\ImageStyle;
 use Drupal\media\Entity\Media;
@@ -323,11 +324,29 @@ function saho_preprocess_views_view__archive_pages__page_1(array &$variables) {
     ],
   ];
 
+  // Collection context: ?collection=NID narrows the index to one
+  // collection head (the exposed field_feature_parent filter); the head
+  // line names it and offers a clear affordance.
+  $collection_id = (int) $request->query->get('collection', 0);
+  if ($collection_id > 0) {
+    $parent = \Drupal::entityTypeManager()->getStorage('node')->load($collection_id);
+    if ($parent instanceof NodeInterface && $parent->access('view')) {
+      $clear = $request->query->all();
+      unset($clear['collection'], $clear['page']);
+      $variables['collection_head'] = [
+        'label' => $parent->label(),
+        'href' => $parent->toUrl()->toString(),
+        'clear_url' => Url::fromUserInput('/archives', $clear !== [] ? ['query' => $clear] : [])->toString(),
+      ];
+      $variables['#cache']['tags'][] = 'node:' . $parent->id();
+    }
+  }
+
   $variables['#attached']['library'][] = 'saho/saho-index-table';
   $variables['#attached']['library'][] = 'saho/saho-archive-card';
   $variables['#attached']['library'][] = 'saho/saho-search-field';
   $variables['#attached']['library'][] = 'saho/archive-index';
-  foreach (['layout', 'sort_by', 'sort_order', 'combine'] as $arg) {
+  foreach (['layout', 'sort_by', 'sort_order', 'combine', 'collection'] as $arg) {
     $variables['#cache']['contexts'][] = 'url.query_args:' . $arg;
   }
 }

@@ -3,9 +3,11 @@
 use Drupal\node\Entity\Node;
 use Drupal\node\NodeInterface;
 use Drupal\taxonomy\TermInterface;
+use Drupal\views\Views;
 use Drupal\Component\Utility\Unicode;
 use Drupal\Core\Datetime\DateFormatter;
 use Drupal\Core\Render\Markup;
+use Drupal\Core\Url;
 use Drupal\image\Entity\ImageStyle;
 use Drupal\file\Entity\File;
 
@@ -2288,6 +2290,7 @@ function _saho_record_meta_props(string $title, string $accent, array $rows): ar
  *   saho:saho-related-tabs props, or [] when there are no relations.
  */
 function _saho_record_related_props(NodeInterface $node): array {
+  $threshold = _saho_related_collapse_threshold();
   $map = [
     'field_people_related_tab' => ['id' => 'people', 'label' => 'People'],
     'field_organizations_related_tab' => ['id' => 'organisations', 'label' => 'Organisations'],
@@ -2313,24 +2316,46 @@ function _saho_record_related_props(NodeInterface $node): array {
 
   // The curated feature-children (the legacy rail accordion) join the same
   // cross-reference engine as tabs, per wireframes wf03/wf04: one engine,
-  // typed dots, counts. Same-id tabs merge and dedupe by href.
+  // typed dots, counts. Same-id tabs merge and dedupe by href; a collapsed
+  // curated tab (collection summary) owns its slot wholesale - the whole
+  // point is that the full list never renders in-page.
   foreach (_saho_record_curated_tabs($node) as $id => $tab) {
-    if (isset($tabs[$id])) {
-      $seen = array_column($tabs[$id]['items'], 'href');
-      foreach ($tab['items'] as $item) {
-        if (!in_array($item['href'], $seen, TRUE)) {
-          $tabs[$id]['items'][] = $item;
-        }
-      }
-      $tabs[$id]['count'] = count($tabs[$id]['items']);
-    }
-    else {
+    if (isset($tab['summary']) || !isset($tabs[$id])) {
       $tabs[$id] = $tab;
+      continue;
+    }
+    $seen = array_column($tabs[$id]['items'], 'href');
+    foreach ($tab['items'] as $item) {
+      if (!in_array($item['href'], $seen, TRUE)) {
+        $tabs[$id]['items'][] = $item;
+      }
+    }
+    $tabs[$id]['count'] = count($tabs[$id]['items']);
+  }
+
+  // The bounded-list rule holds sitewide (not only curated children): a
+  // tab past the threshold collapses to count + samples.
+  foreach ($tabs as $id => $tab) {
+    if (!isset($tab['summary']) && count($tab['items']) > $threshold) {
+      $tabs[$id]['items'] = array_slice($tab['items'], 0, 3);
+      $tabs[$id]['summary'] = [
+        'count_line' => number_format($tab['count']) . ' ' . mb_strtoupper($tab['label']),
+      ];
     }
   }
 
   $tabs = array_values($tabs);
   return $tabs !== [] ? ['title' => 'Cross-references', 'tabs' => $tabs] : [];
+}
+
+/**
+ * Cross-reference lists past this length collapse to count + samples.
+ *
+ * "A rail is for apparatus; 20k records is a query": high-degree nodes
+ * render a bounded collection summary, and the index page IS the list.
+ */
+function _saho_related_collapse_threshold(): int {
+  return 10;
 }
 
 /**
@@ -2389,15 +2414,20 @@ function _saho_record_curated_tabs(NodeInterface $node): array {
     'archive' => ['block' => 'block_5', 'label' => 'Archive'],
     'galleries' => ['block' => 'block_7', 'label' => 'Galleries'],
   ];
+  $threshold = _saho_related_collapse_threshold();
   $tabs = [];
   foreach ($displays as $id => $spec) {
-    $view = \Drupal\views\Views::getView('feature_children');
+    $view = Views::getView('feature_children');
     if ($view === NULL) {
       break;
     }
     $view->setDisplay($spec['block']);
     $view->setArguments([$node->id()]);
-    $view->setItemsPerPage(0);
+    // Never load an unbounded child list (the DISA head has 20k+): fetch
+    // one row past the collapse threshold and let the SQL COUNT carry the
+    // real total.
+    $view->setItemsPerPage($threshold + 1);
+    $view->get_total_rows = TRUE;
     $view->execute();
     $items = [];
     foreach ($view->result as $row) {
@@ -2409,11 +2439,36 @@ function _saho_record_curated_tabs(NodeInterface $node): array {
         $items[] = $item;
       }
     }
-    if ($items !== []) {
+    if ($items === []) {
+      continue;
+    }
+    $total = max((int) ($view->total_rows ?? 0), count($items));
+    if ($total > $threshold) {
+      // Collection summary: mono count, three sample rows, one CTA to
+      // the pre-filtered index. Only the archive index exists today, so
+      // only the Archive tab gets the browse CTA.
+      $summary = [
+        'count_line' => number_format($total) . ' ' . ($id === 'archive' ? 'ARCHIVE ITEMS' : mb_strtoupper($spec['label'])),
+      ];
+      if ($id === 'archive') {
+        $summary['cta'] = [
+          'label' => 'Browse the ' . $node->label() . ' collection',
+          'href' => Url::fromUserInput('/archives', ['query' => ['collection' => $node->id()]])->toString(),
+        ];
+      }
       $tabs[$id] = [
         'id' => $id,
         'label' => $spec['label'],
-        'count' => count($items),
+        'count' => $total,
+        'items' => array_slice($items, 0, 3),
+        'summary' => $summary,
+      ];
+    }
+    else {
+      $tabs[$id] = [
+        'id' => $id,
+        'label' => $spec['label'],
+        'count' => $total,
         'items' => $items,
       ];
     }

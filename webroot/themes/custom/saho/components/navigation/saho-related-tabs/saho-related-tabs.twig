@@ -1,7 +1,8 @@
 {#
 /**
  * @file SAHO Related tabs SDC — the cross-reference engine.
- * props: title, tabs[] (id, label, count, items[] {label, href, note, type})
+ * props: title, tabs[] (id, label, count, items[] {label, href, note, type},
+ *   summary { count_line, cta { label, href } } - bounded collection tabs)
  * Maps to field_people_related_tab / field_organizations_related_tab /
  * field_topics_related_tab / field_timelines_related_tab.
  */
@@ -17,7 +18,10 @@
     {% endfor %}
   </div>
   {% for t in tabs %}
-    <ul class="saho-reltabs__panel{{ loop.first ? ' is-active' : '' }}" data-panel="{{ t.id }}" role="tabpanel">
+    <ul class="saho-reltabs__panel{{ loop.first ? ' is-active' : '' }}{{ t.summary ? ' saho-reltabs__panel--summary' : '' }}" data-panel="{{ t.id }}" role="tabpanel">
+      {% if t.summary %}
+        <li class="saho-reltabs__summary-count">{{ t.summary.count_line }}</li>
+      {% endif %}
       {% for it in t.items %}
         <li class="saho-reltabs__item">
           <a class="saho-reltabs__link" href="{{ it.href|default('#') }}">
@@ -29,6 +33,11 @@
           </a>
         </li>
       {% endfor %}
+      {% if t.summary and t.summary.cta %}
+        <li class="saho-reltabs__summary-cta">
+          <a href="{{ t.summary.cta.href }}">{{ t.summary.cta.label }} &#8594;</a>
+        </li>
+      {% endif %}
     </ul>
   {% endfor %}
 </section>

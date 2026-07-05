@@ -454,6 +454,24 @@ function saho_tools_page_attachments(array &$attachments) {
 }
 
 /**
+ * Implements hook_node_view().
+ *
+ * Record pages render bounded cross-reference blocks (counts + samples of
+ * feature-children, built theme-side in _saho_record_related_props()); a
+ * child added or removed must invalidate the parent's render cache. Per-
+ * bundle list tags are coarse but correct - preprocess cannot attach
+ * cacheability, so the tags land here.
+ */
+function saho_tools_node_view(array &$build, NodeInterface $node, $display, $view_mode) {
+  if ($view_mode !== 'full' || !in_array($node->bundle(), ['article', 'archive', 'biography', 'place'], TRUE)) {
+    return;
+  }
+  foreach (['article', 'archive', 'biography', 'place'] as $bundle) {
+    $build['#cache']['tags'][] = 'node_list:' . $bundle;
+  }
+}
+
+/**
  * Implements hook_preprocess_node().
  */
 function saho_tools_preprocess_node(&$variables) {
