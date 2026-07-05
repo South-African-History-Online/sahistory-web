@@ -2,6 +2,7 @@
 
 use Drupal\node\Entity\Node;
 use Drupal\node\NodeInterface;
+use Drupal\taxonomy\TermInterface;
 use Drupal\Component\Utility\Unicode;
 use Drupal\Core\Datetime\DateFormatter;
 use Drupal\Core\Render\Markup;
@@ -861,6 +862,27 @@ function saho_preprocess_page_title(array &$variables): void {
   $node = $route_match->getParameter('node');
   if ($node instanceof NodeInterface && in_array($node->bundle(), _saho_record_header_bundles(), TRUE)) {
     $variables['title'] = '';
+  }
+}
+
+/**
+ * Implements hook_preprocess_HOOK() for taxonomy-term.html.twig.
+ *
+ * On canonical term pages the term view's Open Record head owns the H1,
+ * but the taxonomy_term view also renders the term entity in its header
+ * area (view_mode full). Core only sets the `page` flag for the main-route
+ * render, so Radix printed the term name again as an H2 (#467). Marking
+ * the route's own term as `page` makes Radix skip that heading.
+ */
+function saho_preprocess_taxonomy_term(array &$variables): void {
+  if (!empty($variables['page']) || ($variables['view_mode'] ?? '') !== 'full') {
+    return;
+  }
+  $term = $variables['term'] ?? NULL;
+  $route_term = \Drupal::routeMatch()->getParameter('taxonomy_term');
+  if ($term instanceof TermInterface && $route_term instanceof TermInterface
+    && (int) $route_term->id() === (int) $term->id()) {
+    $variables['page'] = TRUE;
   }
 }
 
