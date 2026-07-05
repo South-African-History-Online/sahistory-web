@@ -1,7 +1,7 @@
 {#
 /**
  * @file SAHO Archive card SDC.
- * props: type, title, href, excerpt, dates, meta, image, image_alt, duotone
+ * props: type, title, href, excerpt, dates, meta, image, image_alt, duotone, hide_badge
  */
 #}
 {% set type = type|default('article') %}
@@ -9,13 +9,15 @@
   {% if image %}
     <div class="saho-acard__media">
       <img class="saho-acard__img{{ duotone ? ' saho-duotone' : '' }}" src="{{ image }}" alt="{{ image_alt|default('') }}" loading="lazy" onerror="this.closest('.saho-acard__media').classList.add('is-broken')" />
-      <span class="saho-acard__badge">
-        {% include 'saho:badge' with { type: type, label: badge_label|default(''), on_image: true } only %}
-      </span>
+      {% if not hide_badge %}
+        <span class="saho-acard__badge">
+          {% include 'saho:badge' with { type: type, label: badge_label|default(''), on_image: true } only %}
+        </span>
+      {% endif %}
     </div>
   {% endif %}
   <div class="saho-acard__body">
-    {% if not image %}
+    {% if not image and not hide_badge %}
       <div class="saho-acard__badge-inline">{% include 'saho:badge' with { type: type, label: badge_label|default('') } only %}</div>
     {% endif %}
     {% if dates %}<p class="saho-acard__dates saho-meta">{{ dates }}</p>{% endif %}

@@ -870,7 +870,12 @@ function saho_preprocess_views_view__saho_landing_shell(array &$variables): void
   $known_types = ['article', 'biography', 'place', 'archive', 'event', 'topic'];
   $bundle_map = ['upcomingevent' => 'event', 'book' => 'archive'];
 
-  [$type, $label] = _saho_landing_shell_map()[$variables['view']->id()] ?? ['article', 'Records'];
+  $view_id = $variables['view']->id();
+  // Single-type landings: the accent edge carries the type; a badge on
+  // every card would be noise. Mixed-type shells (topic sections) keep it.
+  $single_type = in_array($view_id, ['biographies', 'timelines', 'places'], TRUE);
+
+  [$type, $label] = _saho_landing_shell_map()[$view_id] ?? ['article', 'Records'];
   $variables['landing_type'] = $type;
   $variables['landing_label'] = $label;
   $variables['landing_count'] = number_format((int) ($variables['view']->total_rows ?? count($variables['view']->result)));
@@ -888,6 +893,11 @@ function saho_preprocess_views_view__saho_landing_shell(array &$variables): void
   foreach ($variables['view']->result as $row) {
     $node = $row->_entity ?? NULL;
     if (!$node instanceof NodeInterface || !$node->isPublished() || $node->bundle() === 'product') {
+      continue;
+    }
+    // Editor clone artifacts never surface on landings (belt-and-braces
+    // beside the view-level title filter).
+    if (str_starts_with($node->label(), 'Clone of ')) {
       continue;
     }
     $bundle = $bundle_map[$node->bundle()] ?? $node->bundle();
@@ -935,17 +945,33 @@ function saho_preprocess_views_view__saho_landing_shell(array &$variables): void
     }
     $excerpt = Unicode::truncate(html_entity_decode($excerpt, ENT_QUOTES), 140, TRUE, TRUE);
 
+    // The slot above the card title is reserved for meaning-bearing dates:
+    // biography lifespans and timeline period spans. Node timestamps are
+    // never presented as datelines - the changed date rides the pinned
+    // meta foot, labelled.
+    if ($node->bundle() === 'biography') {
+      $card_dates = $dates;
+    }
+    elseif ($view_id === 'timelines') {
+      $card_dates = _saho_timeline_period($node->label());
+    }
+    else {
+      $card_dates = '';
+    }
+    $card_meta = $ref . ' · UPD ' . mb_strtoupper($date_formatter->format((int) $node->getChangedTime(), 'custom', 'j M Y'));
+
     $image = _saho_search_result_image($node);
     $record_cards[] = [
       'type' => $row_type,
       'title' => $node->label(),
       'href' => $href,
       'excerpt' => $excerpt,
-      'dates' => $dates,
-      'meta' => $ref,
+      'dates' => $card_dates,
+      'meta' => $card_meta,
       'image' => $image['url'] ?? '',
       'image_alt' => $image['alt'],
       'duotone' => TRUE,
+      'hide_badge' => $single_type,
     ];
   }
 
@@ -958,6 +984,31 @@ function saho_preprocess_views_view__saho_landing_shell(array &$variables): void
   $variables['#attached']['library'][] = 'saho/saho-archive-card';
   $variables['#attached']['library'][] = 'saho/saho-card-grid';
   $variables['#cache']['contexts'][] = 'url.query_args:layout';
+}
+
+/**
+ * Derives a mono period line from a timeline title.
+ *
+ * "Industrial and Commercial Union timeline 1919-1989" => "1919–1989",
+ * "South Africa in the 1900s" => "1900s", "The June 16 Soweto Youth
+ * Uprising timeline 1976" => "1976". Titles carrying no period return ''
+ * - the card simply renders without the dates slot, never a timestamp.
+ */
+function _saho_timeline_period(string $title): string {
+  $year = '(1[0-9]{3}|20[0-9]{2})';
+  if (preg_match('/\b' . $year . '\s*[–—-]\s*' . $year . '\b/u', $title, $m)) {
+    return $m[1] . "\u{2013}" . $m[2];
+  }
+  if (preg_match('/\b' . $year . '[\'\x{2019}]?s\b/u', $title, $m)) {
+    return $m[1] . 's';
+  }
+  if (preg_match('/\b' . $year . '\s*$/', $title, $m)) {
+    return $m[1];
+  }
+  if (preg_match('/^\s*' . $year . '\b/', $title, $m)) {
+    return $m[1];
+  }
+  return '';
 }
 
 /**
