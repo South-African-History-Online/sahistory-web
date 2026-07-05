@@ -146,7 +146,8 @@ class HistoryClassroomBlock extends BlockBase implements ContainerFactoryPluginI
       'show_content_count' => TRUE,
       'show_featured_topic' => TRUE,
       'block_title' => 'History by Grade',
-      'intro_text' => 'South African History curriculum resources for grades 4-12',
+      // No auto-subtitle: the voice states facts or says nothing (#462).
+      'intro_text' => '',
     ] + parent::defaultConfiguration();
   }
 
@@ -168,11 +169,12 @@ class HistoryClassroomBlock extends BlockBase implements ContainerFactoryPluginI
       '#rows' => 2,
     ];
 
+    // The carousel mode is retired: an archive is still (#462). Legacy
+    // configs holding 'carousel' render as the grid.
     $form['display_mode'] = $this->configFormHelper->buildDisplayModeSelect(
-      $this->configuration['display_mode'],
+      $this->configuration['display_mode'] === 'carousel' ? 'grid' : $this->configuration['display_mode'],
       [
         'grid' => $this->t('Grid (cards)'),
-        'carousel' => $this->t('Carousel (mobile-friendly)'),
         'list' => $this->t('Stacked List'),
       ],
       $this->t('Display Mode'),

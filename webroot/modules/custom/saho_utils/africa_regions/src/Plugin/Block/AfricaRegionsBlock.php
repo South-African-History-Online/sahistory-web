@@ -197,7 +197,8 @@ class AfricaRegionsBlock extends BlockBase implements ContainerFactoryPluginInte
   public function defaultConfiguration() {
     return [
       'block_title' => 'Africa',
-      'intro_text' => 'Browse the histories of other African countries organised by region.',
+      // No auto-subtitle: the voice states facts or says nothing (#462).
+      'intro_text' => '',
       'display_mode' => 'grid',
       'show_content_count' => TRUE,
       'show_featured_country' => TRUE,
@@ -222,11 +223,12 @@ class AfricaRegionsBlock extends BlockBase implements ContainerFactoryPluginInte
       '#rows' => 3,
     ];
 
+    // The carousel mode is retired: an archive is still (#462). Legacy
+    // configs holding 'carousel' render as the grid.
     $form['display_mode'] = $this->configFormHelper->buildDisplayModeSelect(
-      $this->configuration['display_mode'],
+      $this->configuration['display_mode'] === 'carousel' ? 'grid' : $this->configuration['display_mode'],
       [
         'grid' => $this->t('Grid (Responsive Cards)'),
-        'carousel' => $this->t('Carousel (Slideshow)'),
         'list' => $this->t('List (Stacked)'),
       ],
       $this->t('Display Mode'),

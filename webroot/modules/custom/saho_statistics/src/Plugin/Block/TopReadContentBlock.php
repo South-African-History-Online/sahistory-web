@@ -224,11 +224,14 @@ class TopReadContentBlock extends BlockBase implements ContainerFactoryPluginInt
   public function build() {
     $config = $this->configuration;
 
-    // Get most read content from the service.
+    // Get most read content from the service. With no explicit selection the
+    // ledger lists record types only - utility pages (home, landing shells)
+    // are traffic data, not records (#462).
+    $record_types = ['article', 'biography', 'place', 'event', 'archive', 'upcomingevent'];
     $results = $this->termTracker->getMostReadContent(
       $config['items_per_page'],
       $config['time_period'],
-      $config['content_types']
+      $config['content_types'] ?: $record_types
     );
 
     // Prepare items for the template.

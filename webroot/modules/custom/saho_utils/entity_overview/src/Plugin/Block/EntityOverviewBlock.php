@@ -154,7 +154,8 @@ class EntityOverviewBlock extends BlockBase implements ContainerFactoryPluginInt
       'sort_order' => 'latest',
       'limit' => 5,
       'custom_header' => '',
-      'intro_text' => 'Displaying the latest content from the %title section of the site.',
+      // No auto-subtitle: the voice states facts or says nothing (#462).
+      'intro_text' => '',
       'enable_filtering' => FALSE,
       'enable_sorting' => FALSE,
       'require_images' => FALSE,

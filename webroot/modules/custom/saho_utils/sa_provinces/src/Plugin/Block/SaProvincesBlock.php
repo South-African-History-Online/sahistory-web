@@ -172,7 +172,8 @@ class SaProvincesBlock extends BlockBase implements ContainerFactoryPluginInterf
   public function defaultConfiguration() {
     return [
       'block_title' => 'South African Provinces',
-      'intro_text' => 'Search for the history of your city, town, suburb or village. View our Places Page to search for places of interest, monuments and centres or browse an alphabetical list.',
+      // No auto-subtitle: the voice states facts or says nothing (#462).
+      'intro_text' => '',
       'display_mode' => 'grid',
       'show_place_count' => TRUE,
       'show_featured_place' => TRUE,
@@ -197,11 +198,12 @@ class SaProvincesBlock extends BlockBase implements ContainerFactoryPluginInterf
       '#rows' => 3,
     ];
 
+    // The carousel mode is retired: an archive is still (#462). Legacy
+    // configs holding 'carousel' render as the grid.
     $form['display_mode'] = $this->configFormHelper->buildDisplayModeSelect(
-      $this->configuration['display_mode'],
+      $this->configuration['display_mode'] === 'carousel' ? 'grid' : $this->configuration['display_mode'],
       [
         'grid' => $this->t('Grid (Responsive Cards)'),
-        'carousel' => $this->t('Carousel (Slideshow)'),
         'list' => $this->t('List (Stacked)'),
       ],
       $this->t('Display Mode'),

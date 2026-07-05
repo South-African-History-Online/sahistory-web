@@ -4,37 +4,40 @@
   text-decoration: none;
   background: var(--surface-card);
   border: var(--bw-hair) solid var(--border-default);
-  border-left: var(--bw-accent) solid var(--type-article);
-  border-radius: var(--radius-md);
+  /* Accent on the top edge only - full accent frames read as alerts. */
+  border-top: var(--bw-accent) solid var(--type-article);
+  border-radius: 0;
   transition:
     border-color var(--t-base),
-    box-shadow var(--t-base),
-    transform var(--t-base);
+    background var(--t-base);
 }
-.saho-acard:hover {
-  box-shadow: var(--shadow-md);
-  transform: translateY(-2px);
-  border-color: var(--border-strong);
+/* Hover is selection: the hairline darkens to ink; the accent edge stays. */
+.saho-acard:hover,
+.saho-acard:focus-visible {
+  border-right-color: var(--saho-ink);
+  border-bottom-color: var(--saho-ink);
+  border-left-color: var(--saho-ink);
+  background: var(--saho-paper-sunk);
 }
 
 /* content-type accent edge */
 .saho-acard--article {
-  border-left-color: var(--type-article);
+  border-top-color: var(--type-article);
 }
 .saho-acard--biography {
-  border-left-color: var(--type-biography);
+  border-top-color: var(--type-biography);
 }
 .saho-acard--place {
-  border-left-color: var(--type-place);
+  border-top-color: var(--type-place);
 }
 .saho-acard--archive {
-  border-left-color: var(--type-archive);
+  border-top-color: var(--type-archive);
 }
 .saho-acard--event {
-  border-left-color: var(--type-event);
+  border-top-color: var(--type-event);
 }
 .saho-acard--topic {
-  border-left-color: var(--type-topic);
+  border-top-color: var(--type-topic);
 }
 
 .saho-acard__media {
@@ -74,6 +77,8 @@
 }
 .saho-acard__dates {
   margin: 0 0 6px;
+  /* Mono apparatus reads muted ink, not the inherited link color. */
+  color: var(--text-muted);
 }
 .saho-acard__title {
   margin: 0 0 8px;
@@ -97,4 +102,5 @@
 }
 .saho-acard__meta {
   margin: 12px 0 0;
+  color: var(--text-muted);
 }
