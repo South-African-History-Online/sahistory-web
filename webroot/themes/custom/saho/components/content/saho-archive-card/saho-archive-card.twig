@@ -8,7 +8,7 @@
 <a{{ attributes.addClass(['saho-acard', 'saho-acard--' ~ type]) }} href="{{ href|default('#') }}">
   {% if image %}
     <div class="saho-acard__media">
-      <img class="saho-acard__img{{ duotone ? ' saho-duotone' : '' }}" src="{{ image }}" alt="{{ image_alt|default('') }}" loading="lazy" />
+      <img class="saho-acard__img{{ duotone ? ' saho-duotone' : '' }}" src="{{ image }}" alt="{{ image_alt|default('') }}" loading="lazy" onerror="this.closest('.saho-acard__media').classList.add('is-broken')" />
       <span class="saho-acard__badge">
         {% include 'saho:badge' with { type: type, label: badge_label|default(''), on_image: true } only %}
       </span>
