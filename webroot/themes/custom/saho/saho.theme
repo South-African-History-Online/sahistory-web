@@ -797,6 +797,7 @@ function saho_preprocess_page_title(array &$variables): void {
     'view.classroom.page_1',
     'view.saho_classroom_topic.page_1',
     'view.saho_landing.page_1',
+    'saho_statistics.history_through_pictures_gallery',
   ];
   if (in_array($route_name, $shell_routes, TRUE)) {
     $variables['title'] = '';
@@ -961,6 +962,7 @@ function saho_preprocess_block__page_title_block(array &$variables) {
       'archive' => ['/archives', 'SAHO Archive'],
       'event' => ['/timelines', 'Timelines'],
       'upcomingevent' => ['/all-upcoming-events', 'Upcoming Events'],
+      'presentation' => ['/classroom', 'Classroom'],
       'default' => ['/content', 'Content']
     ];
     
@@ -1186,6 +1188,22 @@ function saho_preprocess_block__page_title_block(array &$variables) {
                 $truncate_text($parent_node->getTitle()),
                 'entity.node.canonical',
                 ['node' => $parent_node->id()]
+              );
+            }
+          }
+          break;
+
+        case 'presentation':
+          // Home > Classroom > Origin article > Deck title. The classroom
+          // module resolves which article a deck was made from; linking it
+          // here lets learners and teachers step back to the full record.
+          if (function_exists('_saho_classroom_match_article')) {
+            $origin_article = _saho_classroom_match_article($node);
+            if ($origin_article) {
+              $links[] = \Drupal\Core\Link::createFromRoute(
+                $truncate_text($origin_article->getTitle(), 70),
+                'entity.node.canonical',
+                ['node' => $origin_article->id()]
               );
             }
           }

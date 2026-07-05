@@ -7,6 +7,7 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Url;
+use Drupal\file\FileInterface;
 use Drupal\saho_utils\Service\ImageExtractorService;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -118,17 +119,8 @@ class HistoryThroughPicturesBlock extends BlockBase implements ContainerFactoryP
       '#description' => $this->t('The number of featured images to display.'),
     ];
 
-    $form['display_mode'] = [
-      '#type' => 'select',
-      '#title' => $this->t('Display mode'),
-      '#options' => [
-        'grid' => $this->t('Grid'),
-        'masonry' => $this->t('Masonry (Pinterest-style)'),
-        'carousel' => $this->t('Carousel'),
-      ],
-      '#default_value' => $config['display_mode'],
-      '#description' => $this->t('How to display the images.'),
-    ];
+    // The carousel and masonry display modes are retired: an archive is
+    // still (#453/#462). Legacy configs render as the grid.
 
     $form['show_title'] = [
       '#type' => 'checkbox',
@@ -210,7 +202,6 @@ class HistoryThroughPicturesBlock extends BlockBase implements ContainerFactoryP
 
     $this->configuration['block_title'] = $form_state->getValue('block_title');
     $this->configuration['items_per_page'] = $form_state->getValue('items_per_page');
-    $this->configuration['display_mode'] = $form_state->getValue('display_mode');
     $this->configuration['show_title'] = $form_state->getValue('show_title');
     $this->configuration['show_caption'] = $form_state->getValue('show_caption');
     $this->configuration['sort_order'] = $form_state->getValue('sort_order');
@@ -389,7 +380,7 @@ class HistoryThroughPicturesBlock extends BlockBase implements ContainerFactoryP
       '#theme' => 'saho_history_through_pictures',
       '#items' => $items,
       '#block_title' => $config['block_title'],
-      '#display_mode' => $config['display_mode'],
+      '#display_mode' => 'grid',
       '#show_title' => $config['show_title'],
       '#show_caption' => $config['show_caption'],
       '#total_count' => $total_count,
@@ -417,9 +408,16 @@ class HistoryThroughPicturesBlock extends BlockBase implements ContainerFactoryP
    */
   protected function getNodeImageUrl($node, string $style = 'max_650x650') {
     // Serve WebP image-style derivatives, not raw originals (#453 perf).
-    // The extractor prefers the {style}_webp variant and falls back to the
-    // original file URL if derivative generation fails.
+    // Files missing on disk (the pre-2019 loss class) are skipped entirely
+    // so the index never publishes a knowingly broken figure.
     foreach (['field_image', 'field_archive_image'] as $field_name) {
+      if (!$node->hasField($field_name) || $node->get($field_name)->isEmpty()) {
+        continue;
+      }
+      $file = $node->get($field_name)->first()->entity ?? NULL;
+      if (!$file instanceof FileInterface || !file_exists($file->getFileUri())) {
+        continue;
+      }
       $url = $this->imageExtractor->extractImageWithDerivatives($node, $style, $field_name);
       if ($url) {
         return $url;
