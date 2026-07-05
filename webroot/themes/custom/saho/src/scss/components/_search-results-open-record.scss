@@ -175,3 +175,42 @@
 .saho-spellcheck-suggestion {
   margin-top: var(--space-4);
 }
+
+// ---- Refine rail form controls (#465) ----
+// Square custom checkboxes: hairline ink border at rest, oxblood fill when
+// checked. Native semantics kept - only the paint changes.
+.saho-search-rail input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  flex: none;
+  margin: 0 6px 0 0;
+  border: var(--bw-hair, 1px) solid var(--saho-ink, #1b1c17);
+  border-radius: 0;
+  background: var(--saho-paper-raised, #f1efe7);
+  vertical-align: -2px;
+  cursor: pointer;
+}
+
+.saho-search-rail input[type="checkbox"]:checked {
+  background: var(--saho-oxblood, #990000);
+  border-color: var(--saho-oxblood, #990000);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 6.5l2.5 2.5 4.5-5' fill='none' stroke='%23f1efe7' stroke-width='2'/%3E%3C/svg%3E");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 11px;
+}
+
+.saho-search-rail input[type="checkbox"]:focus-visible {
+  outline: 2px solid var(--saho-oxblood, #990000);
+  outline-offset: 2px;
+}
+
+// Under the stack breakpoint the stacked rows replace the table, so a
+// TABLE/CARDS toggle would switch between two invisible things (#465).
+@media (max-width: 26rem) {
+  .saho-search-page .saho-view-toggle {
+    display: none;
+  }
+}

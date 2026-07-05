@@ -817,6 +817,39 @@ function saho_preprocess_page_title(array &$variables): void {
 }
 
 /**
+ * Implements hook_form_alter().
+ *
+ * Global-search exposed form (#465): the big SearchField owns the query, so
+ * the rail's duplicate fulltext input becomes a hidden element (facet
+ * submissions must still carry the query). The Type facet drops non-record
+ * bundles and gets human labels instead of raw machine names.
+ */
+function saho_form_alter(array &$form, $form_state, $form_id): void {
+  if (($form['#id'] ?? '') !== 'views-exposed-form-saho-global-search-page-1') {
+    return;
+  }
+  if (isset($form['search_api_fulltext'])) {
+    $form['search_api_fulltext']['#type'] = 'hidden';
+    unset($form['search_api_fulltext']['#title'], $form['search_api_fulltext']['#description']);
+  }
+  if (isset($form['type']['#options'])) {
+    // Not a record type - the type facet lists archive material only.
+    unset($form['type']['#options']['page']);
+    $bundle_labels = [];
+    foreach (\Drupal::entityTypeManager()->getStorage('node_type')->loadMultiple() as $bundle => $node_type) {
+      $bundle_labels[$bundle] = $node_type->label();
+    }
+    foreach ($form['type']['#options'] as $bundle => $label) {
+      if (isset($bundle_labels[$bundle])) {
+        // Keep the facet count the original label carries, e.g. "(1678)".
+        $count = preg_match('/(\(\d+\))\s*$/', (string) $label, $m) ? ' ' . $m[1] : '';
+        $form['type']['#options'][$bundle] = $bundle_labels[$bundle] . $count;
+      }
+    }
+  }
+}
+
+/**
  * Implements hook_preprocess_HOOK() for taxonomy-term.html.twig.
  *
  * On canonical term pages the term view's Open Record head owns the H1,
