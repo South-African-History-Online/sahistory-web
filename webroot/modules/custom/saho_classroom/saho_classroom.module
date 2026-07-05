@@ -8,8 +8,94 @@
 declare(strict_types=1);
 
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 use Drupal\node\NodeInterface;
+use Drupal\views\ViewExecutable;
+
+/**
+ * Implements hook_views_pre_view().
+ *
+ * The CAPS-topic facet depends on grade (#466): with no grade selected the
+ * topic chips are hidden, so a topic value left in the URL must not keep
+ * filtering the results invisibly.
+ */
+function saho_classroom_views_pre_view(ViewExecutable $view, $display_id, array &$args): void {
+  if ($view->id() !== 'classroom') {
+    return;
+  }
+  $input = $view->getExposedInput();
+  if (empty($input['grade']) && isset($input['caps_topic'])) {
+    unset($input['caps_topic']);
+    $view->setExposedInput($input);
+  }
+}
+
+/**
+ * Implements hook_form_alter().
+ *
+ * Turns the CAPS-topic exposed filter into a grade-dependent facet (#466):
+ * teachers arrive knowing their grade, not our taxonomy. With no grade
+ * selected the topic group is hidden entirely; with grades selected, only
+ * the CAPS topics of those grades render (as chips - the widget is a BEF
+ * links element, styled by the classroom-hub chip CSS). The caps_topic
+ * vocabulary nests topics under one parent term per grade, so parentage
+ * is matched to the selected classroom_grade labels; picking a phase term
+ * means all of its grade children.
+ */
+function saho_classroom_form_views_exposed_form_alter(array &$form, FormStateInterface $form_state, string $form_id): void {
+  if (($form['#id'] ?? '') !== 'views-exposed-form-classroom-page-1'
+    || empty($form['caps_topic']['#options'])) {
+    return;
+  }
+
+  $grade_input = $form_state->getUserInput()['grade'] ?? [];
+  $grade_tids = array_filter(is_array($grade_input) ? $grade_input : [$grade_input], 'is_numeric');
+  if (!$grade_tids) {
+    $form['caps_topic']['#access'] = FALSE;
+    return;
+  }
+
+  $term_storage = \Drupal::entityTypeManager()->getStorage('taxonomy_term');
+
+  // Selected grade labels; a phase selection expands to its grade children.
+  $grade_names = [];
+  foreach ($term_storage->loadMultiple($grade_tids) as $grade_term) {
+    $children = $term_storage->loadChildren($grade_term->id(), 'classroom_grade');
+    $terms = $children ?: [$grade_term];
+    foreach ($terms as $term) {
+      $grade_names[mb_strtolower((string) $term->label())] = TRUE;
+    }
+  }
+
+  // Keep only the CAPS topics whose parent term matches a selected grade;
+  // the per-grade parent rows themselves are grouping, not topics.
+  $topic_tids = array_filter(array_keys($form['caps_topic']['#options']), 'is_numeric');
+  $topics = $term_storage->loadMultiple($topic_tids);
+  foreach ($form['caps_topic']['#options'] as $tid => $label) {
+    if (!is_numeric($tid)) {
+      continue;
+    }
+    $topic = $topics[$tid] ?? NULL;
+    $parent_id = $topic ? (int) ($topic->get('parent')->target_id ?? 0) : 0;
+    if (!$topic || !$parent_id) {
+      unset($form['caps_topic']['#options'][$tid]);
+      continue;
+    }
+    $parent = $topics[$parent_id] ?? $term_storage->load($parent_id);
+    if (!$parent || empty($grade_names[mb_strtolower((string) $parent->label())])) {
+      unset($form['caps_topic']['#options'][$tid]);
+      continue;
+    }
+    // Strip the hierarchy indent dashes the select-based options carry.
+    $form['caps_topic']['#options'][$tid] = ltrim((string) $label, '- ');
+  }
+
+  // Nothing matched for the selected grades: hide, not an empty group.
+  if (!array_filter(array_keys($form['caps_topic']['#options']), 'is_numeric')) {
+    $form['caps_topic']['#access'] = FALSE;
+  }
+}
 
 /**
  * Implements hook_preprocess_node().

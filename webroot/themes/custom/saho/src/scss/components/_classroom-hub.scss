@@ -38,6 +38,12 @@
 
 // ---- Grade / phase selector: BEF-links filters as square tag chips ----
 .saho-classroom-hub__grades {
+  // The global link rule paints anchors via --link-rest/--link-hover at
+  // higher specificity than the chip classes; re-scope so chips read ink
+  // at rest and paper when selected.
+  --link-rest: var(--text-primary);
+  --link-hover: var(--text-primary);
+
   margin-bottom: var(--space-6);
   padding: var(--space-4);
   border: var(--bw-hair) solid var(--border-default);
@@ -97,6 +103,9 @@
 
   .bef-link--selected,
   .bef-link--selected:hover {
+    --link-rest: var(--text-on-accent);
+    --link-hover: var(--text-on-accent);
+
     background: var(--accent);
     border-color: var(--accent);
     color: var(--text-on-accent);
