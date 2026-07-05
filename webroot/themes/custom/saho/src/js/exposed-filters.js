@@ -25,6 +25,12 @@
     }
     form.setAttribute('data-filter-panel-initialized', 'true');
 
+    // The Open Record rail (/search, /archives) shows facet groups as-is;
+    // no collapsible "Filter Results" wrapper.
+    if (form.closest('.saho-search-rail')) {
+      return;
+    }
+
     // Check if we need to add a collapsible wrapper
     const befFilters = form.querySelector('.bef-exposed-filters');
     if (!befFilters) return;
@@ -82,6 +88,11 @@
     filterGroups.forEach((group) => {
       // Skip if already initialized
       if (group.hasAttribute('data-show-more-initialized')) {
+        return;
+      }
+      // Long lists on /archives get the facet-narrow lookup well instead
+      // of a SHOW MORE chip wall (facet-narrow.js).
+      if (group.closest('.saho-archive-index')) {
         return;
       }
       group.setAttribute('data-show-more-initialized', 'true');
@@ -165,8 +176,13 @@
   function updateActiveFiltersSummary(form) {
     const activeFilters = getActiveFilters(form);
 
+    // On the Open Record shells the row sits above the results head,
+    // not inside the rail form.
+    const resultsHost = form.closest('.saho-archive-index')?.querySelector('[data-saho-results]');
+    const host = resultsHost || form;
+
     // Remove existing summary
-    const existingSummary = form.querySelector('.active-filters-summary');
+    const existingSummary = host.querySelector('.active-filters-summary');
     if (existingSummary) {
       existingSummary.remove();
     }
@@ -174,13 +190,13 @@
     // Only show summary if there are active filters
     if (activeFilters.length === 0) return;
 
-    // Create summary element
+    // Create summary element: one ruled mono apparatus row.
     const summary = document.createElement('div');
     summary.className = 'active-filters-summary';
 
     const label = document.createElement('span');
     label.className = 'summary-label';
-    label.textContent = 'Active filters:';
+    label.textContent = 'Filtering:';
     summary.appendChild(label);
 
     // Add tag for each active filter
@@ -229,6 +245,7 @@
       clearAll.type = 'button';
       clearAll.className = 'clear-all-filters';
       clearAll.textContent = 'Clear all';
+      clearAll.setAttribute('aria-label', 'Clear all active filters');
       clearAll.addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -265,8 +282,9 @@
       summary.appendChild(clearAll);
     }
 
-    // Insert summary at the top of the form
-    form.insertBefore(summary, form.firstChild);
+    // Above the results head on the Open Record shells, top of the form
+    // elsewhere.
+    host.insertBefore(summary, host.firstChild);
   }
 
   /**
@@ -281,6 +299,12 @@
     checkedInputs.forEach((input) => {
       // Skip if this is a hidden or system input
       if (input.name.includes('autosubmit') || input.classList.contains('visually-hidden')) {
+        return;
+      }
+
+      // Sort state is not a filter: never chip sort_by/sort_order (the
+      // quiet sort control owns them), and Clear all must not touch them.
+      if (input.name === 'sort_by' || input.name === 'sort_order') {
         return;
       }
 
