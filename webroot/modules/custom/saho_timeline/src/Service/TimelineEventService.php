@@ -358,7 +358,6 @@ class TimelineEventService {
       // Unix timestamp, and substr($timestamp, 0, 4) reads e.g. "1710" as a
       // year, bucketing present-day nodes into the 1710s. The formatted
       // fallback below handles creation time correctly.
-
       foreach ($date_fields as $field_name) {
         if ($event->hasField($field_name) && !$event->get($field_name)->isEmpty()) {
           $date_value = $event->get($field_name)->value;
@@ -453,69 +452,6 @@ class TimelineEventService {
     $nids = $query->execute();
 
     return $storage->loadMultiple($nids);
-  }
-
-  /**
-   * Get events with better time period distribution.
-   *
-   * @param int $total_limit
-   *   Total number of events to return.
-   *
-   * @return array
-   *   Array of events distributed across time periods.
-   */
-  public function getEventsWithTimeDistribution($total_limit = 5000) {
-    $storage = $this->entityTypeManager->getStorage('node');
-    $all_events = [];
-
-    // Define time periods with target counts.
-    $time_periods = [
-      ['start' => '1000-01-01', 'end' => '1500-12-31', 'target' => 100],
-      ['start' => '1500-01-01', 'end' => '1650-12-31', 'target' => 150],
-      ['start' => '1650-01-01', 'end' => '1800-12-31', 'target' => 250],
-      ['start' => '1800-01-01', 'end' => '1900-12-31', 'target' => 400],
-      ['start' => '1900-01-01', 'end' => '1950-12-31', 'target' => 450],
-      ['start' => '1950-01-01', 'end' => '1990-12-31', 'target' => 400],
-      ['start' => '1990-01-01', 'end' => '2025-12-31', 'target' => 250],
-    ];
-
-    foreach ($time_periods as $period) {
-      $query = $storage->getQuery()
-        ->condition('type', 'event')
-        ->condition('status', NodeInterface::PUBLISHED)
-        ->accessCheck(TRUE);
-
-      // Add date conditions for this period.
-      if ($period['start'] && $period['end']) {
-        $query->condition('field_event_date', $period['start'], '>=');
-        $query->condition('field_event_date', $period['end'], '<=');
-      }
-      elseif ($period['start']) {
-        $query->condition('field_event_date', $period['start'], '>=');
-      }
-      elseif ($period['end']) {
-        $query->condition('field_event_date', $period['end'], '<=');
-      }
-
-      $query->range(0, $period['target']);
-      $query->sort('field_event_date', 'ASC');
-
-      $nids = $query->execute();
-      if (!empty($nids)) {
-        $period_events = $storage->loadMultiple($nids);
-        $all_events = array_merge($all_events, $period_events);
-
-      }
-    }
-
-    // Sort all events by date.
-    usort($all_events, function ($a, $b) {
-      $date_a = $this->getEventDate($a);
-      $date_b = $this->getEventDate($b);
-      return strcmp($date_a, $date_b);
-    });
-
-    return array_slice($all_events, 0, $total_limit);
   }
 
   /**
@@ -677,51 +613,100 @@ class TimelineEventService {
   }
 
   /**
-   * Get timeline events separated into dated and dateless categories.
+   * Builds the cached light index of dated events (#454/#430).
    *
-   * Uses optimized database queries to avoid loading all nodes into memory.
+   * One SQL join returning stdClass rows {id, title, date} in date order -
+   * a few hundred KB instead of 3.5k fully hydrated nodes. The rows flow
+   * through the API controller's sort/sampling helpers unchanged (they
+   * already support ->date / ->title pseudo-events); full nodes are only
+   * hydrated for the page actually returned.
    *
-   * @param bool $include_tdih
-   *   Whether to include TDIH events.
-   * @param bool $use_cache
-   *   Whether to use caching.
-   * @param bool $include_dateless_full
-   *   Whether to include full dateless event data for admin review.
-   *
-   * @return array
-   *   Array with 'events' (with historical dates) and 'dateless_events' keys.
+   * @return object[]
+   *   Light event rows, field_event_date ascending.
    */
-  public function getAllTimelineEventsSegregated($include_tdih = TRUE, $use_cache = TRUE, $include_dateless_full = FALSE) {
-    $cache_id = 'saho_timeline:segregated_events:' . ($include_dateless_full ? 'full' : 'count');
-
-    // Try cache first.
-    if ($use_cache && $cached = $this->cache->get($cache_id)) {
+  public function getDatedEventIndex(): array {
+    $cache_id = 'saho_timeline:dated_event_index';
+    if ($cached = $this->cache->get($cache_id)) {
       return $cached->data;
     }
 
-    // Use optimized database query to get only events WITH dates.
-    // This avoids loading 17k+ nodes into memory.
-    $storage = $this->entityTypeManager->getStorage('node');
+    $query = $this->database->select('node_field_data', 'n');
+    $query->join('node__field_event_date', 'fed', 'fed.entity_id = n.nid AND fed.deleted = 0');
+    $query->fields('n', ['nid', 'title']);
+    $query->addField('fed', 'field_event_date_value', 'date');
+    $query->condition('n.type', 'event');
+    $query->condition('n.status', 1);
+    $query->isNotNull('fed.field_event_date_value');
+    $query->orderBy('fed.field_event_date_value', 'ASC');
 
-    // Query for events that have field_event_date populated.
-    $query = $storage->getQuery()
-      ->condition('type', 'event')
-      ->condition('status', NodeInterface::PUBLISHED)
-      ->condition('field_event_date', NULL, 'IS NOT NULL')
-      ->accessCheck(TRUE)
-      ->sort('field_event_date', 'ASC');
-
-    $dated_nids = $query->execute();
-
-    // Load only the events with dates.
-    $events_with_dates = [];
-    if (!empty($dated_nids)) {
-      $events_with_dates = $storage->loadMultiple($dated_nids);
+    $rows = [];
+    foreach ($query->execute() as $row) {
+      $rows[] = (object) [
+        'id' => (int) $row->nid,
+        'title' => (string) $row->title,
+        'date' => (string) $row->date,
+      ];
     }
 
-    // Get dateless events - either count only or full data for admin review.
+    $this->cache->set($cache_id, $rows, $this->time->getRequestTime() + 3600, ['node_list:event']);
+    return $rows;
+  }
+
+  /**
+   * Aggregated location/theme facet counts over all dated events.
+   *
+   * GROUP BY queries against the term reference tables - no node loads.
+   *
+   * @return array
+   *   ['geographical_location' => [name => count], 'themes' => [name => count]].
+   */
+  public function getDatedEventTermFacets(): array {
+    $cache_id = 'saho_timeline:dated_event_term_facets';
+    if ($cached = $this->cache->get($cache_id)) {
+      return $cached->data;
+    }
+
+    $facets = ['geographical_location' => [], 'themes' => []];
+    $map = [
+      'geographical_location' => 'node__field_location',
+      'themes' => 'node__field_themes',
+    ];
+    foreach ($map as $facet => $table) {
+      if (!$this->database->schema()->tableExists($table)) {
+        continue;
+      }
+      $column = str_replace('node__', '', $table) . '_target_id';
+      $query = $this->database->select('node_field_data', 'n');
+      $query->join('node__field_event_date', 'fed', 'fed.entity_id = n.nid AND fed.deleted = 0');
+      $query->join($table, 'ref', 'ref.entity_id = n.nid AND ref.deleted = 0');
+      $query->join('taxonomy_term_field_data', 't', 't.tid = ref.' . $column);
+      $query->addField('t', 'name');
+      $query->addExpression('COUNT(DISTINCT n.nid)', 'total');
+      $query->condition('n.type', 'event');
+      $query->condition('n.status', 1);
+      $query->isNotNull('fed.field_event_date_value');
+      $query->groupBy('t.name');
+      $query->orderBy('total', 'DESC');
+      foreach ($query->execute() as $row) {
+        $facets[$facet][$row->name] = (int) $row->total;
+      }
+    }
+
+    $this->cache->set($cache_id, $facets, $this->time->getRequestTime() + 3600, ['node_list:event']);
+    return $facets;
+  }
+
+  /**
+   * Dateless-event summary (count, optionally the first 500 rows).
+   *
+   * @param bool $full
+   *   TRUE to include row data for admin review.
+   *
+   * @return array
+   *   ['events' => array, 'count' => int].
+   */
+  public function getDatelessEvents(bool $full = FALSE): array {
     $dateless_events = [];
-    $dateless_count = 0;
 
     $dateless_query = $this->database->select('node_field_data', 'n');
     $dateless_query->condition('n.type', 'event');
@@ -729,15 +714,12 @@ class TimelineEventService {
     $dateless_query->leftJoin('node__field_event_date', 'fed', 'n.nid = fed.entity_id');
     $dateless_query->isNull('fed.field_event_date_value');
 
-    if ($include_dateless_full) {
-      // Get full dateless event info for admin review.
-      // Limited to 500 for performance.
-      $dateless_query->fields('n', ['nid', 'title', 'created', 'status']);
-      $dateless_query->range(0, 500);
-      $dateless_query->orderBy('n.created', 'DESC');
-      $dateless_results = $dateless_query->execute()->fetchAll();
-
-      foreach ($dateless_results as $row) {
+    if ($full) {
+      $rows_query = clone $dateless_query;
+      $rows_query->fields('n', ['nid', 'title', 'created', 'status']);
+      $rows_query->range(0, 500);
+      $rows_query->orderBy('n.created', 'DESC');
+      foreach ($rows_query->execute() as $row) {
         $dateless_events[] = [
           'id' => $row->nid,
           'title' => $row->title,
@@ -746,37 +728,10 @@ class TimelineEventService {
           'reason' => 'Missing field_event_date value',
         ];
       }
-      $dateless_count = count($dateless_results);
-
-      // Get total count if more than limit.
-      $total_dateless_query = $this->database->select('node_field_data', 'n');
-      $total_dateless_query->condition('n.type', 'event');
-      $total_dateless_query->condition('n.status', 1);
-      $total_dateless_query->leftJoin('node__field_event_date', 'fed', 'n.nid = fed.entity_id');
-      $total_dateless_query->isNull('fed.field_event_date_value');
-      $dateless_count = (int) $total_dateless_query->countQuery()->execute()->fetchField();
-    }
-    else {
-      // Just get the count for performance.
-      $dateless_count = (int) $dateless_query->countQuery()->execute()->fetchField();
     }
 
-    $result = [
-      'events' => array_values($events_with_dates),
-      'dateless_events' => $dateless_events,
-      'stats' => [
-        'total_events' => count($events_with_dates) + $dateless_count,
-        'events_with_dates' => count($events_with_dates),
-        'dateless_events' => $dateless_count,
-      ],
-    ];
-
-    // Cache for 1 hour.
-    if ($use_cache) {
-      $this->cache->set($cache_id, $result, $this->time->getRequestTime() + 3600, ['node_list:event']);
-    }
-
-    return $result;
+    $count = (int) $dateless_query->countQuery()->execute()->fetchField();
+    return ['events' => $dateless_events, 'count' => $count];
   }
 
 }

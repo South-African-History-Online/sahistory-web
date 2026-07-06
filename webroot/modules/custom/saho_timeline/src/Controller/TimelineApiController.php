@@ -145,6 +145,7 @@ class TimelineApiController extends ControllerBase {
     $include_dateless = $request->query->get('include_dateless', 'summary');
 
     // Search for events.
+    $light_index = FALSE;
     if (!empty($filters['keywords'])) {
       $events = $this->timelineEventService->searchEvents($filters['keywords'], $filters);
       // No dateless events for search results.
@@ -162,22 +163,36 @@ class TimelineApiController extends ControllerBase {
       $dateless_count = 0;
     }
     else {
-      // Get all events segregated by date availability.
-      // Pass include_dateless_full=true when full dateless data is requested.
-      $include_dateless_full = ($include_dateless === 'full');
-      $segregated = $this->timelineEventService->getAllTimelineEventsSegregated(TRUE, TRUE, $include_dateless_full);
-      // Events with proper historical dates.
-      $events = $segregated['events'];
-      // Include dateless events if requested.
-      $dateless_events = $segregated['dateless_events'];
-      $dateless_count = $segregated['stats']['dateless_events'] ?? count($dateless_events);
+      // The unfiltered path works on the cached light index (stdClass rows
+      // {id, title, date}) instead of 3.5k hydrated nodes - full entities
+      // are only loaded for the page actually returned (#454/#430).
+      $light_index = TRUE;
+      $events = $this->timelineEventService->getDatedEventIndex();
+      $dateless = $this->timelineEventService->getDatelessEvents($include_dateless === 'full');
+      $dateless_events = $dateless['events'];
+      $dateless_count = $dateless['count'];
     }
 
     // Apply sorting.
     $events = $this->sortEvents($events, $sort);
 
-    // Calculate facets.
-    $facets = $this->timelineFilterService->buildFacetCounts($events);
+    // Calculate facets. The light path counts periods from the raw dates
+    // and pulls term facets from aggregated GROUP BY queries - no loads.
+    if ($light_index) {
+      $facets = [
+        'content_type' => ['event' => count($events)],
+        'time_period' => [],
+      ] + $this->timelineEventService->getDatedEventTermFacets();
+      foreach ($events as $row) {
+        $period = $this->timelineFilterService->calculateTimePeriodFromDate($row->date ?? NULL);
+        if ($period !== NULL) {
+          $facets['time_period'][$period] = ($facets['time_period'][$period] ?? 0) + 1;
+        }
+      }
+    }
+    else {
+      $facets = $this->timelineFilterService->buildFacetCounts($events);
+    }
 
     // Apply intelligent sampling if we have too many events.
     $total = count($events);
@@ -205,6 +220,13 @@ class TimelineApiController extends ControllerBase {
       'limit' => $limit,
       'offset' => $offset,
     ];
+
+    // Light rows hydrate to full nodes only for this returned page, in
+    // chunks with the static entity cache released so a 2000-item request
+    // never holds more than one chunk of nodes in memory.
+    if ($light_index) {
+      $events = $this->hydrateLightRows($events);
+    }
 
     // Format events for JSON response with error handling.
     foreach ($events as $event) {
@@ -643,6 +665,29 @@ class TimelineApiController extends ControllerBase {
     }
 
     return $sanitized;
+  }
+
+  /**
+   * Hydrates light index rows into full nodes for formatting, chunked.
+   *
+   * @param object[] $rows
+   *   Light rows carrying ->id.
+   *
+   * @return \Drupal\node\NodeInterface[]
+   *   Loaded nodes in row order.
+   */
+  protected function hydrateLightRows(array $rows): array {
+    $storage = $this->entityTypeManager()->getStorage('node');
+    $nodes = [];
+    foreach (array_chunk($rows, 100) as $chunk) {
+      $ids = array_map(static fn($row) => $row->id, $chunk);
+      foreach ($storage->loadMultiple($ids) as $node) {
+        $nodes[] = $node;
+      }
+      // Release the static entity cache between chunks.
+      $storage->resetCache($ids);
+    }
+    return $nodes;
   }
 
   /**

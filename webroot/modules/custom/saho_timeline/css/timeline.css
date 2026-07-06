@@ -11,10 +11,10 @@
   --timeline-color-text-primary: #212529;
   --timeline-color-text-secondary: #6c757d;
   --timeline-color-text-muted: #495057;
-  --timeline-color-bg-light: #f8f9fa;
-  --timeline-color-bg-white: #fff;
-  --timeline-color-border-light: #dee2e6;
-  --timeline-color-accent: #0d6efd;
+  --timeline-color-bg-light: var(--saho-paper-sunk, #dad6c7);
+  --timeline-color-bg-white: var(--saho-paper-raised, #f1efe7);
+  --timeline-color-border-light: var(--border-default, #bdb9a6);
+  --timeline-color-accent: var(--saho-oxblood, #990000);
   --timeline-color-shadow: rgba(0, 0, 0, 0.12);
   --timeline-color-shadow-hover: rgba(0, 0, 0, 0.15);
   --timeline-color-accent-shadow: rgba(153, 0, 0, 0.2);
@@ -27,8 +27,8 @@
   --timeline-spacing-1-25: 1.25rem;
   --timeline-spacing-1-5: 1.5rem;
 
-  --timeline-border-radius: 0.5rem;
-  --timeline-border-radius-sm: 0.25rem;
+  --timeline-border-radius: 0; /* Open Record: square (#454) */
+  --timeline-border-radius-sm: 0;
   --timeline-border-width: 2px;
   --timeline-border-width-thick: 4px;
 
@@ -72,12 +72,7 @@
   top: 0;
   bottom: 0;
   width: var(--timeline-border-width);
-  background: linear-gradient(
-    to bottom,
-    var(--timeline-color-border-light),
-    var(--timeline-color-text-secondary),
-    var(--timeline-color-border-light)
-  );
+  background: var(--timeline-color-border-light);
 }
 
 /* Period Styles */
@@ -94,7 +89,7 @@
   padding: 0.75rem var(--timeline-spacing-base);
   background: var(--timeline-color-bg-white);
   border-left: var(--timeline-border-width-thick) solid var(--timeline-color-primary);
-  box-shadow: 0 var(--timeline-border-width) var(--timeline-border-width-thick) var(--timeline-color-shadow);
+  border: 1px solid var(--border-default, #bdb9a6);
 }
 
 .saho-timeline__period-title {
@@ -116,14 +111,15 @@
   margin-bottom: var(--timeline-spacing-2x);
   padding: var(--timeline-spacing-1-25);
   background: var(--timeline-color-bg-white);
+  border: 1px solid var(--border-default, #bdb9a6);
   border-radius: var(--timeline-border-radius);
-  box-shadow: 0 1px 3px var(--timeline-color-shadow);
-  transition: transform var(--timeline-transition-speed), box-shadow var(--timeline-transition-speed);
+  transition: border-color var(--timeline-transition-speed), background-color var(--timeline-transition-speed);
 }
 
+/* Hover selects - the hairline darkens to ink; nothing lifts (#454). */
 .saho-timeline-event:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px var(--timeline-color-shadow-hover);
+  border-color: var(--saho-ink, #1b1c17);
+  background: var(--saho-paper-sunk, #dad6c7);
 }
 
 .saho-timeline-event__marker {
@@ -134,8 +130,8 @@
   height: var(--timeline-marker-size);
   background: var(--timeline-color-primary);
   border: var(--timeline-border-width) solid var(--timeline-color-bg-white);
-  border-radius: 50%;
-  box-shadow: 0 0 0 3px var(--timeline-color-accent-shadow);
+  /* Square marker per the chronology register. */
+  border-radius: 0;
 }
 
 .saho-timeline-event__header {
