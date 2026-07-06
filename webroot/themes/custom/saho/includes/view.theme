@@ -228,14 +228,17 @@ function saho_preprocess_views_view__saho_global_search(array &$variables) {
 }
 
 /**
- * Implements hook_preprocess_views_view() for the archive_pages landing.
+ * Implements hook_preprocess_views_view() for the saho_archive_search landing.
  *
  * /archives adopts the wf05 search shell: full-width query band, mono
  * count + one quiet sort control, facet rail left, index-table/cards
  * right. Rows render from record_* variables via SDCs; the sort widgets
  * BEF renders are hidden in CSS and replaced by archive_sort below.
+ * Results come from the saho_content Solr index (#469): the rail's
+ * facet counts narrow live with the selection and a keyword query is
+ * relevance-ranked.
  */
-function saho_preprocess_views_view__archive_pages__page_1(array &$variables) {
+function saho_preprocess_views_view__saho_archive_search__page_1(array &$variables) {
   /** @var \Drupal\saho_refs\DisplayRefService $refs */
   $refs = \Drupal::service('saho_refs.display_ref');
   $request = \Drupal::request();
@@ -250,8 +253,8 @@ function saho_preprocess_views_view__archive_pages__page_1(array &$variables) {
   $record_rows = [];
   $record_cards = [];
   foreach ($variables['view']->result as $row) {
-    $node = $row->_entity ?? NULL;
-    if (!$node instanceof NodeInterface || !$node->isPublished()) {
+    $node = _saho_search_result_node($row);
+    if (!$node || !$node->isPublished()) {
       continue;
     }
 
@@ -278,12 +281,16 @@ function saho_preprocess_views_view__archive_pages__page_1(array &$variables) {
       'src' => $has_source ? "\u{2713}" : "\u{2013}",
     ];
 
-    $excerpt = '';
-    foreach (['field_synopsis', 'field_description', 'body'] as $excerpt_field) {
-      if ($node->hasField($excerpt_field) && !$node->get($excerpt_field)->isEmpty()) {
-        $excerpt = trim(strip_tags((string) $node->get($excerpt_field)->value));
-        if ($excerpt !== '') {
-          break;
+    // Excerpt: Solr highlight when a query is active, else the record's
+    // own summary fields.
+    $excerpt = trim(strip_tags((string) ($row->search_api_excerpt ?? '')));
+    if ($excerpt === '') {
+      foreach (['field_synopsis', 'field_description', 'body'] as $excerpt_field) {
+        if ($node->hasField($excerpt_field) && !$node->get($excerpt_field)->isEmpty()) {
+          $excerpt = trim(strip_tags((string) $node->get($excerpt_field)->value));
+          if ($excerpt !== '') {
+            break;
+          }
         }
       }
     }
@@ -317,21 +324,26 @@ function saho_preprocess_views_view__archive_pages__page_1(array &$variables) {
   $variables['result_total'] = number_format((int) ($variables['view']->total_rows ?? count($variables['view']->result)));
   $variables['results_layout'] = $request->query->get('layout') === 'grid' ? 'grid' : 'table';
   $variables['search_query'] = (string) $request->query->get('combine', '');
+  $has_query = trim($variables['search_query']) !== '';
 
   // One quiet sort control combining field + direction; archive-sort.js
   // maps the choice back onto the views sort_by/sort_order parameters.
-  $sort_by = $request->query->get('sort_by', 'changed');
+  // With a keyword query the default is relevance (mirrored by
+  // saho_utils_views_pre_view()); without one, newest-updated leads.
+  $sort_by = $request->query->get('sort_by', $has_query ? 'search_api_relevance' : 'changed');
   $sort_order = strtoupper((string) $request->query->get('sort_order', 'DESC'));
   $current = $sort_by . '|' . ($sort_order === 'ASC' ? 'ASC' : 'DESC');
+  $sort_options = $has_query ? ['search_api_relevance|DESC' => 'RELEVANCE'] : [];
+  $sort_options += [
+    // Deliberate default without a query: newest-updated records lead.
+    'changed|DESC' => 'RECENTLY UPDATED',
+    'changed|ASC' => 'OLDEST UPDATED',
+    'title|ASC' => 'TITLE A-Z',
+    'title|DESC' => 'TITLE Z-A',
+  ];
   $variables['archive_sort'] = [
     'current' => $current,
-    'options' => [
-      // Deliberate default: newest-updated records lead the catalogue.
-      'changed|DESC' => 'RECENTLY UPDATED',
-      'changed|ASC' => 'OLDEST UPDATED',
-      'title|ASC' => 'TITLE A-Z',
-      'title|DESC' => 'TITLE Z-A',
-    ],
+    'options' => $sort_options,
   ];
 
   // Collection context: ?collection=NID narrows the index to one

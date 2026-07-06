@@ -1,0 +1,605 @@
+uuid: 4c262e62-8936-4648-80c5-2056b3af6ecc
+langcode: en
+status: true
+dependencies:
+  config:
+    - search_api.index.saho_content
+  module:
+    - better_exposed_filters
+    - facets_exposed_filters
+    - search_api
+id: saho_archive_search
+label: 'SAHO archive search'
+module: views
+description: 'The /archives index on the saho_content Solr index: relevance-ranked keyword search and live selection-narrowed facets.'
+tag: ''
+base_table: search_api_index_saho_content
+base_field: search_api_id
+display:
+  default:
+    id: default
+    display_title: Default
+    display_plugin: default
+    position: 0
+    display_options:
+      title: Archives
+      fields:
+        title:
+          id: title
+          table: search_api_index_saho_content
+          field: title
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: search_api_field
+          label: ''
+          exclude: false
+          alter:
+            alter_text: false
+            text: ''
+            make_link: false
+            path: ''
+            absolute: false
+            external: false
+            replace_spaces: false
+            path_case: none
+            trim_whitespace: false
+            alt: ''
+            rel: ''
+            link_class: ''
+            prefix: ''
+            suffix: ''
+            target: ''
+            nl2br: false
+            max_length: 0
+            word_boundary: true
+            ellipsis: true
+            more_link: false
+            more_link_text: ''
+            more_link_path: ''
+            strip_tags: false
+            trim: false
+            preserve_tags: ''
+            html: false
+          element_type: ''
+          element_class: ''
+          element_label_type: ''
+          element_label_class: ''
+          element_label_colon: false
+          element_wrapper_type: ''
+          element_wrapper_class: ''
+          element_default_classes: true
+          empty: ''
+          hide_empty: false
+          empty_zero: false
+          hide_alter_empty: true
+          click_sort_column: value
+          type: string
+          settings:
+            link_to_entity: true
+          group_column: value
+          group_columns: {  }
+          group_rows: true
+          delta_limit: 0
+          delta_offset: 0
+          delta_reversed: false
+          delta_first_last: false
+          multi_type: separator
+          separator: ', '
+          field_api_classes: false
+          field_rendering: true
+          fallback_handler: search_api
+          fallback_options:
+            link_to_item: false
+            use_highlighting: false
+            multi_type: separator
+            multi_separator: ', '
+      pager:
+        type: full
+        options:
+          offset: 0
+          pagination_heading_level: h4
+          items_per_page: 50
+          total_pages: null
+          id: 0
+          tags:
+            next: 'Next ›'
+            previous: '‹ Previous'
+            first: '« First'
+            last: 'Last »'
+          expose:
+            items_per_page: true
+            items_per_page_label: 'Items per page'
+            items_per_page_options: '10, 25, 50, 100'
+            items_per_page_options_all: false
+            items_per_page_options_all_label: '- All -'
+            offset: false
+            offset_label: Offset
+          quantity: 9
+      exposed_form:
+        type: bef
+        options:
+          submit_button: Apply
+          reset_button: false
+          reset_button_label: Reset
+          exposed_sorts_label: 'Sort by'
+          expose_sort_order: true
+          sort_asc_label: Asc
+          sort_desc_label: Desc
+          text_input_required: 'Select any filter and click on Apply to see results'
+          text_input_required_format: full_html
+          bef:
+            general:
+              autosubmit: true
+              autosubmit_exclude_textfield: true
+              autosubmit_textfield_delay: 500
+              autosubmit_textfield_minimum_length: 3
+              autosubmit_hide: true
+              input_required: false
+              allow_secondary: false
+              secondary_label: 'Advanced options'
+              secondary_open: false
+              reset_button_always_show: false
+            sort:
+              plugin_id: default
+              advanced:
+                is_secondary: false
+            pager:
+              plugin_id: default
+              advanced:
+                is_secondary: false
+            filter:
+              search_api_fulltext:
+                plugin_id: default
+                advanced:
+                  placeholder_text: ''
+                  rewrite:
+                    filter_rewrite_values: ''
+                    filter_rewrite_values_key: false
+                  collapsible: false
+                  collapsible_disable_automatic_open: false
+                  is_secondary: false
+                  hide_label: false
+              facets_media_type_label:
+                plugin_id: bef
+                advanced:
+                  sort_options: false
+                  rewrite:
+                    filter_rewrite_values: ''
+                    filter_rewrite_values_key: false
+                  collapsible: false
+                  collapsible_disable_automatic_open: false
+                  is_secondary: false
+                  hide_label: false
+                select_all_none: false
+                select_all_none_nested: false
+                display_inline: false
+              facets_collection_nid:
+                plugin_id: default
+                advanced:
+                  rewrite:
+                    filter_rewrite_values: ''
+                    filter_rewrite_values_key: false
+                  collapsible: false
+                  collapsible_disable_automatic_open: false
+                  is_secondary: false
+                  hide_label: false
+              facets_language_label:
+                plugin_id: bef
+                advanced:
+                  sort_options: false
+                  rewrite:
+                    filter_rewrite_values: ''
+                    filter_rewrite_values_key: false
+                  collapsible: false
+                  collapsible_disable_automatic_open: false
+                  is_secondary: false
+                  hide_label: false
+                select_all_none: false
+                select_all_none_nested: false
+                display_inline: false
+              facets_saldru_topic_label:
+                plugin_id: bef
+                advanced:
+                  sort_options: false
+                  rewrite:
+                    filter_rewrite_values: ''
+                    filter_rewrite_values_key: false
+                  collapsible: false
+                  collapsible_disable_automatic_open: false
+                  is_secondary: false
+                  hide_label: false
+                select_all_none: false
+                select_all_none_nested: false
+                display_inline: false
+              facets_african_country_label:
+                plugin_id: bef
+                advanced:
+                  sort_options: false
+                  rewrite:
+                    filter_rewrite_values: ''
+                    filter_rewrite_values_key: false
+                  collapsible: false
+                  collapsible_disable_automatic_open: false
+                  is_secondary: false
+                  hide_label: false
+                select_all_none: false
+                select_all_none_nested: false
+                display_inline: false
+      access:
+        type: perm
+        options:
+          perm: 'access content'
+      cache:
+        type: search_api_none
+        options: {  }
+      empty: {  }
+      sorts:
+        changed:
+          id: changed
+          table: search_api_index_saho_content
+          field: changed
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: search_api
+          order: DESC
+          expose:
+            label: 'Recently updated'
+            field_identifier: changed
+          exposed: true
+        title:
+          id: title
+          table: search_api_index_saho_content
+          field: title
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: search_api
+          order: ASC
+          expose:
+            label: Title
+            field_identifier: title
+          exposed: true
+        search_api_relevance:
+          id: search_api_relevance
+          table: search_api_index_saho_content
+          field: search_api_relevance
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: search_api
+          order: DESC
+          expose:
+            label: Relevance
+            field_identifier: search_api_relevance
+          exposed: true
+      arguments: {  }
+      filters:
+        search_api_fulltext:
+          id: search_api_fulltext
+          table: search_api_index_saho_content
+          field: search_api_fulltext
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: search_api_fulltext
+          operator: and
+          value: ''
+          group: 1
+          exposed: true
+          expose:
+            operator_id: combine_op
+            label: 'Search the SAHO archive'
+            description: 'Search on keywords, publication titles, ISBN, author, etc.'
+            use_operator: false
+            operator: combine_op
+            operator_limit_selection: false
+            operator_list: {  }
+            identifier: combine
+            required: false
+            remember: false
+            multiple: false
+            remember_roles:
+              authenticated: authenticated
+            expose_fields: false
+            placeholder: 'Search by title, author, ISBN...'
+            searched_fields_id: combine_searched_fields
+            value_maxlength: 128
+          is_grouped: false
+          group_info:
+            label: ''
+            description: ''
+            identifier: ''
+            optional: true
+            widget: select
+            multiple: false
+            remember: false
+            default_group: All
+            default_group_multiple: {  }
+            group_items: {  }
+          parse_mode: fuzzy_terms
+          min_length: 3
+          fields:
+            - body
+            - field_description
+            - field_isbn
+            - field_publication_title
+            - field_publishers
+            - field_ref_str
+            - field_subtitle
+            - field_synopsis
+            - field_venue
+            - title
+        type_string:
+          id: type_string
+          table: search_api_index_saho_content
+          field: type_string
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: search_api_options
+          operator: or
+          value:
+            archive: archive
+          group: 1
+          exposed: false
+          expose:
+            operator_id: ''
+            label: ''
+            description: ''
+            use_operator: false
+            operator: ''
+            operator_limit_selection: false
+            operator_list: {  }
+            identifier: ''
+            required: false
+            remember: false
+            multiple: false
+            remember_roles:
+              authenticated: authenticated
+            reduce: false
+          is_grouped: false
+          group_info:
+            label: ''
+            description: ''
+            identifier: ''
+            optional: true
+            widget: select
+            multiple: false
+            remember: false
+            default_group: All
+            default_group_multiple: {  }
+            group_items: {  }
+        facets_media_type_label:
+          id: facets_media_type_label
+          table: search_api_index_saho_content
+          field: facets_media_type_label
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: facets_filter
+          operator: '='
+          value: {  }
+          group: 1
+          exposed: true
+          expose:
+            operator_id: ''
+            label: 'Resource Types'
+            description: ''
+            use_operator: false
+            operator: ''
+            operator_limit_selection: false
+            operator_list: {  }
+            identifier: type
+            required: false
+            remember: false
+            multiple: true
+            remember_roles:
+              authenticated: authenticated
+          is_grouped: false
+          group_info: {  }
+          hierarchy: false
+          label_display: visible
+          facet:
+            query_operator: or
+            hard_limit: 0
+            min_count: 1
+            missing: false
+            missing_label: others
+            show_numbers: true
+        facets_collection_nid:
+          id: facets_collection_nid
+          table: search_api_index_saho_content
+          field: facets_collection_nid
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: facets_filter
+          operator: '='
+          value: {  }
+          group: 1
+          exposed: true
+          expose:
+            operator_id: ''
+            label: Collection
+            description: ''
+            use_operator: false
+            operator: ''
+            operator_limit_selection: false
+            operator_list: {  }
+            identifier: collection
+            required: false
+            remember: false
+            multiple: false
+            remember_roles:
+              authenticated: authenticated
+          is_grouped: false
+          group_info: {  }
+          hierarchy: false
+          label_display: visible
+          facet:
+            query_operator: or
+            hard_limit: 0
+            min_count: 1
+            missing: false
+            missing_label: others
+            show_numbers: true
+        facets_language_label:
+          id: facets_language_label
+          table: search_api_index_saho_content
+          field: facets_language_label
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: facets_filter
+          operator: '='
+          value: {  }
+          group: 1
+          exposed: true
+          expose:
+            operator_id: ''
+            label: Language
+            description: ''
+            use_operator: false
+            operator: ''
+            operator_limit_selection: false
+            operator_list: {  }
+            identifier: language
+            required: false
+            remember: false
+            multiple: true
+            remember_roles:
+              authenticated: authenticated
+          is_grouped: false
+          group_info: {  }
+          hierarchy: false
+          label_display: visible
+          facet:
+            query_operator: or
+            hard_limit: 0
+            min_count: 1
+            missing: false
+            missing_label: others
+            show_numbers: true
+        facets_saldru_topic_label:
+          id: facets_saldru_topic_label
+          table: search_api_index_saho_content
+          field: facets_saldru_topic_label
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: facets_filter
+          operator: '='
+          value: {  }
+          group: 1
+          exposed: true
+          expose:
+            operator_id: ''
+            label: 'SALDRU topic'
+            description: ''
+            use_operator: false
+            operator: ''
+            operator_limit_selection: false
+            operator_list: {  }
+            identifier: saldru
+            required: false
+            remember: false
+            multiple: true
+            remember_roles:
+              authenticated: authenticated
+          is_grouped: false
+          group_info: {  }
+          hierarchy: false
+          label_display: visible
+          facet:
+            query_operator: or
+            hard_limit: 0
+            min_count: 1
+            missing: false
+            missing_label: others
+            show_numbers: true
+        facets_african_country_label:
+          id: facets_african_country_label
+          table: search_api_index_saho_content
+          field: facets_african_country_label
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: facets_filter
+          operator: '='
+          value: {  }
+          group: 1
+          exposed: true
+          expose:
+            operator_id: ''
+            label: 'African country'
+            description: ''
+            use_operator: false
+            operator: ''
+            operator_limit_selection: false
+            operator_list: {  }
+            identifier: country
+            required: false
+            remember: false
+            multiple: true
+            remember_roles:
+              authenticated: authenticated
+          is_grouped: false
+          group_info: {  }
+          hierarchy: false
+          label_display: visible
+          facet:
+            query_operator: or
+            hard_limit: 0
+            min_count: 1
+            missing: false
+            missing_label: others
+            show_numbers: true
+      filter_groups:
+        operator: AND
+        groups:
+          1: AND
+      style:
+        type: default
+        options:
+          grouping: {  }
+          row_class: ''
+          default_row_class: true
+      row:
+        type: fields
+      query:
+        type: search_api_query
+        options:
+          bypass_access: false
+          skip_access: false
+          preserve_facet_query_args: false
+          query_tags: {  }
+      relationships: {  }
+      header: {  }
+      footer: {  }
+      display_extenders: {  }
+    cache_metadata:
+      max-age: -1
+      contexts:
+        - 'languages:language_content'
+        - 'languages:language_interface'
+        - url
+        - url.query_args
+      tags: {  }
+  page_1:
+    id: page_1
+    display_title: Page
+    display_plugin: page
+    position: 1
+    display_options:
+      display_extenders: {  }
+      path: archives
+    cache_metadata:
+      max-age: -1
+      contexts:
+        - 'languages:language_content'
+        - 'languages:language_interface'
+        - url
+        - url.query_args
+      tags: {  }

@@ -34,9 +34,12 @@
               return;
             }
 
+            // A select's "no selection" value is '' (legacy) or 'All'
+            // (views exposed filters).
+            const selectValue = group.querySelector('select')?.value;
             const activeCount = isFieldset
               ? group.querySelectorAll('input:checked').length
-              : group.querySelector('select')?.value
+              : selectValue && selectValue !== 'All'
                 ? 1
                 : 0;
 
