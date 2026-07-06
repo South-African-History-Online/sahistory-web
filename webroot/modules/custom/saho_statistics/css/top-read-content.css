@@ -165,3 +165,39 @@
     page-break-inside: avoid;
   }
 }
+
+/* ---------------------------------------------------------------------------
+ * Cards-mode thumbnail (#458): duotone derivative above the rank/title;
+ * broken files fall back to the sunk-paper marker.
+ * ------------------------------------------------------------------------- */
+.top-read-block-wrapper .top-read-item__thumb {
+  display: block;
+  aspect-ratio: 4 / 3;
+  margin: calc(-1 * var(--space-4, 1rem)) calc(-1 * var(--space-4, 1rem)) var(--space-3, 0.75rem);
+  overflow: hidden;
+  background: var(--saho-paper-sunk, #dad6c7);
+}
+
+.top-read-block-wrapper .top-read-item__thumb img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.top-read-block-wrapper .top-read-grid-item:hover .top-read-item__thumb .saho-duotone,
+.top-read-block-wrapper .top-read-grid-item:focus-within .top-read-item__thumb .saho-duotone {
+  filter: none;
+}
+
+.top-read-block-wrapper .top-read-item__thumb.is-broken img {
+  display: none;
+}
+
+.top-read-block-wrapper .top-read-item__thumb.is-broken {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 68'%3E%3Crect x='20' y='4' width='80' height='60' fill='none' stroke='%23990000' stroke-width='3' opacity='.25'/%3E%3Ccircle cx='80' cy='20' r='7' fill='%23990000' opacity='.18'/%3E%3Cpolygon points='30,56 50,30 68,48 80,36 92,56' fill='%23990000' opacity='.18'/%3E%3C/svg%3E");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 72px auto;
+}

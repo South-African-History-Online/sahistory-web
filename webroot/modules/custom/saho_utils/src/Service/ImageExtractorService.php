@@ -40,6 +40,7 @@ class ImageExtractorService {
     'biography' => 'field_bio_pic',
     'archive' => 'field_archive_image',
     'event' => 'field_event_image',
+    'upcomingevent' => 'field_upcomingevent_image',
     'place' => 'field_place_image',
     'default' => 'field_image',
   ];

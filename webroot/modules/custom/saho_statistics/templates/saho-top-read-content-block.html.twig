@@ -4,8 +4,9 @@
  * Theme template for SAHO Top Read Content block.
  *
  * Open Record 2027 idiom: a ruled reading list. Mono two-digit rank
- * numerals, display-font title links, mono muted view counts. Thumbnails
- * are intentionally not rendered (legacy image corruption backlog).
+ * numerals, display-font title links, mono muted view counts. In cards
+ * mode an optional duotone thumbnail derivative renders above the title;
+ * broken files fall back to the sunk-paper marker (#458).
  *
  * Available variables:
  * - items: Array of content items to display. Each item contains:
@@ -14,9 +15,11 @@
  *   - type: Content type machine name
  *   - url: Absolute URL to the node
  *   - view_count: Number of views
+ *   - image: Optional thumbnail derivative URL (saho_thumbnail style)
  * - block_title: The title of the block
  * - display_mode: Display mode ('list', 'grid', or 'cards')
  * - show_view_count: Boolean to show view counts
+ * - show_thumbnail: Boolean to show thumbnails in cards/grid mode
  * - full_width: Boolean for full-width display
  * - attributes: HTML attributes for the wrapper element
  */
@@ -56,6 +59,11 @@
     <ol class="top-read-grid">
       {% for item in items %}
         <li class="top-read-grid-item top-read-item--{{ item.type }}">
+          {% if show_thumbnail and item.image %}
+            <a class="top-read-item__thumb" href="{{ item.url }}" tabindex="-1" aria-hidden="true">
+              <img class="saho-duotone" src="{{ item.image }}" alt="" loading="lazy" decoding="async" onerror="this.closest('.top-read-item__thumb').classList.add('is-broken')" />
+            </a>
+          {% endif %}
           <span class="top-read-item__rank" aria-hidden="true">{{ '%02d'|format(loop.index) }}</span>
           <h3 class="top-read-item__title">
             <a href="{{ item.url }}">{{ item.title }}</a>

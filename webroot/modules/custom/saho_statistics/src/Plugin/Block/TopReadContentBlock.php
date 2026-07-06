@@ -7,7 +7,7 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Url;
-use Drupal\image\Entity\ImageStyle;
+use Drupal\file\FileInterface;
 use Drupal\saho_statistics\TermTracker;
 use Drupal\saho_utils\Service\ImageExtractorService;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -318,27 +318,17 @@ class TopReadContentBlock extends BlockBase implements ContainerFactoryPluginInt
       return NULL;
     }
 
-    $field_value = $node->get($field_name)->first();
-    if (!$field_value) {
+    // Skip files missing on disk (the pre-2019 loss class) so the ledger
+    // never publishes a knowingly broken figure.
+    $file = $node->get($field_name)->first()->entity ?? NULL;
+    if (!$file instanceof FileInterface || !file_exists($file->getFileUri())) {
       return NULL;
     }
 
-    // Get the file entity.
-    $file = $field_value->get('entity')->getValue();
-    if (!$file) {
-      return NULL;
-    }
-
-    // Route through the saho_thumbnail image style (400x225 WebP) so the
-    // browser fetches a ~30 KB derivative instead of the raw source file -
-    // a typical Top Read row only displays the thumbnail at 80x58.
-    $uri = $file->getFileUri();
-    $style = ImageStyle::load('saho_thumbnail');
-    if ($style) {
-      return $style->buildUrl($uri);
-    }
-    // Fallback if the image style isn't configured: relative public URL.
-    return str_replace('public://', '/sites/default/files/', $uri);
+    // Serve the saho_thumbnail derivative (preferring its WebP variant)
+    // instead of the raw source file - a Top Read card only displays the
+    // image small.
+    return $this->imageExtractor->extractImageWithDerivatives($node, 'saho_thumbnail', $field_name);
   }
 
 }
