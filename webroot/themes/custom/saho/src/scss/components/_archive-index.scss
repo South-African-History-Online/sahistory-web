@@ -69,12 +69,68 @@
 // ---- Facet lookup wells (facet-narrow.js) ----
 // Facet groups past 12 values become a scrollable sunk well with a mono
 // filter input above it; lookup instead of SHOW MORE chip walls.
+// The legacy pill bundle (dist/landing-pages.css, _exposed-filters.scss)
+// hides checkbox items past five expecting its own show-more button,
+// which never initializes inside the rail - every value stays reachable
+// here, the well scrolls and the lookup input narrows.
+.saho-archive-index .saho-search-rail .bef-checkboxes {
+  display: block;
+}
+
+// Bootstrap's [hidden] { display: none !important } still wins here, so
+// the lookup input's narrowing keeps working over these rows.
+.saho-archive-index .saho-search-rail .bef-checkboxes .form-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+
+  // Long labels wrap inside the well instead of forcing a sideways
+  // scroll; the pill bundle's 16px label padding has no place in a row.
+  label {
+    min-width: 0;
+    padding: 2px 0;
+    overflow-wrap: anywhere;
+  }
+}
+
+// The same bundle sinks the inputs themselves (opacity 0, absolute) for
+// its pill look; restore the rail's visible square checkboxes.
+.saho-archive-index .saho-search-rail .bef-checkboxes input[type="checkbox"] {
+  position: static;
+  flex-shrink: 0;
+  opacity: 1;
+  pointer-events: auto;
+}
+
 .saho-facet-narrow {
-  max-height: 240px;
+  // 300px cuts the eighth row mid-line: the strongest "more below" cue.
+  max-height: 300px;
   overflow-y: auto;
   padding: var(--space-2) var(--space-2) var(--space-2) 2px;
   background: var(--surface-sunk, var(--saho-paper-sunk, #e9e6da));
   border: var(--bw-hair) solid var(--border-default);
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-default) transparent;
+
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--border-default);
+  }
+}
+
+.saho-facet-narrow__count {
+  margin-left: var(--space-1);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: var(--ls-label);
+  color: var(--text-muted);
+
+  &::before {
+    content: "\00b7\0020";
+  }
 }
 
 .saho-facet-narrow__input {

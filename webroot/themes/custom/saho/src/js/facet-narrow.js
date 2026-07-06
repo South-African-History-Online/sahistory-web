@@ -30,7 +30,17 @@
 
         group.classList.add('saho-facet-narrow');
 
-        const groupLabel = group.closest('fieldset')?.querySelector('legend')?.textContent.trim();
+        const legend = group.closest('fieldset')?.querySelector('legend');
+        const groupLabel = legend?.textContent.trim();
+
+        // A mono total on the heading says how much the well holds - the
+        // visible rows are a window, not the full list.
+        if (legend && !legend.querySelector('.saho-facet-narrow__count')) {
+          const total = document.createElement('span');
+          total.className = 'saho-facet-narrow__count';
+          total.textContent = items.length;
+          (legend.querySelector('.saho-facet-group__toggle') || legend).appendChild(total);
+        }
         const input = document.createElement('input');
         input.type = 'search';
         input.className = 'saho-facet-narrow__input';
