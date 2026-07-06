@@ -50,12 +50,19 @@
         input.setAttribute('aria-label', input.placeholder);
         group.parentNode.insertBefore(input, group);
 
+        // Match on the value's name only - not its record count.
+        const labelText = (label) =>
+          [...(label?.childNodes || [])]
+            .filter((node) => !(node.nodeType === 1 && node.classList.contains('saho-facet-count')))
+            .map((node) => node.textContent)
+            .join('');
+
         input.addEventListener('input', () => {
           const query = normalize(input.value.trim());
           items.forEach((item) => {
-            const label = item.querySelector('label');
             const checked = item.querySelector('input[type="checkbox"]')?.checked;
-            const match = query === '' || normalize(label?.textContent || '').includes(query);
+            const match =
+              query === '' || normalize(labelText(item.querySelector('label'))).includes(query);
             item.hidden = !(checked || match);
           });
         });

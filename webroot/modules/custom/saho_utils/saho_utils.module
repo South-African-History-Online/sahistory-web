@@ -5,7 +5,9 @@
  * Contains saho_utils.module.
  */
 
+use Drupal\Component\Utility\Html;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Render\Markup;
 
 /**
  * Implements hook_form_alter().
@@ -75,6 +77,71 @@ function _saho_utils_archive_refine_alter(array &$form): void {
       $form[$key]['#weight'] = $weight;
     }
   }
+
+  // Facets are apparatus: each value carries its record count, values with
+  // records lead (count descending), values with none disappear - a person
+  // should never click into an empty result set.
+  foreach (_saho_utils_archive_facet_counts() as $key => $counts) {
+    if (!isset($form[$key]['#options'])) {
+      continue;
+    }
+    $selected = array_filter((array) ($form[$key]['#default_value'] ?? []));
+    $kept = [];
+    foreach ($form[$key]['#options'] as $value => $label) {
+      $records = $counts[$value] ?? 0;
+      // A selected zero value must stay visible so it can be unchecked.
+      if ($records === 0 && !in_array((string) $value, array_map('strval', $selected), TRUE)) {
+        continue;
+      }
+      $kept[$value] = ['label' => (string) $label, 'records' => $records];
+    }
+    uasort($kept, fn(array $a, array $b) => [$b['records'], $a['label']] <=> [$a['records'], $b['label']]);
+    $form[$key]['#options'] = array_map(
+      fn(array $option) => Markup::create(
+        Html::escape($option['label'])
+        . ' <span class="saho-facet-count">' . number_format($option['records']) . '</span>'
+      ),
+      $kept
+    );
+  }
+}
+
+/**
+ * Returns per-value record counts for the /archives checkbox facets.
+ *
+ * One aggregated query per facet field over published archive nodes,
+ * keyed by the filters' exposed identifiers. Counts are corpus-wide
+ * (not narrowed by the current selection - that is Solr facet
+ * territory). Cached until archive content changes.
+ *
+ * @return array
+ *   Exposed identifier => [term id => record count].
+ */
+function _saho_utils_archive_facet_counts(): array {
+  $cid = 'saho_utils:archive_facet_counts';
+  $cache = \Drupal::cache()->get($cid);
+  if ($cache) {
+    return $cache->data;
+  }
+  $fields = [
+    'tid' => 'field_media_library_type',
+    'language' => 'field_language',
+    'saldru' => 'field_saldru_category',
+    'field_african_country_target_id' => 'field_african_country',
+  ];
+  $counts = [];
+  $database = \Drupal::database();
+  foreach ($fields as $key => $field) {
+    $counts[$key] = array_map('intval', $database->query("
+      SELECT f.{$field}_target_id AS tid, COUNT(*) AS records
+      FROM {node__{$field}} f
+      INNER JOIN {node_field_data} n
+        ON n.nid = f.entity_id AND n.status = 1 AND n.type = 'archive'
+      WHERE f.deleted = 0
+      GROUP BY f.{$field}_target_id")->fetchAllKeyed());
+  }
+  \Drupal::cache()->set($cid, $counts, \Drupal::time()->getRequestTime() + 3600, ['node_list:archive']);
+  return $counts;
 }
 
 /**

@@ -310,11 +310,14 @@
 
       const label = form.querySelector(`label[for="${input.id}"]`);
       if (label) {
+        // The chip names the value; its record count stays in the rail.
+        const clone = label.cloneNode(true);
+        clone.querySelector('.saho-facet-count')?.remove();
         active.push({
           id: input.id,
           name: input.name,
           value: input.value,
-          label: label.textContent.trim(),
+          label: clone.textContent.trim().replace(/\s+/g, ' '),
         });
       }
     });
