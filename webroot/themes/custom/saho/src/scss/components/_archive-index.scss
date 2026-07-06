@@ -104,7 +104,6 @@
 // only. BEF autosubmit applies changes, so Apply never needs to render.
 .saho-archive-index .saho-search-rail {
   .form-item-combine,
-  .form-item-collection,
   .form-item-sort-by,
   .form-item-sort-order,
   .form-item-items-per-page,
@@ -112,6 +111,103 @@
   [data-drupal-selector="edit-sort-order"],
   .form-actions {
     display: none;
+  }
+}
+
+// ---- Collapsible facet groups (facet-collapse.js) ----
+// Group headings toggle their body; first group and groups with active
+// selections start open, the rest closed, so five groups never wall the
+// rail. The count chip carries the active-selection tally while closed.
+.saho-facet-group {
+  legend,
+  > label {
+    display: block;
+    width: 100%;
+  }
+
+  &__toggle {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    width: 100%;
+    padding: var(--space-1) 0;
+    border: 0;
+    background: none;
+    text-align: left;
+    cursor: pointer;
+    font: inherit;
+    color: inherit;
+    // Buttons reset text-transform in UA stylesheets; keep the heading's
+    // mono-uppercase register.
+    text-transform: inherit;
+    letter-spacing: inherit;
+
+    &::after {
+      content: "\2212"; // minus: open
+      margin-left: auto;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+  }
+
+  &.is-collapsed &__toggle::after {
+    content: "+";
+  }
+
+  &__count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: 999px;
+    background: var(--saho-oxblood, #990000);
+    color: #fff;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    line-height: 1;
+  }
+
+  &.is-collapsed legend ~ div,
+  &.is-collapsed select,
+  &.is-collapsed .saho-facet-narrow__input {
+    display: none;
+  }
+}
+
+// The collection facet renders as a single select (967 collections with
+// counts); native type-ahead does the narrowing. Its label matches the
+// fieldset-legend register so the rail reads as one system.
+.saho-archive-index .saho-search-rail .form-item-collection {
+  margin-bottom: var(--space-4);
+
+  > label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: var(--ls-label);
+    text-transform: uppercase;
+    color: var(--text-primary);
+  }
+}
+
+.saho-archive-index .saho-search-rail .form-item-collection select {
+  width: 100%;
+  max-width: 100%;
+  height: 32px;
+  padding: 0 var(--space-2);
+  border: var(--bw-hair) solid var(--border-default);
+  border-radius: 0;
+  background: var(--surface-card);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-primary);
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 2px solid var(--saho-oxblood, #990000);
+    outline-offset: 2px;
   }
 }
 

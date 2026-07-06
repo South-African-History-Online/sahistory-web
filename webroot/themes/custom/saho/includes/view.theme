@@ -289,7 +289,7 @@ function saho_preprocess_views_view__archive_pages__page_1(array &$variables) {
     $excerpt = Unicode::truncate(html_entity_decode($excerpt, ENT_QUOTES), 140, TRUE, TRUE);
 
     $image = _saho_search_result_image($node);
-    $record_cards[] = [
+    $card = [
       'type' => 'archive',
       'title' => $node->label(),
       'href' => $href,
@@ -300,6 +300,15 @@ function saho_preprocess_views_view__archive_pages__page_1(array &$variables) {
       'image_alt' => $image['alt'],
       'duotone' => TRUE,
     ];
+    // The record's own category (Affidavit, Book Chapter, ...) says more
+    // than the generic ARCHIVE badge; fall back when untyped.
+    if ($node->hasField('field_media_library_type') && !$node->get('field_media_library_type')->isEmpty()) {
+      $type_term = $node->get('field_media_library_type')->entity;
+      if ($type_term) {
+        $card['badge_label'] = (string) $type_term->label();
+      }
+    }
+    $record_cards[] = $card;
   }
 
   $variables['record_rows'] = $record_rows;

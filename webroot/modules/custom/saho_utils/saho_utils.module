@@ -27,6 +27,11 @@ function saho_utils_form_alter(&$form, FormStateInterface $form_state, $form_id)
     }
   }
 
+  // Archive browse (/archives) refine rail.
+  if ($form_id == 'views_exposed_form' && isset($form['#id']) && $form['#id'] == 'views-exposed-form-archive-pages-page-1') {
+    _saho_utils_archive_refine_alter($form);
+  }
+
   // Extend the year range for event date field to support historical dates.
   // SAHO covers African history from earliest times to present.
   if ($form_id === 'node_event_form' || $form_id === 'node_event_edit_form') {
@@ -36,4 +41,71 @@ function saho_utils_form_alter(&$form, FormStateInterface $form_state, $form_id)
       $form['field_event_date']['widget'][0]['value']['#date_year_range'] = '1000:2100';
     }
   }
+}
+
+/**
+ * Shapes the /archives refine rail: collection select + facet-group order.
+ *
+ * The view's "collection" filter is a numeric filter on
+ * field_feature_parent_target_id (collection pages link in with
+ * ?collection=NID); a raw nid textfield is useless to a person, so it
+ * becomes a select of every collection head with its record count.
+ * Group order is set by weight so the strongest facets lead the rail:
+ * coverage across the 30k records is collection 91%, resource type 45%,
+ * language 12%, SALDRU topic 5%, African country under 1%.
+ */
+function _saho_utils_archive_refine_alter(array &$form): void {
+  if (isset($form['collection'])) {
+    $form['collection'] = [
+      '#type' => 'select',
+      '#options' => ['' => t('- All collections -')] + _saho_utils_archive_collection_options(),
+      '#default_value' => $form['collection']['#default_value'] ?? '',
+    ] + array_intersect_key($form['collection'], array_flip(['#name', '#id']));
+  }
+  // Keys are the filters' exposed identifiers, not their plugin ids.
+  $weights = [
+    'tid' => -10,
+    'collection' => -9,
+    'language' => -8,
+    'saldru' => -7,
+    'field_african_country_target_id' => -6,
+  ];
+  foreach ($weights as $key => $weight) {
+    if (isset($form[$key])) {
+      $form[$key]['#weight'] = $weight;
+    }
+  }
+}
+
+/**
+ * Returns collection options for the archive refine rail, with counts.
+ *
+ * Keyed by collection nid, labelled "Title (1,234)", ordered by record
+ * count. Cached until archive content changes.
+ *
+ * @return array
+ *   Options array of collection nid => label.
+ */
+function _saho_utils_archive_collection_options(): array {
+  $cid = 'saho_utils:archive_collection_options';
+  $cache = \Drupal::cache()->get($cid);
+  if ($cache) {
+    return $cache->data;
+  }
+  $options = [];
+  $rows = \Drupal::database()->query("
+    SELECT p.field_feature_parent_target_id AS nid, parent.title AS title, COUNT(*) AS records
+    FROM {node__field_feature_parent} p
+    INNER JOIN {node_field_data} parent
+      ON parent.nid = p.field_feature_parent_target_id AND parent.status = 1
+    INNER JOIN {node_field_data} child
+      ON child.nid = p.entity_id AND child.status = 1
+    WHERE p.bundle = 'archive' AND p.deleted = 0
+    GROUP BY p.field_feature_parent_target_id, parent.title
+    ORDER BY records DESC, parent.title ASC")->fetchAll();
+  foreach ($rows as $row) {
+    $options[(int) $row->nid] = $row->title . ' (' . number_format((int) $row->records) . ')';
+  }
+  \Drupal::cache()->set($cid, $options, \Drupal::time()->getRequestTime() + 3600, ['node_list:archive']);
+  return $options;
 }
