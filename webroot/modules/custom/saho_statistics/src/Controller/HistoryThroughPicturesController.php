@@ -173,6 +173,7 @@ class HistoryThroughPicturesController extends ControllerBase {
       '#items' => $items,
       '#total_count' => $total_count,
       '#sort_links' => $sort_links,
+      '#is_first_page' => ((int) \Drupal::request()->query->get('page', 0)) === 0,
       '#current_sort' => $sort,
       '#attached' => [
         'library' => [

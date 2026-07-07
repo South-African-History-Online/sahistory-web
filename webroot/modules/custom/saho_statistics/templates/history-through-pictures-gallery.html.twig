@@ -33,7 +33,7 @@
 
   {# Curation band (R3 #481): the first featured picture opens the page
      large, with its credit and caption - editorial, then the index. #}
-  {% set lead = items|filter(item => item.has_feature_link)|first %}
+  {% set lead = is_first_page ? items|filter(item => item.has_feature_link)|first : null %}
   {% if lead %}
     <a class="gallery-lead" href="{{ lead.url }}">
       <span class="gallery-lead__frame">
@@ -74,6 +74,14 @@
       </div>
       {% endif %}
     {% endfor %}
+  </div>
+
+  {# Load-more enhancement (hidden until JS confirms a next page). #}
+  <div class="gallery-loadmore" data-htp-loadmore hidden>
+    <button type="button" class="gallery-loadmore__button" data-htp-loadmore-button>
+      {{ 'Load more'|t }}
+    </button>
+    <p class="gallery-loadmore__status" data-htp-loadmore-status aria-live="polite"></p>
   </div>
 
   {% if pager %}
