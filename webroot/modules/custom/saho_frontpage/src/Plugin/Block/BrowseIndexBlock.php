@@ -63,6 +63,7 @@ final class BrowseIndexBlock extends BlockBase implements ContainerFactoryPlugin
       '#props' => [
         'title' => 'Browse the archive',
         'items' => $this->archiveCounts->getBrowseTypes(),
+        'collections' => $this->archiveCounts->getTopCollections(),
       ],
       '#cache' => [
         'tags' => ['node_list'],

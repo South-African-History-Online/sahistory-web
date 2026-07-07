@@ -226,4 +226,37 @@ final class ArchiveCountsService {
     return $this->dateFormatter->format((int) $node->getCreatedTime(), 'custom', 'j M Y');
   }
 
+  /**
+   * Returns the three biggest collections for the browse-band footer.
+   *
+   * R3 #475: archive-first entry from home - each link lands on the
+   * /archives index pre-narrowed to the collection.
+   *
+   * @return array<int, array{label: string, count: string, href: string}>
+   *   Collection rows, largest first.
+   */
+  public function getTopCollections(): array {
+    $cached = $this->cache->get('saho_frontpage:top_collections');
+    if ($cached !== FALSE) {
+      return $cached->data;
+    }
+    $rows = [];
+    $result = $this->database->query(
+      "SELECT p.field_feature_parent_target_id AS nid, n.title, COUNT(*) AS members
+       FROM {node__field_feature_parent} p
+       JOIN {node_field_data} n ON n.nid = p.field_feature_parent_target_id AND n.status = 1
+       GROUP BY p.field_feature_parent_target_id, n.title
+       ORDER BY members DESC LIMIT 3"
+    );
+    foreach ($result as $record) {
+      $rows[] = [
+        'label' => trim((string) $record->title),
+        'count' => number_format((int) $record->members),
+        'href' => '/archives?collection=' . $record->nid,
+      ];
+    }
+    $this->cache->set('saho_frontpage:top_collections', $rows, $this->time->getRequestTime() + self::CACHE_MAX_AGE, ['node_list']);
+    return $rows;
+  }
+
 }

@@ -34,6 +34,25 @@
     <p class="saho-landing-head__count">{{ landing_count }} records</p>
   </header>
 
+  {# R3 #481: /africa leads with its regional entry cards (slate accent). #}
+  {% if view.id() == 'africa' %}
+    {% set regions = [
+      { label: 'Northern Africa'|t, href: '/africa/northern-africa' },
+      { label: 'Western Africa'|t, href: '/africa/western-africa' },
+      { label: 'Central Africa'|t, href: '/africa/central-africa' },
+      { label: 'Eastern Africa'|t, href: '/africa/eastern-africa' },
+      { label: 'Southern Africa'|t, href: '/africa/southern-africa' },
+    ] %}
+    <nav class="saho-africa-regions" aria-label="{{ 'Regions'|t }}">
+      {% for region in regions %}
+        <a class="saho-africa-regions__card" href="{{ region.href }}">
+          <span class="saho-africa-regions__marker" aria-hidden="true"></span>
+          <span class="saho-africa-regions__label">{{ region.label }}</span>
+        </a>
+      {% endfor %}
+    </nav>
+  {% endif %}
+
   {% if header %}
     <div class="saho-landing-intro">
       {{ header }}
