@@ -159,6 +159,7 @@ final class ArchiveCountsService {
         'type' => 'article',
         'href' => '/classroom',
         'count' => NULL,
+        'note' => 'Lessons in 11 languages',
       ],
     ];
   }

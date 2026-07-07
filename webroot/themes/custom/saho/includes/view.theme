@@ -801,6 +801,12 @@ function saho_preprocess_views_view__classroom(array &$variables) {
     $excerpt = Unicode::truncate(html_entity_decode($excerpt, ENT_QUOTES), 140, TRUE, TRUE);
 
     $image = _saho_search_result_image($node);
+    // Language visibility (R3 #479): decks with translations carry the
+    // count on the meta line; absent when English-only.
+    $language_count = count($node->getTranslationLanguages());
+    $card_meta = $language_count > 1
+      ? $meta . ' · ' . $language_count . ' languages'
+      : $meta;
     $classroom_cards[] = [
       'type' => in_array($type, $card_types, TRUE) ? $type : 'article',
       // Label the badge with the resource type ("Presentation", "Worksheet", ...)
@@ -815,6 +821,7 @@ function saho_preprocess_views_view__classroom(array &$variables) {
       'image_alt' => $image['alt'],
       'duotone' => TRUE,
     ];
+    $classroom_cards[count($classroom_cards) - 1]['meta'] = $card_meta;
   }
 
   $variables['classroom_cards'] = $classroom_cards;

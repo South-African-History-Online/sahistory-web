@@ -32,3 +32,11 @@ Enable on the MAIN site only:
 ```
 ddev drush en saho_classroom -y
 ```
+
+## Reserved learner-content patterns (R3 #479)
+
+quiz / worksheet / activity have no published nodes yet (#428 deploys the
+content). When they land, the design contract is: ArchiveCard with a mono
+type kicker (`WORKSHEET - GRADE 6`) in listings, plus a `MATERIALS FOR THIS
+LESSON` RelatedList slot in the deck-page rail. No dead UI ships before the
+content exists.
