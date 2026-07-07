@@ -1992,8 +1992,33 @@ function saho_preprocess_node__biography(array &$variables) {
   $variables['record_provenance'] = _saho_record_provenance_props($node);
   $variables['record_citation'] = _saho_record_citation_props($node);
   $variables['record_image'] = _saho_record_image_props($node, 'field_bio_pic');
+  // Portraitless biographies get a dignified initials tile, never an
+  // empty frame or a generic person icon (R3 X-1).
+  $variables['record_initials'] = _saho_record_initials($name !== '' ? $name : (string) $node->label());
   $variables['record_further'] = _saho_record_further_reading($node);
   _saho_record_attach_libraries($variables);
+}
+
+/**
+ * Derives display initials from a person's name for the initials tile.
+ *
+ * Quoted nicknames are ignored: 'Teboho "Tsietsi" Mashinini' -> 'TM'.
+ *
+ * @param string $name
+ *   The person's display name.
+ *
+ * @return string
+ *   One or two uppercase initials, or '' when nothing usable remains.
+ */
+function _saho_record_initials(string $name): string {
+  $clean = trim((string) preg_replace(['/["\x{201C}\x{201D}\x{2018}\x{2019}\'].*?["\x{201C}\x{201D}\x{2018}\x{2019}\']/u', '/\s+/'], ['', ' '], $name));
+  if ($clean === '') {
+    return '';
+  }
+  $words = explode(' ', $clean);
+  $first = mb_substr($words[0], 0, 1);
+  $last = count($words) > 1 ? mb_substr(end($words), 0, 1) : '';
+  return mb_strtoupper($first . $last);
 }
 
 /**
@@ -2893,6 +2918,11 @@ function _saho_record_image_props(NodeInterface $node, string $image_field, stri
   $item = $node->get($image_field)->first();
   $file = $item ? $item->get('entity')->getValue() : NULL;
   if (!$file instanceof File) {
+    return [];
+  }
+  // Corrupt/missing files (the pre-2019 backlog) must degrade to the
+  // record's own no-image treatment, never a broken-image glyph (R3 X-1).
+  if (!file_exists($file->getFileUri())) {
     return [];
   }
   $caption = '';

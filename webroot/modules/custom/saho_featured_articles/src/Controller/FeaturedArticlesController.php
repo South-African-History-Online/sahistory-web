@@ -3,6 +3,7 @@
 namespace Drupal\saho_featured_articles\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
+use Drupal\Core\Image\ImageFactory;
 use Drupal\file\FileInterface;
 use Drupal\node\NodeInterface;
 use Drupal\saho_featured_articles\Service\FeaturedContentService;
@@ -43,6 +44,15 @@ class FeaturedArticlesController extends ControllerBase {
    */
   protected const PAGE_SIZE = 24;
 
+  /**
+   * Resolution floor for the hero slot (R3 X-1.3).
+   *
+   * 60% of the ~1200px hero rendering width: a source narrower than this
+   * would be upscaled into a blur, so the hero falls back to the
+   * typographic ink panel instead.
+   */
+  protected const HERO_MIN_WIDTH = 720;
+
   public function __construct(
     protected FeaturedContentService $featuredContentService,
     protected StatisticsService $statisticsService,
@@ -50,6 +60,7 @@ class FeaturedArticlesController extends ControllerBase {
     protected DisplayRefService $displayRef,
     protected ImageExtractorService $imageExtractor,
     protected RequestStack $requestStack,
+    protected ImageFactory $imageFactory,
   ) {
   }
 
@@ -64,6 +75,7 @@ class FeaturedArticlesController extends ControllerBase {
       $container->get('saho_refs.display_ref'),
       $container->get('saho_utils.image_extractor'),
       $container->get('request_stack'),
+      $container->get('image.factory'),
     );
   }
 
@@ -127,7 +139,7 @@ class FeaturedArticlesController extends ControllerBase {
       return NULL;
     }
     $ref = $this->displayRef->getRef($node);
-    $image = $this->nodeImage($node, 'saho_hero');
+    $image = $this->nodeImage($node, 'saho_hero', self::HERO_MIN_WIDTH);
     if ($image === NULL) {
       // The hero contract requires an image; without one the template
       // falls back to the ink home-feature panel.
@@ -323,7 +335,7 @@ class FeaturedArticlesController extends ControllerBase {
    * Files missing on disk are skipped so the register never publishes a
    * knowingly broken figure (same guard as the picture archive).
    */
-  protected function nodeImage(NodeInterface $node, string $style): ?string {
+  protected function nodeImage(NodeInterface $node, string $style, int $min_width = 0): ?string {
     foreach (self::IMAGE_FIELDS as $field_name) {
       if (!$node->hasField($field_name) || $node->get($field_name)->isEmpty()) {
         continue;
@@ -331,6 +343,15 @@ class FeaturedArticlesController extends ControllerBase {
       $file = $node->get($field_name)->first()->entity ?? NULL;
       if (!$file instanceof FileInterface || !file_exists($file->getFileUri())) {
         continue;
+      }
+      // Resolution floor: a source narrower than the slot demands would be
+      // upscaled into a blur - skip it so the caller can fall back to the
+      // typographic treatment (R3 X-1.3).
+      if ($min_width > 0) {
+        $image = $this->imageFactory->get($file->getFileUri());
+        if (!$image->isValid() || $image->getWidth() < $min_width) {
+          continue;
+        }
       }
       $url = $this->imageExtractor->extractImageWithDerivatives($node, $style, $field_name);
       if ($url) {

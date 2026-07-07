@@ -30,7 +30,10 @@
     {# LEFT: Main content column #}
     <div class="saho-main-content">
 
-      {% if node.field_feature_banner.entity %}
+      {# .entity alone is truthy on an EMPTY field (Twig ArrayAccess trap) -
+         gate on the actual file URI so empty/deleted files fall through to
+         the record image or the initials tile (R3 X-1). #}
+      {% if node.field_feature_banner.entity.uri.value %}
         <div class="saho-feature-banner">
           <img
             src="{{ file_url(node.field_feature_banner.entity.uri.value) }}"
@@ -44,10 +47,16 @@
       {% elseif record_image.src is defined and record_image.src %}
         {# Open Record portrait: duotone image-credit figure (S3). #}
         {{ include('saho:saho-image-credit', record_image, with_context = false) }}
-      {% elseif biography_portrait_fallback_url %}
-        <div class="saho-feature-banner">
-          <img src="{{ biography_portrait_fallback_url }}" alt="{{ node.title.value }} portrait" class="saho-feature-banner-image" loading="eager" decoding="async" />
-        </div>
+      {% elseif record_initials %}
+        {# No portrait in the record: the dignified initials tile replaces
+           the old generic default-portrait.svg (R3 X-1 - never a generic
+           person icon). #}
+        {{ include('saho:saho-degraded-image', {
+          variant: 'initials',
+          initials: record_initials,
+          label: 'No portrait in the record'|t,
+          ratio: '3 / 4',
+        }, with_context = false) }}
       {% endif %}
 
       <div class="saho-article-meta">

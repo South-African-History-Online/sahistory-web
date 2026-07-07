@@ -1,0 +1,19 @@
+{#
+/**
+ * @file SAHO degraded-image SDC (R3 X-1). props: variant, initials, label, ratio.
+ *
+ * The absence of an image is stated in the record's own voice, on sunk
+ * paper behind a hairline frame - never a UA broken-image glyph.
+ */
+#}
+{% set caption = label|default('No image in the record'|t) %}
+<div{{ attributes.addClass('saho-degraded', variant == 'initials' ? 'saho-degraded--initials' : 'saho-degraded--placeholder') }}
+  style="aspect-ratio: {{ ratio|default('3 / 4') }};"
+  role="img" aria-label="{{ caption }}">
+  {% if variant == 'initials' and initials %}
+    <span class="saho-degraded__initials" aria-hidden="true">{{ initials }}</span>
+  {% else %}
+    <span class="saho-degraded__marker" aria-hidden="true"></span>
+  {% endif %}
+  <span class="saho-degraded__caption" aria-hidden="true">{{ caption }}</span>
+</div>
