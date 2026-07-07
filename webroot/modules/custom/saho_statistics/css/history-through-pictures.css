@@ -317,9 +317,15 @@
   color: var(--saho-ink-muted, rgb(26 26 24 / 60%));
 }
 
-/* Featured pictures anchor the mosaic at 2x2 - pure CSS, no JS masonry. */
+/* Featured pictures anchor the mosaic - every third featured tile spans
+   2x2, dense flow backfills the holes. Pure CSS, no JS masonry; browsers
+   without :nth-child(of) simply keep the flat grid. */
 @media (min-width: 40rem) {
-  .history-picture-item--featured {
+  .history-pictures-grid--gallery {
+    grid-auto-flow: dense;
+  }
+
+  .history-picture-item--featured:nth-child(3n+1 of .history-picture-item--featured) {
     grid-row: span 2;
     grid-column: span 2;
   }
