@@ -745,6 +745,20 @@ function saho_preprocess_page(array &$variables) {
   $logo = \Drupal::theme()->getActiveTheme()->getLogo();
   $variables['site_logo'] = $logo;
 
+  // Search overlay apparatus (R3 #478): one count vocabulary - the same
+  // cached live counts as the home status bar, exact numbers - plus the
+  // three newest records for the "recently added" band.
+  if (\Drupal::hasService('saho_frontpage.archive_counts')) {
+    $overlay_raw = \Drupal::service('saho_frontpage.archive_counts')->getRawCounts();
+    $variables['overlay_stats'] = [
+      ['value' => number_format($overlay_raw['archive'] ?? 0), 'label' => t('Archive records')],
+      ['value' => number_format($overlay_raw['event'] ?? 0), 'label' => t('Historical events')],
+      ['value' => number_format($overlay_raw['biography'] ?? 0), 'label' => t('Biographies')],
+      ['value' => number_format($overlay_raw['article'] ?? 0), 'label' => t('Articles')],
+    ];
+  }
+  $variables['overlay_recent'] = _saho_overlay_recent();
+
   // Conditionally attach page-specific CSS libraries for performance optimization.
   $route_match = \Drupal::routeMatch();
   $route_name = $route_match->getRouteName();
@@ -1997,6 +2011,42 @@ function saho_preprocess_node__biography(array &$variables) {
   $variables['record_initials'] = _saho_record_initials($name !== '' ? $name : (string) $node->label());
   $variables['record_further'] = _saho_record_further_reading($node);
   _saho_record_attach_libraries($variables);
+}
+
+/**
+ * Returns the three newest published records for the overlay band.
+ *
+ * Cached for an hour under the node_list tag - the overlay ships on
+ * every page, the query must not (R3 #478).
+ *
+ * @return array<int, array{title: string, href: string, added: string, type: string}>
+ *   Row props for the recently-added band.
+ */
+function _saho_overlay_recent(): array {
+  $cache = \Drupal::cache();
+  $cached = $cache->get('saho:overlay_recent');
+  if ($cached !== FALSE) {
+    return $cached->data;
+  }
+  $rows = [];
+  $storage = \Drupal::entityTypeManager()->getStorage('node');
+  $nids = $storage->getQuery()
+    ->condition('type', ['article', 'biography', 'archive', 'event', 'place'], 'IN')
+    ->condition('status', 1)
+    ->accessCheck(TRUE)
+    ->sort('created', 'DESC')
+    ->range(0, 3)
+    ->execute();
+  foreach ($storage->loadMultiple($nids) as $node) {
+    $rows[] = [
+      'title' => (string) $node->label(),
+      'href' => $node->toUrl()->toString(),
+      'added' => strtoupper(\Drupal::service('date.formatter')->format($node->getCreatedTime(), 'custom', 'j M Y')),
+      'type' => $node->bundle(),
+    ];
+  }
+  $cache->set('saho:overlay_recent', $rows, \Drupal::time()->getRequestTime() + 3600, ['node_list']);
+  return $rows;
 }
 
 /**

@@ -32,12 +32,6 @@
   {% endif %}
 
   <div class="tdih-block-body">
-    {% if date_picker_form %}
-      <div class="tdih-birthday-picker" role="search" aria-label="{{ 'Search historical events by date'|t }}">
-        {{ date_picker_form }}
-      </div>
-    {% endif %}
-
     <div class="tdih-today-history-wrapper" {% if not show_today_history %}style="display: none;"{% endif %}>
       {% if show_today_history and all_events|length > 0 %}
         <div class="tdih-today-events">
@@ -63,6 +57,17 @@
 
       <a href="/this-day-in-history" class="tdih-timeline-link">{{ 'Open the full timeline'|t }} <span aria-hidden="true">&rarr;</span></a>
     </div>
+
+    {# The birthday picker expands in place at the panel foot (R3 #478):
+       a quiet mono invitation, not a form block. #}
+    {% if date_picker_form %}
+      <details class="tdih-birthday-disclosure">
+        <summary class="tdih-birthday-summary">{{ 'What happened on your birthday?'|t }} <span aria-hidden="true">&rarr;</span></summary>
+        <div class="tdih-birthday-picker" role="search" aria-label="{{ 'Search historical events by date'|t }}">
+          {{ date_picker_form }}
+        </div>
+      </details>
+    {% endif %}
 
     {% if show_details_button and not use_todays_date %}
       <div class="tdih-footer">
