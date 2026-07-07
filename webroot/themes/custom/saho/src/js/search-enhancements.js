@@ -65,7 +65,12 @@
    *   The #mobileSearchModal element.
    */
   function initSearchModal(modal) {
-    // Render chips whenever the modal opens.
+    // Swap the Twig fallback chips for live data at attach time - waiting
+    // for the modal to open makes the fallback flash before the jump.
+    renderPopularChips();
+    renderRecentChips();
+
+    // Re-render on open so recent chips stay fresh within a page's life.
     modal.addEventListener('shown.bs.modal', () => {
       renderPopularChips();
       renderRecentChips();
