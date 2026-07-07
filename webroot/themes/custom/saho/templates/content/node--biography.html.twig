@@ -146,7 +146,8 @@
         'field_article_author',
         'field_article_editors',
         'field_editors',
-        'sharing_buttons'
+        'sharing_buttons',
+        'comment_node_biography'
       ) }}
 
       {# Provenance: "How we know this" from field_ref_str (S3). #}
@@ -158,6 +159,14 @@
       {% if record_citation %}
         {{ include('saho:saho-citation', record_citation, with_context = false) }}
       {% endif %}
+
+      {# The record foot (R3 #480/#477): one quiet supporter line, then
+         reader contributions - after the record, never inside it. #}
+      <p class="saho-record-support">
+        {{ 'SAHO is free because readers fund it.'|t }}
+        <a href="/donate">{{ 'Donate'|t }} &rarr;</a>
+      </p>
+      {{ content.comment_node_biography ?? '' }}
 
     </div>
 

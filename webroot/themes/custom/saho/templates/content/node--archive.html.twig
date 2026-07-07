@@ -134,7 +134,8 @@
         'field_language',
         'field_isbn',
         'field_file_upload',
-        'sharing_buttons'
+        'sharing_buttons',
+        'comment'
       ) }}
 
       {# Provenance: "How we know this" from field_ref_str (S3). #}
@@ -146,6 +147,14 @@
       {% if record_citation %}
         {{ include('saho:saho-citation', record_citation, with_context = false) }}
       {% endif %}
+
+      {# The record foot (R3 #480/#477): one quiet supporter line, then
+         reader contributions - after the record, never inside it. #}
+      <p class="saho-record-support">
+        {{ 'SAHO is free because readers fund it.'|t }}
+        <a href="/donate">{{ 'Donate'|t }} &rarr;</a>
+      </p>
+      {{ content.comment ?? '' }}
 
       {# Sequential flow within the collection: walk item to item without
          returning to the index. #}
