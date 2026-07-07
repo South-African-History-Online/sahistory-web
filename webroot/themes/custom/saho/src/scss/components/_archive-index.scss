@@ -443,3 +443,88 @@
   text-transform: uppercase;
   color: var(--saho-ink);
 }
+
+// ---------------------------------------------------------------------------
+// R3 #477: Svelte timeline app token bridge. The app ships its own
+// stylesheet; this scoped pass hands it the Open Record ground so the
+// /timeline page reads as the same site (full re-skin is out of scope).
+// ---------------------------------------------------------------------------
+.path-timeline .timeline-premium {
+  --tl-bg: var(--saho-paper, #f0ece1);
+  --tl-ink: var(--saho-ink, #1a1a18);
+  --tl-accent: var(--saho-oxblood, #990000);
+
+  background: var(--saho-paper, #f0ece1);
+  color: var(--saho-ink, #1a1a18);
+
+  button,
+  select,
+  input {
+    border-radius: 0;
+    font-family: var(--font-mono);
+  }
+}
+
+// R3 #477: the contribute disclosure - reader annotations, not record.
+.saho-contribute {
+  margin-top: 2rem;
+  border-top: var(--bw-hair) solid var(--border-default);
+  border-bottom: var(--bw-hair) solid var(--border-default);
+}
+
+.saho-contribute__summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 0.25rem;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--saho-ink);
+  list-style: none;
+}
+
+.saho-contribute__summary::before {
+  content: "\25B8";
+  margin-right: 0.5rem;
+  color: var(--saho-oxblood, #990000);
+}
+
+.saho-contribute[open] .saho-contribute__summary::before {
+  content: "\25BE";
+}
+
+.saho-contribute__summary::-webkit-details-marker {
+  display: none;
+}
+
+.saho-contribute__count {
+  color: var(--saho-ink-muted);
+}
+
+.saho-contribute__body {
+  padding: 0.5rem 0.25rem 1.5rem;
+}
+
+.saho-contribute__standfirst {
+  font-size: var(--font-size-sm);
+  color: var(--saho-ink-muted);
+  max-width: 60ch;
+}
+
+// System inputs inside the thread/form: square, hairline, sans labels.
+.saho-contribute input[type="text"],
+.saho-contribute input[type="email"],
+.saho-contribute textarea {
+  border: var(--bw-hair) solid var(--border-default);
+  border-radius: 0;
+  background: var(--saho-paper-raised);
+}
+
+.saho-contribute label {
+  font-family: var(--font-sans);
+  font-size: var(--font-size-sm);
+}

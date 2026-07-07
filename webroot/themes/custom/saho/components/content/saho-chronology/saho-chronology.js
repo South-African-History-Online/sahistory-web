@@ -13,6 +13,21 @@
         if (!index) {
           return;
         }
+
+        // At mobile the rail stacks BELOW the article, so the index
+        // relocates above the chronology as the sticky decade strip
+        // (R3 #477 / X-2) - same node, back again on desktop.
+        const MOBILE = window.matchMedia('(max-width: 47.9375rem)');
+        const home = { parent: index.parentElement, next: index.nextElementSibling };
+        const place = () => {
+          if (MOBILE.matches) {
+            root.parentElement.insertBefore(index, root);
+          } else {
+            home.parent.insertBefore(index, home.next);
+          }
+        };
+        place();
+        MOBILE.addEventListener('change', place);
         const links = new Map(
           [...index.querySelectorAll('.saho-chron-index__link')].map((a) => [
             a.getAttribute('data-decade'),

@@ -138,3 +138,57 @@
     left: calc(48px + var(--space-3) + 5px);
   }
 }
+
+/* R3 #477: at mobile the decade index becomes the page's sticky strip
+   (the record toolbar yields - X-2) - a flat horizontal mono rail. */
+@media (max-width: 47.9375rem) {
+  .saho-chron-index {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    margin: 0 0 1rem;
+    padding: 0.4rem 0;
+    background: var(--saho-paper-raised, #f5f2e9);
+    border-bottom: var(--bw-hair, 1px) solid var(--border-default, rgb(26 26 24 / 20%));
+  }
+
+  .saho-chron-index__title {
+    display: none;
+  }
+
+  .saho-chron-index__list {
+    display: flex;
+    gap: 1rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+    margin: 0;
+    padding: 0 0.25rem;
+    list-style: none;
+  }
+
+  .saho-chron-index__list::-webkit-scrollbar {
+    display: none;
+  }
+
+  .saho-chron-index__item {
+    flex: 0 0 auto;
+  }
+}
+
+/* Bridge to the Svelte timeline app (R3 #477). */
+.saho-chron-bridge {
+  margin: 1.5rem 0 0;
+}
+
+.saho-chron-bridge a {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--saho-ink);
+  text-decoration: none;
+}
+
+.saho-chron-bridge a:hover {
+  color: var(--saho-oxblood, #990000);
+}
