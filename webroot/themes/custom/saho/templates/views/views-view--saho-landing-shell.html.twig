@@ -34,6 +34,24 @@
     <p class="saho-landing-head__count">{{ landing_count }} records</p>
   </header>
 
+  {# R3 #481 J4-2: /biographies exposes its thematic registers as entry
+     cards - deep-link territory becomes front doors. #}
+  {% if view.id() == 'biographies' %}
+    {% set registers = [
+      { label: 'Women in the record'|t, href: '/women-biographies' },
+      { label: 'Deaths in detention'|t, href: '/deaths-in-detention-list' },
+      { label: 'Lives of Courage'|t, href: '/taxonomy/features/lives-courage' },
+    ] %}
+    <nav class="saho-africa-regions saho-bio-registers" aria-label="{{ 'Registers'|t }}">
+      {% for register in registers %}
+        <a class="saho-africa-regions__card saho-bio-registers__card" href="{{ register.href }}">
+          <span class="saho-africa-regions__marker" aria-hidden="true"></span>
+          <span class="saho-africa-regions__label">{{ register.label }}</span>
+        </a>
+      {% endfor %}
+    </nav>
+  {% endif %}
+
   {# R3 #481: /africa leads with its regional entry cards (slate accent). #}
   {% if view.id() == 'africa' %}
     {% set regions = [
