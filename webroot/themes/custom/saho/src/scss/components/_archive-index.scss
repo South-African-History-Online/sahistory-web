@@ -347,3 +347,99 @@
     display: none;
   }
 }
+
+// ---------------------------------------------------------------------------
+// Mobile refine drawer (R3 #475). The trigger lives in the search head row,
+// which becomes the page's single sticky apparatus row at mobile (X-2:
+// paper-raised, hairline rule, <=48px). The rail node itself is relocated
+// into the drawer by archive-refine-drawer.js.
+// ---------------------------------------------------------------------------
+.saho-refine-trigger {
+  display: none;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.75rem;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--saho-ink);
+  background: none;
+  border: var(--bw-hair) solid var(--border-default);
+  border-radius: 0;
+}
+
+.saho-refine-trigger__count {
+  color: var(--saho-oxblood, #990000);
+}
+
+@media (max-width: 39.9375rem) {
+  .saho-refine-trigger {
+    display: inline-flex;
+  }
+
+  .saho-archive-index .saho-search-head {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    min-height: 48px;
+    padding-block: 0.5rem;
+    background: var(--saho-paper-raised);
+    border-bottom: var(--bw-hair) solid var(--border-default);
+  }
+}
+
+.saho-refine-drawer {
+  --bs-offcanvas-width: min(22rem, 92vw);
+
+  background: var(--saho-paper, #f0ece1);
+  border-left: var(--bw-hair) solid var(--saho-ink);
+  border-radius: 0;
+
+  // The drawer header carries the title; the rail's own stays on desktop.
+  .saho-search-rail__title {
+    display: none;
+  }
+
+  .offcanvas-header {
+    border-bottom: var(--bw-hair) solid var(--border-default);
+  }
+}
+
+.saho-refine-drawer__title {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-sm);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.saho-refine-drawer__footer {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  border-top: var(--bw-hair) solid var(--border-default);
+  background: var(--saho-paper-raised);
+}
+
+.saho-refine-drawer__show {
+  flex: 1;
+  padding: 0.65rem 1rem;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-sm);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--saho-paper, #f0ece1);
+  background: var(--saho-oxblood, #990000);
+  border: 0;
+  border-radius: 0;
+}
+
+.saho-refine-drawer__clear {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--saho-ink);
+}

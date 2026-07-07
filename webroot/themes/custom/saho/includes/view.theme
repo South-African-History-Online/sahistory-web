@@ -319,11 +319,57 @@ function saho_preprocess_views_view__saho_archive_search__page_1(array &$variabl
     $record_cards[] = $card;
   }
 
+  // Sparse ledger columns read as breakage at scale (R3 #475): when fewer
+  // than 10% of the rendered page carries a value, the column is dropped -
+  // present origin years fold into the ref cell instead.
+  $row_count = count($record_rows);
+  if ($row_count > 0) {
+    $dash = "\u{2013}";
+    $with_dates = count(array_filter($record_rows, fn(array $r): bool => $r['dates'] !== $dash));
+    $with_src = count(array_filter($record_rows, fn(array $r): bool => $r['src'] !== $dash));
+    $drop = [];
+    if ($with_dates < ceil($row_count * 0.1)) {
+      $drop[] = 'dates';
+      foreach ($record_rows as &$sparse_row) {
+        if ($sparse_row['dates'] !== $dash) {
+          $sparse_row['ref'] .= ' · ' . $sparse_row['dates'];
+        }
+      }
+      unset($sparse_row);
+    }
+    if ($with_src < ceil($row_count * 0.1)) {
+      $drop[] = 'src';
+    }
+    if ($drop !== []) {
+      $variables['record_columns'] = array_values(array_filter(
+        $variables['record_columns'],
+        fn(array $column): bool => !in_array($column['key'], $drop, TRUE),
+      ));
+    }
+  }
+
   $variables['record_rows'] = $record_rows;
   $variables['record_cards'] = $record_cards;
   $variables['result_total'] = number_format((int) ($variables['view']->total_rows ?? count($variables['view']->result)));
   $variables['results_layout'] = $request->query->get('layout') === 'grid' ? 'grid' : 'table';
   $variables['search_query'] = (string) $request->query->get('combine', '');
+
+  // The mobile refine drawer (R3 #475) needs the applied-facet count for
+  // its trigger chip and a clear-all URL that keeps the query itself.
+  $facet_params = ['type', 'collection', 'country', 'language', 'saldru'];
+  $refine_count = 0;
+  foreach ($facet_params as $facet_param) {
+    $facet_value = $request->query->all()[$facet_param] ?? NULL;
+    if (is_array($facet_value)) {
+      $refine_count += count(array_filter($facet_value, fn($v): bool => (string) $v !== '' && $v !== 'All'));
+    }
+    elseif ($facet_value !== NULL && (string) $facet_value !== '' && $facet_value !== 'All') {
+      $refine_count++;
+    }
+  }
+  $variables['refine_count'] = $refine_count;
+  $clear_query = array_diff_key($request->query->all(), array_flip(array_merge($facet_params, ['page'])));
+  $variables['refine_clear_url'] = Url::fromUserInput('/archives', $clear_query !== [] ? ['query' => $clear_query] : [])->toString();
   $has_query = trim($variables['search_query']) !== '';
 
   // One quiet sort control combining field + direction; archive-sort.js
@@ -368,7 +414,8 @@ function saho_preprocess_views_view__saho_archive_search__page_1(array &$variabl
   $variables['#attached']['library'][] = 'saho/saho-archive-card';
   $variables['#attached']['library'][] = 'saho/saho-search-field';
   $variables['#attached']['library'][] = 'saho/archive-index';
-  foreach (['layout', 'sort_by', 'sort_order', 'combine', 'collection'] as $arg) {
+  $variables['#attached']['library'][] = 'saho/archive-refine';
+  foreach (['layout', 'sort_by', 'sort_order', 'combine', 'collection', 'type', 'country', 'language', 'saldru'] as $arg) {
     $variables['#cache']['contexts'][] = 'url.query_args:' . $arg;
   }
 }

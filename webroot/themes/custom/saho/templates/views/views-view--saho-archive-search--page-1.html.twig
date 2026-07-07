@@ -49,7 +49,7 @@
   {# Facet rail + results. #}
   <div class="saho-search-layout">
 
-    <aside class="saho-search-rail" aria-label="Refine the archive">
+    <aside class="saho-search-rail" aria-label="Refine the archive" data-saho-refine-source>
       <h2 class="saho-search-rail__title">Refine</h2>
       {{ exposed }}
     </aside>
@@ -65,10 +65,18 @@
         </p>
       {% endif %}
 
-      {# Head row: mono record count + quiet sort control + layout toggle. #}
+      {# Head row: mono record count + quiet sort control + layout toggle.
+         At mobile this row is the single sticky apparatus row (X-2) and
+         carries the refine trigger - the rail itself relocates into the
+         drawer below (R3 #475). #}
       <div class="saho-search-head">
         <p class="saho-search-count">{{ result_total }} records</p>
         <div class="saho-search-toolbar">
+          <button type="button" class="saho-refine-trigger"
+                  data-bs-toggle="offcanvas" data-bs-target="#sahoRefineDrawer"
+                  aria-controls="sahoRefineDrawer">
+            {{ 'Refine'|t }}{% if refine_count %} <span class="saho-refine-trigger__count">&middot; {{ refine_count }}</span>{% endif %}
+          </button>
           <label class="saho-archive-sort">
             <span class="saho-archive-sort__label">Sort:</span>
             <select class="saho-archive-sort__select" data-saho-archive-sort>
@@ -125,5 +133,24 @@
       {{ attachment_after }}
     </div>
   {% endif %}
+
+  {# Mobile refine drawer (R3 #475). archive-refine-drawer.js relocates the
+     rail node into the body at the 40rem breakpoint - the drawer IS the
+     rail form, never a duplicate. Without JS the rail simply stays in the
+     page flow below the results (the previous behavior). #}
+  <div class="offcanvas offcanvas-end saho-refine-drawer" tabindex="-1"
+       id="sahoRefineDrawer" aria-labelledby="sahoRefineDrawerTitle">
+    <div class="offcanvas-header">
+      <h2 class="saho-refine-drawer__title" id="sahoRefineDrawerTitle">{{ 'Refine'|t }}</h2>
+      <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="{{ 'Close'|t }}"></button>
+    </div>
+    <div class="offcanvas-body saho-refine-drawer__body" data-saho-refine-body></div>
+    <div class="saho-refine-drawer__footer">
+      <button type="button" class="saho-refine-drawer__show" data-saho-refine-show>
+        {{ 'Show @count records'|t({'@count': result_total}) }}
+      </button>
+      <a class="saho-refine-drawer__clear" href="{{ refine_clear_url }}">{{ 'Clear all'|t }}</a>
+    </div>
+  </div>
 
 </div>
