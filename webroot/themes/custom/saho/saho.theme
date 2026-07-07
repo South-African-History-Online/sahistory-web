@@ -2576,6 +2576,18 @@ function _saho_record_header_props(array &$variables, NodeInterface $node, strin
     'facts' => $facts,
   ];
   $variables['#attached']['library'][] = 'saho/saho-record-header';
+
+  // The sticky record toolbar (R3 #476): the page's one cite trigger,
+  // the permanent /ref/ address, share, and the connections jump.
+  $reference = (string) $variables['record']['reference'];
+  $variables['record_toolbar'] = [
+    'reference' => $reference,
+    'permanent_url' => $reference !== ''
+      ? Url::fromUserInput('/ref/' . $reference, ['absolute' => TRUE])->toString()
+      : '',
+    'styles_count' => 5,
+  ];
+  $variables['#attached']['library'][] = 'saho/saho-record-toolbar';
 }
 
 /**

@@ -30,10 +30,7 @@
 
         let ticking = false;
         const toggle = () => {
-          button.classList.toggle(
-            'is-visible',
-            window.scrollY > window.innerHeight * 1.5
-          );
+          button.classList.toggle('is-visible', window.scrollY > window.innerHeight * 1.5);
           ticking = false;
         };
         window.addEventListener(

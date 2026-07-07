@@ -7,6 +7,7 @@ use Drupal\Core\Datetime\DrupalDateTime;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\File\FileUrlGeneratorInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
+use Drupal\Core\Url;
 use Drupal\node\NodeInterface;
 
 /**
@@ -98,8 +99,15 @@ class CitationService {
     // Get the node title.
     $title = $node->getTitle();
 
-    // Get the node URL.
+    // Get the node URL - the permanent /ref/ address when available
+    // (R3 #476): aliases change, references do not.
     $url = $node->toUrl()->setAbsolute()->toString();
+    if (\Drupal::hasService('saho_refs.display_ref')) {
+      $ref = \Drupal::service('saho_refs.display_ref')->getRef($node);
+      if ($ref) {
+        $url = Url::fromUserInput('/ref/' . $ref, ['absolute' => TRUE])->toString();
+      }
+    }
 
     // Get the node creation date.
     $created = $node->getCreatedTime();

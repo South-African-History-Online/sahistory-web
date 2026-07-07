@@ -8,6 +8,7 @@
 use Drupal\file\Entity\File;
 use Drupal\node\NodeInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Url;
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\search_api\Query\QueryInterface as SearchApiQueryInterface;
 use Drupal\search_api\ResultSet\ResultSetInterface as SearchApiResultSetInterface;
@@ -482,7 +483,16 @@ function saho_tools_preprocess_node(&$variables) {
   if ($variables['view_mode'] == 'full') {
     // Add citation data as attributes for potential use in templates.
     $variables['attributes']['data-citation-title'] = $node->getTitle();
-    $variables['attributes']['data-citation-url'] = $node->toUrl()->setAbsolute()->toString();
+    $citation_url = $node->toUrl()->setAbsolute()->toString();
+    // The permanent /ref/ address is the citable URL (R3 #476) - aliases
+    // change, references do not.
+    if (\Drupal::hasService('saho_refs.display_ref')) {
+      $citation_ref = \Drupal::service('saho_refs.display_ref')->getRef($node);
+      if ($citation_ref) {
+        $citation_url = Url::fromUserInput('/ref/' . $citation_ref, ['absolute' => TRUE])->toString();
+      }
+    }
+    $variables['attributes']['data-citation-url'] = $citation_url;
     $variables['attributes']['data-citation-date'] = date('Y-m-d', $node->getChangedTime());
 
     // Add author information if available.
