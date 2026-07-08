@@ -3,6 +3,7 @@
 namespace Drupal\saho_tools\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
+use Drupal\saho_tools\Service\Builder\WebSiteSchemaBuilder;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -23,8 +24,10 @@ class LlmTxtController extends ControllerBase {
     // Get content counts for each type.
     $counts = $this->getContentCounts();
 
-    // Get base URL.
-    $base_url = \Drupal::request()->getSchemeAndHttpHost();
+    // Always advertise the canonical production host: this file is read by
+    // crawlers and cached copies, so it must never carry a local or staging
+    // hostname.
+    $base_url = rtrim(WebSiteSchemaBuilder::CANONICAL_URL, '/');
 
     // Build llm.txt content using Twig template.
     $build = [
