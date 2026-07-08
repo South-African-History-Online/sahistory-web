@@ -5,6 +5,12 @@
  * oxblood). No pink panel, no pills, no rounding.
  */
 .saho-translation-switcher {
+  /* The global link rule (a:not(...)) outranks the pill classes and would
+     paint every anchor oxblood - including the active pill's text on its
+     oxblood background. Re-scope the link vars so pills read ink at rest. */
+  --link-rest: var(--saho-ink, #1a1a18);
+  --link-hover: var(--saho-ink, #1a1a18);
+
   display: flex;
   align-items: center;
   gap: 1rem 1.25rem;
@@ -67,6 +73,9 @@
 }
 
 .saho-translation-switcher__pill.is-active {
+  --link-rest: var(--saho-paper, #f0ece1);
+  --link-hover: var(--saho-paper, #f0ece1);
+
   color: var(--saho-paper, #f0ece1);
   background: var(--saho-oxblood, #990000);
   border-color: var(--saho-oxblood, #990000);

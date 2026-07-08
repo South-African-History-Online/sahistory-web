@@ -2407,6 +2407,25 @@ function saho_preprocess_node__archive(array &$variables): void {
     'Holding ref' => $refs->getRef($node),
   ];
 
+  // Legacy source-link pair (field_link_url + field_link_title): a designed
+  // row in Record details instead of an unstyled dump in the main column.
+  // Values are plain text and often scheme-less ("www.news24.com/...").
+  if ($node->hasField('field_link_url') && !$node->get('field_link_url')->isEmpty()) {
+    $link_url = trim((string) $node->get('field_link_url')->value);
+    if ($link_url !== '') {
+      if (!preg_match('#^https?://#i', $link_url)) {
+        $link_url = 'https://' . $link_url;
+      }
+      $link_title = $node->hasField('field_link_title') && !$node->get('field_link_title')->isEmpty()
+        ? trim(strip_tags((string) $node->get('field_link_title')->value))
+        : '';
+      $rows['Source link'] = [
+        'value' => $link_title !== '' ? $link_title : preg_replace('#^https?://(www\.)?#i', '', $link_url),
+        'href' => $link_url,
+      ];
+    }
+  }
+
   // Collection membership: PART OF . <COLLECTION> (N ITEMS) back-link to
   // the pre-filtered index - the item side of the collection flow.
   if ($node->hasField('field_feature_parent') && !$node->get('field_feature_parent')->isEmpty()) {

@@ -134,6 +134,10 @@
         'field_language',
         'field_isbn',
         'field_file_upload',
+        'field_link_url',
+        'field_link_title',
+        'field_link_attributes',
+        'field_navigation_links_placehold',
         'sharing_buttons',
         'comment'
       ) }}
@@ -207,27 +211,10 @@
         </section>
       {% endif %}
 
-      {# Taxonomy and Classification #}
-      {% if content.field_media_library_type is defined and content.field_media_library_type|render|trim or content.field_archive_page_feature is defined and content.field_archive_page_feature|render|trim %}
-        <div class="saho-taxonomy-container p-3 mb-4 border rounded bg-light">
-          <h3 class="border-bottom pb-2 mb-3">Classification</h3>
-          
-          {% if content.field_media_library_type is defined and content.field_media_library_type|render|trim %}
-            <div class="saho-taxonomy-group mb-3">
-              <h4 class="h5 mb-2">Archive Category</h4>
-              {{ content.field_media_library_type }}
-            </div>
-          {% endif %}
-          
-          {% if content.field_archive_page_feature is defined and content.field_archive_page_feature|render|trim %}
-            <div class="saho-taxonomy-group mb-3">
-              <h4 class="h5 mb-2">Archive Page Feature</h4>
-              {{ content.field_archive_page_feature }}
-            </div>
-          {% endif %}
-        </div>
-      {% endif %}
-      
+      {# No Classification box: field_media_library_type already renders as
+         the FORMAT row in Record details (record_meta), and
+         field_archive_page_feature is an internal curation flag. #}
+
       {# Collection membership renders as the PART OF row in Record
          details (record_meta) - no legacy Related Content box. #}
 
