@@ -7,17 +7,17 @@ namespace Drupal\saho_frontpage;
 use Drupal\Component\Utility\Unicode;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\node\NodeInterface;
-use Drupal\views\Views;
 
 /**
  * Resolves the site's current editorial feature.
  *
  * One engine for every surface that leads with "the current feature" (the
- * front-page editorial block, the /featured register hero): the first row
- * of the curated "Front page content" view - driven by the
- * field_home_page_feature* flags, bundles sorted DESC then changed DESC -
- * falling back to the newest featured biography so the lead never renders
- * blank. Callers own their cache metadata (tags node_list + node:{id}).
+ * front-page editorial block, the /featured register hero): the newest
+ * published node flagged with the "Home Page Feature" field
+ * (field_home_page_feature) - the editors' explicit front-page flag, not the
+ * per-section feature flags - falling back to the newest featured biography
+ * so the lead never renders blank. Callers own their cache metadata (tags
+ * node_list + node:{id}).
  */
 class CurrentFeatureService {
 
@@ -30,17 +30,20 @@ class CurrentFeatureService {
    * Loads the curated feature node, or the newest featured biography.
    */
   public function node(): ?NodeInterface {
-    $view = Views::getView('front_page_content');
-    if ($view !== NULL) {
-      $view->setDisplay('default');
-      $view->setItemsPerPage(1);
-      $view->execute();
-      $entity = $view->result[0]->_entity ?? NULL;
-      if ($entity instanceof NodeInterface) {
-        return $entity;
+    $storage = $this->entityTypeManager->getStorage('node');
+    $nids = $storage->getQuery()
+      ->condition('field_home_page_feature', 1)
+      ->condition('status', 1)
+      ->accessCheck(TRUE)
+      ->sort('changed', 'DESC')
+      ->range(0, 1)
+      ->execute();
+    if ($nids !== []) {
+      $node = $storage->load(reset($nids));
+      if ($node instanceof NodeInterface) {
+        return $node;
       }
     }
-    $storage = $this->entityTypeManager->getStorage('node');
     $nids = $storage->getQuery()
       ->condition('type', 'biography')
       ->condition('status', 1)
