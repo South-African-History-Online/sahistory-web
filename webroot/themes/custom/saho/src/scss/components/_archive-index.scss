@@ -581,11 +581,47 @@
   font-size: var(--font-size-sm);
 }
 
-// J4-2: biography registers reuse the regional-card anatomy, green accent.
-.saho-bio-registers__card {
-  border-top-color: var(--saho-green, #2e5339);
+// Register tiles (generalised J4-2): the regional-card anatomy on every
+// shell landing, accented by the landing type. Tiles drive the landing's
+// exposed filters in place; the active register reads as a pressed tile.
+.saho-landing-registers {
+  --register-accent: var(--saho-slate, #5b6770);
+
+  .saho-africa-regions__card {
+    border-top-color: var(--register-accent);
+  }
+
+  .saho-africa-regions__marker {
+    background: var(--register-accent);
+  }
+
+  .saho-africa-regions__card.is-active {
+    --link-rest: var(--text-on-accent, #fff);
+    --link-hover: var(--text-on-accent, #fff);
+
+    background: var(--register-accent);
+    border-color: var(--register-accent);
+    color: var(--text-on-accent, #fff);
+
+    .saho-africa-regions__marker {
+      background: currentcolor;
+    }
+  }
 }
 
-.saho-bio-registers .saho-africa-regions__marker {
-  background: var(--saho-green, #2e5339);
+// Landing-type accents (the wrapper carries saho-landing--<type>).
+.saho-landing--biography .saho-landing-registers {
+  --register-accent: var(--type-biography, #2e5339);
+}
+
+.saho-landing--event .saho-landing-registers {
+  --register-accent: var(--type-event, #1b1c17);
+}
+
+.saho-landing--place .saho-landing-registers {
+  --register-accent: var(--type-place, #5b6770);
+}
+
+.saho-landing--topic .saho-landing-registers {
+  --register-accent: var(--type-topic, #8c3b2e);
 }

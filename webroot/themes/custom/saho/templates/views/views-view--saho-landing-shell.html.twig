@@ -34,38 +34,19 @@
     <p class="saho-landing-head__count">{{ landing_count }} records</p>
   </header>
 
-  {# R3 #481 J4-2: /biographies exposes its thematic registers as entry
-     cards - deep-link territory becomes front doors. #}
-  {% if view.id() == 'biographies' %}
-    {% set registers = [
-      { label: 'Women in the record'|t, href: '/women-biographies' },
-      { label: 'Deaths in detention'|t, href: '/deaths-in-detention-list' },
-      { label: 'Lives of Courage'|t, href: '/taxonomy/features/lives-courage' },
-    ] %}
-    <nav class="saho-africa-regions saho-bio-registers" aria-label="{{ 'Registers'|t }}">
-      {% for register in registers %}
-        <a class="saho-africa-regions__card saho-bio-registers__card" href="{{ register.href }}">
+  {# Register tiles (R3 #481, generalised): thematic front doors that drive
+     this landing's exposed filters in place - the records below become the
+     register clicked. An active tile links back to the full landing.
+     Built in _saho_landing_registers(); /africa keeps deep links because
+     its regional pages are designed destinations of their own. #}
+  {% if landing_registers %}
+    <nav class="saho-africa-regions saho-landing-registers" aria-label="{{ 'Registers'|t }}">
+      {% for register in landing_registers %}
+        <a class="saho-africa-regions__card{{ register.active ? ' is-active' }}"
+           href="{{ register.href }}"
+           {%- if register.active %} aria-current="true"{% endif %}>
           <span class="saho-africa-regions__marker" aria-hidden="true"></span>
           <span class="saho-africa-regions__label">{{ register.label }}</span>
-        </a>
-      {% endfor %}
-    </nav>
-  {% endif %}
-
-  {# R3 #481: /africa leads with its regional entry cards (slate accent). #}
-  {% if view.id() == 'africa' %}
-    {% set regions = [
-      { label: 'Northern Africa'|t, href: '/africa/northern-africa' },
-      { label: 'Western Africa'|t, href: '/africa/western-africa' },
-      { label: 'Central Africa'|t, href: '/africa/central-africa' },
-      { label: 'Eastern Africa'|t, href: '/africa/eastern-africa' },
-      { label: 'Southern Africa'|t, href: '/africa/southern-africa' },
-    ] %}
-    <nav class="saho-africa-regions" aria-label="{{ 'Regions'|t }}">
-      {% for region in regions %}
-        <a class="saho-africa-regions__card" href="{{ region.href }}">
-          <span class="saho-africa-regions__marker" aria-hidden="true"></span>
-          <span class="saho-africa-regions__label">{{ region.label }}</span>
         </a>
       {% endfor %}
     </nav>

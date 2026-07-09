@@ -6,6 +6,7 @@
  */
 
 use Drupal\Component\Utility\Unicode;
+use Drupal\Component\Utility\UrlHelper;
 use Drupal\Core\Url;
 use Drupal\file\Entity\File;
 use Drupal\image\Entity\ImageStyle;
@@ -1080,11 +1081,103 @@ function saho_preprocess_views_view__saho_landing_shell(array &$variables): void
   $variables['record_cards'] = $record_cards;
   $variables['result_total'] = $variables['landing_count'];
   $variables['results_layout'] = \Drupal::request()->query->get('layout') === 'grid' ? 'grid' : 'table';
+  $variables['landing_registers'] = _saho_landing_registers($view_id);
 
   $variables['#attached']['library'][] = 'saho/saho-index-table';
   $variables['#attached']['library'][] = 'saho/saho-archive-card';
   $variables['#attached']['library'][] = 'saho/saho-card-grid';
-  $variables['#cache']['contexts'][] = 'url.query_args:layout';
+  $variables['#cache']['contexts'][] = 'url.query_args';
+}
+
+/**
+ * Register tiles for a landing: thematic front doors into the record.
+ *
+ * Each register drives the landing's own exposed filters in place (the
+ * entities below the rail become the register), instead of deep-linking to
+ * a legacy title-list page. A register is ['label', 'query'] where query is
+ * exposed-input params, or ['label', 'href'] for the few registers that are
+ * real designed destinations of their own (the /africa regional pages).
+ *
+ * @param string $view_id
+ *   The landing view id.
+ *
+ * @return array
+ *   ['label', 'href', 'active'] per register; [] for landings without any.
+ */
+function _saho_landing_registers(string $view_id): array {
+  $defs = [
+    'biographies' => [
+      // "Women" carries the register (459 tagged) - wider than the legacy
+      // gender-filtered view (409).
+      ['label' => 'Women in the record', 'query' => ['tid_1' => ['13']]],
+      // Level3 term, reached through the URL-only "register" exposed
+      // filter (BEF hidden) - the category chip rail stays clean.
+      ['label' => 'Deaths in detention', 'query' => ['register' => '21904']],
+      ['label' => 'Lives of Courage', 'query' => ['tid_1' => ['21903']]],
+    ],
+    'timelines' => [
+      ['label' => 'Politics and Society', 'query' => ['tid_1' => ['74']]],
+      ['label' => 'Life timelines', 'query' => ['tid_1' => ['73']]],
+      ['label' => 'The 1900s', 'query' => ['tid_1' => ['97']]],
+    ],
+    'places' => [
+      ['label' => 'Historical Sites', 'query' => ['tid' => ['35628']]],
+      ['label' => 'Group Areas', 'query' => ['tid' => ['35623']]],
+      ['label' => 'World Heritage Sites', 'query' => ['tid' => ['35629']]],
+    ],
+    'politics_society' => [
+      ['label' => '20th Century South Africa', 'query' => ['tid' => ['46']]],
+      ['label' => 'Contemporary South Africa', 'query' => ['tid' => ['48']]],
+      ['label' => 'Organisations', 'query' => ['tid' => ['51']]],
+    ],
+    'art_culture' => [
+      ['label' => 'Cultural Heritage & Religion', 'query' => ['tid_1' => ['56']]],
+      ['label' => 'Performing Arts', 'query' => ['tid_1' => ['55']]],
+      ['label' => 'Visual Arts and Architecture', 'query' => ['tid_1' => ['52']]],
+    ],
+    // The regional pages are designed destinations (country cards, featured
+    // places), not bare lists - the tiles stay deep links.
+    'africa' => [
+      ['label' => 'Northern Africa', 'href' => '/africa/northern-africa'],
+      ['label' => 'Western Africa', 'href' => '/africa/western-africa'],
+      ['label' => 'Central Africa', 'href' => '/africa/central-africa'],
+      ['label' => 'Eastern Africa', 'href' => '/africa/eastern-africa'],
+      ['label' => 'Southern Africa', 'href' => '/africa/southern-africa'],
+    ],
+  ];
+  if (!isset($defs[$view_id])) {
+    return [];
+  }
+
+  $request = \Drupal::request();
+  $path = $request->getPathInfo();
+  $current = $request->query->all();
+  $registers = [];
+  foreach ($defs[$view_id] as $def) {
+    if (isset($def['href'])) {
+      $registers[] = ['label' => $def['label'], 'href' => $def['href'], 'active' => FALSE];
+      continue;
+    }
+    // Active when every param of the register is present in the request
+    // (scalar match, or membership for multi-value checkbox params).
+    $active = TRUE;
+    foreach ($def['query'] as $key => $value) {
+      $in_request = $current[$key] ?? NULL;
+      if (is_array($value)) {
+        $active = $active && is_array($in_request) && array_intersect($value, $in_request) === $value;
+      }
+      else {
+        $active = $active && $in_request === $value;
+      }
+    }
+    $registers[] = [
+      'label' => $def['label'],
+      // An active tile toggles the register off - back to the full landing.
+      'href' => $active ? $path : $path . '?' . UrlHelper::buildQuery($def['query']),
+      'active' => $active,
+    ];
+  }
+  return $registers;
 }
 
 /**
