@@ -424,6 +424,13 @@ function saho_preprocess_node(array &$variables) {
     }
   }
 
+  // Open Record reading-list band: convert the saho_suggested_reading engine's
+  // grouped related entities into saho-card props, rendered as a modern card
+  // grid at the record foot (the record page otherwise dead-ends).
+  if (!empty($variables['suggested_reading']) && is_array($variables['suggested_reading'])) {
+    $variables['record_reading'] = _saho_record_reading_cards($variables['suggested_reading']);
+  }
+
   // Pre-render responsive images for article templates.
 
   // For articles: pre-render hero images.
@@ -2853,6 +2860,55 @@ function _saho_record_summary_props(NodeInterface $node): ?array {
     }
   }
   return NULL;
+}
+
+/**
+ * Converts the suggested_reading engine's grouped entities into card props.
+ *
+ * Flattens the saho_suggested_reading groups (Related Content / Similar Topics /
+ * Popular Content ...) into a deduplicated, capped list of saho:saho-card props
+ * for the reading-list band. Only image-bearing records become cards. The
+ * relationship label rides in metadata.category; the badge uses the bundle.
+ *
+ * @param array $grouped
+ *   The grouped items keyed by relationship label; each item has an 'entity'.
+ *
+ * @return array
+ *   A list of saho:saho-card prop arrays (max 6).
+ */
+function _saho_record_reading_cards(array $grouped): array {
+  $builder = \Drupal::service('saho_utils.entity_item_builder');
+  $cards = [];
+  $seen = [];
+  foreach ($grouped as $type => $items) {
+    foreach ($items as $item) {
+      if (count($cards) >= 6) {
+        break 2;
+      }
+      $entity = $item['entity'] ?? NULL;
+      if (!$entity instanceof NodeInterface) {
+        continue;
+      }
+      $id = (int) $entity->id();
+      if (isset($seen[$id])) {
+        continue;
+      }
+      $seen[$id] = TRUE;
+      $built = $builder->buildItemWithTeaser($entity, 120, NULL, 'saho_thumbnail');
+      if (empty($built['image'])) {
+        continue;
+      }
+      $cards[] = [
+        'title' => $built['title'],
+        'url' => $built['url'],
+        'content' => $built['teaser'] ?? '',
+        'image' => ['url' => $built['image'], 'alt' => (string) $built['title']],
+        'content_type' => $entity->bundle(),
+        'metadata' => ['category' => (string) $type],
+      ];
+    }
+  }
+  return $cards;
 }
 
 /**

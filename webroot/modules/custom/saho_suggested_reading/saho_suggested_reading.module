@@ -14,11 +14,20 @@ use Drupal\node\NodeInterface;
 function saho_suggested_reading_preprocess_node(array &$variables) {
   $node = $variables['node'];
 
-  // Only process full view mode for the supported content types. Record
-  // bundles (article/archive/biography/event/place) left this list with
-  // #463: their single cross-reference surface is the rail related-tabs.
+  // Only process full view mode for the supported content types. The record
+  // bundles were dropped during the Open Record redesign (#463) on the
+  // assumption the rail related-tabs would carry cross-references - but those
+  // fields are ~0.1% filled, so records dead-ended with no related content.
+  // The derivation engine (siblings via field_feature_parent, shared
+  // tags/topics, popular fallback) still produces a rich reading list, so the
+  // record bundles are back and rendered as the Open Record reading-list band.
   $supported_bundles = [
     'image',
+    'biography',
+    'article',
+    'archive',
+    'event',
+    'place',
   ];
   if ($variables['view_mode'] !== 'full' || !in_array($node->bundle(), $supported_bundles)) {
     return;
@@ -27,6 +36,8 @@ function saho_suggested_reading_preprocess_node(array &$variables) {
   // Enhance suggested reading content.
   $variables['suggested_reading'] = _saho_suggested_reading_get_enhanced_content($node);
   $variables['#attached']['library'][] = 'saho_suggested_reading/suggested_reading';
+  // The list is derived from other nodes: rebuild when the node set changes.
+  $variables['#cache']['tags'][] = 'node_list';
 }
 
 /**
