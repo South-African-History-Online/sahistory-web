@@ -75,7 +75,7 @@ class ArchiveCountsServiceTest extends UnitTestCase {
     $time = $this->createMock(TimeInterface::class);
     $time->method('getRequestTime')->willReturn(1_700_000_000);
 
-    return new ArchiveCountsService(
+    $service = new ArchiveCountsService(
       $entity_type_manager,
       $cache,
       $database,
@@ -83,6 +83,9 @@ class ArchiveCountsServiceTest extends UnitTestCase {
       $this->createMock(DateFormatterInterface::class),
       $time,
     );
+    // The service wraps labels in $this->t(); a unit test has no container.
+    $service->setStringTranslation($this->getStringTranslationStub());
+    return $service;
   }
 
   /**
@@ -91,6 +94,8 @@ class ArchiveCountsServiceTest extends UnitTestCase {
    */
   public function testGetCountsAggregatesAndFormats(): void {
     $rows = $this->buildService()->getCounts();
+    // Labels are t()-wrapped TranslatableMarkup; compare their string values.
+    $rows = array_map(static fn(array $r): array => ['label' => (string) $r['label'], 'value' => $r['value']], $rows);
     $expected = [
       ['label' => 'Records', 'value' => '63,372'],
       ['label' => 'Biographies', 'value' => '10,766'],
@@ -110,7 +115,7 @@ class ArchiveCountsServiceTest extends UnitTestCase {
     $this->assertCount(6, $items);
     $this->assertSame(
       ['Biographies', 'Topics', 'Places', 'Events', 'Archive', 'Classroom'],
-      array_column($items, 'label'),
+      array_map('strval', array_column($items, 'label')),
     );
     $this->assertSame(
       ['biography', 'topic', 'place', 'event', 'archive', 'article'],
@@ -147,6 +152,7 @@ class ArchiveCountsServiceTest extends UnitTestCase {
       $this->createMock(DateFormatterInterface::class),
       $time,
     );
+    $service->setStringTranslation($this->getStringTranslationStub());
     $this->assertSame('63,372', $service->getCounts()[0]['value']);
   }
 
