@@ -64,10 +64,18 @@
           {% set file_uri = item.entity.uri.value %}
           <div class="saho-pdf-container">
             <h3>{{ 'Document Preview'|t }}</h3>
+            {# An <iframe> renders the browser's built-in PDF viewer far more
+               reliably inline than <object> (whose "unsupported" fallback fires
+               even in capable browsers); the download button below is the
+               always-available safety net. #}
             <div class="saho-pdf-viewer">
-              <object data="{{ file_url(file_uri) }}" type="application/pdf" width="100%" height="600px">
-                <p>{{ 'Your browser does not support embedded PDFs.'|t }} <a href="{{ file_url(file_uri) }}" target="_blank" rel="noopener noreferrer">{{ 'Click here to download the PDF'|t }}</a>.</p>
-              </object>
+              <iframe class="saho-pdf-frame"
+                      src="{{ file_url(file_uri) }}#view=FitH"
+                      title="{{ 'Document preview: @title'|t({'@title': node.label}) }}"
+                      width="100%"
+                      height="820"
+                      loading="lazy">
+              </iframe>
             </div>
             <div class="saho-pdf-download mt-2">
               {% include 'saho:saho-button' with {
