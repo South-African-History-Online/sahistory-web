@@ -3131,9 +3131,13 @@ function _saho_record_curated_tabs(NodeInterface $node): array {
     }
     $total = max((int) ($view->total_rows ?? 0), count($items));
     if ($total > $threshold) {
-      // Collection summary: mono count, three sample rows, one CTA to
-      // the pre-filtered index. Only the archive index exists today, so
-      // only the Archive tab gets the browse CTA.
+      // Collection summary: mono count line, then the bounded set of already
+      // loaded rows (up to the threshold) inside a scrollable panel, and one
+      // CTA to the pre-filtered index. The full list still lives on the index
+      // - we never load 20k rows into the rail - but a dead 3-row stub gave
+      // no sense of the collection, so surface as many as were cheaply
+      // fetched. Only the archive index exists today, so only the Archive tab
+      // gets the browse CTA.
       $summary = [
         'count_line' => number_format($total) . ' ' . ($id === 'archive' ? 'ARCHIVE ITEMS' : mb_strtoupper($spec['label'])),
       ];
@@ -3147,7 +3151,7 @@ function _saho_record_curated_tabs(NodeInterface $node): array {
         'id' => $id,
         'label' => $spec['label'],
         'count' => $total,
-        'items' => array_slice($items, 0, 3),
+        'items' => array_slice($items, 0, $threshold),
         'summary' => $summary,
       ];
     }

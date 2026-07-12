@@ -113,20 +113,23 @@
   color: var(--text-muted);
 }
 
-/* Collection summary (bounded high-degree tab): mono count line, three
-   sample rows, one ruled CTA to the pre-filtered index. The full list
-   never renders in-page, so the summary panel needs no scroll cap. */
-.saho-reltabs__panel--summary.is-active {
-  max-height: none;
-  overflow-y: visible;
-}
+/* Collection summary (bounded high-degree tab): mono count line, a scrollable
+   sample of the collection, one ruled CTA to the pre-filtered index. The count
+   line pins to the top of the scroll so the total stays in view while the
+   samples scroll; the summary panel keeps the same 480px cap as a normal tab
+   (inherited above) so a long sample scrolls in place instead of stretching
+   the rail. */
 .saho-reltabs__summary-count {
+  position: sticky;
+  top: 0;
+  z-index: 1;
   padding: var(--space-2) 0;
   font-family: var(--font-mono);
   font-size: 11px;
   letter-spacing: var(--ls-label);
   text-transform: uppercase;
   color: var(--text-muted);
+  background: var(--surface-card);
   border-bottom: var(--bw-hair) solid var(--border-default);
   list-style: none;
 }
