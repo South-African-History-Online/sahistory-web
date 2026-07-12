@@ -208,8 +208,18 @@ class BiographySchemaBuilder implements SchemaOrgBuilderInterface {
       }
     }
 
+    // Citations from the reference list (pipe-delimited field_ref_str), matching
+    // the article/event builders so every sourced record exposes its sources.
+    $citations = [];
+    if ($node->hasField('field_ref_str') && !$node->get('field_ref_str')->isEmpty()) {
+      $ref_str = (string) $node->get('field_ref_str')->value;
+      if ($ref_str !== '') {
+        $citations = array_values(array_filter(array_map('trim', explode('|', $ref_str))));
+      }
+    }
+
     // Wrap Person in ProfilePage (Google rich-result type for profiles).
-    return [
+    $schema = [
       '@context' => 'https://schema.org',
       '@type' => 'ProfilePage',
       'url' => $url,
@@ -217,6 +227,10 @@ class BiographySchemaBuilder implements SchemaOrgBuilderInterface {
       'dateModified' => date('c', $node->getChangedTime()),
       'mainEntity' => $person,
     ];
+    if (!empty($citations)) {
+      $schema['citation'] = $citations;
+    }
+    return $schema;
   }
 
 }

@@ -136,6 +136,32 @@ class ArchiveSchemaBuilder implements SchemaOrgBuilderInterface {
       $schema['isbn'] = $node->get('field_isbn')->value;
     }
 
+    // Editors + contributors complete the statement of responsibility.
+    $editors = [];
+    if ($node->hasField('field_editors') && !$node->get('field_editors')->isEmpty()) {
+      foreach ($node->get('field_editors') as $editor) {
+        $name = trim(strip_tags((string) $editor->value));
+        if ($name !== '') {
+          $editors[] = ['@type' => 'Person', 'name' => $name];
+        }
+      }
+    }
+    if (!empty($editors)) {
+      $schema['editor'] = count($editors) === 1 ? $editors[0] : $editors;
+    }
+    $contributors = [];
+    if ($node->hasField('field_contributor') && !$node->get('field_contributor')->isEmpty()) {
+      foreach ($node->get('field_contributor') as $contributor) {
+        $name = trim(strip_tags((string) $contributor->value));
+        if ($name !== '') {
+          $contributors[] = ['@type' => 'Person', 'name' => $name];
+        }
+      }
+    }
+    if (!empty($contributors)) {
+      $schema['contributor'] = count($contributors) === 1 ? $contributors[0] : $contributors;
+    }
+
     // Keywords from tags.
     if ($node->hasField('field_tags') && !$node->get('field_tags')->isEmpty()) {
       $keywords = [];
@@ -214,17 +240,41 @@ class ArchiveSchemaBuilder implements SchemaOrgBuilderInterface {
       'url' => $base_url,
     ];
     $schema['holdingArchive'] = $org;
-    $schema['publisher'] = [
-      '@type' => 'Organization',
-      'name' => 'South African History Online',
-      'url' => $base_url,
-      'logo' => [
-        '@type' => 'ImageObject',
-        'url' => $base_url . '/themes/custom/saho/logo.png',
-        'width' => 600,
-        'height' => 60,
-      ],
-    ];
+
+    // Real publisher (e.g. "Sanchar Publishing House") when the record carries
+    // one - what a Book rich result wants; SAHO remains the holding archive and
+    // the digital provider. Publication place rides as locationCreated.
+    $publisher_name = '';
+    if ($node->hasField('field_publishers') && !$node->get('field_publishers')->isEmpty()) {
+      $publisher_name = trim(strip_tags((string) $node->get('field_publishers')->value));
+    }
+    if ($publisher_name !== '') {
+      $schema['publisher'] = ['@type' => 'Organization', 'name' => $publisher_name];
+      $schema['provider'] = [
+        '@type' => 'Organization',
+        'name' => 'South African History Online',
+        'url' => $base_url,
+      ];
+      if ($node->hasField('field_publication_place') && !$node->get('field_publication_place')->isEmpty()) {
+        $place = trim(strip_tags((string) $node->get('field_publication_place')->value));
+        if ($place !== '') {
+          $schema['locationCreated'] = ['@type' => 'Place', 'name' => $place];
+        }
+      }
+    }
+    else {
+      $schema['publisher'] = [
+        '@type' => 'Organization',
+        'name' => 'South African History Online',
+        'url' => $base_url,
+        'logo' => [
+          '@type' => 'ImageObject',
+          'url' => $base_url . '/themes/custom/saho/logo.png',
+          'width' => 600,
+          'height' => 60,
+        ],
+      ];
+    }
     $schema['copyrightHolder'] = [
       '@type' => 'Organization',
       'name' => 'South African History Online',
