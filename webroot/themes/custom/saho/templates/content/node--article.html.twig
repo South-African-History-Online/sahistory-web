@@ -50,14 +50,17 @@
         {{ include('saho:saho-image-credit', record_image, with_context = false) }}
       {% endif %}
 
-      <div class="saho-article-meta">
-        {% if node.getCreatedTime() %}
-          <span>{{ 'Published @date'|t({'@date': node.getCreatedTime()|date("j F Y")}) }}</span>
-        {% endif %}
-        {% if node.getChangedTime() != node.getCreatedTime() %}
-          <span>{{ 'Updated @date'|t({'@date': node.getChangedTime()|date("j F Y")}) }}</span>
-        {% endif %}
-      </div>
+      {# Byline: attribution only when a real contributor wrote the entry -
+         records SAHO authored itself carry no author, so nothing shows. This
+         replaces the old-design Published/Updated line (the record header
+         already carries the dates as facts). #}
+      {% if record_byline %}
+        <p class="saho-record-byline">
+          {%- if record_byline.written_by %}<span class="saho-record-byline__author">{{ 'Written by @who'|t({'@who': record_byline.written_by}) }}</span>{% endif -%}
+          {%- if record_byline.written_by and record_byline.edited_by %} <span class="saho-record-byline__sep" aria-hidden="true">·</span> {% endif -%}
+          {%- if record_byline.edited_by %}<span class="saho-record-byline__editor">{{ 'Edited by @who'|t({'@who': record_byline.edited_by}) }}</span>{% endif -%}
+        </p>
+      {% endif %}
 
       {# Summary / abstract (curator-written synopsis), above the body. #}
       {% if record_summary %}
