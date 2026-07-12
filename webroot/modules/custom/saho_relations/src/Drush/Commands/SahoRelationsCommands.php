@@ -398,4 +398,181 @@ final class SahoRelationsCommands extends DrushCommands {
     file_put_contents($path, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
   }
 
+  /**
+   * Cross-link collection siblings into field_people_related_tab.
+   *
+   * The richest existing graph is field_feature_parent (~46% of nodes belong to
+   * a collection). Nodes sharing a parent are, by curation, related, so this
+   * links each people-relation-capable record (article/biography/event/place/
+   * image - the bundles carrying field_people_related_tab) to its sibling
+   * biographies and articles. Reciprocal by construction. Flows through the
+   * guarded, append-only, validated, reversible RelationWriter.
+   *
+   * SAFE-BY-DESIGN (learned the hard way):
+   * - Candidates are deduplicated and capped PER NODE across all of a node's
+   *   collections, so hub records never accumulate hundreds of links.
+   * - Writes are batched with a per-batch entity-cache reset, and the memory +
+   *   execution-time limits are lifted, so thousands of node saves complete.
+   * - Applies dry-run by default and writes a rollback file on --apply.
+   * - The archive bundle has no *_related_tab field, so its ~30k nodes are
+   *   skipped (they surface related content via the render-time reading list).
+   *
+   * RUN IN A MAINTENANCE WINDOW (or via drush deploy, which enables maintenance
+   * mode): it is a multi-minute bulk write and must not race live traffic.
+   */
+  #[CLI\Command(name: 'saho:relations-siblings', aliases: ['srsib'])]
+  #[CLI\Option(name: 'apply', description: 'Write the relations (default: dry run).')]
+  #[CLI\Option(name: 'cap', description: 'Max sibling links per record (TOTAL, deduped across collections).')]
+  #[CLI\Option(name: 'max-collection', description: 'Skip collections larger than this (mega-buckets).')]
+  #[CLI\Option(name: 'limit', description: 'Process at most N source records (0 = all). For scoped/incremental runs.')]
+  #[CLI\Option(name: 'rollback-out', description: 'Where to write the rollback record.')]
+  #[CLI\Usage(name: 'drush saho:relations-siblings', description: 'Dry-run the sibling enrichment.')]
+  #[CLI\Usage(name: 'drush saho:relations-siblings --apply', description: 'Write the relations (maintenance window).')]
+  public function siblings(
+    array $options = [
+      'apply' => FALSE,
+      'cap' => 12,
+      'max-collection' => 400,
+      'limit' => 0,
+      'rollback-out' => 'relations_siblings_rollback.json',
+    ],
+  ): void {
+    ini_set('memory_limit', '-1');
+    set_time_limit(0);
+    $cap = max(1, (int) $options['cap']);
+    $max_collection = max(2, (int) $options['max-collection']);
+    $limit = max(0, (int) $options['limit']);
+    $source_bundles = ['article', 'biography', 'event', 'place', 'image'];
+    $target_bundles = ['biography', 'article'];
+
+    // One pass: published parent -> [child => bundle].
+    $q = $this->database->select('node__field_feature_parent', 'p');
+    $q->join('node_field_data', 'n', 'n.nid = p.entity_id AND n.status = 1');
+    $q->addField('p', 'field_feature_parent_target_id', 'pid');
+    $q->addField('p', 'entity_id', 'nid');
+    $q->addField('n', 'type', 'bundle');
+    $collections = [];
+    foreach ($q->execute() as $row) {
+      $collections[(int) $row->pid][(int) $row->nid] = $row->bundle;
+    }
+
+    // Aggregate candidates PER SOURCE NODE, deduped across every collection the
+    // node belongs to (this is the fix: the old cap was per-collection, so
+    // multi-collection hubs like Mandela piled up 100+ links).
+    $by_source = [];
+    $skipped_big = 0;
+    foreach ($collections as $children) {
+      if (count($children) > $max_collection) {
+        $skipped_big++;
+        continue;
+      }
+      $targets = array_filter($children, static fn($b) => in_array($b, $target_bundles, TRUE));
+      if (count($targets) < 2) {
+        continue;
+      }
+      foreach ($children as $nid => $bundle) {
+        if (!in_array($bundle, $source_bundles, TRUE)) {
+          continue;
+        }
+        foreach ($targets as $tid => $tbundle) {
+          if ($tid !== $nid) {
+            // Keyed by target -> dedup across collections automatically.
+            $by_source[$nid][$tid] = $tbundle;
+          }
+        }
+      }
+    }
+
+    // Build capped edges (cap is now a real per-node total).
+    $edges = [];
+    $processed = 0;
+    foreach ($by_source as $nid => $targets) {
+      if ($limit && $processed >= $limit) {
+        break;
+      }
+      $processed++;
+      $i = 0;
+      foreach ($targets as $tid => $tbundle) {
+        $edges[] = [
+          'source_nid' => $nid,
+          'field' => 'field_people_related_tab',
+          'target_id' => $tid,
+          'target_bundle' => $tbundle,
+        ];
+        if (++$i >= $cap) {
+          break;
+        }
+      }
+    }
+
+    $this->logger()->notice('Built {n} edges for {s} source records from {c} collections ({b} mega-collections skipped, cap {cap}/node).', [
+      'n' => count($edges),
+      's' => $processed,
+      'c' => count($collections),
+      'b' => $skipped_big,
+      'cap' => $cap,
+    ]);
+
+    // Apply in batches: the writer loads/validates every target, so one call
+    // over tens of thousands of edges exhausts memory. Reset the entity cache
+    // between batches and accumulate rollback records.
+    $by_source_edges = [];
+    foreach ($edges as $edge) {
+      $by_source_edges[$edge['source_nid']][] = $edge;
+    }
+    $node_storage = \Drupal::entityTypeManager()->getStorage('node');
+    $totals = [
+      'edges_added' => 0,
+      'skipped_existing' => 0,
+      'rejected_field' => 0,
+      'rejected_bundle' => 0,
+      'rejected_target' => 0,
+      'nodes_touched' => 0,
+    ];
+    $applied = [];
+    $batch = [];
+    $batch_sources = 0;
+    $flush = function () use (&$batch, &$batch_sources, &$totals, &$applied, $options, $node_storage): void {
+      if ($batch === []) {
+        return;
+      }
+      $result = $this->relationWriter->apply($batch, ['dry_run' => !$options['apply']]);
+      foreach ($totals as $k => $_) {
+        $totals[$k] += $result['stats'][$k] ?? 0;
+      }
+      foreach ($result['applied'] ?? [] as $record) {
+        $applied[] = $record;
+      }
+      $node_storage->resetCache();
+      drupal_static_reset();
+      gc_collect_cycles();
+      $batch = [];
+      $batch_sources = 0;
+    };
+    foreach ($by_source_edges as $source_edges) {
+      foreach ($source_edges as $e) {
+        $batch[] = $e;
+      }
+      if (++$batch_sources >= 200) {
+        $flush();
+      }
+    }
+    $flush();
+
+    $mode = $options['apply'] ? 'APPLIED' : 'DRY RUN';
+    $this->logger()->notice('{mode}: {added} added, {existing} present, {rf}/{rb}/{rt} rejected(field/bundle/target); {touched} nodes touched.', [
+      'mode' => $mode,
+      'added' => $totals['edges_added'],
+      'existing' => $totals['skipped_existing'],
+      'rf' => $totals['rejected_field'],
+      'rb' => $totals['rejected_bundle'],
+      'rt' => $totals['rejected_target'],
+      'touched' => $totals['nodes_touched'],
+    ]);
+    if ($options['apply'] && $applied !== []) {
+      $this->writeJson($options['rollback-out'], $applied);
+      $this->logger()->success(sprintf('Rollback record (%d node-field entries) written to %s', count($applied), $options['rollback-out']));
+    }
+  }
+
 }
