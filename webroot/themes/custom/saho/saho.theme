@@ -935,7 +935,7 @@ function saho_preprocess_taxonomy_term(array &$variables): void {
  *   The bundle names.
  */
 function _saho_record_header_bundles(): array {
-  return ['biography', 'article', 'event', 'place', 'archive', 'upcomingevent'];
+  return ['biography', 'article', 'event', 'place', 'archive', 'upcomingevent', 'image'];
 }
 
 /**
@@ -2431,6 +2431,67 @@ function saho_preprocess_node__place(array &$variables): void {
 }
 
 /**
+ * Implements hook_preprocess_HOOK() for node--image.html.twig.
+ *
+ * 18,395 published photographs join the Open Record system. Assembled
+ * per-helper (the biography pattern) rather than via
+ * _saho_record_common_props(): the lead image captions from field_source
+ * (the external credit - provenance, not authorship) and the bundle has no
+ * field_ref_str / field_further_reading to build.
+ */
+function saho_preprocess_node__image(array &$variables): void {
+  if (($variables['view_mode'] ?? '') !== 'full') {
+    return;
+  }
+  /** @var \Drupal\node\NodeInterface $node */
+  $node = $variables['node'];
+  $date_formatter = \Drupal::service('date.formatter');
+
+  $term_labels = static function (string $field) use ($node): string {
+    if (!$node->hasField($field) || $node->get($field)->isEmpty()) {
+      return '';
+    }
+    $labels = [];
+    foreach ($node->get($field)->referencedEntities() as $term) {
+      $labels[] = (string) $term->label();
+    }
+    return implode(', ', $labels);
+  };
+  $format = $term_labels('field_media_library_type');
+  $source = '';
+  if ($node->hasField('field_source') && !$node->get('field_source')->isEmpty()) {
+    $source = trim(strip_tags((string) $node->get('field_source')->value));
+  }
+
+  $facts = [];
+  if ($format !== '') {
+    $facts[] = ['label' => 'Format', 'value' => $format];
+  }
+  $facts[] = [
+    'label' => 'Updated',
+    'value' => $date_formatter->format($node->getChangedTime(), 'custom', 'j M Y'),
+  ];
+  _saho_record_header_props($variables, $node, 'image', 'Image record', $facts);
+
+  $variables['record_meta'] = _saho_record_meta_props('Record details', 'image', [
+    'Format' => $format,
+    'Source' => $source,
+    'Galleries' => $term_labels('field_gallery_tag'),
+  ]);
+
+  $variables['record_related'] = _saho_record_related_props($node);
+  _saho_record_related_cache_tags($variables);
+  $variables['record_citation'] = _saho_record_citation_props($node);
+  $variables['record_image'] = _saho_record_image_props($node, 'field_image', 'field_source', '16 / 9');
+  if ($variables['record_image'] === []) {
+    $variables['record_image'] = _saho_record_image_props($node, 'field_archive_image', 'field_source', '16 / 9');
+  }
+  $variables['record_plates'] = _saho_record_additional_images($node, $variables['record_image']['src'] ?? '');
+  _saho_record_add_collection_membership($variables, $node);
+  _saho_record_attach_libraries($variables);
+}
+
+/**
  * Implements hook_preprocess_HOOK() for node--archive.html.twig.
  */
 function saho_preprocess_node__archive(array &$variables): void {
@@ -3082,7 +3143,7 @@ function _saho_related_collapse_threshold(): int {
  *   Item props (label/href/note/type), or NULL when not viewable.
  */
 function _saho_record_related_item($ref): ?array {
-  $known_types = ['article', 'biography', 'place', 'archive', 'event', 'topic'];
+  $known_types = ['article', 'biography', 'place', 'archive', 'event', 'topic', 'image'];
   if (!$ref instanceof NodeInterface || !$ref->access('view')) {
     return NULL;
   }
@@ -3422,6 +3483,66 @@ function _saho_record_image_props(NodeInterface $node, string $image_field, stri
 }
 
 /**
+ * Builds image-credit props for a record's additional plates.
+ *
+ * Image nodes can carry a second field_image delta plus any number of
+ * field_archive_image deltas; the legacy template dumped them unstyled.
+ * Walks both fields in order, excludes the file already leading the record
+ * (matched by generated URL), dedupes by file id and caps the run - both
+ * fields are on the loaded node, so this costs no extra queries.
+ *
+ * @param \Drupal\node\NodeInterface $node
+ *   The record node.
+ * @param string $exclude_src
+ *   The lead image's generated URL, or '' when the record has no lead.
+ *
+ * @return array
+ *   A list of saho:saho-image-credit props (possibly empty).
+ */
+function _saho_record_additional_images(NodeInterface $node, string $exclude_src = ''): array {
+  $plates = [];
+  $seen_fids = [];
+  $url_generator = \Drupal::service('file_url_generator');
+  foreach (['field_image', 'field_archive_image'] as $field) {
+    if (!$node->hasField($field)) {
+      continue;
+    }
+    foreach ($node->get($field) as $item) {
+      $file = $item->get('entity')->getValue();
+      if (!$file instanceof File || !file_exists($file->getFileUri())) {
+        continue;
+      }
+      if (isset($seen_fids[$file->id()])) {
+        continue;
+      }
+      $seen_fids[$file->id()] = TRUE;
+      $src = $url_generator->generateString($file->getFileUri());
+      if ($exclude_src !== '' && $src === $exclude_src) {
+        continue;
+      }
+      // Same clamped own-orientation frame as the lead image, so a portrait
+      // plate is never sliced into a landscape band.
+      $width = (int) $item->get('width')->getValue();
+      $height = (int) $item->get('height')->getValue();
+      $r = $width > 0 && $height > 0 ? max(0.75, min(1.7778, $width / $height)) : 4 / 3;
+      $alt = trim((string) $item->get('alt')->getValue());
+      $plates[] = [
+        'src' => $src,
+        'alt' => $alt !== '' ? $alt : $node->label(),
+        'caption' => '',
+        'duotone' => TRUE,
+        'ratio' => (string) round($r, 4),
+        'orientation' => $r < 0.95 ? 'portrait' : ($r <= 1.05 ? 'square' : 'landscape'),
+      ];
+      if (count($plates) >= 12) {
+        return $plates;
+      }
+    }
+  }
+  return $plates;
+}
+
+/**
  * Returns the processed further-reading markup for the rail, or NULL.
  *
  * @param \Drupal\node\NodeInterface $node
@@ -3451,6 +3572,7 @@ function _saho_record_attach_libraries(array &$variables): void {
     'record_provenance' => 'saho/saho-provenance-block',
     'record_citation' => 'saho/saho-citation',
     'record_image' => 'saho/saho-image-credit',
+    'record_plates' => 'saho/saho-image-credit',
     'record_further' => 'saho/saho-metadata-block',
   ];
   foreach ($map as $key => $library) {
