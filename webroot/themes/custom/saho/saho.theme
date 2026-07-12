@@ -3257,12 +3257,33 @@ function _saho_record_image_props(NodeInterface $node, string $image_field, stri
     $caption = trim(strip_tags((string) $node->get($caption_field)->value, '<a><em><strong><i><b><br>'));
   }
   $alt = trim((string) $item->get('alt')->getValue());
+
+  // Frame the image to its own orientation so object-fit: cover crops almost
+  // nothing - a portrait photo in a hardcoded 16/9 landscape frame was being
+  // sliced to a thin band. Image fields store width/height on upload, so no
+  // disk I/O. Clamp the ratio so an extreme shape cannot blow the record grid;
+  // fall back to the caller's ratio when dimensions are missing.
+  $width = (int) $item->get('width')->getValue();
+  $height = (int) $item->get('height')->getValue();
+  if ($width > 0 && $height > 0) {
+    $r = max(0.75, min(1.7778, $width / $height));
+    $ratio = (string) round($r, 4);
+  }
+  else {
+    $parts = array_map('trim', explode('/', $ratio));
+    $rw = (float) ($parts[0] ?? 4);
+    $rh = (float) ($parts[1] ?? 3);
+    $r = $rh > 0 ? $rw / $rh : 4 / 3;
+  }
+  $orientation = $r < 0.95 ? 'portrait' : ($r <= 1.05 ? 'square' : 'landscape');
+
   return [
     'src' => \Drupal::service('file_url_generator')->generateString($file->getFileUri()),
     'alt' => $alt !== '' ? $alt : $node->label() . ' portrait',
     'caption' => $caption !== '' ? Markup::create($caption) : '',
     'duotone' => TRUE,
     'ratio' => $ratio,
+    'orientation' => $orientation,
   ];
 }
 
