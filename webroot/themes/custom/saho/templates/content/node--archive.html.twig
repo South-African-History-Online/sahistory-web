@@ -37,47 +37,41 @@
     {# LEFT: Main content column #}
     <div class="saho-main-content">
 
-      {% if node.field_feature_banner.entity %}
-        <div class="saho-feature-banner">
-          <img
-            src="{{ file_url(node.field_feature_banner.entity.uri.value) }}"
-            alt="{{ node.field_feature_banner.alt }}"
-            class="saho-feature-banner-image"
-            loading="eager"
-            decoding="async"
-            fetchpriority="high"
-          >
-        </div>
-      {% elseif record_image.src is defined and record_image.src %}
-        {# Open Record lead image: duotone image-credit figure (S3). #}
+      {# field_feature_banner does not exist on the archive bundle (config/sync:
+         article/biography/place only), so the old banner branch was dead. The
+         lead image is the Open Record duotone image-credit figure (S3). #}
+      {% if record_image.src is defined and record_image.src %}
         {{ include('saho:saho-image-credit', record_image, with_context = false) }}
       {% endif %}
 
       <div class="saho-article-meta">
         {% if node.getCreatedTime() %}
-          <span>Published {{ node.getCreatedTime()|date("j F Y") }}</span>
+          <span>{{ 'Published @date'|t({'@date': node.getCreatedTime()|date("j F Y")}) }}</span>
         {% endif %}
         {% if node.getChangedTime() != node.getCreatedTime() %}
-          <span>Updated {{ node.getChangedTime()|date("j F Y") }}</span>
+          <span>{{ 'Updated @date'|t({'@date': node.getChangedTime()|date("j F Y")}) }}</span>
         {% endif %}
       </div>
 
-      {# PDF File Display - Enhanced for better readability #}
+      {# Uploaded documents. PDFs get the inline preview + download; every other
+         uploaded file (docx, audio, images, etc.) gets a download affordance so
+         readers always have access to the document (R3). #}
       {% if node.field_file_upload.entity %}
-        {% set file_uri = node.field_file_upload.entity.uri.value %}
-        {% set file_mime = node.field_file_upload.entity.filemime.value %}
-        
-        {% if file_mime == 'application/pdf' %}
+        {% set pdf_files = node.field_file_upload|filter(item => item.entity and item.entity.filemime.value == 'application/pdf') %}
+        {% set other_files = node.field_file_upload|filter(item => item.entity and item.entity.filemime.value != 'application/pdf') %}
+
+        {% for item in pdf_files %}
+          {% set file_uri = item.entity.uri.value %}
           <div class="saho-pdf-container">
-            <h3>Document Preview</h3>
+            <h3>{{ 'Document Preview'|t }}</h3>
             <div class="saho-pdf-viewer">
               <object data="{{ file_url(file_uri) }}" type="application/pdf" width="100%" height="600px">
-                <p>Your browser doesn't support embedded PDFs. <a href="{{ file_url(file_uri) }}" target="_blank">Click here to download the PDF</a>.</p>
+                <p>{{ 'Your browser does not support embedded PDFs.'|t }} <a href="{{ file_url(file_uri) }}" target="_blank" rel="noopener noreferrer">{{ 'Click here to download the PDF'|t }}</a>.</p>
               </object>
             </div>
             <div class="saho-pdf-download mt-2">
               {% include 'saho:saho-button' with {
-                text: 'Download PDF',
+                text: 'Download PDF'|t,
                 url: file_url(file_uri),
                 variant: 'primary',
                 size: 'medium',
@@ -86,6 +80,48 @@
                 }
               } %}
             </div>
+          </div>
+        {% endfor %}
+
+        {% if other_files|length %}
+          <div class="saho-page-attachments">
+            <h3 class="saho-page-attachments__title">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+              </svg>
+              {{ 'Downloads'|t }}
+            </h3>
+            <ul class="saho-page-attachments__list">
+              {% for item in other_files %}
+                {% set ext = item.entity.filename.value|split('.')|last|lower %}
+                <li class="saho-page-attachments__item saho-page-attachments__item--{{ ext }}">
+                  <a href="{{ file_url(item.entity.uri.value) }}"
+                     class="saho-page-attachments__link"
+                     target="_blank"
+                     rel="noopener noreferrer"
+                     download>
+                    <span class="saho-page-attachments__ext">{{ ext|upper }}</span>
+                    {% if item.description %}
+                      <span class="saho-page-attachments__description">{{ item.description }}</span>
+                    {% else %}
+                      <span class="saho-page-attachments__filename">{{ item.entity.filename.value }}</span>
+                    {% endif %}
+                    {% if item.entity.filesize.value %}
+                      <span class="saho-page-attachments__size">
+                        {% if item.entity.filesize.value > 1048576 %}
+                          {{ (item.entity.filesize.value / 1048576)|round(1) }} MB
+                        {% else %}
+                          {{ (item.entity.filesize.value / 1024)|round(0) }} KB
+                        {% endif %}
+                      </span>
+                    {% endif %}
+                    <svg class="saho-page-attachments__arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                  </a>
+                </li>
+              {% endfor %}
+            </ul>
           </div>
         {% endif %}
       {% endif %}
@@ -181,17 +217,14 @@
     </div>
 
     {# RIGHT: Sidebar (the Open Record rail - S3) #}
-    {% if record_meta or record_related or record_further or (node.field_feature_banner.entity and record_image.src is defined and record_image.src) %}
+    {# No field_feature_banner on archive records, so the lead image always
+       stays in the main column - there is no rail-image branch to gate here. #}
+    {% if record_meta or record_related or record_further %}
       {% set sidebar_has_content = true %}
     {% endif %}
 
     {% if sidebar_has_content %}
     <aside class="saho-article-sidebar">
-
-      {# Lead image moves to the rail when a feature banner leads the main column. #}
-      {% if node.field_feature_banner.entity and record_image.src is defined and record_image.src %}
-        {{ include('saho:saho-image-credit', record_image, with_context = false) }}
-      {% endif %}
 
       {# Archive record: the structured publication fields. #}
       {% if record_meta %}
@@ -206,7 +239,7 @@
       {# Further reading (kept crawlable). #}
       {% if record_further %}
         <section class="saho-meta-block saho-meta-block--archive">
-          <h4 class="saho-meta-block__title">Further reading</h4>
+          <h4 class="saho-meta-block__title">{{ 'Further reading'|t }}</h4>
           <div class="saho-meta-block__val">{{ record_further }}</div>
         </section>
       {% endif %}
@@ -222,8 +255,11 @@
       {% if node.field_references_saho_source.value %}
         <div class="saho-references">
           <div class="saho-saho-sources">
-            <h5>SAHO Sources</h5>
-            {{ node.field_references_saho_source.value|striptags('<a><em><strong><i><b><br><p>')|raw }}
+            <h5>{{ 'SAHO Sources'|t }}</h5>
+            {# Render through the field text format (.processed) so its filters
+               strip scripts and event-handler/javascript: attributes; striptags
+               alone kept dangerous attributes on allowed tags. #}
+            {{ node.field_references_saho_source.0.processed|raw }}
           </div>
         </div>
       {% endif %}

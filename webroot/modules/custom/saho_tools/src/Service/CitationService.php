@@ -2,6 +2,7 @@
 
 namespace Drupal\saho_tools\Service;
 
+use Drupal\Component\Utility\Html;
 use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\Datetime\DrupalDateTime;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -9,6 +10,7 @@ use Drupal\Core\File\FileUrlGeneratorInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\Url;
 use Drupal\node\NodeInterface;
+use Drupal\saho_refs\DisplayRefService;
 
 /**
  * Service for generating citations.
@@ -44,6 +46,13 @@ class CitationService {
   protected $fileUrlGenerator;
 
   /**
+   * The optional display reference service (saho_refs).
+   *
+   * @var \Drupal\saho_refs\DisplayRefService|null
+   */
+  protected $displayRef;
+
+  /**
    * Constructs a CitationService object.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
@@ -52,15 +61,19 @@ class CitationService {
    *   The date formatter.
    * @param \Drupal\Core\File\FileUrlGeneratorInterface $file_url_generator
    *   The file URL generator.
+   * @param \Drupal\saho_refs\DisplayRefService|null $display_ref
+   *   The display reference service, or NULL when saho_refs is not installed.
    */
   public function __construct(
     EntityTypeManagerInterface $entity_type_manager,
     DateFormatterInterface $date_formatter,
     FileUrlGeneratorInterface $file_url_generator,
+    ?DisplayRefService $display_ref = NULL,
   ) {
     $this->entityTypeManager = $entity_type_manager;
     $this->dateFormatter = $date_formatter;
     $this->fileUrlGenerator = $file_url_generator;
+    $this->displayRef = $display_ref;
   }
 
   /**
@@ -102,8 +115,8 @@ class CitationService {
     // Get the node URL - the permanent /ref/ address when available
     // (R3 #476): aliases change, references do not.
     $url = $node->toUrl()->setAbsolute()->toString();
-    if (\Drupal::hasService('saho_refs.display_ref')) {
-      $ref = \Drupal::service('saho_refs.display_ref')->getRef($node);
+    if ($this->displayRef) {
+      $ref = $this->displayRef->getRef($node);
       if ($ref) {
         $url = Url::fromUserInput('/ref/' . $ref, ['absolute' => TRUE])->toString();
       }
@@ -329,7 +342,7 @@ class CitationService {
           '<em>%s</em> (%s) \'%s\', <em>%s</em>, %s %s. Available at: %s (Accessed: %s %s %s).',
           $data['site_name'],
           $created_year,
-          $data['title'],
+          Html::escape($data['title']),
           $data['site_name'],
           $created_day,
           $created_month,
@@ -366,7 +379,7 @@ class CitationService {
           $created_year,
           $created_month,
           $created_day,
-          $data['title'],
+          Html::escape($data['title']),
           $data['site_name'],
           $data['url']
       );
@@ -395,7 +408,7 @@ class CitationService {
     $citation = sprintf(
           '<em>%s</em>, %s [website], %s, (accessed %s %s %s).',
           $data['site_name'],
-          $data['title'],
+          Html::escape($data['title']),
           $data['url'],
           $access_day,
           $access_month,

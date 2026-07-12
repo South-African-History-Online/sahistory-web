@@ -74,12 +74,87 @@ final class PresentationDeckFormatter extends FormatterBase {
             'duration' => $deck['duration_minutes'] ?? NULL,
             'attribution' => (string) ($deck['attribution'] ?? ''),
           ],
-          'slides' => $this->processInline(array_values($deck['slides'])),
+          'slides' => $this->sanitizeSlideMedia($this->processInline(array_values($deck['slides']))),
         ],
       ];
     }
 
     return $elements;
+  }
+
+  /**
+   * Sanitises inline SVG in slide media before the template renders it raw.
+   *
+   * The deck field is editor-writable, so an inline SVG (media.type "svg",
+   * media.data emitted with |raw by the component) is a stored-XSS surface.
+   * This strips scripts, event-handler attributes and javascript: URLs, then
+   * marks the result safe so the raw filter renders sanitised markup only.
+   *
+   * @param array $slides
+   *   The processed slides array.
+   *
+   * @return array
+   *   The slides with any inline SVG media sanitised.
+   */
+  private function sanitizeSlideMedia(array $slides): array {
+    foreach ($slides as &$slide) {
+      if (isset($slide['media']['type'], $slide['media']['data'])
+        && $slide['media']['type'] === 'svg'
+        && is_string($slide['media']['data'])) {
+        $slide['media']['data'] = Markup::create($this->sanitizeSvg($slide['media']['data']));
+      }
+    }
+    return $slides;
+  }
+
+  /**
+   * Allowlist-sanitises an inline SVG string.
+   *
+   * @param string $svg
+   *   The raw SVG markup.
+   *
+   * @return string
+   *   Sanitised SVG markup, or an empty string if it cannot be parsed.
+   */
+  private function sanitizeSvg(string $svg): string {
+    $svg = trim($svg);
+    if ($svg === '' || stripos($svg, '<svg') === FALSE) {
+      return '';
+    }
+    $doc = new \DOMDocument();
+    $previous = libxml_use_internal_errors(TRUE);
+    $loaded = $doc->loadXML('<?xml version="1.0" encoding="UTF-8"?>' . $svg, LIBXML_NONET);
+    libxml_clear_errors();
+    libxml_use_internal_errors($previous);
+    if (!$loaded) {
+      return '';
+    }
+    // Elements that can execute or fetch: drop them entirely.
+    $blocked = ['script', 'foreignobject', 'iframe', 'a', 'use', 'image', 'animate', 'set', 'handler'];
+    foreach ($blocked as $name) {
+      $nodes = iterator_to_array($doc->getElementsByTagName($name));
+      foreach ($nodes as $node) {
+        $node->parentNode?->removeChild($node);
+      }
+    }
+    // Strip event-handler attributes and javascript:/data: URLs everywhere.
+    $xpath = new \DOMXPath($doc);
+    foreach ($xpath->query('//*') as $el) {
+      if (!$el instanceof \DOMElement) {
+        continue;
+      }
+      foreach (iterator_to_array($el->attributes ?? []) as $attr) {
+        $attrName = strtolower($attr->nodeName);
+        $attrValue = trim($attr->nodeValue ?? '');
+        $isUrlAttr = in_array($attrName, ['href', 'xlink:href', 'src'], TRUE);
+        if (str_starts_with($attrName, 'on')
+          || ($isUrlAttr && preg_match('/^\s*(javascript|data|vbscript):/i', $attrValue))) {
+          $el->removeAttribute($attr->nodeName);
+        }
+      }
+    }
+    $out = $doc->saveXML($doc->documentElement);
+    return $out === FALSE ? '' : $out;
   }
 
   /**

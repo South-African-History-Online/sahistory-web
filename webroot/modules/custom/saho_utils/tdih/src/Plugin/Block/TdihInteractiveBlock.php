@@ -159,7 +159,7 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
       '#default_value' => $this->configuration['date_picker_mode'],
       '#states' => [
         'visible' => [
-          ':input[name="show_date_picker"]' => ['checked' => TRUE],
+          ':input[name="settings[show_date_picker]"]' => ['checked' => TRUE],
         ],
       ],
     ];

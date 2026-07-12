@@ -21,6 +21,15 @@ use Drupal\node\NodeInterface;
  */
 class CurrentFeatureService {
 
+  /**
+   * Editorial bundles eligible to lead the front page.
+   *
+   * The field_home_page_feature flag is shared with the TDIH event pool, so
+   * the hero query must exclude events (and images) or the newest flagged
+   * event would hijack the lead. Only these bundles carry a real standfirst.
+   */
+  private const EDITORIAL_BUNDLES = ['article', 'archive', 'biography'];
+
   public function __construct(
     private readonly EntityTypeManagerInterface $entityTypeManager,
   ) {
@@ -33,6 +42,7 @@ class CurrentFeatureService {
     $storage = $this->entityTypeManager->getStorage('node');
     $nids = $storage->getQuery()
       ->condition('field_home_page_feature', 1)
+      ->condition('type', self::EDITORIAL_BUNDLES, 'IN')
       ->condition('status', 1)
       ->accessCheck(TRUE)
       ->sort('changed', 'DESC')

@@ -68,20 +68,27 @@ final class EditorialFeatureBlock extends BlockBase implements ContainerFactoryP
   public function build(): array {
     $node = $this->currentFeature->node();
     if (!$node instanceof NodeInterface) {
-      return [];
+      // Publishing eligible content should restore the hero, so carry the
+      // cache metadata even when nothing resolves yet.
+      return [
+        '#cache' => [
+          'tags' => ['node_list'],
+          'max-age' => 3600,
+        ],
+      ];
     }
     return [
       '#type' => 'component',
       '#component' => 'saho:saho-home-feature',
       '#props' => [
-        'kicker' => 'Current feature',
+        'kicker' => $this->t('Current feature'),
         'title' => (string) $node->label(),
         'standfirst' => $this->currentFeature->standfirst($node),
         'href' => $node->toUrl()->toString(),
-        'cta_label' => 'Open the feature',
+        'cta_label' => $this->t('Open the feature'),
         'secondary_href' => '/timelines',
-        'secondary_label' => 'View chronology',
-        'meta' => 'Editorial register · ' . $this->displayRef->getRef($node),
+        'secondary_label' => $this->t('View chronology'),
+        'meta' => $this->t('Editorial register · @ref', ['@ref' => $this->displayRef->getRef($node)]),
         'heading_level' => 'h1',
       ],
       '#cache' => [

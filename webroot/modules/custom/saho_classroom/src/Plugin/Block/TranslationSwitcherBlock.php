@@ -7,6 +7,7 @@ namespace Drupal\saho_classroom\Plugin\Block;
 use Drupal\Core\Block\Attribute\Block;
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Cache\Cache;
+use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
@@ -82,20 +83,25 @@ final class TranslationSwitcherBlock extends BlockBase implements ContainerFacto
     }
 
     $current = $entity->language()->getId();
+    $cacheability = (new CacheableMetadata())
+      ->addCacheableDependency($entity)
+      ->addCacheContexts(['route', 'languages:language_interface']);
     $links = [];
     foreach ($languages as $langcode => $language) {
       try {
-        $url = $entity->getTranslation($langcode)
+        $generated = $entity->getTranslation($langcode)
           ->toUrl('canonical', ['language' => $language])
-          ->toString();
+          ->toString(TRUE);
       }
       catch (\Throwable $e) {
         continue;
       }
+      // Collect the URL's bubbleable cache metadata instead of discarding it.
+      $cacheability->addCacheableDependency($generated);
       $links[] = [
         'langcode' => $langcode,
         'title' => $language->getName(),
-        'url' => $url,
+        'url' => $generated->getGeneratedUrl(),
         'active' => $langcode === $current,
       ];
     }
@@ -103,16 +109,14 @@ final class TranslationSwitcherBlock extends BlockBase implements ContainerFacto
       return [];
     }
 
-    return [
+    $build = [
       '#theme' => 'saho_translation_switcher',
       '#links' => $links,
       '#count' => count($links),
       '#attached' => ['library' => ['saho_classroom/translation_switcher']],
-      '#cache' => [
-        'contexts' => ['route', 'languages:language_interface'],
-        'tags' => $entity->getCacheTags(),
-      ],
     ];
+    $cacheability->applyTo($build);
+    return $build;
   }
 
   /**

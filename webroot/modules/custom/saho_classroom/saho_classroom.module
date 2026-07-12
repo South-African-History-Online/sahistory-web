@@ -10,6 +10,7 @@ declare(strict_types=1);
 use Drupal\Core\Cache\Cache;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Language\LanguageInterface;
 use Drupal\Core\Url;
 use Drupal\node\NodeInterface;
 use Drupal\views\ViewExecutable;
@@ -216,6 +217,11 @@ function saho_classroom_node_view(array &$build, EntityInterface $node, $display
   }
 
   $deck = _saho_classroom_match_deck($node);
+  // Follow the reader into their language: link the matching deck translation
+  // rather than always the English default.
+  if ($deck) {
+    $deck = _saho_classroom_active_translation($deck);
+  }
   $url = $deck ? $deck->toUrl() : Url::fromUserInput('/classroom/presentations');
   $link_text = $deck ? t('Open the presentation') : t('Open presentations');
   $title = $deck
@@ -227,8 +233,12 @@ function saho_classroom_node_view(array &$build, EntityInterface $node, $display
     '#weight' => -100,
     '#attributes' => ['class' => ['saho-classroom-cta']],
     '#attached' => ['library' => ['saho_classroom/badge']],
-    // Recompute if the set of presentation decks changes.
-    '#cache' => ['tags' => ['node_list']],
+    // Recompute if the set of presentation decks changes; the resolved link
+    // varies by the reader's content language.
+    '#cache' => [
+      'tags' => ['node_list'],
+      'contexts' => ['languages:language_content'],
+    ],
     'text' => [
       '#type' => 'html_tag',
       '#tag' => 'div',
@@ -267,14 +277,20 @@ function _saho_classroom_add_origin_link(array &$build, NodeInterface $deck): vo
   if (!$article) {
     return;
   }
+  // Link the article translation the reader is on, when it exists.
+  $article = _saho_classroom_active_translation($article);
   $build['saho_classroom_origin'] = [
     '#type' => 'container',
     // Directly under the deck (weight 0), above sharing/body/meta fields.
     '#weight' => 10,
     '#attributes' => ['class' => ['saho-classroom-origin']],
     '#attached' => ['library' => ['saho_classroom/badge']],
-    // Recompute when articles change so the match stays current.
-    '#cache' => ['tags' => Cache::mergeTags(['node_list'], $article->getCacheTags())],
+    // Recompute when articles change so the match stays current; the resolved
+    // link and title vary by the reader's content language.
+    '#cache' => [
+      'tags' => Cache::mergeTags(['node_list'], $article->getCacheTags()),
+      'contexts' => ['languages:language_content'],
+    ],
     'text' => [
       '#type' => 'html_tag',
       '#tag' => 'div',
@@ -318,62 +334,57 @@ function _saho_classroom_add_origin_link(array &$build, NodeInterface $deck): vo
  *   The best-matching classroom article, or NULL when none is confident.
  */
 function _saho_classroom_match_article(NodeInterface $deck): ?NodeInterface {
-  $topic = '';
-  if ($deck->hasField('field_caps_topic') && !$deck->get('field_caps_topic')->isEmpty()) {
-    $term = $deck->get('field_caps_topic')->entity;
-    if ($term) {
-      $topic = (string) $term->label();
+  // Memoise per request keyed by the source deck: a page that renders the
+  // same node more than once must not re-scan the article corpus each time.
+  $resolved = &drupal_static(__FUNCTION__, []);
+  $source_id = (int) $deck->getUntranslated()->id();
+
+  if (!array_key_exists($source_id, $resolved)) {
+    $resolved[$source_id] = NULL;
+    $topic = '';
+    if ($deck->hasField('field_caps_topic') && !$deck->get('field_caps_topic')->isEmpty()) {
+      $term = $deck->get('field_caps_topic')->entity;
+      if ($term) {
+        $topic = (string) $term->label();
+      }
     }
-  }
-  if ($topic === '') {
-    $topic = (string) $deck->getUntranslated()->label();
-  }
-  $topic_tokens = _saho_classroom_tokens($topic);
-  if (!$topic_tokens) {
-    return NULL;
-  }
-
-  $storage = \Drupal::entityTypeManager()->getStorage('node');
-  $query = $storage->getQuery()
-    ->accessCheck(TRUE)
-    ->condition('type', 'article')
-    ->condition('status', 1);
-  $query->condition($query->orConditionGroup()
-    ->exists('field_classroom_categories')
-    ->exists('field_classroom'));
-  $ids = $query->execute();
-  if (!$ids) {
-    return NULL;
-  }
-
-  // Titles only - matching every classroom article does not need full loads.
-  $titles = \Drupal::database()->select('node_field_data', 'n')
-    ->fields('n', ['nid', 'title'])
-    ->condition('n.nid', $ids, 'IN')
-    ->condition('n.default_langcode', 1)
-    ->execute()
-    ->fetchAllKeyed();
-
-  $best_nid = NULL;
-  $best_score = 0.0;
-  foreach ($titles as $nid => $title) {
-    $article_tokens = _saho_classroom_tokens((string) $title);
-    if (!$article_tokens) {
-      continue;
+    if ($topic === '') {
+      $topic = (string) $deck->getUntranslated()->label();
     }
-    $hits = count(array_intersect_key($topic_tokens, $article_tokens));
-    $score = $hits / count($topic_tokens);
-    if ($score > $best_score) {
-      $best_score = $score;
-      $best_nid = (int) $nid;
+    $topic_tokens = _saho_classroom_tokens($topic);
+    if ($topic_tokens) {
+      $storage = \Drupal::entityTypeManager()->getStorage('node');
+      $query = $storage->getQuery()
+        ->accessCheck(TRUE)
+        ->condition('type', 'article')
+        ->condition('status', 1);
+      $query->condition($query->orConditionGroup()
+        ->exists('field_classroom_categories')
+        ->exists('field_classroom'));
+      $ids = $query->execute();
+      if ($ids) {
+        // Titles only - matching every classroom article needs no full loads.
+        $titles = \Drupal::database()->select('node_field_data', 'n')
+          ->fields('n', ['nid', 'title'])
+          ->condition('n.nid', $ids, 'IN')
+          ->condition('n.default_langcode', 1)
+          ->execute()
+          ->fetchAllKeyed();
+        $candidates = [];
+        foreach ($titles as $nid => $title) {
+          $candidates[$nid] = _saho_classroom_tokens((string) $title);
+        }
+        // Score every article against the fixed deck topic (denominator is
+        // the deck's own token count).
+        $resolved[$source_id] = _saho_classroom_best_match($topic_tokens, $candidates, FALSE);
+      }
     }
   }
 
-  // Same confidence bar as the forward match: never link loosely.
-  if ($best_nid === NULL || $best_score < 0.6) {
+  if ($resolved[$source_id] === NULL) {
     return NULL;
   }
-  $article = $storage->load($best_nid);
+  $article = \Drupal::entityTypeManager()->getStorage('node')->load($resolved[$source_id]);
   return $article instanceof NodeInterface ? $article : NULL;
 }
 
@@ -391,47 +402,104 @@ function _saho_classroom_match_article(NodeInterface $deck): ?NodeInterface {
  *   The best-matching presentation node, or NULL when none is confident.
  */
 function _saho_classroom_match_deck(NodeInterface $article): ?NodeInterface {
-  $storage = \Drupal::entityTypeManager()->getStorage('node');
-  $ids = $storage->getQuery()
-    ->accessCheck(TRUE)
-    ->condition('type', 'presentation')
-    ->condition('status', 1)
-    ->execute();
-  if (!$ids) {
-    return NULL;
-  }
-  $article_tokens = _saho_classroom_tokens($article->label());
-  if (!$article_tokens) {
-    return NULL;
-  }
+  // Memoise per request keyed by the source article: a presentation page may
+  // resolve the same article context more than once per render.
+  $resolved = &drupal_static(__FUNCTION__, []);
+  $source_id = (int) $article->getUntranslated()->id();
 
-  $best = NULL;
-  $best_score = 0.0;
-  foreach ($storage->loadMultiple($ids) as $deck) {
-    $topic = '';
-    if ($deck->hasField('field_caps_topic') && !$deck->get('field_caps_topic')->isEmpty()) {
-      $term = $deck->get('field_caps_topic')->entity;
-      if ($term) {
-        $topic = (string) $term->label();
+  if (!array_key_exists($source_id, $resolved)) {
+    $resolved[$source_id] = NULL;
+    $article_tokens = _saho_classroom_tokens((string) $article->getUntranslated()->label());
+    if ($article_tokens) {
+      $storage = \Drupal::entityTypeManager()->getStorage('node');
+      $ids = $storage->getQuery()
+        ->accessCheck(TRUE)
+        ->condition('type', 'presentation')
+        ->condition('status', 1)
+        ->execute();
+      if ($ids) {
+        $candidates = [];
+        foreach ($storage->loadMultiple($ids) as $deck) {
+          $topic = '';
+          if ($deck->hasField('field_caps_topic') && !$deck->get('field_caps_topic')->isEmpty()) {
+            $term = $deck->get('field_caps_topic')->entity;
+            if ($term) {
+              $topic = (string) $term->label();
+            }
+          }
+          if ($topic === '') {
+            $topic = (string) $deck->label();
+          }
+          $candidates[$deck->id()] = _saho_classroom_tokens($topic);
+        }
+        // Score every deck against the fixed article (denominator is each
+        // deck's own token count).
+        $resolved[$source_id] = _saho_classroom_best_match($article_tokens, $candidates, TRUE);
       }
     }
-    if ($topic === '') {
-      $topic = (string) $deck->label();
-    }
-    $topic_tokens = _saho_classroom_tokens($topic);
-    if (!$topic_tokens) {
-      continue;
-    }
-    $hits = count(array_intersect_key($topic_tokens, $article_tokens));
-    $score = $hits / count($topic_tokens);
-    if ($score > $best_score) {
-      $best_score = $score;
-      $best = $deck;
-    }
   }
 
-  // Require a strong overlap so we never link to a loosely-related deck.
-  return $best_score >= 0.6 ? $best : NULL;
+  if ($resolved[$source_id] === NULL) {
+    return NULL;
+  }
+  $deck = \Drupal::entityTypeManager()->getStorage('node')->load($resolved[$source_id]);
+  return $deck instanceof NodeInterface ? $deck : NULL;
+}
+
+/**
+ * Picks the id of the best token-overlap match above the confidence bar.
+ *
+ * Shared by both directions of the article <-> deck cross-link so the scoring
+ * and the 0.6 confidence bar live in one place.
+ *
+ * @param array $query_tokens
+ *   The fixed token set to match against (see _saho_classroom_tokens()).
+ * @param array $candidates
+ *   Map of entity id => candidate token set.
+ * @param bool $normalise_by_candidate
+ *   When TRUE the overlap is divided by each candidate's token count (article
+ *   -> deck); when FALSE it is divided by the query token count (deck ->
+ *   article).
+ *
+ * @return int|null
+ *   The winning entity id, or NULL when nothing clears the threshold.
+ */
+function _saho_classroom_best_match(array $query_tokens, array $candidates, bool $normalise_by_candidate): ?int {
+  if (!$query_tokens) {
+    return NULL;
+  }
+  $best_id = NULL;
+  $best_score = 0.0;
+  foreach ($candidates as $id => $tokens) {
+    if (!$tokens) {
+      continue;
+    }
+    $denominator = $normalise_by_candidate ? count($tokens) : count($query_tokens);
+    if ($denominator === 0) {
+      continue;
+    }
+    $score = count(array_intersect_key($query_tokens, $tokens)) / $denominator;
+    if ($score > $best_score) {
+      $best_score = $score;
+      $best_id = (int) $id;
+    }
+  }
+  // Require a strong overlap so we never link to a loosely-related record.
+  return ($best_id !== NULL && $best_score >= 0.6) ? $best_id : NULL;
+}
+
+/**
+ * Returns a node in the active content language when that translation exists.
+ *
+ * The cross-link matchers resolve nodes in their default (English) language;
+ * this swaps in the translation the visitor is currently reading so the CTA
+ * points at - and is labelled in - the right language variant.
+ */
+function _saho_classroom_active_translation(NodeInterface $node): NodeInterface {
+  $langcode = \Drupal::languageManager()
+    ->getCurrentLanguage(LanguageInterface::TYPE_CONTENT)
+    ->getId();
+  return $node->hasTranslation($langcode) ? $node->getTranslation($langcode) : $node;
 }
 
 /**

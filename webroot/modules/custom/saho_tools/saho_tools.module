@@ -11,10 +11,24 @@ use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Url;
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\search_api\Query\QueryInterface as SearchApiQueryInterface;
-use Drupal\search_api\ResultSet\ResultSetInterface as SearchApiResultSetInterface;
 use Solarium\Core\Query\QueryInterface as SolariumQueryInterface;
-use Solarium\QueryType\Select\Result\Result as SolrSelectResult;
 use Solarium\QueryType\Select\Query\Query as SolrSelectQuery;
+
+/**
+ * Returns the node bundles that surface the Cite and Share tools.
+ *
+ * The citation + sharing buttons are rendered by the theme on these bundles,
+ * so the modals and their libraries must be emitted for the same set. Keeping
+ * the list in one place stops the button scope (templates) and the modal scope
+ * (page_attachments_alter / preprocess_html) from drifting apart, which is
+ * what left the buttons dead on image and basic-page records.
+ *
+ * @return string[]
+ *   The node bundle machine names.
+ */
+function _saho_tools_bundles_with_tools() {
+  return ['article', 'biography', 'archive', 'place', 'event', 'image', 'page'];
+}
 
 /**
  * Implements hook_help().
@@ -79,7 +93,7 @@ function saho_tools_page_attachments_alter(array &$attachments) {
     // pages, the homepage, etc. Scope the libraries to the bundles that
     // actually surface the buttons.
     $node = \Drupal::routeMatch()->getParameter('node');
-    $bundles_with_tools = ['article', 'biography', 'archive', 'place', 'event'];
+    $bundles_with_tools = _saho_tools_bundles_with_tools();
     $on_tools_page = $node instanceof NodeInterface
       && in_array($node->bundle(), $bundles_with_tools, TRUE);
 
@@ -150,7 +164,7 @@ function saho_tools_preprocess_html(&$variables) {
   // page_attachments_alter scope so /featured, listings, taxonomy etc.
   // don't drag in the saho_tools CSS via the modal's #attached library.
   $node_for_tools = \Drupal::routeMatch()->getParameter('node');
-  $tools_bundles = ['article', 'biography', 'archive', 'place', 'event'];
+  $tools_bundles = _saho_tools_bundles_with_tools();
   $emit_tools_modals = $node_for_tools instanceof NodeInterface
     && in_array($node_for_tools->bundle(), $tools_bundles, TRUE);
 
@@ -773,41 +787,6 @@ function saho_tools_search_api_solr_query_alter(SolariumQueryInterface $solarium
     $spellcheck->setMaxCollations(3);
     $spellcheck->setMaxCollationTries(10);
     $spellcheck->setOnlyMorePopular(FALSE);
-  }
-}
-
-/**
- * Implements hook_search_api_solr_search_results_alter().
- *
- * Captures Solr spellcheck collations when a search returns zero results and
- * stores the best suggestion in the request attributes for template use.
- */
-function saho_tools_search_api_solr_search_results_alter(SearchApiResultSetInterface $result_set, SearchApiQueryInterface $query, SolrSelectResult $result) {
-  if ($query->getIndex()->id() !== 'saho_content') {
-    return;
-  }
-
-  // Only suggest alternatives when there are no results.
-  if ($result_set->getResultCount() > 0) {
-    return;
-  }
-
-  try {
-    $spellcheck = $result->getSpellcheck();
-    if (!$spellcheck) {
-      return;
-    }
-    $collations = $spellcheck->getCollations();
-    if (!empty($collations)) {
-      $first_collation = reset($collations);
-      $suggestion = $first_collation->getQuery();
-      if (!empty($suggestion)) {
-        \Drupal::request()->attributes->set('saho_spellcheck_suggestion', $suggestion);
-      }
-    }
-  }
-  catch (\Exception $e) {
-    // Spellcheck is non-critical - silently ignore errors.
   }
 }
 

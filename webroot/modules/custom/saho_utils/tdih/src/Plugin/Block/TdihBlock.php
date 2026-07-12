@@ -23,6 +23,13 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * Displays historical events that occurred on today's date, or allows
  * administrators to manually select a specific event to display.
  *
+ * @deprecated in saho:1.25.0 and is removed from saho:2.0.0. Use the
+ *   interactive This Day In History block (tdih_interactive_block) instead;
+ *   this legacy plugin is retained only for QA placements and will be deleted
+ *   once the QA node is retired.
+ *
+ * @see https://github.com/South-African-History-Online/sahistory-web/issues
+ *
  * @Block(
  *   id = "tdih_block",
  *   admin_label = @Translation("TDIH Block"),
@@ -203,7 +210,7 @@ class TdihBlock extends BlockBase implements ContainerFactoryPluginInterface {
       $this->configuration['manual_entity_id'] ?? NULL,
       [
         'visible' => [
-          ':input[name="use_manual_override"]' => ['checked' => TRUE],
+          ':input[name="settings[use_manual_override]"]' => ['checked' => TRUE],
         ],
       ],
       $this->t('Manual Entity'),

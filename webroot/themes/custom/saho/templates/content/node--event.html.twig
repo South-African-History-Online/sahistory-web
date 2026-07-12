@@ -40,34 +40,20 @@
     {# LEFT: Main content column #}
     <div class="saho-main-content">
 
-      {% if node.field_feature_banner.entity %}
-        <div class="saho-image-block">
-          <img
-            src="{{ file_url(node.field_feature_banner.entity.uri.value) }}"
-            alt="{{ node.field_feature_banner.alt }}"
-            class="saho-image"
-            loading="eager"
-            decoding="async"
-            fetchpriority="high"
-          >
-          {% if node.field_node_image_caption.value %}
-            <div class="caption">
-              {{ node.field_node_image_caption.value|striptags('<a><em><strong><i><b><br>')|raw }}
-            </div>
-          {% endif %}
-        </div>
-      {% elseif record_image.src is defined and record_image.src %}
-        {# Open Record lead image: duotone image-credit figure (S3). #}
+      {# field_feature_banner does not exist on the event bundle (config/sync:
+         article/biography/place only), so the old banner branch was dead. The
+         lead image is the Open Record duotone image-credit figure (S3). #}
+      {% if record_image.src is defined and record_image.src %}
         {{ include('saho:saho-image-credit', record_image, with_context = false) }}
       {% endif %}
 
       {# Article metadata (Published/Updated dates) #}
       <div class="saho-article-meta">
         {% if node.getCreatedTime() %}
-          <span>Published {{ node.getCreatedTime()|date("j F Y") }}</span>
+          <span>{{ 'Published @date'|t({'@date': node.getCreatedTime()|date("j F Y")}) }}</span>
         {% endif %}
         {% if node.getChangedTime() != node.getCreatedTime() %}
-          <span>Updated {{ node.getChangedTime()|date("j F Y") }}</span>
+          <span>{{ 'Updated @date'|t({'@date': node.getChangedTime()|date("j F Y")}) }}</span>
         {% endif %}
       </div>
 
@@ -98,7 +84,7 @@
 
       {% if content.field_highlight %}
         <div id="highlights" class="saho-highlight">
-          <h3>Highlights</h3>
+          <h3>{{ 'Highlights'|t }}</h3>
           {{ content.field_highlight }}
         </div>
       {% endif %}
@@ -151,17 +137,14 @@
     </div>
 
     {# RIGHT: Sidebar (the Open Record rail - S3) #}
-    {% if record_meta or record_related or record_further or accordion_views is not empty or (node.field_feature_banner.entity and record_image.src is defined and record_image.src) %}
+    {# No field_feature_banner on events, so the lead image always stays in the
+       main column - there is no rail-image branch to gate here. #}
+    {% if record_meta or record_related or record_further or accordion_views is not empty %}
       {% set sidebar_has_content = true %}
     {% endif %}
 
     {% if sidebar_has_content %}
     <aside class="saho-article-sidebar">
-
-      {# Image moves to the rail when a feature banner leads the main column. #}
-      {% if node.field_feature_banner.entity and record_image.src is defined and record_image.src %}
-        {{ include('saho:saho-image-credit', record_image, with_context = false) }}
-      {% endif %}
 
       {# Event record: the structured event fields. #}
       {% if record_meta %}
@@ -176,7 +159,7 @@
       {# Further reading (kept crawlable). #}
       {% if record_further %}
         <section class="saho-meta-block saho-meta-block--event">
-          <h4 class="saho-meta-block__title">Further reading</h4>
+          <h4 class="saho-meta-block__title">{{ 'Further reading'|t }}</h4>
           <div class="saho-meta-block__val">{{ record_further }}</div>
         </section>
       {% endif %}

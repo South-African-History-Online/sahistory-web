@@ -164,6 +164,11 @@ class HomeLayoutRebuilder {
     ];
 
     $node->set('layout_builder__layout', $new_sections);
+    // Save as a new revision so the rewrite is traceable and revertible.
+    if ($node->getEntityType()->isRevisionable()) {
+      $node->setNewRevision(TRUE);
+      $node->setRevisionLogMessage('Open Record catalogue home layout applied by saho_frontpage rebuild.');
+    }
     $node->save();
     $this->discardPendingDrafts();
 

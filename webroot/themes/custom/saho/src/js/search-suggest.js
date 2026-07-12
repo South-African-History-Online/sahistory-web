@@ -129,6 +129,11 @@
             e.preventDefault();
             rows[active].click();
           } else if (e.key === 'Escape') {
+            // Escape closes only the suggestion listbox; stop the event so the
+            // surrounding search modal's document-level handler does not also
+            // close the whole overlay in the same keypress.
+            e.preventDefault();
+            e.stopPropagation();
             close();
             input.setAttribute('aria-expanded', 'false');
           }

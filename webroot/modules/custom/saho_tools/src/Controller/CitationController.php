@@ -66,6 +66,13 @@ class CitationController extends ControllerBase {
       ]);
     }
     catch (\Exception $e) {
+      // Log the failure before returning the generic error so the fault is
+      // diagnosable rather than silently swallowed.
+      $this->getLogger('saho_tools')->error('Citation generation failed for node @nid: @message', [
+        '@nid' => $node->id(),
+        '@message' => $e->getMessage(),
+      ]);
+
       // Return an error response.
       return new JsonResponse([
         'success' => FALSE,

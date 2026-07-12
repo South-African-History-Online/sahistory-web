@@ -12,8 +12,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *
  * @Block(
  *   id = "citation_block",
- *   admin_label = @Translation("Citation Block"),
- *   category = @Translation("All custom"),
+ *   admin_label = @Translation("Citation"),
+ *   category = @Translation("SAHO"),
  * )
  */
 class CitationBlock extends BlockBase implements ContainerFactoryPluginInterface {

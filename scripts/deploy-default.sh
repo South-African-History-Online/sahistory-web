@@ -101,6 +101,14 @@ vendor/bin/drush saho_classroom:sync-decks -l "${SITE_URI}" 2>&1 | tee -a "${LOG
     || echo -e "${YELLOW}⚠ Classroom deck sync skipped/failed (non-fatal)${NC}"
 echo -e "${GREEN}✓ Classroom decks synced${NC}"
 
+# Reproducible catalogue home layout on node 144647. Idempotent; runs on every
+# deploy so a fresh environment (where the saho_frontpage post_update is skipped
+# because config import auto-marks it complete) still gets the Open Record home.
+echo -e "${YELLOW}Rebuilding catalogue front page...${NC}"
+vendor/bin/drush saho:frontpage-rebuild -l "${SITE_URI}" 2>&1 | tee -a "${LOG_FILE}" \
+    || echo -e "${YELLOW}⚠ Front-page rebuild skipped/failed (non-fatal)${NC}"
+echo -e "${GREEN}✓ Front page rebuilt${NC}"
+
 # Disable maintenance mode (production only, staging stays in maintenance)
 if [ "${ENVIRONMENT}" = "production" ]; then
     echo -e "${YELLOW}Disabling maintenance mode (production)...${NC}"

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Drupal\saho_frontpage\Plugin\Block;
 
 use Drupal\Core\Block\BlockBase;
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\saho_frontpage\ArchiveCountsService;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -63,6 +64,27 @@ final class RecentlyAddedBlock extends BlockBase implements ContainerFactoryPlug
   /**
    * {@inheritdoc}
    */
+  public function blockForm($form, FormStateInterface $form_state): array {
+    $form['limit'] = [
+      '#type' => 'number',
+      '#title' => $this->t('Number of records to show'),
+      '#default_value' => (int) ($this->configuration['limit'] ?? 8),
+      '#min' => 1,
+      '#max' => 50,
+    ];
+    return $form;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function blockSubmit($form, FormStateInterface $form_state): void {
+    $this->configuration['limit'] = (int) $form_state->getValue('limit');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function build(): array {
     $limit = (int) ($this->configuration['limit'] ?? 8);
     return [
@@ -70,7 +92,7 @@ final class RecentlyAddedBlock extends BlockBase implements ContainerFactoryPlug
         '#type' => 'component',
         '#component' => 'saho:saho-section-heading',
         '#props' => [
-          'title' => 'Recently added to the archive',
+          'title' => $this->t('Recently added to the archive'),
           'level' => 'h2',
         ],
       ],
@@ -79,14 +101,14 @@ final class RecentlyAddedBlock extends BlockBase implements ContainerFactoryPlug
         '#component' => 'saho:saho-index-table',
         '#props' => [
           'columns' => [
-            ['key' => 'ref', 'label' => 'Ref', 'mono' => TRUE, 'width' => '110px'],
-            ['key' => 'type', 'label' => 'Type', 'width' => '150px'],
-            ['key' => 'title', 'label' => 'Record', 'sortable' => TRUE],
-            ['key' => 'dates', 'label' => 'Dates', 'mono' => TRUE, 'muted' => TRUE, 'width' => '150px'],
-            ['key' => 'status', 'label' => 'Status', 'mono' => TRUE, 'muted' => TRUE, 'width' => '110px'],
+            ['key' => 'ref', 'label' => $this->t('Ref'), 'mono' => TRUE, 'width' => '110px'],
+            ['key' => 'type', 'label' => $this->t('Type'), 'width' => '150px'],
+            ['key' => 'title', 'label' => $this->t('Record'), 'sortable' => TRUE],
+            ['key' => 'dates', 'label' => $this->t('Dates'), 'mono' => TRUE, 'muted' => TRUE, 'width' => '150px'],
+            ['key' => 'status', 'label' => $this->t('Status'), 'mono' => TRUE, 'muted' => TRUE, 'width' => '110px'],
           ],
           'rows' => $this->archiveCounts->getRecent($limit),
-          'caption' => 'Recently added records',
+          'caption' => $this->t('Recently added records'),
         ],
       ],
       '#cache' => [

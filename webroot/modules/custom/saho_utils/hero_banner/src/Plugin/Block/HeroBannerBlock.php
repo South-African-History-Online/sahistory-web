@@ -8,7 +8,7 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\File\FileUrlGeneratorInterface;
-use Drupal\Core\Render\Markup;
+use Drupal\Core\Render\RendererInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -37,6 +37,13 @@ class HeroBannerBlock extends BlockBase implements ContainerFactoryPluginInterfa
   protected $fileUrlGenerator;
 
   /**
+   * The renderer.
+   *
+   * @var \Drupal\Core\Render\RendererInterface
+   */
+  protected $renderer;
+
+  /**
    * Constructs a new HeroBannerBlock instance.
    *
    * @param array $configuration
@@ -49,11 +56,14 @@ class HeroBannerBlock extends BlockBase implements ContainerFactoryPluginInterfa
    *   The entity type manager.
    * @param \Drupal\Core\File\FileUrlGeneratorInterface $file_url_generator
    *   The file URL generator.
+   * @param \Drupal\Core\Render\RendererInterface $renderer
+   *   The renderer.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, FileUrlGeneratorInterface $file_url_generator) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, FileUrlGeneratorInterface $file_url_generator, RendererInterface $renderer) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->entityTypeManager = $entity_type_manager;
     $this->fileUrlGenerator = $file_url_generator;
+    $this->renderer = $renderer;
   }
 
   /**
@@ -65,7 +75,8 @@ class HeroBannerBlock extends BlockBase implements ContainerFactoryPluginInterfa
       $plugin_id,
       $plugin_definition,
       $container->get('entity_type.manager'),
-      $container->get('file_url_generator')
+      $container->get('file_url_generator'),
+      $container->get('renderer')
     );
   }
 
@@ -448,15 +459,23 @@ class HeroBannerBlock extends BlockBase implements ContainerFactoryPluginInterfa
     // Process body through the administrator-configured text format
     // for XSS protection (only in standard mode).
     $body_value = '';
+    $body_format = NULL;
     if (!$is_graphic_mode && !empty($config['body']['value'])) {
       // Use the format selected by the administrator in the block config
       // form. The format is stored when the block is saved via text_format.
       // Fallback to 'basic_html' only if format is missing (e.g., legacy data).
       $format = !empty($config['body']['format']) ? $config['body']['format'] : 'basic_html';
-      // Use check_markup to apply text format filtering, then wrap in Markup
-      // so Twig knows it's already sanitized and won't double-escape.
-      $filtered_body = check_markup($config['body']['value'], $format);
-      $body_value = Markup::create($filtered_body);
+      $body_format = $format;
+      // Render through the processed_text element so the configured text
+      // format's filters run (XSS protection) and its cache tags are attached.
+      // This replaces the deprecated check_markup() + Markup::create() pair
+      // and returns a MarkupInterface Twig treats as already sanitized.
+      $processed_text = [
+        '#type' => 'processed_text',
+        '#text' => $config['body']['value'],
+        '#format' => $format,
+      ];
+      $body_value = $this->renderer->renderInIsolation($processed_text);
     }
 
     // Use SDC component for rendering (Drupal 11 best practice).
@@ -498,7 +517,12 @@ class HeroBannerBlock extends BlockBase implements ContainerFactoryPluginInterfa
       ],
       '#cache' => [
         'contexts' => ['url'],
-        'tags' => !empty($config['background_image']) ? ['media:' . $config['background_image']] : [],
+        'tags' => array_merge(
+          !empty($config['background_image']) ? ['media:' . $config['background_image']] : [],
+          // renderInIsolation() does not bubble the processed_text cache tags,
+          // so attach the body's filter format config tag explicitly.
+          $body_format ? ['config:filter.format.' . $body_format] : []
+        ),
         'max-age' => 3600,
       ],
       '#attached' => [

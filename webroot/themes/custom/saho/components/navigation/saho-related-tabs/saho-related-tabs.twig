@@ -12,32 +12,39 @@
   <div class="saho-reltabs__bar" role="tablist">
     {% for t in tabs %}
       <button type="button" class="saho-reltabs__tab{{ loop.first ? ' is-active' : '' }}"
-              role="tab" aria-selected="{{ loop.first ? 'true' : 'false' }}" data-tab="{{ t.id }}">
-        {{ t.label }}{% if t.count is not null %}<span class="saho-reltabs__count">{{ t.count }}</span>{% endif %}
+              role="tab" id="reltab-tab-{{ t.id }}" aria-controls="reltab-panel-{{ t.id }}"
+              aria-selected="{{ loop.first ? 'true' : 'false' }}" data-tab="{{ t.id }}">
+        {{ t.label }}{% if t.count is not null %}<span class="saho-reltabs__count">{{ t.count|number_format }}</span>{% endif %}
       </button>
     {% endfor %}
   </div>
   {% for t in tabs %}
-    <ul class="saho-reltabs__panel{{ loop.first ? ' is-active' : '' }}{{ t.summary ? ' saho-reltabs__panel--summary' : '' }}" data-panel="{{ t.id }}" role="tabpanel">
-      {% if t.summary %}
-        <li class="saho-reltabs__summary-count">{{ t.summary.count_line }}</li>
-      {% endif %}
-      {% for it in t.items %}
-        <li class="saho-reltabs__item">
-          <a class="saho-reltabs__link" href="{{ it.href|default('#') }}">
-            <span class="saho-reltabs__dot saho-reltabs__dot--{{ it.type|default('article') }}" aria-hidden="true"></span>
-            <span class="saho-reltabs__text">
-              <span class="saho-reltabs__label">{{ it.label }}</span>
-              {% if it.note %}<span class="saho-reltabs__note">{{ it.note }}</span>{% endif %}
-            </span>
-          </a>
-        </li>
-      {% endfor %}
-      {% if t.summary and t.summary.cta %}
-        <li class="saho-reltabs__summary-cta">
-          <a href="{{ t.summary.cta.href }}">{{ t.summary.cta.label }} &#8594;</a>
-        </li>
-      {% endif %}
-    </ul>
+    {# Each panel is a container (div role=tabpanel) wrapping its list, so the
+       <li> children are never orphaned under a role=tabpanel (WAI-ARIA APG). #}
+    <div class="saho-reltabs__panel{{ loop.first ? ' is-active' : '' }}{{ t.summary ? ' saho-reltabs__panel--summary' : '' }}"
+         data-panel="{{ t.id }}" role="tabpanel" id="reltab-panel-{{ t.id }}"
+         aria-labelledby="reltab-tab-{{ t.id }}">
+      <ul class="saho-reltabs__list">
+        {% if t.summary %}
+          <li class="saho-reltabs__summary-count">{{ t.summary.count_line }}</li>
+        {% endif %}
+        {% for it in t.items %}
+          <li class="saho-reltabs__item">
+            <a class="saho-reltabs__link" href="{{ it.href|default('#') }}">
+              <span class="saho-reltabs__dot saho-reltabs__dot--{{ it.type|default('article') }}" aria-hidden="true"></span>
+              <span class="saho-reltabs__text">
+                <span class="saho-reltabs__label">{{ it.label }}</span>
+                {% if it.note %}<span class="saho-reltabs__note">{{ it.note }}</span>{% endif %}
+              </span>
+            </a>
+          </li>
+        {% endfor %}
+        {% if t.summary and t.summary.cta %}
+          <li class="saho-reltabs__summary-cta">
+            <a href="{{ t.summary.cta.href }}">{{ t.summary.cta.label }} &#8594;</a>
+          </li>
+        {% endif %}
+      </ul>
+    </div>
   {% endfor %}
 </section>

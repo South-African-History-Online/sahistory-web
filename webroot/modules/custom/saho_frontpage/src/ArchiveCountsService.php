@@ -9,6 +9,7 @@ use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\node\NodeInterface;
 use Drupal\saho_refs\DisplayRefService;
 
@@ -21,10 +22,17 @@ use Drupal\saho_refs\DisplayRefService;
  */
 final class ArchiveCountsService {
 
+  use StringTranslationTrait;
+
   /**
    * Cache id for the aggregated counts.
    */
   public const COUNTS_CID = 'saho_frontpage:counts';
+
+  /**
+   * Cache id for the top-collections footer rows.
+   */
+  public const TOP_COLLECTIONS_CID = 'saho_frontpage:top_collections';
 
   /**
    * Seconds the aggregated counts stay cached.
@@ -77,16 +85,22 @@ final class ArchiveCountsService {
     $storage = $this->entityTypeManager->getStorage('node');
     foreach (self::RECORD_BUNDLES as $bundle) {
       $counts[$bundle] = (int) $storage->getQuery()
+        // Public aggregate counts, scoped to published nodes of this bundle:
+        // not per-user data, so no access check (the result is cached in a
+        // shared, permission-unaware bin and must be correct for anonymous).
         ->condition('type', $bundle)
         ->condition('status', 1)
-        ->accessCheck(TRUE)
+        ->accessCheck(FALSE)
         ->count()
         ->execute();
     }
     // An entity query cannot cheaply COUNT non-empty across the field table
-    // at this scale, so the sources count is a raw DISTINCT query.
+    // at this scale, so the sources count is a raw DISTINCT query. Join
+    // node_field_data so only published, non-deleted records are counted.
     $counts['sources'] = (int) $this->database->query(
-      "SELECT COUNT(DISTINCT entity_id) FROM {node__field_ref_str} WHERE field_ref_str_value IS NOT NULL AND field_ref_str_value <> ''"
+      "SELECT COUNT(DISTINCT f.entity_id) FROM {node__field_ref_str} f
+       JOIN {node_field_data} n ON n.nid = f.entity_id AND n.status = 1
+       WHERE f.deleted = 0 AND f.field_ref_str_value IS NOT NULL AND f.field_ref_str_value <> ''"
     )->fetchField();
     $counts['records'] = array_sum(array_intersect_key($counts, array_flip(self::RECORD_BUNDLES)));
     $this->cache->set(self::COUNTS_CID, $counts, $this->time->getRequestTime() + self::CACHE_MAX_AGE, ['node_list']);
@@ -102,12 +116,12 @@ final class ArchiveCountsService {
   public function getCounts(): array {
     $raw = $this->getRawCounts();
     return [
-      ['label' => 'Records', 'value' => number_format($raw['records'])],
-      ['label' => 'Biographies', 'value' => number_format($raw['biography'])],
-      ['label' => 'Events', 'value' => number_format($raw['event'])],
-      ['label' => 'Places', 'value' => number_format($raw['place'])],
-      ['label' => 'Documents', 'value' => number_format($raw['archive'])],
-      ['label' => 'Records with sources', 'value' => number_format($raw['sources'])],
+      ['label' => $this->t('Records'), 'value' => number_format($raw['records'])],
+      ['label' => $this->t('Biographies'), 'value' => number_format($raw['biography'])],
+      ['label' => $this->t('Events'), 'value' => number_format($raw['event'])],
+      ['label' => $this->t('Places'), 'value' => number_format($raw['place'])],
+      ['label' => $this->t('Documents'), 'value' => number_format($raw['archive'])],
+      ['label' => $this->t('Records with sources'), 'value' => number_format($raw['sources'])],
     ];
   }
 
@@ -125,41 +139,41 @@ final class ArchiveCountsService {
     $raw = $this->getRawCounts();
     return [
       [
-        'label' => 'Biographies',
+        'label' => $this->t('Biographies'),
         'type' => 'biography',
         'href' => '/biographies',
         'count' => number_format($raw['biography']),
       ],
       [
-        'label' => 'Topics',
+        'label' => $this->t('Topics'),
         'type' => 'topic',
         'href' => '/politics-society',
         'count' => number_format($raw['article']),
       ],
       [
-        'label' => 'Places',
+        'label' => $this->t('Places'),
         'type' => 'place',
         'href' => '/places',
         'count' => number_format($raw['place']),
       ],
       [
-        'label' => 'Events',
+        'label' => $this->t('Events'),
         'type' => 'event',
         'href' => '/timelines',
         'count' => number_format($raw['event']),
       ],
       [
-        'label' => 'Archive',
+        'label' => $this->t('Archive'),
         'type' => 'archive',
         'href' => '/archives',
         'count' => number_format($raw['archive']),
       ],
       [
-        'label' => 'Classroom',
+        'label' => $this->t('Classroom'),
         'type' => 'article',
         'href' => '/classroom',
         'count' => NULL,
-        'note' => 'Lessons in 11 languages',
+        'note' => $this->t('Lessons in 11 languages'),
       ],
     ];
   }
@@ -236,15 +250,19 @@ final class ArchiveCountsService {
    *   Collection rows, largest first.
    */
   public function getTopCollections(): array {
-    $cached = $this->cache->get('saho_frontpage:top_collections');
+    $cached = $this->cache->get(self::TOP_COLLECTIONS_CID);
     if ($cached !== FALSE) {
       return $cached->data;
     }
     $rows = [];
+    // Count only published members (c.status = 1) of published collection
+    // parents (n.status = 1); the field row itself must not be deleted.
     $result = $this->database->query(
       "SELECT p.field_feature_parent_target_id AS nid, n.title, COUNT(*) AS members
        FROM {node__field_feature_parent} p
        JOIN {node_field_data} n ON n.nid = p.field_feature_parent_target_id AND n.status = 1
+       JOIN {node_field_data} c ON c.nid = p.entity_id AND c.status = 1
+       WHERE p.deleted = 0
        GROUP BY p.field_feature_parent_target_id, n.title
        ORDER BY members DESC LIMIT 3"
     );
@@ -255,7 +273,7 @@ final class ArchiveCountsService {
         'href' => '/archives?collection=' . $record->nid,
       ];
     }
-    $this->cache->set('saho_frontpage:top_collections', $rows, $this->time->getRequestTime() + self::CACHE_MAX_AGE, ['node_list']);
+    $this->cache->set(self::TOP_COLLECTIONS_CID, $rows, $this->time->getRequestTime() + self::CACHE_MAX_AGE, ['node_list']);
     return $rows;
   }
 

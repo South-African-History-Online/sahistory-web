@@ -11,11 +11,21 @@
     <thead>
       <tr>
         {% for c in columns %}
+          {# The <th> stays a plain columnheader (scope + aria-sort); the
+             interactive sort affordance is a <button> inside it, per the
+             WAI-ARIA APG sortable-table pattern. role=button + aria-sort on
+             the same th would have destroyed the columnheader semantics. #}
           <th scope="col"
               class="saho-index-table__th{{ c.sortable ? ' is-sortable' : '' }}"
               style="text-align: {{ c.align|default('left') }};{% if c.width %} width: {{ c.width }};{% endif %}"
-              {% if c.sortable %}data-sort-key="{{ c.key }}" aria-sort="none" tabindex="0" role="button"{% endif %}>
-            {{ c.label }}{% if c.sortable %}<span class="saho-index-table__arrow" aria-hidden="true"></span>{% endif %}
+              {% if c.sortable %}data-sort-key="{{ c.key }}" aria-sort="none"{% endif %}>
+            {% if c.sortable %}
+              <button type="button" class="saho-index-table__sort-btn">
+                {{ c.label }}<span class="saho-index-table__arrow" aria-hidden="true"></span>
+              </button>
+            {% else %}
+              {{ c.label }}
+            {% endif %}
           </th>
         {% endfor %}
       </tr>

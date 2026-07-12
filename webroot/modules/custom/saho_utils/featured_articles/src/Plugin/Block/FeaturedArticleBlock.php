@@ -17,6 +17,13 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 /**
  * Provides a "Featured Article" block.
  *
+ * @deprecated in saho:1.25.0 and is removed from saho:2.0.0. The home feature
+ *   is now owned by the saho_editorial_feature block; this legacy plugin is
+ *   retained only for QA placements and will be deleted once the QA node is
+ *   retired.
+ *
+ * @see https://github.com/South-African-History-Online/sahistory-web/issues
+ *
  * @Block(
  *   id = "featured_article_block",
  *   admin_label = @Translation("Featured Article Block"),
@@ -141,7 +148,7 @@ class FeaturedArticleBlock extends BlockBase implements ContainerFactoryPluginIn
       $this->configuration['manual_entity_id'],
       [
         'visible' => [
-          ':input[name="use_manual_override"]' => ['checked' => TRUE],
+          ':input[name="settings[use_manual_override]"]' => ['checked' => TRUE],
         ],
       ],
       $this->t('Manual Article'),

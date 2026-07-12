@@ -3,6 +3,7 @@
 namespace Drupal\Tests\saho_statistics\Unit\Service;
 
 use Drupal\Core\Cache\CacheBackendInterface;
+use Drupal\Core\Cache\CacheTagsInvalidatorInterface;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Database\Query\Select;
 use Drupal\Core\Database\StatementInterface;
@@ -55,6 +56,13 @@ class TermTrackerTest extends UnitTestCase {
   protected $cacheBackend;
 
   /**
+   * The cache tags invalidator mock.
+   *
+   * @var \Drupal\Core\Cache\CacheTagsInvalidatorInterface|\PHPUnit\Framework\MockObject\MockObject
+   */
+  protected $cacheTagsInvalidator;
+
+  /**
    * {@inheritdoc}
    */
   protected function setUp(): void {
@@ -64,12 +72,14 @@ class TermTrackerTest extends UnitTestCase {
     $this->entityTypeManager = $this->createMock(EntityTypeManagerInterface::class);
     $this->entityUsage = $this->createMock(EntityUsageInterface::class);
     $this->cacheBackend = $this->createMock(CacheBackendInterface::class);
+    $this->cacheTagsInvalidator = $this->createMock(CacheTagsInvalidatorInterface::class);
 
     $this->termTracker = new TermTracker(
       $this->database,
       $this->entityTypeManager,
       $this->entityUsage,
-      $this->cacheBackend
+      $this->cacheBackend,
+      $this->cacheTagsInvalidator
     );
   }
 
@@ -293,8 +303,12 @@ class TermTrackerTest extends UnitTestCase {
    * @covers ::clearCache
    */
   public function testClearCache() {
-    $this->cacheBackend->expects($this->once())
+    // clearCache() must target the 'taxonomy' tag, never nuke the whole bin.
+    $this->cacheBackend->expects($this->never())
       ->method('deleteAll');
+    $this->cacheTagsInvalidator->expects($this->once())
+      ->method('invalidateTags')
+      ->with(['taxonomy']);
 
     $this->termTracker->clearCache();
   }

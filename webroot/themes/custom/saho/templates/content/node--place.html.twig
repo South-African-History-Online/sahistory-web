@@ -40,7 +40,10 @@
     {# LEFT: Main content column #}
     <div class="saho-main-content">
 
-      {% if node.field_feature_banner.entity %}
+      {# .entity alone is truthy on an EMPTY reference field (Twig ArrayAccess
+         trap); gate on the file URI so places without a banner fall through to
+         the record image instead of emitting an empty-src eager <img>. #}
+      {% if node.field_feature_banner.entity.uri.value %}
         <div class="saho-feature-banner">
           <img
             src="{{ file_url(node.field_feature_banner.entity.uri.value) }}"
@@ -58,10 +61,10 @@
 
       <div class="saho-article-meta">
         {% if node.getCreatedTime() %}
-          <span>Published {{ node.getCreatedTime()|date("j F Y") }}</span>
+          <span>{{ 'Published @date'|t({'@date': node.getCreatedTime()|date("j F Y")}) }}</span>
         {% endif %}
         {% if node.getChangedTime() != node.getCreatedTime() %}
-          <span>Updated {{ node.getChangedTime()|date("j F Y") }}</span>
+          <span>{{ 'Updated @date'|t({'@date': node.getChangedTime()|date("j F Y")}) }}</span>
         {% endif %}
       </div>
 
@@ -75,7 +78,7 @@
       {# Geolocation information if available #}
       {% if content.field_geolocation|render|trim %}
         <div class="saho-place-location mb-4">
-          <h3 class="mb-3">Location Map</h3>
+          <h3 class="mb-3">{{ 'Location Map'|t }}</h3>
           <div class="saho-map-responsive">
             {{ content.field_geolocation }}
           </div>
@@ -143,7 +146,7 @@
     </div>
 
     {# RIGHT: Sidebar (the Open Record rail - S3) #}
-    {% if record_meta or record_related or record_further or (node.field_feature_banner.entity and record_image.src is defined and record_image.src) %}
+    {% if record_meta or record_related or record_further or (node.field_feature_banner.entity.uri.value and record_image.src is defined and record_image.src) %}
       {% set sidebar_has_content = true %}
     {% endif %}
 
@@ -151,7 +154,7 @@
     <aside class="saho-article-sidebar">
 
       {# Place image moves to the rail when a feature banner leads the main column. #}
-      {% if node.field_feature_banner.entity and record_image.src is defined and record_image.src %}
+      {% if node.field_feature_banner.entity.uri.value and record_image.src is defined and record_image.src %}
         {{ include('saho:saho-image-credit', record_image, with_context = false) }}
       {% endif %}
 
@@ -168,7 +171,7 @@
       {# Further reading (kept crawlable). #}
       {% if record_further %}
         <section class="saho-meta-block saho-meta-block--place">
-          <h4 class="saho-meta-block__title">Further reading</h4>
+          <h4 class="saho-meta-block__title">{{ 'Further reading'|t }}</h4>
           <div class="saho-meta-block__val">{{ record_further }}</div>
         </section>
       {% endif %}

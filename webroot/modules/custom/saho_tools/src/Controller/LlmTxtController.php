@@ -2,8 +2,11 @@
 
 namespace Drupal\saho_tools\Controller;
 
+use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Controller\ControllerBase;
+use Drupal\Core\Render\RendererInterface;
 use Drupal\saho_tools\Service\Builder\WebSiteSchemaBuilder;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -13,6 +16,53 @@ use Symfony\Component\HttpFoundation\Response;
  * with comprehensive information about SAHO's content, APIs, and structure.
  */
 class LlmTxtController extends ControllerBase {
+
+  /**
+   * Cache id for the per-bundle content counts.
+   */
+  protected const COUNTS_CID = 'saho_tools:llm_txt:counts';
+
+  /**
+   * How long the generated file stays fresh, in seconds (one day).
+   */
+  protected const MAX_AGE = 86400;
+
+  /**
+   * The renderer.
+   *
+   * @var \Drupal\Core\Render\RendererInterface
+   */
+  protected $renderer;
+
+  /**
+   * The default cache backend.
+   *
+   * @var \Drupal\Core\Cache\CacheBackendInterface
+   */
+  protected $cacheBackend;
+
+  /**
+   * Constructs a LlmTxtController object.
+   *
+   * @param \Drupal\Core\Render\RendererInterface $renderer
+   *   The renderer.
+   * @param \Drupal\Core\Cache\CacheBackendInterface $cache_backend
+   *   The default cache backend.
+   */
+  public function __construct(RendererInterface $renderer, CacheBackendInterface $cache_backend) {
+    $this->renderer = $renderer;
+    $this->cacheBackend = $cache_backend;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static(
+      $container->get('renderer'),
+      $container->get('cache.default')
+    );
+  }
 
   /**
    * Generate llm.txt content.
@@ -37,13 +87,15 @@ class LlmTxtController extends ControllerBase {
       '#last_updated' => date('Y-m-d'),
     ];
 
-    $renderer = \Drupal::service('renderer');
-    $content = $renderer->renderInIsolation($build);
+    $content = $this->renderer->renderInIsolation($build);
 
-    // Return as plain text response.
+    // Return as plain text response. The file is host-canonical and identical
+    // for every visitor, so it is safe to cache publicly for a day.
     $response = new Response($content);
     $response->headers->set('Content-Type', 'text/plain; charset=UTF-8');
     $response->headers->set('X-Robots-Tag', 'noindex');
+    $response->setPublic();
+    $response->setMaxAge(self::MAX_AGE);
 
     return $response;
   }
@@ -55,6 +107,14 @@ class LlmTxtController extends ControllerBase {
    *   Array of content type counts.
    */
   protected function getContentCounts(): array {
+    // The counts drift only when content is published/unpublished, so cache
+    // them for a day under node_list rather than running seven count queries
+    // on every crawler hit.
+    $cached = $this->cacheBackend->get(self::COUNTS_CID);
+    if ($cached && is_array($cached->data)) {
+      return $cached->data;
+    }
+
     $node_storage = $this->entityTypeManager()->getStorage('node');
     $counts = [];
 
@@ -75,6 +135,13 @@ class LlmTxtController extends ControllerBase {
         ->condition('status', 1);
       $counts[$type] = $query->count()->execute();
     }
+
+    $this->cacheBackend->set(
+      self::COUNTS_CID,
+      $counts,
+      time() + self::MAX_AGE,
+      ['node_list']
+    );
 
     return $counts;
   }

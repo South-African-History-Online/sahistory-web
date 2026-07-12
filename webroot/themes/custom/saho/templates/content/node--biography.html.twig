@@ -68,10 +68,10 @@
 
       <div class="saho-article-meta">
         {% if node.getCreatedTime() %}
-          <span>Published {{ node.getCreatedTime()|date("j F Y") }}</span>
+          <span>{{ 'Published @date'|t({'@date': node.getCreatedTime()|date("j F Y")}) }}</span>
         {% endif %}
         {% if node.getChangedTime() != node.getCreatedTime() %}
-          <span>Updated {{ node.getChangedTime()|date("j F Y") }}</span>
+          <span>{{ 'Updated @date'|t({'@date': node.getChangedTime()|date("j F Y")}) }}</span>
         {% endif %}
       </div>
 
@@ -196,7 +196,7 @@
       {# Further reading (kept crawlable). #}
       {% if record_further %}
         <section class="saho-meta-block saho-meta-block--biography">
-          <h4 class="saho-meta-block__title">Further reading</h4>
+          <h4 class="saho-meta-block__title">{{ 'Further reading'|t }}</h4>
           <div class="saho-meta-block__val">{{ record_further }}</div>
         </section>
       {% endif %}

@@ -272,10 +272,16 @@ class TopReadContentBlock extends BlockBase implements ContainerFactoryPluginInt
       $items[] = $item;
     }
 
-    // If no results, show message.
+    // If no results, return a cache-tagged empty render array so the band
+    // collapses instead of printing a placeholder - and so the empty state is
+    // not cached permanently and tagless. It shares the same tags/max-age as
+    // the populated build so a new view count refreshes it too.
     if (empty($items)) {
       return [
-        '#markup' => '<p>' . $this->t('No content available.') . '</p>',
+        '#cache' => [
+          'tags' => ['node_list', 'saho_node_counter'],
+          'max-age' => 3600,
+        ],
       ];
     }
 
@@ -293,7 +299,6 @@ class TopReadContentBlock extends BlockBase implements ContainerFactoryPluginInt
         ],
       ],
       '#cache' => [
-        'contexts' => ['url.query_args'],
         'tags' => ['node_list', 'saho_node_counter'],
         'max-age' => 3600,
       ],

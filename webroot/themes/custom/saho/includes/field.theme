@@ -5,6 +5,8 @@
  * Theme and preprocess functions for fields.
  */
 
+use Drupal\Core\Entity\FieldableEntityInterface;
+
 /**
  * Implements hook_preprocess_field__comment().
  *
@@ -15,7 +17,7 @@ function saho_preprocess_field__comment(array &$variables): void {
   $element = $variables['element'];
   $entity = $element['#object'] ?? NULL;
   $count = 0;
-  if ($entity instanceof \Drupal\Core\Entity\FieldableEntityInterface
+  if ($entity instanceof FieldableEntityInterface
     && isset($element['#field_name'])
     && $entity->hasField($element['#field_name'])) {
     $count = (int) ($entity->get($element['#field_name'])->comment_count ?? 0);

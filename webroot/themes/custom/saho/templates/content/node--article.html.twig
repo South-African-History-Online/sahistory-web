@@ -52,10 +52,10 @@
 
       <div class="saho-article-meta">
         {% if node.getCreatedTime() %}
-          <span>Published {{ node.getCreatedTime()|date("j F Y") }}</span>
+          <span>{{ 'Published @date'|t({'@date': node.getCreatedTime()|date("j F Y")}) }}</span>
         {% endif %}
         {% if node.getChangedTime() != node.getCreatedTime() %}
-          <span>Updated {{ node.getChangedTime()|date("j F Y") }}</span>
+          <span>{{ 'Updated @date'|t({'@date': node.getChangedTime()|date("j F Y")}) }}</span>
         {% endif %}
       </div>
 
@@ -64,7 +64,7 @@
           {# Article contents page field integrated within body text like biography metadata #}
           {% if content.field_article_contents_page is defined and content.field_article_contents_page|render|trim %}
             <div class="saho-article-index">
-              <h4>Contents</h4>
+              <h4>{{ 'Contents'|t }}</h4>
               <div class="saho-index-content">
                 {{ content.field_article_contents_page }}
               </div>
@@ -81,7 +81,7 @@
             {{ include('saho:saho-chronology', chronology, with_context = false) }}
             {# Bridge to the interactive timeline app (R3 #477). #}
             <p class="saho-chron-bridge">
-              <a href="/timeline">Explore the full timeline &rarr;</a>
+              <a href="/timeline">{{ 'Explore the full timeline'|t }} &rarr;</a>
             </p>
           {% else %}
             {{ content.body.0 }}
@@ -91,7 +91,7 @@
 
       {% if content.field_tags is defined and content.field_tags|render|trim %}
         <div class="saho-tags">
-          <h4>Tags</h4>
+          <h4>{{ 'Tags'|t }}</h4>
           <ul class="saho-tags-list">
             {% for item in node.field_tags %}
               <li>
@@ -167,7 +167,10 @@
     </div>
 
     {# RIGHT: Sidebar (the Open Record rail - S3) #}
-    {% set rail_image = record_image.src is defined and record_image.src and (node.field_feature_banner.entity or is_collection_head) %}
+    {# Gate the rail image on the banner's file URI (not .entity, which is
+       truthy on an empty reference field) so a banner-less article does not
+       render its lead image in both the main column and the rail. #}
+    {% set rail_image = record_image.src is defined and record_image.src and (node.field_feature_banner.entity.uri.value or is_collection_head) %}
     {% if record_meta or record_related or record_further or rail_image or chronology_decades %}
       {% set sidebar_has_content = true %}
     {% endif %}
@@ -193,7 +196,7 @@
       {# Further reading (kept crawlable). #}
       {% if record_further %}
         <section class="saho-meta-block saho-meta-block--article">
-          <h4 class="saho-meta-block__title">Further reading</h4>
+          <h4 class="saho-meta-block__title">{{ 'Further reading'|t }}</h4>
           <div class="saho-meta-block__val">{{ record_further }}</div>
         </section>
       {% endif %}
@@ -203,8 +206,8 @@
       {# Sticky decade index, last in the rail so sticking never overlaps
          rail siblings: orientation for long chronologies. #}
       {% if chronology_decades %}
-        <nav class="saho-chron-index" data-saho-chron-index aria-label="Decade index">
-          <h4 class="saho-chron-index__title">Decades</h4>
+        <nav class="saho-chron-index" data-saho-chron-index aria-label="{{ 'Decade index'|t }}">
+          <h4 class="saho-chron-index__title">{{ 'Decades'|t }}</h4>
           <ul class="saho-chron-index__list">
             {% for d in chronology_decades %}
               <li class="saho-chron-index__item">

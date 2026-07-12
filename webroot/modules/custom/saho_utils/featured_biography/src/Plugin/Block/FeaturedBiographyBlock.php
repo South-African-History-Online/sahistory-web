@@ -396,7 +396,22 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
     $biography_data = $this->getBiographyItem();
 
     if (!$biography_data) {
-      // Create a sample/demo biography to show the layout.
+      // No biography could be selected. Never expose a placeholder biography to
+      // the public: build a node_list:biography-tagged cache so the block
+      // recovers as soon as a biography becomes available, keyed by permission.
+      $cache = $this->cacheHelper->buildNodeListCache('biography', [], 300);
+      $cache = $this->cacheHelper->addCacheContext($cache, 'user.permissions');
+
+      // Regular visitors get an empty render array - no demo fixture is ever
+      // shown to the public.
+      if (!$this->currentUser->hasPermission('administer blocks')) {
+        return [
+          '#cache' => $cache,
+        ];
+      }
+
+      // Block administrators get a sample layout plus a hint to configure the
+      // block so the empty state is diagnosable in the editorial UI.
       $demo_biography = [
         'nid' => 0,
         'title' => $this->t('Sample Biography'),
@@ -411,23 +426,12 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
         'is_demo' => TRUE,
       ];
 
-      // Provide helpful error message for admins.
-      $show_admin_info = $this->currentUser->hasPermission('administer blocks');
-
-      // Build cache array using CacheHelperService.
-      $cache = $this->cacheHelper->buildStandardCache(
-        'featured_biography_block',
-        $this->configuration,
-        300
-      );
-      $cache = $this->cacheHelper->addCacheContext($cache, 'user.permissions');
-
       return [
         '#theme' => 'featured_biography_block',
         '#biography_item' => $demo_biography,
         '#display_mode' => $this->configuration['display_mode'],
         '#is_demo' => TRUE,
-        '#show_admin_info' => $show_admin_info,
+        '#show_admin_info' => TRUE,
         '#selection_method' => $this->configuration['selection_method'],
         '#display_title' => $this->configuration['display_title'],
         '#block_description' => $this->configuration['block_description'],
