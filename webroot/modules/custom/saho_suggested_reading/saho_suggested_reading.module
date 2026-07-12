@@ -37,7 +37,13 @@ function saho_suggested_reading_preprocess_node(array &$variables) {
   $variables['suggested_reading'] = _saho_suggested_reading_get_enhanced_content($node);
   $variables['#attached']['library'][] = 'saho_suggested_reading/suggested_reading';
   // The list is derived from other nodes: rebuild when the node set changes.
-  $variables['#cache']['tags'][] = 'node_list';
+  // Per-bundle list tags, not the bare node_list tag - the broad tag meant
+  // every node save on the site (topics, TDIH, products...) flushed every
+  // record page from render + page cache, so cold renders were the common
+  // case. The engine only ever surfaces these bundles.
+  foreach ($supported_bundles as $reading_bundle) {
+    $variables['#cache']['tags'][] = 'node_list:' . $reading_bundle;
+  }
 }
 
 /**
