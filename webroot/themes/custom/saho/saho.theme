@@ -3001,11 +3001,14 @@ function _saho_record_related_props(NodeInterface $node): array {
     $tabs[$id]['count'] = count($tabs[$id]['items']);
   }
 
-  // The bounded-list rule holds sitewide (not only curated children): a
-  // tab past the threshold collapses to count + samples.
+  // Past the threshold a tab gets a count line, but the typed *_related_tab
+  // sets are editorially curated, already fully loaded, and have no index page
+  // to defer to - so keep every item and let the panel scroll (the count line
+  // pins to the top), instead of stranding the reader at three rows with no
+  // way to reach the rest. Curated feature-children tabs keep their own
+  // count-plus-samples summary and browse CTA (set above), untouched here.
   foreach ($tabs as $id => $tab) {
     if (!isset($tab['summary']) && count($tab['items']) > $threshold) {
-      $tabs[$id]['items'] = array_slice($tab['items'], 0, 3);
       $tabs[$id]['summary'] = [
         'count_line' => number_format($tab['count']) . ' ' . mb_strtoupper($tab['label']),
       ];
