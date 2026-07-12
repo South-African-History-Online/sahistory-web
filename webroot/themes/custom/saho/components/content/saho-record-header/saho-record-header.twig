@@ -22,6 +22,15 @@
     <h1 class="saho-record__title">{{ title }}</h1>
   </div>
 
+  {# Lead image, mobile only: on narrow screens the person/place should lead,
+     not sit below the metadata strip and toolbar. The desktop copy renders in
+     the content column (hidden here on wide screens via CSS). #}
+  {% if image.src is defined and image.src %}
+    <div class="saho-record__lead-mobile">
+      {{ include('saho:saho-image-credit', image, with_context = false) }}
+    </div>
+  {% endif %}
+
   {% if facts %}
     <dl class="saho-record__facts">
       {% for f in facts %}

@@ -15,6 +15,7 @@
 
   {# 2027 "Open Record" record header (typed tab + display ref + status + key fields). #}
   {% if record is defined %}
+    {% set record_lead_mobile = (record_image.orientation is defined and record_image.orientation in ['portrait', 'square'] and not (node.hasField('field_feature_banner') and node.field_feature_banner.entity.uri.value)) ? record_image : {} %}
     {{ include('saho:saho-record-header', {
       type: record.type,
       reference: record.reference,
@@ -22,6 +23,7 @@
       kicker: record.kicker,
       title: record.title,
       facts: record.facts,
+      image: record_lead_mobile,
     }, with_context = false) }}
   {% endif %}
 
@@ -177,7 +179,10 @@
     </div>
 
     {# RIGHT: Sidebar (the Open Record rail - S3) #}
-    {% if record_meta or record_related or record_further or (node.field_feature_banner.entity and record_image.src is defined and record_image.src) %}
+    {# .entity alone is truthy on an EMPTY reference field (Twig ArrayAccess
+       trap), so a banner-less biography was rendering its portrait in BOTH the
+       main column and the rail. Gate on the actual banner file URI. #}
+    {% if record_meta or record_related or record_further or (node.field_feature_banner.entity.uri.value and record_image.src is defined and record_image.src) %}
       {% set sidebar_has_content = true %}
     {% endif %}
 
@@ -185,7 +190,7 @@
     <aside class="saho-article-sidebar">
 
       {# Portrait moves to the rail when a feature banner leads the main column. #}
-      {% if node.field_feature_banner.entity and record_image.src is defined and record_image.src %}
+      {% if node.field_feature_banner.entity.uri.value and record_image.src is defined and record_image.src %}
         {{ include('saho:saho-image-credit', record_image, with_context = false) }}
       {% endif %}
 

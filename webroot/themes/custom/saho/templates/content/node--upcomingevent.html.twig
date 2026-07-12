@@ -16,6 +16,7 @@
 
   {# Record header: typed tab + display ref + live event status + key facts. #}
   {% if record is defined %}
+    {% set record_lead_mobile = (record_image.orientation is defined and record_image.orientation in ['portrait', 'square'] and not (node.hasField('field_feature_banner') and node.field_feature_banner.entity.uri.value)) ? record_image : {} %}
     {{ include('saho:saho-record-header', {
       type: record.type,
       reference: record.reference,
@@ -23,6 +24,7 @@
       kicker: record.kicker,
       title: record.title,
       facts: record.facts,
+      image: record_lead_mobile,
     }, with_context = false) }}
   {% endif %}
 
