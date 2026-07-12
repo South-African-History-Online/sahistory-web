@@ -8,6 +8,7 @@ use Drupal\node\Entity\Node;
 use Drupal\Core\Link;
 use Drupal\block_content\Entity\BlockContent;
 use Drupal\Core\Asset\AttachedAssetsInterface;
+use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\node\NodeInterface;
 use Drupal\taxonomy\TermInterface;
 use Drupal\views\Views;
@@ -2205,6 +2206,30 @@ function _saho_article_chronology(NodeInterface $node): array {
   if (!$node->hasField('body') || $node->get('body')->isEmpty()) {
     return [];
   }
+  // The parse is deterministic per revision but costs a full check_markup +
+  // DOM walk of the body, which on long timeline articles is real cold-render
+  // time. The revision id keys content changes; the node tag catches
+  // same-revision saves and delete/unpublish.
+  $cid = 'saho:chronology:' . $node->id() . ':' . $node->getRevisionId();
+  $cache = \Drupal::cache();
+  if (($hit = $cache->get($cid)) !== FALSE) {
+    return $hit->data;
+  }
+  $chronology = _saho_article_chronology_build($node);
+  $cache->set($cid, $chronology, CacheBackendInterface::CACHE_PERMANENT, ['node:' . $node->id()]);
+  return $chronology;
+}
+
+/**
+ * Parses the body into the chronology structure (uncached).
+ *
+ * @param \Drupal\node\NodeInterface $node
+ *   The article node, body known to be non-empty.
+ *
+ * @return array
+ *   See _saho_article_chronology().
+ */
+function _saho_article_chronology_build(NodeInterface $node): array {
   $body = $node->get('body')->first();
   $processed = (string) check_markup((string) $body->value, $body->format ?? 'basic_html');
   if (trim($processed) === '') {
