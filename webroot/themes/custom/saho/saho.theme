@@ -859,6 +859,25 @@ function saho_form_alter(array &$form, $form_state, $form_id): void {
   if (($form['#id'] ?? '') !== 'views-exposed-form-saho-global-search-page-1') {
     return;
   }
+  // The facets_exposed_filters facets (type / people / place) build as
+  // multi-value elements. A scalar value in the URL (e.g. ?type=biography
+  // instead of type[]=biography, as produced by cross-links and shared links)
+  // makes FormBuilder fatal in NestedArray::setValue ("Cannot create key
+  // <value> on non-array value"). Normalise scalar facet input to arrays
+  // before the elements are processed.
+  if (is_object($form_state) && method_exists($form_state, 'getUserInput')) {
+    $input = $form_state->getUserInput();
+    $normalised = FALSE;
+    foreach (['type', 'people_category_label', 'place_category_label'] as $facet_key) {
+      if (isset($input[$facet_key]) && !is_array($input[$facet_key])) {
+        $input[$facet_key] = [$input[$facet_key]];
+        $normalised = TRUE;
+      }
+    }
+    if ($normalised) {
+      $form_state->setUserInput($input);
+    }
+  }
   if (isset($form['search_api_fulltext'])) {
     $form['search_api_fulltext']['#type'] = 'hidden';
     unset($form['search_api_fulltext']['#title'], $form['search_api_fulltext']['#description']);
