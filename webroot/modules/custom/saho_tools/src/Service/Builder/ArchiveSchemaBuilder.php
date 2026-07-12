@@ -140,7 +140,7 @@ class ArchiveSchemaBuilder implements SchemaOrgBuilderInterface {
     $editors = [];
     if ($node->hasField('field_editors') && !$node->get('field_editors')->isEmpty()) {
       foreach ($node->get('field_editors') as $editor) {
-        $name = trim(strip_tags((string) $editor->value));
+        $name = trim(strip_tags($editor->getString()));
         if ($name !== '') {
           $editors[] = ['@type' => 'Person', 'name' => $name];
         }
@@ -152,7 +152,7 @@ class ArchiveSchemaBuilder implements SchemaOrgBuilderInterface {
     $contributors = [];
     if ($node->hasField('field_contributor') && !$node->get('field_contributor')->isEmpty()) {
       foreach ($node->get('field_contributor') as $contributor) {
-        $name = trim(strip_tags((string) $contributor->value));
+        $name = trim(strip_tags($contributor->getString()));
         if ($name !== '') {
           $contributors[] = ['@type' => 'Person', 'name' => $name];
         }
