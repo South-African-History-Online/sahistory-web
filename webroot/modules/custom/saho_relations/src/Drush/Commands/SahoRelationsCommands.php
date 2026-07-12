@@ -225,10 +225,12 @@ final class SahoRelationsCommands extends DrushCommands {
   #[CLI\Command(name: 'saho:relations-candidates', aliases: ['src'])]
   #[CLI\Option(name: 'field', description: 'Target relation field.')]
   #[CLI\Option(name: 'dict', description: 'Dictionary JSON produced by extract.')]
-  #[CLI\Option(name: 'signal', description: 'name_match, mlt, or both.')]
+  #[CLI\Option(name: 'signal', description: 'name_match, title_match, mlt, or both (= name_match + mlt).')]
   #[CLI\Option(name: 'source-bundles', description: 'Comma-separated source bundles to scan.')]
   #[CLI\Option(name: 'target-bundles', description: 'Comma-separated target bundles to keep.')]
   #[CLI\Option(name: 'mlt-top-k', description: 'MLT neighbours per node.')]
+  #[CLI\Option(name: 'include-source-field', description: 'title_match: also scan field_source credits.')]
+  #[CLI\Option(name: 'max-per-source', description: 'title_match: cap matches per source node.')]
   #[CLI\Option(name: 'out', description: 'Output JSON path.')]
   public function candidates(
     array $options = [
@@ -238,6 +240,8 @@ final class SahoRelationsCommands extends DrushCommands {
       'source-bundles' => 'article,biography,event,place',
       'target-bundles' => NULL,
       'mlt-top-k' => '8',
+      'include-source-field' => TRUE,
+      'max-per-source' => '5',
       'out' => 'candidates.json',
     ],
   ): void {
@@ -259,6 +263,20 @@ final class SahoRelationsCommands extends DrushCommands {
         $dictionary,
         $field,
         ['source_bundles' => $source_bundles],
+      ));
+    }
+    if ($signal === 'title_match') {
+      // Deliberately explicit, never folded into 'both': title scanning is
+      // built for title-identified bundles (image) and its precision profile
+      // differs from the body scan.
+      $candidates = array_merge($candidates, $this->candidateGenerator->titleMatchCandidates(
+        $dictionary,
+        $field,
+        [
+          'source_bundles' => $source_bundles,
+          'include_source_field' => filter_var($options['include-source-field'], FILTER_VALIDATE_BOOLEAN),
+          'max_per_source' => (int) $options['max-per-source'],
+        ],
       ));
     }
     if ($signal === 'mlt' || $signal === 'both') {

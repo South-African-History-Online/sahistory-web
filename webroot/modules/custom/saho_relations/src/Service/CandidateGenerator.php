@@ -141,6 +141,132 @@ final class CandidateGenerator {
   }
 
   /**
+   * Generate title-match candidate edges.
+   *
+   * The inverse of nameMatchCandidates(): where that scans source BODY text
+   * for dictionary titles, this scans the source node's own TITLE (and
+   * optionally its field_source credit). Built for the image bundle, whose
+   * identity lives in the title - "Hendrik Verwoerd addressing a crowd,
+   * 1958" contains the biography title "Hendrik Verwoerd" - while bodies
+   * are mostly empty.
+   *
+   * @param array $dictionary
+   *   Dictionary from EntityDictionaryBuilder, keyed by target nid.
+   * @param string $field
+   *   The relation field the edges target (e.g. field_people_related_tab).
+   * @param array $options
+   *   Keys:
+   *   - source_bundles (string[]): node bundles to scan titles of.
+   *     Default ['image'].
+   *   - include_source_field (bool): also scan field_source. Default TRUE.
+   *   - exclude_self (bool): never link a node to itself. Default TRUE.
+   *   - min_tokens (int): minimum dictionary-name tokens. Default 2.
+   *   - max_per_source (int): cap matches per source node, keeping the
+   *     longest (most specific) phrases. Default 5.
+   *   - batch_size (int): source rows per query. Default 500.
+   *
+   * @return array
+   *   List of candidate edges:
+   *   ['source_nid','source_bundle','field','target_id','target_bundle',
+   *    'signal'=>'title_match','match_kind'=>'exact'|'contains',
+   *    'matched_in'=>'title'|'source','evidence'=>string].
+   */
+  public function titleMatchCandidates(array $dictionary, string $field, array $options = []): array {
+    $source_bundles = $options['source_bundles'] ?? ['image'];
+    $include_source_field = $options['include_source_field'] ?? TRUE;
+    $exclude_self = $options['exclude_self'] ?? TRUE;
+    $min_tokens = (int) ($options['min_tokens'] ?? 2);
+    $max_per_source = (int) ($options['max_per_source'] ?? 5);
+    $batch_size = (int) ($options['batch_size'] ?? 500);
+
+    // Anchor index: token -> [target nids], same blocking as name-match.
+    $anchor_index = [];
+    foreach ($dictionary as $nid => $entry) {
+      if (count($entry['tokens']) < $min_tokens) {
+        continue;
+      }
+      $anchor = $entry['anchor'];
+      if (in_array($anchor, self::STOPLIST, TRUE) || mb_strlen($anchor) < 3) {
+        continue;
+      }
+      $anchor_index[$anchor][] = $nid;
+    }
+
+    $logger = $this->loggerFactory->get('saho_relations');
+    $candidates = [];
+    $last_nid = 0;
+
+    do {
+      $rows = $this->fetchTitles($source_bundles, $last_nid, $batch_size, $include_source_field);
+      foreach ($rows as $row) {
+        $last_nid = (int) $row->nid;
+        // Parenthetical asides in titles are dropped exactly as the
+        // dictionary drops nicknames, so both sides normalise alike.
+        $haystacks = ['title' => (string) $row->title];
+        if ($include_source_field && ($row->source ?? '') !== '') {
+          $haystacks['source'] = strip_tags((string) $row->source);
+        }
+
+        $matches = [];
+        foreach ($haystacks as $where => $raw) {
+          $cleaned = preg_replace('/\([^)]*\)/u', ' ', $raw) ?? $raw;
+          $normalized = EntityDictionaryBuilder::normalize($cleaned);
+          if ($normalized === '') {
+            continue;
+          }
+          $padded = ' ' . $normalized . ' ';
+          foreach (array_unique(EntityDictionaryBuilder::tokenize($normalized)) as $token) {
+            if (!isset($anchor_index[$token])) {
+              continue;
+            }
+            foreach ($anchor_index[$token] as $target_nid) {
+              if (isset($matches[$target_nid])) {
+                continue;
+              }
+              if ($exclude_self && $target_nid === (int) $row->nid) {
+                continue;
+              }
+              $entry = $dictionary[$target_nid];
+              if (!str_contains($padded, ' ' . $entry['match'] . ' ')) {
+                continue;
+              }
+              $matches[$target_nid] = [
+                'source_nid' => (int) $row->nid,
+                'source_bundle' => $row->type,
+                'field' => $field,
+                'target_id' => $target_nid,
+                'target_bundle' => $entry['bundle'],
+                'signal' => 'title_match',
+                'match_kind' => $normalized === $entry['match'] ? 'exact' : 'contains',
+                'matched_in' => $where,
+                'match_length' => mb_strlen($entry['match']),
+                'evidence' => trim($raw),
+              ];
+            }
+          }
+        }
+
+        if ($matches === []) {
+          continue;
+        }
+        // Group photos and list captions fan out to many names: keep only
+        // the longest (most specific) phrases per source.
+        usort($matches, static fn(array $a, array $b): int => $b['match_length'] <=> $a['match_length']);
+        foreach (array_slice($matches, 0, $max_per_source) as $match) {
+          unset($match['match_length']);
+          $candidates[] = $match;
+        }
+      }
+      $logger->info('Title-match scanned up to nid @nid, @count candidates so far', [
+        '@nid' => $last_nid,
+        '@count' => count($candidates),
+      ]);
+    } while (count($rows) === $batch_size);
+
+    return $candidates;
+  }
+
+  /**
    * Generate Solr More-Like-This candidate edges for given source nodes.
    *
    * @param int[] $source_nids
@@ -215,6 +341,25 @@ final class CandidateGenerator {
     $query->addField('b', 'body_value', 'body');
     $query->condition('n.type', $bundles, 'IN');
     $query->condition('n.status', 1);
+    $query->condition('n.nid', $after_nid, '>');
+    $query->orderBy('n.nid', 'ASC');
+    $query->range(0, $batch_size);
+    return $query->execute()->fetchAll();
+  }
+
+  /**
+   * Fetch a keyset-paginated batch of node titles (+ field_source credits).
+   */
+  protected function fetchTitles(array $bundles, int $after_nid, int $batch_size, bool $with_source = TRUE): array {
+    $query = $this->database->select('node_field_data', 'n');
+    $query->fields('n', ['nid', 'type', 'title']);
+    if ($with_source) {
+      $query->leftJoin('node__field_source', 's', 's.entity_id = n.nid AND s.deleted = 0');
+      $query->addField('s', 'field_source_value', 'source');
+    }
+    $query->condition('n.type', $bundles, 'IN');
+    $query->condition('n.status', 1);
+    $query->condition('n.default_langcode', 1);
     $query->condition('n.nid', $after_nid, '>');
     $query->orderBy('n.nid', 'ASC');
     $query->range(0, $batch_size);

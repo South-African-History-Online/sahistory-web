@@ -20,6 +20,14 @@ namespace Drupal\saho_relations\Service;
 final class CandidateScorer {
 
   /**
+   * Title-match targets matched by more source nodes than this are "hot".
+   *
+   * Containment edges on hot targets (the "Cape Town in every caption"
+   * problem) are demoted to the low tier; exact-title edges survive.
+   */
+  public const TITLE_MATCH_DF_CEILING = 200;
+
+  /**
    * Score a set of candidate edges.
    *
    * @param array $candidates
@@ -46,8 +54,58 @@ final class CandidateScorer {
       $by_nid[(int) $entry['nid']] = $entry;
     }
 
+    // Title-match document frequency: how many source nodes matched each
+    // target. "Cape Town" appearing in hundreds of captions is a hot phrase,
+    // not a curated relation - containment edges on such targets are demoted
+    // (an image literally TITLED "Cape Town" keeps its exact match).
+    $title_match_df = [];
+    foreach ($candidates as $edge) {
+      if (($edge['signal'] ?? '') === 'title_match') {
+        $title_match_df[(int) $edge['target_id']] = ($title_match_df[(int) $edge['target_id']] ?? 0) + 1;
+      }
+    }
+
     $scored = [];
     foreach ($candidates as $edge) {
+      if (($edge['signal'] ?? '') === 'title_match') {
+        $target = $by_nid[(int) $edge['target_id']] ?? NULL;
+        $tokens = $target ? count($target['tokens']) : 2;
+        $match = $target['match'] ?? '';
+        $shared = $homonyms[$match] ?? 1;
+        $exact = ($edge['match_kind'] ?? '') === 'exact';
+
+        $confidence = match (TRUE) {
+          $exact && $tokens >= 3 => 0.90,
+          $exact => 0.72,
+          $tokens >= 3 => 0.62,
+          default => 0.50,
+        };
+        // A credit-line match is weaker identity evidence than the title.
+        if (($edge['matched_in'] ?? 'title') === 'source') {
+          $confidence -= 0.10;
+        }
+        // Homonyms: several targets share the phrase; adjudication decides.
+        if ($shared > 1) {
+          $confidence = min($confidence, 0.45);
+        }
+        // Hot-phrase ceiling: containment on a target matched by hundreds of
+        // images cannot stand on its own.
+        if (!$exact && ($title_match_df[(int) $edge['target_id']] ?? 0) > self::TITLE_MATCH_DF_CEILING) {
+          $confidence = min($confidence, 0.45);
+        }
+        $confidence = max(0.0, min(1.0, $confidence));
+
+        $scored[] = $edge + [
+          'confidence' => round($confidence, 2),
+          'tier' => match (TRUE) {
+            $confidence >= 0.80 => 'high',
+            $confidence >= 0.50 => 'review',
+            default => 'low',
+          },
+          'homonyms' => $shared,
+        ];
+        continue;
+      }
       if (($edge['signal'] ?? '') !== 'name_match') {
         // MLT and other signals are scored elsewhere; pass through untouched.
         $scored[] = $edge + ['confidence' => (float) ($edge['confidence'] ?? 0.4), 'tier' => 'review'];

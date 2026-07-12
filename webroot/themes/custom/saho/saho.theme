@@ -2863,7 +2863,9 @@ function _saho_record_common_props(array &$variables, NodeInterface $node, array
  *   The preprocess variables, by reference.
  */
 function _saho_record_related_cache_tags(array &$variables): void {
-  foreach (['article', 'biography', 'place', 'archive'] as $child_bundle) {
+  // Image joins the set for the reverse Galleries tab (images referencing
+  // this record change what the tab shows).
+  foreach (['article', 'biography', 'place', 'archive', 'image'] as $child_bundle) {
     $variables['#cache']['tags'][] = 'node_list:' . $child_bundle;
   }
 }
@@ -3091,7 +3093,18 @@ function _saho_record_related_props(NodeInterface $node): array {
   // typed dots, counts. Same-id tabs merge and dedupe by href; a collapsed
   // curated tab (collection summary) owns its slot wholesale - the whole
   // point is that the full list never renders in-page.
-  foreach (_saho_record_curated_tabs($node) as $id => $tab) {
+  $merged_tabs = _saho_record_curated_tabs($node);
+  $gallery_tab = _saho_record_gallery_tab($node);
+  if ($gallery_tab !== NULL) {
+    $merged_tabs[] = $gallery_tab;
+  }
+  foreach ($merged_tabs as $tab) {
+    $id = $tab['id'];
+    if (isset($tab['summary']) && isset($tabs[$id]['summary'])) {
+      // Two collapsed summaries for one slot cannot merge honestly; the
+      // curated one (first in) wins.
+      continue;
+    }
     if (isset($tab['summary']) || !isset($tabs[$id])) {
       $tabs[$id] = $tab;
       continue;
@@ -3356,6 +3369,71 @@ function _saho_record_curated_tabs(NodeInterface $node): array {
   }
 
   return $memo[$nid] = $tabs;
+}
+
+/**
+ * Builds the reverse Galleries tab: images that reference this record.
+ *
+ * The image -> biography edges written by the saho_relations title-match
+ * pipeline live on the IMAGE side (field_people_related_tab), so the
+ * biography surfaces them at render time - one indexed COUNT when empty
+ * (the common case), threshold+1 loads when not. Rolling back the image
+ * edges empties this tab automatically.
+ *
+ * @param \Drupal\node\NodeInterface $node
+ *   The record node.
+ *
+ * @return array|null
+ *   A tab shaped like a curated tab (id 'galleries', so the same-id merge
+ *   folds it into any existing Galleries tab), or NULL when no images
+ *   reference this record.
+ */
+function _saho_record_gallery_tab(NodeInterface $node): ?array {
+  // Phase A: biographies. Places follow once image.field_topics_related_tab
+  // accepts place targets.
+  if ($node->bundle() !== 'biography') {
+    return NULL;
+  }
+  $nid = (int) $node->id();
+  static $memo = [];
+  if (array_key_exists($nid, $memo)) {
+    return $memo[$nid];
+  }
+  $threshold = _saho_related_collapse_threshold();
+  $query = \Drupal::entityQuery('node')
+    ->condition('type', 'image')
+    ->condition('status', 1)
+    ->condition('field_people_related_tab', $nid)
+    ->accessCheck(FALSE);
+  $total = (int) (clone $query)->count()->execute();
+  if ($total === 0) {
+    return $memo[$nid] = NULL;
+  }
+  $image_nids = $query->sort('created', 'DESC')
+    ->range(0, $threshold + 1)
+    ->execute();
+  $items = [];
+  foreach (Node::loadMultiple($image_nids) as $image) {
+    $item = _saho_record_related_item($image);
+    if ($item !== NULL) {
+      $items[] = $item;
+    }
+  }
+  if ($items === []) {
+    return $memo[$nid] = NULL;
+  }
+  $tab = [
+    'id' => 'galleries',
+    'label' => 'Galleries',
+    'count' => max($total, count($items)),
+    'items' => $total > $threshold ? array_slice($items, 0, $threshold) : $items,
+  ];
+  if ($total > $threshold) {
+    $tab['summary'] = [
+      'count_line' => number_format($total) . ' IMAGES',
+    ];
+  }
+  return $memo[$nid] = $tab;
 }
 
 /**
