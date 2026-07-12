@@ -3,9 +3,12 @@ status: true
 dependencies:
   config:
     - field.storage.node.field_geolocation
+    - field.storage.node.field_place_type
+    - field.storage.node.field_places_level3
   module:
     - geolocation
     - geolocation_leaflet
+    - image
     - node
     - user
 id: places_map
@@ -71,6 +74,21 @@ display:
           multi_type: separator
           separator: ', '
           field_api_classes: false
+        field_place_type:
+          id: field_place_type
+          table: node__field_place_type
+          field: field_place_type
+          relationship: none
+          group_type: group
+          admin_label: ''
+          entity_type: node
+          entity_field: field_place_type
+          plugin_id: field
+          label: ''
+          exclude: false
+          type: entity_reference_label
+          settings:
+            link: false
         field_geolocation:
           id: field_geolocation
           table: node__field_geolocation
@@ -198,6 +216,96 @@ display:
           expose:
             operator_limit_selection: false
             operator_list: {  }
+        field_place_type_target_id:
+          id: field_place_type_target_id
+          table: node__field_place_type
+          field: field_place_type_target_id
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: taxonomy_index_tid
+          operator: or
+          value: {  }
+          group: 1
+          exposed: true
+          expose:
+            operator_id: field_place_type_target_id_op
+            label: 'Place type'
+            description: ''
+            use_operator: false
+            operator: field_place_type_target_id_op
+            operator_limit_selection: false
+            operator_list: {  }
+            identifier: type
+            required: false
+            remember: false
+            multiple: false
+            remember_roles:
+              authenticated: authenticated
+            reduce: false
+          is_grouped: false
+          group_info:
+            label: ''
+            description: ''
+            identifier: ''
+            optional: true
+            widget: select
+            multiple: false
+            remember: false
+            default_group: All
+            default_group_multiple: {  }
+            group_items: {  }
+          reduce_duplicates: false
+          vid: field_place_type
+          type: select
+          hierarchy: false
+          limit: true
+          error_message: true
+        field_places_level3_target_id:
+          id: field_places_level3_target_id
+          table: node__field_places_level3
+          field: field_places_level3_target_id
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: taxonomy_index_tid
+          operator: or
+          value: {  }
+          group: 1
+          exposed: true
+          expose:
+            operator_id: field_places_level3_target_id_op
+            label: Category
+            description: ''
+            use_operator: false
+            operator: field_places_level3_target_id_op
+            operator_limit_selection: false
+            operator_list: {  }
+            identifier: category
+            required: false
+            remember: false
+            multiple: false
+            remember_roles:
+              authenticated: authenticated
+            reduce: false
+          is_grouped: false
+          group_info:
+            label: ''
+            description: ''
+            identifier: ''
+            optional: true
+            widget: select
+            multiple: false
+            remember: false
+            default_group: All
+            default_group_multiple: {  }
+            group_items: {  }
+          reduce_duplicates: false
+          vid: field_places_level3
+          type: select
+          hierarchy: false
+          limit: true
+          error_message: true
       style:
         type: maps_common
         options:
@@ -295,7 +403,7 @@ display:
                 settings:
                   position: topleft
               control_geocoder:
-                enabled: true
+                enabled: false
                 weight: 0
                 settings:
                   position: topleft
@@ -714,7 +822,7 @@ display:
                           x: null
                           'y': null
                     leaflet_marker_popup:
-                      enabled: false
+                      enabled: true
                       weight: 0
                       settings:
                         info_auto_display: false
@@ -768,7 +876,7 @@ display:
                           x: null
                           'y': null
                     leaflet_marker_popup:
-                      enabled: false
+                      enabled: true
                       weight: 0
                       settings:
                         info_auto_display: false
@@ -822,7 +930,7 @@ display:
                           x: null
                           'y': null
                     leaflet_marker_popup:
-                      enabled: false
+                      enabled: true
                       weight: 0
                       settings:
                         info_auto_display: false
@@ -879,9 +987,12 @@ display:
             touchZoom: true
             bounceAtZoomLimits: true
       row:
-        type: 'entity:node'
+        type: fields
         options:
-          view_mode: teaser
+          default_field_elements: true
+          inline: {  }
+          separator: ''
+          hide_empty: true
       query:
         type: views_query
         options:
