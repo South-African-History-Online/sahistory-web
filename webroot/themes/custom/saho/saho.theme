@@ -1945,7 +1945,9 @@ function saho_preprocess_node__biography(array &$variables) {
   $facts = [];
   foreach (['Born' => 'field_dob', 'Died' => 'field_dod', 'Role' => 'field_position'] as $label => $field) {
     if ($node->hasField($field) && !$node->get($field)->isEmpty()) {
-      $value = trim((string) $node->get($field)->value);
+      // field_position is a formatted field: strip its markup so the mono fact
+      // strip shows "President (1952 - 1967)", not "<p>President...</p>".
+      $value = trim(strip_tags((string) $node->get($field)->value));
       if ($value !== '') {
         $facts[] = ['label' => $label, 'value' => _saho_record_date($value)];
       }
@@ -2128,9 +2130,8 @@ function saho_preprocess_node__article(array &$variables): void {
   $published = $date_formatter->format($node->getCreatedTime(), 'custom', 'j M Y');
 
   $facts = [];
-  if ($value('field_article_author') !== '') {
-    $facts[] = ['label' => 'Author', 'value' => strip_tags($value('field_article_author'))];
-  }
+  // No author on articles: SAHO writes them, so authorship is never credited
+  // (author + archival metadata belong only on archive references).
   $facts[] = ['label' => 'Published', 'value' => $published];
   $facts[] = [
     'label' => 'Updated',
@@ -2165,9 +2166,9 @@ function saho_preprocess_node__article(array &$variables): void {
   }
   _saho_record_header_props($variables, $node, 'article', $kicker, $facts);
 
+  // No author/editor on articles: SAHO writes them (authorship + archival
+  // metadata belong only on archive references).
   $variables['record_meta'] = _saho_record_meta_props('Record details', 'article', [
-    'Author' => strip_tags($value('field_article_author')),
-    'Editors' => strip_tags($value('field_article_editors')),
     'Published' => $published,
   ]);
   // Summary/abstract from the curator-written synopsis.
