@@ -431,13 +431,6 @@ function saho_preprocess_node(array &$variables) {
     $variables['record_reading'] = _saho_record_reading_cards($variables['suggested_reading']);
   }
 
-  // Byline (written by / edited by) on record bundles, replacing the old
-  // Published/Updated line. Only shown when a real contributor is named.
-  if ($variables['view_mode'] === 'full'
-    && in_array($node->bundle(), ['biography', 'article', 'place', 'event'], TRUE)) {
-    $variables['record_byline'] = _saho_record_byline($node);
-  }
-
   // Pre-render responsive images for article templates.
 
   // For articles: pre-render hero images.
@@ -2867,35 +2860,6 @@ function _saho_record_summary_props(NodeInterface $node): ?array {
     }
   }
   return NULL;
-}
-
-/**
- * Builds the byline (written by / edited by) for a record, when attributed.
- *
- * Records SAHO wrote itself carry no author, so nothing is shown - attribution
- * only appears when a real external contributor is named (field_article_author
- * / field_article_editors / field_editors). This replaces the old-design
- * "Published X / Updated Y" line (the Open Record header already carries the
- * dates as facts). Archive book-creator (field_author) is deliberately excluded
- * here: it is the cited work's author, surfaced as Creator in the record meta.
- *
- * @param \Drupal\node\NodeInterface $node
- *   The record node.
- *
- * @return array|null
- *   ['written_by' => string, 'edited_by' => string], or NULL when unattributed.
- */
-function _saho_record_byline(NodeInterface $node): ?array {
-  $value = static function (string $field) use ($node): string {
-    return $node->hasField($field) && !$node->get($field)->isEmpty()
-      ? trim(strip_tags((string) $node->get($field)->value)) : '';
-  };
-  $written = $value('field_article_author');
-  $edited = $value('field_article_editors') ?: $value('field_editors');
-  if ($written === '' && $edited === '') {
-    return NULL;
-  }
-  return ['written_by' => $written, 'edited_by' => $edited];
 }
 
 /**
