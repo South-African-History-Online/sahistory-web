@@ -11,7 +11,6 @@ use Drupal\Core\Asset\AttachedAssetsInterface;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\node\NodeInterface;
 use Drupal\taxonomy\TermInterface;
-use Drupal\views\Views;
 use Drupal\Component\Utility\Html;
 use Drupal\Component\Utility\Unicode;
 use Drupal\Core\Render\Markup;
@@ -2048,6 +2047,7 @@ function saho_preprocess_node__biography(array &$variables) {
   // Summary/abstract from the curator-written synopsis.
   $variables['record_summary'] = _saho_record_summary_props($node);
   $variables['record_related'] = _saho_record_related_props($node);
+  _saho_record_related_cache_tags($variables);
   $variables['record_provenance'] = _saho_record_provenance_props($node);
   $variables['record_citation'] = _saho_record_citation_props($node);
   $variables['record_image'] = _saho_record_image_props($node, 'field_bio_pic');
@@ -2774,6 +2774,7 @@ function _saho_record_header_props(array &$variables, NodeInterface $node, strin
  */
 function _saho_record_common_props(array &$variables, NodeInterface $node, array $image_fields): void {
   $variables['record_related'] = _saho_record_related_props($node);
+  _saho_record_related_cache_tags($variables);
   $variables['record_provenance'] = _saho_record_provenance_props($node);
   $variables['record_citation'] = _saho_record_citation_props($node);
   $variables['record_image'] = [];
@@ -2787,6 +2788,23 @@ function _saho_record_common_props(array &$variables, NodeInterface $node, array
   $variables['record_further'] = _saho_record_further_reading($node);
   _saho_record_add_collection_membership($variables, $node);
   _saho_record_attach_libraries($variables);
+}
+
+/**
+ * Bubbles the cache tags the curated cross-reference tabs depend on.
+ *
+ * The curated tabs list children of the four record bundles; until now their
+ * freshness rode, by accident, on the reading-list band's broad node_list
+ * tag. These per-bundle list tags make the dependency explicit and survive
+ * the reading-list tag narrowing.
+ *
+ * @param array $variables
+ *   The preprocess variables, by reference.
+ */
+function _saho_record_related_cache_tags(array &$variables): void {
+  foreach (['article', 'biography', 'place', 'archive'] as $child_bundle) {
+    $variables['#cache']['tags'][] = 'node_list:' . $child_bundle;
+  }
 }
 
 /**
@@ -3107,49 +3125,115 @@ function _saho_record_curated_tabs(NodeInterface $node): array {
   if (isset($memo[$nid])) {
     return $memo[$nid];
   }
-  // Cheap short-circuit: the seven curated views all list nodes that reference
-  // this record via field_feature_parent. If nothing references it (the common
-  // case for most records), skip the whole Views machinery - one indexed COUNT
-  // instead of seven view executions per page render.
-  $has_children = (int) \Drupal::entityQuery('node')
-    ->condition('field_feature_parent', $nid)
-    ->condition('status', 1)
-    ->accessCheck(FALSE)
-    ->count()
-    ->execute();
-  if ($has_children === 0) {
+  // Parity with the retired feature_children views, whose parent-status
+  // filter meant an unpublished record rendered no curated tabs.
+  if (!$node->isPublished()) {
     return $memo[$nid] = [];
   }
-  $displays = [
-    'articles' => ['block' => 'block_1', 'label' => 'Articles'],
-    'people' => ['block' => 'block_2', 'label' => 'People'],
-    'places' => ['block' => 'block_9', 'label' => 'Places'],
-    'organisations' => ['block' => 'block_3', 'label' => 'Organisations'],
-    'timelines' => ['block' => 'block_4', 'label' => 'Timelines'],
-    'archive' => ['block' => 'block_5', 'label' => 'Archive'],
-    'galleries' => ['block' => 'block_7', 'label' => 'Galleries'],
+
+  // One indexed inventory query replaces the seven feature_children view
+  // executions (and their per-display COUNTs) this function used to run.
+  // The views' rendered output was discarded anyway - only each child's
+  // bundle plus two flags decide its bucket, mirroring the view displays:
+  // Organisations = article carrying term 51, Timelines = article with
+  // field_article_type 2985, Articles = article with neither (an article
+  // carrying both appears under Organisations AND Timelines, as the views
+  // did). Children are deduped across translations (default_langcode) and,
+  // unlike the views, counted only when published - the old totals silently
+  // included unpublished children the visitor could never see.
+  $rows = \Drupal::database()->query(
+    'SELECT DISTINCT c.nid, c.type, c.title, c.created,
+      (org.nid IS NOT NULL) AS is_org,
+      (tl.entity_id IS NOT NULL) AS is_timeline
+    FROM {node__field_feature_parent} p
+    INNER JOIN {node_field_data} c
+      ON c.nid = p.entity_id AND c.status = 1 AND c.default_langcode = 1
+    LEFT JOIN {taxonomy_index} org
+      ON org.nid = c.nid AND org.tid = :org_tid
+    LEFT JOIN {node__field_article_type} tl
+      ON tl.entity_id = c.nid AND tl.deleted = 0
+      AND tl.field_article_type_target_id = :timeline_type
+    WHERE p.field_feature_parent_target_id = :nid AND p.deleted = 0',
+    [
+      ':nid' => $nid,
+      // Term 51 "Organisations" and article-type 2985 "Timeline" - the two
+      // classifiers the feature_children displays filtered on.
+      ':org_tid' => 51,
+      ':timeline_type' => 2985,
+    ]
+  )->fetchAll();
+  if ($rows === []) {
+    return $memo[$nid] = [];
+  }
+
+  $buckets = [
+    'articles' => ['label' => 'Articles', 'rows' => []],
+    'people' => ['label' => 'People', 'rows' => []],
+    'places' => ['label' => 'Places', 'rows' => []],
+    'organisations' => ['label' => 'Organisations', 'rows' => []],
+    'timelines' => ['label' => 'Timelines', 'rows' => []],
+    'archive' => ['label' => 'Archive', 'rows' => []],
   ];
-  $threshold = _saho_related_collapse_threshold();
-  $tabs = [];
-  foreach ($displays as $id => $spec) {
-    $view = Views::getView('feature_children');
-    if ($view === NULL) {
-      break;
+  foreach ($rows as $row) {
+    switch ($row->type) {
+      case 'biography':
+        $buckets['people']['rows'][] = $row;
+        break;
+
+      case 'place':
+        $buckets['places']['rows'][] = $row;
+        break;
+
+      case 'archive':
+        $buckets['archive']['rows'][] = $row;
+        break;
+
+      case 'article':
+        if ($row->is_org) {
+          $buckets['organisations']['rows'][] = $row;
+        }
+        if ($row->is_timeline) {
+          $buckets['timelines']['rows'][] = $row;
+        }
+        if (!$row->is_org && !$row->is_timeline) {
+          $buckets['articles']['rows'][] = $row;
+        }
+        break;
     }
-    $view->setDisplay($spec['block']);
-    $view->setArguments([$node->id()]);
-    // Never load an unbounded child list (the DISA head has 20k+): fetch
-    // one row past the collapse threshold and let the SQL COUNT carry the
-    // real total.
-    $view->setItemsPerPage($threshold + 1);
-    $view->get_total_rows = TRUE;
-    $view->execute();
+  }
+
+  // Ordering parity: the Timelines/Archive views sorted the child title
+  // ascending; the other displays only sorted parent columns (constant per
+  // query), leaving child order undefined - newest-first is the
+  // deterministic replacement. Nid tiebreaks keep runs stable.
+  $by_title = static fn(object $a, object $b): int => strcasecmp($a->title, $b->title) ?: $a->nid <=> $b->nid;
+  $by_newest = static fn(object $a, object $b): int => $b->created <=> $a->created ?: $b->nid <=> $a->nid;
+  $threshold = _saho_related_collapse_threshold();
+
+  // Fetch one row past the collapse threshold per bucket (never an unbounded
+  // child list - the DISA head has 20k+); one loadMultiple covers every tab.
+  $slices = [];
+  $load_nids = [];
+  foreach ($buckets as $id => $bucket) {
+    if ($bucket['rows'] === []) {
+      continue;
+    }
+    usort($bucket['rows'], in_array($id, ['timelines', 'archive'], TRUE) ? $by_title : $by_newest);
+    $slice = array_slice($bucket['rows'], 0, $threshold + 1);
+    $slices[$id] = [
+      'label' => $bucket['label'],
+      'total' => count($bucket['rows']),
+      'nids' => array_map(static fn(object $row): int => (int) $row->nid, $slice),
+    ];
+    $load_nids = array_merge($load_nids, $slices[$id]['nids']);
+  }
+  $children = Node::loadMultiple(array_unique($load_nids));
+
+  $tabs = [];
+  foreach ($slices as $id => $spec) {
     $items = [];
-    foreach ($view->result as $row) {
-      // The view's base row is the parent node; the child arrives through
-      // the reverse field_feature_parent relationship.
-      $ref = $row->_relationship_entities['reverse__node__field_feature_parent'] ?? $row->_entity ?? NULL;
-      $item = $ref !== NULL ? _saho_record_related_item($ref) : NULL;
+    foreach ($spec['nids'] as $child_nid) {
+      $item = isset($children[$child_nid]) ? _saho_record_related_item($children[$child_nid]) : NULL;
       if ($item !== NULL) {
         $items[] = $item;
       }
@@ -3157,7 +3241,7 @@ function _saho_record_curated_tabs(NodeInterface $node): array {
     if ($items === []) {
       continue;
     }
-    $total = max((int) ($view->total_rows ?? 0), count($items));
+    $total = max($spec['total'], count($items));
     if ($total > $threshold) {
       // Collection summary: mono count line, then the bounded set of already
       // loaded rows (up to the threshold) inside a scrollable panel, and one
@@ -3192,7 +3276,25 @@ function _saho_record_curated_tabs(NodeInterface $node): array {
       ];
     }
   }
-  return $tabs;
+
+  // Galleries parity: the block_7 display aggregated the record's OWN
+  // field_gallery_tag (no child in sight), so a gallery-tagged collection
+  // head surfaced itself as a single Galleries item. Quirk preserved
+  // verbatim - the tab still only appears when the record has children,
+  // exactly as the old has-children short-circuit guaranteed.
+  if ($node->hasField('field_gallery_tag') && !$node->get('field_gallery_tag')->isEmpty()) {
+    $self = _saho_record_related_item($node);
+    if ($self !== NULL) {
+      $tabs['galleries'] = [
+        'id' => 'galleries',
+        'label' => 'Galleries',
+        'count' => 1,
+        'items' => [$self],
+      ];
+    }
+  }
+
+  return $memo[$nid] = $tabs;
 }
 
 /**
