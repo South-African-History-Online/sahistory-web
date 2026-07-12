@@ -11,6 +11,7 @@ use Drupal\Core\Asset\AttachedAssetsInterface;
 use Drupal\node\NodeInterface;
 use Drupal\taxonomy\TermInterface;
 use Drupal\views\Views;
+use Drupal\Component\Utility\Html;
 use Drupal\Component\Utility\Unicode;
 use Drupal\Core\Render\Markup;
 use Drupal\Core\Url;
@@ -1954,6 +1955,17 @@ function saho_preprocess_node__biography(array &$variables) {
     return $node->hasField($field) && !$node->get($field)->isEmpty()
       ? trim((string) $node->get($field)->value) : '';
   };
+  // Reads referenced taxonomy-term labels for a field (comma-joined).
+  $term_labels = function (string $field) use ($node): string {
+    if (!$node->hasField($field) || $node->get($field)->isEmpty()) {
+      return '';
+    }
+    $labels = [];
+    foreach ($node->get($field)->referencedEntities() as $term) {
+      $labels[] = (string) $term->label();
+    }
+    return implode(', ', $labels);
+  };
   $banning = array_filter([
     'information' => $field_value('field_ban_information'),
     'date_from' => _saho_record_date($field_value('field_banning_date_from') ?: $field_value('field_banning_date_from_text_')),
@@ -1961,7 +1973,9 @@ function saho_preprocess_node__biography(array &$variables) {
     'province' => $field_value('field_banning_province'),
   ]);
   $prison = array_filter([
-    'prison_name' => $field_value('field_prison_name'),
+    // Prefer the field_prison taxonomy (450 records) over the sparse
+    // free-text field_prison_name (59 records).
+    'prison_name' => $term_labels('field_prison') ?: $field_value('field_prison_name'),
     'prisoner_number' => $field_value('field_prison_number'),
     'date_admitted' => _saho_record_date($field_value('field_date_admitted') ?: $field_value('field_prison_admittance_date')),
     'date_released' => _saho_record_date($field_value('field_date_released') ?: $field_value('field_prison_release_date')),
@@ -2005,7 +2019,24 @@ function saho_preprocess_node__biography(array &$variables) {
     'Died' => $died,
     'Position' => strip_tags($field_value('field_position_held') ?: $field_value('field_position')),
     'Affiliation' => $field_value('field_affiliation'),
+    'Gender' => ucfirst(strtolower($field_value('field_gender'))),
+    'Field' => $term_labels('field_biography_art_category'),
   ]);
+  // Organisation memberships as cross-links to the term pages (361 activists ->
+  // 39 movements). Appended as Affiliation rows on the Vital record.
+  if ($node->hasField('field_member_of_organisation') && !$node->get('field_member_of_organisation')->isEmpty()) {
+    foreach ($node->get('field_member_of_organisation')->referencedEntities() as $org) {
+      if ($org instanceof TermInterface) {
+        $variables['record_meta']['items'][] = [
+          'label' => 'Affiliation',
+          'value' => (string) $org->label(),
+          'href' => $org->toUrl()->toString(),
+        ];
+      }
+    }
+  }
+  // Summary/abstract from the curator-written synopsis.
+  $variables['record_summary'] = _saho_record_summary_props($node);
   $variables['record_related'] = _saho_record_related_props($node);
   $variables['record_provenance'] = _saho_record_provenance_props($node);
   $variables['record_citation'] = _saho_record_citation_props($node);
@@ -2104,6 +2135,17 @@ function saho_preprocess_node__article(array &$variables): void {
   // whose body does not parse (fewer than 3 dated entries) render the
   // plain body exactly as before.
   $kicker = 'Article record';
+  // Declare the article genre (Feature / People / Review / Newspaper...) in the
+  // kicker; the timeline branch below overrides it for timeline articles.
+  if ($node->hasField('field_article_type') && !$node->get('field_article_type')->isEmpty()) {
+    $genre = [];
+    foreach ($node->get('field_article_type')->referencedEntities() as $term) {
+      $genre[] = (string) $term->label();
+    }
+    if ($genre !== []) {
+      $kicker = 'Article · ' . implode(', ', $genre);
+    }
+  }
   if ($node->hasField('field_timeline_categories_type') && !$node->get('field_timeline_categories_type')->isEmpty()) {
     $chronology = _saho_article_chronology($node);
     if ($chronology !== []) {
@@ -2121,6 +2163,8 @@ function saho_preprocess_node__article(array &$variables): void {
     'Editors' => strip_tags($value('field_article_editors')),
     'Published' => $published,
   ]);
+  // Summary/abstract from the curator-written synopsis.
+  $variables['record_summary'] = _saho_record_summary_props($node);
   _saho_record_common_props($variables, $node, ['field_article_image', 'field_image']);
 
   // Collection heads (articles with archive children, e.g. DISA): the
@@ -2404,6 +2448,9 @@ function saho_preprocess_node__archive(array &$variables): void {
     'Origin date' => $origin,
     'Format' => $term_labels('field_media_library_type'),
     'Creator' => $value('field_author'),
+    // Editors + Contributors complete the statement of responsibility.
+    'Editors' => trim(strip_tags((string) $value('field_editors'))),
+    'Contributors' => trim(strip_tags((string) $value('field_contributor'))),
     'Language' => $language !== '' ? [
       'value' => $language,
       'lang' => _saho_record_lang_code($language),
@@ -2445,6 +2492,24 @@ function saho_preprocess_node__archive(array &$variables): void {
   }
 
   $variables['record_meta'] = _saho_record_meta_props('Record details', 'archive', $rows);
+
+  // Publication catalogue panel: the bibliographic record (publisher, title,
+  // place, year, ISBN, edition) that the template suppressed and never showed -
+  // ~10k archive records carry a publisher, 288 an ISBN. Rendered as its own
+  // metadata block so it reads as a proper catalogue entry.
+  $variables['record_meta_publication'] = _saho_record_meta_props('Publication', 'archive', [
+    'Publisher' => trim(strip_tags((string) $value('field_publishers'))),
+    'Title' => trim(strip_tags((string) $value('field_publication_title'))),
+    'Subtitle' => trim(strip_tags((string) $value('field_subtitle'))),
+    'Place' => trim(strip_tags((string) $value('field_publication_place'))),
+    'Year' => $origin,
+    'ISBN' => trim(strip_tags((string) $value('field_isbn'))),
+    'Copyright' => trim(strip_tags((string) $value('field_copyright'))),
+  ]);
+
+  // Summary/abstract from the curator-written synopsis.
+  $variables['record_summary'] = _saho_record_summary_props($node);
+
   $variables['record_collection_nav'] = _saho_record_collection_nav($node);
   _saho_record_common_props($variables, $node, ['field_archive_image', 'field_image']);
 }
@@ -2754,6 +2819,40 @@ function _saho_record_collection_membership_item(NodeInterface $node): ?array {
     'value' => $value,
     'href' => $parent->toUrl()->toString(),
   ];
+}
+
+/**
+ * Builds a record "Summary/abstract" render array from the synopsis fields.
+ *
+ * The field_synopsis / field_description values are curator-written precis that
+ * the record templates suppressed and threw away. They are long prose, so they
+ * render as an inline saho-meta-block section (not the tabular metadata block).
+ * Returns the processed text as safe markup, or NULL when neither is populated.
+ *
+ * @param \Drupal\node\NodeInterface $node
+ *   The record node.
+ *
+ * @return array|null
+ *   ['heading' => string, 'body' => MarkupInterface], or NULL when empty.
+ */
+function _saho_record_summary_props(NodeInterface $node): ?array {
+  foreach (['field_synopsis', 'field_description'] as $field) {
+    if ($node->hasField($field) && !$node->get($field)->isEmpty()) {
+      $item = $node->get($field)->first();
+      // Prefer the format-processed value (text_long); fall back to escaped
+      // plain text for string fields with no text format.
+      $text = isset($item->processed)
+        ? (string) $item->processed
+        : '<p>' . Html::escape(trim((string) $item->value)) . '</p>';
+      if (trim(strip_tags($text)) !== '') {
+        return [
+          'heading' => 'Summary',
+          'body' => Markup::create($text),
+        ];
+      }
+    }
+  }
+  return NULL;
 }
 
 /**

@@ -126,6 +126,14 @@
         {% endif %}
       {% endif %}
 
+      {# Summary / abstract (curator-written synopsis), above the body. #}
+      {% if record_summary %}
+        <section class="saho-record-summary saho-meta-block saho-meta-block--archive">
+          <h4 class="saho-meta-block__title">{{ record_summary.heading|t }}</h4>
+          <div class="saho-record-summary__body">{{ record_summary.body }}</div>
+        </section>
+      {% endif %}
+
       {% if content.body %}
         <div class="saho-article-body">
           {{ content.body }}
@@ -219,7 +227,7 @@
     {# RIGHT: Sidebar (the Open Record rail - S3) #}
     {# No field_feature_banner on archive records, so the lead image always
        stays in the main column - there is no rail-image branch to gate here. #}
-    {% if record_meta or record_related or record_further %}
+    {% if record_meta or record_meta_publication or record_related or record_further %}
       {% set sidebar_has_content = true %}
     {% endif %}
 
@@ -229,6 +237,11 @@
       {# Archive record: the structured publication fields. #}
       {% if record_meta %}
         {{ include('saho:saho-metadata-block', record_meta, with_context = false) }}
+      {% endif %}
+
+      {# Publication: the bibliographic record (publisher, ISBN, edition). #}
+      {% if record_meta_publication %}
+        {{ include('saho:saho-metadata-block', record_meta_publication, with_context = false) }}
       {% endif %}
 
       {# Cross-references: typed entity relations. #}
