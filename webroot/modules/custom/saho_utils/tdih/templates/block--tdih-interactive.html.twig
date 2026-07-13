@@ -73,9 +73,12 @@
     </div>
 
     {# The birthday picker expands in place at the panel foot (R3 #478):
-       a quiet mono invitation, not a form block. #}
+       a quiet mono invitation, not a form block. On instances that do
+       NOT show the today-ledger (the /this-day-in-history page), the
+       form and its default today results ARE the page's content, so the
+       disclosure defaults open - a closed one left that page empty. #}
     {% if date_picker_form %}
-      <details class="tdih-birthday-disclosure">
+      <details class="tdih-birthday-disclosure"{% if not show_today_history %} open{% endif %}>
         <summary class="tdih-birthday-summary">{{ 'What happened on your birthday?'|t }} <span aria-hidden="true">&rarr;</span></summary>
         <div class="tdih-birthday-picker" role="search" aria-label="{{ 'Search historical events by date'|t }}">
           {{ date_picker_form }}

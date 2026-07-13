@@ -396,6 +396,15 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
     if ($this->configuration['show_today_history']) {
       $nodes = $this->nodeFetcher->loadPotentialEvents($target_date);
 
+      // Editorial curation first - but most days carry no
+      // field_home_page_feature event, and the old block showed the
+      // day's uncurated events rather than an empty panel. Fall back to
+      // the full day set so "No events found for today" only appears
+      // when the day genuinely has nothing.
+      if (empty($nodes)) {
+        $nodes = $this->nodeFetcher->loadAllBirthdayEvents($target_date);
+      }
+
       if (!empty($nodes)) {
         // Build node items for rendering and filter by exact date.
         foreach ($nodes as $node) {
