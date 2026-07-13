@@ -52,6 +52,14 @@
 
   function onViewChange(year) {
     currentYear = year;
+    // Scrolling clearly out of an explicitly chosen era hands the chip
+    // highlight back to the year-based logic.
+    if (currentEraId !== null) {
+      const era = (timeline.settings?.eras ?? []).find((e) => e.id === currentEraId);
+      if (era && (year < (era.start ?? -10000) - 1 || year >= (era.end ?? 10000))) {
+        currentEraId = null;
+      }
+    }
     if (booted && window.scrollY > 100) {
       replaceUrlState({ year, q: timeline.query, era: currentEraId });
     }
@@ -151,7 +159,7 @@
   </div>
 {:else if timeline.ready}
   <div class="tl-app" data-timeline-live>
-    <EraRail {currentYear} onjump={onEraJump} />
+    <EraRail {currentYear} {currentEraId} onjump={onEraJump} />
     <div class="tl-controls">
       <SearchBox bind:this={searchBox} onsearch={onSearch} />
       <DensityRuler {currentYear} onjump={onRulerJump} />

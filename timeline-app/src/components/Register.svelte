@@ -136,7 +136,25 @@
     lo = Math.max(0, first - BUFFER);
     hi = Math.min(heights.length - 1, last + BUFFER);
     timeline.requestRange(rowAt(lo), rowAt(hi));
-    onviewchange?.(timeline.years[rowAt(first)]);
+    notifyView(timeline.years[rowAt(first)]);
+  }
+
+  // The view-change notification escapes the current flush: updateWindow
+  // can run synchronously inside an effect (scrollToPosition from the
+  // boot effect), and the parent's handler reads/writes reactive state -
+  // calling it inline re-enters the flush (effect_update_depth_exceeded).
+  let notifyQueued = false;
+  let notifyYear = null;
+  function notifyView(year) {
+    notifyYear = year;
+    if (notifyQueued) {
+      return;
+    }
+    notifyQueued = true;
+    queueMicrotask(() => {
+      notifyQueued = false;
+      onviewchange?.(notifyYear);
+    });
   }
 
   let ticking = false;

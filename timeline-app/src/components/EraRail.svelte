@@ -2,11 +2,17 @@
   import { timeline } from '../state/timeline.svelte.js';
 
   /** Curated era chips - one horizontally scrollable row of entry points. */
-  let { currentYear = null, onjump = null } = $props();
+  let { currentYear = null, currentEraId = null, onjump = null } = $props();
 
   const eras = timeline.settings?.eras ?? [];
 
   function isActive(era) {
+    // An explicitly chosen era wins: the jump target deliberately shows
+    // one row of context above the era's first year, which would
+    // otherwise highlight the previous chapter's chip.
+    if (currentEraId !== null) {
+      return era.id === currentEraId;
+    }
     if (currentYear === null) {
       return false;
     }
