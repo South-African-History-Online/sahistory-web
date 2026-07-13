@@ -1,0 +1,61 @@
+{#
+/**
+ * @file
+ * The /timeline shell: real server-rendered content the Svelte app
+ * mounts over. Crawlers and no-JS visitors get the record header plus
+ * one linked section per era; the app replaces the [data-timeline-ssr]
+ * region once its data arrives.
+ *
+ * Available variables:
+ * - count: number of plottable events.
+ * - range: [first_year, last_year].
+ * - eras: era sections {id, label, start, end, blurb, count, events[]}.
+ * - json_ld: schema.org ItemList JSON string.
+ */
+#}
+<div class="saho-timeline-page">
+  {{ include('saho:saho-record-header', {
+    type: 'timeline',
+    kicker: 'THE RECORD, IN ORDER',
+    title: 'Timeline of South African History',
+    facts: [
+      { label: 'Dated entries', value: count|number_format(0, '.', ',') },
+      { label: 'Spanning', value: range[0] ~ ' - ' ~ range[1] },
+    ],
+  }, with_context = false) }}
+
+  <div id="saho-timeline-app">
+    <div data-timeline-ssr>
+      {% for era in eras %}
+        <section class="saho-timeline-era" id="era-{{ era.id }}">
+          <h2 class="saho-timeline-era__label">
+            {{ era.label }}
+            <span class="saho-timeline-era__span">
+              {{ era.start ?: 'before ' ~ era.end }}{% if era.start %} - {{ era.end ?: 'today' }}{% endif %}
+              &middot; {{ era.count }} {{ era.count == 1 ? 'entry' : 'entries' }}
+            </span>
+          </h2>
+          <p class="saho-timeline-era__blurb">{{ era.blurb }}</p>
+          {% if era.events %}
+            <ul class="saho-timeline-era__events">
+              {% for event in era.events %}
+                <li>
+                  <span class="saho-timeline-era__year">{{ event.year }}</span>
+                  <a href="{{ event.url }}">{{ event.title }}</a>
+                </li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+        </section>
+      {% endfor %}
+      <noscript>
+        <p class="saho-timeline-noscript">
+          {{ 'The interactive timeline needs JavaScript. The links above lead to individual records; every dated event is also reachable through'|t }}
+          <a href="/search">{{ 'search'|t }}</a>.
+        </p>
+      </noscript>
+    </div>
+  </div>
+
+  <script type="application/ld+json">{{ json_ld|raw }}</script>
+</div>
