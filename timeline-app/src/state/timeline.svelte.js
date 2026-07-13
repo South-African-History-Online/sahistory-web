@@ -34,6 +34,7 @@ function createTimeline() {
   // Search over skeleton titles - all client-side, zero round trips.
   // The lowercase haystack builds lazily on first use.
   let query = $state('');
+  let dayFilter = $state(null);
   let visible = $state(null);
   let matchCounts = $state(null);
   let titlesLower = null;
@@ -189,6 +190,51 @@ function createTimeline() {
     get visible() { return visible; },
     get matchCounts() { return matchCounts; },
 
+    get dayFilter() { return dayFilter; },
+
+    /**
+     * "On this day" filter: every event sharing the given month/day,
+     * across all years - month and day are already encoded in the
+     * yyyymmdd ints, so this is a single typed-array pass. Mutually
+     * exclusive with text search.
+     */
+    setDayFilter(month, day) {
+      if (month === null) {
+        dayFilter = null;
+        if (!query) {
+          visible = null;
+          matchCounts = null;
+        }
+        return;
+      }
+      query = '';
+      dayFilter = { month, day };
+      const target = month * 100 + day;
+      const matches = [];
+      const buckets = {};
+      for (let i = 0; i < count; i += 1) {
+        if (dateInts[i] % 10000 === target && precision[i] === 'd') {
+          matches.push(i);
+          const token = bucketForYear(years[i]);
+          buckets[token] = (buckets[token] ?? 0) + 1;
+        }
+      }
+      visible = Int32Array.from(matches);
+      matchCounts = buckets;
+    },
+
+    /** Count of day-precision events on a given month/day. */
+    countForDay(month, day) {
+      const target = month * 100 + day;
+      let total = 0;
+      for (let i = 0; i < count; i += 1) {
+        if (dateInts[i] % 10000 === target && precision[i] === 'd') {
+          total += 1;
+        }
+      }
+      return total;
+    },
+
     /**
      * Client-side title search over the skeleton. Sets the visible row
      * subset and per-bucket match counts (the Ruler's density overlay).
@@ -196,6 +242,7 @@ function createTimeline() {
     setQuery(text) {
       const q = text.trim().toLowerCase();
       query = text;
+      dayFilter = null;
       if (q.length < 2) {
         visible = null;
         matchCounts = null;

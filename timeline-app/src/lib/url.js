@@ -36,10 +36,14 @@ function buildUrl({ year = null, era = null, q = null, event = null }) {
 
 let lastReplace = 0;
 
-/** Throttled replaceState - scroll position updates, 1/sec, no history spam. */
-export function replaceUrlState(state) {
+/**
+ * Throttled replaceState - scroll position updates, 1/sec, no history
+ * spam. Pass force for deliberate one-shot updates (panel prev/next)
+ * that must not be swallowed by the throttle.
+ */
+export function replaceUrlState(state, force = false) {
   const now = Date.now();
-  if (now - lastReplace < 1000) {
+  if (!force && now - lastReplace < 1000) {
     return;
   }
   lastReplace = now;

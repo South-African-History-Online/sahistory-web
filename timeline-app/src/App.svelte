@@ -5,13 +5,14 @@
   import DensityRuler from './components/DensityRuler.svelte';
   import EraRail from './components/EraRail.svelte';
   import SearchBox from './components/SearchBox.svelte';
+  import DetailPanel from './components/DetailPanel.svelte';
+  import OnThisDayChip from './components/OnThisDayChip.svelte';
 
   let register = $state(null);
   let searchBox = $state(null);
   let currentYear = $state(null);
   let currentEraId = $state(null);
-  // Deep-linked event, opened by the detail panel once it exists.
-  let pendingEvent = $state(null);
+  let openNid = $state(null);
   let booted = false;
 
   // The server-rendered era shell stays visible until the skeleton has
@@ -60,6 +61,47 @@
     pushUrlState({ q: text || null, year: currentYear });
   }
 
+  function jumpToNid(nid) {
+    const index = timeline.indexOfNid(nid);
+    if (index < 0 || !register) {
+      return;
+    }
+    let position = index;
+    if (timeline.visible) {
+      position = timeline.visible.indexOf(index);
+      if (position < 0) {
+        return;
+      }
+    }
+    register.scrollToPosition(position);
+    currentYear = timeline.years[index];
+  }
+
+  function openEvent(nid) {
+    openNid = nid;
+    jumpToNid(nid);
+    pushUrlState({ event: nid, year: currentYear, q: timeline.query, era: currentEraId });
+  }
+
+  function navigatePanel(nid) {
+    if (nid === null) {
+      return;
+    }
+    openNid = nid;
+    jumpToNid(nid);
+    replaceUrlState({ event: nid, year: currentYear, q: timeline.query, era: currentEraId }, true);
+  }
+
+  function onPanelClose() {
+    if (openNid === null) {
+      return;
+    }
+    openNid = null;
+    if (readUrlState().event !== null) {
+      history.back();
+    }
+  }
+
   function applyUrlState(state) {
     if (state.q) {
       timeline.setQuery(state.q);
@@ -79,8 +121,9 @@
     if (state.year) {
       jumpToYear(state.year);
     }
+    openNid = state.event;
     if (state.event) {
-      pendingEvent = state.event;
+      jumpToNid(state.event);
     }
   }
 
@@ -113,6 +156,7 @@
       <SearchBox bind:this={searchBox} onsearch={onSearch} />
       <DensityRuler {currentYear} onjump={onRulerJump} />
     </div>
+    <OnThisDayChip />
     {#if timeline.visible && timeline.visible.length === 0}
       <p class="tl-app__empty" role="status">
         No titles match &ldquo;{timeline.query}&rdquo;. Try a shorter
@@ -123,8 +167,10 @@
         bind:this={register}
         visible={timeline.visible}
         onviewchange={onViewChange}
+        onopen={openEvent}
       />
     {/if}
+    <DetailPanel nid={openNid} onclose={onPanelClose} onnavigate={navigatePanel} />
   </div>
 {/if}
 
