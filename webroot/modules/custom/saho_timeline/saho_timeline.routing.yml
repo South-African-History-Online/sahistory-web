@@ -14,6 +14,41 @@ saho_timeline.search:
   requirements:
     _permission: 'access content'
 
+saho_timeline.api.v2.index:
+  path: '/api/timeline/v2/index'
+  defaults:
+    _controller: '\Drupal\saho_timeline\Controller\TimelineApiV2Controller::index'
+  requirements:
+    _permission: 'use timeline api'
+  methods: [GET]
+  options:
+    no_cache: FALSE
+
+saho_timeline.api.v2.bucket:
+  path: '/api/timeline/v2/events/{bucket}'
+  defaults:
+    _controller: '\Drupal\saho_timeline\Controller\TimelineApiV2Controller::bucket'
+  requirements:
+    _permission: 'use timeline api'
+    bucket: 'pre1500|\d{3}0'
+  methods: [GET]
+  options:
+    no_cache: FALSE
+
+saho_timeline.api.v2.event:
+  path: '/api/timeline/v2/event/{node}'
+  defaults:
+    _controller: '\Drupal\saho_timeline\Controller\TimelineApiV2Controller::event'
+  requirements:
+    _permission: 'use timeline api'
+    node: '\d+'
+  methods: [GET]
+  options:
+    no_cache: FALSE
+    parameters:
+      node:
+        type: 'entity:node'
+
 saho_timeline.api.events:
   path: '/api/timeline/events'
   defaults:
