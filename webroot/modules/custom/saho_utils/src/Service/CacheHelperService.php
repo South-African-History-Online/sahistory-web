@@ -60,8 +60,10 @@ class CacheHelperService {
     array $additional_tags = [],
     int $max_age = 3600,
   ): array {
+    // Per-bundle list tag only: every consumer queries a single bundle, and
+    // the bare node_list tag meant ANY node save flushed every one of these
+    // blocks (and the pages carrying them) site-wide.
     $tags = [
-      'node_list',
       'node_list:' . $content_type,
     ];
 

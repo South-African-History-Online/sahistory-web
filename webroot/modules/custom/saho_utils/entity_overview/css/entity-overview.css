@@ -81,10 +81,97 @@
    CARD GRID LAYOUT
    ========================================================================== */
 
+/* Three per row on desktop - explicit counts, not auto-fill: minmax(300px)
+   collapsed the content column to two wide cards. */
 .entity-overview-items {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: var(--entity-spacing-lg);
+}
+
+@media (max-width: 991px) {
+  .entity-overview-items {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 575px) {
+  .entity-overview-items {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ==========================================================================
+   DISPLAY MODES + READER TOGGLE
+   ========================================================================== */
+
+/* Compact: a dense catalogue - no teasers or actions, tighter run. */
+.entity-overview--compact .entity-overview-items {
+  gap: var(--entity-spacing-md, 16px);
+}
+
+.entity-overview--compact .saho-card-teaser,
+.entity-overview--compact .saho-card-actions {
+  display: none;
+}
+
+/* List (full-width): one column, image beside the entry. */
+.entity-overview--full-width .entity-overview-items {
+  grid-template-columns: 1fr;
+}
+
+.entity-overview--full-width .saho-card {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+}
+
+.entity-overview--full-width .saho-card-image {
+  height: 100%;
+}
+
+.entity-overview--full-width .saho-card-image img {
+  height: 100%;
+  object-fit: cover;
+}
+
+@media (max-width: 575px) {
+  .entity-overview--full-width .saho-card {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* The toggle: quiet mono group, pressed state = inverse. */
+.entity-overview-toggle {
+  display: flex;
+  gap: 0;
+  margin: 0 0 12px;
+}
+
+.entity-overview-toggle__btn {
+  font-family: var(--font-mono, monospace);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 5px 12px;
+  background: transparent;
+  color: var(--text-secondary, #41433a);
+  border: var(--bw-hair, 1px) solid var(--border-default, #bdb9a6);
+  cursor: pointer;
+}
+
+.entity-overview-toggle__btn + .entity-overview-toggle__btn {
+  border-left: 0;
+}
+
+.entity-overview-toggle__btn[aria-pressed="true"] {
+  background: var(--saho-ink, #1b1c17);
+  color: var(--text-on-dark, #f3ecdd);
+  border-color: var(--saho-ink, #1b1c17);
+}
+
+.entity-overview-toggle__btn:focus-visible {
+  outline: 2px solid var(--focus-ring, #900);
+  outline-offset: 1px;
 }
 
 /* ==========================================================================
