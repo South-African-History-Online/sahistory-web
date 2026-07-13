@@ -152,12 +152,10 @@ class EntityOverviewBlock extends BlockBase implements ContainerFactoryPluginInt
     return [
       'content_type' => 'article',
       'sort_order' => 'latest',
-      'limit' => 5,
+      'limit' => 6,
       'custom_header' => '',
       // No auto-subtitle: the voice states facts or says nothing (#462).
       'intro_text' => '',
-      'enable_filtering' => FALSE,
-      'enable_sorting' => FALSE,
       'require_images' => FALSE,
       'display_mode' => 'default',
       'show_display_toggle' => FALSE,
@@ -195,17 +193,15 @@ class EntityOverviewBlock extends BlockBase implements ContainerFactoryPluginInt
       }
     }
 
+    // No #ajax here: the callback it used to point at (updateTaxonomyTerms)
+    // was removed with the taxonomy filter, and a dangling callback breaks
+    // the form on change.
     $form['content_type'] = [
       '#type' => 'select',
       '#title' => $this->t('Content Type'),
       '#description' => $this->t('Select the content type to display.'),
       '#options' => $content_type_options,
       '#default_value' => $this->configuration['content_type'],
-      '#ajax' => [
-        'callback' => [$this, 'updateTaxonomyTerms'],
-        'wrapper' => 'taxonomy-term-wrapper',
-        'event' => 'change',
-      ],
     ];
 
     // Comprehensive sorting options.
@@ -238,7 +234,7 @@ class EntityOverviewBlock extends BlockBase implements ContainerFactoryPluginInt
     $form['limit'] = [
       '#type' => 'number',
       '#title' => $this->t('Number of items'),
-      '#description' => $this->t('Number of items to show initially. Additional items can be loaded with "Load More" if enabled below.'),
+      '#description' => $this->t('Number of items to show. Three-column rows read best with a multiple of 3.'),
       '#default_value' => $this->configuration['limit'],
       '#min' => 1,
       '#max' => 50,
@@ -272,7 +268,6 @@ class EntityOverviewBlock extends BlockBase implements ContainerFactoryPluginInt
     $this->configuration['require_images'] = $form_state->getValue('require_images');
     $this->configuration['display_mode'] = $form_state->getValue('display_mode');
     $this->configuration['show_display_toggle'] = $form_state->getValue('show_display_toggle');
-    $this->configuration['enable_filtering'] = FALSE;
   }
 
   /**
@@ -344,15 +339,11 @@ class EntityOverviewBlock extends BlockBase implements ContainerFactoryPluginInt
     $display_mode = $this->configuration['display_mode'] ?? 'default';
     $show_display_toggle = $this->configuration['show_display_toggle'] ?? FALSE;
 
-    // Determine if there are more items available.
-    $total_count = $this->getEntityCount($content_type);
-    $has_more = count($items) < $total_count;
-
     // Build cache array using CacheHelperService.
     $cache = $this->cacheHelper->buildNodeListCache($content_type);
 
     // Return the render array.
-    $build = [
+    return [
       '#theme' => 'entity_overview_block',
       '#items' => $items,
       '#block_title' => $block_title,
@@ -360,46 +351,11 @@ class EntityOverviewBlock extends BlockBase implements ContainerFactoryPluginInt
       '#block_id' => $block_id,
       '#display_mode' => $display_mode,
       '#show_display_toggle' => $show_display_toggle,
-      '#has_more' => $has_more,
-      '#filter_options' => [],
-      '#sort_options' => [],
-      '#current_sort_order' => $sort_order,
       '#cache' => $cache,
       '#attached' => [
         'library' => ['entity_overview/entity_overview'],
-        'drupalSettings' => [
-          'entityOverview' => [
-            $block_id => [
-              'blockId' => $block_id,
-              'contentType' => $content_type,
-              'currentSortOrder' => $sort_order,
-              'limit' => $limit,
-              'displayMode' => $display_mode,
-            ],
-          ],
-        ],
       ],
     ];
-
-    return $build;
-  }
-
-  /**
-   * Gets the total count of entities matching the filter.
-   *
-   * @param string $content_type
-   *   The content type.
-   *
-   * @return int
-   *   The total count.
-   */
-  protected function getEntityCount($content_type) {
-    $query = $this->entityTypeManager->getStorage('node')->getQuery()
-      ->condition('type', $content_type)
-      ->condition('status', 1)
-      ->accessCheck(TRUE);
-
-    return $query->count()->execute();
   }
 
   /**

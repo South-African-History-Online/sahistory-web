@@ -4,9 +4,8 @@
  * Default theme implementation for an entity overview block.
  *
  * Canonical single source for this block's markup, using the unified SAHO
- * card system. The saho theme previously carried a diverged block override
- * (webroot/themes/custom/saho/templates/block/entity-overview-block.html.twig);
- * that copy should be removed by the theme pass so this template renders.
+ * card system. Do not re-add a theme override - a diverged copy shadowed
+ * this template for months.
  *
  * Available variables:
  * - items: An array of entity items, each with:
@@ -15,17 +14,19 @@
  *   - url: The entity URL.
  *   - image: The entity image URL.
  *   - teaser: The entity teaser text.
- *   - created: The entity creation date.
- *   - changed: The entity changed date.
+ *   - created: The entity creation timestamp.
+ *   - changed: The entity changed timestamp.
  * - block_title: The title of the block.
  * - intro_text: Introductory text for the block.
  * - block_id: A unique ID for the block wrapper.
+ * - display_mode: default | compact | full-width.
+ * - show_display_toggle: Whether readers may switch display modes.
  * - attributes: HTML attributes for the containing element.
  *
  * @ingroup themeable
  */
 #}
-<div{{ attributes.addClass('entity-overview-block') }} data-block-id="{{ block_id }}">
+<div{{ attributes.addClass('entity-overview-block', 'entity-overview--' ~ display_mode|default('default')) }} data-block-id="{{ block_id }}" data-display-mode="{{ display_mode|default('default') }}">
   {% if block_title %}
     {{ include('saho:saho-section-heading', {
       title: block_title,
@@ -39,6 +40,15 @@
     </div>
   {% endif %}
 
+  {% if show_display_toggle %}
+    <div class="entity-overview-toggle" role="group" aria-label="{{ 'Display mode'|t }}">
+      {% for mode, label in { 'default': 'Grid'|t, 'compact': 'Compact'|t, 'full-width': 'List'|t } %}
+        <button type="button" class="entity-overview-toggle__btn" data-mode="{{ mode }}"
+          aria-pressed="{{ display_mode|default('default') == mode ? 'true' : 'false' }}">{{ label }}</button>
+      {% endfor %}
+    </div>
+  {% endif %}
+
   {# Content using SAHO Card System #}
   {% if items %}
     <div class="entity-overview-items saho-card-grid">
@@ -46,8 +56,8 @@
         <div class="saho-card entity-overview-item" data-item-id="{{ item.id }}">
           {% if item.image %}
             <div class="saho-card-image">
-              <a href="{{ item.url }}">
-                <img src="{{ item.image }}" alt="{{ item.title|striptags }}" loading="lazy" decoding="async" onerror="this.closest('.saho-card-image').classList.add('is-broken')">
+              <a href="{{ item.url }}" tabindex="-1" aria-hidden="true">
+                <img src="{{ item.image }}" alt="" loading="lazy" decoding="async" onerror="this.closest('.saho-card-image').classList.add('is-broken')">
               </a>
             </div>
           {% endif %}
@@ -67,8 +77,10 @@
               <time datetime="{{ item.changed|date('c') }}">
                 {{ 'Updated'|t }}: {{ item.changed|date('j M Y') }}
               </time>
-              {% if item.created != item.changed %}
-                <span class="separator">•</span>
+              {# Only a Created date on a DIFFERENT day says anything; two
+                 timestamps minutes apart rendered as twin dates. #}
+              {% if item.created|date('Y-m-d') != item.changed|date('Y-m-d') %}
+                <span class="separator">&middot;</span>
                 <time datetime="{{ item.created|date('c') }}">
                   {{ 'Created'|t }}: {{ item.created|date('j M Y') }}
                 </time>
