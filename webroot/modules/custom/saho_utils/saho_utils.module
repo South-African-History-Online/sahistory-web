@@ -5,7 +5,10 @@
  * Contains saho_utils.module.
  */
 
+use Drupal\Component\Utility\Html;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Render\Markup;
+use Drupal\views\ViewExecutable;
 
 /**
  * Implements hook_form_alter().
@@ -27,6 +30,11 @@ function saho_utils_form_alter(&$form, FormStateInterface $form_state, $form_id)
     }
   }
 
+  // Archive browse (/archives) refine rail.
+  if ($form_id == 'views_exposed_form' && isset($form['#id']) && $form['#id'] == 'views-exposed-form-saho-archive-search-page-1') {
+    _saho_utils_archive_refine_alter($form);
+  }
+
   // Extend the year range for event date field to support historical dates.
   // SAHO covers African history from earliest times to present.
   if ($form_id === 'node_event_form' || $form_id === 'node_event_edit_form') {
@@ -34,6 +42,87 @@ function saho_utils_form_alter(&$form, FormStateInterface $form_state, $form_id)
       // Allow dates from year 1000 to 2100 for historical events.
       // Note: Year must be 4 digits for Drupal's date range parser.
       $form['field_event_date']['widget'][0]['value']['#date_year_range'] = '1000:2100';
+    }
+  }
+}
+
+/**
+ * Shapes the /archives refine rail on the Solr-backed archive view.
+ *
+ * The facets_exposed_filters options arrive as "Label (123)" with live,
+ * selection-narrowed Solr counts, ordered count-descending with
+ * zero-result values already dropped (min_count 1). This alter only
+ * restyles: counts move into the rail's mono count chip, the collection
+ * facet's raw nids become node titles (collection pages link in with
+ * ?collection=NID, so the value must stay the nid), and group order is
+ * set by weight so the strongest facets lead the rail: coverage across
+ * the 30k records is collection 91%, resource type 45%, language 12%,
+ * SALDRU topic 5%, African country under 1%.
+ */
+function _saho_utils_archive_refine_alter(array &$form): void {
+  // Keys are the filters' exposed identifiers, not their plugin ids.
+  $weights = [
+    'type' => -10,
+    'collection' => -9,
+    'language' => -8,
+    'saldru' => -7,
+    'country' => -6,
+  ];
+  foreach ($weights as $key => $weight) {
+    if (isset($form[$key])) {
+      $form[$key]['#weight'] = $weight;
+    }
+  }
+
+  // Collection: a select of raw nids is useless to a person - name every
+  // collection head, keeping the facet's count-descending order.
+  if (isset($form['collection']['#options'])) {
+    $nids = array_filter(array_keys($form['collection']['#options']), 'is_numeric');
+    $titles = $nids === [] ? [] : \Drupal::database()->query(
+      'SELECT nid, title FROM {node_field_data} WHERE nid IN (:nids[]) AND status = 1',
+      [':nids[]' => $nids]
+    )->fetchAllKeyed();
+    foreach ($form['collection']['#options'] as $value => $label) {
+      if (!is_numeric($value)) {
+        $form['collection']['#options'][$value] = t('- All collections -');
+        continue;
+      }
+      $count = preg_match('/\((\d+)\)\s*$/', (string) $label, $m)
+        ? ' (' . number_format((int) $m[1]) . ')'
+        : '';
+      $form['collection']['#options'][$value] = ($titles[$value] ?? (string) $label) . $count;
+    }
+  }
+
+  // Checkbox facets: restyle the trailing "(123)" into the rail's mono
+  // count chip so the shipped register carries over unchanged.
+  foreach (['type', 'language', 'saldru', 'country'] as $key) {
+    if (!isset($form[$key]['#options'])) {
+      continue;
+    }
+    foreach ($form[$key]['#options'] as $value => $label) {
+      if (preg_match('/^(.*) \((\d+)\)$/s', (string) $label, $m)) {
+        $form[$key]['#options'][$value] = Markup::create(
+          Html::escape($m[1])
+          . ' <span class="saho-facet-count">' . number_format((int) $m[2]) . '</span>'
+        );
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_views_pre_view().
+ */
+function saho_utils_views_pre_view(ViewExecutable $view, $display_id, array &$args) {
+  // /archives: a keyword query ranks by relevance unless the person picked
+  // a sort; without a query the catalogue leads with recently updated.
+  if ($view->id() === 'saho_archive_search' && $display_id === 'page_1') {
+    $input = $view->getExposedInput();
+    if (trim((string) ($input['combine'] ?? '')) !== '' && empty($input['sort_by'])) {
+      $input['sort_by'] = 'search_api_relevance';
+      $input['sort_order'] = 'DESC';
+      $view->setExposedInput($input);
     }
   }
 }

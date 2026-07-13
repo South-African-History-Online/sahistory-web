@@ -1,0 +1,46 @@
+{#
+/**
+ * @file SAHO Record header SDC.
+ * props: type, reference, status, kicker, title, facts[] · slots: actions
+ */
+#}
+{% set type = type|default('article') %}
+<header{{ attributes.addClass(['saho-record', 'saho-record--' ~ type]) }}>
+  <div class="saho-record__strip">
+    <span class="saho-record__tab">{{ type }}</span>
+    {% if reference %}
+      <span class="saho-record__ref">REF <b>{{ reference }}</b></span>
+    {% endif %}
+    <span class="saho-record__spacer"></span>
+    {% if status %}
+      <span class="saho-record__status"><span class="saho-record__dot"></span>{{ status }}</span>
+    {% endif %}
+  </div>
+
+  <div class="saho-record__titleblock">
+    {% if kicker %}<p class="saho-eyebrow saho-record__kicker">{{ kicker }}</p>{% endif %}
+    <h1 class="saho-record__title">{{ title }}</h1>
+  </div>
+
+  {# Lead image, mobile only: on narrow screens the person/place should lead,
+     not sit below the metadata strip and toolbar. The desktop copy renders in
+     the content column (hidden here on wide screens via CSS). #}
+  {% if image.src is defined and image.src %}
+    <div class="saho-record__lead-mobile">
+      {{ include('saho:saho-image-credit', image, with_context = false) }}
+    </div>
+  {% endif %}
+
+  {% if facts %}
+    <dl class="saho-record__facts">
+      {% for f in facts %}
+        <div class="saho-record__fact">
+          <dt>{{ f.label }}</dt>
+          <dd>{{ f.value }}</dd>
+        </div>
+      {% endfor %}
+    </dl>
+  {% endif %}
+
+  {% if actions %}<div class="saho-record__actions">{{ actions }}</div>{% endif %}
+</header>

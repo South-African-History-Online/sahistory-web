@@ -1,0 +1,133 @@
+{#
+/**
+ * @file
+ * Shared section-landing shell - 2027 "Open Record" (wireframe wf02).
+ *
+ * Rows are NOT printed via {{ rows }}: saho_preprocess_views_view__biographies()
+ * shapes every result into record_rows (saho-index-table SDC) and record_cards
+ * (saho-archive-card SDC), rendered behind the shared table/cards toggle
+ * (saho-view-toggle.js in the saho-index-table library). Same results contract
+ * as views-view--saho-landing.html.twig, with two deviations:
+ * - This header owns the page H1: block.block.saho_page_title excludes
+ *   /biographies (negated request_path from the legacy landing template era),
+ *   so unlike /index/% no global page title renders on this route.
+ * - The exposed Biography Categories filter (BEF checkboxes) renders as a
+ *   chip rail above the results (the classroom treatment), not a side rail.
+ *
+ * Available variables (beyond the standard views-view set):
+ * - landing_type: Accent key for the content type.
+ * - landing_label: Human label for the section.
+ * - landing_count: Total record count across all pages (formatted).
+ * - record_columns: Column definitions for the index-table SDC.
+ * - record_rows: One row per result (ref/type/title/href/dates/src).
+ * - record_cards: One archive-card prop set per result.
+ * - results_layout: 'table' or 'grid' - the server-side default layout.
+ */
+#}
+<div{{ attributes.addClass('saho-page', 'is-wide', 'saho-landing-page', 'saho-landing--' ~ landing_type) }}>
+
+  {# Landing header: type chip, title, mono record count. This header owns
+     the page H1 - the page title block is excluded on /biographies. #}
+  <header class="saho-landing-head">
+    <span class="saho-landing-head__tab saho-landing-head__tab--{{ landing_type }}">{{ landing_label }}</span>
+    <h1 class="saho-landing-head__title">{{ landing_label }}</h1>
+    <p class="saho-landing-head__count">{{ landing_count }} records</p>
+    {# Places carry coordinates: offer the clustered map as an alternate view. #}
+    {% if landing_type == 'place' %}
+      <a class="saho-landing-head__maplink" href="/places-map">{{ 'View all on the map'|t }} &rarr;</a>
+    {% endif %}
+  </header>
+
+  {# Register tiles (R3 #481, generalised): thematic front doors that drive
+     this landing's exposed filters in place - the records below become the
+     register clicked. An active tile links back to the full landing.
+     Built in _saho_landing_registers(); /africa keeps deep links because
+     its regional pages are designed destinations of their own. #}
+  {% if landing_registers %}
+    <nav class="saho-africa-regions saho-landing-registers" aria-label="{{ 'Registers'|t }}">
+      {% for register in landing_registers %}
+        <a class="saho-africa-regions__card{{ register.active ? ' is-active' }}"
+           href="{{ register.href }}"
+           {%- if register.active %} aria-current="true"{% endif %}>
+          <span class="saho-africa-regions__marker" aria-hidden="true"></span>
+          <span class="saho-africa-regions__label">{{ register.label }}</span>
+        </a>
+      {% endfor %}
+    </nav>
+  {% endif %}
+
+  {% if header %}
+    <div class="saho-landing-intro">
+      {{ header }}
+    </div>
+  {% endif %}
+
+  {# Biography Categories (BEF checkboxes) as a square mono chip rail. #}
+  <nav class="saho-landing__filters" aria-label="Filter {{ landing_label|lower }}">
+    {{ exposed }}
+  </nav>
+
+  <div class="saho-search-layout saho-search-layout--single">
+    <section class="saho-search-results" data-saho-results>
+
+      {# Head row: the table/cards layout toggle (the header owns the count). #}
+      <div class="saho-search-head">
+        <div class="saho-search-toolbar">
+          <div class="saho-view-toggle" data-saho-view-toggle role="tablist" aria-label="Result layout">
+            <button type="button" role="tab" data-view="table"
+                    class="saho-view-toggle__btn{{ results_layout == 'table' ? ' is-active' : '' }}"
+                    aria-selected="{{ results_layout == 'table' ? 'true' : 'false' }}">Table</button>
+            <button type="button" role="tab" data-view="grid"
+                    class="saho-view-toggle__btn{{ results_layout == 'grid' ? ' is-active' : '' }}"
+                    aria-selected="{{ results_layout == 'grid' ? 'true' : 'false' }}">Cards</button>
+          </div>
+        </div>
+      </div>
+
+      {% if record_rows is not empty %}
+        <div class="saho-results--table"{% if results_layout == 'grid' %} hidden{% endif %}>
+          {% include 'saho:saho-index-table' with {
+            columns: record_columns,
+            rows: record_rows,
+            caption: landing_label,
+          } only %}
+        </div>
+        <div class="saho-results--grid"{% if results_layout == 'table' %} hidden{% endif %}>
+          <div class="saho-card-grid saho-card-grid--columns-three">
+            {% for card in record_cards %}
+              {% include 'saho:saho-archive-card' with card only %}
+            {% endfor %}
+          </div>
+        </div>
+      {% else %}
+        {% if empty %}
+          <div class="saho-view-empty">
+            {{ empty }}
+          </div>
+        {% else %}
+          <p class="saho-search-empty">No records found.</p>
+        {% endif %}
+      {% endif %}
+
+      {% if pager %}
+        <div class="saho-search-pager">
+          {{ pager }}
+        </div>
+      {% endif %}
+
+      {% if more %}
+        <div class="saho-search-more">
+          {{ more }}
+        </div>
+      {% endif %}
+
+    </section>
+  </div>
+
+  {% if attachment_after %}
+    <div class="saho-landing-attachment">
+      {{ attachment_after }}
+    </div>
+  {% endif %}
+
+</div>

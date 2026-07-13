@@ -13,13 +13,19 @@
 
 <div {{ page_attributes.addClass(page_classes) }}>
 	{% block page_navigation %}
-		{% include 'saho:page-navigation' %}
+		{# The legacy navbar region blocks are all disabled; skip the empty bar
+		   entirely unless a region actually has content (S2 chrome owns the
+		   header now). #}
+		{% if page.navbar_branding|render|trim or page.navbar_left|render|trim or page.navbar_right|render|trim %}
+			{% include 'saho:page-navigation' %}
+		{% endif %}
 	{% endblock %}
 
   {% block page_content %}
     {% include 'saho:page-content' with {
-      page_main_utility_classes: ['py-5'],
-      page_header_container_utility_classes: ['mb-3'],
+      page_main_utility_classes: ['pt-3', 'pb-5'],
+      page_header_container_utility_classes: ['mb-2'],
+      page_content_container_utility_classes: ['saho-page'],
       breadcrumb: breadcrumb,
     }%}
   {% endblock %}

@@ -25,7 +25,6 @@ props:
 
     url:
       type: string
-      format: uri
       title: Button URL
       description: The destination URL when clicked
       examples:
@@ -35,9 +34,9 @@ props:
     variant:
       type: string
       title: Button Variant
-      description: Visual style variant (primary filled red button only)
-      enum:
-        - primary          # Filled red button (only variant)
+      # Free string: callers pass primary/text/ghost/link etc. Drupal 11.4 SDC
+      # validation rejects values outside a narrow enum, so we don't constrain it.
+      description: Visual style variant (primary, text, ghost, link)
       default: primary
 
     size:
@@ -70,7 +69,7 @@ props:
       default: after
 
     attributes:
-      type: object
+      type: [object, string]
       title: HTML Attributes
       description: Additional HTML attributes (class, id, data-*, etc.)
       properties:
@@ -93,7 +92,9 @@ props:
             - _parent
             - _top
         rel:
-          type: string
+          # Nullable: hero_banner passes NULL when no rel is configured
+          # (Drupal 11.4 SDC validation fatals on schema misses).
+          type: [string, 'null']
           title: Link Relationship
           description: Link rel attribute (noopener, noreferrer, etc.)
         aria-label:

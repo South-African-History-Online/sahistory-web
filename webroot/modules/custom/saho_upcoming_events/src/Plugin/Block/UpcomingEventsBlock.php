@@ -166,9 +166,10 @@ class UpcomingEventsBlock extends BlockBase implements ContainerFactoryPluginInt
     $events = $this->getUpcomingEvents($config['number_of_events']);
 
     if (empty($events)) {
+      // Collapse the whole block (including its Layout Builder label) rather
+      // than shipping a visible empty band on the home page. Publishing an
+      // event restores it, so carry the cache metadata even when empty.
       return [
-        '#type' => 'markup',
-        '#markup' => '<div class="upcoming-events-empty">' . $this->t('No upcoming events at this time.') . '</div>',
         '#cache' => [
           'tags' => ['node_list:upcomingevent'],
           'max-age' => 3600,

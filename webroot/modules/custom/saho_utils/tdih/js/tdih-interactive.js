@@ -59,7 +59,7 @@
           e.preventDefault();
           $body.slideToggle();
           $item.toggleClass('expanded');
-          return FALSE;
+          return false;
         }
         });
       });

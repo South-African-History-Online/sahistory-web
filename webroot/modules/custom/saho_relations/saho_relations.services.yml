@@ -1,0 +1,25 @@
+services:
+  saho_relations.dictionary_builder:
+    class: Drupal\saho_relations\Service\EntityDictionaryBuilder
+    arguments:
+      - '@entity_type.manager'
+      - '@database'
+  saho_relations.candidate_generator:
+    class: Drupal\saho_relations\Service\CandidateGenerator
+    arguments:
+      - '@entity_type.manager'
+      - '@database'
+      - '@logger.factory'
+  saho_relations.candidate_scorer:
+    class: Drupal\saho_relations\Service\CandidateScorer
+  saho_relations.relation_writer:
+    class: Drupal\saho_relations\Service\RelationWriter
+    arguments:
+      - '@entity_type.manager'
+      - '@entity_field.manager'
+      - '@logger.factory'
+  saho_relations.rollback_manager:
+    class: Drupal\saho_relations\Service\RollbackManager
+    arguments:
+      - '@entity_type.manager'
+      - '@logger.factory'

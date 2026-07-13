@@ -1,0 +1,194 @@
+/* SAHO Chronology - the timeline-article register. Mono year column,
+   square ink markers on a hairline spine, Caslon entry prose right. */
+.saho-chron {
+  margin-block: var(--space-4);
+}
+
+.saho-chron__entry {
+  position: relative;
+  display: grid;
+  grid-template-columns: 64px 16px minmax(0, 1fr);
+  gap: 0 var(--space-3);
+  padding-block: var(--space-3);
+}
+
+/* The spine: one hairline running down the marker column. */
+.saho-chron__entry::before {
+  content: "";
+  position: absolute;
+  left: calc(64px + var(--space-3) + 7px);
+  top: 0;
+  bottom: 0;
+  width: var(--bw-hair);
+  background: var(--border-default);
+}
+.saho-chron__entry:first-of-type::before {
+  top: calc(var(--space-3) + 4px);
+}
+.saho-chron__entry:last-of-type::before {
+  bottom: auto;
+  height: calc(var(--space-3) + 8px);
+}
+
+.saho-chron__year {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: var(--fw-semibold);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--ls-label);
+  color: var(--saho-oxblood, #990000);
+  text-align: right;
+  padding-top: 2px;
+}
+
+/* Square marker on the spine - an archive is still. */
+.saho-chron__marker {
+  position: relative;
+  z-index: 1;
+  width: 8px;
+  height: 8px;
+  margin-top: 6px;
+  justify-self: center;
+  background: var(--saho-ink, #1b1c17);
+}
+
+.saho-chron__date {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 2px;
+}
+
+.saho-chron__body {
+  font-family: var(--font-serif);
+  line-height: 1.6;
+  color: var(--text-primary);
+}
+.saho-chron__body p {
+  margin: 0 0 var(--space-2);
+}
+.saho-chron__body p:last-child {
+  margin-bottom: 0;
+}
+
+/* In-entry record links read as standard oxblood links: linking work
+   inside the chronology is visible and rewarded. */
+.saho-chron__body a {
+  color: var(--saho-oxblood, #990000);
+  text-decoration: none;
+  border-bottom: var(--bw-hair) solid currentcolor;
+}
+.saho-chron__body a:hover {
+  color: var(--link-hover, #6e0000);
+}
+
+.saho-chron__prose {
+  max-width: var(--measure);
+  padding-block: var(--space-3);
+}
+
+/* ---- Decade index (rail) ---- */
+.saho-chron-index {
+  position: sticky;
+  top: var(--space-5);
+}
+.saho-chron-index__title {
+  margin: 0 0 var(--space-2);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: var(--fw-semibold);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.saho-chron-index__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: var(--bw-hair) solid var(--border-default);
+}
+.saho-chron-index__item {
+  border-bottom: var(--bw-hair) solid var(--border-default);
+}
+.saho-chron-index__link {
+  display: block;
+  padding: var(--space-1) 0;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: var(--ls-label);
+  color: var(--text-primary);
+  text-decoration: none;
+}
+.saho-chron-index__link:hover {
+  color: var(--saho-oxblood, #990000);
+}
+.saho-chron-index__link.is-current {
+  color: var(--saho-oxblood, #990000);
+  font-weight: var(--fw-semibold);
+}
+
+@media (max-width: 40rem) {
+  .saho-chron__entry {
+    grid-template-columns: 48px 12px minmax(0, 1fr);
+  }
+  .saho-chron__entry::before {
+    left: calc(48px + var(--space-3) + 5px);
+  }
+}
+
+/* R3 #477: at mobile the decade index becomes the page's sticky strip
+   (the record toolbar yields - X-2) - a flat horizontal mono rail. */
+@media (max-width: 47.9375rem) {
+  .saho-chron-index {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    margin: 0 0 1rem;
+    padding: 0.4rem 0;
+    background: var(--saho-paper-raised, #f5f2e9);
+    border-bottom: var(--bw-hair, 1px) solid var(--border-default, rgb(26 26 24 / 20%));
+  }
+
+  .saho-chron-index__title {
+    display: none;
+  }
+
+  .saho-chron-index__list {
+    display: flex;
+    gap: 1rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+    margin: 0;
+    padding: 0 0.25rem;
+    list-style: none;
+  }
+
+  .saho-chron-index__list::-webkit-scrollbar {
+    display: none;
+  }
+
+  .saho-chron-index__item {
+    flex: 0 0 auto;
+  }
+}
+
+/* Bridge to the Svelte timeline app (R3 #477). */
+.saho-chron-bridge {
+  margin: 1.5rem 0 0;
+}
+
+.saho-chron-bridge a {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--saho-ink);
+  text-decoration: none;
+}
+
+.saho-chron-bridge a:hover {
+  color: var(--saho-oxblood, #990000);
+}

@@ -1,631 +1,552 @@
 /**
- * CSS for the TDIH Interactive Block.
- * Modernized to use inline CSS custom properties inheriting from unified SAHO design tokens.
- * All components are self-contained with NO external SCSS dependencies.
+ * CSS for the TDIH Interactive Block - Open Record 2027.
+ *
+ * A bordered catalogue aside on the paper ground: mono header strip,
+ * hairline-separated ledger entries (square type marker + mono year +
+ * display title), and a bottom timeline link. Square corners (no
+ * border-radius), borders instead of shadows, no gradients.
+ *
+ * Tokens come from the theme's :root (--saho-*, --surface-*, --border-*,
+ * --text-*, --type-*, --font-*, --bw-*); fallbacks keep the block legible
+ * if the theme is swapped out.
+ *
+ * JS contract (js/tdih-interactive.js) - selectors that must keep working:
+ * .tdih-interactive-block, .tdih-today-history-wrapper, .tdih-event-item,
+ * .tdih-event-item-hover, .tdih-event-title a, .tdih-event-body,
+ * .tdih-events-container, .tdih-birthday-events, .tdih-exact-match,
+ * .tdih-birthday-date-picker, .tdih-day-picker, .tdih-month-picker,
+ * .tdih-event-date (year is parsed from its text), .ajax-progress .message.
  */
 
-/* Main container */
+/* ---------------------------------------------------------------------------
+ * Container: the bordered aside box.
+ * ------------------------------------------------------------------------- */
+
+/* Let the box stretch to the editorial row's height (the theme's block
+   wrappers otherwise shrink-wrap). Scoped to this block's own wrapper. */
+.block-tdih-interactive-block,
+.block-tdih-interactive-block .block__content {
+  height: 100%;
+}
+
 .tdih-interactive-block {
-  /* Component-scoped tokens - inherit from base SAHO design system */
-  /* Colors - map to unified SAHO color system */
-  --tdih-color-primary: var(--saho-color-primary);              /* Heritage red */
-  --tdih-color-primary-dark: var(--saho-color-primary-dark);    /* Darker red for hover */
-  --tdih-color-brown-earth: #8b4513;                            /* African-themed brown (component-specific) */
-  --tdih-color-white: var(--saho-color-white);
-  --tdih-color-text-primary: var(--saho-color-text-dark);
-  --tdih-color-text-secondary: var(--saho-color-text-light);
-  --tdih-gray-100: var(--saho-color-gray-100);
-  --tdih-gray-200: var(--saho-color-gray-200);
-  --tdih-gray-300: var(--saho-color-gray-300);
-  --tdih-gray-600: var(--saho-color-gray-600);
-  --tdih-gray-700: var(--saho-color-gray-700);
-  --tdih-color-info: #0dcaf0;                                   /* Bootstrap info color */
-  --tdih-color-info-dark: #0aa2c0;                              /* Darker info variant */
-
-  /* Spacing - use unified 8px baseline grid */
-  --tdih-spacing-xs: var(--saho-space-1);    /* 8px */
-  --tdih-spacing-sm: var(--saho-space-2);    /* 16px */
-  --tdih-spacing-md: var(--saho-space-2);    /* 16px */
-  --tdih-spacing-lg: var(--saho-space-3);    /* 24px */
-  --tdih-spacing-xl: var(--saho-space-4);    /* 32px */
-
-  /* Border radius - use unified scale */
-  --tdih-border-radius-sm: var(--saho-radius-sm);  /* 4px */
-  --tdih-border-radius-md: var(--saho-radius-md);  /* 8px */
-  --tdih-border-radius: var(--saho-radius-md);     /* 8px */
-
-  /* Shadows - use unified shadow system */
-  --tdih-shadow-sm: var(--saho-shadow-sm);
-  --tdih-shadow-md: var(--saho-shadow-md);
-  --tdih-shadow-lg: var(--saho-shadow-md);
-  --tdih-shadow-hover: 0 4px 16px var(--saho-color-black-alpha-15);
-
-  /* Transitions - use unified transition system */
-  --tdih-transition: var(--saho-transition-base);
-  --tdih-transition-fast: var(--saho-transition-fast);
-
-  /* Typography - use unified font size scale */
-  --tdih-font-size-title: var(--saho-font-size-xl);      /* 24-30px */
-  --tdih-font-size-date: var(--saho-font-size-sm);       /* 14-16px */
-  --tdih-font-size-body: var(--saho-font-size-base);     /* 16-18px */
-  --tdih-font-size-meta: var(--saho-font-size-xs);       /* 12-14px */
-
-  max-width: 100%;
-  margin-bottom: var(--tdih-spacing-xl);
-  padding: var(--tdih-spacing-lg);
-  background-color: var(--tdih-gray-100);
-  border-radius: var(--tdih-border-radius);
-  box-shadow: var(--tdih-shadow-md);
-}
-
-/* Header section */
-.tdih-interactive-header {
-  margin-bottom: var(--tdih-spacing-lg);
-  text-align: center;
-}
-
-.tdih-interactive-header h2 {
-  font-size: var(--tdih-font-size-title);
-  margin-bottom: var(--tdih-spacing-sm);
-  color: var(--tdih-color-text-primary);
-}
-
-.tdih-intro-text {
-  font-size: var(--tdih-font-size-body);
-  color: var(--tdih-color-text-secondary);
-  margin-bottom: var(--tdih-spacing-md);
-}
-
-/* Toggle button for Today in history section */
-.tdih-toggle-button {
-  background-color: var(--tdih-gray-100);
-  border: 1px solid var(--tdih-gray-300);
-  border-radius: var(--tdih-border-radius-sm);
-  color: var(--tdih-gray-600);
-  cursor: pointer;
-  font-size: var(--tdih-font-size-date);
-  margin-bottom: var(--tdih-spacing-md);
-  padding: var(--tdih-spacing-sm) var(--tdih-spacing-md);
-  transition: var(--tdih-transition-fast);
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column;
+  height: 100%;
+  max-width: 100%;
+  border: var(--bw-hair, 1px) solid var(--border-default, #bdb9a6);
+  background: transparent;
 }
 
-.tdih-toggle-button:hover {
-  background-color: var(--tdih-gray-200);
+/* Header strip: "This day - 3 July". */
+.tdih-block-strip {
+  margin: 0;
+  padding: 11px 16px;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1.4;
+  color: var(--text-muted, #6b6c5f);
+  background: var(--surface-sunk, #dad6c7);
+  border-bottom: var(--bw-hair, 1px) solid var(--border-default, #bdb9a6);
 }
 
-.tdih-toggle-button.active {
-  background-color: var(--tdih-color-primary);
-  color: var(--tdih-color-white);
-  border-color: var(--tdih-color-primary-dark);
+.tdih-block-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 6px 16px 16px;
 }
 
-.tdih-toggle-button::before {
-  content: "";
+/* ---------------------------------------------------------------------------
+ * Ledger entries: square marker + mono year + display title.
+ * ------------------------------------------------------------------------- */
+.tdih-entry-list {
+  display: block;
+}
+
+.tdih-entry {
+  display: grid;
+  grid-template-columns: 9px 1fr;
+  gap: 12px;
+  align-items: baseline;
+  padding: 12px 0;
+  border-bottom: var(--bw-hair, 1px) solid var(--border-faint, #d3cfbf);
+  text-decoration: none;
+}
+
+.tdih-entry:last-child {
+  border-bottom: none;
+}
+
+.tdih-entry-marker {
+  width: 9px;
+  height: 9px;
+  background: var(--type-event, #1b1c17);
+  transform: translateY(3px);
+}
+
+.tdih-entry-year {
+  display: block;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent, #990000);
+}
+
+.tdih-entry .tdih-event-title {
+  display: block;
+  margin: 0;
+  font-family: var(--font-display, georgia, serif);
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--text-primary, #1b1c17);
+}
+
+/* Hover: underline the title only; .tdih-event-item-hover is added by JS. */
+.tdih-entry:hover .tdih-event-title,
+.tdih-entry:focus-visible .tdih-event-title,
+.tdih-entry.tdih-event-item-hover .tdih-event-title {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+
+/* Optional excerpt in full display mode. */
+.tdih-entry .tdih-event-body {
+  display: block;
+  margin-top: 4px;
+  font-family: var(--font-serif, georgia, serif);
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-secondary, #41433a);
+}
+
+/* Bottom timeline link - pinned to the panel foot so the chronology
+   entries and the exit link hold the column together (#460). */
+.tdih-today-history-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.tdih-timeline-link {
   display: inline-block;
-  width: 1rem;      /* 16px - rounded from 12px */
-  height: 1rem;     /* 16px - rounded from 12px */
-  margin-right: 0.5rem;  /* 8px */
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23555'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
-  background-size: contain;
-  transition: transform 0.2s ease;
+  margin-top: auto;
+  padding-top: 12px;
+  font-family: var(--font-sans, system-ui, sans-serif);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--link-rest, #990000);
+  text-decoration: none;
 }
 
-.tdih-toggle-button.active::before {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23fff'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
-  transform: rotate(180deg);
+.tdih-timeline-link:hover,
+.tdih-timeline-link:focus-visible {
+  color: var(--link-hover, #6e0000);
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
-/* Birthday picker section */
+/* Focus ring: hard square outline, no glow. */
+.tdih-interactive-block a:focus-visible,
+.tdih-interactive-block select:focus-visible,
+.tdih-interactive-block input:focus-visible,
+.tdih-interactive-block button:focus-visible {
+  outline: 2px solid var(--focus-ring, #990000);
+  outline-offset: 2px;
+  box-shadow: none;
+}
+
+/* ---------------------------------------------------------------------------
+ * Date picker (birthday / day-month forms rendered inside the box).
+ * ------------------------------------------------------------------------- */
 .tdih-birthday-picker {
-  margin-bottom: var(--tdih-spacing-xl);
-  padding: var(--tdih-spacing-md);
-  background-color: var(--tdih-color-white);
-  border-radius: var(--tdih-border-radius-md);
-  box-shadow: var(--tdih-shadow-sm);
+  padding: 12px 0 16px;
+  border-bottom: var(--bw-hair, 1px) solid var(--border-default, #bdb9a6);
+  margin-bottom: 4px;
 }
 
-.tdih-birthday-title {
-  font-size: var(--saho-font-size-lg);
-  margin-bottom: var(--tdih-spacing-sm);
-  color: var(--tdih-color-text-primary);
+.tdih-birthday-title,
+.tdih-day-month-title {
+  margin: 0 0 4px;
+  font-family: var(--font-display, georgia, serif);
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--text-primary, #1b1c17);
 }
 
-.tdih-birthday-description {
-  font-size: var(--tdih-font-size-date);
-  color: var(--tdih-color-text-secondary);
-  margin-bottom: var(--tdih-spacing-md);
+.tdih-birthday-description,
+.tdih-day-month-description {
+  margin: 0 0 12px;
+  font-family: var(--font-sans, system-ui, sans-serif);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-muted, #6b6c5f);
 }
 
-.tdih-birthday-date-picker {
+/* Selects and the date input: square, hairline, mono, >= 44px targets. */
+.tdih-interactive-block .form-select,
+.tdih-interactive-block .tdih-day-picker,
+.tdih-interactive-block .tdih-month-picker,
+.tdih-interactive-block .tdih-year-picker,
+.tdih-interactive-block .tdih-birthday-date-picker {
   width: 100%;
-  padding: var(--tdih-spacing-sm);
-  border: 1px solid var(--tdih-gray-300);
-  border-radius: var(--tdih-border-radius-sm);
-  margin-bottom: var(--tdih-spacing-md);
+  min-height: 44px;
+  padding: 8px 10px;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 13px;
+  color: var(--text-primary, #1b1c17);
+  background-color: var(--surface-card, #f1efe7);
+  border: var(--bw-hair, 1px) solid var(--border-default, #bdb9a6);
+  border-radius: 0;
+  box-shadow: none;
 }
 
-.tdih-birthday-submit {
+/* Submit: square outline button that fills with ink on hover. */
+.tdih-interactive-block .tdih-birthday-submit,
+.tdih-interactive-block .tdih-day-month-submit {
   display: inline-block;
-  padding: var(--tdih-spacing-sm) var(--tdih-spacing-md);
-  background-color: var(--tdih-color-info);
-  color: var(--tdih-color-white);
-  border: none;
-  border-radius: var(--tdih-border-radius-sm);
+  min-height: 44px;
+  padding: 10px 16px;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-primary, #1b1c17) !important;
+  background: transparent !important;
+  border: var(--bw-hair, 1px) solid var(--border-strong, #8e8a73) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
   cursor: pointer;
-  font-weight: bold;
 }
 
-.tdih-birthday-submit:hover {
-  background-color: var(--tdih-color-info-dark);
+.tdih-interactive-block .tdih-birthday-submit:hover,
+.tdih-interactive-block .tdih-birthday-submit:focus,
+.tdih-interactive-block .tdih-day-month-submit:hover,
+.tdih-interactive-block .tdih-day-month-submit:focus {
+  color: var(--text-on-dark, #f3ecdd) !important;
+  background: var(--surface-inverse, #1b1c17) !important;
+  border-color: var(--surface-inverse, #1b1c17) !important;
 }
 
-/* Events section */
-.tdih-today-events {
-  margin-bottom: var(--tdih-spacing-lg);
-}
-
-.tdih-today-events h3 {
-  font-size: var(--saho-font-size-lg);
-  margin-bottom: var(--tdih-spacing-md);
-  color: var(--tdih-color-text-primary);
-  border-bottom: 1px solid var(--tdih-gray-300);
-  padding-bottom: var(--tdih-spacing-sm);
+/* ---------------------------------------------------------------------------
+ * AJAX results (tdih-events / tdih-birthday-events inside the forms).
+ * These keep the .tdih-event-item / .tdih-event-date / .tdih-event-title a /
+ * .tdih-event-body structure the JS expects.
+ * ------------------------------------------------------------------------- */
+.tdih-events-container {
+  margin-top: 12px;
 }
 
 .tdih-events-list {
-  margin-bottom: var(--tdih-spacing-md);
+  display: block;
 }
 
-/* Birthday Events Highlighting */
-.tdih-birthday-events .tdih-events-list {
-  border-left: 4px solid var(--tdih-color-brown-earth);
-  padding-left: var(--tdih-spacing-md);
-  background-color: rgba(139, 69, 19, 0.05);
-  border-radius: var(--tdih-border-radius-sm);
-}
-
-/* Exact Date Match Highlighting */
-.tdih-exact-match {
-  order: -1; /* Move to the top of the list */
-  position: relative;
-  border: 2px solid var(--tdih-color-primary) !important;
-  border-radius: var(--tdih-border-radius-md);
-  padding: var(--tdih-spacing-md);
-  margin-bottom: var(--tdih-spacing-xl) !important;
-  background-color: var(--saho-color-primary-alpha-10);
-  box-shadow: 0 4px 8px var(--saho-color-primary-alpha-20);
-}
-
-.tdih-exact-match::before {
-  content: "Exact Date Match";
-  position: absolute;
-  top: -0.75rem;     /* -12px */
-  left: 0.5rem;      /* 8px */
-  background-color: var(--tdih-color-primary);
-  color: var(--tdih-color-white);
-  font-size: var(--tdih-font-size-meta);
-  padding: 0 var(--saho-space-1);
-  border-radius: var(--tdih-border-radius-sm);
-  font-weight: bold;
-}
-
-.tdih-exact-match .tdih-event-date {
-  font-weight: bold;
-  color: var(--tdih-color-primary);
-  font-size: var(--saho-font-size-md);
-}
-
-.tdih-exact-match .tdih-event-title {
-  font-size: var(--saho-font-size-lg);
-}
-
-.tdih-birthday-events .tdih-event-item {
-  position: relative;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  margin-bottom: var(--tdih-spacing-xl);
-  padding: 1.5rem;  /* 24px - rounded from 20px (1.25rem) */
-  border-radius: var(--tdih-border-radius);
-  background-color: var(--tdih-color-white);
-  box-shadow: 0 2px 8px rgba(139, 69, 19, 0.1);
-  border-left: 3px solid var(--tdih-color-brown-earth);
+.tdih-events-list .tdih-event-item {
   display: flex;
   flex-wrap: wrap;
+  gap: 12px;
+  padding: 12px 0;
+  margin: 0;
+  background: transparent;
+  border-bottom: var(--bw-hair, 1px) solid var(--border-faint, #d3cfbf);
 }
 
-.tdih-birthday-events .tdih-event-item:hover {
-  transform: translateX(8px);  /* 8px - rounded from 5px */
-  box-shadow: -4px 0 0 var(--tdih-color-brown-earth);  /* 4px - rounded from 3px */
-}
-
-.tdih-birthday-events .tdih-event-date {
-  font-weight: bold;
-  color: var(--tdih-color-brown-earth);
-}
-
-.tdih-birthday-events .tdih-event-title a {
-  color: #6d3710; /* Darker brown for links */
-}
-
-.tdih-birthday-events h3 {
-  color: var(--tdih-color-brown-earth);
-  border-bottom: 2px solid var(--tdih-color-brown-earth);
-  padding-bottom: var(--tdih-spacing-sm);
-  margin-bottom: var(--tdih-spacing-md);
-}
-
-.tdih-birthday-events .tdih-event-item::before {
-  content: "★";
-  position: absolute;
-  left: -1.5rem;
-  color: var(--tdih-color-brown-earth);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.tdih-birthday-events .tdih-event-item:hover::before {
-  opacity: 1;
-}
-
-/* Regular event items styling */
-.tdih-event-item {
-  position: relative;
-  transition: var(--tdih-transition);
-  margin-bottom: var(--tdih-spacing-lg);
-  padding: 1.5rem;  /* 24px - rounded from 20px (1.25rem) */
-  border-radius: var(--tdih-border-radius);
-  background-color: var(--tdih-color-white);
-  box-shadow: var(--tdih-shadow-lg);
-  display: flex;
-  flex-wrap: wrap;
-}
-
-.tdih-event-item:hover {
-  transform: translateY(-4px);  /* 4px - rounded from 3px */
-  box-shadow: var(--tdih-shadow-hover);
-}
-
-.tdih-event-item:last-child {
-  margin-bottom: 0;
+.tdih-events-list .tdih-event-item:last-child {
+  border-bottom: none;
 }
 
 .tdih-event-image {
-  flex: 0 0 30%;
-  margin-right: var(--tdih-spacing-md);
-  margin-bottom: var(--tdih-spacing-md);
-  max-width: 250px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  flex: 0 0 72px;
 }
 
 .tdih-event-image img {
-  max-width: 100%;
-  border-radius: var(--tdih-border-radius-sm);
-  object-fit: contain;
-  width: 100%;
-  height: auto;
-  max-height: 300px;
-}
-
-/* Placeholder image styling */
-.tdih-event-image--placeholder {
-  background-color: var(--tdih-gray-100);
-  border-radius: var(--tdih-border-radius-sm);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 150px;
-  width: 100%;
-  color: var(--tdih-color-primary);
-}
-
-.tdih-event-image--placeholder .fas {
-  font-size: var(--saho-font-size-3xl);
-  opacity: 0.6;
-}
-
-/* Handle portrait orientation images */
-.tdih-event-image img.portrait {
-  object-position: center top;
+  display: block;
+  width: 72px;
+  height: 72px;
+  object-fit: cover;
+  border: var(--bw-hair, 1px) solid var(--border-default, #bdb9a6);
+  border-radius: 0;
+  filter: var(--img-duotone, none);
 }
 
 .tdih-event-content {
   flex: 1;
+  min-width: 0;
 }
 
-.tdih-event-date {
-  font-size: var(--tdih-font-size-date);
-  color: var(--tdih-color-text-secondary);
-  margin-bottom: var(--tdih-spacing-sm);
+.tdih-events-list .tdih-event-date {
+  margin-bottom: 2px;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent, #990000);
 }
 
-.tdih-event-title {
-  font-size: var(--saho-font-size-md);
-  margin-bottom: var(--tdih-spacing-sm);
+.tdih-events-list .tdih-event-title {
+  margin: 0 0 4px;
+  font-family: var(--font-display, georgia, serif);
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.2;
 }
 
-.tdih-event-title a {
-  color: var(--tdih-color-primary); /* SAHO red color */
+/* Specificity note: the theme's global
+   a:not(.btn):not(.nav-link):not(.page-link):not([class*="badge"]) rule is
+   (0,4,1) and main.css loads after this file, so titles need (0,5,1) to
+   render in ink. The :not() hops mirror the theme's own chain. */
+.tdih-event-item .tdih-event-content .tdih-event-title a:not(.btn):not(.nav-link) {
+  color: var(--text-primary, #1b1c17);
   text-decoration: none;
 }
 
-.tdih-event-title a:hover {
+.tdih-event-item .tdih-event-content .tdih-event-title a:not(.btn):not(.nav-link):hover,
+.tdih-event-item .tdih-event-content .tdih-event-title a:not(.btn):not(.nav-link):focus-visible {
+  color: var(--text-primary, #1b1c17);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.tdih-events-list .tdih-event-body {
+  font-family: var(--font-serif, georgia, serif);
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-secondary, #41433a);
+}
+
+/* Birthday result set: warm archival edge instead of the old brown card. */
+.tdih-birthday-events .tdih-events-list,
+.tdih-birthday-events-wrapper .tdih-events-list {
+  border-left: var(--bw-accent, 3px) solid var(--saho-ochre-deep, #8a6420);
+  padding-left: 12px;
+}
+
+/* Exact date match: oxblood record, still hard-edged. */
+.tdih-event-item.exact-match,
+.tdih-event-item.tdih-exact-match {
+  order: -1;
+  border: var(--bw-hair, 1px) solid var(--accent, #990000);
+  border-left-width: var(--bw-accent, 3px);
+  background: var(--saho-oxblood-10, rgba(153, 0, 0, 0.1));
+  padding: 12px;
+  margin-bottom: 12px;
+}
+
+.exact-match-badge {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 1px 6px;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent, #990000);
+  border: var(--bw-hair, 1px) solid currentColor;
+}
+
+.years-before,
+.years-after {
+  margin-left: 6px;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--text-muted, #6b6c5f);
+}
+
+.tdih-subheading {
+  margin: 16px 0 4px;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted, #6b6c5f);
+}
+
+/* Notices: sunk strip with a semantic edge - no rounded alert boxes. */
+.tdih-notice {
+  padding: 10px 12px;
+  margin-bottom: 12px;
+  font-family: var(--font-sans, system-ui, sans-serif);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-primary, #1b1c17);
+  background: var(--surface-sunk, #dad6c7);
+  border-left: var(--bw-accent, 3px) solid var(--border-strong, #8e8a73);
+}
+
+.tdih-notice--success {
+  border-left-color: var(--saho-success, #2e6b34);
+}
+
+.tdih-notice--info {
+  border-left-color: var(--saho-info, #2b5a8c);
+}
+
+/* No-events message. */
+.tdih-no-events {
+  padding: 12px 0;
+  font-family: var(--font-sans, system-ui, sans-serif);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-muted, #6b6c5f);
+}
+
+/* ---------------------------------------------------------------------------
+ * Footer link(s): mono underline register, no button chrome.
+ * ------------------------------------------------------------------------- */
+.tdih-footer {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: var(--bw-hair, 1px) solid var(--border-faint, #d3cfbf);
+}
+
+.tdih-view-more-button {
+  display: inline-block;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--link-rest, #990000) !important;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+}
+
+.tdih-view-more-button:hover,
+.tdih-view-more-button:focus {
+  color: var(--link-hover, #6e0000) !important;
+  background: transparent !important;
   text-decoration: underline;
 }
 
-.tdih-event-body {
-  font-size: var(--tdih-font-size-date);
-  color: var(--tdih-color-text-primary);
-  line-height: 1.5;
-}
-
-/* Compact mode */
-.compact-mode .tdih-event-item {
-  padding-bottom: var(--saho-space-2);
-  margin-bottom: var(--saho-space-2);
-}
-
-.compact-mode .tdih-event-title {
-  font-size: var(--tdih-font-size-body);
-  margin-bottom: var(--saho-space-1);
-}
-
-/* No events message */
-.tdih-no-events {
-  padding: var(--tdih-spacing-md);
-  background-color: var(--tdih-gray-100);
-  border-radius: var(--tdih-border-radius-sm);
-  text-align: center;
-  color: var(--tdih-color-text-secondary);
-}
-
-/* Footer section */
-.tdih-footer {
-  text-align: center;
-  margin-top: var(--tdih-spacing-md);
-}
-
-.tdih-more-link {
-  display: inline-block;
-  padding: var(--tdih-spacing-sm) var(--tdih-spacing-md);
-  background-color: var(--tdih-gray-600);
-  color: var(--tdih-color-white);
-  border-radius: var(--tdih-border-radius-sm);
-  text-decoration: none;
-  font-weight: bold;
-}
-
-.tdih-more-link:hover {
-  background-color: var(--tdih-gray-700);
-  text-decoration: none;
-}
-
-/* TDIH navigation links - text-link style, no box/fill */
-.tdih-view-more-button.saho-button,
-.tdih-fallback-button.saho-button {
-  background: transparent !important;
-  background-color: transparent !important;
-  color: var(--tdih-color-primary) !important;
-  border: none !important;
-  border-bottom: 1px solid transparent !important;
-  box-shadow: none !important;
-  padding: 0 !important;
-  border-radius: 0 !important;
-}
-
-.tdih-view-more-button.saho-button:hover,
-.tdih-fallback-button.saho-button:hover,
-.tdih-view-more-button.saho-button:focus,
-.tdih-fallback-button.saho-button:focus {
-  background: transparent !important;
-  background-color: transparent !important;
-  color: var(--tdih-color-primary-dark) !important;
-  border-color: transparent !important;
-  border-bottom-color: var(--tdih-color-primary-dark) !important;
-  box-shadow: none !important;
-  transform: none !important;
-}
-
-.tdih-view-more-button.saho-button:active,
-.tdih-fallback-button.saho-button:active {
-  transform: none !important;
-  box-shadow: none !important;
-}
-
-/* African Drum Loading Indicator */
+/* ---------------------------------------------------------------------------
+ * AJAX progress: quiet mono message, square pulse instead of the drum.
+ * ------------------------------------------------------------------------- */
 .tdih-interactive-block .ajax-progress {
   position: relative;
   display: inline-block;
-  padding-left: 2.5rem;  /* 40px */
-  margin-left: 0.5rem;   /* 8px - rounded from 10px */
-  font-weight: bold;
-  color: var(--tdih-color-brown-earth); /* Brown color for African theme */
+  padding-left: 20px;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 12px;
+  color: var(--text-muted, #6b6c5f);
 }
 
 .tdih-interactive-block .ajax-progress .throbber {
   position: absolute;
   left: 0;
   top: 50%;
-  transform: translateY(-50%);
-  width: 2rem;   /* 32px - rounded from 30px */
-  height: 2rem;  /* 32px - rounded from 30px */
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath fill='%238B4513' d='M50 5C25.1 5 5 25.1 5 50s20.1 45 45 45 45-20.1 45-45S74.9 5 50 5zm0 80c-19.3 0-35-15.7-35-35s15.7-35 35-35 35 15.7 35 35-15.7 35-35 35z'/%3E%3Cpath fill='%23A0522D' d='M50 20c-16.5 0-30 13.5-30 30s13.5 30 30 30 30-13.5 30-30-13.5-30-30-30zm0 50c-11 0-20-9-20-20s9-20 20-20 20 9 20 20-9 20-20 20z'/%3E%3Cpath fill='%23CD853F' d='M50 30c-11 0-20 9-20 20s9 20 20 20 20-9 20-20-9-20-20-20zm0 30c-5.5 0-10-4.5-10-10s4.5-10 10-10 10 4.5 10 10-4.5 10-10 10z'/%3E%3Cpath fill='%23DEB887' d='M50 40c-5.5 0-10 4.5-10 10s4.5 10 10 10 10-4.5 10-10-4.5-10-10-10zm0 15c-2.8 0-5-2.2-5-5s2.2-5 5-5 5 2.2 5 5-2.2 5-5 5z'/%3E%3Cpath fill='%238B4513' d='M30 50h-5c0-13.8 11.2-25 25-25v5c-11 0-20 9-20 20z'/%3E%3Cpath fill='%238B4513' d='M50 75v-5c11 0 20-9 20-20h5c0 13.8-11.2 25-25 25z'/%3E%3C/svg%3E");
-  background-size: contain;
-  background-repeat: no-repeat;
-  animation: tdih-drum-beat 0.8s ease-in-out infinite alternate;
+  width: 9px;
+  height: 9px;
+  margin-top: -5px;
+  background: var(--accent, #990000);
+  animation: tdih-pulse 0.8s ease-in-out infinite alternate;
 }
 
-@keyframes tdih-drum-beat {
-  0% { transform: translateY(-50%) scale(1); }
-  100% { transform: translateY(-50%) scale(1.2); }
+@keyframes tdih-pulse {
+  0% { opacity: 1; }
+  100% { opacity: 0.25; }
 }
 
-/* Custom loading message */
 .tdih-interactive-block .ajax-progress .message {
-  font-style: italic;
-  color: var(--tdih-color-brown-earth);
-  font-family: 'Georgia', serif;
+  font-style: normal;
+  color: var(--text-muted, #6b6c5f);
 }
 
-/* Responsive styles */
-/* Enhanced tablet responsiveness */
-@media (max-width: 1024px) {
-  .tdih-interactive-block {
-    padding: 1rem;  /* 16px - rounded from 12px (0.75rem) */
-  }
-
-  .tdih-birthday-picker {
-    padding: var(--tdih-spacing-md);
-    margin-bottom: 1.5rem;  /* 24px - rounded from 20px (1.25rem) */
+@media (prefers-reduced-motion: reduce) {
+  .tdih-interactive-block .ajax-progress .throbber {
+    animation: none;
   }
 }
 
+/* ---------------------------------------------------------------------------
+ * Mobile: full width, >= 44px targets.
+ * ------------------------------------------------------------------------- */
 @media (max-width: 768px) {
-  .tdih-interactive-block {
-    padding: var(--tdih-spacing-sm);
+  .tdih-block-body {
+    padding: 4px 12px 12px;
   }
 
-  .tdih-event-item {
-    margin-bottom: 1.5rem;  /* 24px - rounded from 28px (1.75rem) */
-    padding: var(--tdih-spacing-lg);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);  /* Rounded 3px 10px to 4px 8px */
-    border-left: none;
-    border-top: 3px solid var(--tdih-color-primary);
+  .tdih-block-strip {
+    padding: 10px 12px;
   }
 
-  .tdih-birthday-events .tdih-event-item {
-    border-top: 3px solid var(--tdih-color-brown-earth);
-    border-left: none;
+  .tdih-entry {
+    padding: 14px 0;
+  }
+
+  .tdih-timeline-link,
+  .tdih-view-more-button {
+    padding-block: 13px !important;
+  }
+
+  .tdih-interactive-block .tdih-birthday-submit,
+  .tdih-interactive-block .tdih-day-month-submit {
+    width: 100%;
   }
 
   .tdih-event-image {
-    flex: 0 0 100%;
-    margin-right: 0;
-    margin-bottom: 1.5rem;  /* 24px - rounded from 20px (1.25rem) */
-    text-align: center;
+    flex: 0 0 56px;
   }
 
   .tdih-event-image img {
-    height: auto;
-    max-height: 256px;  /* 256px - rounded from 250px */
-    border-radius: var(--tdih-border-radius-md);
-    object-fit: contain;
-  }
-
-  /* Better display for vertical/portrait images */
-  .saho-card-image img {
-    width: 100%;
-    height: 200px;
-    object-fit: cover;
-    border-radius: 8px 8px 0 0;  /* 8px - rounded from 6px */
-  }
-
-  /* Full width utilization for mobile TDIH cards */
-  .tdih-interactive-block .saho-cards-grid .saho-card {
-    width: calc(100% - 1rem);
-    margin: 0 0.5rem 1rem 0.5rem;
-  }
-
-  .tdih-birthday-picker {
-    padding: var(--tdih-spacing-md);
-    margin-bottom: 1.5rem;  /* 24px - rounded from 20px (1.25rem) */
-    margin-left: -0.5rem;   /* -8px - rounded from -4px (-0.25rem) */
-    margin-right: -0.5rem;  /* -8px - rounded from -4px (-0.25rem) */
-  }
-
-  .tdih-event-content {
-    flex: 0 0 100%;
-  }
-
-  .tdih-event-date {
-    font-size: var(--tdih-font-size-body);
-    margin-bottom: var(--saho-space-2);
-  }
-
-  .tdih-event-title {
-    font-size: var(--saho-font-size-lg);
-    margin-bottom: var(--saho-space-2);
-    line-height: 1.3;
-  }
-
-  .tdih-event-body {
-    font-size: var(--tdih-font-size-body);
-    line-height: 1.6;
-  }
-
-  .tdih-today-events h3 {
-    font-size: var(--saho-font-size-xl);
-    text-align: center;
-    margin-bottom: var(--tdih-spacing-lg);
-  }
-
-  .tdih-birthday-title {
-    font-size: var(--saho-font-size-xl);
-    text-align: center;
-  }
-
-  .tdih-birthday-description {
-    text-align: center;
-  }
-
-  .tdih-birthday-submit {
-    width: 100%;
-    padding: var(--saho-space-2);
-    font-size: var(--saho-font-size-md);
-    background-color: var(--tdih-color-primary);
-  }
-
-  .tdih-birthday-submit:hover,
-  .tdih-birthday-submit:focus {
-    background-color: var(--tdih-color-primary-dark);
-  }
-
-  /* Add separation between entries with a subtle gradient line */
-  .tdih-event-item::after {
-    content: "";
-    position: absolute;
-    bottom: -1rem;  /* -16px - rounded from -14px (-0.875rem) */
-    left: 10%;
-    width: 80%;
-    height: 1px;
-    background: linear-gradient(to right, transparent, rgba(0, 0, 0, 0.1), transparent);
-  }
-
-  .tdih-event-item:last-child::after {
-    display: none;
+    width: 56px;
+    height: 56px;
   }
 }
 
-/* Extra small devices */
-@media (max-width: 480px) {
-  .tdih-interactive-block {
-    padding: var(--tdih-spacing-xs);
-  }
-
-  .tdih-event-item {
-    padding: 1.5rem 1rem;  /* 24px 16px - rounded from 20px 16px (1.25rem 1rem) */
-  }
-
-  .tdih-event-title {
-    font-size: var(--saho-font-size-lg);
-  }
-
-  /* Maximum width utilization on small screens */
-  .tdih-interactive-block .saho-cards-grid .saho-card {
-    width: calc(100% - 0.5rem);
-    margin: 0 0.5rem 1rem 0.5rem;  /* Rounded 14px to 16px (0.875rem to 1rem) */
-  }
-
-  .tdih-birthday-picker {
-    padding: 1rem;  /* 16px - rounded from 14px (0.875rem) */
-    margin-left: 0;  /* 0 - rounded from -2px (-0.125rem) */
-    margin-right: 0; /* 0 - rounded from -2px (-0.125rem) */
-  }
-}
-
+/* Spam Master signature field: keep hidden. */
 #edit-spammaster-signature {
   display: none !important;
+}
+
+/* R3 #478: birthday picker as a quiet foot disclosure. */
+.tdih-birthday-disclosure {
+  margin-top: 0.75rem;
+  border-top: var(--bw-hair, 1px) solid var(--border-default, rgb(26 26 24 / 20%));
+}
+
+.tdih-birthday-summary {
+  padding: 0.6rem 0.25rem;
+  cursor: pointer;
+  list-style: none;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--saho-ink, #1a1a18);
+}
+
+.tdih-birthday-summary::-webkit-details-marker {
+  display: none;
+}
+
+.tdih-birthday-summary:hover {
+  color: var(--saho-oxblood, #990000);
+}
+
+/* X-3: the match chip - ochre fill, ink text, square. */
+.tdih-match-chip {
+  display: inline-block;
+  margin-right: 0.5rem;
+  padding: 0.15rem 0.5rem;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--saho-ink, #1a1a18);
+  background: var(--saho-ochre, #c8a441);
+  border-radius: 0;
 }

@@ -1,15 +1,15 @@
 /**
- * SAHO Publications block - front-page discovery section.
+ * SAHO Publications block - front-page SAHO Press strip (Open Record 2027).
  *
- * Self-contained styles. Uses the unified `--saho-*` tokens if they're in
- * scope but falls back to brand-safe defaults so the block looks correct
- * even on pages that don't load the full token sheet.
+ * The catalogue idiom: square paper cards, hairline frames, an archive
+ * (ochre) accent edge, Caslon display titles, mono apparatus for prices
+ * and labels. No rounded corners, no shadows, no gradients. Uses the
+ * theme's Open Record tokens with brand-safe fallbacks.
  */
 
 .saho-publications {
-  background: var(--saho-color-surface, #fff);
   padding: 4rem 0;
-  color: var(--saho-color-text-primary, #1e293b);
+  color: var(--text-primary, #1b1c17);
 }
 
 @media (max-width: 768px) {
@@ -18,52 +18,49 @@
   }
 }
 
-/* Header */
+/* Section heading - mono kicker above a ruled title row */
 .saho-publications__header {
-  text-align: center;
-  margin-bottom: 2.5rem;
+  margin-bottom: 2rem;
 }
 
-.saho-publications__eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin: 0 0 0.75rem;
+.saho-publications__kicker {
+  margin: 0 0 8px;
+  font-family: var(--font-mono, "IBM Plex Mono", ui-monospace, monospace);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: var(--ls-meta, 0.06em);
   text-transform: uppercase;
-  letter-spacing: 0.18em;
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: #b88a2e;
+  color: var(--saho-ochre-deep, #8a6420);
 }
 
-.saho-publications__rule {
-  display: inline-block;
-  width: 28px;
-  height: 1px;
-  background: #b88a2e;
+.saho-publications__header-row {
+  border-bottom: var(--bw-rule, 2px) solid var(--border-strong, #8e8a73);
+  padding-bottom: 10px;
 }
 
 .saho-publications__title {
-  font-size: clamp(1.75rem, 3vw, 2.5rem);
-  font-weight: 800;
-  margin: 0 0 0.75rem;
-  color: var(--saho-color-text-primary, #1e293b);
+  margin: 0;
+  font-family: var(--font-display, "Libre Caslon Text", georgia, serif);
+  font-size: clamp(1.6rem, 2.6vw, 2.25rem);
+  font-weight: 700;
+  color: var(--text-primary, #1b1c17);
 }
 
 .saho-publications__subtitle {
   max-width: 640px;
-  margin: 0 auto;
+  margin: 12px 0 0;
+  font-family: var(--font-serif, "Libre Caslon Text", georgia, serif);
   font-size: 1rem;
   line-height: 1.6;
-  color: var(--saho-color-text-secondary, #475569);
+  color: var(--text-secondary, #41433a);
 }
 
 /* Grid */
 .saho-publications__grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 2rem;
-  margin-bottom: 2rem;
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
 }
 
 @media (max-width: 480px) {
@@ -73,38 +70,43 @@
   }
 }
 
-/* Card */
-.saho-publication-card {
+/* Card - a filed record sheet with the archive accent edge */
+.saho-publications__card {
   display: flex;
   flex-direction: column;
-  background: #fff;
-  border: 1px solid var(--saho-color-border, #d9d9d9);
-  border-radius: 8px;
-  overflow: hidden;
+  background: var(--surface-card, #f1efe7);
+  border: var(--bw-hair, 1px) solid var(--border-default, #bdb9a6);
+  border-left: var(--bw-accent, 3px) solid var(--type-archive, #8a6420);
+  border-radius: 0;
   transition:
-    transform 180ms cubic-bezier(0.2, 0.8, 0.2, 1),
-    box-shadow 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
+    border-color 150ms ease,
+    background-color 150ms ease;
 }
 
-.saho-publication-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+/* Hover selects, it does not lift: ink frame, sunk ground */
+.saho-publications__card:hover,
+.saho-publications__card:focus-within {
+  border-color: var(--saho-ink, #1b1c17);
+  border-left-color: var(--type-archive, #8a6420);
+  background: var(--surface-sunk, #dad6c7);
 }
 
-.saho-publication-card__cover-link {
+.saho-publications__cover-link {
   display: block;
   text-decoration: none;
-  background: #faf5ec;
 }
 
-.saho-publication-card__cover {
+/* Covers stay true colour - books are products, not archive imagery */
+.saho-publications__cover {
   position: relative;
   aspect-ratio: 2 / 3;
   width: 100%;
   overflow: hidden;
+  background: var(--surface-sunk, #dad6c7);
+  border-bottom: var(--bw-hair, 1px) solid var(--border-default, #bdb9a6);
 }
 
-.saho-publication-card__cover-img {
+.saho-publications__cover-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -112,141 +114,150 @@
   display: block;
 }
 
-/* Fallback used when no cover URL is set yet. SAHO Press mark on parchment. */
-.saho-publication-card__cover-fallback {
+/* Fallback when no cover is set: flat manila with the mono press mark */
+.saho-publications__cover-fallback {
   width: 100%;
   height: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.25rem;
-  background: linear-gradient(135deg, #faf5ec 0%, #ecdfc4 100%);
-  color: #7a5a18;
+  gap: 0.35rem;
+  background: var(--surface-tab, #d9d2bd);
+  color: var(--saho-ochre-deep, #8a6420);
 }
 
-.saho-publication-card__fallback-mark {
+.saho-publications__fallback-mark {
+  font-family: var(--font-display, "Libre Caslon Text", georgia, serif);
   font-size: 1.5rem;
-  font-weight: 900;
-  letter-spacing: 0.08em;
+  font-weight: 700;
+  letter-spacing: 0.06em;
 }
 
-.saho-publication-card__fallback-sub {
-  font-size: 0.7rem;
+.saho-publications__fallback-sub {
+  font-family: var(--font-mono, "IBM Plex Mono", ui-monospace, monospace);
+  font-size: 11px;
   text-transform: uppercase;
-  letter-spacing: 0.2em;
-  opacity: 0.75;
+  letter-spacing: var(--ls-meta, 0.06em);
 }
 
 /* Card body */
-.saho-publication-card__body {
-  padding: 1rem 1rem 1.25rem;
+.saho-publications__card-body {
+  padding: 1rem 1rem 1.125rem;
   display: flex;
   flex-direction: column;
   flex: 1 1 auto;
   gap: 0.5rem;
 }
 
-.saho-publication-card__title {
-  font-size: 0.95rem;
-  font-weight: 700;
-  line-height: 1.3;
+.saho-publications__card-title {
   margin: 0;
-  color: var(--saho-color-text-primary, #1e293b);
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  font-family: var(--font-display, "Libre Caslon Text", georgia, serif);
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.25;
 }
 
-.saho-publication-card__title a {
-  color: inherit;
+.saho-publications__card-title a {
   text-decoration: none;
 }
 
-.saho-publication-card__title a:hover {
-  color: #900;
+/* Inner span owns the colour so the global link rule cannot repaint it */
+.saho-publications__card-title-text {
+  color: var(--text-primary, #1b1c17);
+  transition: color 150ms ease;
 }
 
-.saho-publication-card__subtitle {
-  font-size: 0.8rem;
-  line-height: 1.4;
+.saho-publications__card:hover .saho-publications__card-title-text {
+  color: var(--link-hover, #6e0000);
+}
+
+.saho-publications__card-subtitle {
   margin: 0;
-  color: var(--saho-color-text-secondary, #475569);
+  font-family: var(--font-serif, "Libre Caslon Text", georgia, serif);
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: var(--text-secondary, #41433a);
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
-.saho-publication-card__meta {
-  font-size: 0.8rem;
+/* Author / year - mono catalogue metadata */
+.saho-publications__card-meta {
   margin: 0;
-  color: var(--saho-color-text-muted, #94a3b8);
+  font-family: var(--font-mono, "IBM Plex Mono", ui-monospace, monospace);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: var(--ls-meta, 0.06em);
+  color: var(--text-muted, #6b6c5f);
 }
 
-.saho-publication-card__cta-row {
+/* Price + shop link, ruled off from the body */
+.saho-publications__card-footer {
   margin-top: auto;
   display: flex;
-  align-items: center;
+  align-items: baseline;
   justify-content: space-between;
   gap: 0.75rem;
-  padding-top: 0.5rem;
-  border-top: 1px solid #f0eee9;
+  padding-top: 0.625rem;
+  border-top: var(--bw-hair, 1px) solid var(--border-faint, #d3cfbf);
 }
 
-.saho-publication-card__price {
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: #900;
+.saho-publications__price {
+  font-family: var(--font-mono, "IBM Plex Mono", ui-monospace, monospace);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--text-primary, #1b1c17);
 }
 
-.saho-publication-card__cta {
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: #900;
+.saho-publications__cta {
+  font-family: var(--font-mono, "IBM Plex Mono", ui-monospace, monospace);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: var(--ls-meta, 0.06em);
   text-decoration: none;
   white-space: nowrap;
 }
 
-.saho-publication-card__cta:hover {
-  color: #8b0000;
-  text-decoration: underline;
-}
-
-/* Footer "View all" link */
+/* Footer "View all" - square outline button, mono label */
 .saho-publications__footer {
   text-align: center;
-  margin-top: 1rem;
 }
 
 .saho-publications__view-all {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
+  display: inline-block;
   padding: 0.75rem 1.75rem;
-  border: 2px solid #900;
-  color: #900;
+  border: var(--bw-rule, 2px) solid var(--accent, #990000);
+  border-radius: 0;
   background: transparent;
-  border-radius: 9999px;
-  font-weight: 700;
-  font-size: 0.9rem;
   text-decoration: none;
   transition:
-    background-color 180ms ease,
-    color 180ms ease,
-    transform 180ms ease,
-    box-shadow 180ms ease;
+    background-color 150ms ease,
+    border-color 150ms ease;
 }
 
-.saho-publications__view-all:hover {
-  background: #900;
-  color: #fff;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 14px rgba(153, 0, 0, 0.25);
+/* Inner span owns the colour so the global link rule cannot repaint it */
+.saho-publications__view-all-label {
+  font-family: var(--font-mono, "IBM Plex Mono", ui-monospace, monospace);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: var(--ls-meta, 0.06em);
+  color: var(--accent, #990000);
+  transition: color 150ms ease;
 }
 
-.saho-publications__view-all:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(184, 138, 46, 0.45);
+.saho-publications__view-all:hover,
+.saho-publications__view-all:focus {
+  background: var(--accent, #990000);
+  border-color: var(--accent, #990000);
+}
+
+.saho-publications__view-all:hover .saho-publications__view-all-label,
+.saho-publications__view-all:focus .saho-publications__view-all-label {
+  color: var(--text-on-accent, #fbf3ee);
 }

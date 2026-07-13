@@ -14,13 +14,19 @@ use Drupal\node\NodeInterface;
 function saho_suggested_reading_preprocess_node(array &$variables) {
   $node = $variables['node'];
 
-  // Only process full view mode for the supported content types.
+  // Only process full view mode for the supported content types. The record
+  // bundles were dropped during the Open Record redesign (#463) on the
+  // assumption the rail related-tabs would carry cross-references - but those
+  // fields are ~0.1% filled, so records dead-ended with no related content.
+  // The derivation engine (siblings via field_feature_parent, shared
+  // tags/topics, popular fallback) still produces a rich reading list, so the
+  // record bundles are back and rendered as the Open Record reading-list band.
   $supported_bundles = [
+    'image',
+    'biography',
     'article',
     'archive',
-    'biography',
     'event',
-    'image',
     'place',
   ];
   if ($variables['view_mode'] !== 'full' || !in_array($node->bundle(), $supported_bundles)) {
@@ -30,6 +36,14 @@ function saho_suggested_reading_preprocess_node(array &$variables) {
   // Enhance suggested reading content.
   $variables['suggested_reading'] = _saho_suggested_reading_get_enhanced_content($node);
   $variables['#attached']['library'][] = 'saho_suggested_reading/suggested_reading';
+  // The list is derived from other nodes: rebuild when the node set changes.
+  // Per-bundle list tags, not the bare node_list tag - the broad tag meant
+  // every node save on the site (topics, TDIH, products...) flushed every
+  // record page from render + page cache, so cold renders were the common
+  // case. The engine only ever surfaces these bundles.
+  foreach ($supported_bundles as $reading_bundle) {
+    $variables['#cache']['tags'][] = 'node_list:' . $reading_bundle;
+  }
 }
 
 /**

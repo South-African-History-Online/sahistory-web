@@ -1,145 +1,51 @@
 {#
 /**
  * @file
- * Theme implementation for the History Classroom block.
+ * Theme implementation for the History Classroom block (Open Record, #462).
+ *
+ * Grade doors rendered as archive-cards: type marker GRADE N, mono phase
+ * kicker, Caslon featured-topic title, mono resource count. Whole card is
+ * the link - no medallions, numerals, icons or carousels.
  *
  * Available variables:
- * - grades: Array of grade data:
- *   - number: Grade number (4-12)
- *   - tid: Taxonomy term ID
- *   - name: Full term name
- *   - label: Display label (e.g., "Grade 8")
- *   - count: Number of articles
- *   - featured_topic: Featured/recent topic title
- *   - url: Link to grade page
- *   - color: Hex color for grade
- * - block_title: Block title
- * - intro_text: Introduction text
- * - display_mode: Display mode (grid, carousel, list)
- * - show_content_count: Whether to show content counts
- * - show_featured_topic: Whether to show featured topics
+ * - grades: Array of grade data (number, tid, name, label, count,
+ *   featured_topic, url).
+ * - block_title: Block title.
+ * - intro_text: Editor-supplied standfirst (empty by default).
+ * - display_mode: grid | list (legacy carousel renders as grid).
+ * - show_content_count: Whether to show content counts.
+ * - show_featured_topic: Whether to show featured topics.
  *
  * @ingroup themeable
  */
 #}
 <div class="history-classroom-block">
   {% if block_title %}
-    <h2 class="block-title mb-3">{{ block_title }}</h2>
+    {{ include('saho:saho-section-heading', {
+      title: block_title,
+      level: 'h2',
+    }, with_context = false) }}
   {% endif %}
 
   {% if intro_text %}
-    <p class="block-intro text-muted mb-4">{{ intro_text }}</p>
+    <p class="block-intro">{{ intro_text }}</p>
   {% endif %}
 
   {% if grades %}
-    <div class="classroom-grades-wrapper display-mode-{{ display_mode }}">
-      {% if display_mode == 'carousel' %}
-        {# Carousel mode for mobile-friendly browsing #}
-        <div id="classroomCarousel" class="carousel slide" data-bs-ride="carousel">
-          <div class="carousel-indicators">
-            {% for grade in grades %}
-              <button type="button" data-bs-target="#classroomCarousel" data-bs-slide-to="{{ loop.index0 }}"
-                      class="{{ loop.first ? 'active' : '' }}" aria-label="Grade {{ grade.number }}"></button>
-            {% endfor %}
-          </div>
-
-          <div class="carousel-inner">
-            {% for grade in grades %}
-              <div class="carousel-item {{ loop.first ? 'active' : '' }}">
-                {{ _self.grade_card(grade, show_content_count, show_featured_topic) }}
-              </div>
-            {% endfor %}
-          </div>
-
-          <button class="carousel-control-prev" type="button" data-bs-target="#classroomCarousel" data-bs-slide="prev">
-            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">{{ 'Previous'|t }}</span>
-          </button>
-          <button class="carousel-control-next" type="button" data-bs-target="#classroomCarousel" data-bs-slide="next">
-            <span class="carousel-control-next-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">{{ 'Next'|t }}</span>
-          </button>
-        </div>
-
-      {% elseif display_mode == 'list' %}
-        {# Stacked list mode #}
-        <div class="classroom-grades-list">
-          {% for grade in grades %}
-            {{ _self.grade_card(grade, show_content_count, show_featured_topic) }}
-          {% endfor %}
-        </div>
-
-      {% else %}
-        {# Grid mode (default) #}
-        <div class="saho-cards-grid classroom-grades-grid">
-          {% for grade in grades %}
-            {{ _self.grade_card(grade, show_content_count, show_featured_topic) }}
-          {% endfor %}
-        </div>
-      {% endif %}
+    <div class="saho-cards-grid classroom-grades-grid{{ display_mode == 'list' ? ' classroom-grades-grid--list' : '' }}">
+      {% for grade in grades %}
+        {% set phase = grade.number <= 6 ? 'Intermediate Phase' : (grade.number <= 9 ? 'Senior Phase' : 'FET Phase') %}
+        {{ include('saho:saho-archive-card', {
+          type: 'archive',
+          badge_label: grade.label,
+          dates: phase|upper,
+          title: (show_featured_topic and grade.featured_topic) ? grade.featured_topic : grade.label ~ ' resources',
+          meta: show_content_count ? grade.count ~ (grade.count == 1 ? ' RESOURCE' : ' RESOURCES') : '',
+          href: grade.url,
+        }, with_context = false) }}
+      {% endfor %}
     </div>
   {% else %}
-    <div class="alert alert-info">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-2" aria-hidden="true">
-        <circle cx="12" cy="12" r="10"></circle>
-        <line x1="12" y1="16" x2="12" y2="12"></line>
-        <line x1="12" y1="8" x2="12.01" y2="8"></line>
-      </svg>
-      {{ 'No classroom content available.'|t }}
-    </div>
+    <p class="saho-view-empty">{{ 'No classroom content available.'|t }}</p>
   {% endif %}
 </div>
-
-{#
-/**
- * Grade card macro for reusable card rendering.
- */
-#}
-{% macro grade_card(grade, show_count, show_topic) %}
-  <div class="saho-card grade-card grade-{{ grade.number }}" style="--grade-color: {{ grade.color }}">
-    <a href="{{ grade.url }}" class="saho-card-link">
-      <div class="saho-card-image grade-image">
-        {# Grade number badge #}
-        <div class="grade-badge">
-          <span class="grade-number">{{ grade.number }}</span>
-        </div>
-        {# Decorative background pattern #}
-        <div class="grade-pattern"></div>
-      </div>
-
-      <div class="saho-card-content">
-        <h3 class="saho-card-title">{{ grade.label }}</h3>
-
-        {% if show_topic and grade.featured_topic %}
-          <div class="featured-topic">
-            <svg class="featured-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-            </svg>
-            <span class="topic-text">{{ grade.featured_topic|truncate(60, true) }}</span>
-          </div>
-        {% endif %}
-
-        {% if show_count %}
-          <div class="resource-count">
-            <svg class="count-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-              <polyline points="14 2 14 8 20 8"></polyline>
-            </svg>
-            <span class="count-number">{{ grade.count }}</span>
-            <span class="count-label">{{ grade.count == 1 ? 'resource'|t : 'resources'|t }}</span>
-          </div>
-        {% endif %}
-
-        <div class="saho-card-footer">
-          <span class="saho-card-button">
-            {{ 'View Grade'|t }} {{ grade.number }}
-            <svg class="button-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-              <polyline points="12 5 19 12 12 19"></polyline>
-            </svg>
-          </span>
-        </div>
-      </div>
-    </a>
-  </div>
-{% endmacro %}

@@ -3,6 +3,11 @@
  * @file
  * Theme template for SAHO Top Read Content block.
  *
+ * Open Record 2027 idiom: a ruled reading list. Mono two-digit rank
+ * numerals, display-font title links, mono muted view counts. In cards
+ * mode an optional duotone thumbnail derivative renders above the title;
+ * broken files fall back to the sunk-paper marker (#458).
+ *
  * Available variables:
  * - items: Array of content items to display. Each item contains:
  *   - nid: Node ID
@@ -10,11 +15,11 @@
  *   - type: Content type machine name
  *   - url: Absolute URL to the node
  *   - view_count: Number of views
- *   - image: Thumbnail image URL (if show_thumbnail is enabled)
+ *   - image: Optional thumbnail derivative URL (saho_thumbnail style)
  * - block_title: The title of the block
  * - display_mode: Display mode ('list', 'grid', or 'cards')
  * - show_view_count: Boolean to show view counts
- * - show_thumbnail: Boolean to show thumbnails
+ * - show_thumbnail: Boolean to show thumbnails in cards/grid mode
  * - full_width: Boolean for full-width display
  * - attributes: HTML attributes for the wrapper element
  */
@@ -27,94 +32,47 @@
 ]) }}>
 
   {% if block_title %}
-    <div class="block-section-header">
-      <div class="block-title-wrapper">
-        <h2 class="top-read-title">{{ block_title }}</h2>
-      </div>
+    <div class="top-read-heading">
+      <h2 class="top-read-title">{{ block_title }}</h2>
     </div>
   {% endif %}
 
   {% if display_mode == 'list' %}
-    <ol class="top-read-list" style="counter-reset: item;">
+    <ol class="top-read-list">
       {% for item in items %}
         <li class="top-read-item top-read-item--{{ item.type }}">
-          <div class="top-read-item__content">
-            <span class="top-read-item__badge" aria-hidden="true">{{ loop.index }}</span>
-            {% if show_thumbnail and item.image %}
-              <div class="top-read-item__thumbnail">
-                <a href="{{ item.url }}">
-                  <img src="{{ item.image }}" alt="{{ item.title }}" loading="lazy" decoding="async" />
-                </a>
-              </div>
+          <span class="top-read-item__rank" aria-hidden="true">{{ '%02d'|format(loop.index) }}</span>
+          <div class="top-read-item__details">
+            <h3 class="top-read-item__title">
+              <a href="{{ item.url }}">{{ item.title }}</a>
+            </h3>
+            {% if show_view_count %}
+              <span class="top-read-item__views">{{ item.view_count|number_format }} {{ 'views'|t }}</span>
             {% endif %}
-            <div class="top-read-item__details">
-              <h3 class="top-read-item__title">
-                <a href="{{ item.url }}">{{ item.title }}</a>
-              </h3>
-              {% if show_view_count %}
-                <span class="top-read-item__views">
-                  {{ item.view_count|number_format }} {{ 'views'|t }}
-                </span>
-              {% endif %}
-            </div>
           </div>
         </li>
       {% endfor %}
     </ol>
 
-  {% elseif display_mode == 'grid' %}
-    <div class="top-read-grid">
+  {% else %}
+    {# grid / cards modes share one archive-card treatment. #}
+    <ol class="top-read-grid">
       {% for item in items %}
-        <div class="top-read-item top-read-item--{{ item.type }}">
+        <li class="top-read-grid-item top-read-item--{{ item.type }}">
           {% if show_thumbnail and item.image %}
-            <div class="top-read-item__thumbnail">
-              <a href="{{ item.url }}">
-                <img src="{{ item.image }}" alt="{{ item.title }}" loading="lazy" decoding="async" />
-              </a>
-            </div>
+            <a class="top-read-item__thumb" href="{{ item.url }}" tabindex="-1" aria-hidden="true">
+              <img class="saho-duotone" src="{{ item.image }}" alt="" loading="lazy" decoding="async" onerror="this.closest('.top-read-item__thumb').classList.add('is-broken')" />
+            </a>
           {% endif %}
-          <div class="top-read-item__content">
-            <h3 class="top-read-item__title">
-              <a href="{{ item.url }}">{{ item.title }}</a>
-            </h3>
-            {% if show_view_count %}
-              <span class="top-read-item__views">
-                {{ item.view_count|number_format }} {{ 'views'|t }}
-              </span>
-            {% endif %}
-          </div>
-        </div>
-      {% endfor %}
-    </div>
-
-  {% elseif display_mode == 'cards' %}
-    <div class="top-read-cards">
-      {% for item in items %}
-        <div class="top-read-card top-read-card--{{ item.type }}">
-          {% if show_thumbnail and item.image %}
-            <div class="top-read-card__image">
-              <a href="{{ item.url }}">
-                <img src="{{ item.image }}" alt="{{ item.title }}" loading="lazy" decoding="async" />
-              </a>
-            </div>
+          <span class="top-read-item__rank" aria-hidden="true">{{ '%02d'|format(loop.index) }}</span>
+          <h3 class="top-read-item__title">
+            <a href="{{ item.url }}">{{ item.title }}</a>
+          </h3>
+          {% if show_view_count %}
+            <span class="top-read-item__views">{{ item.view_count|number_format }} {{ 'views'|t }}</span>
           {% endif %}
-          <div class="top-read-card__body">
-            <h3 class="top-read-card__title">
-              <a href="{{ item.url }}">{{ item.title }}</a>
-            </h3>
-            {% if show_view_count %}
-              <div class="top-read-card__footer">
-                <span class="top-read-card__views">
-                  <svg class="icon icon-eye" aria-hidden="true" width="16" height="16">
-                    <use xlink:href="#icon-eye"></use>
-                  </svg>
-                  {{ item.view_count|number_format }}
-                </span>
-              </div>
-            {% endif %}
-          </div>
-        </div>
+        </li>
       {% endfor %}
-    </div>
+    </ol>
   {% endif %}
 </div>

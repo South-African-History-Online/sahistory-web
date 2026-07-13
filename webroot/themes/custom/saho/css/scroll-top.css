@@ -1,0 +1,61 @@
+/* Back-to-top (R3): square Open Record register, 44px touch target. */
+.saho-scroll-top {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 1030; /* above content and sticky rows, below modals/offcanvas (1045+) */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.1rem;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  color: var(--saho-ink, #1a1a18);
+  background: var(--saho-paper-raised, #f5f2e9);
+  border: var(--bw-hair, 1px) solid var(--saho-ink, #1a1a18);
+  border-radius: 0;
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(0.5rem);
+  transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+}
+
+.saho-scroll-top.is-visible {
+  visibility: visible;
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.saho-scroll-top__glyph {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.saho-scroll-top__label {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.55rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.saho-scroll-top:hover,
+.saho-scroll-top:focus-visible {
+  background: var(--saho-ink, #1a1a18);
+  color: var(--saho-paper, #f0ece1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .saho-scroll-top {
+    transition: none;
+  }
+}
+
+@media print {
+  .saho-scroll-top {
+    display: none;
+  }
+}

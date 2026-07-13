@@ -1,0 +1,61 @@
+{#
+/**
+ * @file
+ * Classroom clip (Open Record S6, #428).
+ *
+ * A short self-hosted educational video: poster-first player (the video
+ * only loads and plays on engagement; muted preview may start when the
+ * player is visible unless the visitor prefers reduced motion or is on a
+ * metered connection - see saho_classroom/clip-player), a mono provenance
+ * line for the source credit (a plain link, never an embed), then the
+ * summary and the classroom apparatus (grade, subject, CAPS topic).
+ */
+#}
+{{ attach_library('saho_classroom/clip-player') }}
+
+<article{{ attributes.addClass('saho-clip') }}>
+
+  <div class="saho-clip__player" data-saho-clip>
+    {% if content.field_poster|render %}
+      <button class="saho-clip__poster" type="button" data-clip-play aria-label="{{ 'Play the clip'|t }}">
+        {{ content.field_poster }}
+        <span class="saho-clip__play" aria-hidden="true">&#9654;</span>
+      </button>
+    {% endif %}
+    <div class="saho-clip__video"{% if content.field_poster|render %} hidden{% endif %}>
+      {{ content.field_clip_media }}
+    </div>
+  </div>
+
+  {% set source = node.field_source_url.0 %}
+  {% if source and source.uri %}
+    <p class="saho-clip__source">
+      {{ 'Source'|t }} &middot;
+      <a href="{{ source.uri }}" rel="noopener nofollow">{{ source.uri|replace({'https://': '', 'http://': '', 'www.': ''})|trim('/') }}</a>
+    </p>
+  {% endif %}
+
+  {% if content.body|render %}
+    <div class="saho-clip__body">
+      {{ content.body }}
+    </div>
+  {% endif %}
+
+  {% set facts = [
+    { label: 'Grade'|t, term: node.field_classroom_grade.isEmpty ? null : node.field_classroom_grade.entity },
+    { label: 'Subject'|t, term: node.field_classroom_subject.isEmpty ? null : node.field_classroom_subject.entity },
+    { label: 'CAPS topic'|t, term: node.field_caps_topic.isEmpty ? null : node.field_caps_topic.entity },
+    { label: 'Resource type'|t, term: node.field_classroom_resource_type.isEmpty ? null : node.field_classroom_resource_type.entity },
+  ] %}
+  <dl class="saho-clip__facts">
+    {% for fact in facts %}
+      {% if fact.term %}
+        <div class="saho-clip__fact">
+          <dt>{{ fact.label }}</dt>
+          <dd>{{ fact.term.label() }}</dd>
+        </div>
+      {% endif %}
+    {% endfor %}
+  </dl>
+
+</article>

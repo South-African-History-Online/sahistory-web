@@ -34,9 +34,10 @@ class PublicationsBlock extends BlockBase {
   /**
    * Default curated set used when no Settings override is present.
    *
-   * Six titles, spread across decades, all with cover art already on the
-   * shop. Cover URLs are absolute so the block works on any environment
-   * (local DDEV main-site can read shop.sahistory.org.za assets directly).
+   * Four titles, all with cover art already on the shop - a cover-less
+   * entry reads as a gap on the front page. Cover URLs are absolute so
+   * the block works on any environment (local DDEV main-site can read
+   * shop.sahistory.org.za assets directly).
    */
   protected function getDefaultFeatured(): array {
     $shop = 'https://shop.sahistory.org.za';
@@ -73,23 +74,6 @@ class PublicationsBlock extends BlockBase {
         'price' => 'R200',
         'url' => $shop . '/product/9',
         'cover' => $shop . '/sites/shop.sahistory.org.za/files/styles/publication_cover/public/product-covers/bookcover_mafika_gwala_collected_poems.jpg',
-      ],
-      [
-        'title' => 'Cape Flats Details',
-        'subtitle' => "Life and Popular Art in Cape Town's Townships",
-        'author' => 'Chris Ledochowski',
-        'year' => '2003',
-        'price' => 'R500',
-        'url' => $shop . '/product/8',
-        'cover' => NULL,
-      ],
-      [
-        'title' => 'Seedtimes',
-        'author' => 'Omar Badsha',
-        'year' => '2017',
-        'price' => 'R500',
-        'url' => $shop . '/product/25',
-        'cover' => NULL,
       ],
     ];
   }

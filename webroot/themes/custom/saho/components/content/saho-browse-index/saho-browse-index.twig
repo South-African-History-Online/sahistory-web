@@ -1,0 +1,35 @@
+{#
+/**
+ * @file SAHO Browse index SDC. props: title, items[] of {label, type, href, count}.
+ * Every square is a real <a href> (SEO); count is optional and hidden when null.
+ */
+#}
+<section{{ attributes.addClass('saho-browse-index') }}>
+  {% if title %}
+    <h2 class="saho-browse-index__title">{{ title }}</h2>
+  {% endif %}
+  <div class="saho-browse-index__grid">
+    {% for item in items %}
+      <a class="saho-browse-index__item saho-browse-index__item--{{ item.type }}" href="{{ item.href }}">
+        <span class="saho-browse-index__label">{{ item.label }}</span>
+        {% if item.count %}
+          <span class="saho-browse-index__count">{{ item.count }}</span>
+        {% elseif item.note %}
+          {# Cells without a clean count may carry one mono claim (R3 #479). #}
+          <span class="saho-browse-index__note">{{ item.note }}</span>
+        {% endif %}
+      </a>
+    {% endfor %}
+  </div>
+
+  {# R3 #475-S3: the deepest holdings, one mono footer line straight into
+     the narrowed archive index. #}
+  {% if collections %}
+    <p class="saho-browse-index__collections">
+      <span class="saho-browse-index__collections-label">{{ 'Collections'|t }}</span>
+      {% for c in collections %}
+        <a href="{{ c.href }}">{{ c.label }} &middot; {{ c.count }}</a>
+      {% endfor %}
+    </p>
+  {% endif %}
+</section>

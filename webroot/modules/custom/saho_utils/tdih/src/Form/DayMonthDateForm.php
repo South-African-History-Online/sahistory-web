@@ -266,7 +266,7 @@ class DayMonthDateForm extends FormBase {
           '#markup' => '<div class="alert alert-info text-center">' .
             '<i class="fas fa-info-circle me-2"></i>' .
             $this->t('No historical events found for @date.', [
-              '@date' => date('F j', mktime(0, 0, 0, $month, $day)),
+              '@date' => $this->formatDayMonth($month, $day),
             ]) . '</div>',
         ];
       }
@@ -348,7 +348,7 @@ class DayMonthDateForm extends FormBase {
           '#markup' => '<div class="alert alert-info text-center">' .
             '<i class="fas fa-info-circle me-2"></i>' .
             $this->t('No historical events found for @date.', [
-              '@date' => date('F j', mktime(0, 0, 0, $month, $day)),
+              '@date' => $this->formatDayMonth($month, $day),
             ]) . '</div>',
         ];
       }
@@ -361,6 +361,27 @@ class DayMonthDateForm extends FormBase {
     }
 
     return $response;
+  }
+
+  /**
+   * Formats a month/day pair as a "Month Day" label without year rollover.
+   *
+   * Calling mktime() with the current year rolls February 29 over to March 1
+   * in a non-leap year, which would misreport the picked date in the "no
+   * events" message. The month name is therefore derived from a fixed day (the
+   * 1st) and the selected day is appended verbatim so Feb 29 stays Feb 29.
+   *
+   * @param int|string $month
+   *   The month number (1-12).
+   * @param int|string $day
+   *   The day of the month.
+   *
+   * @return string
+   *   A "Month Day" label, e.g. "February 29".
+   */
+  protected function formatDayMonth($month, $day): string {
+    $month_name = date('F', mktime(0, 0, 0, (int) $month, 1));
+    return $month_name . ' ' . (int) $day;
   }
 
   /**

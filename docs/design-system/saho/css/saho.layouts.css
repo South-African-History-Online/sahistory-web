@@ -1,0 +1,88 @@
+/* ============================================================
+   SAHO 2027 — Layout Builder alignment system
+   The fix for the "nothing lines up" problem: ONE shared measure, ONE
+   gutter, ONE vertical rhythm. Every Layout Builder section is constrained
+   to the same container and column grid, so regions align across the page
+   regardless of what blocks editors drop in.
+   Mobile-first: single column by default; grids appear at >=48rem / >=64rem.
+   ============================================================ */
+
+/* ---- The page shell: one max-width, one gutter, centred ---- */
+.saho-page,
+.layout--saho {
+  width: 100%;
+  max-width: var(--container-standard);   /* 1200px reading/record width */
+  margin-inline: auto;
+  padding-inline: var(--gutter-page);      /* fluid 16→48px, shared by ALL */
+}
+.saho-page--wide,
+.layout--saho.is-wide { max-width: var(--container-wide); }     /* 1440 index/gallery */
+.saho-page--prose,
+.layout--saho.is-prose { max-width: var(--container-narrow); }  /* 832 long-form */
+
+/* ---- Vertical rhythm: consistent space between stacked sections ---- */
+.saho-page > * + * { margin-top: var(--space-7); }
+.layout-builder__region > * + * { margin-top: var(--space-6); }
+
+/* ============================================================
+   Named Layout Builder layouts (see saho.layouts.yml)
+   Each is mobile-first single-column, then a defined desktop grid.
+   ============================================================ */
+
+/* --- 1. Standard: single aligned column --- */
+.layout--saho-standard { display: block; }
+
+/* --- 2. Record: main + right rail (biography, article, event) --- */
+.layout--saho-record { display: grid; grid-template-columns: 1fr; gap: var(--space-6); }
+.layout--saho-record > .region--rail { min-width: 0; }
+@media (min-width: 64rem) {
+  .layout--saho-record {
+    grid-template-columns: minmax(0, 1fr) var(--rail-width);
+    gap: var(--rail-gap);
+    align-items: start;
+  }
+  /* Rail becomes sticky on desktop so provenance/chronology stays in view */
+  .layout--saho-record > .region--rail { position: sticky; top: var(--space-5); }
+}
+
+/* --- 3. Index: responsive record/card grid (browse, search, home) --- */
+.layout--saho-index { display: grid; grid-template-columns: 1fr; gap: var(--grid-gap-tight); }
+@media (min-width: 40rem) {
+  .layout--saho-index { grid-template-columns: repeat(2, 1fr); gap: var(--grid-gap); }
+}
+@media (min-width: 64rem) {
+  .layout--saho-index { grid-template-columns: repeat(3, 1fr); }
+}
+.layout--saho-index.is-dense { grid-template-columns: 1fr; }
+@media (min-width: 64rem) {
+  .layout--saho-index.is-dense { grid-template-columns: repeat(4, 1fr); }
+}
+/* Auto variant: fills columns by min card width, always aligned rows */
+.layout--saho-index.is-auto {
+  grid-template-columns: repeat(auto-fill, minmax(var(--grid-min-card), 1fr));
+}
+
+/* --- 4. Editorial: asymmetric feature (the people's-history register) --- */
+.layout--saho-editorial { display: grid; grid-template-columns: 1fr; gap: var(--space-6); }
+@media (min-width: 64rem) {
+  .layout--saho-editorial {
+    grid-template-columns: 1.55fr 1fr;
+    gap: var(--space-7);
+    align-items: stretch;
+  }
+}
+
+/* ---- Section band: full-bleed background, aligned inner content ---- */
+.saho-band { padding-block: var(--space-7); }
+.saho-band--ink { background: var(--surface-inverse); color: var(--text-on-dark); }
+.saho-band--sunk { background: var(--surface-sunk); }
+.saho-band--ruled { border-top: var(--bw-rule) solid var(--border-strong); }
+.saho-band > .saho-page { padding-block: 0; }
+
+/* ---- Equal-height alignment helpers ---- */
+.saho-stretch { display: grid; grid-auto-rows: 1fr; }
+.saho-cluster { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; }
+.saho-cluster--between { justify-content: space-between; }
+
+/* ---- A hairline ruled divider between stacked records ---- */
+.saho-ruled > * + * { border-top: var(--bw-hair) solid var(--border-default); padding-top: var(--space-5); margin-top: var(--space-5); }

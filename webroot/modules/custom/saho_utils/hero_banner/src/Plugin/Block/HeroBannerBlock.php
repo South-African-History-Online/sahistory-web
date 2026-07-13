@@ -8,7 +8,7 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\File\FileUrlGeneratorInterface;
-use Drupal\Core\Render\Markup;
+use Drupal\Core\Render\RendererInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -37,6 +37,13 @@ class HeroBannerBlock extends BlockBase implements ContainerFactoryPluginInterfa
   protected $fileUrlGenerator;
 
   /**
+   * The renderer.
+   *
+   * @var \Drupal\Core\Render\RendererInterface
+   */
+  protected $renderer;
+
+  /**
    * Constructs a new HeroBannerBlock instance.
    *
    * @param array $configuration
@@ -49,11 +56,14 @@ class HeroBannerBlock extends BlockBase implements ContainerFactoryPluginInterfa
    *   The entity type manager.
    * @param \Drupal\Core\File\FileUrlGeneratorInterface $file_url_generator
    *   The file URL generator.
+   * @param \Drupal\Core\Render\RendererInterface $renderer
+   *   The renderer.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, FileUrlGeneratorInterface $file_url_generator) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, FileUrlGeneratorInterface $file_url_generator, RendererInterface $renderer) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->entityTypeManager = $entity_type_manager;
     $this->fileUrlGenerator = $file_url_generator;
+    $this->renderer = $renderer;
   }
 
   /**
@@ -65,7 +75,8 @@ class HeroBannerBlock extends BlockBase implements ContainerFactoryPluginInterfa
       $plugin_id,
       $plugin_definition,
       $container->get('entity_type.manager'),
-      $container->get('file_url_generator')
+      $container->get('file_url_generator'),
+      $container->get('renderer')
     );
   }
 
@@ -75,19 +86,27 @@ class HeroBannerBlock extends BlockBase implements ContainerFactoryPluginInterfa
   public function defaultConfiguration() {
     return [
       'title' => '',
-      'title_color' => 'white',
+      'kicker' => '',
       'subtitle' => '',
       'body' => [
         'value' => '',
         'format' => 'basic_html',
       ],
       'background_image' => NULL,
+      'credit' => '',
       'display_mode' => 'standard',
       'call_to_action' => [
         'title' => '',
         'uri' => '',
         'style' => 'solid',
       ],
+      'call_to_action_secondary' => [
+        'title' => '',
+        'uri' => '',
+      ],
+      // Legacy keys kept so stored block configs stay valid; no longer
+      // rendered (wf07 contract: flat ink band, no overlay, paper masthead).
+      'title_color' => 'white',
       'overlay_opacity' => 50,
     ] + parent::defaultConfiguration();
   }
@@ -126,17 +145,12 @@ class HeroBannerBlock extends BlockBase implements ContainerFactoryPluginInterfa
       ],
     ];
 
-    $form['title_color'] = [
-      '#type' => 'select',
-      '#title' => $this->t('Title Color'),
-      '#default_value' => $config['title_color'] ?? 'white',
-      '#options' => [
-        'white' => $this->t('White'),
-        'red' => $this->t('SAHO Red'),
-        'gold' => $this->t('SAHO Gold'),
-        'green' => $this->t('SAHO Green'),
-      ],
-      '#description' => $this->t('Choose the color for the hero banner title.'),
+    $form['kicker'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Kicker'),
+      '#default_value' => $config['kicker'] ?? '',
+      '#maxlength' => 255,
+      '#description' => $this->t('Mono eyebrow line above the masthead, e.g. CURRENT FEATURE · COMMEMORATION.'),
       '#states' => [
         'visible' => [
           ':input[name="settings[display_mode]"]' => ['value' => 'standard'],
@@ -146,9 +160,10 @@ class HeroBannerBlock extends BlockBase implements ContainerFactoryPluginInterfa
 
     $form['subtitle'] = [
       '#type' => 'textfield',
-      '#title' => $this->t('Subtitle'),
+      '#title' => $this->t('Standfirst'),
       '#default_value' => $config['subtitle'],
       '#maxlength' => 255,
+      '#description' => $this->t('One-line standfirst under the masthead.'),
       '#states' => [
         'visible' => [
           ':input[name="settings[display_mode]"]' => ['value' => 'standard'],
@@ -187,14 +202,17 @@ class HeroBannerBlock extends BlockBase implements ContainerFactoryPluginInterfa
       '#maxlength' => 1024,
     ];
 
-    $form['overlay_opacity'] = [
-      '#type' => 'range',
-      '#title' => $this->t('Overlay Opacity'),
-      '#default_value' => $config['overlay_opacity'],
-      '#min' => 0,
-      '#max' => 100,
-      '#step' => 10,
-      '#description' => $this->t('Set the overlay opacity for the background image (0 = transparent, 100 = opaque).'),
+    $form['credit'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Image credit'),
+      '#default_value' => $config['credit'] ?? '',
+      '#maxlength' => 255,
+      '#description' => $this->t('Mono provenance line for the image, e.g. PHOTOGRAPH · UWC-RIM MAYIBUYE ARCHIVES. Required when an image is set (provenance is part of the visual language).'),
+      '#states' => [
+        'visible' => [
+          ':input[name="settings[display_mode]"]' => ['value' => 'standard'],
+        ],
+      ],
     ];
 
     $form['call_to_action'] = [
@@ -218,15 +236,30 @@ class HeroBannerBlock extends BlockBase implements ContainerFactoryPluginInterfa
       '#maxlength' => 2048,
     ];
 
-    $form['call_to_action']['style'] = [
-      '#type' => 'select',
-      '#title' => $this->t('Button Style'),
-      '#default_value' => $config['call_to_action']['style'] ?? 'solid',
-      '#options' => [
-        'solid' => $this->t('Solid Button'),
-        'ghost' => $this->t('Ghost Button (Outline)'),
+    $form['call_to_action_secondary'] = [
+      '#type' => 'fieldset',
+      '#title' => $this->t('Secondary action (optional)'),
+      '#description' => $this->t('Renders as a ghost button next to the primary action. The hero allows at most two actions.'),
+      '#states' => [
+        'visible' => [
+          ':input[name="settings[display_mode]"]' => ['value' => 'standard'],
+        ],
       ],
-      '#description' => $this->t('Choose the button style.'),
+    ];
+
+    $form['call_to_action_secondary']['title'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Button Text'),
+      '#default_value' => $config['call_to_action_secondary']['title'] ?? '',
+      '#maxlength' => 255,
+    ];
+
+    $form['call_to_action_secondary']['uri'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Link'),
+      '#default_value' => $config['call_to_action_secondary']['uri'] ?? '',
+      '#description' => $this->t('Internal path (e.g., /about-us) or external URL.'),
+      '#maxlength' => 2048,
     ];
 
     return $form;
@@ -243,6 +276,13 @@ class HeroBannerBlock extends BlockBase implements ContainerFactoryPluginInterfa
     if ($form_state->getValue('display_mode') === 'standard' && trim((string) $form_state->getValue('title')) === '') {
       $form_state->setErrorByName('title', $this->t('Title is required in Standard display mode.'));
     }
+    // A filled hero must credit its image - provenance is part of the visual
+    // language (#461), not optional.
+    if ($form_state->getValue('display_mode') === 'standard'
+      && !empty($form_state->getValue('background_image'))
+      && trim((string) $form_state->getValue('credit')) === '') {
+      $form_state->setErrorByName('credit', $this->t('An image credit is required when a hero image is set.'));
+    }
   }
 
   /**
@@ -252,9 +292,14 @@ class HeroBannerBlock extends BlockBase implements ContainerFactoryPluginInterfa
     parent::blockSubmit($form, $form_state);
     $values = $form_state->getValues();
     $this->configuration['title'] = $values['title'];
-    $this->configuration['title_color'] = $values['title_color'];
+    $this->configuration['kicker'] = $values['kicker'] ?? '';
     $this->configuration['subtitle'] = $values['subtitle'];
     $this->configuration['body'] = $values['body'];
+    $this->configuration['credit'] = $values['credit'] ?? '';
+    $this->configuration['call_to_action_secondary'] = [
+      'title' => $values['call_to_action_secondary']['title'] ?? '',
+      'uri' => $values['call_to_action_secondary']['uri'] ?? '',
+    ];
     // Entity autocomplete returns an entity object, store just the ID.
     if (!empty($values['background_image'])) {
       if (is_object($values['background_image'])) {
@@ -267,10 +312,11 @@ class HeroBannerBlock extends BlockBase implements ContainerFactoryPluginInterfa
     else {
       $this->configuration['background_image'] = NULL;
     }
-    $this->configuration['overlay_opacity'] = $values['overlay_opacity'];
     $this->configuration['display_mode'] = $values['display_mode'];
     $this->configuration['call_to_action']['title'] = $values['call_to_action']['title'];
-    $this->configuration['call_to_action']['style'] = $values['call_to_action']['style'];
+    // The primary action is always the solid oxblood button (wf07 contract);
+    // the secondary renders ghost.
+    $this->configuration['call_to_action']['style'] = 'solid';
     // Handle URI from form.
     $uri_input = $values['call_to_action']['uri'] ?? '';
     if (!empty($uri_input)) {
@@ -413,44 +459,70 @@ class HeroBannerBlock extends BlockBase implements ContainerFactoryPluginInterfa
     // Process body through the administrator-configured text format
     // for XSS protection (only in standard mode).
     $body_value = '';
+    $body_format = NULL;
     if (!$is_graphic_mode && !empty($config['body']['value'])) {
       // Use the format selected by the administrator in the block config
       // form. The format is stored when the block is saved via text_format.
       // Fallback to 'basic_html' only if format is missing (e.g., legacy data).
       $format = !empty($config['body']['format']) ? $config['body']['format'] : 'basic_html';
-      // Use check_markup to apply text format filtering, then wrap in Markup
-      // so Twig knows it's already sanitized and won't double-escape.
-      $filtered_body = check_markup($config['body']['value'], $format);
-      $body_value = Markup::create($filtered_body);
+      $body_format = $format;
+      // Render through the processed_text element so the configured text
+      // format's filters run (XSS protection) and its cache tags are attached.
+      // This replaces the deprecated check_markup() + Markup::create() pair
+      // and returns a MarkupInterface Twig treats as already sanitized.
+      $processed_text = [
+        '#type' => 'processed_text',
+        '#text' => $config['body']['value'],
+        '#format' => $format,
+      ];
+      $body_value = $this->renderer->renderInIsolation($processed_text);
     }
 
     // Use SDC component for rendering (Drupal 11 best practice).
     // Falls back to module template for backward compatibility.
     // In graphic mode, suppress title/subtitle/body.
     // The graphic itself contains the messaging.
+    // Resolve the optional secondary action (ghost button, standard mode).
+    $button2_url = '';
+    if (!$is_graphic_mode && !empty($config['call_to_action_secondary']['uri'])) {
+      $uri2 = $config['call_to_action_secondary']['uri'];
+      if (strpos($uri2, 'internal:') === 0) {
+        $button2_url = substr($uri2, 9);
+      }
+      else {
+        $button2_url = $uri2;
+      }
+    }
+
     $build = [
       '#type' => 'component',
       '#component' => 'saho:saho-hero-banner',
       '#props' => [
         'title' => $is_graphic_mode ? '' : (string) ($config['title'] ?? ''),
-        'title_color' => (string) ($config['title_color'] ?? 'white'),
+        'kicker' => $is_graphic_mode ? '' : (string) ($config['kicker'] ?? ''),
         'subtitle' => $is_graphic_mode ? '' : (string) ($config['subtitle'] ?? ''),
         'body' => $is_graphic_mode ? '' : $body_value,
         'background_image' => (string) ($background_image_url ?? ''),
         'background_image_mobile' => (string) ($background_image_mobile_url ?? $background_image_url ?? ''),
-        'overlay_opacity' => (float) (($config['overlay_opacity'] ?? 50) / 100),
+        'credit' => $is_graphic_mode ? '' : (string) ($config['credit'] ?? ''),
         'display_mode' => (string) $display_mode,
         'button_text' => (string) ($config['call_to_action']['title'] ?? ''),
         'button_url' => (string) ($button_url ?? ''),
         'button_target' => (string) ($button_target ?? '_self'),
         'button_rel' => (string) ($button_rel ?? ''),
-        'button_style' => (string) ($config['call_to_action']['style'] ?? 'solid'),
+        'button2_text' => $is_graphic_mode ? '' : (string) ($config['call_to_action_secondary']['title'] ?? ''),
+        'button2_url' => (string) $button2_url,
         'image_width' => $image_width,
         'image_height' => $image_height,
       ],
       '#cache' => [
         'contexts' => ['url'],
-        'tags' => !empty($config['background_image']) ? ['media:' . $config['background_image']] : [],
+        'tags' => array_merge(
+          !empty($config['background_image']) ? ['media:' . $config['background_image']] : [],
+          // renderInIsolation() does not bubble the processed_text cache tags,
+          // so attach the body's filter format config tag explicitly.
+          $body_format ? ['config:filter.format.' . $body_format] : []
+        ),
         'max-age' => 3600,
       ],
       '#attached' => [

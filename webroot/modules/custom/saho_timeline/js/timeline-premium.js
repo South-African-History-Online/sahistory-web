@@ -7,14 +7,6 @@
 (function ($, Drupal, once) {
   'use strict';
 
-  // Define PHP-style constants for PHPCS compliance
-  // phpcs:ignore Drupal.Semantics.FunctionTriggerError
-  var TRUE = TRUE;
-  // phpcs:ignore Drupal.Semantics.FunctionTriggerError
-  var FALSE = FALSE;
-  // phpcs:ignore Drupal.Semantics.FunctionTriggerError
-  var NULL = NULL;
-
   /**
    * Premium Timeline behavior using TimelineJS3.
    */
@@ -93,7 +85,7 @@
                     const year = parseInt(event.date.substring(0, 4));
                     return year >= 2020;
                   }
-                  return FALSE;
+                  return false;
                 });
 
                 // Cache the response for 30 minutes to avoid repeated API calls.
@@ -151,7 +143,7 @@
 
     // TimelineJS3 options optimized for ALL events with dynamic date range
     const options = {
-      hash_bookmark: TRUE,
+      hash_bookmark: true,
       initial_zoom: 4, // Higher zoom to focus more tightly on event-dense periods
       height: 900, // Full height for desktop viewing
       width: '100%', // Full width for desktop
@@ -165,15 +157,15 @@
       marker_padding: 1, // Minimal padding for density
       start_at_slide: findHistoricalCenterSlide(events), // Start at historical center
       menubar_height: 0,
-      use_bc: TRUE, // Enable BC dates
+      use_bc: true, // Enable BC dates
       duration: 400, // Smooth transitions
       ease: 'easeInOutQuart', // Smooth easing
-      dragging: TRUE,
-      trackResize: TRUE,
+      dragging: true,
+      trackResize: true,
       slide_padding_lr: 40, // Compact padding
       slide_default_fade: '10%', // Less fade for crisp display
       zoom_sequence: [0.05, 0.1, 0.25, 0.5, 1, 2, 4, 8, 16, 32], // More zoom levels for precision
-      ga_property_id: NULL,
+      ga_property_id: null,
       track_events: ['nav_next', 'nav_previous', 'nav_zoom_in', 'nav_zoom_out'],
       timenav_height: 400, // Taller navigation for all events
       timenav_height_percentage: 40, // More space for timeline navigation
@@ -184,11 +176,11 @@
       zoom_sequence: [0.5, 1, 2, 4, 8, 16], // More focused zoom levels
       default_bg_color: {color: "#ffffff", url: ""}, // Clean background
       // Performance optimizations for large dataset
-      animation: TRUE, // Keep animations but optimize them
-      calculate_zoom: FALSE, // Disable auto-zoom calculations for performance
+      animation: true, // Keep animations but optimize them
+      calculate_zoom: false, // Disable auto-zoom calculations for performance
       optimal_tick_width: 40, // Smaller ticks for more events
       marker_spacing_threshold: 2, // Tighter marker spacing
-      cosmetic: FALSE // Disable cosmetic features for performance
+      cosmetic: false // Disable cosmetic features for performance
     };
 
     // Initialize TimelineJS3
@@ -380,7 +372,7 @@
    * Parse event date to TimelineJS format.
    */
   function parseEventDate(dateStr) {
-    if (!dateStr) { return NULL;
+    if (!dateStr) { return null;
     }
 
     try {
@@ -413,7 +405,7 @@
     } catch (e) {
     }
 
-    return NULL;
+    return null;
   }
 
   /**

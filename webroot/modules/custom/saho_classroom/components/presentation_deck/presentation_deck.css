@@ -1,0 +1,413 @@
+/**
+ * @file
+ * SAHO Classroom presentation deck engine styles.
+ *
+ * Extracted from the #436 self-contained prototype
+ * (prototype/group-areas-act.html) and scoped under .saho-deck so the deck can
+ * be embedded inside a Drupal page without repainting the whole document. The
+ * prototype's global html/body rules are deliberately dropped; the deck owns
+ * its own height and dark chrome instead.
+ */
+
+.saho-deck {
+  /* SAHO brand tokens (docs/COLOR-SYSTEM.md). */
+  --saho-red: #990000;
+  --saho-red-dark: #7a0000;
+  --saho-slate: #3a4a64;
+  --saho-gold: #b88a2e;
+  --saho-green: #2d5016;
+  --ink: #1e293b;
+  --ink-soft: #475569;
+  --paper: #ffffff;
+  --paper-tint: #f6f2ec;
+  --line: #d9cfc2;
+  --focus: #b88a2e;
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: min(80vh, 760px);
+  background: #201a17;
+  color: var(--ink);
+  font-family: var(--font);
+  border-radius: 14px;
+  overflow: hidden;
+  -webkit-text-size-adjust: 100%;
+}
+
+.saho-deck *,
+.saho-deck *::before,
+.saho-deck *::after {
+  box-sizing: border-box;
+}
+
+.saho-deck:fullscreen {
+  height: 100vh;
+  border-radius: 0;
+}
+
+/* Skip link for keyboard / screen reader users. */
+.saho-deck .skip-link {
+  position: absolute;
+  left: -999px;
+  top: 0;
+  z-index: 100;
+  background: var(--saho-red);
+  color: #fff;
+  padding: 0.6rem 1rem;
+  border-radius: 0 0 6px 0;
+}
+.saho-deck .skip-link:focus {
+  left: 0;
+}
+
+/* Stage --------------------------------------------------------------- */
+.saho-deck__stage {
+  flex: 1 1 auto;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(0.5rem, 2vw, 2rem);
+}
+
+/* One slide fills the stage. */
+.saho-deck .slide {
+  display: none;
+  width: min(1120px, 100%);
+  max-height: 100%;
+  overflow-y: auto;
+  background: var(--paper);
+  border-radius: 14px;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+  padding: clamp(1.4rem, 3.4vw, 3rem);
+}
+.saho-deck .slide.is-active {
+  display: block;
+  animation: saho-deck-fade 0.28s ease;
+}
+@keyframes saho-deck-fade {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.saho-deck .slide__eyebrow {
+  display: inline-block;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--saho-red);
+  border-bottom: 3px solid var(--saho-gold);
+  padding-bottom: 0.2rem;
+  margin-bottom: 0.9rem;
+}
+
+.saho-deck .slide h1 {
+  font-size: clamp(1.9rem, 4.6vw, 3.2rem);
+  line-height: 1.08;
+  margin: 0 0 0.6rem;
+  color: var(--saho-red-dark);
+}
+.saho-deck .slide h2 {
+  font-size: clamp(1.4rem, 3.2vw, 2.2rem);
+  line-height: 1.15;
+  margin: 0 0 1rem;
+  color: var(--saho-slate);
+}
+.saho-deck .slide p { font-size: clamp(1rem, 1.7vw, 1.22rem); line-height: 1.55; margin: 0 0 0.9rem; }
+.saho-deck .slide ul,
+.saho-deck .slide ol { font-size: clamp(1rem, 1.7vw, 1.22rem); line-height: 1.5; padding-left: 1.2rem; }
+.saho-deck .slide li { margin-bottom: 0.55rem; }
+.saho-deck .lead { font-size: clamp(1.1rem, 2.1vw, 1.5rem); color: var(--ink-soft); }
+
+.saho-deck .cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(1rem, 3vw, 2.4rem);
+  align-items: start;
+}
+@media (max-width: 720px) {
+  .saho-deck .cols { grid-template-columns: 1fr; }
+}
+
+.saho-deck .card {
+  background: var(--paper-tint);
+  border: 1px solid var(--line);
+  border-left: 5px solid var(--saho-gold);
+  border-radius: 8px;
+  padding: 1rem 1.2rem;
+}
+.saho-deck .card h3 { margin: 0 0 0.4rem; color: var(--saho-slate); font-size: 1.1rem; }
+
+.saho-deck .timeline {
+  list-style: none;
+  padding-left: 0;
+}
+.saho-deck .timeline li {
+  padding: 0.4rem 0 0.4rem 1rem;
+  border-left: 3px solid var(--saho-gold);
+  margin-bottom: 0.4rem;
+}
+.saho-deck .timeline strong { color: var(--saho-red-dark); margin-right: 0.4rem; }
+
+.saho-deck blockquote {
+  margin: 0;
+  padding: 1.1rem 1.4rem;
+  background: var(--paper-tint);
+  border-left: 6px solid var(--saho-red);
+  border-radius: 0 8px 8px 0;
+  font-size: clamp(1.15rem, 2.4vw, 1.7rem);
+  font-style: italic;
+  color: var(--ink);
+}
+.saho-deck blockquote cite {
+  display: block;
+  margin-top: 0.7rem;
+  font-size: 0.95rem;
+  font-style: normal;
+  color: var(--ink-soft);
+}
+
+.saho-deck .figure { margin: 0; }
+.saho-deck .figure svg,
+.saho-deck .figure img { width: 100%; height: auto; display: block; border-radius: 8px; }
+.saho-deck .figure figcaption {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+}
+
+.saho-deck .title-slide { text-align: left; }
+.saho-deck .title-slide .meta {
+  margin-top: 1.4rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.saho-deck .pill {
+  background: var(--saho-slate);
+  color: #fff;
+  border-radius: 999px;
+  padding: 0.32rem 0.85rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.saho-deck .pill--gold { background: var(--saho-gold); color: #23180a; }
+.saho-deck .pill--green { background: var(--saho-green); }
+
+.saho-deck .qa {
+  background: var(--paper-tint);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 1rem 1.2rem;
+  margin-top: 0.6rem;
+}
+.saho-deck .qa b { color: var(--saho-red); }
+
+/* Toolbar ------------------------------------------------------------- */
+.saho-deck .toolbar {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem clamp(0.6rem, 2vw, 1.4rem);
+  background: #17120f;
+  color: #f4ece2;
+  border-top: 2px solid var(--saho-gold);
+}
+.saho-deck .brand {
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  margin-right: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-size: 0.95rem;
+}
+.saho-deck .brand .mark {
+  width: 26px; height: 26px;
+  display: inline-grid;
+  place-items: center;
+  background: var(--saho-red);
+  color: #fff;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 900;
+}
+.saho-deck .brand small { color: #c9bdae; font-weight: 500; }
+
+.saho-deck .btn {
+  appearance: none;
+  border: 1px solid #4a3f36;
+  background: #241d18;
+  color: #f4ece2;
+  font: inherit;
+  font-size: 0.85rem;
+  padding: 0.42rem 0.7rem;
+  border-radius: 6px;
+  cursor: pointer;
+  line-height: 1;
+}
+.saho-deck .btn:hover { background: #322820; }
+.saho-deck .btn:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.saho-deck .btn[aria-pressed="true"] { background: var(--saho-gold); color: #23180a; border-color: var(--saho-gold); }
+.saho-deck .btn--icon { min-width: 2.3rem; text-align: center; }
+
+.saho-deck .counter {
+  font-variant-numeric: tabular-nums;
+  font-size: 0.9rem;
+  padding: 0 0.6rem;
+  color: #d8ccbd;
+}
+
+/* Edge nav arrows ----------------------------------------------------- */
+.saho-deck .edge {
+  position: absolute;
+  top: 0; bottom: 0;
+  width: clamp(48px, 8vw, 90px);
+  border: 0;
+  background: transparent;
+  color: #fff;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  opacity: 0.55;
+  transition: opacity 0.15s, background 0.15s;
+}
+.saho-deck .edge:hover { opacity: 1; background: rgba(0, 0, 0, 0.22); }
+.saho-deck .edge:focus-visible { outline: 3px solid var(--focus); outline-offset: -6px; opacity: 1; }
+.saho-deck .edge--prev { left: 0; }
+.saho-deck .edge--next { right: 0; }
+.saho-deck .edge svg { width: 34px; height: 34px; filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.6)); }
+
+/* Progress dots ------------------------------------------------------- */
+.saho-deck .dots {
+  position: absolute;
+  left: 0; right: 0; bottom: 0.6rem;
+  display: flex;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0 1rem;
+}
+.saho-deck .dot {
+  width: 11px; height: 11px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.7);
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+}
+.saho-deck .dot.is-active { background: var(--saho-gold); border-color: var(--saho-gold); }
+.saho-deck .dot:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+
+/* Progress bar -------------------------------------------------------- */
+.saho-deck .progress {
+  position: absolute;
+  left: 0; top: 0;
+  height: 4px;
+  background: var(--saho-gold);
+  width: 0;
+  transition: width 0.3s ease;
+}
+
+/* Speaker notes ------------------------------------------------------- */
+.saho-deck .notes {
+  flex: 0 0 auto;
+  display: none;
+  background: #fbf7f0;
+  color: var(--ink);
+  border-top: 3px solid var(--saho-red);
+  padding: 0.9rem clamp(0.8rem, 3vw, 2rem);
+  max-height: 32vh;
+  overflow-y: auto;
+}
+.saho-deck .notes.is-open { display: block; }
+.saho-deck .notes h4 {
+  margin: 0 0 0.4rem;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--saho-red);
+}
+.saho-deck .notes p { margin: 0 0 0.5rem; line-height: 1.5; }
+
+/* Per-slide notes are only shown in the panel / print, never inline. */
+.saho-deck .slide .notes { display: none; }
+
+/* On-load help hint --------------------------------------------------- */
+.saho-deck .hint {
+  position: absolute;
+  bottom: 2.2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(23, 18, 15, 0.92);
+  color: #f4ece2;
+  padding: 0.5rem 0.9rem;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  border: 1px solid var(--saho-gold);
+}
+.saho-deck .hint kbd {
+  background: #2c2018;
+  border: 1px solid #5a4a3a;
+  border-radius: 4px;
+  padding: 0.05rem 0.35rem;
+  font-family: inherit;
+}
+
+.saho-deck .visually-hidden {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0);
+  white-space: nowrap; border: 0;
+}
+
+/* Print / save-as-PDF ------------------------------------------------- */
+@media print {
+  .saho-deck {
+    height: auto;
+    background: #fff;
+    display: block;
+    border-radius: 0;
+  }
+  .saho-deck .toolbar,
+  .saho-deck .edge,
+  .saho-deck .dots,
+  .saho-deck .progress,
+  .saho-deck .hint,
+  .saho-deck .skip-link { display: none !important; }
+  .saho-deck__stage { display: block; height: auto; overflow: visible; padding: 0; }
+  .saho-deck .slide {
+    display: block !important;
+    width: 100%;
+    max-height: none;
+    box-shadow: none;
+    border: none;
+    border-radius: 0;
+    page-break-after: always;
+    break-after: page;
+    padding: 1.4cm;
+  }
+  .saho-deck .slide.is-active { animation: none; }
+  /* Speaker notes always print beneath their slide as a handout. */
+  .saho-deck .slide .notes {
+    display: block !important;
+    max-height: none;
+    border-top: 1px dashed #999;
+    background: #fff;
+    page-break-inside: avoid;
+    margin-top: 0.6cm;
+  }
+  .saho-deck .slide svg,
+  .saho-deck blockquote { break-inside: avoid; }
+  @page { margin: 1cm; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .saho-deck .slide.is-active { animation: none; }
+  .saho-deck .progress { transition: none; }
+}

@@ -1,375 +1,464 @@
 /**
- * Styling for the Featured Biography block.
+ * @file
+ * Featured Biography block - Open Record 2027.
  *
- * MODERNIZED: Uses unified SAHO design tokens
- * Component-scoped tokens inherit from global --saho-* tokens
- * Biography content type uses forest green (#2d5016)
+ * Archive index cards on paper: square corners, hairline borders, a 3px
+ * biography accent edge, duotone portraits, mono meta and display-font
+ * titles. Canon: saho/components/content/saho-archive-card.
+ *
+ * The .saho-fbio scope exists to out-specify legacy theme rules that still
+ * target .featured-biography-block and .saho-card.
  */
 
-/* Main container */
-.featured-biography-block {
-  /* === Component-Scoped Design Tokens === */
-  /* These tokens inherit from the unified SAHO design system */
-
-  /* Brand Colors - Biography uses FOREST GREEN for content type consistency */
-  --bio-color-primary: var(--saho-color-forest-green, #2d5016);     /* Forest green - Biography content type */
-  --bio-color-primary-dark: var(--saho-color-forest-green-dark, #234012); /* Darker green for hover states */
-  --bio-color-primary-light: rgba(45, 80, 22, 0.1);                  /* 10% opacity light variant */
-  --bio-color-white: var(--saho-color-white, #ffffff);
-  --bio-color-text-primary: var(--saho-color-text-primary, #212529);
-  --bio-color-text-secondary: var(--saho-color-text-secondary, #6c757d);
-
-  /* Gray Scale - Maps to unified tokens */
-  --bio-color-gray-100: var(--saho-color-gray-100, #f8f9fa);
-  --bio-color-gray-300: var(--saho-color-gray-300, #cbd5e1);
-  --bio-color-gray-500: var(--saho-color-gray-500, #64748b);
-  --bio-color-gray-600: var(--saho-color-gray-600, #475569);
-  --bio-color-gray-700: var(--saho-color-gray-700, #334155);
-
-  /* Semantic Colors - Maps to unified tokens */
-  --bio-color-warning: var(--saho-color-warning, #eab308);
-  --bio-color-success: var(--saho-color-success, #22c55e);
-
-  /* Spacing - 8px baseline grid from unified system */
-  --bio-spacing-xs: 0.25rem;                                         /* 4px - micro spacing */
-  --bio-spacing-sm: var(--saho-space-1, 0.5rem);                    /* 8px */
-  --bio-spacing-md: var(--saho-space-2, 1rem);                      /* 16px */
-  --bio-spacing-lg: var(--saho-space-3, 1.5rem);                    /* 24px */
-  --bio-spacing-xl: var(--saho-space-4, 2rem);                      /* 32px */
-
-  /* Border Radius - Maps to unified tokens */
-  --bio-radius-sm: var(--saho-radius-sm, 4px);
-  --bio-radius-md: var(--saho-radius-md, 8px);
-  --bio-radius-lg: var(--saho-radius-lg, 12px);
-
-  /* Shadows - Maps to unified tokens */
-  --bio-shadow-sm: var(--saho-shadow-sm, 0 2px 4px rgba(0, 0, 0, 0.05));
-  --bio-shadow-md: var(--saho-shadow-md, 0 3px 10px rgba(0, 0, 0, 0.05));
-  --bio-shadow-lg: var(--saho-shadow-lg, 0 4px 12px rgba(0, 0, 0, 0.08));
-  --bio-shadow-xl: var(--saho-shadow-xl, 0 10px 25px rgba(0, 0, 0, 0.15));
-
-  /* Typography - Maps to unified tokens */
-  --bio-font-size-xs: var(--saho-font-size-xs, 0.75rem);           /* 12px - captions */
-  --bio-font-size-sm: var(--saho-font-size-sm, 0.875rem);          /* 14px - small text */
-  --bio-font-size-base: var(--saho-font-size-base, 1rem);          /* 16px - body text */
-  --bio-font-size-md: var(--saho-font-size-md, 1.125rem);          /* 18px - emphasized */
-  --bio-font-size-lg: var(--saho-font-size-lg, 1.25rem);           /* 20px - subheadings */
-  --bio-font-size-xl: var(--saho-font-size-xl, 1.5rem);            /* 24px - section headings */
-  --bio-font-size-2xl: var(--saho-font-size-2xl, 1.75rem);         /* 28px - major headings */
-  --bio-font-size-3xl: var(--saho-font-size-3xl, 2.25rem);         /* 36px - page titles */
-
-  /* Apply styles using inline tokens */
+/* Block wrapper - flat on the page, never a floating white card. */
+.featured-biography-block.saho-fbio {
   max-width: 100%;
-  margin-bottom: var(--bio-spacing-xl);
-  border: none;
-  border-radius: var(--bio-radius-md);
-  overflow: hidden;
-  box-shadow: var(--bio-shadow-sm);
-  background-color: var(--bio-color-white);
-  transition: box-shadow 0.3s ease;
+  margin-bottom: 2rem;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  overflow: visible;
+  transition: none;
 }
 
-/* Demo card styling */
-.saho-card--demo {
+.featured-biography-block.saho-fbio:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+/* Section heading - mirrors saho-section-heading (Caslon + hairline). */
+.saho-fbio .saho-fbio__heading {
+  border-bottom: var(--bw-rule, 2px) solid var(--border-strong, #b9b1a4);
+  padding-bottom: 10px;
+  margin-bottom: 4px;
+}
+
+.saho-fbio .saho-fbio__title {
+  margin: 0;
+  font-family: var(--font-display, georgia, serif);
+  font-size: var(--fs-lg, 1.5rem);
+  font-weight: var(--fw-bold, 700);
+  line-height: 1.2;
+  color: var(--text-primary, #1b1c17);
+}
+
+.saho-fbio .saho-fbio__description {
+  margin: 10px 0 0;
+  font-family: var(--font-serif, georgia, serif);
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-secondary, #4a4b43);
+}
+
+/* Card grid. */
+.saho-fbio .saho-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  margin: 16px 0 0;
+  padding: 0;
+  width: 100%;
   position: relative;
-  opacity: 0.85;
-}
-
-.saho-card--demo::before {
-  content: 'DEMO';
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: var(--bio-color-warning);
-  color: var(--bio-color-text-primary);
-  padding: 4px 8px;
-  font-size: var(--bio-font-size-xs);
-  font-weight: bold;
-  border-radius: 4px;
   z-index: 1;
 }
 
-.saho-card--demo .saho-card-link {
-  pointer-events: none;
-  cursor: default;
-}
-
-.featured-biography-block:hover {
-  box-shadow: var(--bio-shadow-lg);
-}
-
-/* Block title and description */
-.featured-biography-block .block-title {
-  font-size: var(--bio-font-size-3xl);
-  font-weight: 600;
-  color: var(--bio-color-text-primary);
-  margin-top: var(--bio-spacing-lg);
-  margin-bottom: var(--bio-spacing-md);
-  padding-left: var(--bio-spacing-sm);
+/* Archive card: paper, hairline border, biography accent edge.
+   The chained classes out-specify the theme's Open Record reskin, whose
+   [class*="-card"] border shorthand would otherwise flatten the accent. */
+.saho-fbio .saho-card.saho-fbio__card {
   position: relative;
-}
-
-.featured-biography-block .block-title::after {
-  content: '';
-  display: block;
-  width: 50px;
-  height: 3px;
-  background-color: var(--bio-color-primary);
-  margin-top: 12px;
-  transition: width 0.3s ease;
-}
-
-.featured-biography-block:hover .block-title::after {
-  width: 80px;
-}
-
-.featured-biography-block .block-description {
-  font-size: var(--bio-font-size-lg);
-  color: var(--bio-color-text-secondary);
-  line-height: 1.5;
-  margin-top: var(--bio-spacing-sm);
-  margin-bottom: var(--bio-spacing-lg);
-  padding: 0 var(--bio-spacing-sm) var(--bio-spacing-md) var(--bio-spacing-sm);
-}
-
-/* Add more spacing to the content section */
-.featured-biography-content {
-  padding: var(--bio-spacing-lg) !important;
-}
-
-/* Header section */
-.featured-biography-header {
-  background-color: var(--bio-color-primary);
-  padding: var(--bio-spacing-lg) var(--bio-spacing-lg);
-  margin-bottom: var(--bio-spacing-md);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-}
-
-.featured-biography-header h2 {
-  color: var(--bio-color-white);
-  margin: 0;
-  font-size: var(--bio-font-size-3xl);
-  font-weight: 600;
-  letter-spacing: 0.01em;
-}
-
-/* Content section */
-.featured-biography-content {
-  padding: var(--bio-spacing-lg);
-  max-width: 1000px;
-  margin: 0 auto;
-}
-
-.featured-biography-item {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--bio-spacing-xl);
-  align-items: flex-start;
-  background: var(--bio-color-white);
-  border-radius: var(--bio-radius-lg);
-  padding: var(--bio-spacing-xl);
-  box-shadow: var(--bio-shadow-md);
-  border: 1px solid rgba(0, 0, 0, 0.05);
-  transition: box-shadow 0.3s ease;
-}
-
-.featured-biography-item:hover {
-  box-shadow: var(--bio-shadow-xl);
-}
-
-/* Image styling - made more compact */
-.featured-biography-image {
-  display: block;
-  visibility: visible;
-  flex: 0 0 200px;
-  max-width: 200px;
-  position: relative;
+  height: 100%;
+  background: var(--surface-card, #f1efe7);
+  border: var(--bw-hair, 1px) solid var(--border-default, #bdb9a6);
+  border-left: var(--bw-accent, 3px) solid var(--type-biography, #2d5016);
+  border-radius: 0;
+  box-shadow: none;
   overflow: hidden;
-  border-radius: var(--bio-radius-md);
-  box-shadow: var(--bio-shadow-md);
+  transition: border-color var(--t-base, 180ms ease), background-color var(--t-base, 180ms ease);
 }
 
-.featured-biography-image::before {
-  content: "";
-  display: block;
-  padding-top: 125%; /* 4:5 aspect ratio - more compact than 3:4 */
+/* DS rule: hover selects, it does not lift. Border darkens to ink, the
+   ground sinks; the accent edge stays. */
+.saho-fbio .saho-card.saho-fbio__card:hover,
+.saho-fbio .saho-card.saho-fbio__card:focus-within,
+.saho-fbio .saho-card.saho-fbio__card.saho-card--hover {
+  border-color: var(--saho-ink, #1b1c17);
+  border-left-color: var(--type-biography, #2d5016);
+  background-color: var(--surface-sunk, #dad6c7);
+  box-shadow: none;
+  transform: none;
 }
 
-.featured-biography-image img {
-  display: block; /* Ensure img element is displayed */
-  visibility: visible; /* Ensure visibility */
-  position: absolute;
-  top: 0;
-  left: 0;
+/* Whole card is the link. */
+.saho-fbio .saho-fbio__link {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Duotone portrait. */
+.saho-fbio .saho-fbio__media {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background: var(--surface-sunk, #efe9dd);
+}
+
+.saho-fbio .saho-fbio__media img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   object-position: center top;
-  transition: transform 0.3s ease;
+  display: block;
+  filter: var(--img-duotone, none);
+  transition: filter var(--t-base, 180ms ease);
 }
 
-.featured-biography-image a:hover img {
-  transform: scale(1.03);
+/* Reveal true colour when the card is engaged. */
+.saho-fbio .saho-card:hover .saho-fbio__media img,
+.saho-fbio .saho-card:focus-within .saho-fbio__media img {
+  filter: none;
 }
 
-/* Details section - more compact */
-.featured-biography-details {
-  flex: 1;
-  min-width: 300px; /* Fixed minimum width instead of percentage */
-  max-width: calc(100% - 240px); /* Account for image width + gap */
-}
-
-/* Categories (breadcrumb-like) */
-.featured-biography-categories {
-  margin-bottom: 0.75rem;
-  font-size: var(--bio-font-size-sm);
-  color: var(--bio-color-text-secondary);
-  font-weight: 500;
-}
-
-.featured-biography-category {
-  color: var(--bio-color-text-secondary);
-  text-decoration: none;
-  transition: color 0.2s ease;
-}
-
-.featured-biography-category:hover {
-  text-decoration: underline;
-  color: var(--bio-color-primary);
-}
-
-/* Title - more compact */
-.featured-biography-title {
-  margin-top: 0;
-  margin-bottom: var(--bio-spacing-sm);
-  font-size: var(--bio-font-size-2xl);
-  line-height: 1.3;
-  font-weight: 600;
-}
-
-.featured-biography-title a {
-  color: var(--bio-color-primary);
-  text-decoration: none;
-  transition: color 0.2s ease;
-}
-
-.featured-biography-title a:hover {
-  text-decoration: underline;
-  color: var(--bio-color-primary-dark);
-}
-
-/* Dates */
-.featured-biography-dates {
-  margin-bottom: var(--bio-spacing-sm);
-  font-size: var(--bio-font-size-md);
-  color: var(--bio-color-gray-700);
-  font-weight: 500;
-}
-
-/* Position */
-.featured-biography-position {
-  margin-bottom: 0.75rem;
-  font-style: italic;
-  color: var(--bio-color-gray-600);
-  font-size: var(--bio-font-size-base);
-  line-height: 1.4;
-}
-
-/* Summary - more compact with better line height */
-.featured-biography-summary {
-  margin-bottom: var(--bio-spacing-md);
-  font-size: var(--bio-font-size-md);
-  line-height: 1.5;
-  color: var(--bio-color-text-primary);
-  max-height: 4.5em;
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-}
-
-/* Read more link - more modern styling */
-.featured-biography-read-more {
-  margin-top: var(--bio-spacing-md);
-}
-
-.featured-biography-link {
-  display: inline-flex;
+/* Missing portrait: plain sunk surface with a mono initial. No gradients. */
+.saho-fbio .saho-fbio__media--empty {
+  display: flex;
   align-items: center;
-  gap: 0.375rem;
-  background: transparent;
-  color: var(--saho-color-primary);
-  text-decoration: none;
+  justify-content: center;
+}
+
+.saho-fbio .saho-fbio__initial {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 2.5rem;
+  font-weight: var(--fw-semibold, 600);
+  color: var(--text-muted, #6f6a5e);
+}
+
+/* Card body. */
+.saho-fbio .saho-fbio__body {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  padding: var(--space-4, 1rem);
+}
+
+/* Mono uppercase eyebrow (category / record type). */
+.saho-fbio .saho-fbio__eyebrow {
+  margin: 0 0 8px;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 11px;
+  font-weight: var(--fw-semibold, 600);
+  letter-spacing: var(--ls-meta, 0.06em);
+  text-transform: uppercase;
+  color: var(--type-biography, #2d5016);
+}
+
+/* Display-font title is the link text. */
+.saho-fbio .saho-fbio__card-title {
+  margin: 0 0 8px;
+  font-family: var(--font-display, georgia, serif);
+  font-size: var(--fs-lg, 1.375rem);
+  font-weight: var(--fw-bold, 700);
+  line-height: 1.18;
+  color: var(--text-primary, #1b1c17);
+  transition: color var(--t-fast, 120ms ease);
+}
+
+.saho-fbio .saho-card:hover .saho-fbio__card-title {
+  color: var(--link-hover, #5c1414);
+}
+
+/* Mono dates line. */
+.saho-fbio .saho-fbio__dates {
+  margin: 0 0 8px;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 12px;
+  letter-spacing: var(--ls-meta, 0.06em);
+  color: var(--text-muted, #6f6a5e);
+  font-variant-numeric: tabular-nums;
+}
+
+.saho-fbio .saho-fbio__excerpt {
+  margin: 0;
+  font-family: var(--font-serif, georgia, serif);
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-secondary, #4a4b43);
+}
+
+/* Demo card marker - mono stamp, not a pill. */
+.saho-fbio .saho-card--demo {
+  opacity: 0.85;
+}
+
+.saho-fbio .saho-card--demo::before {
+  content: "DEMO";
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 1;
+  padding: 2px 6px;
+  background: var(--surface-card, #fdfbf6);
+  border: var(--bw-hair, 1px) solid var(--border-strong, #b9b1a4);
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 11px;
+  letter-spacing: var(--ls-meta, 0.06em);
+  color: var(--text-muted, #6f6a5e);
+}
+
+.saho-fbio .saho-card--demo .saho-fbio__link {
+  pointer-events: none;
+  cursor: default;
+}
+
+/* Carousel (JS-driven; classes are load-bearing for featured-biography.js). */
+.saho-fbio.enable-carousel .saho-cards-grid {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 16px;
+  overflow: visible;
+  width: 100%;
+  will-change: transform;
+  transition: transform 0.5s ease;
+  touch-action: pan-y;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.saho-fbio.enable-carousel .saho-cards-grid.dragging {
+  cursor: grabbing;
+  transition: none;
+}
+
+.saho-fbio.enable-carousel .saho-card {
+  flex: 0 0 calc(33.333% - 11px);
+  max-width: calc(33.333% - 11px);
+}
+
+.saho-fbio .featured-biography-carousel-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 24px;
+  padding: 8px 0;
+  border-top: var(--bw-hair, 1px) solid var(--border-default, #d8d2c7);
+}
+
+/* Square hairline controls, >=44px targets. */
+.saho-fbio .featured-bio-prev-btn,
+.saho-fbio .featured-bio-next-btn,
+.saho-fbio .carousel-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  margin: 0 8px;
+  background: var(--surface-card, #fdfbf6);
+  border: var(--bw-hair, 1px) solid var(--border-strong, #b9b1a4);
   border-radius: 0;
-  font-size: var(--bio-font-size-base);
-  font-weight: 600;
-  transition: gap 0.2s ease, color 0.2s ease, border-color 0.2s ease;
-  border: none;
-  border-bottom: 1px solid transparent;
+  box-shadow: none;
+  color: var(--text-primary, #1b1c17);
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 1rem;
+  cursor: pointer;
+  transition: border-color var(--t-fast, 120ms ease), color var(--t-fast, 120ms ease);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.saho-fbio .featured-bio-prev-btn:hover,
+.saho-fbio .featured-bio-next-btn:hover,
+.saho-fbio .carousel-button:hover {
+  background: var(--surface-card, #fdfbf6);
+  border-color: var(--text-primary, #1b1c17);
+  color: var(--link-hover, #5c1414);
+  transform: none;
+  box-shadow: none;
+}
+
+.saho-fbio .featured-bio-prev-btn:focus-visible,
+.saho-fbio .featured-bio-next-btn:focus-visible {
+  outline: 2px solid var(--text-primary, #1b1c17);
+  outline-offset: 2px;
+}
+
+.saho-fbio .featured-bio-prev-btn.disabled,
+.saho-fbio .featured-bio-next-btn.disabled,
+.saho-fbio .carousel-button.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.saho-fbio .featured-bio-indicators {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin: 0 16px;
+  padding: 8px 0;
+}
+
+/* Square mono indicators. */
+.saho-fbio .featured-bio-indicator {
+  width: 10px;
+  height: 10px;
+  min-width: 10px;
+  margin: 4px;
   padding: 0;
-  padding-bottom: 1px;
-  box-shadow: none;
+  background: var(--border-default, #d8d2c7);
+  border: 0;
+  border-radius: 0;
+  cursor: pointer;
+  transition: background-color var(--t-fast, 120ms ease);
+  -webkit-tap-highlight-color: transparent;
 }
 
-/* Clean link styling for biography content */
-.featured-biography-summary a,
-.featured-biography-summary a:link,
-.featured-biography-summary a:visited {
-  color: var(--bio-color-primary);
+.saho-fbio .featured-bio-indicator.active {
+  background: var(--text-primary, #1b1c17);
+}
+
+/* Single biography display (non-front-page variant). */
+.featured-biography-block.saho-fbio .featured-biography-content {
+  padding: 16px 0 0;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.featured-biography-block.saho-fbio .featured-biography-item {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  align-items: flex-start;
+  background: var(--surface-card, #fdfbf6);
+  border: var(--bw-hair, 1px) solid var(--border-default, #d8d2c7);
+  border-left: var(--bw-accent, 3px) solid var(--type-biography, #2d5016);
+  border-radius: 0;
+  box-shadow: none;
+  padding: var(--space-4, 1rem);
+}
+
+.featured-biography-block.saho-fbio .featured-biography-image {
+  flex: 0 0 200px;
+  max-width: 200px;
+  border-radius: 0;
+  box-shadow: none;
+  overflow: hidden;
+  background: var(--surface-sunk, #efe9dd);
+}
+
+.featured-biography-block.saho-fbio .featured-biography-image img {
+  display: block;
+  width: 100%;
+  height: auto;
+  filter: var(--img-duotone, none);
+  transition: filter var(--t-base, 180ms ease);
+}
+
+.featured-biography-block.saho-fbio .featured-biography-item:hover .featured-biography-image img {
+  filter: none;
+}
+
+.featured-biography-block.saho-fbio .saho-fbio__media--single {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  aspect-ratio: auto;
+}
+
+.featured-biography-block.saho-fbio .featured-biography-details {
+  flex: 1;
+  min-width: 260px;
+}
+
+.featured-biography-block.saho-fbio .featured-biography-categories {
+  margin-bottom: 8px;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 11px;
+  font-weight: var(--fw-semibold, 600);
+  letter-spacing: var(--ls-meta, 0.06em);
+  text-transform: uppercase;
+}
+
+.featured-biography-block.saho-fbio .featured-biography-category {
+  color: var(--type-biography, #2d5016);
+  text-decoration: none;
+}
+
+.featured-biography-block.saho-fbio .featured-biography-category:hover {
   text-decoration: underline;
-  transition: color 0.2s ease;
 }
 
-.featured-biography-summary a:hover {
-  color: var(--bio-color-primary-dark);
+.featured-biography-block.saho-fbio .featured-biography-title {
+  margin: 0 0 8px;
+  font-family: var(--font-display, georgia, serif);
+  font-size: var(--fs-lg, 1.5rem);
+  font-weight: var(--fw-bold, 700);
+  line-height: 1.18;
+}
+
+.featured-biography-block.saho-fbio .featured-biography-title a {
+  color: var(--text-primary, #1b1c17);
   text-decoration: none;
 }
 
-.featured-biography-link::after {
-  content: '→';
-  margin-left: var(--bio-spacing-sm);
-  transition: transform 0.2s ease;
+.featured-biography-block.saho-fbio .featured-biography-title a:hover {
+  color: var(--link-hover, #5c1414);
+  text-decoration: underline;
+  text-underline-offset: 0.14em;
 }
 
-.featured-biography-link:hover {
-  background: transparent;
-  color: var(--saho-color-primary-dark);
-  border-bottom-color: var(--saho-color-primary-dark);
-  text-decoration: none;
-  transform: none;
-  box-shadow: none;
-  gap: 0.5rem;
+.featured-biography-block.saho-fbio .featured-biography-dates {
+  margin-bottom: 8px;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 12px;
+  letter-spacing: var(--ls-meta, 0.06em);
+  color: var(--text-muted, #6f6a5e);
+  font-variant-numeric: tabular-nums;
 }
 
-.featured-biography-link:hover::after {
-  transform: translateX(3px);
-}
-
-.featured-biography-link:active {
-  transform: none;
-  box-shadow: none;
-}
-
-/* Empty state */
-.featured-biography-empty {
-  padding: var(--bio-spacing-lg);
-  text-align: center;
-  color: var(--bio-color-text-secondary);
+.featured-biography-block.saho-fbio .featured-biography-position {
+  margin-bottom: 8px;
+  font-family: var(--font-serif, georgia, serif);
   font-style: italic;
+  font-size: 14px;
+  color: var(--text-secondary, #4a4b43);
 }
 
-/* Force image visibility - override any potential conflicts */
-.featured-biography-image,
-.featured-biography-image img,
-.featured-biography-image a,
-.featured-biography-image a img {
-  display: block !important;
-  visibility: visible !important;
-  opacity: 1 !important;
+.featured-biography-block.saho-fbio .featured-biography-summary {
+  margin-bottom: 0;
+  font-family: var(--font-serif, georgia, serif);
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-secondary, #4a4b43);
 }
 
-/* Accessibility */
-.visually-hidden {
+/* Empty state - mono muted. */
+.featured-biography-block.saho-fbio .featured-biography-empty {
+  padding: 24px 0;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 12px;
+  letter-spacing: var(--ls-meta, 0.06em);
+  text-transform: uppercase;
+  color: var(--text-muted, #6f6a5e);
+}
+
+/* Admin info (block preview only). */
+.saho-fbio .featured-biography-admin-info {
+  margin-top: 16px;
+  padding: 12px;
+  border: var(--bw-hair, 1px) dashed var(--border-strong, #b9b1a4);
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 12px;
+  color: var(--text-muted, #6f6a5e);
+}
+
+/* Accessibility. */
+.saho-fbio .visually-hidden {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -380,547 +469,46 @@
   border: 0;
 }
 
-/* Compact mode */
-.compact-mode .featured-biography-image {
-  flex: 0 0 25%;
-  max-width: 25%;
-}
-
-.compact-mode .featured-biography-title {
-  font-size: 1.25rem;
-}
-
-.compact-mode .featured-biography-summary {
-  display: none;
-}
-
-.compact-mode .featured-biography-position {
-  font-size: 0.9rem;
-}
-
-.compact-mode .featured-biography-dates {
-  font-size: 0.9rem;
-}
-
-/* Card styling - scoped but allowing initial display */
-.featured-biography-block .saho-cards-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: var(--bio-spacing-lg);
-  transition: transform 0.5s ease;
-  min-height: 400px;
-  position: relative;
-  overflow: visible;
-  width: 100%;
-  margin: 0;
-  padding: 0;
-  z-index: 1;
-}
-
-.featured-biography-block .saho-card {
-  position: relative;
-  background-color: var(--bio-color-white);
-  border-radius: var(--bio-radius-md);
-  overflow: hidden;
-  box-shadow: var(--bio-shadow-sm);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  height: 100%;
-  display: block !important;
-  opacity: 1 !important;
-  transform: none !important;
-  visibility: visible !important;
-}
-
-/* Apply animation after load instead of hiding initially */
-.featured-biography-block .saho-card.saho-card--animate {
-  animation: fadeInUp 0.5s ease forwards;
-}
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.featured-biography-block .saho-card--hover,
-.featured-biography-block .saho-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--bio-shadow-xl);
-}
-
-.featured-biography-block .saho-card-link {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  color: inherit;
-  text-decoration: none;
-}
-
-.featured-biography-block .saho-card-image {
-  position: relative;
-  padding-top: 66.67%; /* 2:3 aspect ratio */
-  overflow: hidden;
-}
-
-.featured-biography-block .saho-card-image img {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.5s ease;
-}
-
-.featured-biography-block .saho-card:hover .saho-card-image img {
-  transform: scale(1.05);
-}
-
-.featured-biography-block .saho-card-image--placeholder {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: var(--bio-color-gray-100);
-  color: var(--bio-color-gray-500);
-}
-
-.featured-biography-block .saho-card-content {
-  padding: 1.25rem;
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
-}
-
-.featured-biography-block .saho-card-badge {
-  display: inline-block;
-  padding: var(--bio-spacing-xs) var(--bio-spacing-sm);
-  background-color: var(--bio-color-primary);
-  color: white;
-  font-size: var(--bio-font-size-xs);
-  font-weight: 600;
-  border-radius: var(--bio-radius-sm);
-  margin-bottom: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-}
-
-.featured-biography-block .saho-card-title {
-  font-size: var(--bio-font-size-xl);
-  font-weight: 600;
-  margin-bottom: var(--bio-spacing-sm);
-  line-height: 1.3;
-  color: var(--bio-color-text-primary);
-}
-
-.featured-biography-block .saho-card-subtitle {
-  font-size: 0.875rem;
-  color: var(--bio-color-text-secondary);
-  margin-bottom: var(--bio-spacing-sm);
-  display: flex;
-  align-items: center;
-}
-
-.featured-biography-block .saho-card-description {
-  font-size: var(--bio-font-size-base);
-  color: var(--bio-color-gray-600);
-  margin-bottom: var(--bio-spacing-md);
-  line-height: 1.5;
-  flex-grow: 1;
-}
-
-.featured-biography-block .saho-card-footer {
-  margin-top: auto;
-  padding-top: 0.75rem;
-  border-top: 1px solid rgba(0, 0, 0, 0.05);
-}
-
-.featured-biography-block .saho-card-button {
-  display: inline-flex;
-  align-items: center;
-  color: var(--bio-color-primary);
-  font-weight: 500;
-  font-size: var(--bio-font-size-base);
-  transition: color 0.2s ease;
-}
-
-.featured-biography-block .saho-card-button i {
-  margin-left: var(--bio-spacing-sm);
-  transition: transform 0.2s ease;
-}
-
-.featured-biography-block .saho-card:hover .saho-card-button {
-  color: var(--bio-color-primary-dark);
-}
-
-.featured-biography-block .saho-card:hover .saho-card-button i {
-  transform: translateX(3px);
-}
-
-/* Modern Touch-Enabled Carousel Styling */
-/* Base container styling */
-.featured-biography-block.enable-carousel .saho-cards-grid {
-  display: flex !important;
-  flex-wrap: nowrap !important;
-  gap: var(--bio-spacing-lg);
-  overflow: visible !important;
-  width: 100% !important;
-  will-change: transform;
-  transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
-  touch-action: pan-y;
-  -webkit-overflow-scrolling: touch;
-  cursor: grab;
-  user-select: none;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  transform: translateX(0) !important;
-  min-height: 400px !important;
-}
-
-/* Styling while dragging */
-.featured-biography-block.enable-carousel .saho-cards-grid.dragging {
-  cursor: grabbing;
-  transition: none; /* No transition during drag for responsiveness */
-}
-
-/* Card styling for carousel */
-.featured-biography-block.enable-carousel .saho-card {
-  flex: 0 0 calc(33.333% - 1rem) !important;
-  max-width: calc(33.333% - 1rem) !important;
-  display: block !important; /* Ensure cards are displayed */
-  visibility: visible !important;
-  transform: scale(1) !important; /* Full size to ensure visibility */
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  will-change: transform; /* Performance hint */
-  position: relative !important; /* Ensure proper positioning */
-  height: auto !important; /* Let content determine height */
-  min-height: 300px !important; /* Minimum height to ensure visibility */
-  opacity: 1 !important; /* Force visibility */
-}
-
-/* Active card styling */
-.featured-biography-block.enable-carousel .saho-card.active {
-  transform: scale(1);
-  box-shadow: var(--bio-shadow-xl);
-}
-
-/* Explicit block-specific carousel controls with better touch targets */
-.featured-biography-block .featured-biography-carousel-controls {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-top: var(--bio-spacing-xl);
-  padding: var(--bio-spacing-sm) 0;
-}
-
-/* Enhanced, more visible control buttons */
-.featured-biography-block .featured-bio-prev-btn,
-.featured-biography-block .featured-bio-next-btn,
-.featured-biography-block .carousel-button {
-  background-color: var(--bio-color-primary);
-  border: 1px solid var(--bio-color-gray-300);
-  border-radius: var(--saho-radius-full);
-  width: 48px;
-  height: 48px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  color: var(--bio-color-white);
-  transition: all 0.3s ease;
-  font-size: 1.25rem;
-  box-shadow: var(--bio-shadow-sm);
-  margin: 0 var(--bio-spacing-sm);
-  -webkit-tap-highlight-color: transparent;
-  position: relative;
-  z-index: 10;
-  outline: none;
-}
-
-/* Hover and active states for buttons with increased visual feedback */
-.featured-biography-block .featured-bio-prev-btn:hover,
-.featured-biography-block .featured-bio-next-btn:hover,
-.featured-biography-block .carousel-button:hover {
-  background-color: var(--bio-color-primary-dark);
-  color: var(--bio-color-white);
-  transform: translateY(-2px) scale(1.05);
-  box-shadow: var(--bio-shadow-md);
-}
-
-.featured-biography-block .featured-bio-prev-btn:active,
-.featured-biography-block .featured-bio-next-btn:active,
-.featured-biography-block .carousel-button:active {
-  transform: translateY(0) scale(0.95);
-  box-shadow: var(--bio-shadow-sm);
-}
-
-/* Disabled state styling */
-.featured-biography-block .featured-bio-prev-btn.disabled,
-.featured-biography-block .featured-bio-next-btn.disabled,
-.featured-biography-block .carousel-button.disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
-  background-color: var(--bio-color-gray-500);
-}
-
-/* Make sure the control container is clearly visible */
-.featured-biography-block .featured-biography-carousel-controls {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-top: var(--bio-spacing-xl);
-  padding: 0.75rem 0;
-  background-color: var(--bio-color-gray-100);
-  border-radius: var(--saho-radius-md);
-  box-shadow: var(--bio-shadow-sm);
-}
-
-/* Indicators with animation */
-.featured-biography-block .featured-bio-indicators {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 var(--bio-spacing-md);
-  flex-wrap: wrap;
-  padding: var(--bio-spacing-sm) 0;
-}
-
-/* Modern indicator styling */
-.featured-biography-block .featured-bio-indicator {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background-color: var(--bio-color-gray-300);
-  margin: var(--bio-spacing-xs);
-  border: none;
-  padding: 0;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
-  box-shadow: var(--bio-shadow-sm);
-  position: relative;
-  overflow: hidden;
-  -webkit-tap-highlight-color: transparent;
-}
-
-/* Active indicator with animation */
-.featured-biography-block .featured-bio-indicator.active {
-  background-color: var(--bio-color-primary);
-  transform: scale(1.3);
-}
-
-/* Add pulse animation to active indicator */
-@keyframes indicatorPulse {
-  0% { transform: scale(1.3); }
-  50% { transform: scale(1.4); }
-  100% { transform: scale(1.3); }
-}
-
-.featured-biography-block .featured-bio-indicator.active {
-  animation: indicatorPulse 2s infinite ease-in-out;
-}
-/* Enhanced mobile experience */
+/* Mobile: single column, comfortable targets. */
 @media (max-width: 768px) {
-  /* Optimize for touch on mobile */
-  .featured-biography-block.enable-carousel .saho-cards-grid {
-    gap: var(--bio-spacing-md);
-    padding-bottom: var(--bio-spacing-md);
+  .saho-fbio .saho-cards-grid {
+    grid-template-columns: 1fr;
   }
 
-  /* Full width cards on mobile */
-  .featured-biography-block.enable-carousel .saho-card {
-    flex: 0 0 calc(100% - 2rem) !important;
-    max-width: calc(100% - 2rem) !important;
+  .saho-fbio.enable-carousel .saho-card {
+    flex: 0 0 calc(100% - 2rem);
+    max-width: calc(100% - 2rem);
   }
 
-  /* Smaller controls on mobile but still touch-friendly */
-  .featured-biography-block .featured-bio-prev-btn,
-  .featured-biography-block .featured-bio-next-btn {
-    width: 40px;
-    height: 40px;
-  }
-
-  /* Center and space indicators better on mobile */
-  .featured-biography-block .featured-bio-indicators {
-    margin: var(--bio-spacing-sm) 0;
-  }
-}
-/* Multiple items styling */
-.multiple-items .featured-biography-item {
-  flex-direction: column;
-  height: 100%;
-  border: 1px solid rgba(0, 0, 0, 0.05);
-  border-radius: 0.375rem;
-  overflow: hidden;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.multiple-items .featured-biography-item:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--bio-shadow-xl);
-}
-
-.multiple-items .featured-biography-image {
-  flex: 0 0 100%;
-  max-width: 100%;
-  margin-bottom: 0;
-}
-
-.multiple-items .featured-biography-image::before {
-  padding-top: 66.67%; /* 2:3 aspect ratio for grid items */
-}
-
-.multiple-items .featured-biography-details {
-  padding: 1.25rem;
-}
-
-/* Enhanced responsive design for optimal screen utilization */
-@media (max-width: 1024px) {
-  .featured-biography-block {
-    margin: 0 var(--bio-spacing-sm) var(--bio-spacing-lg) var(--bio-spacing-sm);
-  }
-
-  .featured-biography-grid {
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 1.25rem;
-  }
-}
-
-@media (max-width: 991px) {
-  .featured-biography-image {
-    display: block !important; /* Ensure image is visible */
-    visibility: visible !important; /* Force visibility */
-    flex: 0 0 35%;
-    max-width: 35%;
-  }
-
-  .featured-biography-image img {
-    display: block !important; /* Ensure img element is visible */
-    visibility: visible !important;
-  }
-
-  .compact-mode .featured-biography-image {
-    display: block !important; /* Ensure image is visible */
-    visibility: visible !important; /* Force visibility */
-    flex: 0 0 30%;
-    max-width: 30%;
-  }
-
-  .featured-biography-grid {
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  }
-}
-
-@media (max-width: 768px) {
-  /* Enhanced mobile width utilization */
-  .featured-biography-block {
-    margin: 0 var(--bio-spacing-sm) 1.25rem var(--bio-spacing-sm);
-  }
-
-  .featured-biography-content {
-    padding: var(--bio-spacing-md);
-  }
-
-  .featured-biography-item {
+  .featured-biography-block.saho-fbio .featured-biography-item {
     flex-direction: column;
-    padding: var(--bio-spacing-lg);
-    gap: var(--bio-spacing-lg);
   }
 
-  .featured-biography-image,
-  .compact-mode .featured-biography-image {
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
+  .featured-biography-block.saho-fbio .featured-biography-image {
     flex: 0 0 auto;
     width: 200px;
     max-width: 100%;
-    height: auto;
-    margin: 0 auto var(--bio-spacing-md) auto;
-    position: relative;
+    margin: 0 auto;
   }
 
-  .featured-biography-image::before {
-    padding-top: 125%;
-  }
-
-  .featured-biography-image img {
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-  }
-
-  .featured-biography-details {
-    min-width: auto;
+  .featured-biography-block.saho-fbio .featured-biography-details {
+    min-width: 0;
     max-width: 100%;
-    text-align: center;
-  }
-
-  .featured-biography-title {
-    font-size: var(--bio-font-size-xl);
-  }
-
-  .compact-mode .featured-biography-title {
-    font-size: 1.125rem;
-  }
-
-  .featured-biography-grid {
-    grid-template-columns: 1fr;
-    gap: var(--bio-spacing-md);
-    padding: 0 var(--bio-spacing-sm);
   }
 }
 
-@media (max-width: 480px) {
-  /* Maximum width utilization on small screens */
-  .featured-biography-block {
-    margin: 0 var(--bio-spacing-xs) var(--bio-spacing-md) var(--bio-spacing-xs);
+@media (min-width: 769px) and (max-width: 991px) {
+  .saho-fbio.enable-carousel .saho-card {
+    flex: 0 0 calc(50% - 8px);
+    max-width: calc(50% - 8px);
   }
+}
 
-  .featured-biography-header {
-    padding: 0.875rem var(--bio-spacing-md);
-  }
-
-  .featured-biography-header h2 {
-    font-size: 1.3rem;
-  }
-
-  .featured-biography-content {
-    padding: 0.875rem;
-  }
-
-  .featured-biography-item {
-    padding: 1.25rem;
-  }
-
-  .featured-biography-image {
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    width: 150px;
-    max-width: 100%;
-    height: auto;
-  }
-
-  .featured-biography-image img {
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-  }
-
-  .featured-biography-title {
-    font-size: 1.125rem;
-  }
-
-  .featured-biography-grid {
-    grid-template-columns: 1fr;
-    gap: 0.875rem;
-    padding: 0 var(--bio-spacing-xs);
+/* Print. */
+@media print {
+  .saho-fbio .saho-card,
+  .featured-biography-block.saho-fbio .featured-biography-item {
+    box-shadow: none !important;
+    page-break-inside: avoid;
   }
 }

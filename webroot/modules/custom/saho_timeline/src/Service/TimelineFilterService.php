@@ -341,6 +341,19 @@ class TimelineFilterService {
       $date = $result->get('field_event_date')->value;
     }
 
+    return $this->calculateTimePeriodFromDate($date);
+  }
+
+  /**
+   * Calculates the time-period bucket from a raw date string.
+   *
+   * @param string|null $date
+   *   A stored date value (Y-m-d...).
+   *
+   * @return string|null
+   *   The period label, or NULL without a date.
+   */
+  public function calculateTimePeriodFromDate(?string $date) {
     if (!$date) {
       return NULL;
     }

@@ -1,144 +1,130 @@
 {#
 /**
  * @file
- * Template for the SAHO Global Search view.
+ * SAHO global search - 2027 "Open Record" search shell (wireframe wf05).
  *
- * This template removes the smaller Sort button and grid/list view toggle
- * while preserving the main sorting functionality.
+ * Rows are NOT printed via {{ rows }}: saho_preprocess_views_view__saho_global_search()
+ * shapes every result into record_rows (saho-index-table SDC) and record_cards
+ * (saho-archive-card SDC), and this template renders both containers behind a
+ * table/cards toggle (saho-view-toggle.js in the saho-index-table library).
+ * The server-rendered default honours ?layout=grid.
  *
- * Available variables:
- * - view: The view object.
- * - rows: A list of the view's row items.
- * - options: The view plugin style options.
- * - title: The title of the view.
- * - header: The view header.
- * - footer: The view footer.
- * - empty: The empty text to display if the view is empty.
- * - pager: The pager output.
- * - exposed: Exposed widget form/info to display.
- * - feed_icons: Feed icons to display, if any.
- * - more: An optional link to the next page of results.
- * - totals: The total rows and pages.
- * - rows_total: The total number of rows returned by the view.
- * - attachment_before: An optional attachment view to be displayed before the view.
- * - attachment_after: An optional attachment view to be displayed after the view.
- * - dom_id: Unique id for every view being printed to give unique class for Javascript.
+ * Available variables (beyond the standard views-view set):
+ * - search_query: Active fulltext query string (set by saho_tools).
+ * - spellcheck_suggestion: Solr "Did you mean" collation (set by saho_tools).
+ * - record_columns: Column definitions for the index-table SDC.
+ * - record_rows: One row per result (ref/type/title/href/dates/src).
+ * - record_cards: One archive-card prop set per result.
+ * - result_total: Total result count across all pages.
+ * - results_layout: 'table' or 'grid' - the server-side default layout.
  *
- * @see template_preprocess_views_view()
+ * The page title block provides the H1 on /search; headings here start at h2.
  */
 #}
+<div{{ attributes.addClass('saho-page', 'is-wide', 'saho-search-page') }}>
 
-<div{{ attributes.addClass('view-' ~ view.id|clean_class) }}>
-  
-  {# Header Section #}
-  <section class="saho-landing-hero mb-5">
-    <div class="container">
-      <div class="row">
-        <div class="col-lg-12">
-          <div class="saho-search-header">
-            <h3 class="saho-search-page-title">
-              {% if search_query %}
-                Search Results for <em>&ldquo;{{ search_query }}&rdquo;</em>
-              {% else %}
-                Search Results
-              {% endif %}
-            </h3>
-            {% if header %}
-              <div class="saho-landing-description mb-4">
-                {{ header }}
-              </div>
-            {% endif %}
-          </div>
-        </div>
-      </div>
+  {# Header zone: the big ledger search field, prefilled with the active query. #}
+  <div class="saho-search-page__header">
+    {% include 'saho:saho-search-field' with {
+      size: 'lg',
+      action: '/search',
+      placeholder: 'Search people, events, places, dates…',
+      value: search_query|default(''),
+      input_id: 'saho-search-page-input',
+    } only %}
+  </div>
+
+  {% if header %}
+    <div class="saho-search-page__intro">
+      {{ header }}
     </div>
-  </section>
-  
-  {# Main Content Section #}
-  <section class="saho-landing-content mb-5">
-    <div class="container">
-      <div class="row">
-        
-        {# Sidebar with filters #}
-        <div class="col-lg-3 mb-4 mb-lg-0">
-          <div class="saho-landing-sidebar p-3 rounded shadow-sm">
-            
-            {% if exposed %}
-              <div class="saho-landing-filters mb-4">
-                {{ exposed }}
-
-                {% if feed_icons %}
-                  <div class="saho-landing-feeds mt-3 text-end">
-                    {{ feed_icons }}
-                  </div>
-                {% endif %}
-              </div>
-            {% endif %}
-
-          </div>
-        </div>
-        
-        {# Main content #}
-        <div class="col-lg-9">
-          {% if title %}
-            <h2 class="h3 mb-4">{{ title }}</h2>
-          {% endif %}
-          
-          {# Results count #}
-          {% if rows_total is defined and rows_total > 0 %}
-            <p class="saho-results-count small text-muted mb-3">Showing <strong>{{ rows_total }}</strong> results</p>
-          {% endif %}
-          
-          {% if rows %}
-            <div class="saho-search-results-wrapper">
-              <div class="search-results list-view">
-                {{ rows }}
-              </div>
-            </div>
-          {% else %}
-            {% if empty %}
-              <div class="saho-view-empty alert alert-info">
-                {{ empty }}
-              </div>
-            {% elseif search_query %}
-              <p class="text-muted mb-3">No results found for <em>&ldquo;{{ search_query }}&rdquo;</em>.</p>
-            {% endif %}
-
-            {% if spellcheck_suggestion and search_query %}
-              <p class="saho-spellcheck-suggestion">
-                Did you mean:
-                <a href="{{ path('view.saho_global_search.page_1', {}, {'query': {'search_api_fulltext': spellcheck_suggestion}}) }}" class="saho-spellcheck-link fw-semibold">
-                  {{ spellcheck_suggestion }}
-                </a>?
-              </p>
-            {% endif %}
-          {% endif %}
-          
-          {% if pager %}
-            <div class="saho-search-pager mt-4">
-              {{ pager }}
-            </div>
-          {% endif %}
-          
-          {% if more %}
-            <div class="saho-landing-more mt-4 text-center">
-              {{ more }}
-            </div>
-          {% endif %}
-        </div>
-      </div>
-    </div>
-  </section>
-  
-  {# Additional Content Section - if available #}
-  {% if attachment_after %}
-    <section class="saho-landing-additional py-4 mb-5 bg-light">
-      <div class="container">
-        <h2 class="h3 mb-4">Related Results</h2>
-        <div class="saho-additional-content">
-          {{ attachment_after }}
-        </div>
-      </div>
-    </section>
   {% endif %}
+
+  {# Refine rail + results. #}
+  <div class="saho-search-layout">
+
+    <aside class="saho-search-rail" aria-label="Refine search">
+      <h2 class="saho-search-rail__title">Refine</h2>
+      {{ exposed }}
+      {% if feed_icons %}
+        <div class="saho-search-rail__feeds">{{ feed_icons }}</div>
+      {% endif %}
+    </aside>
+
+    <section class="saho-search-results" data-saho-results>
+
+      {# Head row: mono record count + the table/cards layout toggle. #}
+      <div class="saho-search-head">
+        <p class="saho-search-count">{{ result_total }} records
+          <a class="saho-search-advanced-link saho-search-advanced-link--inline" href="/search/advanced">Advanced search &rarr;</a>
+        </p>
+        <div class="saho-search-toolbar">
+          <div class="saho-view-toggle" data-saho-view-toggle role="tablist" aria-label="Result layout">
+            <button type="button" role="tab" data-view="table"
+                    class="saho-view-toggle__btn{{ results_layout == 'table' ? ' is-active' : '' }}"
+                    aria-selected="{{ results_layout == 'table' ? 'true' : 'false' }}">Table</button>
+            <button type="button" role="tab" data-view="grid"
+                    class="saho-view-toggle__btn{{ results_layout == 'grid' ? ' is-active' : '' }}"
+                    aria-selected="{{ results_layout == 'grid' ? 'true' : 'false' }}">Cards</button>
+          </div>
+        </div>
+      </div>
+
+      {% if record_rows is not empty %}
+        {# saho-results--stack: on narrow phones rows stack (title first)
+           instead of scrolling sideways - see saho-index-table.css. #}
+        <div class="saho-results--table saho-results--stack"{% if results_layout == 'grid' %} hidden{% endif %}>
+          {% include 'saho:saho-index-table' with {
+            columns: record_columns,
+            rows: record_rows,
+            caption: 'Search results',
+          } only %}
+        </div>
+        <div class="saho-results--grid"{% if results_layout == 'table' %} hidden{% endif %}>
+          <div class="saho-card-grid saho-card-grid--columns-three">
+            {% for card in record_cards %}
+              {% include 'saho:saho-archive-card' with card only %}
+            {% endfor %}
+          </div>
+        </div>
+      {% else %}
+        {% if empty %}
+          <div class="saho-view-empty">
+            {{ empty }}
+          </div>
+        {% elseif search_query %}
+          <p class="saho-search-empty">No results found for &ldquo;{{ search_query }}&rdquo;.</p>
+        {% endif %}
+
+        {% if spellcheck_suggestion and search_query %}
+          <p class="saho-spellcheck-suggestion">
+            Did you mean:
+            <a href="{{ path('view.saho_global_search.page_1', {}, {'query': {'search_api_fulltext': spellcheck_suggestion}}) }}" class="saho-spellcheck-link">
+              {{ spellcheck_suggestion }}
+            </a>?
+          </p>
+        {% endif %}
+      {% endif %}
+
+      {% if pager %}
+        <div class="saho-search-pager">
+          {{ pager }}
+        </div>
+      {% endif %}
+
+      {% if more %}
+        <div class="saho-search-more">
+          {{ more }}
+        </div>
+      {% endif %}
+
+    </section>
+  </div>
+
+  {% if attachment_after %}
+    <div class="saho-search-attachment">
+      {{ attachment_after }}
+    </div>
+  {% endif %}
+
 </div>

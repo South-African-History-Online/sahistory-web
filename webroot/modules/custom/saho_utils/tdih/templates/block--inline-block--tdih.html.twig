@@ -1,0 +1,56 @@
+{#
+/**
+ * @file
+ * TDIH band template (Open Record register, #453).
+ *
+ * Anatomy: block-section band (oxblood top rule, hairline header with the
+ * mono date meta), one duotone figure from the first event (the home-page
+ * LCP image, year as the square label), then up to three ruled chronology
+ * entries where the title is the link, and one mono band action to the
+ * full timeline. No per-item Read more buttons, no filler intro.
+ */
+#}
+
+<div class="block-section">
+  <div class="block-section-header">
+    <div class="block-title-wrapper">
+      <h2>{{ 'Today in history'|t }}</h2>
+    </div>
+    <div class="block-meta">{{ "now"|date('j F') }}</div>
+  </div>
+
+  {% if tdih_nodes %}
+    {% set first = tdih_nodes|first %}
+    <div class="block-content">
+      {% if first.image %}
+        <div class="block-image-wrapper">
+          {# First TDIH item is the home-page LCP element - eager + high priority. #}
+          <img src="{{ first.image }}" alt="{{ first.title|striptags }}" class="block-image" fetchpriority="high" decoding="async" />
+          <div class="block-label">{{ first.event_date|date('Y') }}</div>
+        </div>
+      {% endif %}
+
+      <ul class="block-entries">
+        {% for item in tdih_nodes %}
+          <li class="block-entry">
+            <a href="{{ item.url }}" class="block-entry__link">
+              <span class="block-entry__marker" aria-hidden="true"></span>
+              <span class="block-entry__text">
+                <span class="block-entry__year">{{ item.event_date|date('Y') }}</span>
+                <span class="block-entry__title">{{ item.title|striptags }}</span>
+              </span>
+            </a>
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+
+    <div class="block-buttons">
+      <a href="/this-day-in-history" class="block-more-link">{{ 'This day in history'|t }} <span aria-hidden="true">&rarr;</span></a>
+    </div>
+  {% else %}
+    <div class="block-content">
+      <p class="block-main-text">{{ 'No events found.'|t }}</p>
+    </div>
+  {% endif %}
+</div>

@@ -64,24 +64,27 @@ class HistoryClassroomBlock extends BlockBase implements ContainerFactoryPluginI
    * @var array
    */
   protected const GRADE_COLORS = [
-  // Deep Heritage Red.
+    // Intermediate phase: the oxblood family.
+    // Oxblood.
     4 => '#990000',
-  // Firebrick Red.
-    5 => '#B22222',
-  // Faded Brick Red.
+    // Oxblood deep.
+    5 => '#7a0000',
+    // Topic maroon.
     6 => '#8b2331',
-  // Dark Red.
-    7 => '#8B0000',
-  // Slate Blue.
+    // Ink.
+    7 => '#1b1c17',
+    // Senior phase: slate + green.
+    // Place slate.
     8 => '#3a4a64',
-  // Lighter Slate.
-    9 => '#4a5a74',
-  // Muted Gold.
+    // Biography green.
+    9 => '#2d5016',
+    // FET phase: the ochre family.
+    // Ochre.
     10 => '#b88a2e',
-  // Lighter Gold.
-    11 => '#c89a3e',
-  // Dark Gold.
-    12 => '#8B6914',
+    // Archive gold.
+    11 => '#8a6420',
+    // Muted ink.
+    12 => '#6d6a5c',
   ];
 
   /**
@@ -143,7 +146,8 @@ class HistoryClassroomBlock extends BlockBase implements ContainerFactoryPluginI
       'show_content_count' => TRUE,
       'show_featured_topic' => TRUE,
       'block_title' => 'History by Grade',
-      'intro_text' => 'South African History curriculum resources for grades 4-12',
+      // No auto-subtitle: the voice states facts or says nothing (#462).
+      'intro_text' => '',
     ] + parent::defaultConfiguration();
   }
 
@@ -165,11 +169,12 @@ class HistoryClassroomBlock extends BlockBase implements ContainerFactoryPluginI
       '#rows' => 2,
     ];
 
+    // The carousel mode is retired: an archive is still (#462). Legacy
+    // configs holding 'carousel' render as the grid.
     $form['display_mode'] = $this->configFormHelper->buildDisplayModeSelect(
-      $this->configuration['display_mode'],
+      $this->configuration['display_mode'] === 'carousel' ? 'grid' : $this->configuration['display_mode'],
       [
         'grid' => $this->t('Grid (cards)'),
-        'carousel' => $this->t('Carousel (mobile-friendly)'),
         'list' => $this->t('Stacked List'),
       ],
       $this->t('Display Mode'),
@@ -290,7 +295,7 @@ class HistoryClassroomBlock extends BlockBase implements ContainerFactoryPluginI
         'count' => $count,
         'featured_topic' => $featured_topic,
         'url' => $term->toUrl()->toString(),
-        'color' => self::GRADE_COLORS[$grade_number] ?? '#6C757D',
+        'color' => self::GRADE_COLORS[$grade_number] ?? '#6d6a5c',
       ];
     }
 

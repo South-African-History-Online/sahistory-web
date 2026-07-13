@@ -1,0 +1,54 @@
+{#
+/**
+ * @file
+ * Classroom 2.0 topic spine - one page per caps_topic term (issue #444).
+ *
+ * Rows are NOT printed via {{ rows }}:
+ * saho_preprocess_views_view__saho_classroom_topic() shapes every result
+ * into archive-card SDC props grouped by resource type in a fixed
+ * pedagogical order (spine_groups).
+ *
+ * Available variables (beyond the standard views-view set):
+ * - topic_label: The caps_topic term name.
+ * - topic_grade: The parent grade term name (e.g. "Grade 10").
+ * - spine_groups: Ordered map of resource-type label => archive-card props.
+ * - result_total: Total result count (formatted).
+ *
+ * This header's topic heading is the page H1 (the global page title is
+ * suppressed for view.saho_classroom_topic.page_1 in
+ * saho_preprocess_page_title()); groups start at h3.
+ */
+#}
+<div{{ attributes.addClass('saho-page', 'saho-classroom-topic') }}>
+
+  {# Header: mono grade kicker, topic heading, mono count, back link. #}
+  <header class="saho-classroom-topic__head">
+    {% if topic_grade %}
+      <p class="saho-classroom-topic__kicker">{{ topic_grade }} - CAPS topic</p>
+    {% endif %}
+    <h1 class="saho-classroom-topic__title">{{ topic_label }}</h1>
+    <p class="saho-classroom-topic__count">{{ result_total }} resources</p>
+    <p class="saho-classroom-topic__back"><a href="/classroom">&larr; All classroom material</a></p>
+  </header>
+
+  {% if spine_groups is not empty %}
+    {# The spine: one ruled section per resource type, 3-col card grid. #}
+    {% for label, cards in spine_groups %}
+      <section class="saho-classroom-topic__group">
+        {% include 'saho:saho-section-heading' with {
+          title: label,
+          level: 'h3',
+        } only %}
+        <div class="saho-card-grid saho-card-grid--columns-three">
+          {% for card in cards %}
+            {% include 'saho:saho-archive-card' with card only %}
+          {% endfor %}
+        </div>
+      </section>
+    {% endfor %}
+  {% else %}
+    <p class="saho-classroom-topic__empty">No classroom material for this topic yet.</p>
+    <p class="saho-classroom-topic__back"><a href="/classroom">&larr; All classroom material</a></p>
+  {% endif %}
+
+</div>

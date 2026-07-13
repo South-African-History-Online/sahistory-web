@@ -1,0 +1,27 @@
+{#
+/**
+ * @file SAHO Search field SDC. props: placeholder, action, size, button_label, scopes[], input_name, value
+ * The site search view exposes its filter as "search_api_fulltext", hence the default.
+ */
+#}
+<div{{ attributes.addClass(['saho-search', 'saho-search--' ~ (size|default('lg'))]) }}>
+  <form class="saho-search__form" action="{{ action|default('/search') }}" method="get" role="search">
+    <span class="saho-search__icon" aria-hidden="true">
+      <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round">
+        <circle cx="8.5" cy="8.5" r="6"></circle>
+        <line x1="13" y1="13" x2="17.5" y2="17.5"></line>
+      </svg>
+    </span>
+    {% set field_id = input_id|default('saho-search-input') %}
+    <label class="visually-hidden" for="{{ field_id }}">{{ placeholder }}</label>
+    <input class="saho-search__input" id="{{ field_id }}" type="search" name="{{ input_name|default('search_api_fulltext') }}" value="{{ value|default('') }}" placeholder="{{ placeholder|default('Search people, events, places, dates…') }}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+    <button class="saho-search__submit" type="submit">{{ button_label|default('Search') }}</button>
+  </form>
+  {% if scopes %}
+    <div class="saho-search__scopes" data-saho-scopes role="group" aria-label="Search scope">
+      {% for s in scopes %}
+        <button type="button" class="saho-search__scope{{ loop.first ? ' is-active' : '' }}" data-scope="{{ s }}">{{ s }}</button>
+      {% endfor %}
+    </div>
+  {% endif %}
+</div>

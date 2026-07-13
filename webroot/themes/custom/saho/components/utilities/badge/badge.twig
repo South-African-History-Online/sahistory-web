@@ -1,0 +1,12 @@
+{#
+/**
+ * @file SAHO Badge SDC (Open Record). props: type, label, on_image
+ * Classes namespaced .saho-tbadge to avoid clashing with the legacy saho-badge.
+ */
+#}
+{% set classes = [
+  'saho-tbadge',
+  'saho-tbadge--' ~ (type|default('article')),
+  on_image ? 'saho-tbadge--on-image' : '',
+] %}
+<span{{ attributes.addClass(classes) }}>{{ label ?: type|default('article')|capitalize }}</span>

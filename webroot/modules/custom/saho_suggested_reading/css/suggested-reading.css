@@ -1,16 +1,22 @@
 /**
  * @file
- * Suggested reading component styles for SAHO
- * Uses unified token system with --reading-* scoped tokens
- * Inherits from --saho-* base tokens for consistency
- * Mobile-first responsive design with accessibility
+ * Suggested reading component styles for SAHO - Open Record 2027.
+ *
+ * Paper-ground cards with 1px hairline frames, square corners, no shadows.
+ * Hover selects (ink border + sunk paper ground) - it never lifts.
+ * Caslon headings, serif body, mono uppercase meta.
+ * Mobile-first responsive design with accessibility.
+ *
+ * Group headings (h4) are styled by the theme layer
+ * (_context-sections.scss: plain Caslon over a bottom rule) - this file
+ * deliberately adds no borders or backgrounds to them.
  */
 
 /* Base mobile styles (320px+) */
 .saho-suggested-reading-enhanced .saho-cards-grid {
-  /* Component-scoped tokens inheriting from unified system */
-  --reading-grid-gap: var(--saho-space-2);  /* 16px mobile */
-  --reading-grid-padding: var(--saho-space-1);  /* 8px mobile */
+  /* Component-scoped tokens inheriting from the Open Record system */
+  --reading-grid-gap: var(--saho-space-2, 16px);
+  --reading-grid-padding: var(--saho-space-1, 8px);
 
   display: grid;
   grid-template-columns: 1fr;
@@ -19,57 +25,55 @@
   min-height: auto;
 }
 
-/* Mobile card styling */
+/* Card: paper ground, hairline frame, square corners, no shadow */
 .saho-suggested-reading-enhanced .saho-card {
-  /* Component-scoped tokens inheriting from unified system */
-  --reading-card-bg: var(--saho-color-white);
-  --reading-card-radius: var(--saho-radius-md);  /* 8px */
-  --reading-card-border-color: var(--saho-color-border);
-  --reading-card-border-hover: var(--saho-color-primary);
-  --reading-card-shadow: var(--saho-shadow-sm);
-  --reading-card-shadow-hover: var(--saho-shadow-hover);
+  /* Component-scoped tokens inheriting from the Open Record system */
+  --reading-card-bg: var(--surface-card, #f1efe7);
+  --reading-card-bg-active: var(--saho-paper-sunk, #dad6c7);
+  --reading-card-border-color: var(--border-default, #bdb9a6);
+  --reading-card-border-active: var(--saho-ink, #1b1c17);
   --reading-card-min-height: 280px;
-
-  /* Touch feedback tokens */
-  --reading-touch-highlight: var(--saho-color-primary-alpha-10);
-  --reading-touch-scale: 0.98;
 
   display: flex;
   flex-direction: column;
   background: var(--reading-card-bg);
-  border-radius: var(--reading-card-radius);
+  border-radius: 0;
   overflow: hidden;
-  box-shadow: var(--reading-card-shadow);
+  box-shadow: none;
   border: 1px solid var(--reading-card-border-color);
-  transition: var(--saho-transition-base);
+  transition: border-color 0.2s ease, background-color 0.2s ease;
   min-height: var(--reading-card-min-height);
-  margin-bottom: var(--saho-space-1);
+  margin-bottom: var(--saho-space-1, 8px);
 
-  /* Enhanced touch targets for mobile */
-  -webkit-tap-highlight-color: var(--reading-touch-highlight);
+  /* No tap-highlight tint - selection is shown on the card itself */
+  -webkit-tap-highlight-color: transparent;
 }
 
 .saho-suggested-reading-enhanced .saho-card-link {
-  /* Component-scoped tokens */
-  --reading-link-transition: var(--saho-transition-fast);
-
   display: flex;
   flex-direction: column;
   height: 100%;
   text-decoration: none;
   color: inherit;
   padding: 0;
-  border-radius: var(--reading-card-radius);
+  border-radius: 0;
   overflow: hidden;
-
-  /* Enhanced touch feedback */
-  transition: transform var(--reading-link-transition), box-shadow var(--reading-link-transition);
+  transition: background-color 0.2s ease;
 }
 
-/* Mobile touch interactions */
+/* Touch/press: select the card (sunk ground), never scale or lift */
 .saho-suggested-reading-enhanced .saho-card-link:active {
-  transform: scale(var(--reading-touch-scale));
-  box-shadow: var(--saho-shadow-sm);
+  background-color: var(--reading-card-bg-active, #dad6c7);
+}
+
+.saho-suggested-reading-enhanced .saho-card:has(.saho-card-link:active) {
+  border-color: var(--reading-card-border-active, #1b1c17);
+}
+
+/* Keyboard focus: 2px oxblood outline */
+.saho-suggested-reading-enhanced .saho-card-link:focus-visible {
+  outline: 2px solid var(--focus-ring, #990000);
+  outline-offset: 2px;
 }
 
 /* Prioritize cards with images */
@@ -77,40 +81,27 @@
   order: -1; /* Move cards with images to the front */
 }
 
-/* Mobile-optimized image display */
+/* Image well: recessed paper ground, no scale-on-hover */
 .saho-suggested-reading-enhanced .saho-card-image {
-  /* Component-scoped tokens inheriting from unified system */
-  --reading-image-height: 160px;  /* Mobile height */
-  --reading-image-bg: var(--saho-color-surface-alt);
-  --reading-image-scale-hover: 1.03;
-  --reading-image-scale-active: 1.02;
+  --reading-image-height: 160px; /* Mobile height */
+  --reading-image-bg: var(--surface-sunk, #dad6c7);
 
   height: var(--reading-image-height);
   overflow: hidden;
   background: var(--reading-image-bg);
   position: relative;
+  border-bottom: 1px solid var(--reading-card-border-color, #bdb9a6);
 }
 
 .saho-suggested-reading-enhanced .saho-card-image img {
-  /* Component-scoped tokens */
-  --reading-image-transition: transform 0.3s ease;
-
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: var(--reading-image-transition);
 }
 
-/* Subtle hover/touch effect */
-.saho-suggested-reading-enhanced .saho-card-link:hover .saho-card-image img,
-.saho-suggested-reading-enhanced .saho-card-link:focus .saho-card-image img {
-  transform: scale(var(--reading-image-scale-hover));
-}
-
-/* Mobile content styling */
+/* Content */
 .saho-suggested-reading-enhanced .saho-card-content {
-  /* Component-scoped tokens inheriting from unified system */
-  --reading-content-padding: var(--saho-space-2);  /* 16px */
+  --reading-content-padding: var(--saho-space-2, 16px);
 
   padding: var(--reading-content-padding);
   flex: 1;
@@ -118,80 +109,80 @@
   flex-direction: column;
 }
 
+/* Title: Caslon display face */
 .saho-suggested-reading-enhanced .saho-card-title {
-  /* Component-scoped tokens inheriting from unified system */
-  --reading-title-color: var(--saho-color-text-primary);
-  --reading-title-size: var(--saho-font-size-base);  /* 16px mobile */
-  --reading-title-weight: var(--saho-font-weight-semibold);
-  --reading-title-line-height: var(--saho-line-height-tight);
-  --reading-title-margin: 0 0 var(--saho-space-1) 0;
+  --reading-title-color: var(--text-primary, #1b1c17);
+  --reading-title-size: var(--saho-font-size-base, 1rem);
+  --reading-title-margin: 0 0 var(--saho-space-1, 8px) 0;
 
+  font-family: var(--font-display, "Libre Caslon Text", georgia, serif);
   font-size: var(--reading-title-size);
-  font-weight: var(--reading-title-weight);
-  line-height: var(--reading-title-line-height);
+  font-weight: 700;
+  line-height: 1.2;
   color: var(--reading-title-color);
   margin: var(--reading-title-margin);
-  transition: var(--saho-transition-fast);
+  transition: color 0.15s ease;
 }
 
+.saho-suggested-reading-enhanced .saho-card-link:hover .saho-card-title,
+.saho-suggested-reading-enhanced .saho-card-link:focus .saho-card-title {
+  color: var(--link-hover, #6d0000);
+}
+
+/* Description: serif body text */
 .saho-suggested-reading-enhanced .saho-card-description {
-  /* Component-scoped tokens inheriting from unified system */
-  --reading-description-color: var(--saho-color-text-secondary);
-  --reading-description-size: var(--saho-font-size-sm);  /* 14px */
-  --reading-description-line-height: var(--saho-line-height-normal);
+  --reading-description-color: var(--text-secondary, #43443c);
+  --reading-description-size: var(--saho-font-size-sm, 0.875rem);
   --reading-description-margin: 0 0 auto 0;
 
+  font-family: var(--font-serif, "Libre Caslon Text", georgia, serif);
   font-size: var(--reading-description-size);
-  line-height: var(--reading-description-line-height);
+  line-height: 1.55;
   color: var(--reading-description-color);
   margin: var(--reading-description-margin);
   flex-grow: 1;
 }
 
-/* Mobile button styling */
+/* Footer: single hairline rule */
 .saho-suggested-reading-enhanced .saho-card-footer {
-  /* Component-scoped tokens inheriting from unified system */
-  --reading-footer-margin-top: var(--saho-space-2);
-  --reading-footer-padding-top: var(--saho-space-2);
-  --reading-footer-border-color: var(--saho-color-border-light);
+  --reading-footer-margin-top: var(--saho-space-2, 16px);
+  --reading-footer-padding-top: var(--saho-space-2, 16px);
+  --reading-footer-border-color: var(--border-default, #bdb9a6);
 
   margin-top: var(--reading-footer-margin-top);
   padding-top: var(--reading-footer-padding-top);
   border-top: 1px solid var(--reading-footer-border-color);
 }
 
+/* Button: mono uppercase meta, generous touch target */
 .saho-suggested-reading-enhanced .saho-card-button {
-  /* Component-scoped tokens inheriting from button system */
-  --reading-button-color: var(--saho-button-ghost-text);
-  --reading-button-color-hover: var(--saho-button-ghost-text-hover);
-  --reading-button-size: var(--saho-font-size-sm);  /* 14px */
-  --reading-button-weight: var(--saho-font-weight-medium);
-  --reading-button-padding: 0.25rem 0;
-  --reading-button-min-height: 44px;  /* Touch target */
+  --reading-button-color: var(--text-secondary, #43443c);
+  --reading-button-color-hover: var(--saho-oxblood, #990000);
+  --reading-button-min-height: 44px; /* Touch target */
 
   display: inline-flex;
   align-items: center;
-  font-size: var(--reading-button-size);
-  font-weight: var(--reading-button-weight);
+  font-family: var(--font-mono, "IBM Plex Mono", ui-monospace, monospace);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   color: var(--reading-button-color);
-  transition: var(--saho-button-transition);
+  transition: color 0.15s ease;
 
   /* Enhanced touch target */
-  padding: var(--reading-button-padding);
+  padding: 0.25rem 0;
   min-height: var(--reading-button-min-height);
   justify-content: flex-start;
 }
 
 .saho-suggested-reading-enhanced .saho-card-button svg {
-  /* Component-scoped tokens */
-  --reading-icon-margin: var(--saho-space-1);
-  --reading-icon-size: 14px;
-  --reading-icon-translate-hover: 2px;
+  --reading-icon-margin: var(--saho-space-1, 8px);
+  --reading-icon-size: 12px;
 
   margin-left: var(--reading-icon-margin);
   width: var(--reading-icon-size);
   height: var(--reading-icon-size);
-  transition: var(--saho-transition-fast);
 }
 
 .saho-suggested-reading-enhanced .saho-card-link:hover .saho-card-button,
@@ -199,18 +190,12 @@
   color: var(--reading-button-color-hover);
 }
 
-.saho-suggested-reading-enhanced .saho-card-link:hover .saho-card-button svg,
-.saho-suggested-reading-enhanced .saho-card-link:focus .saho-card-button svg {
-  transform: translateX(var(--reading-icon-translate-hover));
-}
-
-/* Loading placeholder for dynamic content */
+/* Loading indicator for dynamic content: square rotating frame */
 .saho-suggested-reading-enhanced.loading .saho-cards-grid::before {
-  /* Component-scoped tokens */
-  --reading-spinner-size: 40px;
-  --reading-spinner-border: 3px;
-  --reading-spinner-color-bg: var(--saho-color-surface-alt);
-  --reading-spinner-color-active: var(--saho-color-primary);
+  --reading-spinner-size: 32px;
+  --reading-spinner-border: 2px;
+  --reading-spinner-color-bg: var(--border-default, #bdb9a6);
+  --reading-spinner-color-active: var(--saho-oxblood, #990000);
 
   content: '';
   position: absolute;
@@ -221,7 +206,6 @@
   height: var(--reading-spinner-size);
   border: var(--reading-spinner-border) solid var(--reading-spinner-color-bg);
   border-top: var(--reading-spinner-border) solid var(--reading-spinner-color-active);
-  border-radius: 50%;
   animation: spin 1s linear infinite;
 }
 
@@ -230,36 +214,23 @@
   100% { transform: translate(-50%, -50%) rotate(360deg); }
 }
 
-/* Touch interaction states */
+/* Touch interaction states (class set by suggested-reading.js) */
 .saho-suggested-reading-enhanced .saho-card-link.touch-active {
-  /* Component-scoped tokens */
-  --reading-touch-shadow: 0 2px 8px var(--saho-color-primary-alpha-20, rgba(153, 0, 0, 0.2));
-
-  transform: scale(var(--reading-touch-scale));
-  box-shadow: var(--reading-touch-shadow);
+  background-color: var(--reading-card-bg-active, #dad6c7);
 }
 
-.saho-suggested-reading-enhanced .touch-active .saho-card-image img {
-  transform: scale(var(--reading-image-scale-active));
+.saho-suggested-reading-enhanced .saho-card:has(.touch-active) {
+  border-color: var(--reading-card-border-active, #1b1c17);
 }
 
-/* Lazy loading states */
+/* Lazy loading states: flat recessed placeholder, no gradient shimmer */
 .saho-suggested-reading-enhanced .saho-card-image img.lazy-loading {
-  /* Component-scoped tokens */
-  --reading-loading-pattern: linear-gradient(135deg, #f0f0f0 25%, transparent 25%, transparent 50%, #f0f0f0 50%, #f0f0f0 75%, transparent 75%, transparent);
-  --reading-loading-size: 20px;
-
-  background: var(--reading-loading-pattern);
-  background-size: var(--reading-loading-size) var(--reading-loading-size);
-  animation: loading-shimmer 1.5s infinite;
-}
-
-@keyframes loading-shimmer {
-  0% { background-position: 0 0; }
-  100% { background-position: 40px 40px; }
+  background: var(--surface-sunk, #dad6c7);
+  opacity: 0;
 }
 
 .saho-suggested-reading-enhanced .saho-card-image img.loaded {
+  opacity: 1;
   animation: fade-in 0.3s ease;
 }
 
@@ -268,18 +239,17 @@
   to { opacity: 1; }
 }
 
-/* Horizontal scroll styles for mobile */
+/* Horizontal scroll styles for mobile (classes set by suggested-reading.js) */
 .saho-suggested-reading-enhanced .saho-cards-grid.horizontal-scroll {
-  /* Component-scoped tokens */
-  --reading-scrollbar-color-thumb: var(--saho-color-primary);
-  --reading-scrollbar-color-track: var(--saho-color-surface-alt);
+  --reading-scrollbar-color-thumb: var(--saho-oxblood, #990000);
+  --reading-scrollbar-color-track: var(--saho-paper-sunk, #dad6c7);
 
   overflow-x: auto;
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;
   scrollbar-color: var(--reading-scrollbar-color-thumb) var(--reading-scrollbar-color-track);
-  padding-bottom: var(--saho-space-2);
+  padding-bottom: var(--saho-space-2, 16px);
 }
 
 .saho-suggested-reading-enhanced .saho-cards-grid.horizontal-scroll .saho-card {
@@ -291,27 +261,15 @@
   scroll-snap-type: none;
 }
 
-/* Mobile viewport adjustments */
+/* Viewport entrance (class set by suggested-reading.js): fade only, no slide */
 .saho-suggested-reading-enhanced .saho-cards-grid.in-viewport {
-  animation: slide-up 0.6s ease;
+  animation: fade-in 0.4s ease;
 }
 
-@keyframes slide-up {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Mobile section headers */
+/* Section wrapper spacing - heading decoration belongs to the theme layer */
 .saho-suggested-reading-enhanced .saho-related-content-section {
-  /* Component-scoped tokens inheriting from unified system */
-  --reading-section-margin: var(--saho-space-3);  /* 24px */
-  --reading-section-padding: var(--saho-space-1);  /* 8px mobile */
+  --reading-section-margin: var(--saho-space-3, 24px);
+  --reading-section-padding: var(--saho-space-1, 8px);
 
   margin-bottom: var(--reading-section-margin);
   padding: 0 var(--reading-section-padding);
@@ -321,33 +279,11 @@
   margin-bottom: 0;
 }
 
-.saho-suggested-reading-enhanced .saho-related-content-section h4 {
-  /* Component-scoped tokens inheriting from unified system */
-  --reading-heading-color: var(--saho-color-primary);
-  --reading-heading-bg: var(--saho-color-surface-alt);
-  --reading-heading-border-color: var(--saho-color-primary);
-  --reading-heading-border-width: 4px;
-  --reading-heading-size: var(--saho-font-size-md);  /* 18px mobile */
-  --reading-heading-weight: var(--saho-font-weight-bold);
-  --reading-heading-margin: 0 0 var(--saho-space-2) 0;
-  --reading-heading-padding: var(--saho-space-2);  /* 16px */
-  --reading-heading-radius: var(--saho-radius-md);
-
-  font-size: var(--reading-heading-size);
-  font-weight: var(--reading-heading-weight);
-  color: var(--reading-heading-color);
-  margin: var(--reading-heading-margin);
-  padding: var(--reading-heading-padding);
-  background: var(--reading-heading-bg);
-  border-radius: var(--reading-heading-radius);
-  border-left: var(--reading-heading-border-width) solid var(--reading-heading-border-color);
-}
-
 /* Small mobile phones (320px - 479px) */
 @media (max-width: 479px) {
   .saho-suggested-reading-enhanced .saho-cards-grid {
     grid-template-columns: 1fr;
-    gap: var(--saho-space-1);
+    gap: var(--saho-space-1, 8px);
     padding: 0;
   }
 
@@ -361,7 +297,7 @@
   }
 
   .saho-suggested-reading-enhanced .saho-card-content {
-    padding: var(--saho-space-1);
+    padding: var(--saho-space-1, 8px);
   }
 
   .saho-suggested-reading-enhanced .saho-card-title {
@@ -381,7 +317,7 @@
 @media (min-width: 480px) and (max-width: 767px) {
   .saho-suggested-reading-enhanced .saho-cards-grid {
     grid-template-columns: repeat(2, 1fr);
-    gap: var(--saho-space-2);
+    gap: var(--saho-space-2, 16px);
   }
 
   .saho-suggested-reading-enhanced .saho-card {
@@ -397,8 +333,8 @@
 @media (min-width: 768px) and (max-width: 1023px) {
   .saho-suggested-reading-enhanced .saho-cards-grid {
     grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: var(--saho-space-3);  /* 24px */
-    padding: 0 var(--saho-space-2);
+    gap: var(--saho-space-3, 24px);
+    padding: 0 var(--saho-space-2, 16px);
   }
 
   .saho-suggested-reading-enhanced .saho-card {
@@ -410,13 +346,8 @@
   }
 
   .saho-suggested-reading-enhanced .saho-related-content-section {
-    margin-bottom: var(--saho-space-4);
-    padding: 0 var(--saho-space-2);
-  }
-
-  .saho-suggested-reading-enhanced .saho-related-content-section h4 {
-    font-size: var(--saho-font-size-lg);  /* 20px */
-    padding: var(--saho-space-2) var(--saho-space-3);
+    margin-bottom: var(--saho-space-4, 32px);
+    padding: 0 var(--saho-space-2, 16px);
   }
 }
 
@@ -424,8 +355,8 @@
 @media (min-width: 1024px) {
   .saho-suggested-reading-enhanced .saho-cards-grid {
     grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-    gap: var(--saho-space-4);  /* 32px */
-    padding: 0 var(--saho-space-3);
+    gap: var(--saho-space-4, 32px);
+    padding: 0 var(--saho-space-3, 24px);
     min-height: 200px;
   }
 
@@ -452,33 +383,29 @@
   }
 
   .saho-suggested-reading-enhanced .saho-related-content-section {
-    margin-bottom: var(--saho-space-5);
-    padding: 0 var(--saho-space-3);
+    margin-bottom: var(--saho-space-5, 40px);
+    padding: 0 var(--saho-space-3, 24px);
   }
 
-  .saho-suggested-reading-enhanced .saho-related-content-section h4 {
-    font-size: var(--saho-font-size-xl);  /* 24px */
-  }
-
-  /* Hover effects for non-touch devices */
+  /* Hover selects: ink border + sunk paper ground, never a lift */
   .saho-suggested-reading-enhanced .saho-card:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--reading-card-shadow-hover);
-    border-color: var(--reading-card-border-hover);
+    transform: none;
+    box-shadow: none;
+    border-color: var(--reading-card-border-active, #1b1c17);
+    background-color: var(--reading-card-bg-active, #dad6c7);
   }
 }
 
-/* Additional mobile accessibility improvements */
+/* Touch devices: same selected state, no residual hover artifacts */
 @media (max-width: 1023px) {
-  /* Remove hover effects on touch devices */
   .saho-suggested-reading-enhanced .saho-card:hover {
     transform: none;
-    box-shadow: var(--reading-card-shadow);
+    box-shadow: none;
   }
 
   /* Ensure touch targets are at least 44px */
   .saho-suggested-reading-enhanced .saho-card-link {
-    min-height: var(--reading-button-min-height);
+    min-height: 44px;
   }
 }
 
@@ -494,20 +421,15 @@
 
   .saho-suggested-reading-enhanced .saho-cards-grid {
     grid-template-columns: repeat(2, 1fr);
-    gap: var(--saho-space-1);
+    gap: var(--saho-space-1, 8px);
   }
 }
 
 /* High DPI mobile displays */
 @media (-webkit-min-device-pixel-ratio: 2) and (max-width: 767px),
        (min-resolution: 192dpi) and (max-width: 767px) {
-  .saho-suggested-reading-enhanced .saho-card-title {
-    font-weight: var(--saho-font-weight-medium);
-    letter-spacing: -0.005em;
-  }
-
   .saho-suggested-reading-enhanced .saho-card-description {
-    line-height: var(--saho-line-height-relaxed);
+    line-height: 1.6;
   }
 }
 
@@ -516,9 +438,15 @@
   .saho-suggested-reading-enhanced .saho-card-content {
     padding: 0.75rem;
   }
+}
 
-  .saho-suggested-reading-enhanced .saho-related-content-section h4 {
-    font-size: var(--saho-font-size-base);  /* 16px */
-    padding: 0.625rem 0.75rem;
+/* Reduced motion: no animation at all */
+@media (prefers-reduced-motion: reduce) {
+  .saho-suggested-reading-enhanced .saho-card,
+  .saho-suggested-reading-enhanced .saho-card-link,
+  .saho-suggested-reading-enhanced .saho-card-image img,
+  .saho-suggested-reading-enhanced .saho-cards-grid.in-viewport {
+    transition: none;
+    animation: none;
   }
 }

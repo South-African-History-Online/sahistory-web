@@ -7,6 +7,7 @@ use Drupal\Core\Cache\CacheTagsInvalidatorInterface;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Flood\FloodInterface;
+use Drupal\Core\State\StateInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -25,7 +26,9 @@ use Symfony\Component\HttpFoundation\Response;
  *    session dedup is not enough on an open endpoint.
  *  - After a successful merge, the saho_node_counter cache tag is
  *    invalidated so dependent caches (TopReadContentBlock, TermTracker)
- *    pick up the new count on the next request.
+ *    pick up the new count on the next request. This is throttled to at most
+ *    once per COUNTER_FLUSH_INTERVAL so a busy site does not rebuild the
+ *    front-page/most-read caches on every single pageview beacon.
  */
 class NodeViewCounterController extends ControllerBase {
 
@@ -43,6 +46,19 @@ class NodeViewCounterController extends ControllerBase {
    * Flood window in seconds.
    */
   protected const FLOOD_WINDOW = 3600;
+
+  /**
+   * Minimum seconds between saho_node_counter cache-tag invalidations.
+   *
+   * The most-read list tolerates this much staleness; throttling the flush to
+   * this interval stops the front-page cache churning on every pageview.
+   */
+  protected const COUNTER_FLUSH_INTERVAL = 900;
+
+  /**
+   * State key holding the timestamp of the last counter cache-tag flush.
+   */
+  protected const LAST_FLUSH_STATE_KEY = 'saho_statistics.last_counter_flush';
 
   /**
    * The database connection.
@@ -73,6 +89,13 @@ class NodeViewCounterController extends ControllerBase {
   protected $cacheTagsInvalidator;
 
   /**
+   * The state service.
+   *
+   * @var \Drupal\Core\State\StateInterface
+   */
+  protected $state;
+
+  /**
    * Constructs a NodeViewCounterController.
    *
    * @param \Drupal\Core\Database\Connection $database
@@ -83,17 +106,21 @@ class NodeViewCounterController extends ControllerBase {
    *   The flood control service.
    * @param \Drupal\Core\Cache\CacheTagsInvalidatorInterface $cache_tags_invalidator
    *   The cache tags invalidator.
+   * @param \Drupal\Core\State\StateInterface $state
+   *   The state service.
    */
   public function __construct(
     Connection $database,
     TimeInterface $time,
     FloodInterface $flood,
     CacheTagsInvalidatorInterface $cache_tags_invalidator,
+    StateInterface $state,
   ) {
     $this->database = $database;
     $this->time = $time;
     $this->flood = $flood;
     $this->cacheTagsInvalidator = $cache_tags_invalidator;
+    $this->state = $state;
   }
 
   /**
@@ -104,7 +131,8 @@ class NodeViewCounterController extends ControllerBase {
       $container->get('database'),
       $container->get('datetime.time'),
       $container->get('flood'),
-      $container->get('cache_tags.invalidator')
+      $container->get('cache_tags.invalidator'),
+      $container->get('state')
     );
   }
 
@@ -167,8 +195,16 @@ class NodeViewCounterController extends ControllerBase {
         ->expression('daycount', '[daycount] + 1')
         ->execute();
 
-      // Bust dependent caches (TopReadContentBlock, TermTracker results).
-      $this->cacheTagsInvalidator->invalidateTags(['saho_node_counter']);
+      // Bust dependent caches (TopReadContentBlock, TermTracker results), but
+      // no more than once per COUNTER_FLUSH_INTERVAL. Invalidating on every
+      // beacon would churn the front-page/most-read caches; the list tolerates
+      // a few minutes of staleness. The tag itself is preserved so cron or an
+      // admin action can still force an immediate flush.
+      $last_flush = (int) $this->state->get(self::LAST_FLUSH_STATE_KEY, 0);
+      if ($timestamp - $last_flush >= self::COUNTER_FLUSH_INTERVAL) {
+        $this->cacheTagsInvalidator->invalidateTags(['saho_node_counter']);
+        $this->state->set(self::LAST_FLUSH_STATE_KEY, $timestamp);
+      }
     }
     catch (\Exception $e) {
       // Log but swallow - a failed counter must never break page delivery.

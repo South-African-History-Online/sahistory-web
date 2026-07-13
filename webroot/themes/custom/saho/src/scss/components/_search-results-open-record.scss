@@ -1,0 +1,224 @@
+// =============================================================================
+// SAHO 2027 "Open Record" - /search results shell (wireframe wf05)
+// =============================================================================
+// The search page as a reading-room catalogue: big ledger search field on top,
+// a 240px "Refine" rail (Views exposed filters) beside the results, and a
+// table/cards layout toggle. Square, borders-not-shadows, tokens only.
+// Row and card visuals live in the saho-index-table / saho-archive-card SDCs;
+// this file styles the shell around them.
+
+.saho-search-page {
+  padding-block: var(--space-6) var(--space-8);
+
+  // .is-wide is defined for .layout--saho; honour it on the search shell too.
+  &.is-wide {
+    max-width: var(--container-wide);
+  }
+}
+
+.saho-search-page__header {
+  margin-bottom: var(--space-6);
+}
+
+.saho-search-page__intro {
+  margin-bottom: var(--space-5);
+  max-width: var(--measure);
+}
+
+// ---- Rail + results grid ----
+.saho-search-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 28px;
+}
+
+// wf05 gives the refine rail 18rem; narrower and multi-word facet
+// values (with their record counts) wrap to three lines.
+@media (min-width: 40rem) {
+  .saho-search-layout {
+    grid-template-columns: 18rem minmax(0, 1fr);
+  }
+}
+
+// Below 40rem the rail drops UNDER the results.
+@media (max-width: 39.9375rem) {
+  .saho-search-rail {
+    order: 2;
+  }
+  .saho-search-results {
+    order: 1;
+  }
+}
+
+// ---- Refine rail ----
+.saho-search-rail {
+  min-width: 0;
+}
+
+@media (min-width: 40rem) {
+  .saho-search-rail {
+    border-right: var(--bw-hair) solid var(--border-default);
+    padding-right: var(--space-5);
+  }
+}
+
+.saho-search-rail__title {
+  margin: 0 0 var(--space-4);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: var(--fw-semibold);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+// Light-touch restyle of the exposed form. BEF markup varies, so only target
+// generic descendants - never specific wrapper classes.
+.saho-search-rail label,
+.saho-search-rail legend {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.saho-search-rail .form-item {
+  margin-block: 0 var(--space-4);
+}
+
+.saho-search-rail ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.saho-search-rail input[type="text"],
+.saho-search-rail input[type="search"],
+.saho-search-rail select {
+  width: 100%;
+  border: var(--bw-hair) solid var(--border-default);
+  border-radius: 0;
+  background: var(--surface-card);
+  padding: var(--space-2) var(--space-3);
+}
+
+.saho-search-rail__feeds {
+  margin-top: var(--space-4);
+}
+
+// ---- Results head: mono count + layout toggle ----
+.saho-search-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.saho-search-count {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.saho-view-toggle {
+  display: inline-flex;
+  border: var(--bw-hair) solid var(--border-default);
+  background: var(--surface-card);
+}
+
+.saho-view-toggle__btn {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 var(--space-4);
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--text-muted);
+  cursor: pointer;
+
+  & + & {
+    border-left: var(--bw-hair) solid var(--border-default);
+  }
+
+  &:hover {
+    color: var(--text-primary);
+    background: var(--surface-sunk);
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-shadow);
+  }
+
+  &.is-active {
+    background: var(--accent);
+    color: var(--text-on-accent);
+  }
+}
+
+// ---- Results body ----
+// Cards in the Open Record shells share row height (the card-grid SDC
+// defaults to align-items:start); the archive-card pins its meta foot.
+.saho-results--grid .saho-card-grid {
+  align-items: stretch;
+}
+
+.saho-search-pager {
+  margin-top: var(--space-6);
+}
+.saho-search-more {
+  margin-top: var(--space-4);
+}
+
+.saho-search-empty,
+.saho-spellcheck-suggestion {
+  margin-top: var(--space-4);
+}
+
+// ---- Refine rail form controls (#465) ----
+// Square custom checkboxes: hairline ink border at rest, oxblood fill when
+// checked. Native semantics kept - only the paint changes.
+.saho-search-rail input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  flex: none;
+  margin: 0 6px 0 0;
+  border: var(--bw-hair, 1px) solid var(--saho-ink, #1b1c17);
+  border-radius: 0;
+  background: var(--saho-paper-raised, #f1efe7);
+  vertical-align: -2px;
+  cursor: pointer;
+}
+
+.saho-search-rail input[type="checkbox"]:checked {
+  background: var(--saho-oxblood, #990000);
+  border-color: var(--saho-oxblood, #990000);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 6.5l2.5 2.5 4.5-5' fill='none' stroke='%23f1efe7' stroke-width='2'/%3E%3C/svg%3E");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 11px;
+}
+
+.saho-search-rail input[type="checkbox"]:focus-visible {
+  outline: 2px solid var(--saho-oxblood, #990000);
+  outline-offset: 2px;
+}
+
+// Under the stack breakpoint the stacked rows replace the table, so a
+// TABLE/CARDS toggle would switch between two invisible things (#465).
+@media (max-width: 26rem) {
+  .saho-search-page .saho-view-toggle {
+    display: none;
+  }
+}

@@ -3,6 +3,7 @@
 namespace Drupal\saho_statistics;
 
 use Drupal\Core\Cache\CacheBackendInterface;
+use Drupal\Core\Cache\CacheTagsInvalidatorInterface;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\entity_usage\EntityUsageInterface;
@@ -41,6 +42,13 @@ class TermTracker {
   protected $cacheBackend;
 
   /**
+   * The cache tags invalidator.
+   *
+   * @var \Drupal\Core\Cache\CacheTagsInvalidatorInterface
+   */
+  protected $cacheTagsInvalidator;
+
+  /**
    * Constructs a TermTracker object.
    *
    * @param \Drupal\Core\Database\Connection $database
@@ -51,17 +59,21 @@ class TermTracker {
    *   The entity usage service.
    * @param \Drupal\Core\Cache\CacheBackendInterface $cache_backend
    *   The cache backend.
+   * @param \Drupal\Core\Cache\CacheTagsInvalidatorInterface $cache_tags_invalidator
+   *   The cache tags invalidator.
    */
   public function __construct(
     Connection $database,
     EntityTypeManagerInterface $entity_type_manager,
     EntityUsageInterface $entity_usage,
     CacheBackendInterface $cache_backend,
+    CacheTagsInvalidatorInterface $cache_tags_invalidator,
   ) {
     $this->database = $database;
     $this->entityTypeManager = $entity_type_manager;
     $this->entityUsage = $entity_usage;
     $this->cacheBackend = $cache_backend;
+    $this->cacheTagsInvalidator = $cache_tags_invalidator;
   }
 
   /**
@@ -131,9 +143,13 @@ class TermTracker {
 
   /**
    * Clears the popular terms cache.
+   *
+   * Invalidates only the 'taxonomy' cache tag (which the popular-terms entries
+   * carry) instead of flushing the entire shared cache.default bin, so a
+   * single term save no longer wipes every unrelated cached item.
    */
   public function clearCache() {
-    $this->cacheBackend->deleteAll();
+    $this->cacheTagsInvalidator->invalidateTags(['taxonomy']);
   }
 
   /**

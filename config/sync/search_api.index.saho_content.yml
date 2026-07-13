@@ -6,20 +6,30 @@ dependencies:
     - field.storage.node.body
     - field.storage.node.field_african_country
     - field.storage.node.field_article_type
+    - field.storage.node.field_description
     - field.storage.node.field_event_type
+    - field.storage.node.field_feature_parent
     - field.storage.node.field_feature_tag
     - field.storage.node.field_isbn
+    - field.storage.node.field_language
+    - field.storage.node.field_media_library_type
     - field.storage.node.field_people_category
     - field.storage.node.field_place_category
     - field.storage.node.field_place_type
     - field.storage.node.field_places_level3
+    - field.storage.node.field_publication_title
+    - field.storage.node.field_publishers
     - field.storage.node.field_ref_str
+    - field.storage.node.field_saldru_category
+    - field.storage.node.field_subtitle
+    - field.storage.node.field_synopsis
     - field.storage.node.field_tags
-    - search_api.server.saho_prod
+    - field.storage.node.field_venue
+    - search_api.server.local_solr
   module:
     - node
     - search_api_solr
-    - search_api_sort_priority
+    - taxonomy
 third_party_settings:
   search_api_solr:
     finalize: false
@@ -72,6 +82,16 @@ name: 'SAHO content'
 description: ''
 read_only: false
 field_settings:
+  african_country_label:
+    label: 'African country (facet)'
+    datasource_id: 'entity:node'
+    property_path: 'field_african_country:entity:name'
+    type: string
+    dependencies:
+      config:
+        - field.storage.node.field_african_country
+      module:
+        - taxonomy
   body:
     label: Body
     datasource_id: 'entity:node'
@@ -81,6 +101,22 @@ field_settings:
     dependencies:
       config:
         - field.storage.node.body
+  changed:
+    label: Changed
+    datasource_id: 'entity:node'
+    property_path: changed
+    type: date
+    dependencies:
+      module:
+        - node
+  collection_nid:
+    label: 'Collection (facet)'
+    datasource_id: 'entity:node'
+    property_path: field_feature_parent
+    type: integer
+    dependencies:
+      config:
+        - field.storage.node.field_feature_parent
   field_african_country:
     label: 'African country'
     datasource_id: 'entity:node'
@@ -99,6 +135,14 @@ field_settings:
     dependencies:
       config:
         - field.storage.node.field_article_type
+  field_description:
+    label: Description
+    datasource_id: 'entity:node'
+    property_path: field_description
+    type: text
+    dependencies:
+      config:
+        - field.storage.node.field_description
   field_event_type:
     label: 'Event type'
     datasource_id: 'entity:node'
@@ -159,6 +203,24 @@ field_settings:
     dependencies:
       config:
         - field.storage.node.field_places_level3
+  field_publication_title:
+    label: 'Publication title'
+    datasource_id: 'entity:node'
+    property_path: field_publication_title
+    type: text
+    boost: 2.0
+    dependencies:
+      config:
+        - field.storage.node.field_publication_title
+  field_publishers:
+    label: Publishers
+    datasource_id: 'entity:node'
+    property_path: field_publishers
+    type: text
+    boost: 2.0
+    dependencies:
+      config:
+        - field.storage.node.field_publishers
   field_ref_str:
     label: References
     datasource_id: 'entity:node'
@@ -167,6 +229,22 @@ field_settings:
     dependencies:
       config:
         - field.storage.node.field_ref_str
+  field_subtitle:
+    label: Subtitle
+    datasource_id: 'entity:node'
+    property_path: field_subtitle
+    type: text
+    dependencies:
+      config:
+        - field.storage.node.field_subtitle
+  field_synopsis:
+    label: Synopsis
+    datasource_id: 'entity:node'
+    property_path: field_synopsis
+    type: text
+    dependencies:
+      config:
+        - field.storage.node.field_synopsis
   field_tags:
     label: Tags
     datasource_id: 'entity:node'
@@ -176,6 +254,64 @@ field_settings:
     dependencies:
       config:
         - field.storage.node.field_tags
+  field_venue:
+    label: Venue
+    datasource_id: 'entity:node'
+    property_path: field_venue
+    type: text
+    dependencies:
+      config:
+        - field.storage.node.field_venue
+  language_label:
+    label: 'Language (facet)'
+    datasource_id: 'entity:node'
+    property_path: 'field_language:entity:name'
+    type: string
+    dependencies:
+      config:
+        - field.storage.node.field_language
+      module:
+        - taxonomy
+  media_type_label:
+    label: 'Resource type (facet)'
+    datasource_id: 'entity:node'
+    property_path: 'field_media_library_type:entity:name'
+    type: string
+    dependencies:
+      config:
+        - field.storage.node.field_media_library_type
+      module:
+        - taxonomy
+  people_category_label:
+    label: 'People category (facet)'
+    datasource_id: 'entity:node'
+    property_path: 'field_people_category:entity:name'
+    type: string
+    dependencies:
+      config:
+        - field.storage.node.field_people_category
+      module:
+        - taxonomy
+  place_category_label:
+    label: 'Place category (facet)'
+    datasource_id: 'entity:node'
+    property_path: 'field_place_category:entity:name'
+    type: string
+    dependencies:
+      config:
+        - field.storage.node.field_place_category
+      module:
+        - taxonomy
+  saldru_topic_label:
+    label: 'SALDRU topic (facet)'
+    datasource_id: 'entity:node'
+    property_path: 'field_saldru_category:entity:name'
+    type: string
+    dependencies:
+      config:
+        - field.storage.node.field_saldru_category
+      module:
+        - taxonomy
   title:
     label: Title
     datasource_id: 'entity:node'
@@ -201,6 +337,14 @@ field_settings:
     dependencies:
       module:
         - node
+  type_string:
+    label: 'Content type (facet)'
+    datasource_id: 'entity:node'
+    property_path: type
+    type: string
+    dependencies:
+      module:
+        - node
 datasource_settings:
   'entity:node':
     bundles:
@@ -223,6 +367,7 @@ processor_settings:
   aggregated_field: {  }
   auto_aggregated_fulltext_field: {  }
   custom_value: {  }
+  entity_status: {  }
   entity_type: {  }
   highlight:
     weights:
@@ -275,4 +420,4 @@ options:
   delete_on_fail: true
   index_directly: true
   track_changes_in_references: true
-server: saho_prod
+server: local_solr

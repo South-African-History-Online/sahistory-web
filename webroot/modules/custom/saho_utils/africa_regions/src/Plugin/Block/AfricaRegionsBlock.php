@@ -65,7 +65,7 @@ class AfricaRegionsBlock extends BlockBase implements ContainerFactoryPluginInte
     'north' => [
       'label' => 'Northern Africa',
       'description' => 'View the histories of Northern African nations',
-      'color' => '#d97706',
+      'color' => '#b88a2e',
       // Warm Amber.
       'countries' => [
         'Algeria',
@@ -80,7 +80,7 @@ class AfricaRegionsBlock extends BlockBase implements ContainerFactoryPluginInte
     'east' => [
       'label' => 'Eastern Africa',
       'description' => 'Discover stories from the Eastern African region',
-      'color' => '#059669',
+      'color' => '#2d5016',
       // Emerald Green.
       'countries' => [
         'Burundi',
@@ -98,7 +98,7 @@ class AfricaRegionsBlock extends BlockBase implements ContainerFactoryPluginInte
     'southern' => [
       'label' => 'Southern Africa',
       'description' => 'Rich histories from Southern African countries',
-      'color' => '#dc2626',
+      'color' => '#990000',
       // SAHO Red.
       'countries' => [
         'Botswana',
@@ -116,7 +116,7 @@ class AfricaRegionsBlock extends BlockBase implements ContainerFactoryPluginInte
     'central' => [
       'label' => 'Central Africa',
       'description' => 'Central African nations and their heritage',
-      'color' => '#7c3aed',
+      'color' => '#8b2331',
       // Deep Purple.
       'countries' => [
         'Angola',
@@ -133,7 +133,7 @@ class AfricaRegionsBlock extends BlockBase implements ContainerFactoryPluginInte
     'west' => [
       'label' => 'Western Africa',
       'description' => 'Western African stories and historical narratives',
-      'color' => '#0891b2',
+      'color' => '#3a4a64',
       // Cyan Blue.
       'countries' => [
         'Benin',
@@ -197,7 +197,8 @@ class AfricaRegionsBlock extends BlockBase implements ContainerFactoryPluginInte
   public function defaultConfiguration() {
     return [
       'block_title' => 'Africa',
-      'intro_text' => 'Browse the histories of other African countries organised by region.',
+      // No auto-subtitle: the voice states facts or says nothing (#462).
+      'intro_text' => '',
       'display_mode' => 'grid',
       'show_content_count' => TRUE,
       'show_featured_country' => TRUE,
@@ -222,11 +223,12 @@ class AfricaRegionsBlock extends BlockBase implements ContainerFactoryPluginInte
       '#rows' => 3,
     ];
 
+    // The carousel mode is retired: an archive is still (#462). Legacy
+    // configs holding 'carousel' render as the grid.
     $form['display_mode'] = $this->configFormHelper->buildDisplayModeSelect(
-      $this->configuration['display_mode'],
+      $this->configuration['display_mode'] === 'carousel' ? 'grid' : $this->configuration['display_mode'],
       [
         'grid' => $this->t('Grid (Responsive Cards)'),
-        'carousel' => $this->t('Carousel (Slideshow)'),
         'list' => $this->t('List (Stacked)'),
       ],
       $this->t('Display Mode'),

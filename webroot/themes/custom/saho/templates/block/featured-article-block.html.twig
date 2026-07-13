@@ -1,11 +1,20 @@
+{#
+/**
+ * @file
+ * Featured topics band (Open Record register, #453).
+ *
+ * One staff-pick article as a duotone figure with a square kind label and
+ * the title as the link, closed by a single mono band action to /featured.
+ * No filler standfirst - the voice states facts or says nothing.
+ */
+#}
 <div class="block-section">
   <div class="block-section-header">
     <div class="block-title-wrapper">
-      <h2>Featured topics</h2>
+      <h2>{{ 'Featured topics'|t }}</h2>
     </div>
+    <div class="block-meta">{{ 'Staff picks'|t }}</div>
   </div>
-  
-  <p class="intro-text">Read about important themes, topics and events from South Africa's past with our staff picks</p>
 
   {% if article_item %}
     <div class="block-content">
@@ -13,7 +22,7 @@
         <div class="block-image-wrapper">
           {# Featured topics block sits in the home page LCP region - eager load. #}
           <img src="{{ article_item.image }}" alt="{{ article_item.title|striptags }}" class="block-image" fetchpriority="high" decoding="async" />
-          <div class="block-label">Article</div>
+          <div class="block-label">{{ 'Article'|t }}</div>
         </div>
       {% endif %}
 
@@ -23,18 +32,11 @@
     </div>
   {% else %}
     <div class="block-content">
-      <p class="block-main-text">No featured article found.</p>
+      <p class="block-main-text">{{ 'No featured article found.'|t }}</p>
     </div>
   {% endif %}
 
   <div class="block-buttons">
-    {% include 'saho:saho-button' with {
-      text: 'More features'|t,
-      url: '/featured',
-      variant: 'text',
-      size: 'medium',
-      icon: 'arrow-right',
-      icon_position: 'after'
-    } %}
+    <a href="/featured" class="block-more-link">{{ 'More features'|t }} <span aria-hidden="true">&rarr;</span></a>
   </div>
 </div>

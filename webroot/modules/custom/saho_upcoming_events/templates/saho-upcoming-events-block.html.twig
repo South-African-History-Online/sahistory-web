@@ -2,16 +2,20 @@
 /**
  * @file
  * Theme implementation for SAHO upcoming events block.
- * Simple HTML template without SDC complexity.
+ *
+ * Open Record 2027 idiom: archive index cards on paper with the event
+ * accent edge (--type-event), duotone imagery, mono status/date meta and
+ * display-font titles.
+ *
+ * JS hooks preserved (upcoming-events.js): .event-card-clickable (whole
+ * card click + keyboard support) and .event-card__button (href source).
  */
 #}
-<div class="saho-upcoming-events-block">
-  {# Title is now handled by Drupal's standard block title system #}
-  {# Use "Display title" checkbox in block settings to show/hide #}
-  {# Keeping backward compatibility for existing blocks with config.block_title #}
+<div class="saho-upcoming-events-block saho-uev">
+  {# Title is handled by Drupal's standard block title system #}
 
   {% if events %}
-    <div class="upcoming-events-grid-wrapper">
+    <div class="saho-uev__grid">
       {% for event in events %}
         {# Calculate event status - using DATE-ONLY comparison (not timestamp) #}
         {% set today_date = "now"|date('Y-m-d') %}
@@ -24,12 +28,12 @@
         {% set end_timestamp = end_date|date('U') %}
 
         {% set event_status_local = 'past' %}
-        {% set event_status_label_local = 'Past Event' %}
+        {% set event_status_label_local = 'Past event' %}
         {% set show_pulse_local = false %}
 
         {% if start_timestamp <= today_timestamp and end_timestamp >= today_timestamp %}
           {% set event_status_local = 'in-progress' %}
-          {% set event_status_label_local = 'Happening Now' %}
+          {% set event_status_label_local = 'Happening now' %}
           {% set show_pulse_local = true %}
         {% elseif start_timestamp > today_timestamp %}
           {% set event_status_local = 'upcoming' %}
@@ -46,112 +50,69 @@
           {% endif %}
         {% endif %}
 
-        <article class="saho-upcoming-events-card event-card-clickable event-card--{{ event_status_local }} saho-upcoming-events-card--portrait card h-100">
+        <article class="saho-uev__card event-card-clickable saho-uev__card--{{ event_status_local }}">
 
-          {# Image with Badge #}
-          <div class="saho-upcoming-events-card__image-wrapper card-img-top-wrapper position-relative overflow-hidden">
-            {% if config.show_images and event.field_upcomingevent_image.0 and event.field_upcomingevent_image.entity %}
+          {% if config.show_images and event.field_upcomingevent_image.0 and event.field_upcomingevent_image.entity %}
+            <div class="saho-uev__media saho-duotone">
               <img src="{{ file_url(event.field_upcomingevent_image.entity.uri.value) }}"
                    alt="{{ event.field_upcomingevent_image.alt|default(event.getTitle()) }}"
-                   class="saho-upcoming-events-card__img w-100 h-100"
+                   class="saho-uev__img"
                    loading="lazy"
                    decoding="async">
-            {% else %}
-              <div class="saho-upcoming-events-card__placeholder bg-light d-flex align-items-center justify-content-center">
-                <i class="fas fa-calendar-alt fa-3x text-muted"></i>
-              </div>
-            {% endif %}
+            </div>
+          {% endif %}
 
-            {# Status Badge - Show only for "Happening Now" and "Past Event", not "Upcoming" #}
-            {# Upcoming events use the countdown badge instead (with icon) #}
-            {% if event_status_local != 'upcoming' %}
-              <div class="saho-upcoming-events-card__status-badge">
-                <div class="event-card__badge event-card__badge--{{ event_status_local }}">
-                  {% if show_pulse_local %}
-                    <span class="badge-pulse"></span>
-                  {% endif %}
-                  {{ event_status_label_local }}
-                </div>
-              </div>
-            {% endif %}
+          <div class="saho-uev__body">
+            <p class="saho-uev__status saho-uev__status--{{ event_status_local }}">
+              {%- if show_pulse_local %}<span class="saho-uev__pulse" aria-hidden="true"></span>{% endif -%}
+              {{ event_status_label_local }}
+            </p>
 
-            {# Countdown Badge - Top right, with icon, for upcoming events #}
-            {% if event_status_local == 'upcoming' %}
-              <div class="saho-upcoming-events-card__countdown">
-                <svg class="saho-upcoming-events-card__icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/>
-                </svg>
-                <span>{{ event_status_label_local }}</span>
-              </div>
-            {% endif %}
-          </div>
-
-          {# Card Body #}
-          <div class="card-body d-flex flex-column">
-            <h3 class="saho-upcoming-events-card__title card-title">
-              <a href="{{ path('entity.node.canonical', {'node': event.id()}) }}" class="text-decoration-none stretched-link">
-                {{ event.getTitle() }}
-              </a>
+            <h3 class="saho-uev__title">
+              <a href="{{ path('entity.node.canonical', {'node': event.id()}) }}">{{ event.getTitle() }}</a>
             </h3>
 
-            <div class="saho-upcoming-events-card__meta">
+            <div class="saho-uev__meta">
               {% if event.field_start_date.value %}
-                <div class="saho-upcoming-events-card__date">
-                  <svg class="saho-upcoming-events-card__icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/>
-                  </svg>
+                <span class="saho-uev__date">
                   {% if event.field_end_date.value %}
-                    {# Multi-day or same-day with end time #}
                     {% set start_date_only = event.field_start_date.value|date('Y-m-d') %}
                     {% set end_date_only = event.field_end_date.value|date('Y-m-d') %}
                     {% if start_date_only == end_date_only %}
-                      {# Same day event - show date once with time range #}
                       {{ event.field_start_date.value|date('j F Y, H:i') }} - {{ event.field_end_date.value|date('H:i') }}
                     {% else %}
-                      {# Multi-day event - show full date and time for both #}
                       {{ event.field_start_date.value|date('j F Y, H:i') }} - {{ event.field_end_date.value|date('j F Y, H:i') }}
                     {% endif %}
                   {% else %}
-                    {# No end date - just show start date and time #}
                     {{ event.field_start_date.value|date('j F Y, H:i') }}
                   {% endif %}
-                </div>
+                </span>
               {% endif %}
 
               {% if config.show_venue and event.field_upcoming_venue.value %}
-                <div class="saho-upcoming-events-card__venue">
-                  <svg class="saho-upcoming-events-card__icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-                  </svg>
-                  {{ event.field_upcoming_venue.value|striptags }}
-                </div>
+                <span class="saho-uev__venue">{{ event.field_upcoming_venue.value|striptags }}</span>
               {% endif %}
             </div>
 
             {% if config.show_excerpt and event.body.value %}
-              <div class="saho-upcoming-events-card__excerpt card-text text-muted">
+              <p class="saho-uev__excerpt">
                 {{ event.body.value|striptags|slice(0, config.excerpt_length) }}{% if event.body.value|striptags|length > config.excerpt_length %}...{% endif %}
-              </div>
+              </p>
             {% endif %}
 
-            <div class="mt-auto saho-upcoming-events-card__action">
-              <a href="{{ path('entity.node.canonical', {'node': event.id()}) }}" class="event-card__button">
-                Learn More
-                <span class="event-card__button-arrow">→</span>
-              </a>
-            </div>
+            <a href="{{ path('entity.node.canonical', {'node': event.id()}) }}" class="event-card__button saho-uev__more">
+              View event record
+              <span class="event-card__button-arrow" aria-hidden="true">&rarr;</span>
+            </a>
           </div>
         </article>
       {% endfor %}
     </div>
 
     {% if config.show_view_all_link %}
-      <div class="view-all-events mt-4">
-        <a href="/all-upcoming-events" class="saho-button saho-button--text saho-button--medium saho-button--with-icon">
-          <span class="saho-button__text">View All Upcoming Events</span>
-          <svg class="saho-button__icon saho-button__icon--arrow-right" width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-            <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/>
-          </svg>
+      <div class="view-all-events saho-uev__viewall-row">
+        <a href="/all-upcoming-events" class="saho-uev__viewall">
+          View all upcoming events <span aria-hidden="true">&rarr;</span>
         </a>
       </div>
     {% endif %}

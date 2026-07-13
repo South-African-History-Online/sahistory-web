@@ -1,0 +1,103 @@
+/* SAHO Browse index - ruled type squares with content-type accent edges (wf01). */
+
+.saho-browse-index__title {
+  font-size: var(--fs-h3);
+  margin-bottom: 16px;
+}
+
+.saho-browse-index__grid {
+  display: grid;
+  /* Six items: fixed tracks so rows stay balanced instead of auto-fit orphaning one.
+     minmax(0, 1fr) keeps columns equal - plain 1fr lets long counts widen their column. */
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0;
+  border-top: var(--bw-hair) solid var(--border-default);
+  border-left: var(--bw-hair) solid var(--border-default);
+}
+
+@media (max-width: 767.98px) {
+  .saho-browse-index__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 575.98px) {
+  .saho-browse-index__grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.saho-browse-index__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: var(--surface-card);
+  border-left: var(--bw-accent) solid var(--saho-ink);
+  border-right: var(--bw-hair) solid var(--border-default);
+  border-bottom: var(--bw-hair) solid var(--border-default);
+  padding: 15px 16px;
+  text-decoration: none;
+}
+
+.saho-browse-index__item:hover,
+.saho-browse-index__item:focus-visible {
+  background: var(--surface-sunk);
+}
+
+.saho-browse-index__item--article {
+  border-left-color: var(--type-article);
+}
+.saho-browse-index__item--biography {
+  border-left-color: var(--type-biography);
+}
+.saho-browse-index__item--place {
+  border-left-color: var(--type-place);
+}
+.saho-browse-index__item--archive {
+  border-left-color: var(--type-archive);
+}
+.saho-browse-index__item--event {
+  border-left-color: var(--type-event);
+}
+.saho-browse-index__item--topic {
+  border-left-color: var(--type-topic);
+}
+
+.saho-browse-index__label {
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.saho-browse-index__count {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* R3 #475: top-collections footer line. */
+.saho-browse-index__collections {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.25rem;
+  margin: 0.75rem 0 0;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.saho-browse-index__collections-label {
+  color: var(--saho-ink-muted, rgb(26 26 24 / 60%));
+}
+
+.saho-browse-index__collections a {
+  color: var(--saho-ink, #1a1a18);
+  text-decoration: none;
+}
+
+.saho-browse-index__collections a:hover {
+  color: var(--saho-oxblood, #990000);
+}

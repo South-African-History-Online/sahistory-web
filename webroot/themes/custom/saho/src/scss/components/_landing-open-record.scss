@@ -1,0 +1,278 @@
+// =============================================================================
+// SAHO 2027 "Open Record" - /index/% content-type landing shell (wireframe wf02)
+// =============================================================================
+// The landing reuses the /search results shell (.saho-search-layout classes in
+// _search-results-open-record.scss); this file adds the landing header (type
+// chip + plural title + mono count) and the rail-less single-column variant
+// used until the era/place facet rail ships with the reindex follow-up.
+
+.saho-landing-page {
+  padding-block: var(--space-6) var(--space-8);
+
+  // .is-wide is defined for .layout--saho; honour it on the landing shell too.
+  &.is-wide {
+    max-width: var(--container-wide);
+  }
+
+  // The landing header owns the record count, so the results head only holds
+  // the table/cards toggle - keep it flush right.
+  .saho-search-head {
+    justify-content: flex-end;
+  }
+}
+
+// ---- Landing header ----
+.saho-landing-head {
+  margin-bottom: var(--space-6);
+  padding-bottom: var(--space-5);
+  border-bottom: var(--bw-hair) solid var(--border-default);
+}
+
+// Solid content-type tab (wf02): the type reads at a glance, colour never
+// alone - the label carries it. Paper text on the type fill (#464).
+.saho-landing-head__tab {
+  display: inline-block;
+  margin-bottom: var(--space-3);
+  padding: var(--space-1) var(--space-3);
+  border: 0;
+  background: var(--type-article);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: var(--fw-semibold);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  color: var(--saho-paper-raised, #f1efe7);
+}
+
+// Content-type fills (mirrors the record-header tab family).
+.saho-landing-head__tab--article {
+  background: var(--type-article);
+}
+.saho-landing-head__tab--biography {
+  background: var(--type-biography);
+}
+.saho-landing-head__tab--place {
+  background: var(--type-place);
+}
+.saho-landing-head__tab--archive {
+  background: var(--type-archive);
+}
+.saho-landing-head__tab--event {
+  background: var(--type-event);
+}
+.saho-landing-head__tab--topic {
+  background: var(--type-topic);
+}
+
+.saho-landing-head__title {
+  margin: 0 0 var(--space-2);
+}
+
+.saho-landing-head__count {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.saho-landing-intro {
+  margin-bottom: var(--space-5);
+  max-width: var(--measure);
+}
+
+// Rail-less landings: results take the full width.
+@media (min-width: 40rem) {
+  .saho-search-layout--single {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+// ---- /biographies filter rail: BEF checkboxes as square mono chips ----
+// Mirrors .saho-classroom-hub__grades: the checkbox input is visually
+// hidden and its label is the chip; BEF links degrade to the same chips.
+.saho-landing__filters {
+  // One slim ruled band, not a raised box (same register as the
+  // classroom grade band): hairline top + bottom, transparent ground.
+  // Each facet group is its own hairline-ruled row.
+  margin-bottom: var(--space-5);
+  padding: var(--space-4) 0;
+  border-top: var(--bw-hair) solid var(--border-default);
+  border-bottom: var(--bw-hair) solid var(--border-default);
+  background: transparent;
+
+  fieldset + fieldset {
+    margin-top: var(--space-2);
+    padding-top: var(--space-2);
+    border-top: var(--bw-hair) solid var(--border-default);
+  }
+
+  // Each facet group is one ruled row: LABEL - chips - SHOW MORE.
+  fieldset {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-3);
+    margin: 0;
+
+    // The chips wrapper (Bootstrap .mb-3 div) rides the row; content
+    // width only, so the SHOW MORE link packs beside it. Bootstrap's
+    // margin utilities carry !important, hence the counter here.
+    > div {
+      flex: 0 1 auto;
+      min-width: 0;
+      /* biome-ignore lint/complexity/noImportantStyles: counters Bootstrap's !important .mb-3 margin utility */
+      margin: 0 !important;
+    }
+  }
+
+  // BEF autosubmit applies chip changes; Apply never renders in the band.
+  .form-actions {
+    display: none;
+  }
+
+  // "Biography Categories" legend as a mono apparatus heading, inline
+  // on the row (float strips the fieldset-legend special placement).
+  legend {
+    float: left;
+    width: auto;
+    flex: 0 0 auto;
+    /* biome-ignore lint/complexity/noImportantStyles: counters Bootstrap's !important .mb-3 margin utility */
+    margin: 0 !important;
+  }
+  .fieldset-legend {
+    margin-bottom: 0;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: var(--fw-semibold);
+    letter-spacing: var(--ls-wide);
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  .filter-show-more {
+    flex: 0 0 auto;
+  }
+
+  // Flatten the BEF checkbox (or link-list) tree into one wrapping row.
+  .bef-checkboxes,
+  .bef-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+  .bef-checkboxes .form-check,
+  .bef-links ul,
+  .bef-links li {
+    display: contents;
+  }
+
+  // One chip row per group: five visible + the mono SHOW MORE link
+  // (exposed-filters.js toggles .show-all). display:contents above beats
+  // the generic nth-child hiding, so re-assert it here; chips carrying a
+  // checked value stay visible regardless of position.
+  .bef-checkboxes:not(.show-all) .form-check:nth-child(n + 6):not(:has(input:checked)),
+  .bef-links:not(.show-all) li:nth-child(n + 6) {
+    display: none;
+  }
+
+  // Visually hide the checkbox; the label stays its accessible proxy.
+  .form-check-input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+
+  // Square mono chips (min 44px targets) for checkbox labels + BEF links.
+  .form-check-label,
+  .bef-link {
+    // A legacy rule forces label width 100%; chips shrink-wrap.
+    width: auto;
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: var(--space-1) var(--space-3);
+    border: var(--bw-hair) solid var(--border-default);
+    background: var(--saho-paper);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: var(--ls-label);
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: border-color var(--t-fast), background var(--t-fast);
+
+    &:hover {
+      border-color: var(--border-strong);
+    }
+  }
+  .form-check-input:checked + .form-check-label,
+  .bef-link--selected,
+  .bef-link--selected:hover {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--text-on-accent);
+  }
+  .form-check-input:focus-visible + .form-check-label {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+}
+
+// Legacy exposed-form chrome must not draw inside the filter rail: the
+// generic views-exposed-form card (white bg + padding) and the outer
+// .form-checkboxes grid otherwise stack the chips vertically in a box.
+.saho-landing__filters {
+  form,
+  .views-exposed-form {
+    background: none;
+    border: 0;
+    box-shadow: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  fieldset {
+    border: 0;
+    padding: 0;
+    margin: 0;
+    min-width: 0;
+    background: none;
+  }
+
+  .form-checkboxes:not(.bef-checkboxes),
+  fieldset > div {
+    display: block;
+    width: 100%;
+  }
+
+  // BEF soft-limit toggle joins the chip row as the quiet mono text
+  // link (#465) - never a boxed button.
+  .filter-show-more,
+  .bef-toggle {
+    display: inline-flex;
+    align-items: center;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: var(--ls-label);
+    text-transform: uppercase;
+    color: var(--saho-oxblood, #990000);
+    cursor: pointer;
+
+    &:hover,
+    &:focus-visible {
+      color: var(--text-primary);
+      text-decoration: underline;
+    }
+  }
+}

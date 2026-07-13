@@ -105,6 +105,17 @@ class SearchQueryTracker implements EventSubscriberInterface {
     }
 
     $query = $event->getQuery();
+
+    // Only track queries that originate from a real Views search page. The
+    // Search API Views query plugin sets the 'search_api_view' option on its
+    // queries; the typeahead suggest controller builds its query with
+    // $index->query() directly, so it carries no such option. Gating here
+    // stops every keystroke prefix from writing a saho_search_queries row and
+    // polluting the popular/trending search analytics.
+    if (!$query->getOption('search_api_view')) {
+      return;
+    }
+
     $keys = $query->getKeys();
 
     // Skip empty queries.

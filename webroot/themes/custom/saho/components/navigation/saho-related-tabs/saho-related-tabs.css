@@ -1,0 +1,156 @@
+/* SAHO Related tabs — the cross-reference engine. */
+.saho-reltabs__title {
+  margin: 0 0 8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: var(--fw-semibold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.saho-reltabs__bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  border-bottom: var(--bw-rule) solid var(--border-strong);
+  padding-bottom: 8px;
+}
+.saho-reltabs__tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: var(--fw-semibold);
+  padding: 6px 11px;
+  cursor: pointer;
+  border: var(--bw-hair) solid var(--border-default);
+  background: transparent;
+  color: var(--text-secondary);
+}
+.saho-reltabs__tab.is-active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--text-on-accent);
+}
+.saho-reltabs__count {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-muted);
+}
+.saho-reltabs__tab.is-active .saho-reltabs__count {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.saho-reltabs__panel {
+  margin: 0;
+  padding: 0;
+  display: none;
+}
+.saho-reltabs__panel.is-active {
+  display: block;
+  /* Large curated sets scroll inside the ledger instead of stretching the rail. */
+  max-height: 480px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+/* The list now sits inside the role=tabpanel container, so the list-reset
+   moves off the panel and onto the ul. */
+.saho-reltabs__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.saho-reltabs__item {
+  border-bottom: var(--bw-hair) solid var(--border-faint);
+}
+.saho-reltabs__link {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 10px 0;
+  text-decoration: none;
+}
+.saho-reltabs__dot {
+  width: 8px;
+  height: 8px;
+  flex: none;
+  transform: translateY(-1px);
+  background: var(--type-article);
+}
+.saho-reltabs__dot--article {
+  background: var(--type-article);
+}
+.saho-reltabs__dot--biography {
+  background: var(--type-biography);
+}
+.saho-reltabs__dot--place {
+  background: var(--type-place);
+}
+.saho-reltabs__dot--archive {
+  background: var(--type-archive);
+}
+.saho-reltabs__dot--event {
+  background: var(--type-event);
+}
+.saho-reltabs__dot--topic {
+  background: var(--type-topic);
+}
+.saho-reltabs__dot--image {
+  background: var(--type-image);
+}
+.saho-reltabs__label {
+  display: block;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: var(--fw-semibold);
+  color: var(--text-primary);
+}
+.saho-reltabs__link:hover .saho-reltabs__label {
+  color: var(--link-hover);
+}
+.saho-reltabs__note {
+  display: block;
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+
+/* Collection summary (bounded high-degree tab): mono count line, a scrollable
+   sample of the collection, one ruled CTA to the pre-filtered index. The count
+   line pins to the top of the scroll so the total stays in view while the
+   samples scroll; the summary panel keeps the same 480px cap as a normal tab
+   (inherited above) so a long sample scrolls in place instead of stretching
+   the rail. */
+.saho-reltabs__summary-count {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: var(--space-2) 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--text-muted);
+  background: var(--surface-card);
+  border-bottom: var(--bw-hair) solid var(--border-default);
+  list-style: none;
+}
+.saho-reltabs__summary-cta {
+  margin-top: var(--space-2);
+  padding-top: var(--space-2);
+  border-top: var(--bw-hair) solid var(--border-default);
+  list-style: none;
+}
+.saho-reltabs__summary-cta a {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--saho-oxblood, #990000);
+}
+.saho-reltabs__summary-cta a:hover {
+  color: var(--text-primary);
+  text-decoration: underline;
+}

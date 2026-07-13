@@ -7,7 +7,7 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Url;
-use Drupal\image\Entity\ImageStyle;
+use Drupal\file\FileInterface;
 use Drupal\saho_statistics\TermTracker;
 use Drupal\saho_utils\Service\ImageExtractorService;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -224,11 +224,14 @@ class TopReadContentBlock extends BlockBase implements ContainerFactoryPluginInt
   public function build() {
     $config = $this->configuration;
 
-    // Get most read content from the service.
+    // Get most read content from the service. With no explicit selection the
+    // ledger lists record types only - utility pages (home, landing shells)
+    // are traffic data, not records (#462).
+    $record_types = ['article', 'biography', 'place', 'event', 'archive', 'upcomingevent'];
     $results = $this->termTracker->getMostReadContent(
       $config['items_per_page'],
       $config['time_period'],
-      $config['content_types']
+      $config['content_types'] ?: $record_types
     );
 
     // Prepare items for the template.
@@ -269,10 +272,16 @@ class TopReadContentBlock extends BlockBase implements ContainerFactoryPluginInt
       $items[] = $item;
     }
 
-    // If no results, show message.
+    // If no results, return a cache-tagged empty render array so the band
+    // collapses instead of printing a placeholder - and so the empty state is
+    // not cached permanently and tagless. It shares the same tags/max-age as
+    // the populated build so a new view count refreshes it too.
     if (empty($items)) {
       return [
-        '#markup' => '<p>' . $this->t('No content available.') . '</p>',
+        '#cache' => [
+          'tags' => ['node_list', 'saho_node_counter'],
+          'max-age' => 3600,
+        ],
       ];
     }
 
@@ -290,7 +299,6 @@ class TopReadContentBlock extends BlockBase implements ContainerFactoryPluginInt
         ],
       ],
       '#cache' => [
-        'contexts' => ['url.query_args'],
         'tags' => ['node_list', 'saho_node_counter'],
         'max-age' => 3600,
       ],
@@ -315,27 +323,17 @@ class TopReadContentBlock extends BlockBase implements ContainerFactoryPluginInt
       return NULL;
     }
 
-    $field_value = $node->get($field_name)->first();
-    if (!$field_value) {
+    // Skip files missing on disk (the pre-2019 loss class) so the ledger
+    // never publishes a knowingly broken figure.
+    $file = $node->get($field_name)->first()->entity ?? NULL;
+    if (!$file instanceof FileInterface || !file_exists($file->getFileUri())) {
       return NULL;
     }
 
-    // Get the file entity.
-    $file = $field_value->get('entity')->getValue();
-    if (!$file) {
-      return NULL;
-    }
-
-    // Route through the saho_thumbnail image style (400x225 WebP) so the
-    // browser fetches a ~30 KB derivative instead of the raw source file -
-    // a typical Top Read row only displays the thumbnail at 80x58.
-    $uri = $file->getFileUri();
-    $style = ImageStyle::load('saho_thumbnail');
-    if ($style) {
-      return $style->buildUrl($uri);
-    }
-    // Fallback if the image style isn't configured: relative public URL.
-    return str_replace('public://', '/sites/default/files/', $uri);
+    // Serve the saho_thumbnail derivative (preferring its WebP variant)
+    // instead of the raw source file - a Top Read card only displays the
+    // image small.
+    return $this->imageExtractor->extractImageWithDerivatives($node, 'saho_thumbnail', $field_name);
   }
 
 }

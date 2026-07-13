@@ -1,0 +1,46 @@
+{#
+/**
+ * @file
+ * A single presentation card row for the Classroom browse (#444).
+ *
+ * Proposal template - drops into the saho theme at
+ * templates/views/views-view-fields--classroom-presentations.html.twig
+ * (see the module README). Styled by scss/_classroom-presentations.scss.
+ *
+ * Open Record card: opaque paper sheet, square corners, an oxblood
+ * (--type-article) accent edge, mono eyebrow/meta apparatus and a Caslon title.
+ * There is no dedicated image field on the presentation bundle, so the card is
+ * deliberately text-forward - the CAPS topic eyebrow does the visual sorting.
+ *
+ * Available variables:
+ * - view: The view object.
+ * - fields: Field id => object; render each with `{{ fields.NAME.content }}`.
+ *   Present here: title (linked), field_caps_topic, field_classroom_subject,
+ *   body (trimmed summary). field_classroom_grade is excluded (drives grouping).
+ * - row: The raw result row.
+ */
+#}
+{% set topic = fields.field_caps_topic.content|render|striptags|trim %}
+{% set subject = fields.field_classroom_subject.content|render|striptags|trim %}
+{% set summary = fields.body.content|render|trim %}
+
+<article class="saho-presentation-card">
+  {% if topic %}
+    <p class="saho-presentation-card__eyebrow">{{ topic }}</p>
+  {% endif %}
+
+  <h3 class="saho-presentation-card__title">
+    {{ fields.title.content }}
+  </h3>
+
+  {% if summary %}
+    <div class="saho-presentation-card__summary">{{ summary }}</div>
+  {% endif %}
+
+  <p class="saho-presentation-card__meta">
+    {% if subject %}
+      <span class="saho-presentation-card__subject">{{ subject }}</span>
+    {% endif %}
+    <span class="saho-presentation-card__type">{{ 'Presentation'|t }}</span>
+  </p>
+</article>

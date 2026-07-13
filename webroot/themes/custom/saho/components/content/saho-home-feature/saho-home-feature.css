@@ -1,0 +1,132 @@
+/* SAHO Home feature - editorial register lead on ink (wf01 / HomeScreen). */
+
+/* Doubled class: the legacy _elements.scss rules paint every <article> as a
+   paper card and strip it on mobile front (.path-frontpage article, (0,1,1)).
+   (0,2,0) keeps this component in charge of its own surface. */
+.saho-home-feature.saho-home-feature {
+  /* The global link rule paints links via --link-rest/--link-hover; re-scope
+     them for the ink background so inner links stay readable. */
+  --link-rest: var(--text-on-dark);
+  --link-hover: #fff;
+
+  height: 100%;
+  background: var(--saho-ink);
+  color: var(--text-on-dark);
+  padding: var(--space-6);
+  border: 0;
+  border-top: var(--bw-accent) solid var(--saho-oxblood);
+  border-radius: 0;
+  margin-bottom: 0;
+}
+
+.saho-home-feature__kicker {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--saho-ochre);
+}
+
+/* Editorial register title: bold Archivo, condensed, tight leading. */
+.saho-home-feature__title {
+  font-family: var(--font-sans);
+  font-weight: var(--fw-black, 900);
+  font-stretch: 88%;
+  letter-spacing: -0.01em;
+  line-height: 0.98;
+  text-wrap: balance;
+  font-size: clamp(2.4rem, 1.5rem + 3.4vw, 4.2rem);
+  margin: 14px 0 16px;
+  color: var(--text-on-dark);
+}
+
+.saho-home-feature__title-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.saho-home-feature__title-link:hover,
+.saho-home-feature__title-link:focus-visible {
+  text-decoration: underline;
+  text-decoration-thickness: 3px;
+  text-underline-offset: 6px;
+}
+
+.saho-home-feature__standfirst {
+  font-family: var(--font-serif);
+  font-size: var(--fs-md);
+  line-height: 1.6;
+  /* Muted paper tone on ink, from the design source. */
+  color: #c8c2b2;
+  max-width: 52ch;
+  /* Clamp the excerpt: the feature is a door, not the article (#460). */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+  overflow: hidden;
+}
+
+@media (max-width: 480px) {
+  .saho-home-feature__standfirst {
+    font-size: var(--fs-body, 1rem);
+    -webkit-line-clamp: 5;
+  }
+}
+
+.saho-home-feature__actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 22px;
+  flex-wrap: wrap;
+}
+
+.saho-home-feature__cta {
+  display: inline-block;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 600;
+  padding: 11px 20px;
+  background: var(--saho-oxblood);
+  color: var(--text-on-dark);
+  text-decoration: none;
+  border: var(--bw-hair) solid transparent;
+}
+
+.saho-home-feature__cta:hover,
+.saho-home-feature__cta:focus-visible {
+  filter: brightness(1.15);
+  color: var(--text-on-dark);
+}
+
+.saho-home-feature__cta--ghost {
+  --link-rest: var(--saho-ochre);
+  --link-hover: var(--saho-ochre);
+
+  background: transparent;
+  color: var(--saho-ochre);
+  border-color: rgb(255 255 255 / 25%);
+}
+
+.saho-home-feature__cta--ghost:hover,
+.saho-home-feature__cta--ghost:focus-visible {
+  filter: none;
+  border-color: rgb(255 255 255 / 55%);
+  color: var(--saho-ochre);
+}
+
+.saho-home-feature__meta {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  /* Muted mono tone on ink, from the design source. */
+  color: #9a937f;
+  margin-top: 20px;
+  margin-bottom: 0;
+}
+
+@media (max-width: 40rem) {
+  .saho-home-feature.saho-home-feature {
+    padding: var(--space-5);
+  }
+}

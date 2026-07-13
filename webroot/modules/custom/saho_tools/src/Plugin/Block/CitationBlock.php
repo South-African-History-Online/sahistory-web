@@ -12,8 +12,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *
  * @Block(
  *   id = "citation_block",
- *   admin_label = @Translation("Citation Block"),
- *   category = @Translation("All custom"),
+ *   admin_label = @Translation("Citation"),
+ *   category = @Translation("SAHO"),
  * )
  */
 class CitationBlock extends BlockBase implements ContainerFactoryPluginInterface {
@@ -60,14 +60,13 @@ class CitationBlock extends BlockBase implements ContainerFactoryPluginInterface
   public function build() {
     $build = [];
 
-    // Add a citation button that will trigger the citation modal.
+    // One trigger markup for every placement: the citation_button theme
+    // hook renders the square ghost .saho-cite-btn (#453). The legacy
+    // citation-trigger class stays for anything keyed to it.
     $build['citation_button'] = [
-      '#type' => 'html_tag',
-      '#tag' => 'button',
-      '#value' => $this->t('Cite This Page'),
+      '#theme' => 'citation_button',
       '#attributes' => [
-        'class' => ['btn', 'btn-outline-primary', 'btn-sm', 'citation-trigger'],
-        'data-citation-trigger' => 'true',
+        'class' => ['citation-trigger'],
       ],
     ];
 

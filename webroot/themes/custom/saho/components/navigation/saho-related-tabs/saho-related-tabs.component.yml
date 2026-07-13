@@ -1,0 +1,61 @@
+'$schema': 'https://git.drupalcode.org/project/drupal/-/raw/11.0.x/core/modules/sdc/src/metadata.schema.json'
+name: 'Related tabs'
+machine_name: saho_related_tabs
+status: stable
+group: 'SAHO Navigation'
+description: 'The cross-reference engine. Tabbed panel over the *_related_tab entity-reference fields (People / Organisations / Topics / Timelines). Replaces the Bootstrap sidebar-tabs. Server renders all panels; tabs are progressive enhancement.'
+props:
+  type: object
+  properties:
+    title:
+      type: string
+      default: 'Cross-references'
+    tabs:
+      type: array
+      title: 'Tabs (one per populated reference field)'
+      items:
+        type: object
+        properties:
+          id:
+            type: string
+          label:
+            type: string
+          count:
+            type: integer
+          summary:
+            type: object
+            title: 'Collection summary (bounded high-degree tab)'
+            description: 'When present the tab renders count line + sample items + optional CTA instead of the full list; the pre-filtered index page carries the full list.'
+            properties:
+              count_line:
+                type: string
+              cta:
+                type: object
+                properties:
+                  label:
+                    type: string
+                  href:
+                    type: string
+          items:
+            type: array
+            items:
+              type: object
+              properties:
+                label:
+                  type: string
+                href:
+                  type: string
+                note:
+                  type: string
+                type:
+                  type: string
+                  enum:
+                    - article
+                    - biography
+                    - place
+                    - archive
+                    - event
+                    - topic
+                    - image
+libraryDependencies:
+  - saho/saho-related-tabs

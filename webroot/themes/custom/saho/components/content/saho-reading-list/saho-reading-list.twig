@@ -1,0 +1,20 @@
+{#
+/**
+ * @file
+ * SAHO Reading List - a titled grid of related-record cards.
+ *
+ * Props:
+ * - title: band heading (string).
+ * - items: array of saho:saho-card prop objects.
+ */
+#}
+{% if items is not empty %}
+  <section class="saho-reading-list" aria-labelledby="reading-list-heading">
+    <h3 class="saho-reading-list__title" id="reading-list-heading">{{ title|default('Further reading'|t) }}</h3>
+    <div class="saho-reading-list__grid">
+      {% for item in items %}
+        {{ include('saho:saho-card', item, with_context = false) }}
+      {% endfor %}
+    </div>
+  </section>
+{% endif %}

@@ -1,620 +1,377 @@
 /**
- * @file
- * Styles for History Through Pictures block.
+ * History Through Pictures - Open Record register (#453).
+ *
+ * An archival picture index: still grid of duotone figures with visible
+ * mono caption bands (museum labels). Square, hairlines not shadows,
+ * hover is selection. Carousel and masonry are retired.
  */
 
-/* Base block styles */
+/* ---------------------------------------------------------------------------
+ * Strip block wrapper.
+ * ------------------------------------------------------------------------- */
 .saho-history-pictures {
-  /* Component-scoped design tokens */
-  --pic-radius:          var(--saho-radius-md);          /* 8px - card standard */
-  --pic-shadow:          var(--saho-shadow-sm);
-  --pic-shadow-hover:    var(--saho-shadow-xl);
-  --pic-transition:      all var(--saho-transition-slow, 0.3s ease);
-  --pic-color-primary:   var(--saho-color-primary);
-  --pic-color-surface:   var(--saho-color-white);
-  --pic-color-surface-alt: var(--saho-color-surface-alt);
-  --pic-color-text:      var(--saho-color-text-primary);
-  --pic-color-gray-500:  var(--saho-color-gray-500);
-  --pic-color-gray-200:  var(--saho-color-gray-200);
-
-  margin: 3rem 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  margin: 0 auto;
 }
 
-.history-pictures-title {
-  font-size: 2rem;
-  font-weight: 700;
-  margin-bottom: 2.5rem;
-  color: var(--pic-color-text);
-  letter-spacing: -0.025em;
-  position: relative;
-  padding-bottom: 1rem;
-  text-align: center;
-}
-
-.history-pictures-title::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 80px;
-  height: 4px;
-  background: linear-gradient(90deg, var(--pic-color-primary) 0%, var(--saho-color-primary-light, #b22222) 100%);
-  border-radius: 2px;
-}
-
-/* View all link */
-.history-pictures-view-all {
-  margin-top: 2.5rem;
-  text-align: center;
-}
-
-/* Grid display mode */
+/* ---------------------------------------------------------------------------
+ * The picture grid (block strip + gallery page share it).
+ * ------------------------------------------------------------------------- */
 .history-pictures-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: var(--space-4, 1rem);
+  margin-top: var(--space-4, 1rem);
 }
 
+.history-pictures-grid--gallery {
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+}
+
+/* ---------------------------------------------------------------------------
+ * Picture figure: whole card is one link; frame + visible label band.
+ * ------------------------------------------------------------------------- */
 .history-picture-item {
-  position: relative;
-  border-radius: var(--pic-radius);
-  overflow: hidden;
-  background: var(--pic-color-surface);
-  box-shadow: var(--pic-shadow);
-  transition: var(--pic-transition);
-}
-
-.history-picture-item:hover {
-  box-shadow: var(--pic-shadow-hover);
-  transform: translateY(-4px);
+  min-width: 0;
 }
 
 .history-picture-link {
   display: block;
-  position: relative;
-  text-decoration: none;
+  height: 100%;
+  background: var(--surface-card, #f1efe7);
+  border: var(--bw-hair, 1px) solid var(--border-default, #bdb9a6);
   color: inherit;
+  text-decoration: none;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
 }
 
-.history-picture-image {
-  position: relative;
-  width: 100%;
-  padding-bottom: 75%;
+/* Hover is selection: hairline darkens to ink, ground sinks. */
+.history-picture-link:hover,
+.history-picture-link:focus-visible {
+  border-color: var(--saho-ink, #1b1c17);
+  background: var(--saho-paper-sunk, #dad6c7);
+  color: inherit;
+  text-decoration: none;
+}
+
+.history-picture-frame {
+  display: block;
+  aspect-ratio: 4 / 3;
   overflow: hidden;
-  background: var(--pic-color-surface-alt);
+  background: var(--saho-paper-sunk, #dad6c7);
 }
 
-.history-picture-image img {
-  position: absolute;
-  top: 0;
-  left: 0;
+.history-picture-frame img {
+  display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
   object-position: center;
-  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  transform: scale(1.02);
 }
 
-.history-picture-item:hover .history-picture-image img {
-  transform: scale(1.08);
+/* Duotone clears when the figure is engaged (global .saho-duotone applies
+   the ramp; the reveal mirrors the card system). */
+.history-picture-link:hover .saho-duotone,
+.history-picture-link:focus-visible .saho-duotone {
+  filter: none;
 }
 
-/* Title overlay */
-.history-picture-overlay {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.65) 50%, transparent 100%);
-  padding: 4rem 1.5rem 1.25rem;
-  transform: translateY(0);
-  transition: all 0.3s ease;
+/* Museum label: visible mono caption band, never a hover overlay. */
+.history-picture-label {
+  display: block;
+  padding: 10px 12px 12px;
 }
 
-.history-picture-item:hover .history-picture-overlay {
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.92) 0%, rgba(0, 0, 0, 0.75) 60%, transparent 100%);
-  padding-bottom: 1.5rem;
-}
-
-.history-picture-item-title {
-  color: #ffffff;
-  font-size: 1rem;
-  font-weight: 600;
-  margin: 0;
-  line-height: 1.5;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+.history-picture-label__title {
   display: -webkit-box;
-  -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
   overflow: hidden;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  line-height: 1.45;
+  color: var(--text-primary, #1b1c17);
 }
 
-/* Caption */
-.history-picture-caption {
-  padding: 1rem 1.5rem;
-  font-size: 0.875rem;
-  color: var(--pic-color-gray-500);
-  line-height: 1.6;
-  background: var(--pic-color-surface);
-  font-style: italic;
-  border-top: 1px solid var(--pic-color-gray-200);
+.history-picture-link:hover .history-picture-label__title,
+.history-picture-link:focus-visible .history-picture-label__title {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
 }
 
-/* Hide captions by default if they look like URLs */
-.history-picture-caption:empty {
-  display: none;
+.history-picture-label__tag {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 1px 6px;
+  border: var(--bw-hair, 1px) solid var(--border-strong, #1b1c17);
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-primary, #1b1c17);
 }
 
-/* Masonry display mode */
-.history-pictures-masonry {
-  column-count: 3;
-  column-gap: 1.5rem;
-}
-
-.history-pictures-masonry .history-picture-item {
-  break-inside: avoid;
-  margin-bottom: 1.5rem;
-}
-
-.history-pictures-masonry .history-picture-image {
-  padding-bottom: 0;
-  height: auto;
-}
-
-.history-pictures-masonry .history-picture-image img {
-  position: static;
-  height: auto;
-  width: 100%;
-}
-
-/* Carousel display mode */
-.history-pictures-carousel {
-  position: relative;
+.history-picture-label__source {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
   overflow: hidden;
-  padding: 0 4rem;
-  margin: 0 -4rem;
+  margin-top: 4px;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  line-height: 1.5;
+  color: var(--text-muted, #6b6c5f);
 }
 
-.carousel-track {
-  display: flex;
-  gap: 1.5rem;
-  overflow-x: hidden;
-  scroll-behavior: smooth;
-  padding: 1rem 0;
-  -webkit-overflow-scrolling: touch;
-  transition: transform 0.3s ease;
+/* Lightbox cursor hint. */
+.history-picture-lightbox .history-picture-frame {
+  cursor: zoom-in;
 }
 
-.history-pictures-carousel .history-picture-item {
-  flex: 0 0 calc((100% - 3rem) / 3);
-  scroll-snap-align: start;
-}
-
-.history-pictures-carousel .history-picture-image {
-  padding-bottom: 75%;
-}
-
-/* Carousel in smaller containers */
-@media (max-width: 1200px) {
-  .history-pictures-carousel .history-picture-item {
-    flex: 0 0 calc((100% - 1.5rem) / 2);
-  }
-}
-
-/* Carousel navigation */
-.carousel-prev,
-.carousel-next {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  background: rgba(255, 255, 255, 0.95);
-  border: none;
-  width: 48px;
-  height: 48px;
-  border-radius: var(--saho-radius-full);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  z-index: 10;
-  box-shadow: var(--saho-shadow-md);
-  transition: all 0.2s ease;
-}
-
-.carousel-prev:hover,
-.carousel-next:hover {
-  background: var(--pic-color-surface);
-  box-shadow: var(--saho-shadow-lg);
-  transform: translateY(-50%) scale(1.1);
-}
-
-.carousel-prev {
-  left: 1rem;
-}
-
-.carousel-next {
-  right: 1rem;
-}
-
-.carousel-prev svg,
-.carousel-next svg {
-  width: 24px;
-  height: 24px;
-  color: var(--pic-color-text);
-}
-
-/* Responsive adjustments */
-@media (max-width: 1024px) {
-  .history-pictures-masonry {
-    column-count: 2;
-  }
-
-  .history-pictures-grid {
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  }
-}
-
-@media (max-width: 768px) {
-  .history-pictures-title {
-    font-size: 1.5rem;
-  }
-
-  .history-pictures-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .history-pictures-masonry {
-    column-count: 1;
-  }
-
-  .history-pictures-carousel {
-    padding: 0 3rem;
-    margin: 0 -3rem;
-  }
-
-  .history-pictures-carousel .history-picture-item {
-    flex: 0 0 100%;
-  }
-
-  .carousel-prev,
-  .carousel-next {
-    width: 40px;
-    height: 40px;
-  }
-
-  .carousel-prev svg,
-  .carousel-next svg {
-    width: 20px;
-    height: 20px;
-  }
-}
-
-/* Hover effects for grid items */
-@media (hover: hover) {
-  .history-picture-item::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg, transparent 0%, var(--saho-color-primary-alpha-10, rgba(153, 0, 0, 0.1)) 100%);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    pointer-events: none;
-  }
-
-  .history-picture-item:hover::after {
-    opacity: 1;
-  }
-}
-
-/* Dark mode support */
-@media (prefers-color-scheme: dark) {
-  .history-picture-item {
-    background: var(--saho-color-gray-800, #1f2937);
-  }
-
-  /* Title color removed - inherit from theme for consistency */
-
-  .history-picture-caption {
-    background: var(--saho-color-gray-800, #1f2937);
-    color: var(--saho-color-gray-300, #d1d5db);
-  }
-
-  .carousel-prev,
-  .carousel-next {
-    background: rgba(31, 41, 55, 0.95);
-  }
-
-  .carousel-prev:hover,
-  .carousel-next:hover {
-    background: var(--saho-color-gray-800, #1f2937);
-  }
-
-  .carousel-prev svg,
-  .carousel-next svg {
-    color: var(--saho-color-gray-100, #f9fafb);
-  }
-}
-
-/* Loading animation */
-@keyframes shimmer {
-  0% {
-    background-position: -1000px 0;
-  }
-  100% {
-    background-position: 1000px 0;
-  }
-}
-
-.history-picture-item.loading {
-  background: linear-gradient(90deg, var(--pic-color-surface-alt) 0%, var(--pic-color-gray-200) 50%, var(--pic-color-surface-alt) 100%);
-  background-size: 1000px 100%;
-  animation: shimmer 2s infinite;
-}
-
-/* Gallery page styles */
+/* ---------------------------------------------------------------------------
+ * Gallery page head + sort row (#453: quiet mono sort, auto-submit).
+ * ------------------------------------------------------------------------- */
 .history-pictures-gallery {
-  padding: 3rem 0;
-  min-height: 60vh;
+  padding-block: var(--space-4, 1rem) var(--space-8, 4rem);
 }
 
-.gallery-header {
-  margin-bottom: 3rem;
+.gallery-head {
+  padding-top: var(--space-4, 1rem);
+  border-top: var(--bw-accent, 3px) solid var(--type-archive, #8a6420);
+  margin-bottom: var(--space-5, 1.5rem);
 }
 
-.gallery-intro {
-  text-align: center;
-  max-width: 850px;
-  margin: 0 auto 2.5rem;
-}
-
-.gallery-title-wrapper {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-}
-
-.gallery-icon {
-  color: var(--pic-color-primary);
-  flex-shrink: 0;
-}
-
-.gallery-title {
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: var(--pic-color-text);
-  margin: 0;
-  letter-spacing: -0.025em;
-}
-
-.gallery-description {
-  text-align: left;
-  margin: 0 auto;
-}
-
-.description-content {
-  display: flex;
-  align-items: flex-start;
-  gap: 1rem;
-  padding: 1.5rem;
-  background: var(--pic-color-surface-alt);
-  border-left: 4px solid var(--pic-color-primary);
-  border-radius: var(--pic-radius);
-}
-
-.description-icon {
-  color: var(--pic-color-primary);
-  flex-shrink: 0;
-  margin-top: 0.125rem;
-}
-
-.description-content p {
-  font-size: 1.125rem;
-  color: var(--saho-color-text-secondary, #4a5568);
-  line-height: 1.7;
-  margin: 0;
-}
-
-.gallery-controls {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  flex-wrap: wrap;
-  padding: 1.5rem;
-  background: var(--pic-color-surface-alt);
-  border-radius: var(--saho-radius-lg);
-  border: 1px solid var(--pic-color-gray-200);
-}
-
-.sort-label {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+.gallery-head__kicker {
+  margin: 0 0 8px;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 11px;
   font-weight: 600;
-  color: var(--saho-color-text-primary);
-  font-size: 0.875rem;
+  letter-spacing: 0.07em;
   text-transform: uppercase;
+  color: var(--text-muted, #6b6c5f);
+}
+
+.gallery-head__title {
+  margin: 0 0 var(--space-3, 0.75rem);
+}
+
+.gallery-head__standfirst {
+  margin: 0 0 var(--space-2, 0.5rem);
+  max-width: 60ch;
+  font-family: var(--font-serif, georgia, serif);
+  color: var(--text-muted, #6b6c5f);
+}
+
+.gallery-head__count {
+  margin: 0;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 12px;
   letter-spacing: 0.05em;
-}
-
-.sort-label svg {
-  color: var(--pic-color-primary);
-}
-
-.sort-links {
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-}
-
-.sort-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.375rem;
-  padding: 0.5rem 1rem;
-  border-radius: var(--pic-radius);
-  background: var(--pic-color-surface);
-  color: var(--saho-color-text-secondary, #4a5568);
-  text-decoration: none;
-  font-weight: 500;
-  font-size: 0.875rem;
-  border: 1px solid var(--pic-color-gray-200);
-  transition: all 0.2s ease;
-  white-space: nowrap;
-}
-
-.sort-icon {
-  flex-shrink: 0;
-  opacity: 0.7;
-  transition: opacity 0.2s ease;
-}
-
-.sort-link:hover {
-  background: var(--pic-color-surface-alt);
-  color: var(--pic-color-text);
-  border-color: var(--saho-color-gray-300, #d1d5db);
-  transform: translateY(-1px);
-  box-shadow: var(--saho-shadow-sm);
-}
-
-.sort-link:hover .sort-icon {
-  opacity: 1;
-}
-
-.sort-link.active {
-  background: var(--pic-color-primary);
-  color: var(--pic-color-surface);
-  border-color: var(--pic-color-primary);
-}
-
-.sort-link.active .sort-icon {
-  opacity: 1;
-}
-
-.sort-link.active:hover {
-  background: var(--saho-color-primary-dark);
-  border-color: var(--saho-color-primary-dark);
-}
-
-/* Gallery grid - more columns for larger screens */
-.history-pictures-grid--gallery {
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 2rem;
-}
-
-/* Feature link badge */
-.feature-link-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.375rem;
-  margin-top: 0.5rem;
-  padding: 0.25rem 0.625rem;
-  background: var(--pic-color-primary);
-  color: var(--pic-color-surface);
-  font-size: 0.75rem;
-  font-weight: 600;
-  border-radius: 4px;
   text-transform: uppercase;
-  letter-spacing: 0.025em;
+  color: var(--text-muted, #6b6c5f);
 }
 
-.feature-link-badge svg {
-  width: 12px;
-  height: 12px;
-  opacity: 0.9;
+.gallery-sort {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: var(--space-3, 0.75rem) 0;
+  border-top: var(--bw-hair, 1px) solid var(--border-default, #bdb9a6);
+  border-bottom: var(--bw-hair, 1px) solid var(--border-default, #bdb9a6);
 }
 
-/* Gallery pager */
+.gallery-sort__label {
+  margin: 0;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted, #6b6c5f);
+}
+
+.gallery-sort__select {
+  border: var(--bw-hair, 1px) solid var(--border-default, #bdb9a6);
+  border-radius: 0;
+  background: var(--surface-card, #f1efe7);
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 12px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  padding: 4px 8px;
+}
+
+.gallery-sort__apply {
+  border: var(--bw-hair, 1px) solid var(--border-strong, #1b1c17);
+  border-radius: 0;
+  background: var(--surface-card, #f1efe7);
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  cursor: pointer;
+}
+
 .gallery-pager {
-  margin-top: 3rem;
-  text-align: center;
+  margin-top: var(--space-6, 2rem);
 }
 
-/* Responsive adjustments for gallery */
-@media (max-width: 1200px) {
-  .history-pictures-grid--gallery {
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  }
-}
-
-@media (max-width: 768px) {
-  .gallery-title-wrapper {
-    flex-direction: column;
-    gap: 0.75rem;
-  }
-
-  .gallery-icon {
-    width: 40px;
-    height: 40px;
-  }
-
-  .gallery-title {
-    font-size: 2rem;
-  }
-
-  .description-content {
-    flex-direction: column;
-    text-align: left;
-  }
-
-  .description-content p {
-    font-size: 1rem;
-  }
-
-  .gallery-controls {
-    flex-direction: column;
-    gap: 1rem;
-  }
-
-  .sort-label {
-    justify-content: center;
-  }
-
-  .sort-links {
-    justify-content: center;
-  }
-
-  .history-pictures-grid--gallery {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
-  }
-}
-
-/* GLightbox customization for SAHO theme */
+/* ---------------------------------------------------------------------------
+ * GLightbox skin (mounts on <body> - theme tokens, not scoped ones).
+ * ------------------------------------------------------------------------- */
 .glightbox-container .gclose,
 .glightbox-container .gprev,
 .glightbox-container .gnext {
-  background: var(--pic-color-primary);
-  border-radius: var(--pic-radius);
+  background: var(--saho-oxblood, #990000);
+  border-radius: 0;
 }
 
 .glightbox-container .gclose:hover,
 .glightbox-container .gprev:hover,
 .glightbox-container .gnext:hover {
-  background: var(--saho-color-primary-dark);
-}
-
-.glightbox-container .gslide-title {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  font-weight: 600;
-  font-size: 1.125rem;
+  background: var(--saho-oxblood-deep, #6e0000);
 }
 
 .glightbox-container .gslide-description {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  font-style: italic;
-  opacity: 0.9;
+  background: var(--saho-paper-raised, #f1efe7);
 }
 
-/* Lightbox cursor hint */
-.history-picture-lightbox .history-picture-image {
-  cursor: zoom-in;
+.glightbox-container .gslide-title {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--saho-ink, #1b1c17);
+}
+
+.glightbox-container .gslide-desc {
+  font-family: var(--font-serif, georgia, serif);
+  font-style: normal;
+  color: var(--saho-ink-soft, #41433a);
+}
+
+/* ---------------------------------------------------------------------------
+ * Mobile.
+ * ------------------------------------------------------------------------- */
+@media (max-width: 480px) {
+  .history-pictures-grid,
+  .history-pictures-grid--gallery {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-2, 0.5rem);
+  }
+}
+
+/* R3 #481: curation band + focal mosaic. */
+.gallery-lead {
+  display: block;
+  margin: 0 0 1.5rem;
+  color: inherit;
+  text-decoration: none;
+  border: var(--bw-hair, 1px) solid var(--border-default, rgb(26 26 24 / 20%));
+  background: var(--saho-paper-raised, #f5f2e9);
+}
+
+.gallery-lead__frame {
+  display: block;
+  aspect-ratio: 21 / 9;
+  overflow: hidden;
+}
+
+.gallery-lead__frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.gallery-lead__caption {
+  display: block;
+  padding: 0.75rem 1rem;
+  border-top: var(--bw-hair, 1px) solid var(--border-default, rgb(26 26 24 / 20%));
+}
+
+.gallery-lead__tag {
+  display: block;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--saho-ochre, #c8a441);
+}
+
+.gallery-lead__title {
+  display: block;
+  font-family: var(--font-serif, georgia, serif);
+  font-size: 1.15rem;
+}
+
+.gallery-lead__source {
+  display: block;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.72rem;
+  color: var(--saho-ink-muted, rgb(26 26 24 / 60%));
+}
+
+/* Featured pictures anchor the mosaic - every third featured tile spans
+   2x2, dense flow backfills the holes. Pure CSS, no JS masonry; browsers
+   without :nth-child(of) simply keep the flat grid. */
+@media (min-width: 40rem) {
+  .history-pictures-grid--gallery {
+    grid-auto-flow: dense;
+  }
+
+  .history-picture-item--featured:nth-child(3n+1 of .history-picture-item--featured) {
+    grid-row: span 2;
+    grid-column: span 2;
+  }
+}
+
+/* Load-more (R3): the pager yields to the mono button once JS confirms
+   a next page; no-JS readers keep the numbered pager. */
+.gallery-pager.is-enhanced {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+
+.gallery-loadmore {
+  margin: 2rem 0;
+  text-align: center;
+}
+
+.gallery-loadmore__button {
+  padding: 0.7rem 2.5rem;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--saho-ink, #1a1a18);
+  background: var(--saho-paper-raised, #f5f2e9);
+  border: var(--bw-hair, 1px) solid var(--saho-ink, #1a1a18);
+  border-radius: 0;
+}
+
+.gallery-loadmore__button:hover:not(:disabled) {
+  color: var(--saho-paper, #f0ece1);
+  background: var(--saho-ink, #1a1a18);
+}
+
+.gallery-loadmore__button:disabled {
+  opacity: 0.5;
+}
+
+.gallery-loadmore__status {
+  margin: 0.75rem 0 0;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--saho-ink-muted, rgb(26 26 24 / 60%));
 }

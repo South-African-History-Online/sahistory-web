@@ -1,0 +1,28 @@
+'$schema': 'https://git.drupalcode.org/project/drupal/-/raw/11.0.x/core/modules/sdc/src/metadata.schema.json'
+name: 'Metadata block'
+machine_name: saho_metadata_block
+status: stable
+group: 'SAHO Content'
+description: 'Consistent tabular key/value block for people, events, places and objects. Mono labels, finding-aid styling, optional content-type accent rule.'
+props:
+  type: object
+  properties:
+    title:
+      type: string
+      title: 'Section label'
+    accent:
+      type: string
+      title: 'Accent (content type)'
+      enum: [article, biography, place, archive, event, topic, image]
+    items:
+      type: array
+      title: Fields
+      items:
+        type: object
+        properties:
+          label: { type: string }
+          value: { type: string }
+          href: { type: string }
+          lang: { type: string, title: 'BCP 47 language of the value' }
+libraryDependencies:
+  - saho/saho-metadata-block

@@ -1,0 +1,17 @@
+{#
+/**
+ * @file SAHO Content warning SDC. props: reason, reveal_label · slots: content
+ * The gate works with JS off by defaulting to hidden and providing a native
+ * <details> fallback semantics via the button + [hidden] toggle.
+ */
+#}
+<div{{ attributes.addClass('saho-cw') }} data-saho-content-warning>
+  <div class="saho-cw__notice" data-cw-notice>
+    <p class="saho-cw__label">Content sensitivity</p>
+    <p class="saho-cw__reason">{{ reason|default('This page contains imagery and accounts of apartheid-era violence.') }}</p>
+    <button type="button" class="saho-cw__reveal" data-cw-reveal>{{ reveal_label|default('Show content') }}</button>
+  </div>
+  <div class="saho-cw__content" data-cw-content hidden>
+    {{ content }}
+  </div>
+</div>

@@ -22,7 +22,7 @@ $filter-border-active: #8b1a1a;
 $filter-text: #212529;
 $filter-text-muted: #6c757d;
 $filter-text-active: #fff;
-$filter-radius: 50px; // Pill shape
+$filter-radius: 0; // Pill shape
 $filter-padding-x: 1rem;
 $filter-padding-y: 0.5rem;
 $filter-gap: 0.5rem;
@@ -44,7 +44,7 @@ $visible-categories: 5;
 .views-exposed-form {
   margin-bottom: 2rem;
   background: $filter-bg;
-  border-radius: 12px;
+  border-radius: 0;
   padding: 1rem;
   box-shadow: 0 1px 3px rgb(0, 0, 0, 0.1);
 
@@ -59,7 +59,7 @@ $visible-categories: 5;
     justify-content: space-between;
     padding: 0.75rem 1rem;
     margin: -1rem -1rem 0;
-    border-radius: 12px 12px 0 0;
+    border-radius: 0;
     cursor: pointer;
     user-select: none;
     transition: background-color 0.2s ease;
@@ -147,18 +147,21 @@ $visible-categories: 5;
     margin-bottom: 0;
   }
 
-  // Filter labels - make all filter labels SAHO red
+  // Filter-group labels: quiet mono apparatus, ink - oxblood is for links
+  // and emphasis, not headings (#466).
   .form-item > label {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    font-family: var(--font-mono, ui-monospace, monospace);
     font-weight: 600;
-    font-size: 0.9375rem;
-    color: $filter-bg-active; // SAHO red
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-muted, #5d5e52);
     margin-bottom: 0.75rem;
 
     @media (min-width: $mobile-breakpoint) {
-      font-size: 1rem;
       margin-bottom: 1rem;
     }
 
@@ -280,7 +283,7 @@ $visible-categories: 5;
       margin-left: 0.5rem;
       padding: 0.125rem 0.5rem;
       background: rgb(0, 0, 0, 0.05);
-      border-radius: 12px;
+      border-radius: 0;
       font-size: 0.75rem;
       font-weight: 600;
       color: $filter-text-muted;
@@ -330,33 +333,29 @@ $visible-categories: 5;
   }
 }
 
-// "Show More" button
+// "Show more" - a quiet mono text link, not a boxed button (#465/#464).
 .filter-show-more {
-  display: block;
-  margin-top: 0.75rem;
-  padding: 0.5rem 1rem;
+  display: inline-block;
+  margin-top: 0.5rem;
+  padding: 0;
   background: transparent;
-  border: 1.5px solid $filter-border;
-  border-radius: 8px;
-  color: $filter-text;
-  font-size: 0.875rem;
-  font-weight: 600;
+  border: 0;
+  color: var(--link-rest, #990000);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs, 0.75rem);
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
   cursor: pointer;
-  transition: $filter-transition;
-  width: 100%;
-
-  @media (min-width: $mobile-breakpoint) {
-    width: auto;
-    min-width: 180px;
-  }
 
   &:hover {
-    background: $filter-bg-hover;
-    border-color: darken($filter-border, 10%);
+    color: var(--link-hover, #6e0000);
+    text-decoration: underline;
+    text-underline-offset: 3px;
   }
 
-  &:focus {
-    outline: 2px solid #4a90e2;
+  &:focus-visible {
+    outline: 2px solid var(--saho-oxblood, #990000);
     outline-offset: 2px;
   }
 
@@ -384,7 +383,7 @@ $visible-categories: 5;
     min-width: 200px;
     padding: $filter-padding-y $filter-padding-x;
     border: 2px solid $filter-border;
-    border-radius: 8px;
+    border-radius: 0;
     font-size: 0.9375rem;
     transition: $filter-transition;
 
@@ -428,7 +427,7 @@ $visible-categories: 5;
     background: $filter-bg-active;
     color: $filter-text-active;
     border: 2px solid $filter-border-active;
-    border-radius: 8px;
+    border-radius: 0;
     font-weight: 600;
     font-size: 0.9375rem;
     cursor: pointer;
@@ -457,7 +456,7 @@ $visible-categories: 5;
     background: transparent;
     color: $filter-text;
     border: 2px solid $filter-border;
-    border-radius: 8px;
+    border-radius: 0;
     font-weight: 600;
     font-size: 0.9375rem;
     cursor: pointer;
@@ -475,60 +474,73 @@ $visible-categories: 5;
 }
 
 // ============================================================================
-// Active Filters Summary
+// Active Filters Summary - one ruled mono apparatus row
 // ============================================================================
+// FILTERING: ARTICLE x . ANGOLA x ... CLEAR ALL
+// Square hairline chips on paper (never a filled band), the x in oxblood,
+// CLEAR ALL as a mono text link. Sort state never appears here
+// (exposed-filters.js skips sort_by/sort_order).
 
 .active-filters-summary {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 0.5rem;
-  padding: 0.75rem;
-  background: rgb(139, 26, 26, 0.05);
-  border-radius: 8px;
-  margin-bottom: 1rem;
+  gap: var(--space-2, 8px);
+  padding: var(--space-2, 8px) 0;
+  background: transparent;
+  border-top: var(--bw-hair, 1px) solid var(--border-default, #d8d4c8);
+  border-bottom: var(--bw-hair, 1px) solid var(--border-default, #d8d4c8);
+  margin-bottom: var(--space-4, 16px);
 
   .summary-label {
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: $filter-text;
-    margin-right: 0.5rem;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: var(--ls-label);
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-right: var(--space-2, 8px);
   }
 
   .active-filter-tag {
     display: inline-flex;
     align-items: center;
-    padding: 0.25rem 0.75rem;
-    background: $filter-bg-active;
-    color: $filter-text-active;
-    border-radius: 20px;
-    font-size: 0.8125rem;
-    font-weight: 500;
+    padding: 2px var(--space-2, 8px);
+    background: transparent;
+    border: var(--bw-hair, 1px) solid var(--border-default, #d8d4c8);
+    border-radius: 0;
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: var(--ls-label);
+    text-transform: uppercase;
 
     .remove-filter {
-      margin-left: 0.5rem;
+      margin-left: var(--space-2, 8px);
+      color: var(--saho-oxblood, #990000);
       cursor: pointer;
-      opacity: 0.8;
 
       &:hover {
-        opacity: 1;
+        color: var(--text-primary);
       }
     }
   }
 
   .clear-all-filters {
     margin-left: auto;
-    padding: 0.25rem 0.75rem;
+    padding: 0;
     background: transparent;
-    border: 1px solid $filter-border;
-    border-radius: 20px;
-    font-size: 0.8125rem;
-    font-weight: 600;
+    border: 0;
+    border-radius: 0;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: var(--ls-label);
+    text-transform: uppercase;
+    color: var(--saho-oxblood, #990000);
     cursor: pointer;
-    transition: $filter-transition;
 
     &:hover {
-      background: $filter-bg-hover;
+      color: var(--text-primary);
+      text-decoration: underline;
     }
   }
 }
@@ -548,7 +560,7 @@ $visible-categories: 5;
     padding: 0.5rem 1rem;
     background: $filter-bg-active;
     color: $filter-text-active;
-    border-radius: 4px;
+    border-radius: 0;
     margin-bottom: 1rem;
   }
 }

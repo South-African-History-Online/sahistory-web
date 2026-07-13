@@ -1,0 +1,51 @@
+'$schema': 'https://git.drupalcode.org/project/drupal/-/raw/11.0.x/core/modules/sdc/src/metadata.schema.json'
+name: 'Browse index'
+machine_name: saho_browse_index
+status: stable
+group: 'SAHO Content'
+description: 'Ruled grid of content-type squares, each a real link with a 3px content-type accent edge and an optional mono count. The type index of the catalogue front page.'
+props:
+  type: object
+  required:
+    - items
+  properties:
+    title:
+      type: [string, 'null']
+      title: 'Section title'
+      default: 'Browse the archive'
+    items:
+      type: array
+      title: 'Type squares'
+      items:
+        type: object
+        properties:
+          label:
+            type: string
+            title: Label
+          type:
+            type: string
+            title: 'Content type accent'
+            enum: [article, biography, place, archive, event, topic]
+          href:
+            type: string
+            title: URL
+          count:
+            type: [string, 'null']
+            title: 'Pre-formatted count'
+          note:
+            type: [string, 'null']
+            title: 'Mono claim for cells without a clean count (R3 #479)'
+    collections:
+      type: array
+      title: 'Top collections footer row (R3 #475)'
+      items:
+        type: object
+        properties:
+          label:
+            type: string
+          count:
+            type: string
+          href:
+            type: string
+libraryDependencies:
+  - saho/saho-browse-index

@@ -1,7 +1,16 @@
 services:
   saho_tools.citation_service:
     class: Drupal\saho_tools\Service\CitationService
-    arguments: ['@entity_type.manager', '@date.formatter', '@file_url_generator']
+    arguments: ['@entity_type.manager', '@date.formatter', '@file_url_generator', '@?saho_refs.display_ref']
+
+  # Captures Solr spellcheck collations for "Did you mean?" suggestions. The
+  # legacy hook_search_api_solr_search_results_alter() was removed in
+  # search_api_solr:4.3.0, so the logic runs as an event subscriber now.
+  saho_tools.solr_spellcheck_subscriber:
+    class: Drupal\saho_tools\EventSubscriber\SolrSpellcheckSubscriber
+    arguments: ['@request_stack']
+    tags:
+      - { name: event_subscriber }
 
   # Schema.org Service and Builders.
   saho_tools.schema_org_service:

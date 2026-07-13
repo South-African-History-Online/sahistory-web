@@ -1,0 +1,137 @@
+/**
+ * Classroom clip player (Open Record S6, #428).
+ *
+ * Poster-first surface: square duotone-able poster with a quiet play mark,
+ * hairline frame, mono provenance line beneath. Flat - no shadows, no
+ * rounding, hover is selection.
+ */
+
+.saho-clip__player {
+  position: relative;
+  border: var(--bw-hair, 1px) solid var(--border-default, #bdb9a6);
+  background: var(--saho-paper-sunk, #dad6c7);
+}
+
+.saho-clip__poster {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.saho-clip__poster img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.saho-clip__play {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  color: var(--saho-paper-raised, #f1efe7);
+  background: rgba(27, 28, 23, 0.25);
+  transition: background 0.18s ease;
+  pointer-events: none;
+}
+
+.saho-clip__poster:hover .saho-clip__play,
+.saho-clip__poster:focus-visible .saho-clip__play {
+  background: rgba(27, 28, 23, 0.45);
+}
+
+.saho-clip__poster:focus-visible {
+  outline: 2px solid var(--saho-oxblood, #990000);
+  outline-offset: 2px;
+}
+
+.saho-clip__video video {
+  display: block;
+  width: 100%;
+  height: auto;
+  background: var(--saho-ink, #1b1c17);
+}
+
+/* Mono provenance line - a plain credit link, never an embed. */
+.saho-clip__source {
+  margin: 8px 0 0;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-muted, #6b6c5f);
+}
+
+.saho-clip__source a {
+  color: var(--link-rest, #990000);
+  text-decoration: none;
+}
+
+.saho-clip__source a:hover,
+.saho-clip__source a:focus-visible {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.saho-clip__body {
+  margin-top: var(--space-4, 1rem);
+}
+
+/* Classroom apparatus: the record key-field register. */
+.saho-clip__facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  margin: var(--space-4, 1rem) 0 0;
+  border-top: var(--bw-hair, 1px) solid var(--border-default, #bdb9a6);
+  border-bottom: var(--bw-hair, 1px) solid var(--border-default, #bdb9a6);
+}
+
+.saho-clip__fact {
+  padding: 10px 18px 10px 0;
+  margin-right: 18px;
+  border-right: var(--bw-hair, 1px) solid var(--border-faint, #d3cfbf);
+}
+
+.saho-clip__fact:last-child {
+  border-right: 0;
+  margin-right: 0;
+}
+
+.saho-clip__fact dt {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted, #6b6c5f);
+}
+
+.saho-clip__fact dd {
+  margin: 3px 0 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary, #1b1c17);
+}
+
+@media (max-width: 480px) {
+  .saho-clip__facts {
+    display: block;
+  }
+
+  .saho-clip__fact {
+    padding: 8px 0;
+    margin-right: 0;
+    border-right: 0;
+    border-bottom: var(--bw-hair, 1px) solid var(--border-faint, #d3cfbf);
+  }
+
+  .saho-clip__fact:last-child {
+    border-bottom: 0;
+  }
+}

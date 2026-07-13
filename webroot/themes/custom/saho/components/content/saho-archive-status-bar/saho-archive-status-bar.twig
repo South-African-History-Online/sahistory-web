@@ -1,0 +1,16 @@
+{#
+/**
+ * @file SAHO Archive status bar SDC. props: stats[] of {label, value}.
+ * Values are pre-formatted strings; keep them mono so columns read as a rule.
+ */
+#}
+{# Focusable scroll group: with the scrollbar hidden, keyboard users
+   scroll the strip with arrow keys once it has focus (#460). #}
+<div{{ attributes.addClass('saho-archive-status-bar').setAttribute('tabindex', '0').setAttribute('role', 'group').setAttribute('aria-label', 'Archive holdings'|t) }}>
+  {% for stat in stats %}
+    <div class="saho-archive-status-bar__stat">
+      <div class="saho-archive-status-bar__label">{{ stat.label }}</div>
+      <div class="saho-archive-status-bar__value">{{ stat.value }}</div>
+    </div>
+  {% endfor %}
+</div>

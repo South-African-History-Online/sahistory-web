@@ -76,13 +76,14 @@
   // SURFACE & TEXT COLORS
   // ---------------------------------------------------------------------------
 
-  --saho-color-surface: #fff; // Primary surface
-  --saho-color-surface-alt: #f7f7f7; // Secondary surface (3% darker)
-  --saho-color-border: #d9d9d9; // Standard borders (12% darker)
-  --saho-color-border-light: #efefef; // Light borders (6% darker)
-  --saho-color-text-primary: #1e293b; // Main text (gray-800)
-  --saho-color-text-secondary: #475569; // Supporting text (gray-600)
-  --saho-color-text-muted: #94a3b8; // De-emphasized text (gray-400)
+  --saho-color-surface: #e7e4d8; // Primary surface - cool newsprint paper
+  --saho-color-surface-alt: #dad6c7; // Secondary surface - sunk paper well
+  --saho-color-surface-raised: #f1efe7; // Raised paper (records / cards)
+  --saho-color-border: #bdb9a6; // Standard borders - catalogue hairline
+  --saho-color-border-light: #d3cfbf; // Light borders - faint divider
+  --saho-color-text-primary: #1b1c17; // Main text - cool printer's ink (AAA)
+  --saho-color-text-secondary: #41433a; // Supporting text - secondary ink
+  --saho-color-text-muted: #5d5e52; // De-emphasized text - metadata ink (WCAG 4.5:1 on paper)
 
   // ---------------------------------------------------------------------------
   // SPACING SCALE (8px baseline grid)
@@ -169,22 +170,26 @@
   // BORDER RADIUS
   // ---------------------------------------------------------------------------
 
-  --saho-radius-sm: 0.25rem; // 4px
-  --saho-radius-md: 0.5rem; // 8px - STANDARD for cards
-  --saho-radius-lg: 0.75rem; // 12px
-  --saho-radius-xl: 1rem; // 16px
-  --saho-radius-full: 9999px; // Pill/circular
+  // 2027 "Open Record": square by discipline - the archive is a ledger, not an app.
+  // All radii collapse to 0; --saho-radius-full stays for genuine circles (avatars, dots).
+  --saho-radius-sm: 0;
+  --saho-radius-md: 0; // was 8px - cards are now square
+  --saho-radius-lg: 0;
+  --saho-radius-xl: 0;
+  --saho-radius-full: 9999px; // Genuine circles only (avatars, status dots)
 
   // ---------------------------------------------------------------------------
   // SHADOWS
   // ---------------------------------------------------------------------------
 
-  --saho-shadow-sm: 0 0.125rem 0.375rem rgba(0, 0, 0, 0.05);
-  --saho-shadow-md: 0 0.1875rem 0.625rem rgba(0, 0, 0, 0.05);
-  --saho-shadow-lg: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.08);
-  --saho-shadow-xl: 0 0.625rem 1.875rem rgba(0, 0, 0, 0.1);
-  --saho-shadow-2xl: 0 1rem 3rem rgba(0, 0, 0, 0.1);
-  --saho-shadow-hover: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.1);
+  // 2027 "Open Record": borders do the structural work; shadows near-absent.
+  // sm/md are near-flat; lg/xl reserved for true overlays (modals, popovers).
+  --saho-shadow-sm: 0 1px 0 rgba(27, 28, 23, 0.05);
+  --saho-shadow-md: 0 1px 2px rgba(27, 28, 23, 0.07);
+  --saho-shadow-lg: 0 4px 14px rgba(27, 28, 23, 0.1);
+  --saho-shadow-xl: 0 10px 30px rgba(27, 28, 23, 0.14);
+  --saho-shadow-2xl: 0 10px 30px rgba(27, 28, 23, 0.14);
+  --saho-shadow-hover: none; // records select (border + sunk bg), never lift
 
   // Text shadows for overlays
   --saho-text-shadow-sm: 0.0625rem 0.0625rem 0.125rem rgba(0, 0, 0, 0.5);
@@ -219,10 +224,10 @@
   --saho-button-padding-sm: 0.4rem 0.8rem;
   --saho-button-padding-md: 0.625rem 1.875rem;
   --saho-button-padding-lg: 0.75rem 2rem;
-  --saho-button-radius-sm: 0.25rem; // 4px
-  --saho-button-radius-md: 0.375rem; // 6px
-  --saho-button-radius-lg: 1.5625rem; // 25px - pill
-  --saho-button-radius-pill: 1.5625rem;
+  --saho-button-radius-sm: 0; // 2027: square buttons - no pills
+  --saho-button-radius-md: 0;
+  --saho-button-radius-lg: 0;
+  --saho-button-radius-pill: 0;
   --saho-button-font-size-sm: 0.85rem;
   --saho-button-font-size-md: 0.9rem;
   --saho-button-font-size-lg: 1rem;
@@ -282,6 +287,115 @@
 }
 
 // =============================================================================
+// PART 1b: OPEN RECORD 2027 TOKENS ("The Open Record" design standard)
+// =============================================================================
+// Authoritative source: docs/design-system/tokens/*.css. Raw material hues +
+// semantic aliases. Author new components against the SEMANTIC ALIASES
+// (--surface-*, --text-*, --border-*, --link-*, --type-*), not the raw hues.
+
+:root {
+  // ---- Paper (cool aged newsprint / manila grounds) ----
+  --saho-paper: #e7e4d8; // dominant ground - cool newsprint oat
+  --saho-paper-sunk: #dad6c7; // recessed wells, table stripes
+  --saho-paper-raised: #f1efe7; // record surfaces / cards on the ground
+  --saho-paper-edge: #cbc7b6; // paper-on-paper hairline separation
+  --saho-manila: #d9d2bd; // folder tab / index-divider accent
+
+  // ---- Ink (cool printer's near-blacks -> grey) ----
+  --saho-ink: #1b1c17; // primary text (AAA on paper)
+  --saho-ink-soft: #41433a; // secondary text
+  --saho-ink-muted: #5d5e52; // metadata / captions (WCAG 4.5:1 on every paper ground)
+  --saho-ink-faint: #92907f; // disabled, faint rules
+
+  // ---- Hairlines & rules (the catalogue grid) ----
+  --saho-rule: #bdb9a6;
+  --saho-rule-strong: #8e8a73;
+  --saho-rule-faint: #d3cfbf;
+
+  // ---- Oxblood / Heritage red - the single emphasis accent ----
+  --saho-oxblood: #990000;
+  --saho-oxblood-deep: #6e0000;
+  --saho-oxblood-bright: #b22222;
+  --saho-oxblood-10: rgba(153, 0, 0, 0.1);
+  --saho-oxblood-16: rgba(153, 0, 0, 0.16);
+  --saho-oxblood-25: rgba(153, 0, 0, 0.25);
+
+  // ---- Ochre / Muted gold - warm editorial secondary ----
+  --saho-ochre: #b88a2e;
+  --saho-ochre-deep: #8a6420; // text-safe on paper
+  --saho-umber: #6b4a2f; // photographic sepia - Image (6.2:1 on paper)
+  --saho-ochre-10: rgba(184, 138, 46, 0.1);
+  --saho-ochre-20: rgba(184, 138, 46, 0.2);
+
+  // ---- Heritage content-type hues (meaning-bearing) ----
+  --saho-slate: #3a4a64; // Place
+  --saho-forest: #2d5016; // Biography
+  --saho-brick: #8b2331; // Topic / content emphasis
+
+  // ---- Semantic / feedback (restrained) ----
+  --saho-success: #2e6b34;
+  --saho-warning: #9a6a00;
+  --saho-danger: #b3261e;
+  --saho-info: #2b5a8c;
+
+  // ============================================================
+  // SEMANTIC ALIASES - author against these, not raw hues
+  // ============================================================
+  --surface-page: var(--saho-paper);
+  --surface-card: var(--saho-paper-raised);
+  --surface-sunk: var(--saho-paper-sunk);
+  --surface-inverse: var(--saho-ink);
+  --surface-tab: var(--saho-manila);
+
+  --text-primary: var(--saho-ink);
+  --text-secondary: var(--saho-ink-soft);
+  --text-muted: var(--saho-ink-muted);
+  --text-on-dark: #f3ecdd;
+  --text-on-accent: #fbf3ee;
+
+  --border-default: var(--saho-rule);
+  --border-strong: var(--saho-rule-strong);
+  --border-faint: var(--saho-rule-faint);
+
+  --link-rest: var(--saho-oxblood);
+  --link-hover: var(--saho-oxblood-deep);
+  --accent: var(--saho-oxblood);
+  --accent-warm: var(--saho-ochre);
+  --focus-ring: var(--saho-oxblood);
+
+  // ---- Content-type semantic map ----
+  --type-article: var(--saho-oxblood);
+  --type-biography: var(--saho-forest);
+  --type-place: var(--saho-slate);
+  --type-archive: var(--saho-ochre-deep);
+  --type-event: var(--saho-ink);
+  --type-topic: var(--saho-brick);
+  --type-image: var(--saho-umber);
+
+  // ============================================================
+  // TYPE - two registers + the typed record apparatus
+  // ============================================================
+  --font-masthead: "Libre Caslon Display", "Libre Caslon Text", georgia, serif;
+  --font-display: "Libre Caslon Text", "Times New Roman", georgia, serif;
+  --font-serif: "Libre Caslon Text", "Times New Roman", georgia, serif;
+  --font-sans: "Archivo", system-ui, -apple-system, "Segoe UI", roboto, arial, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", menlo, consolas, monospace;
+  --archivo-masthead: "wdth" 90; // condensed masthead width axis
+  --archivo-normal: "wdth" 100;
+
+  // ============================================================
+  // EFFECTS - the hard-edged catalogue
+  // ============================================================
+  --bw-hair: 1px; // field rules
+  --bw-rule: 2px; // section / record-top rules
+  --bw-accent: 3px; // content-type edge
+  // Archival duotone: unifies disparate archive imagery (darks -> ink, lights -> paper).
+  --img-duotone: grayscale(1) contrast(1.06) sepia(0.18) saturate(0.65) brightness(0.98);
+  --img-duotone-shadow: var(--saho-ink);
+  --img-duotone-light: var(--saho-paper);
+}
+
+// =============================================================================
 // PART 2: SCSS VARIABLES (Bootstrap Compatibility & Build-time)
 // =============================================================================
 // These variables are needed for:
@@ -311,20 +425,20 @@ $deep-heritage-red: #900 !default; // Use --saho-color-primary
 $muted-gold: #b88a2e !default; // Use --saho-color-accent
 $slate-blue: #3a4a64 !default; // Use --saho-color-secondary
 $faded-brick-red: #8b2331 !default; // Use --saho-color-highlight
-$dark-charcoal: $gray-800 !default; // Use --saho-color-text-primary
+$dark-charcoal: #1b1c17 !default; // Cool printer's ink (Event content type) - use --saho-color-text-primary
 $forest-green: #2d5016 !default; // Use --saho-color-forest-green (Biography content type)
 $saho-forest-green: #2d5016 !default; // Use --saho-color-forest-green
 
-// Neutral Palette
+// Neutral Palette - 2027 "Open Record": warm ink on warm newsprint paper
 // DEPRECATED: Use CSS custom properties instead
-$aged-parchment: #fff !default;
+$aged-parchment: #e7e4d8 !default; // Cool aged newsprint - dominant ground
 $surface: $aged-parchment !default;
-$surface-alt: darken($aged-parchment, 3%) !default;
-$muted: mix($aged-parchment, $white, 90%) !default;
-$border: darken($aged-parchment, 12%) !default;
-$text-primary: $dark-charcoal !default;
-$text-secondary: lighten($dark-charcoal, 20%) !default;
-$text-muted: lighten($dark-charcoal, 40%) !default;
+$surface-alt: #dad6c7 !default; // Sunk paper (recessed wells, table stripes)
+$muted: #f1efe7 !default; // Raised paper (record surfaces / cards)
+$border: #bdb9a6 !default; // Catalogue hairline rule
+$text-primary: $dark-charcoal !default; // Cool printer's ink (#1b1c17, AAA)
+$text-secondary: #41433a !default; // Secondary ink
+$text-muted: #5d5e52 !default; // Metadata / caption ink (WCAG 4.5:1 on paper)
 
 // Dark Mode Colors
 $dark-bg-primary: #0f172a !default;
@@ -361,9 +475,19 @@ $content-bg: lighten($aged-parchment, 2%) !default;
 // Typography System
 // =============================================================================
 
-// Modern Font Stack
+// 2027 "Open Record" font stacks - two registers + the typed record apparatus.
+// Reference register (Caslon) for titles/long-form; editorial + UI (Archivo);
+// scholarly apparatus (IBM Plex Mono) for provenance, metadata, citations, dates.
+$font-family-serif: "Libre Caslon Text", "Times New Roman", georgia, serif !default;
+$font-family-monospace:
+  "IBM Plex Mono",
+  ui-monospace,
+  "SFMono-Regular",
+  menlo,
+  consolas,
+  monospace !default;
 $font-family-sans-serif:
-  "Inter",
+  "Archivo",
   -apple-system,
   blinkmacsystemfont,
   "Segoe UI",
@@ -374,7 +498,7 @@ $font-family-sans-serif:
   "Apple Color Emoji",
   "Segoe UI Emoji",
   "Segoe UI Symbol" !default;
-$headings-font-family: $font-family-sans-serif !default;
+$headings-font-family: $font-family-serif !default; // Caslon titles (reference register)
 $headings-font-weight: 700 !default;
 
 // Typography Scale - Static sizes for SCSS calculations
@@ -417,10 +541,20 @@ $font-weight-black: 900 !default;
 // Component-specific customizations for Bootstrap variables
 // These reference the SCSS variables above for build-time calculations
 
+// 2027 "Open Record": square by discipline. Collapse every Bootstrap radius to
+// 0 at build time (cards, buttons, inputs, alerts, badges, dropdowns...).
+// Genuine circles use .rounded-circle / 50% and are unaffected.
+$border-radius: 0 !default;
+$border-radius-sm: 0 !default;
+$border-radius-lg: 0 !default;
+$border-radius-xl: 0 !default;
+$border-radius-xxl: 0 !default;
+$border-radius-pill: 0 !default;
+
 // Dropdowns
 $dropdown-link-hover-color: $white !default;
 $dropdown-link-hover-bg: $primary !default;
-$dropdown-border-radius: 0.5rem !default;
+$dropdown-border-radius: 0 !default;
 $dropdown-box-shadow: 0 0.5rem 1.5rem rgba($black, 0.1) !default;
 
 // Navs
@@ -445,11 +579,11 @@ $pagination-hover-border-color: $primary !default;
 $pagination-disabled-color: $text-muted !default;
 $pagination-disabled-border-color: $pagination-border-color !default;
 
-// Cards
+// Cards - square, hairline frame, borders (not shadows) do the structural work
 $card-border-color: $border !default;
 $card-cap-bg: $surface-alt !default;
-$card-border-radius: 1rem !default;
-$card-box-shadow: 0 0.25rem 0.75rem rgba($black, 0.05) !default;
+$card-border-radius: 0 !default;
+$card-box-shadow: none !default;
 
 // Popovers
 $popover-border-color: $border !default;
@@ -472,11 +606,12 @@ $list-group-disabled-bg: $surface-alt !default;
 $list-group-hover-bg: $surface-alt !default;
 $list-group-action-hover-color: $primary !default;
 
-// Breadcrumbs
-$breadcrumb-padding-y: 0.75rem !default;
-$breadcrumb-padding-x: 1.25rem !default;
-$breadcrumb-border-radius: 0.5rem !default;
-$breadcrumb-bg: $surface-alt !default;
+// Breadcrumbs - Open Record: unboxed mono trail (see base/_breadcrumb.scss).
+$breadcrumb-padding-y: 0 !default;
+$breadcrumb-padding-x: 0 !default;
+$breadcrumb-border-radius: 0 !default;
+$breadcrumb-bg: transparent !default;
+$breadcrumb-font-size: 11px !default;
 $breadcrumb-divider-color: $text-secondary !default;
 $breadcrumb-active-color: $text-primary !default;
 

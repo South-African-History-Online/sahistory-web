@@ -1,0 +1,33 @@
+{#
+/**
+ * @file SAHO record toolbar SDC (R3 #476).
+ * props: reference, permanent_url, styles_count, connections_count.
+ *
+ * The Cite button is THE page's citation trigger (saho_tools modal);
+ * Share reuses the sharing modal trigger. Sticky behavior + copy live
+ * in saho-record-toolbar.js.
+ */
+#}
+<div{{ attributes.addClass('saho-record-toolbar') }} data-saho-record-toolbar>
+  <span class="saho-record-toolbar__ref" aria-hidden="true">{{ reference }}</span>
+  <div class="saho-record-toolbar__actions" role="group" aria-label="{{ 'Record tools'|t }}">
+    <button type="button" class="saho-record-toolbar__action" data-citation-trigger="true">
+      <span class="saho-record-toolbar__glyph" aria-hidden="true">&#10077;</span>
+      {{ 'Cite'|t }}{% if styles_count %} <span class="saho-record-toolbar__hint">&middot; {{ styles_count }} {{ 'styles'|t }}</span>{% endif %}
+    </button>
+    {% if permanent_url %}
+      <button type="button" class="saho-record-toolbar__action" data-saho-permanent-link="{{ permanent_url }}">
+        {{ 'Permanent link'|t }}
+      </button>
+    {% endif %}
+    <button type="button" class="saho-record-toolbar__action" data-sharing-trigger="true">
+      {{ 'Share'|t }}
+    </button>
+    {% if connections_count %}
+      <button type="button" class="saho-record-toolbar__action" data-saho-connections>
+        {{ 'Connections'|t }} <span class="saho-record-toolbar__hint">&middot; {{ connections_count }}</span>
+      </button>
+    {% endif %}
+  </div>
+  <span class="saho-record-toolbar__live visually-hidden" aria-live="polite"></span>
+</div>

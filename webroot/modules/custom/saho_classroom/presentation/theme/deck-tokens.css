@@ -1,0 +1,168 @@
+/*
+ * SAHO Classroom - presentation deck "Open Record" token layer.
+ *
+ * NEW, additive file. It does NOT edit engine/deck.css or the
+ * components/presentation_deck/presentation_deck.css component (both are
+ * co-owned). It only (re)declares CSS custom properties on the deck's two host
+ * selectors, so loading it AFTER the engine CSS re-points the deck onto the
+ * theme's 2027 "Open Record" palette and typography without touching a single
+ * rule. See theme/design-alignment.md for the wiring + the small set of rule
+ * edits that a variable re-map alone cannot reach (the typography split and the
+ * hardcoded dark-chrome literals).
+ *
+ * SELF-CONTAINED: no @import, no url(), no external fonts. Every value is either
+ * a literal or a var() with a literal fallback. Font FAMILY NAMES match the
+ * fonts the Open Record theme already loads (Libre Caslon Text / Archivo /
+ * IBM Plex Mono via base/_fonts.scss). Embedded in a Drupal page the deck
+ * inherits those already-loaded webfonts; rendered standalone from file:// it
+ * silently falls back to the system stack and still makes zero network requests.
+ *
+ * Two host selectors are covered in one block:
+ *   :root       - the standalone engine deck (engine/deck.css hosts its vars on :root)
+ *   .saho-deck  - the embedded SDC component (presentation_deck.css scopes its vars here)
+ * The var(--saho-*, literal) fallbacks matter: inside a themed page the theme's
+ * real --saho-* / --font-* / --fs-* tokens resolve; standalone they do not, so
+ * the literal (a faithful copy of the Open Record value) takes over.
+ */
+
+:root,
+.saho-deck {
+  /* ==========================================================================
+   * 1. Palette re-map - drop-in, needs NO rule edits.
+   * The engine already consumes these var names throughout deck.css /
+   * presentation_deck.css; re-declaring them here repaints the whole deck.
+   * ====================================================================== */
+
+  /* Oxblood / heritage red - the single emphasis accent. */
+  --saho-red: var(--saho-oxblood, #990000);
+  --saho-red-dark: var(--saho-oxblood-deep, #6e0000); /* was #7a0000 */
+
+  /* Content-type hues - identical values, now sourced from Open Record. */
+  --saho-slate: var(--saho-slate, #3a4a64); /* Place */
+  --saho-green: var(--saho-forest, #2d5016); /* Biography */
+
+  /* Muted gold / ochre - warm editorial secondary (rules, pills, progress). */
+  --saho-gold: var(--saho-ochre, #b88a2e);
+
+  /* Cool printer's ink instead of the old blue-grey slate ink. */
+  --ink: var(--saho-ink, #1b1c17); /* was #1e293b */
+  --ink-soft: var(--saho-ink-soft, #41433a); /* was #475569 */
+
+  /* Archival paper instead of pure white / cream tint. A slide reads as a
+   * filed record sheet; nested cards sink one step for contrast. */
+  --paper: var(--saho-paper-raised, #f1efe7); /* was #ffffff */
+  --paper-tint: var(--saho-paper-sunk, #dad6c7); /* was #f6f2ec */
+
+  /* Catalogue hairline. */
+  --line: var(--saho-rule, #bdb9a6); /* was #d9cfc2 */
+
+  /* Open Record focus is oxblood, not gold (see base/_open-record.scss). */
+  --focus: var(--focus-ring, #990000); /* was #b88a2e */
+
+  /* Default UI/body family -> Archivo. Titles + metadata use the dedicated
+   * serif/mono tokens below (adopted via the rule edits in the proposal). */
+  --font: var(
+    --font-sans,
+    "Archivo",
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    roboto,
+    arial,
+    sans-serif
+  );
+
+  /* ==========================================================================
+   * 2. New deck tokens - the "type scale, spacing" layer.
+   * These are NOT yet consumed by the engine CSS; the proposal doc lists the
+   * exact rules to point at them. Namespaced --deck-* so they never collide
+   * with the theme or the engine's own vars.
+   * ====================================================================== */
+
+  /* ---- Typography register (Open Record three-font system) ---- */
+  --deck-font-serif: var(
+    --font-serif,
+    "Libre Caslon Text",
+    "Times New Roman",
+    georgia,
+    serif
+  ); /* titles / long-form (reference register) */
+  --deck-font-sans: var(
+    --font-sans,
+    "Archivo",
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    roboto,
+    arial,
+    sans-serif
+  ); /* editorial + UI */
+  --deck-font-mono: var(
+    --font-mono,
+    "IBM Plex Mono",
+    ui-monospace,
+    "SFMono-Regular",
+    menlo,
+    consolas,
+    monospace
+  ); /* scholarly apparatus: eyebrow, counter, dates, captions, cites */
+
+  /* ---- Fluid type scale (mirrors theme base/_open-record-scale.scss --fs-*) ---- */
+  --deck-fs-meta: var(--fs-xs, clamp(0.75rem, 0.72rem + 0.18vw, 0.875rem));
+  --deck-fs-eyebrow: var(--fs-2xs, clamp(0.6875rem, 0.66rem + 0.14vw, 0.75rem));
+  --deck-fs-body: var(--fs-base, clamp(1.0625rem, 1rem + 0.3vw, 1.1875rem));
+  --deck-fs-lead: var(--fs-md, clamp(1.1875rem, 1.1rem + 0.4vw, 1.375rem));
+  --deck-fs-h3: var(--fs-lg, clamp(1.375rem, 1.25rem + 0.6vw, 1.75rem));
+  --deck-fs-h2: var(--fs-xl, clamp(1.625rem, 1.4rem + 1vw, 2.25rem));
+  --deck-fs-h1: var(--fs-2xl, clamp(2rem, 1.65rem + 1.6vw, 3rem));
+  --deck-fs-quote: var(--fs-lg, clamp(1.375rem, 1.25rem + 0.6vw, 1.75rem));
+
+  /* ---- Line height / weight / letter-spacing (mirrors --lh-* / --fw-* / --ls-*) ---- */
+  --deck-lh-tight: var(--lh-tight, 1.12);
+  --deck-lh-snug: var(--lh-snug, 1.25);
+  --deck-lh-normal: var(--lh-normal, 1.5);
+  --deck-lh-relaxed: var(--lh-relaxed, 1.62);
+  --deck-fw-regular: var(--fw-regular, 400);
+  --deck-fw-medium: var(--fw-medium, 500);
+  --deck-fw-semibold: var(--fw-semibold, 600);
+  --deck-fw-bold: var(--fw-bold, 700);
+  --deck-ls-label: var(--ls-label, 0.04em); /* eyebrow / notes-heading label */
+  --deck-ls-meta: var(--ls-meta, 0.06em); /* metadata caps */
+
+  /* ---- Spacing (mirrors theme --space-*, 4px design base) ---- */
+  --deck-space-1: var(--space-1, 0.25rem);
+  --deck-space-2: var(--space-2, 0.5rem);
+  --deck-space-3: var(--space-3, 0.75rem);
+  --deck-space-4: var(--space-4, 1rem);
+  --deck-space-5: var(--space-5, 1.5rem);
+  --deck-space-6: var(--space-6, 2rem); /* standard grid gap / section */
+  --deck-space-7: var(--space-7, 3rem);
+  --deck-space-8: var(--space-8, 4rem);
+
+  /* ---- Effects (square by discipline; borders do the structural work) ---- */
+  --deck-radius: var(--radius-md, 0); /* Open Record collapses card/box radii to 0 */
+  --deck-radius-slide: var(--radius-lg, 0); /* slide sheet - square filed record */
+  --deck-shadow-slide: var(--shadow-xl, 0 10px 30px rgba(27, 28, 23, 0.14));
+  --deck-bw-hair: var(--bw-hair, 1px); /* field rule */
+  --deck-bw-rule: var(--bw-rule, 2px); /* section / top rule */
+  --deck-bw-accent: var(--bw-accent, 3px); /* content-type edge */
+  --deck-focus-ring: var(--focus-shadow, 0 0 0 3px rgba(153, 0, 0, 0.25));
+
+  /* ==========================================================================
+   * 3. Dark-chrome tokens (toolbar / stage backdrop / edge nav / buttons).
+   * The engine hardcodes warm-brown literals (#201a17, #17120f, #241d18, ...).
+   * These re-tune the chrome onto Open Record's COOL printer-ink family so the
+   * frame matches the paper it surrounds. They only take effect once the owner
+   * swaps those literals for these vars (see the proposal doc).
+   * ====================================================================== */
+  --deck-chrome-bg: #1b1c17; /* stage backdrop - was #201a17 (warm brown) */
+  --deck-chrome-bar: #14150f; /* toolbar - was #17120f */
+  --deck-chrome-text: #e7e4d8; /* cool newsprint - was #f4ece2 */
+  --deck-chrome-text-muted: #b9b5a2; /* was #c9bdae / #d8ccbd */
+  --deck-chrome-accent: var(--saho-ochre, #b88a2e); /* top hairline accent */
+  --deck-btn-bg: #26271f; /* was #241d18 */
+  --deck-btn-bg-hover: #313227; /* was #322820 */
+  --deck-btn-border: #3c3d31; /* was #4a3f36 */
+  --deck-notes-bg: var(--saho-paper-raised, #f1efe7); /* was #fbf7f0 */
+  --deck-hint-bg: rgba(27, 28, 23, 0.92); /* was rgba(23,18,15,0.92) */
+}

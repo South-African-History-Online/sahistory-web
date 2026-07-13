@@ -7,9 +7,12 @@
 #}
 <div{{ attributes.addClass('entity-overview-block') }} data-block-id="{{ block_id }}">
   {% if block_title %}
-    <h2 class="block-title mb-3">{{ block_title }}</h2>
+    {{ include('saho:saho-section-heading', {
+      title: block_title,
+      level: 'h2',
+    }, with_context = false) }}
   {% endif %}
-  
+
   {% if intro_text %}
     <div class="block-intro mb-4">
       {{ intro_text|replace({'%title': block_title}) }}
@@ -24,7 +27,7 @@
           {% if item.image %}
             <div class="saho-card-image">
               <a href="{{ item.url }}">
-                <img src="{{ item.image }}" alt="{{ item.title|striptags }}" loading="lazy" decoding="async">
+                <img src="{{ item.image }}" alt="{{ item.title|striptags }}" loading="lazy" decoding="async" onerror="this.closest('.saho-card-image').classList.add('is-broken')">
               </a>
             </div>
           {% endif %}

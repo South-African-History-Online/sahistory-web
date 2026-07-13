@@ -23,6 +23,13 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * Displays historical events that occurred on today's date, or allows
  * administrators to manually select a specific event to display.
  *
+ * @deprecated in saho:1.25.0 and is removed from saho:2.0.0. Use the
+ *   interactive This Day In History block (tdih_interactive_block) instead;
+ *   this legacy plugin is retained only for QA placements and will be deleted
+ *   once the QA node is retired.
+ *
+ * @see https://github.com/South-African-History-Online/sahistory-web/issues
+ *
  * @Block(
  *   id = "tdih_block",
  *   admin_label = @Translation("TDIH Block"),
@@ -203,7 +210,7 @@ class TdihBlock extends BlockBase implements ContainerFactoryPluginInterface {
       $this->configuration['manual_entity_id'] ?? NULL,
       [
         'visible' => [
-          ':input[name="use_manual_override"]' => ['checked' => TRUE],
+          ':input[name="settings[use_manual_override]"]' => ['checked' => TRUE],
         ],
       ],
       $this->t('Manual Entity'),
@@ -314,38 +321,32 @@ class TdihBlock extends BlockBase implements ContainerFactoryPluginInterface {
         }
 
         if (!empty($filtered_nodes)) {
-          // Apply sorting configuration.
+          // Apply sorting configuration, then emit up to three entries so the
+          // aside holds its column as a chronology, not a lone teaser (#460).
           $sort_by = $this->configuration['sort_by'] ?? 'none';
-          $selected_node = NULL;
+          $selected_nodes = [];
 
-          // Handle random_with_images option.
           if ($sort_by === 'random_with_images') {
-            // Filter nodes to only those with images.
+            // Prefer nodes with images (the first entry carries the LCP
+            // image), then pad with the rest.
             $nodes_with_images = array_filter($filtered_nodes, function ($node) {
               return $this->imageExtractor->hasImage($node, 'field_event_image');
             });
-
-            if (!empty($nodes_with_images)) {
-              // Random selection from nodes with images.
-              $selected_node = $nodes_with_images[array_rand($nodes_with_images)];
-            }
-            else {
-              // Fallback to random selection if none have images.
-              $selected_node = $filtered_nodes[array_rand($filtered_nodes)];
-            }
+            $nodes_without = array_diff_key($filtered_nodes, $nodes_with_images);
+            shuffle($nodes_with_images);
+            shuffle($nodes_without);
+            $selected_nodes = array_merge($nodes_with_images, $nodes_without);
           }
           elseif ($sort_by === 'none') {
-            // Random selection (existing behavior).
-            $selected_node = $filtered_nodes[array_rand($filtered_nodes)];
+            $selected_nodes = $filtered_nodes;
+            shuffle($selected_nodes);
           }
           else {
             // Use SortingService for consistent sorting.
-            $sorted_nodes = $this->sortingService->sortLoadedEntities($filtered_nodes, $sort_by);
-            // Select the first node after sorting.
-            $selected_node = reset($sorted_nodes);
+            $selected_nodes = $this->sortingService->sortLoadedEntities($filtered_nodes, $sort_by);
           }
 
-          if ($selected_node) {
+          foreach (array_slice($selected_nodes, 0, 3) as $selected_node) {
             $tdih_nodes[] = $this->buildNodeItem($selected_node);
           }
         }
@@ -365,11 +366,8 @@ class TdihBlock extends BlockBase implements ContainerFactoryPluginInterface {
       '#theme' => 'tdih_block',
       '#tdih_nodes' => $tdih_nodes,
       // Attach the TDIH block CSS library.
-      '#attached' => [
-        'library' => [
-          'tdih/tdih-block',
-        ],
-      ],
+      // Styling comes from the theme's .block-section band; the legacy
+      // tdih-block library is retired (#453).
       // Add cache metadata to ensure the block updates at midnight.
       '#cache' => [
         'keys' => ['tdih_block', $sort_by, $cache_date],

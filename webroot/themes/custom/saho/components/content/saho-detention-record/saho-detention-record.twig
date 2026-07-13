@@ -1,0 +1,42 @@
+{#
+/**
+ * @file SAHO Detention record SDC.
+ * props: title, note, banning{}, prison{}
+ * Renders only the rows that have values; omit both groups and it renders nothing.
+ */
+#}
+{% if banning or prison %}
+<section{{ attributes.addClass('saho-detention') }}>
+  <header class="saho-detention__head">
+    <span class="saho-detention__stamp" aria-hidden="true"></span>
+    <h3 class="saho-detention__title">{{ title|default('State record') }}</h3>
+  </header>
+
+  {% if banning %}
+    <div class="saho-detention__doc">
+      <h4 class="saho-detention__doc-title">Banning order</h4>
+      <dl class="saho-detention__rows">
+        {% if banning.information %}<div class="saho-detention__row"><dt>Order</dt><dd>{{ banning.information }}</dd></div>{% endif %}
+        {% if banning.date_from %}<div class="saho-detention__row"><dt>In force from</dt><dd>{{ banning.date_from }}</dd></div>{% endif %}
+        {% if banning.date_until %}<div class="saho-detention__row"><dt>Until</dt><dd>{{ banning.date_until }}</dd></div>{% endif %}
+        {% if banning.province %}<div class="saho-detention__row"><dt>Province</dt><dd>{{ banning.province }}</dd></div>{% endif %}
+      </dl>
+    </div>
+  {% endif %}
+
+  {% if prison %}
+    <div class="saho-detention__doc">
+      <h4 class="saho-detention__doc-title">Incarceration</h4>
+      <dl class="saho-detention__rows">
+        {% if prison.prison_name %}<div class="saho-detention__row"><dt>Prison</dt><dd>{{ prison.prison_name }}</dd></div>{% endif %}
+        {% if prison.prisoner_number %}<div class="saho-detention__row"><dt>Prisoner no.</dt><dd>{{ prison.prisoner_number }}</dd></div>{% endif %}
+        {% if prison.date_admitted %}<div class="saho-detention__row"><dt>Admitted</dt><dd>{{ prison.date_admitted }}</dd></div>{% endif %}
+        {% if prison.date_released %}<div class="saho-detention__row"><dt>Released</dt><dd>{{ prison.date_released }}</dd></div>{% endif %}
+        {% if prison.days_detained %}<div class="saho-detention__row"><dt>Days detained</dt><dd>{{ prison.days_detained }}</dd></div>{% endif %}
+      </dl>
+    </div>
+  {% endif %}
+
+  {% if note %}<p class="saho-detention__note">{{ note }}</p>{% endif %}
+</section>
+{% endif %}

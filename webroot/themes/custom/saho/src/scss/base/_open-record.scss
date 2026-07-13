@@ -1,0 +1,265 @@
+// =============================================================================
+// SAHO 2027 "Open Record" - Phase 0 sitewide hard-edged reskin
+// =============================================================================
+// The token layer (base/_variables.scss) flips palette + type + Bootstrap shape.
+// This partial catches the theme's OWN component literals during the migration:
+// square corners, remove hover-lift and glassmorphism. Later per-template phases
+// replace component internals with SDC; until then this guarantees the 2027 look.
+//
+// Imported LAST in main.style.scss so it wins the cascade.
+
+// --- Square by discipline --------------------------------------------------
+// Collapse literal radii on box/card/button/input families to 0. Genuine
+// circles (avatars, status dots, spinners) opt out via the :not() guards.
+.card,
+.btn,
+[class*="btn-"],
+.badge,
+.alert,
+.tile,
+.block,
+.panel,
+.form-control,
+.form-select,
+.input-group,
+.input-group-text,
+.dropdown-menu,
+.list-group,
+.list-group-item,
+.nav-tabs,
+.nav-pills .nav-link,
+.pagination,
+.page-link,
+.modal-content,
+.toast,
+.popover,
+.accordion,
+.accordion-item,
+.accordion-button,
+[class*="saho-"],
+[class*="-card"],
+[class*="card-"],
+[class*="-tile"] {
+  &:not(.rounded-circle):not(.spinner-border):not(.spinner-grow):not([class*="avatar"]):not(
+      [class*="dot"]
+    ) {
+    border-radius: 0;
+  }
+}
+
+// --- Borders do the structural work, not shadows ---------------------------
+// Cards/records read as filed sheets: hairline frame, square, no elevation.
+// Only card ROOTS get the frame: descendants whose class merely contains
+// "-card" (title/description/footer/image wrappers) and grid containers
+// must not each grow their own box.
+// TRAP: the descendant-excluder also skips card ROOTS inside a
+// .saho-cards-grid wrapper, because "saho-cards-grid" itself contains the
+// substring "-card" - so those roots are matched explicitly below.
+.card,
+[class*="-card"]:not([class*="-card"] *):not([class*="grid"]),
+.saho-cards-grid > [class*="-card"],
+.glass-card,
+.tile {
+  &:not(.rounded-circle) {
+    box-shadow: none;
+    // A calm archival ground with a catalogue hairline frame.
+    background-color: var(--saho-paper-raised, #f1efe7);
+    border: var(--bw-hair, 1px) solid var(--border-default, #bdb9a6);
+  }
+}
+
+// Bootstrap's tinted alert variants sit off-palette (near-white/near-blue);
+// informational notices read as sunk paper with a hairline.
+.alert-light,
+.alert-info,
+.alert-secondary {
+  background-color: var(--saho-paper-sunk, #dad6c7);
+  border-color: var(--border-default, #bdb9a6);
+  color: var(--text-secondary, #41433a);
+}
+
+// --- No glassmorphism -------------------------------------------------------
+// An archive is opaque paper: kill blur/translucency; sit on raised paper.
+.glass-card,
+[class*="glass"],
+.saho-search-suggestions,
+.search-suggestions {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background-color: var(--saho-paper-raised, #f1efe7);
+}
+
+// --- Hover selects, it does not lift ---------------------------------------
+// The DS rule: on hover a record darkens its border to ink and drops to the
+// sunk ground; it never translates, scales, or glows. An archive is still.
+.card,
+[class*="-card"]:not([class*="-card"] *):not([class*="grid"]),
+.saho-cards-grid > [class*="-card"],
+.tile,
+.block-card,
+.saho-card,
+.glass-card {
+  &:hover,
+  &:focus-within {
+    transform: none;
+    box-shadow: none;
+    border-color: var(--saho-ink, #1b1c17);
+    background-color: var(--saho-paper-sunk, #dad6c7);
+  }
+}
+
+// --- Links: oxblood, thickening underline on hover -------------------------
+a:not(.btn):not(.nav-link):not(.page-link):not([class*="badge"]) {
+  color: var(--link-rest, #990000);
+  text-underline-offset: 0.15em;
+
+  &:hover,
+  &:focus {
+    color: var(--link-hover, #6e0000);
+    text-decoration-thickness: 2px;
+  }
+}
+
+// --- Body-copy links must not rely on colour alone (WCAG 1.4.1) -------------
+// Underlines are off globally (nav/cards/toolbars stay clean), but links inside
+// running prose are otherwise distinguished from surrounding ink by colour only.
+// Underline them in prose containers ONLY. The shared offset above and the
+// hover-thickening from the global link rule still apply.
+.node__content .field--name-body,
+.field--name-body,
+.article-body,
+.saho-article-body,
+.saho-record__body,
+.saho-record-body,
+.prose,
+.text-content {
+  a:not(.btn):not(.nav-link):not(.page-link):not([class*="badge"]) {
+    text-decoration: underline;
+    text-underline-offset: 0.15em;
+  }
+}
+
+// --- Record summary / abstract ---------------------------------------------
+// The curator-written synopsis, surfaced above the body as a ruled abstract:
+// Caslon prose at a comfortable measure, set off from the body by hairline
+// rules (square register, borders-not-shadows).
+.saho-record-summary {
+  margin: 0 0 var(--space-4, 1.25rem);
+  padding: var(--space-3, 1rem) 0;
+  border-block: var(--bw-rule, 2px) solid var(--border-default, #1b1c17);
+
+  .saho-record-summary__body {
+    max-width: var(--measure, 68ch);
+    font-family: var(--type-serif, "Libre Caslon Text", Georgia, serif);
+    font-size: 1.05em;
+    line-height: 1.55;
+    color: var(--text-primary, #1b1c17);
+
+    p:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+// --- Places landing: link to the clustered map -----------------------------
+.saho-landing-head__maplink {
+  display: inline-block;
+  margin-top: var(--space-2, 0.5rem);
+  font-family: var(--type-mono, "IBM Plex Mono", monospace);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--saho-oxblood, #990000);
+  text-decoration: none;
+
+  &:hover,
+  &:focus-visible {
+    text-decoration: underline;
+    text-underline-offset: 0.15em;
+  }
+}
+
+// --- Focus: always-visible oxblood outline + ring --------------------------
+a,
+button,
+.btn,
+input,
+select,
+textarea,
+[tabindex]:not([tabindex="-1"]),
+summary {
+  &:focus-visible {
+    outline: var(--bw-rule, 2px) solid var(--focus-ring, #990000);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 3px var(--saho-oxblood-25, rgba(153, 0, 0, 0.25));
+  }
+}
+
+// --- Reference register: Caslon titles, mono apparatus ---------------------
+// Long-form article/prose body reads in Caslon Text; metadata rows in Plex Mono.
+.node__content .field--name-body,
+.article-body,
+.saho-article-body,
+.prose,
+.text-content {
+  font-family: var(--font-serif, "Libre Caslon Text", georgia, serif);
+}
+
+.saho-meta,
+.saho-eyebrow,
+.field--name-field-ref,
+time,
+.date,
+[class*="metadata"] {
+  font-family: var(--font-mono, "IBM Plex Mono", ui-monospace, monospace);
+}
+
+// --- Archival duotone: unify disparate content imagery ---------------------
+// The archive mixes photographs of every source and quality; a single warm
+// duotone (darks -> ink, lights -> paper) makes them sit together. Scoped to
+// content-card thumbnails + an opt-in utility; excludes logo, icons, social.
+.saho-card-image img,
+img.saho-duotone,
+.saho-duotone img {
+  filter: var(--img-duotone);
+  transition: filter var(--saho-transition-base, 200ms) ease;
+}
+
+// Reveal true colour when the card, figure, or link holding a duotone image is
+// engaged (a gentle exception to "still"). Keyed on the shared .saho-duotone
+// opt-in so every card family reveals - the archive cards (.saho-acard) used on
+// every landing/browse page, featured bio and register tiles - not only the
+// legacy .saho-card .saho-card-image grid cards, which alone were covered and
+// left the rest stuck in greyscale.
+.saho-card:hover .saho-card-image img,
+.saho-card:focus-within .saho-card-image img,
+.saho-card:hover .saho-duotone,
+.saho-card:focus-within .saho-duotone,
+.saho-acard:hover .saho-duotone,
+.saho-acard:focus-within .saho-duotone,
+.saho-figure:hover .saho-duotone,
+.saho-figure:focus-within .saho-duotone,
+a:hover .saho-duotone,
+a:focus-within .saho-duotone {
+  filter: none;
+}
+
+// --- Record pages: the record-header owns the H1 ---------------------------
+// Suppress the global page-title block on bundles rebuilt onto the Open Record
+// record layout, so there is exactly one H1 (the record-header title).
+.node-type--biography .block-page-title-block {
+  display: none;
+}
+
+// --- Motion: calm and purposeful; none under reduced-motion ----------------
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms;
+    animation-iteration-count: 1;
+    transition-duration: 0.001ms;
+    scroll-behavior: auto;
+  }
+}

@@ -1,6 +1,8 @@
 /**
  * @file
  * Styles for Africa Regions Block
+ * Open Record design language: paper/ink surfaces, square corners,
+ * no shadows, no gradients, hover = selection not lift.
  */
 
 /* Block container */
@@ -11,7 +13,7 @@
 .africa-regions-block .block-title {
   font-size: 2rem;
   font-weight: 700;
-  color: #2c3e50;
+  color: var(--saho-ink, #1b1c17);
   text-align: center;
 }
 
@@ -35,20 +37,18 @@
 .africa-region-card {
   position: relative;
   overflow: hidden;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  border: 2px solid transparent;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+  border: 1px solid var(--border-default, #bdb9a6);
 }
 
 .africa-region-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
-  border-color: var(--region-color);
+  border-color: var(--saho-ink, #1b1c17);
 }
 
-/* Region image area with color */
+/* Region image area - flat accent colour */
 .africa-region-card .region-image {
   position: relative;
-  background: linear-gradient(135deg, var(--region-color), var(--region-color) 50%, rgba(255, 255, 255, 0.1));
+  background: var(--region-color);
   min-height: 180px;
   display: flex;
   align-items: center;
@@ -60,14 +60,13 @@
 .region-badge {
   position: relative;
   z-index: 2;
-  background: rgba(255, 255, 255, 0.95);
+  background: var(--saho-paper-raised, #f1efe7);
   width: 110px;
   height: 110px;
-  border-radius: 50%;
+  border-radius: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   border: 4px solid var(--region-color);
 }
 
@@ -76,14 +75,14 @@
   height: 50px;
   color: var(--region-color);
   stroke-width: 1.5;
-  transition: transform 0.3s ease;
+  transition: none;
 }
 
 .africa-region-card:hover .region-icon {
-  transform: scale(1.1) rotate(5deg);
+  transform: none;
 }
 
-/* Decorative pattern overlay */
+/* Decorative pattern overlay - disabled, flat surfaces only */
 .region-pattern {
   position: absolute;
   top: 0;
@@ -91,16 +90,14 @@
   width: 100%;
   height: 100%;
   opacity: 0.1;
-  background-image:
-    repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255, 255, 255, 0.3) 10px, rgba(255, 255, 255, 0.3) 20px),
-    repeating-linear-gradient(-45deg, transparent, transparent 10px, rgba(255, 255, 255, 0.3) 10px, rgba(255, 255, 255, 0.3) 20px);
+  background-image: none;
   pointer-events: none;
 }
 
 /* Card content */
 .africa-region-card .saho-card-content {
   padding: 1.5rem;
-  background: #fff;
+  background: var(--saho-paper-raised, #f1efe7);
 }
 
 .africa-region-card .saho-card-title {
@@ -120,33 +117,36 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  background: #f0fdf4;
-  border-left: 3px solid #059669;
+  background: var(--saho-paper-sunk, #dad6c7);
+  border-left: 3px solid var(--saho-ochre, #b88a2e);
   padding: 0.5rem 0.75rem;
   margin-bottom: 0.75rem;
-  border-radius: 4px;
+  border-radius: 0;
   font-size: 0.9rem;
 }
 
 .featured-icon {
   flex-shrink: 0;
-  color: #059669;
+  color: var(--saho-ochre, #b88a2e);
 }
 
 .featured-country .country-text {
-  color: #065f46;
+  color: var(--saho-ink, #1b1c17);
   font-weight: 500;
 }
 
-/* Region count */
+/* Region count - mono kicker */
 .region-count {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 0;
-  color: #6c757d;
-  font-size: 1rem;
-  border-top: 1px solid #e9ecef;
+  color: var(--text-muted, #6d6a5c);
+  font-family: var(--font-mono, "IBM Plex Mono", monospace);
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border-top: 1px solid var(--border-default, #bdb9a6);
   margin-top: 0.75rem;
 }
 
@@ -157,19 +157,19 @@
 
 .region-count .count-number {
   font-weight: 700;
-  font-size: 1.25rem;
-  color: var(--region-color);
+  font-size: 12px;
+  color: var(--saho-ink, #1b1c17);
 }
 
 .region-count .count-label {
-  font-size: 0.9rem;
+  font-size: 11px;
 }
 
 /* Card footer button */
 .africa-region-card .saho-card-footer {
   margin-top: 1rem;
   padding-top: 1rem;
-  border-top: 1px solid #e9ecef;
+  border-top: 1px solid var(--border-default, #bdb9a6);
 }
 
 .africa-region-card .saho-card-button {
@@ -178,20 +178,20 @@
   gap: 0.5rem;
   color: var(--region-color);
   font-weight: 600;
-  transition: gap 0.3s ease;
+  transition: color 0.2s ease;
 }
 
 .button-icon {
   flex-shrink: 0;
-  transition: transform 0.3s ease;
+  transition: none;
 }
 
 .africa-region-card:hover .saho-card-button {
-  gap: 0.75rem;
+  color: var(--saho-ink, #1b1c17);
 }
 
 .africa-region-card:hover .button-icon {
-  transform: translateX(4px);
+  transform: none;
 }
 
 /* List mode styling */
@@ -234,6 +234,7 @@
 .display-mode-carousel .carousel-control-next {
   width: 50px;
   opacity: 0.8;
+  border-radius: 0;
 }
 
 .display-mode-carousel .carousel-control-prev:hover,
@@ -241,11 +242,12 @@
   opacity: 1;
 }
 
+/* Ink-on-paper indicator squares */
 .display-mode-carousel .carousel-indicators button {
   width: 12px;
   height: 12px;
-  border-radius: 50%;
-  background-color: var(--region-color, #6c757d);
+  border-radius: 0;
+  background-color: var(--saho-ink, #1b1c17);
 }
 
 /* Responsive adjustments */
@@ -299,15 +301,13 @@
   outline-offset: 4px;
 }
 
-/* Animation for card entrance */
+/* Animation for card entrance - fade only, no lift */
 @keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translateY(30px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
   }
 }
 
@@ -327,7 +327,7 @@
   .africa-region-card {
     page-break-inside: avoid;
     box-shadow: none !important;
-    border: 1px solid #ddd;
+    border: 1px solid var(--border-default, #bdb9a6);
   }
 
   .saho-card-button {
@@ -335,23 +335,23 @@
   }
 }
 
-/* Region-specific accent colors */
+/* Region-specific accent colors - mapped into the Open Record palette */
 .region-north {
-  --region-accent: #d97706;
+  --region-accent: var(--saho-ochre, #b88a2e);
 }
 
 .region-east {
-  --region-accent: #059669;
+  --region-accent: var(--saho-ink, #1b1c17);
 }
 
 .region-southern {
-  --region-accent: #dc2626;
+  --region-accent: var(--saho-oxblood, #990000);
 }
 
 .region-central {
-  --region-accent: #7c3aed;
+  --region-accent: var(--saho-ink, #1b1c17);
 }
 
 .region-west {
-  --region-accent: #0891b2;
+  --region-accent: var(--saho-ochre, #b88a2e);
 }

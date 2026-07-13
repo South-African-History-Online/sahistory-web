@@ -14,153 +14,44 @@
 {# Related-cards footer renders .saho-button as static spans; ensure its CSS loads. #}
 {{ attach_library('saho/saho-button') }}
 
-{# Macro: enhanced suggested-reading cards (shared markup with article template). #}
-{% macro suggested_reading_section(suggested_reading) %}
-  <div class="saho-context-sections saho-context-bottom saho-suggested-reading-enhanced">
-    <h3>Related Content & Topics</h3>
-
-    {% for section_title, items in suggested_reading %}
-      <div class="saho-related-content-section">
-        <h4>{{ section_title }}</h4>
-        <div class="saho-cards-grid">
-          {% for item in items %}
-            {% set entity = item.entity %}
-            {% set image_url = null %}
-
-{# Get image URL based on content type and available fields #}
-            {% set bundle = entity.bundle %}
-
-            {# Content-type specific image field priority #}
-            {% if bundle == 'biography' %}
-              {% if entity.field_bio_pic.entity %}
-                {% set image_url = file_url(entity.field_bio_pic.entity.uri.value) %}
-                {% set image_alt = entity.field_bio_pic.alt %}
-              {% elseif entity.field_feature_banner.entity %}
-                {% set image_url = file_url(entity.field_feature_banner.entity.uri.value) %}
-                {% set image_alt = entity.field_feature_banner.alt %}
-              {% endif %}
-
-            {% elseif bundle == 'article' %}
-              {% if entity.field_article_image.entity %}
-                {% set image_url = file_url(entity.field_article_image.entity.uri.value) %}
-                {% set image_alt = entity.field_article_image.alt %}
-              {% elseif entity.field_feature_banner.entity %}
-                {% set image_url = file_url(entity.field_feature_banner.entity.uri.value) %}
-                {% set image_alt = entity.field_feature_banner.alt %}
-              {% endif %}
-
-            {% elseif bundle == 'archive' %}
-              {% if entity.field_archive_image.entity %}
-                {% set image_url = file_url(entity.field_archive_image.entity.uri.value) %}
-                {% set image_alt = entity.field_archive_image.alt %}
-              {% elseif entity.field_image.entity %}
-                {% set image_url = file_url(entity.field_image.entity.uri.value) %}
-                {% set image_alt = entity.field_image.alt %}
-              {% endif %}
-
-            {% elseif bundle == 'place' %}
-              {% if entity.field_place_image.entity %}
-                {% set image_url = file_url(entity.field_place_image.entity.uri.value) %}
-                {% set image_alt = entity.field_place_image.alt %}
-              {% elseif entity.field_feature_banner.entity %}
-                {% set image_url = file_url(entity.field_feature_banner.entity.uri.value) %}
-                {% set image_alt = entity.field_feature_banner.alt %}
-              {% endif %}
-
-            {% elseif bundle == 'event' %}
-              {% if entity.field_event_image.entity %}
-                {% set image_url = file_url(entity.field_event_image.entity.uri.value) %}
-                {% set image_alt = entity.field_event_image.alt %}
-              {% elseif entity.field_tdih_image.entity %}
-                {% set image_url = file_url(entity.field_tdih_image.entity.uri.value) %}
-                {% set image_alt = entity.field_tdih_image.alt %}
-              {% endif %}
-
-            {% else %}
-              {# Fallback for other content types #}
-              {% if entity.field_image.entity %}
-                {% set image_url = file_url(entity.field_image.entity.uri.value) %}
-                {% set image_alt = entity.field_image.alt %}
-              {% elseif entity.field_article_image.entity %}
-                {% set image_url = file_url(entity.field_article_image.entity.uri.value) %}
-                {% set image_alt = entity.field_article_image.alt %}
-              {% elseif entity.field_feature_banner.entity %}
-                {% set image_url = file_url(entity.field_feature_banner.entity.uri.value) %}
-                {% set image_alt = entity.field_feature_banner.alt %}
-              {% endif %}
-            {% endif %}
-
-            <div class="saho-card">
-              <a href="{{ path('entity.node.canonical', {'node': entity.id()}) }}" class="saho-card-link">
-                {% if image_url %}
-                <div class="saho-card-image">
-                  <img src="{{ image_url }}" alt="{{ image_alt }}" loading="lazy" decoding="async">
-                </div>
-                {% endif %}
-                <div class="saho-card-content">
-                  <h5 class="saho-card-title">{{ entity.label }}</h5>
-                  {% if entity.field_synopsis.value %}
-                    <p class="saho-card-description">{{ entity.field_synopsis.value|striptags|truncate(120) }}</p>
-                  {% elseif entity.body.value %}
-                    <p class="saho-card-description">{{ entity.body.value|striptags|truncate(120) }}</p>
-                  {% endif %}
-                  <div class="saho-card-footer">
-                    <span class="saho-button saho-button--primary saho-button--small saho-button--with-icon">
-                      <span class="saho-button__text">Read More</span>
-                      <svg class="saho-button__icon saho-button__icon--arrow-right" width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-                        <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/>
-                      </svg>
-                    </span>
-                  </div>
-                </div>
-              </a>
-            </div>
-          {% endfor %}
-        </div>
-      </div>
-    {% endfor %}
-  </div>
-{% endmacro %}
-
-{% import _self as suggested %}
-
 <article{{ attributes.addClass('saho-article-wrapper') }}>
+
+  {# 2027 "Open Record" record header (typed tab + display ref + status + key fields). #}
+  {% if record is defined %}
+    {% set record_lead_mobile = (record_image.orientation is defined and record_image.orientation in ['portrait', 'square'] and not (node.hasField('field_feature_banner') and node.field_feature_banner.entity.uri.value)) ? record_image : {} %}
+    {{ include('saho:saho-record-header', {
+      type: record.type,
+      reference: record.reference,
+      status: record.status,
+      kicker: record.kicker,
+      title: record.title,
+      facts: record.facts,
+      image: record_lead_mobile,
+    }, with_context = false) }}
+  {% endif %}
+
+  {# The record toolbar rides directly under the key-field strip (R3 #476). #}
+  {% if record_toolbar is defined %}
+    {{ include('saho:saho-record-toolbar', record_toolbar|merge({
+      connections_count: record_related.tabs is defined ? record_related.tabs|reduce((c, t) => c + t.count, 0) : 0,
+    }), with_context = false) }}
+  {% endif %}
 
   <div class="saho-article-grid">
 
     {# LEFT: Main content column #}
     <div class="saho-main-content">
 
-      {# No feature banner or images in main content for TDIH events - images go to sidebar #}
+      {# field_feature_banner does not exist on the event bundle (config/sync:
+         article/biography/place only), so the old banner branch was dead. The
+         lead image is the Open Record duotone image-credit figure (S3). #}
+      {% if record_image.src is defined and record_image.src %}
+        {{ include('saho:saho-image-credit', record_image, with_context = false) }}
+      {% endif %}
 
       {# Article metadata (Published/Updated dates) #}
-      <div class="saho-article-meta">
-        {% if node.getCreatedTime() %}
-          <span>Published {{ node.getCreatedTime()|date("j F Y") }}</span>
-        {% endif %}
-        {% if node.getChangedTime() != node.getCreatedTime() %}
-          <span>Updated {{ node.getChangedTime()|date("j F Y") }}</span>
-        {% endif %}
-        <div class="saho-tools-wrapper">
-          {% if citation_button %}
-            <div class="saho-citation-wrapper">
-              {{ citation_button }}
-            </div>
-          {% endif %}
-          {% if sharing_button %}
-            <div class="saho-sharing-wrapper">
-              {{ sharing_button }}
-            </div>
-          {% endif %}
-        </div>
-      </div>
 
-      {# Display styled "This Day in History" date #}
-      {% if node.field_event_date.value %}
-        <div class="saho-event-date" style="background-color: #f0f0f0; padding: 8px 12px; margin-bottom: 20px; display: inline-block;">
-          <strong>This Day in History:</strong> {{ node.field_event_date.value|date("j F Y") }}
-        </div>
-      {% endif %}
+      {# Event date now lives in the rail metadata-block (S3). #}
 
       {# Main content with ID for TOC linking #}
       <div id="event-details" class="saho-article-body">
@@ -187,7 +78,7 @@
 
       {% if content.field_highlight %}
         <div id="highlights" class="saho-highlight">
-          <h3>Highlights</h3>
+          <h3>{{ 'Highlights'|t }}</h3>
           {{ content.field_highlight }}
         </div>
       {% endif %}
@@ -201,6 +92,7 @@
         'field_tdih_image',
         'field_node_image_caption',
         'field_ref_str',
+        'field_feature_banner',
         'field_feature_parent',
         'field_feature_tag',
         'field_home_page_feature',
@@ -210,155 +102,69 @@
         'field_people_related_tab',
         'field_organizations_related_tab',
         'field_topics_related_tab',
+        'field_timelines_related_tab',
         'field_synopsis',
         'field_article_author',
         'field_article_editors',
-        'sharing_buttons'
+        'sharing_buttons',
+        'comment_node_event'
       ) }}
+
+      {# Provenance: "How we know this" from field_ref_str (S3). #}
+      {% if record_provenance %}
+        {{ include('saho:saho-provenance-block', record_provenance, with_context = false) }}
+      {% endif %}
+
+      {# Cite this entry (Harvard / APA / Oxford, from CitationService). #}
+      {% if record_citation %}
+        {{ include('saho:saho-citation', record_citation, with_context = false) }}
+      {% endif %}
+
+      {# The record foot (R3 #480/#477): one quiet supporter line, then
+         reader contributions - after the record, never inside it. #}
+      {# Open Record reading list: derived related records (siblings, shared
+         topics, popular) - the record's onward-reading engine. #}
+      {% if record_reading %}
+        {{ include('saho:saho-reading-list', { title: 'Further reading'|t, items: record_reading }, with_context = false) }}
+      {% endif %}
+
+      <p class="saho-record-support">
+        {{ 'SAHO is free because readers fund it.'|t }}
+        <a href="/donate">{{ 'Donate'|t }} &rarr;</a>
+      </p>
+      {{ content.comment_node_event ?? '' }}
 
     </div>
 
-    {# RIGHT: Sidebar - always has content if there's an image #}
-    {% if node.field_tdih_image.entity or node.field_event_image.entity or node.field_feature_banner.entity %}
+    {# RIGHT: Sidebar (the Open Record rail - S3) #}
+    {# No field_feature_banner on events, so the lead image always stays in the
+       main column - there is no rail-image branch to gate here. #}
+    {% if record_meta or record_related or record_further or accordion_views is not empty %}
       {% set sidebar_has_content = true %}
     {% endif %}
-    
-    {% if accordion_views is not empty %}
-      {% set sidebar_has_content = true %}
-    {% endif %}
-    
-    {% if content.field_people_related_tab is defined and content.field_people_related_tab|render|trim %}
-      {% set sidebar_has_content = true %}
-    {% endif %}
-    
-    {% if content.field_organizations_related_tab is defined and content.field_organizations_related_tab|render|trim %}
-      {% set sidebar_has_content = true %}
-    {% endif %}
-    
-    {% if content.field_topics_related_tab is defined and content.field_topics_related_tab|render|trim %}
-      {% set sidebar_has_content = true %}
-    {% endif %}
-    
-    {% if content.field_feature_parent is defined and content.field_feature_parent|render|trim %}
-      {% set sidebar_has_content = true %}
-    {% endif %}
-    
-    {% if content.field_synopsis is defined and content.field_synopsis|render|trim %}
-      {% set sidebar_has_content = true %}
-    {% endif %}
-    
-    {% if content.field_further_reading is defined and content.field_further_reading|render|trim %}
-      {% set sidebar_has_content = true %}
-    {% endif %}
-    
-    {% if node.field_ref_str.value %}
-      {% set sidebar_has_content = true %}
-    {% endif %}
-
 
     {% if sidebar_has_content %}
     <aside class="saho-article-sidebar">
 
-
-      {# Always display images in sidebar - prioritize in order: feature banner, tdih image, event image #}
-      {% if node.field_feature_banner.entity %}
-        <div class="saho-image-block">
-          <img
-            src="{{ file_url(node.field_feature_banner.entity.uri.value) }}"
-            alt="{{ node.field_feature_banner.alt }}"
-            class="saho-image"
-            loading="eager"
-            decoding="async"
-            fetchpriority="high"
-          >
-          {% if node.field_node_image_caption.value %}
-            <div class="caption">
-              {{ node.field_node_image_caption.value|striptags('<a><em><strong><i><b><br>')|raw }}
-            </div>
-          {% endif %}
-        </div>
-      {% elseif node.field_tdih_image.entity %}
-        <div class="saho-image-block">
-          <img
-            src="{{ file_url(node.field_tdih_image.entity.uri.value) }}"
-            alt="{{ node.field_tdih_image.alt }}"
-            class="saho-image"
-            loading="eager"
-            decoding="async"
-          >
-          {% if node.field_node_image_caption.value %}
-            <div class="caption">
-              {{ node.field_node_image_caption.value|striptags('<a><em><strong><i><b><br>')|raw }}
-            </div>
-          {% endif %}
-        </div>
-      {% elseif node.field_event_image.entity %}
-        <div class="saho-image-block">
-          <img
-            src="{{ file_url(node.field_event_image.entity.uri.value) }}"
-            alt="{{ node.field_event_image.alt }}"
-            class="saho-image"
-            loading="eager"
-            decoding="async"
-          >
-          {% if node.field_node_image_caption.value %}
-            <div class="caption">
-              {{ node.field_node_image_caption.value|striptags('<a><em><strong><i><b><br>')|raw }}
-            </div>
-          {% endif %}
-        </div>
+      {# Event record: the structured event fields. #}
+      {% if record_meta %}
+        {{ include('saho:saho-metadata-block', record_meta, with_context = false) }}
       {% endif %}
 
-      {# Related content - re-print stripped relationship fields as crawlable links #}
-      {% if content.field_people_related_tab is defined and content.field_people_related_tab|render|trim %}
-        <div class="saho-taxonomy-group">
-          <h4>Related People</h4>
-          {{ content.field_people_related_tab }}
-        </div>
+      {# Cross-references: typed entity relations. #}
+      {% if record_related %}
+        {{ include('saho:saho-related-tabs', record_related, with_context = false) }}
       {% endif %}
 
-      {% if content.field_organizations_related_tab is defined and content.field_organizations_related_tab|render|trim %}
-        <div class="saho-taxonomy-group">
-          <h4>Related Organizations</h4>
-          {{ content.field_organizations_related_tab }}
-        </div>
+      {# Further reading (kept crawlable). #}
+      {% if record_further %}
+        <section class="saho-meta-block saho-meta-block--event">
+          <h4 class="saho-meta-block__title">{{ 'Further reading'|t }}</h4>
+          <div class="saho-meta-block__val">{{ record_further }}</div>
+        </section>
       {% endif %}
 
-      {% if content.field_topics_related_tab is defined and content.field_topics_related_tab|render|trim %}
-        <div class="saho-taxonomy-group">
-          <h4>Related Topics</h4>
-          {{ content.field_topics_related_tab }}
-        </div>
-      {% endif %}
-
-      {% if content.field_feature_parent is defined and content.field_feature_parent|render|trim %}
-        <div class="saho-taxonomy-group">
-          <h4>Related Content</h4>
-          {{ content.field_feature_parent }}
-        </div>
-      {% endif %}
-
-      {% if content.field_synopsis is defined and content.field_synopsis|render|trim %}
-        <div class="saho-synopsis">
-          <h4>Synopsis</h4>
-          {{ content.field_synopsis }}
-        </div>
-      {% endif %}
-
-      {# References block #}
-      {% if node.field_ref_str.value %}
-        {% set refs = node.field_ref_str.value|split('|') %}
-        <div id="references" class="saho-references">
-          <h4>References</h4>
-          <ul class="saho-reference-list">
-            {% for ref in refs %}
-              {% if ref|trim %}
-                <li>{{ ref|trim|striptags('<a><em><strong><i><b>')|raw }}</li>
-              {% endif %}
-            {% endfor %}
-          </ul>
-        </div>
-      {% endif %}
+      {# References now render as the main-column provenance-block (S3). #}
 
     </aside>
     {% endif %}
@@ -367,7 +173,3 @@
 
 </article>
 
-{# Enhanced suggested reading - crawlable contextual cards (~6-12 related items). #}
-{% if suggested_reading is defined and suggested_reading is not empty %}
-  {{ suggested.suggested_reading_section(suggested_reading) }}
-{% endif %}

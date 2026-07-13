@@ -2,6 +2,7 @@
 
 namespace Drupal\saho_timeline\Controller;
 
+use Drupal\Component\Utility\Html;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Entity\ContentEntityInterface;
@@ -144,6 +145,7 @@ class TimelineApiController extends ControllerBase {
     $include_dateless = $request->query->get('include_dateless', 'summary');
 
     // Search for events.
+    $light_index = FALSE;
     if (!empty($filters['keywords'])) {
       $events = $this->timelineEventService->searchEvents($filters['keywords'], $filters);
       // No dateless events for search results.
@@ -161,22 +163,36 @@ class TimelineApiController extends ControllerBase {
       $dateless_count = 0;
     }
     else {
-      // Get all events segregated by date availability.
-      // Pass include_dateless_full=true when full dateless data is requested.
-      $include_dateless_full = ($include_dateless === 'full');
-      $segregated = $this->timelineEventService->getAllTimelineEventsSegregated(TRUE, TRUE, $include_dateless_full);
-      // Events with proper historical dates.
-      $events = $segregated['events'];
-      // Include dateless events if requested.
-      $dateless_events = $segregated['dateless_events'];
-      $dateless_count = $segregated['stats']['dateless_events'] ?? count($dateless_events);
+      // The unfiltered path works on the cached light index (stdClass rows
+      // {id, title, date}) instead of 3.5k hydrated nodes - full entities
+      // are only loaded for the page actually returned (#454/#430).
+      $light_index = TRUE;
+      $events = $this->timelineEventService->getDatedEventIndex();
+      $dateless = $this->timelineEventService->getDatelessEvents($include_dateless === 'full');
+      $dateless_events = $dateless['events'];
+      $dateless_count = $dateless['count'];
     }
 
     // Apply sorting.
     $events = $this->sortEvents($events, $sort);
 
-    // Calculate facets.
-    $facets = $this->timelineFilterService->buildFacetCounts($events);
+    // Calculate facets. The light path counts periods from the raw dates
+    // and pulls term facets from aggregated GROUP BY queries - no loads.
+    if ($light_index) {
+      $facets = [
+        'content_type' => ['event' => count($events)],
+        'time_period' => [],
+      ] + $this->timelineEventService->getDatedEventTermFacets();
+      foreach ($events as $row) {
+        $period = $this->timelineFilterService->calculateTimePeriodFromDate($row->date ?? NULL);
+        if ($period !== NULL) {
+          $facets['time_period'][$period] = ($facets['time_period'][$period] ?? 0) + 1;
+        }
+      }
+    }
+    else {
+      $facets = $this->timelineFilterService->buildFacetCounts($events);
+    }
 
     // Apply intelligent sampling if we have too many events.
     $total = count($events);
@@ -204,6 +220,13 @@ class TimelineApiController extends ControllerBase {
       'limit' => $limit,
       'offset' => $offset,
     ];
+
+    // Light rows hydrate to full nodes only for this returned page, in
+    // chunks with the static entity cache released so a 2000-item request
+    // never holds more than one chunk of nodes in memory.
+    if ($light_index) {
+      $events = $this->hydrateLightRows($events);
+    }
 
     // Format events for JSON response with error handling.
     foreach ($events as $event) {
@@ -385,16 +408,12 @@ class TimelineApiController extends ControllerBase {
 
     if ($event instanceof ContentEntityInterface) {
       $data['id'] = $event->id();
-      $title = $event->label();
-      // More robust UTF-8 cleaning.
-      $title = @iconv('UTF-8', 'UTF-8//IGNORE', $title);
-      if ($title === FALSE) {
-        $title = mb_convert_encoding($event->label(), 'UTF-8', 'UTF-8');
-      }
-      // Remove any remaining invalid characters.
-      $title = htmlspecialchars($title, ENT_QUOTES | ENT_HTML5, 'UTF-8', FALSE);
-      $title = preg_replace('/[\x00-\x1F\x7F-\xFF]/', '', $title);
-      $data['title'] = trim(strip_tags($title));
+      // The API carries PLAIN TEXT: decode entities first (so stored
+      // "&lt;em&gt;" cannot survive as markup), strip tags, then drop only
+      // control characters. The previous htmlspecialchars() pass shipped
+      // pre-escaped entities (&amp;amp;, &amp;#039;) to every consumer, and
+      // the \x7F-\xFF byte strip destroyed multibyte UTF-8.
+      $data['title'] = $this->toPlainText($event->label());
       $data['url'] = $event->toUrl('canonical', ['absolute' => TRUE])->toString();
       $data['type'] = $event->bundle();
 
@@ -418,21 +437,10 @@ class TimelineApiController extends ControllerBase {
         $data['date'] = date('Y-m-d', $event->getCreatedTime());
       }
 
-      // Get body with robust UTF-8 cleaning.
+      // Get body as plain text (same pipeline as the title).
       if ($event->hasField('body') && !$event->get('body')->isEmpty()) {
-        $body = $event->get('body')->value;
-        // More robust UTF-8 cleaning for body text.
-        $body = @iconv('UTF-8', 'UTF-8//IGNORE', $body);
-        if ($body === FALSE) {
-          $body = mb_convert_encoding($event->get('body')->value, 'UTF-8', 'UTF-8');
-        }
-        // Strip HTML tags first to avoid breaking UTF-8 sequences.
-        $body = strip_tags($body);
-        // Remove invalid characters using modern approach.
-        $body = htmlspecialchars($body, ENT_QUOTES | ENT_HTML5, 'UTF-8', FALSE);
-        $body = preg_replace('/[\x00-\x1F\x7F-\xFF]/', '', $body);
-        $body = trim(strip_tags($body));
-        $data['body'] = !empty($body) ? substr($body, 0, 300) . '...' : '';
+        $body = $this->toPlainText($event->get('body')->value);
+        $data['body'] = $body !== '' ? mb_substr($body, 0, 300) . '...' : '';
       }
 
       // Get image from multiple possible fields.
@@ -660,6 +668,29 @@ class TimelineApiController extends ControllerBase {
   }
 
   /**
+   * Hydrates light index rows into full nodes for formatting, chunked.
+   *
+   * @param object[] $rows
+   *   Light rows carrying ->id.
+   *
+   * @return \Drupal\node\NodeInterface[]
+   *   Loaded nodes in row order.
+   */
+  protected function hydrateLightRows(array $rows): array {
+    $storage = $this->entityTypeManager()->getStorage('node');
+    $nodes = [];
+    foreach (array_chunk($rows, 100) as $chunk) {
+      $ids = array_map(static fn($row) => $row->id, $chunk);
+      foreach ($storage->loadMultiple($ids) as $node) {
+        $nodes[] = $node;
+      }
+      // Release the static entity cache between chunks.
+      $storage->resetCache($ids);
+    }
+    return $nodes;
+  }
+
+  /**
    * Validate limit parameter.
    *
    * @param mixed $limit
@@ -735,6 +766,33 @@ class TimelineApiController extends ControllerBase {
     }
 
     return FALSE;
+  }
+
+  /**
+   * Reduces stored (possibly HTML) text to clean plain text for the API.
+   *
+   * Decodes entities BEFORE stripping tags so encoded markup ("&lt;em&gt;")
+   * cannot survive as live markup in consumers that render via innerHTML
+   * (TimelineJS3), then removes control characters only - multibyte UTF-8
+   * passes through intact.
+   *
+   * @param string|null $text
+   *   The stored value.
+   *
+   * @return string
+   *   Plain text, trimmed; '' when nothing survives.
+   */
+  protected function toPlainText(?string $text): string {
+    if ($text === NULL || $text === '') {
+      return '';
+    }
+    $clean = @iconv('UTF-8', 'UTF-8//IGNORE', $text);
+    if ($clean === FALSE) {
+      $clean = mb_convert_encoding($text, 'UTF-8', 'UTF-8');
+    }
+    $clean = strip_tags(Html::decodeEntities($clean));
+    $clean = preg_replace('/[\x00-\x1F\x7F]/u', ' ', $clean);
+    return trim(preg_replace('/\s+/u', ' ', $clean));
   }
 
 }

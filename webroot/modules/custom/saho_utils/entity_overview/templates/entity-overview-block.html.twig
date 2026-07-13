@@ -1,19 +1,25 @@
 {#
 /**
  * @file
- * Default theme implementation to display an entity overview block using unified card system.
+ * Default theme implementation for an entity overview block.
+ *
+ * Canonical single source for this block's markup, using the unified SAHO
+ * card system. The saho theme previously carried a diverged block override
+ * (webroot/themes/custom/saho/templates/block/entity-overview-block.html.twig);
+ * that copy should be removed by the theme pass so this template renders.
  *
  * Available variables:
- * - items: An array of entity items.
+ * - items: An array of entity items, each with:
  *   - id: The entity ID.
  *   - title: The entity title.
  *   - url: The entity URL.
  *   - image: The entity image URL.
- *   - created: The entity creation timestamp.
+ *   - teaser: The entity teaser text.
+ *   - created: The entity creation date.
+ *   - changed: The entity changed date.
  * - block_title: The title of the block.
  * - intro_text: Introductory text for the block.
- * - display_mode: The default display mode ('default', 'compact', or 'full-width').
- * - show_display_toggle: Whether to show the display mode toggle.
+ * - block_id: A unique ID for the block wrapper.
  * - attributes: HTML attributes for the containing element.
  *
  * @ingroup themeable
@@ -21,107 +27,76 @@
 #}
 <div{{ attributes.addClass('entity-overview-block') }} data-block-id="{{ block_id }}">
   {% if block_title %}
-    <h2 class="block-title mb-3">{{ block_title }}</h2>
+    {{ include('saho:saho-section-heading', {
+      title: block_title,
+      level: 'h2',
+    }, with_context = false) }}
   {% endif %}
-  
+
   {% if intro_text %}
-    <div class="block-intro mb-4 text-muted">
+    <div class="block-intro mb-4">
       {{ intro_text|replace({'%title': block_title}) }}
     </div>
   {% endif %}
-  
-  {% if filter_options or sort_options %}
-    <div class="entity-overview-controls mb-4 p-3 bg-light rounded">
-      <div class="row g-3 align-items-center">
-        {% if filter_options %}
-          <div class="col-auto">
-            <label for="{{ block_id }}-filter" class="form-label mb-0 me-2">{{ 'Filter by:'|t }}</label>
-            <select id="{{ block_id }}-filter" class="form-select form-select-sm entity-overview-filter-select">
-              <option value="">{{ 'All'|t }}</option>
-              {% for option in filter_options %}
-                <option value="{{ option.id }}">{{ option.label }}</option>
-              {% endfor %}
-            </select>
-          </div>
-        {% endif %}
-        
-        {% if sort_options %}
-          <div class="col-auto">
-            <label for="{{ block_id }}-sort" class="form-label mb-0 me-2">{{ 'Sort by:'|t }}</label>
-            <select id="{{ block_id }}-sort" class="form-select form-select-sm entity-overview-sort-select">
-              {% for option in sort_options %}
-                <option value="{{ option.id }}">{{ option.label }}</option>
-              {% endfor %}
-            </select>
-          </div>
-        {% endif %}
-        
-        {% if show_display_toggle %}
-          <div class="col-auto ms-auto">
-            <div class="btn-group btn-group-sm" role="group" aria-label="Display mode">
-              <button type="button" class="btn btn-outline-secondary entity-display-toggle {{ display_mode == 'default' ? 'active' : '' }}" data-mode="default">
-                <i class="fas fa-th"></i> {{ 'Grid'|t }}
-              </button>
-              <button type="button" class="btn btn-outline-secondary entity-display-toggle {{ display_mode == 'compact' ? 'active' : '' }}" data-mode="compact">
-                <i class="fas fa-th-large"></i> {{ 'Compact'|t }}
-              </button>
-              <button type="button" class="btn btn-outline-secondary entity-display-toggle {{ display_mode == 'full-width' ? 'active' : '' }}" data-mode="full-width">
-                <i class="fas fa-list"></i> {{ 'List'|t }}
-              </button>
-            </div>
-          </div>
-        {% endif %}
-      </div>
-    </div>
-  {% endif %}
-  
+
+  {# Content using SAHO Card System #}
   {% if items %}
-    <div class="saho-cards-grid entity-overview-items {{ display_mode ? 'display-mode-' ~ display_mode : '' }}">
+    <div class="entity-overview-items saho-card-grid">
       {% for item in items %}
-        <div class="saho-card">
-          <a href="{{ item.url }}" class="saho-card-link">
-            {% if item.image %}
-              <div class="saho-card-image">
-                <img src="{{ item.image }}" alt="{{ item.title }}" loading="lazy" />
-              </div>
-            {% else %}
-              <div class="saho-card-image saho-card-image--placeholder">
-                <i class="fas fa-file-alt"></i>
+        <div class="saho-card entity-overview-item" data-item-id="{{ item.id }}">
+          {% if item.image %}
+            <div class="saho-card-image">
+              <a href="{{ item.url }}">
+                <img src="{{ item.image }}" alt="{{ item.title|striptags }}" loading="lazy" decoding="async" onerror="this.closest('.saho-card-image').classList.add('is-broken')">
+              </a>
+            </div>
+          {% endif %}
+
+          <div class="saho-card-content">
+            <h3 class="saho-card-title">
+              <a href="{{ item.url }}">{{ item.title }}</a>
+            </h3>
+
+            {% if item.teaser %}
+              <div class="saho-card-teaser">
+                <p>{{ item.teaser }}</p>
               </div>
             {% endif %}
-            
-            <div class="saho-card-content">
-              <h3 class="saho-card-title">{{ item.title }}</h3>
-              
-              {% if item.created %}
-                <div class="saho-card-subtitle">
-                  <i class="far fa-calendar-alt me-1"></i>
-                  {{ item.created|date('j F Y') }}
-                </div>
+
+            <div class="saho-card-meta">
+              <time datetime="{{ item.changed|date('c') }}">
+                {{ 'Updated'|t }}: {{ item.changed|date('j M Y') }}
+              </time>
+              {% if item.created != item.changed %}
+                <span class="separator">•</span>
+                <time datetime="{{ item.created|date('c') }}">
+                  {{ 'Created'|t }}: {{ item.created|date('j M Y') }}
+                </time>
               {% endif %}
-              
-              <div class="saho-card-footer">
-                <span class="saho-card-button">
-                  {{ 'Read more'|t }}
-                  <i class="fas fa-arrow-right"></i>
-                </span>
-              </div>
             </div>
-          </a>
+
+            <div class="saho-card-actions">
+              {% include 'saho:saho-button' with {
+                text: 'Read more'|t,
+                url: item.url,
+                variant: 'text',
+                size: 'small',
+                icon: 'arrow-right',
+                icon_position: 'after'
+              } %}
+            </div>
+          </div>
         </div>
       {% endfor %}
     </div>
-    
-    {% if has_more %}
-      <div class="text-center mt-4">
-        <button type="button" class="entity-overview-load-more-button">
-          <i class="fas fa-plus me-2"></i>{{ 'Load more'|t }}
-        </button>
-      </div>
-    {% endif %}
+
   {% else %}
     <div class="alert alert-info text-center">
-      <i class="fas fa-info-circle me-2"></i>
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-2">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="16" x2="12" y2="12"/>
+        <line x1="12" y1="8" x2="12.01" y2="8"/>
+      </svg>
       {{ 'No items found.'|t }}
     </div>
   {% endif %}

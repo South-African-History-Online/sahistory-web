@@ -1,0 +1,32 @@
+{#
+/**
+ * @file SAHO Timeline SDC. props: title, themes[], events[]
+ * Theme filtering is progressive enhancement (saho.behaviours.js).
+ */
+#}
+<section{{ attributes.addClass('saho-timeline') }} data-saho-timeline>
+  <header class="saho-timeline__head">
+    <h3 class="saho-timeline__title">{{ title|default('Chronology') }}</h3>
+    {% if themes %}
+      <div class="saho-timeline__filters" role="group" aria-label="Filter by theme">
+        <button type="button" class="saho-timeline__filter is-active" data-theme="All">All</button>
+        {% for t in themes %}
+          <button type="button" class="saho-timeline__filter" data-theme="{{ t }}">{{ t }}</button>
+        {% endfor %}
+      </div>
+    {% endif %}
+  </header>
+  <ol class="saho-timeline__list">
+    {% for e in events %}
+      <li class="saho-timeline__event" data-theme="{{ e.theme|default('') }}">
+        <span class="saho-timeline__marker" aria-hidden="true"></span>
+        <div class="saho-timeline__year">{{ e.year }}</div>
+        <div class="saho-timeline__event-title">
+          {%- if e.href %}<a href="{{ e.href }}">{{ e.title }}</a>{% else %}{{ e.title }}{% endif -%}
+        </div>
+        {% if e.detail %}<p class="saho-timeline__detail">{{ e.detail }}</p>{% endif %}
+        {% if e.theme %}<span class="saho-timeline__tag">{{ e.theme }}</span>{% endif %}
+      </li>
+    {% endfor %}
+  </ol>
+</section>

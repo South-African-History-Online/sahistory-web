@@ -1,239 +1,223 @@
 /**
  * @file
- * Styles for Educational Resources Block
+ * Styles for the Educational Resources block (Open Record 2027).
+ *
+ * The catalogue idiom: square paper cards, hairline frames, the article
+ * (oxblood) accent edge, Caslon display titles, serif descriptions and
+ * mono counts/labels. No rounded corners, no shadows, no gradients.
+ * Uses the theme's Open Record tokens with brand-safe fallbacks.
  */
 
 /* Block container */
 .educational-resources-block {
   padding: 2rem 0;
+  color: var(--text-primary, #1b1c17);
 }
 
-.educational-resources-block .block-title {
-  font-size: 2rem;
+/* Section heading - mono kicker above a ruled title row */
+.edu-resources__header {
+  margin-bottom: 1.5rem;
+}
+
+.edu-resources__kicker {
+  margin: 0 0 8px;
+  font-family: var(--font-mono, "IBM Plex Mono", ui-monospace, monospace);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: var(--ls-meta, 0.06em);
+  text-transform: uppercase;
+  color: var(--saho-ochre-deep, #8a6420);
+}
+
+.edu-resources__header-row {
+  border-bottom: var(--bw-rule, 2px) solid var(--border-strong, #8e8a73);
+  padding-bottom: 10px;
+}
+
+.edu-resources__title {
+  margin: 0;
+  font-family: var(--font-display, "Libre Caslon Text", georgia, serif);
+  font-size: clamp(1.5rem, 2.4vw, 2rem);
   font-weight: 700;
-  color: var(--saho-color-text-primary);
-  text-align: center;
+  color: var(--text-primary, #1b1c17);
 }
 
-.educational-resources-block .block-intro {
-  text-align: center;
-  font-size: 1.1rem;
-  max-width: 600px;
-  margin-left: auto;
-  margin-right: auto;
+.edu-resources__intro {
+  max-width: 640px;
+  margin: 12px 0 0;
+  font-family: var(--font-serif, "Libre Caslon Text", georgia, serif);
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--text-secondary, #41433a);
+}
+
+/* Empty state - a quiet mono note, no alert chrome */
+.edu-resources__empty {
+  margin: 0;
+  padding: 1rem;
+  border: var(--bw-hair, 1px) solid var(--border-default, #bdb9a6);
+  background: var(--surface-card, #f1efe7);
+  font-family: var(--font-mono, "IBM Plex Mono", ui-monospace, monospace);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: var(--ls-meta, 0.06em);
+  color: var(--text-muted, #6b6c5f);
 }
 
 /* Grid layout */
 .resources-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: 1.5rem;
-  margin-top: 2rem;
+  margin-top: 0.5rem;
 }
 
-/* Resource card styling */
-.resource-card {
-  position: relative;
-  overflow: hidden;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  border: 2px solid transparent;
-}
-
-.resource-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--saho-shadow-xl);
-  border-color: var(--resource-color);
-}
-
-/* Resource image area with color */
-.resource-card .resource-image {
-  position: relative;
-  background: linear-gradient(135deg, var(--resource-color), var(--resource-color) 50%, rgba(255, 255, 255, 0.1));
-  --resource-image-height: 180px;
-  min-height: var(--resource-image-height);
+/* Card - a filed record sheet with the article accent edge */
+.edu-resources__card {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
+  background: var(--surface-card, #f1efe7);
+  border: var(--bw-hair, 1px) solid var(--border-default, #bdb9a6);
+  border-left: var(--bw-accent, 3px) solid var(--type-article, #990000);
+  border-radius: 0;
+  transition:
+    border-color 150ms ease,
+    background-color 150ms ease;
 }
 
-/* Resource badge */
-.resource-badge {
-  position: relative;
-  z-index: 2;
-  background: rgba(255, 255, 255, 0.95);
-  width: 100px;
-  height: 100px;
-  border-radius: var(--saho-radius-full);
+/* Hover selects, it does not lift: ink frame, sunk ground */
+.edu-resources__card:hover,
+.edu-resources__card:focus-within {
+  border-color: var(--saho-ink, #1b1c17);
+  border-left-color: var(--type-article, #990000);
+  background: var(--surface-sunk, #dad6c7);
+}
+
+/* The whole card is one link */
+.edu-resources__card-link {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: var(--saho-shadow-md);
-  border: 4px solid var(--resource-color);
+  flex-direction: column;
+  flex: 1 1 auto;
+  gap: 0.625rem;
+  padding: 1.125rem 1.25rem 1.25rem;
+  text-decoration: none;
 }
 
-.resource-icon {
-  width: 48px;
-  height: 48px;
-  color: var(--resource-color);
-  stroke-width: 1.5;
-  transition: transform 0.3s ease;
-}
-
-.resource-card:hover .resource-icon {
-  transform: scale(1.1);
-}
-
-/* Decorative pattern overlay */
-.resource-pattern {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  opacity: 0.1;
-  background-image:
-    repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255, 255, 255, 0.3) 10px, rgba(255, 255, 255, 0.3) 20px),
-    repeating-linear-gradient(-45deg, transparent, transparent 10px, rgba(255, 255, 255, 0.3) 10px, rgba(255, 255, 255, 0.3) 20px);
-  pointer-events: none;
-}
-
-/* Card content */
-.resource-card .saho-card-content {
-  padding: 1.5rem;
-  background: var(--saho-color-white);
-}
-
-.resource-card .saho-card-title {
-  font-size: 1.5rem;
-  font-weight: 700;
-  margin-bottom: 0.75rem;
-  color: var(--resource-color);
-}
-
-.resource-description {
-  font-size: 0.95rem;
-  line-height: 1.5;
-}
-
-/* Featured item */
-.featured-item {
+/* Top apparatus row: mono type label + mono count */
+.edu-resources__card-apparatus {
   display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: #fff3cd;
-  border-left: 3px solid #ffc107;
-  padding: 0.5rem 0.75rem;
-  margin-bottom: 0.75rem;
-  border-radius: 4px;
-  font-size: 0.9rem;
-}
-
-.featured-icon {
-  flex-shrink: 0;
-  color: #ffc107;
-}
-
-.featured-item .item-text {
-  color: #856404;
-  font-weight: 500;
-}
-
-/* Resource count */
-.resource-count {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 0;
-  color: var(--saho-color-text-muted);
-  font-size: 1rem;
-  border-top: 1px solid var(--saho-color-border);
-  margin-top: 0.75rem;
-}
-
-.count-icon {
-  flex-shrink: 0;
-  color: var(--resource-color);
-}
-
-.resource-count .count-number {
-  font-weight: 700;
-  font-size: 1.25rem;
-  color: var(--resource-color);
-}
-
-.resource-count .count-label {
-  font-size: 0.9rem;
-}
-
-/* Card footer button */
-.resource-card .saho-card-footer {
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid var(--saho-color-border);
-}
-
-.resource-card .saho-card-button {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  color: var(--resource-color);
-  font-weight: 600;
-  transition: gap 0.3s ease;
-}
-
-.button-icon {
-  flex-shrink: 0;
-  transition: transform 0.3s ease;
-}
-
-.resource-card:hover .saho-card-button {
+  align-items: baseline;
+  justify-content: space-between;
   gap: 0.75rem;
+  margin: 0;
+  font-family: var(--font-mono, "IBM Plex Mono", ui-monospace, monospace);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: var(--ls-meta, 0.06em);
 }
 
-.resource-card:hover .button-icon {
-  transform: translateX(4px);
+.edu-resources__card-label {
+  color: var(--type-article, #990000);
 }
 
-/* List mode styling */
+.edu-resources__card-count {
+  color: var(--text-muted, #6b6c5f);
+  white-space: nowrap;
+}
+
+.edu-resources__card-title {
+  margin: 0;
+  font-family: var(--font-display, "Libre Caslon Text", georgia, serif);
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+/* Inner span owns the colour so the global link rule cannot repaint it */
+.edu-resources__card-title-text {
+  color: var(--text-primary, #1b1c17);
+  transition: color 150ms ease;
+}
+
+.edu-resources__card:hover .edu-resources__card-title-text {
+  color: var(--link-hover, #6e0000);
+}
+
+.edu-resources__card-desc {
+  margin: 0;
+  font-family: var(--font-serif, "Libre Caslon Text", georgia, serif);
+  font-size: 0.875rem;
+  line-height: 1.55;
+  color: var(--text-secondary, #41433a);
+}
+
+/* Featured item - a ruled-off citation line, mono label + serif title */
+.edu-resources__featured {
+  margin: 0;
+  padding-top: 0.625rem;
+  border-top: var(--bw-hair, 1px) solid var(--border-faint, #d3cfbf);
+}
+
+.edu-resources__featured-label {
+  display: block;
+  margin-bottom: 2px;
+  font-family: var(--font-mono, "IBM Plex Mono", ui-monospace, monospace);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: var(--ls-meta, 0.06em);
+  color: var(--text-muted, #6b6c5f);
+}
+
+.edu-resources__featured-text {
+  font-family: var(--font-serif, "Libre Caslon Text", georgia, serif);
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: var(--text-secondary, #41433a);
+}
+
+/* Bottom mono call to action, ruled off and pinned to the base */
+.edu-resources__card-cta {
+  margin: auto 0 0;
+  padding-top: 0.625rem;
+  border-top: var(--bw-hair, 1px) solid var(--border-faint, #d3cfbf);
+}
+
+.edu-resources__card-cta-text {
+  font-family: var(--font-mono, "IBM Plex Mono", ui-monospace, monospace);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: var(--ls-meta, 0.06em);
+  color: var(--link-rest, #990000);
+}
+
+.edu-resources__card:hover .edu-resources__card-cta-text {
+  color: var(--link-hover, #6e0000);
+}
+
+/* List mode - stacked full-width sheets */
 .display-mode-list .resources-list {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  margin-top: 0.5rem;
 }
 
-.display-mode-list .resource-card {
-  display: flex;
-  flex-direction: row;
-}
-
-.display-mode-list .resource-image {
-  width: 150px;
-  min-height: auto;
-  flex-shrink: 0;
-}
-
-.display-mode-list .saho-card-content {
-  flex: 1;
-}
-
-/* Carousel mode styling */
+/* Carousel mode - Bootstrap carousel on the paper ground */
 .display-mode-carousel .carousel-item {
-  padding: 2rem;
-  min-height: 400px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  padding: 2rem 3.5rem;
+  min-height: 320px;
 }
 
-.display-mode-carousel .resource-card {
-  max-width: 400px;
+.display-mode-carousel .edu-resources__card {
+  max-width: 420px;
   margin: 0 auto;
 }
 
 .display-mode-carousel .carousel-control-prev,
 .display-mode-carousel .carousel-control-next {
-  width: 50px;
+  width: 3rem;
   opacity: 0.8;
 }
 
@@ -242,11 +226,17 @@
   opacity: 1;
 }
 
+/* Bootstrap ships white control glyphs; invert them to ink for paper */
+.display-mode-carousel .carousel-control-prev-icon,
+.display-mode-carousel .carousel-control-next-icon {
+  filter: invert(1) grayscale(1);
+}
+
 .display-mode-carousel .carousel-indicators button {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background-color: var(--resource-color, #6c757d);
+  width: 10px;
+  height: 10px;
+  border-radius: 0;
+  background-color: var(--saho-ink, #1b1c17);
 }
 
 /* Responsive adjustments */
@@ -255,82 +245,28 @@
     grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
     gap: 1rem;
   }
-
-  .resource-badge {
-    width: 80px;
-    height: 80px;
-  }
-
-  .resource-icon {
-    font-size: 2.5rem;
-  }
-
-  .resource-card .saho-card-title {
-    font-size: 1.25rem;
-  }
-
-  /* Force list mode on very small screens */
-  .display-mode-list .resource-card {
-    flex-direction: column;
-  }
-
-  .display-mode-list .resource-image {
-    width: 100%;
-  }
 }
 
 @media (max-width: 576px) {
   .resources-grid {
     grid-template-columns: 1fr;
   }
-
-  .educational-resources-block .block-title {
-    font-size: 1.5rem;
-  }
-
-  .educational-resources-block .block-intro {
-    font-size: 1rem;
-  }
 }
 
-/* Accessibility: Focus states */
-.resource-card:focus-within {
-  outline: 3px solid var(--resource-color);
-  outline-offset: 4px;
+/* Accessibility: focus states */
+.edu-resources__card:focus-within {
+  outline: var(--bw-rule, 2px) solid var(--focus-ring, #990000);
+  outline-offset: 2px;
 }
-
-/* Animation for card entrance */
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.resource-card {
-  animation: fadeInUp 0.5s ease-out backwards;
-}
-
-/* Stagger animation delay for each card */
-.resource-card:nth-child(1) { animation-delay: 0.05s; }
-.resource-card:nth-child(2) { animation-delay: 0.1s; }
-.resource-card:nth-child(3) { animation-delay: 0.15s; }
-.resource-card:nth-child(4) { animation-delay: 0.2s; }
-.resource-card:nth-child(5) { animation-delay: 0.25s; }
 
 /* Print styles */
 @media print {
-  .resource-card {
+  .edu-resources__card {
     page-break-inside: avoid;
-    box-shadow: none !important;
     border: 1px solid #ddd;
   }
 
-  .saho-card-button {
+  .edu-resources__card-cta {
     display: none;
   }
 }

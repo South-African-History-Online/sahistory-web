@@ -1,0 +1,35 @@
+'$schema': 'https://git.drupalcode.org/project/drupal/-/raw/11.0.x/core/modules/sdc/src/metadata.schema.json'
+name: Chronology
+machine_name: saho_chronology
+status: stable
+group: 'SAHO Content'
+description: 'The chronology register for timeline-genre articles: mono year column on a hairline spine with square markers, entry prose to the right. Built theme-side from year-led body markup (dl/dt or year-led paragraphs); unparsed prose interleaves untouched.'
+props:
+  type: object
+  properties:
+    entries:
+      type: array
+      title: 'Chronology entries and interleaved prose, in source order'
+      items:
+        type: object
+        properties:
+          kind:
+            type: string
+            enum: [entry, prose]
+          year:
+            type: string
+            title: 'Mono year (entry kind only)'
+          date:
+            type: string
+            title: 'Sub-year date label, e.g. "June 16"'
+          anchor:
+            type: string
+            title: 'Element id for decade-index deep links'
+          decade:
+            type: string
+            title: 'Decade bucket, e.g. "1970s" (scrollspy hook)'
+          html:
+            type: string
+            title: 'Entry/prose body HTML (sanitised by the text format)'
+libraryDependencies:
+  - saho/saho-chronology

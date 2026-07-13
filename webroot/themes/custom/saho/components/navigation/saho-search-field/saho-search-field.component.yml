@@ -1,0 +1,47 @@
+'$schema': 'https://git.drupalcode.org/project/drupal/-/raw/11.0.x/core/modules/sdc/src/metadata.schema.json'
+name: 'Search field'
+machine_name: saho_search_field
+status: stable
+group: 'SAHO Navigation'
+description: 'The front door — fast, forgiving, prominent. A large ledger-ruled field with an oxblood submit and optional content-type scope chips.'
+props:
+  type: object
+  properties:
+    placeholder:
+      type: string
+      title: Placeholder
+      default: 'Search people, events, places, dates…'
+    action:
+      type: string
+      title: 'Form action'
+      default: '/search'
+    input_name:
+      type: [string, 'null']
+      title: 'Query input name'
+      description: 'Name of the search GET parameter; the site search view exposes search_api_fulltext.'
+      default: search_api_fulltext
+    value:
+      type: [string, 'null']
+      title: 'Prefilled value'
+      description: 'Prefills the input value attribute, e.g. the active search query on the results page.'
+      default: ''
+    input_id:
+      type: [string, 'null']
+      title: 'Input element id'
+      description: 'Override when the field renders more than once per page (header modal + offcanvas).'
+      default: saho-search-input
+    size:
+      type: string
+      title: Size
+      enum: [md, lg]
+      default: lg
+    button_label:
+      type: string
+      title: 'Button label'
+      default: Search
+    scopes:
+      type: array
+      title: 'Scope chips'
+      items: { type: string }
+libraryDependencies:
+  - saho/saho-search-field

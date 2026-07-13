@@ -78,6 +78,8 @@ class SearchQueryTrackerTest extends KernelTestBase {
     $query = $this->createMock(Query::class);
     $query->method('getKeys')->willReturn('test search query');
     $query->method('getIndex')->willReturn($index);
+    // A real Views search page sets the 'search_api_view' option.
+    $query->method('getOption')->willReturn('saho_global_search');
     $query->method('getConditionGroup')->willReturn($this->createMock('Drupal\search_api\Query\ConditionGroupInterface'));
 
     // Dispatch the query pre-execute event.
@@ -107,6 +109,7 @@ class SearchQueryTrackerTest extends KernelTestBase {
       ->execute()
       ->fetchObject();
 
+    $this->assertIsObject($record);
     $this->assertEquals('test search query', $record->query_text);
     $this->assertEquals('test_index', $record->index_id);
     $this->assertEquals(10, $record->result_count);
@@ -160,6 +163,8 @@ class SearchQueryTrackerTest extends KernelTestBase {
     $query = $this->createMock(Query::class);
     $query->method('getKeys')->willReturn('');
     $query->method('getIndex')->willReturn($index);
+    // Comes from a real search view, but with no keys - must not be tracked.
+    $query->method('getOption')->willReturn('saho_global_search');
 
     $pre_event = new QueryPreExecuteEvent($query);
     $this->eventDispatcher->dispatch($pre_event, SearchApiEvents::QUERY_PRE_EXECUTE);
@@ -181,6 +186,42 @@ class SearchQueryTrackerTest extends KernelTestBase {
   }
 
   /**
+   * Tests that typeahead suggest queries are not tracked.
+   *
+   * The suggest controller builds its query with $index->query() directly, so
+   * it carries no 'search_api_view' option. Such queries must be ignored to
+   * keep the per-keystroke prefixes out of the analytics table.
+   */
+  public function testSuggestQueriesNotTracked() {
+    $index = $this->createMock(Index::class);
+    $index->method('id')->willReturn('saho_content');
+
+    $query = $this->createMock(Query::class);
+    $query->method('getKeys')->willReturn('nel');
+    $query->method('getIndex')->willReturn($index);
+    // No 'search_api_view' option: simulates the typeahead suggest endpoint.
+    $query->method('getOption')->willReturn(NULL);
+    $query->method('getConditionGroup')->willReturn($this->createMock('Drupal\search_api\Query\ConditionGroupInterface'));
+
+    $pre_event = new QueryPreExecuteEvent($query);
+    $this->eventDispatcher->dispatch($pre_event, SearchApiEvents::QUERY_PRE_EXECUTE);
+
+    $results = $this->createMock(ResultSet::class);
+    $results->method('getResultCount')->willReturn(7);
+    $results->method('getQuery')->willReturn($query);
+
+    $post_event = new ProcessingResultsEvent($results);
+    $this->eventDispatcher->dispatch($post_event, SearchApiEvents::PROCESSING_RESULTS);
+
+    $count = $this->database->select('saho_search_queries', 's')
+      ->countQuery()
+      ->execute()
+      ->fetchField();
+
+    $this->assertEquals(0, $count, 'Suggest queries without a search_api_view option are not tracked.');
+  }
+
+  /**
    * Tests IP address hashing for privacy.
    */
   public function testIpAddressHashing() {
@@ -190,6 +231,7 @@ class SearchQueryTrackerTest extends KernelTestBase {
     $query = $this->createMock(Query::class);
     $query->method('getKeys')->willReturn('privacy test');
     $query->method('getIndex')->willReturn($index);
+    $query->method('getOption')->willReturn('saho_global_search');
     $query->method('getConditionGroup')->willReturn($this->createMock('Drupal\search_api\Query\ConditionGroupInterface'));
 
     $pre_event = new QueryPreExecuteEvent($query);
@@ -222,6 +264,7 @@ class SearchQueryTrackerTest extends KernelTestBase {
     $query = $this->createMock(Query::class);
     $query->method('getKeys')->willReturn('session test');
     $query->method('getIndex')->willReturn($index);
+    $query->method('getOption')->willReturn('saho_global_search');
     $query->method('getConditionGroup')->willReturn($this->createMock('Drupal\search_api\Query\ConditionGroupInterface'));
 
     $pre_event = new QueryPreExecuteEvent($query);

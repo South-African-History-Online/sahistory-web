@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SAHO 2027 · Wireframe blueprints</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+  /* ---- Wireframe blueprint palette (neutral, blueprint-not-brand) ---- */
+  :root {
+    --wf-work:   #d9d9d6;   /* workspace */
+    --wf-sheet:  #ffffff;   /* page sheet */
+    --wf-fill:   #ededeb;   /* greybox fill */
+    --wf-fill-2: #e3e3e0;   /* darker region */
+    --wf-fill-3: #d6d6d2;   /* emphasis region */
+    --wf-ink:    #2a2a28;   /* labels */
+    --wf-mut:    #7d7d78;   /* sub labels */
+    --wf-bar:    #cdcdc9;   /* text placeholder bars */
+    --wf-bar-d:  #b9b9b4;
+    --wf-border: #bcbcb6;
+    --wf-accent: #9a9a93;   /* content-type marker (kept neutral) */
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--wf-work); font-family: var(--font-sans); color: var(--wf-ink); }
+
+  /* ---- Doc header + index ---- */
+  .doc-head { background: var(--saho-ink); color: #ece8dd; padding: 28px var(--gutter-page); }
+  .doc-head h1 { font-family: var(--font-masthead); font-weight: 400; font-size: 34px; margin: 0 0 6px; color: #ece8dd; }
+  .doc-head p { font-family: var(--font-mono); font-size: 12px; letter-spacing: .04em; color: #b3ab97; margin: 0; max-width: none; }
+  .index { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 16px; }
+  .index a { font-family: var(--font-mono); font-size: 11px; letter-spacing: .03em; color: #d8cfb9; text-decoration: none; }
+  .index a:hover { color: #fff; }
+
+  /* ---- Sheet ---- */
+  .sheet { padding: 34px var(--gutter-page); border-bottom: 1px solid #c6c6c2; }
+  .sheet-head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 18px; }
+  .sheet-no { font-family: var(--font-mono); font-size: 12px; color: #fff; background: var(--saho-oxblood); padding: 3px 8px; }
+  .sheet-head h2 { font-family: var(--font-display); font-weight: 700; font-size: 22px; margin: 0; }
+  .sheet-tag { font-family: var(--font-mono); font-size: 11px; color: var(--wf-mut); letter-spacing: .04em; margin-left: auto; }
+  .sheet-body { display: grid; grid-template-columns: 1fr 290px; gap: 28px; align-items: start; }
+  @media (max-width: 1100px) { .sheet-body { grid-template-columns: 1fr; } }
+
+  .sheet-notes { font-family: var(--font-sans); font-size: 13px; line-height: 1.5; color: #3c3c39; }
+  .sheet-notes h4 { font-family: var(--font-mono); font-size: 10px; letter-spacing: .07em; text-transform: uppercase; color: var(--wf-mut); margin: 0 0 6px; }
+  .sheet-notes p { margin: 0 0 14px; max-width: none; }
+  .sheet-notes code { font-family: var(--font-mono); font-size: 12px; background: #e6e6e2; padding: 1px 4px; }
+  .sheet-notes ul { margin: 0 0 14px; padding-left: 16px; }
+  .sheet-notes li { margin-bottom: 3px; }
+
+  /* ---- The sheet canvas (a page) ---- */
+  .canvas { background: var(--wf-sheet); border: 1px solid var(--wf-border); padding: 18px; }
+  .stack { display: flex; flex-direction: column; gap: 14px; }
+
+  /* ---- Greybox primitives ---- */
+  .gb { background: var(--wf-fill); border: 1px solid var(--wf-border); position: relative; padding: 14px; min-height: 40px; }
+  .gb--2 { background: var(--wf-fill-2); }
+  .gb--3 { background: var(--wf-fill-3); }
+  .gb--dark { background: #3a3a36; }
+  .gb-label { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--wf-mut); display: block; margin-bottom: 8px; }
+  .gb--dark .gb-label { color: #b9b4a3; }
+  .row { display: flex; gap: 14px; }
+  .row > * { flex: 1; }
+  .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .grid6 { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+  .rail { display: grid; grid-template-columns: 1fr 240px; gap: 28px; align-items: start; }
+  .rail--wide { grid-template-columns: 1fr 280px; }
+
+  /* text placeholder bars */
+  .t { height: 9px; background: var(--wf-bar); border-radius: 0; margin-bottom: 7px; }
+  .t.d { background: var(--wf-bar-d); }
+  .t.tall { height: 15px; }
+  .t.huge { height: 26px; }
+  .w90{width:90%}.w80{width:80%}.w70{width:70%}.w60{width:60%}.w50{width:50%}.w40{width:40%}.w30{width:30%}.w25{width:25%}
+  .lines .t:last-child { margin-bottom: 0; }
+
+  /* image placeholder (crossed box) */
+  .img { background:
+      linear-gradient(to top right, transparent calc(50% - 1px), var(--wf-border), transparent calc(50% + 1px)),
+      linear-gradient(to top left, transparent calc(50% - 1px), var(--wf-border), transparent calc(50% + 1px)),
+      var(--wf-fill-2);
+    border: 1px solid var(--wf-border); }
+  .img.r43 { aspect-ratio: 4/3; }
+  .img.r34 { aspect-ratio: 3/4; }
+  .img.r169 { aspect-ratio: 16/9; }
+
+  /* chips / buttons / tabs as greyboxes */
+  .chips { display: flex; gap: 7px; flex-wrap: wrap; }
+  .chip { height: 24px; min-width: 56px; background: var(--wf-fill-3); border: 1px solid var(--wf-border); }
+  .chip.solid { background: var(--wf-accent); }
+  .btn { height: 30px; width: 120px; background: var(--wf-accent); border: 1px solid var(--wf-border); }
+  .btn.ghost { background: transparent; }
+  .marker { width: 9px; height: 9px; background: var(--wf-accent); flex: none; }
+
+  /* ruled table rows */
+  .tbl { border: 1px solid var(--wf-border); }
+  .tr { display: grid; grid-template-columns: 70px 130px 1fr 90px 50px; gap: 12px; padding: 9px 12px; border-bottom: 1px solid var(--wf-border); align-items: center; }
+  .tr:last-child { border-bottom: 0; }
+  .tr.head { background: var(--wf-fill-2); }
+  .tr .cell { height: 9px; background: var(--wf-bar); }
+  .tr.head .cell { background: var(--wf-bar-d); height: 7px; }
+
+  /* phones */
+  .phones { display: flex; gap: 22px; flex-wrap: wrap; }
+  .phone { width: 250px; background: var(--wf-sheet); border: 2px solid var(--wf-ink); padding: 10px; }
+  .phone .stack { gap: 10px; }
+  .phone .gb { padding: 10px; }
+
+  .tagrow { display: flex; gap: 8px; align-items: center; }
+  .accentbar { height: 4px; background: linear-gradient(90deg, var(--wf-accent) 0 62%, var(--wf-bar) 62% 100%); }
+  .hairline { height: 1px; background: var(--wf-border); }
+</style>
+</head>
+<body>
+<template id="__bundler_thumbnail">
+  <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" fill="#1b1c17"/><rect x="18" y="22" width="64" height="10" fill="#b88a2e"/><rect x="18" y="40" width="64" height="6" fill="#6b6c5f"/><rect x="18" y="52" width="44" height="6" fill="#6b6c5f"/><rect x="18" y="68" width="64" height="12" fill="#990000"/></svg>
+</template>
+
+<header class="doc-head">
+  <h1>SAHO 2027 · Wireframe blueprints</h1>
+  <p>Medium-fidelity greyboxes on the real grid · maps every template to its DS components and Drupal regions</p>
+  <nav class="index">
+    <a href="#wf01">01 Front page</a>
+    <a href="#wf02">02 Content-type landing</a>
+    <a href="#wf03">03 Biography record</a>
+    <a href="#wf04">04 Topic / Event article</a>
+    <a href="#wf05">05 Search & browse</a>
+    <a href="#wf06">06 Timeline</a>
+    <a href="#wf07">07 Editorial feature / campaign</a>
+    <a href="#wf08">08 Classroom / educator</a>
+    <a href="#wf09">09 Mobile · home</a>
+    <a href="#wf10">10 Mobile · record</a>
+    <a href="#wf11">11 Mobile · search</a>
+  </nav>
+</header>
+
+<!-- shared header greybox -->
+<!-- 01 FRONT PAGE -->
+<section class="sheet" id="wf01">
+  <div class="sheet-head"><span class="sheet-no">01</span><h2>Front page / Catalogue home</h2><span class="sheet-tag">Desktop · container-standard 1200</span></div>
+  <div class="sheet-body">
+    <div class="canvas">
+      <div class="accentbar"></div>
+      <div class="gb" style="margin:14px 0;"><span class="gb-label">SiteHeader · wordmark + nav + search icon</span><div class="row" style="align-items:center"><div class="t w40" style="margin:0"></div><div class="chips" style="justify-content:flex-end"><span class="chip"></span><span class="chip"></span><span class="chip"></span><span class="chip"></span><span class="chip solid" style="min-width:36px"></span></div></div></div>
+      <div class="stack">
+        <div class="gb"><span class="gb-label">SearchField · front-door query (full width)</span><div class="t tall w90" style="margin:0"></div></div>
+        <div class="gb--2 gb"><span class="gb-label">ArchiveStatusBar · record counts (mono)</span><div class="grid6"><div class="t w80" style="margin:0"></div><div class="t w80" style="margin:0"></div><div class="t w80" style="margin:0"></div><div class="t w80" style="margin:0"></div><div class="t w80" style="margin:0"></div><div class="t w80" style="margin:0"></div></div></div>
+        <div class="row">
+          <div class="gb--dark gb" style="flex:1.55"><span class="gb-label">Current feature · EDITORIAL register (Archivo)</span><div class="t huge w80" style="background:#6f6f68"></div><div class="t huge w60" style="background:#8a6a2e"></div><div class="lines" style="margin-top:12px"><div class="t w90" style="background:#55554f"></div><div class="t w80" style="background:#55554f"></div></div><div class="tagrow" style="margin-top:12px"><span class="btn" style="background:#8a8a82"></span><span class="btn ghost" style="border-color:#666"></span></div></div>
+          <div class="gb" style="flex:1"><span class="gb-label">This day in history · chronology entry</span><div class="stack" style="gap:10px"><div class="tagrow"><span class="marker"></span><div class="lines" style="flex:1"><div class="t w30"></div><div class="t w70" style="margin:0"></div></div></div><div class="hairline"></div><div class="tagrow"><span class="marker"></span><div class="lines" style="flex:1"><div class="t w30"></div><div class="t w70" style="margin:0"></div></div></div></div></div>
+        </div>
+        <div class="gb"><span class="gb-label">Browse the archive · ruled type index (6 content types)</span><div class="grid6">
+          <div class="gb--2 gb" style="min-height:54px;border-left:3px solid var(--wf-accent)"><div class="t w70" style="margin:0"></div></div>
+          <div class="gb--2 gb" style="min-height:54px;border-left:3px solid var(--wf-accent)"><div class="t w70" style="margin:0"></div></div>
+          <div class="gb--2 gb" style="min-height:54px;border-left:3px solid var(--wf-accent)"><div class="t w70" style="margin:0"></div></div>
+          <div class="gb--2 gb" style="min-height:54px;border-left:3px solid var(--wf-accent)"><div class="t w70" style="margin:0"></div></div>
+          <div class="gb--2 gb" style="min-height:54px;border-left:3px solid var(--wf-accent)"><div class="t w70" style="margin:0"></div></div>
+          <div class="gb--2 gb" style="min-height:54px;border-left:3px solid var(--wf-accent)"><div class="t w70" style="margin:0"></div></div>
+        </div></div>
+        <div class="gb"><span class="gb-label">IndexTable · recently added records</span>
+          <div class="tbl">
+            <div class="tr head"><span class="cell"></span><span class="cell"></span><span class="cell"></span><span class="cell"></span><span class="cell"></span></div>
+            <div class="tr"><span class="cell"></span><div class="tagrow"><span class="marker"></span><span class="cell" style="flex:1"></span></div><span class="cell w80"></span><span class="cell"></span><span class="cell"></span></div>
+            <div class="tr"><span class="cell"></span><div class="tagrow"><span class="marker"></span><span class="cell" style="flex:1"></span></div><span class="cell w70"></span><span class="cell"></span><span class="cell"></span></div>
+            <div class="tr"><span class="cell"></span><div class="tagrow"><span class="marker"></span><span class="cell" style="flex:1"></span></div><span class="cell w90"></span><span class="cell"></span><span class="cell"></span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <aside class="sheet-notes">
+      <h4>Purpose</h4>
+      <p>Not a splash. The catalogue front page: query box, live record counts, one editorial feature, the type index, and the most recent records as a table.</p>
+      <h4>DS components</h4>
+      <p><code>SiteHeader</code>, <code>SearchField</code>, <code>ArchiveStatusBar</code>, <code>HomeFeature</code> (editorial), <code>Timeline</code> teaser, <code>IndexTable</code>.</p>
+      <h4>Drupal mapping</h4>
+      <ul><li>Header/footer = theme regions + <code>page-footer</code> SDC.</li><li>Feature = a curated Node queue block.</li><li>Status counts = a small cached Views aggregate block.</li><li>Recent records = a Views table (fields: ref, type, title, dates, status).</li></ul>
+    </aside>
+  </div>
+</section>
+
+<!-- 02 CONTENT-TYPE LANDING -->
+<section class="sheet" id="wf02">
+  <div class="sheet-head"><span class="sheet-no">02</span><h2>Content-type landing (Biographies / Topics / Places / Events / Archive)</h2><span class="sheet-tag">Desktop · one parameterized template</span></div>
+  <div class="sheet-body">
+    <div class="canvas">
+      <div class="gb" style="border-top:3px solid var(--wf-accent)"><span class="gb-label">Landing header · type tab + title + count + intro</span><div class="tagrow" style="margin-bottom:10px"><span class="chip solid" style="min-width:80px"></span><div class="t w25" style="margin:0"></div></div><div class="t huge w60"></div><div class="t w50" style="margin-top:8px"></div></div>
+      <div class="rail--wide rail" style="margin-top:14px">
+        <div class="stack">
+          <div class="gb--2 gb"><span class="gb-label">Filter bar · era / theme / place Tags + sort</span><div class="chips"><span class="chip solid"></span><span class="chip"></span><span class="chip"></span><span class="chip"></span><span class="chip" style="margin-left:auto"></span></div></div>
+          <div class="gb"><span class="gb-label">IndexTable OR ArchiveCard grid (toggle)</span>
+            <div class="grid3" style="margin-top:4px">
+              <div class="gb--2 gb" style="border-left:3px solid var(--wf-accent);min-height:120px"><div class="t w40"></div><div class="t tall w90"></div><div class="t w80"></div></div>
+              <div class="gb--2 gb" style="border-left:3px solid var(--wf-accent);min-height:120px"><div class="t w40"></div><div class="t tall w90"></div><div class="t w80"></div></div>
+              <div class="gb--2 gb" style="border-left:3px solid var(--wf-accent);min-height:120px"><div class="t w40"></div><div class="t tall w90"></div><div class="t w80"></div></div>
+              <div class="gb--2 gb" style="border-left:3px solid var(--wf-accent);min-height:120px"><div class="t w40"></div><div class="t tall w90"></div><div class="t w80"></div></div>
+              <div class="gb--2 gb" style="border-left:3px solid var(--wf-accent);min-height:120px"><div class="t w40"></div><div class="t tall w90"></div><div class="t w80"></div></div>
+              <div class="gb--2 gb" style="border-left:3px solid var(--wf-accent);min-height:120px"><div class="t w40"></div><div class="t tall w90"></div><div class="t w80"></div></div>
+            </div>
+            <div class="tagrow" style="justify-content:center;margin-top:14px"><span class="btn ghost"></span></div>
+          </div>
+        </div>
+        <aside class="stack">
+          <div class="gb"><span class="gb-label">Facets · A–Z / era / place</span><div class="lines"><div class="t w90"></div><div class="t w70"></div><div class="t w80"></div><div class="t w60" style="margin:0"></div></div></div>
+          <div class="gb--2 gb"><span class="gb-label">Featured record</span><div class="img r43"></div></div>
+        </aside>
+      </div>
+    </div>
+    <aside class="sheet-notes">
+      <h4>Purpose</h4>
+      <p>One template drives all five content-type indexes. The type only changes the accent, the tab label and the default facets.</p>
+      <h4>DS components</h4>
+      <p><code>RecordHeader</code> (landing variant), <code>Tag</code> filters, <code>IndexTable</code> / <code>ArchiveCard</code> grid toggle, facet list.</p>
+      <h4>Drupal mapping</h4>
+      <ul><li>A single Views display with a contextual filter on content type.</li><li>Exposed filters = the Tag/facet UI (Facets module).</li><li>Grid/table = two Views formats behind a toggle.</li></ul>
+    </aside>
+  </div>
+</section>
+
+<!-- 03 BIOGRAPHY RECORD -->
+<section class="sheet" id="wf03">
+  <div class="sheet-head"><span class="sheet-no">03</span><h2>Biography record (detail) · the workhorse</h2><span class="sheet-tag">Desktop · also covers Place / Event / Archive detail</span></div>
+  <div class="sheet-body">
+    <div class="canvas">
+      <div class="t w30" style="margin-bottom:12px"></div>
+      <div class="gb" style="border-top:3px solid var(--wf-accent)"><span class="gb-label">RecordHeader · type tab · REF · status · title · key fields</span>
+        <div class="tagrow" style="margin-bottom:10px"><span class="chip solid" style="min-width:80px"></span><span class="chip" style="min-width:100px"></span><span class="chip" style="min-width:80px;margin-left:auto"></span></div>
+        <div class="t huge w70"></div>
+        <div class="row" style="margin-top:12px;gap:10px">
+          <div class="lines" style="flex:1"><div class="t w40"></div><div class="t w80" style="margin:0"></div></div>
+          <div class="lines" style="flex:1"><div class="t w40"></div><div class="t w80" style="margin:0"></div></div>
+          <div class="lines" style="flex:1"><div class="t w40"></div><div class="t w80" style="margin:0"></div></div>
+          <div class="lines" style="flex:1"><div class="t w40"></div><div class="t w80" style="margin:0"></div></div>
+        </div>
+      </div>
+      <div class="rail" style="margin-top:16px">
+        <div class="stack">
+          <div class="gb"><span class="gb-label">Article body · Caslon long-form + in-text cross-links</span><div class="lines"><div class="t w90"></div><div class="t w90"></div><div class="t w80"></div><div class="t w90"></div><div class="t w60"></div></div><div class="gb--2 gb" style="margin:12px 0;border-left:3px solid var(--wf-accent)"><span class="gb-label">Pull-quote</span><div class="t tall w80"></div><div class="t tall w60" style="margin:0"></div></div><div class="lines"><div class="t w90"></div><div class="t w80"></div><div class="t w90" style="margin:0"></div></div></div>
+          <div class="gb--2 gb" style="border-left:3px solid var(--wf-accent)"><span class="gb-label">ProvenanceBlock · “How we know this” + source list</span><div class="t w70"></div><div class="hairline" style="margin:8px 0"></div><div class="lines"><div class="t w90"></div><div class="t w80"></div><div class="t w85" style="margin:0"></div></div></div>
+          <div class="gb"><span class="gb-label">Citation · Cite this record (Chicago/APA/MLA)</span><div class="chips" style="margin-bottom:8px"><span class="chip solid" style="min-width:50px"></span><span class="chip" style="min-width:50px"></span><span class="chip" style="min-width:50px"></span></div><div class="t w90" style="margin:0"></div></div>
+        </div>
+        <aside class="stack">
+          <div class="gb"><span class="gb-label">ImageCredit · portrait (duotone) + credit</span><div class="img r34"></div><div class="t w80" style="margin-top:8px"></div></div>
+          <div class="gb--2 gb"><span class="gb-label">MetadataBlock · record fields</span><div class="lines"><div class="t w90"></div><div class="t w90"></div><div class="t w90"></div><div class="t w70" style="margin:0"></div></div></div>
+          <div class="gb"><span class="gb-label">Timeline · life chronology</span><div class="lines"><div class="tagrow"><span class="marker"></span><div class="t w70" style="margin:0"></div></div><div class="tagrow"><span class="marker"></span><div class="t w60" style="margin:0"></div></div><div class="tagrow"><span class="marker"></span><div class="t w80" style="margin:0"></div></div></div></div>
+          <div class="gb--2 gb"><span class="gb-label">RelatedList · linked records (typed)</span><div class="lines"><div class="tagrow"><span class="marker"></span><div class="t w70" style="margin:0"></div></div><div class="tagrow"><span class="marker"></span><div class="t w60" style="margin:0"></div></div><div class="tagrow"><span class="marker"></span><div class="t w80" style="margin:0"></div></div></div></div>
+        </aside>
+      </div>
+    </div>
+    <aside class="sheet-notes">
+      <h4>Purpose</h4>
+      <p>The entity detail view. A record with visible provenance and citation; the rail carries the structured fields, chronology and typed relations.</p>
+      <h4>DS components</h4>
+      <p><code>RecordHeader</code>, <code>ImageCredit</code>, <code>MetadataBlock</code>, <code>Timeline</code>, <code>RelatedList</code>, <code>ProvenanceBlock</code>, <code>Citation</code>.</p>
+      <h4>Drupal mapping</h4>
+      <ul><li>One node template per content type (SDC: <code>record-header</code>, <code>metadata-block</code>, <code>provenance-block</code>).</li><li>Relations = entity-reference fields rendered as <code>RelatedList</code>.</li><li>Chronology = referenced Event nodes.</li></ul>
+    </aside>
+  </div>
+</section>
+
+<!-- 04 TOPIC / EVENT ARTICLE -->
+<section class="sheet" id="wf04">
+  <div class="sheet-head"><span class="sheet-no">04</span><h2>Topic / Event article · long-form + chronology rail</h2><span class="sheet-tag">Desktop · reference register</span></div>
+  <div class="sheet-body">
+    <div class="canvas">
+      <div class="gb" style="border-top:3px solid var(--wf-accent)"><span class="gb-label">RecordHeader · type tab · REF · title · dateline</span><div class="tagrow" style="margin-bottom:10px"><span class="chip solid" style="min-width:70px"></span><span class="chip" style="min-width:90px;margin-left:auto"></span></div><div class="t huge w80"></div></div>
+      <div class="rail" style="margin-top:16px">
+        <div class="stack">
+          <div class="gb"><span class="gb-label">Lead + body · Caslon, generous measure, in-text cross-links</span><div class="lines"><div class="t tall w90"></div><div class="t w90"></div><div class="t w80"></div><div class="t w90"></div><div class="t w70"></div><div class="t w85"></div><div class="t w60" style="margin:0"></div></div></div>
+          <div class="gb--2 gb"><span class="gb-label">Inline ImageCredit (full-measure figure)</span><div class="img r169"></div><div class="t w70" style="margin-top:8px"></div></div>
+          <div class="gb"><span class="gb-label">Body continued + section headings</span><div class="t tall w50" style="margin-bottom:10px"></div><div class="lines"><div class="t w90"></div><div class="t w80"></div><div class="t w90" style="margin:0"></div></div></div>
+          <div class="gb--2 gb" style="border-left:3px solid var(--wf-accent)"><span class="gb-label">ProvenanceBlock + Citation</span><div class="t w70"></div><div class="hairline" style="margin:8px 0"></div><div class="lines"><div class="t w90"></div><div class="t w80" style="margin:0"></div></div></div>
+        </div>
+        <aside class="stack" style="position:sticky;top:10px">
+          <div class="gb"><span class="gb-label">Chronology rail (sticky) · Timeline</span><div class="lines"><div class="tagrow"><span class="marker"></span><div class="t w70" style="margin:0"></div></div><div class="tagrow"><span class="marker"></span><div class="t w60" style="margin:0"></div></div><div class="tagrow"><span class="marker"></span><div class="t w80" style="margin:0"></div></div><div class="tagrow"><span class="marker"></span><div class="t w50" style="margin:0"></div></div></div></div>
+          <div class="gb--2 gb"><span class="gb-label">On this page · in-text anchors</span><div class="lines"><div class="t w80"></div><div class="t w60"></div><div class="t w70" style="margin:0"></div></div></div>
+          <div class="gb"><span class="gb-label">RelatedList · linked records</span><div class="lines"><div class="tagrow"><span class="marker"></span><div class="t w70" style="margin:0"></div></div><div class="tagrow"><span class="marker"></span><div class="t w60" style="margin:0"></div></div></div></div>
+        </aside>
+      </div>
+    </div>
+    <aside class="sheet-notes">
+      <h4>Purpose</h4>
+      <p>Long-form reference with strong cross-linking. The sticky chronology rail anchors the reader in time as they scroll.</p>
+      <h4>DS components</h4>
+      <p><code>RecordHeader</code>, body prose, <code>ImageCredit</code>, sticky <code>Timeline</code>, <code>RelatedList</code>, <code>ProvenanceBlock</code>, <code>Citation</code>.</p>
+      <h4>Drupal mapping</h4>
+      <ul><li>Article/Event node template; body = filtered long-text with link fields.</li><li>Rail = a sidebar region; chronology from referenced events; “On this page” from heading anchors (JS).</li></ul>
+    </aside>
+  </div>
+</section>
+
+<!-- 05 SEARCH -->
+<section class="sheet" id="wf05">
+  <div class="sheet-head"><span class="sheet-no">05</span><h2>Search & browse · the front door</h2><span class="sheet-tag">Desktop · query → index table</span></div>
+  <div class="sheet-body">
+    <div class="canvas">
+      <div class="gb" style="margin-bottom:14px"><span class="gb-label">SearchField (large) + scope chips</span><div class="t huge w90"></div><div class="chips" style="margin-top:10px"><span class="chip solid"></span><span class="chip"></span><span class="chip"></span><span class="chip"></span><span class="chip"></span></div></div>
+      <div class="rail" style="grid-template-columns:240px 1fr">
+        <aside class="gb"><span class="gb-label">Facets · type · era · place (checkbox)</span><div class="lines" style="margin-top:6px"><div class="t w80"></div><div class="t w90"></div><div class="t w70"></div><div class="t w85"></div><div class="t w60"></div><div class="t w75" style="margin:0"></div></div></aside>
+        <section>
+          <div class="tagrow" style="margin-bottom:10px"><div class="t w30" style="margin:0"></div><div class="t w25" style="margin:0 0 0 auto"></div></div>
+          <div class="gb" style="padding:0"><span class="gb-label" style="padding:12px 12px 0">IndexTable · results (ref · type · record · dates · src)</span>
+            <div class="tbl" style="border:0;border-top:1px solid var(--wf-border);margin-top:8px">
+              <div class="tr head"><span class="cell"></span><span class="cell"></span><span class="cell"></span><span class="cell"></span><span class="cell"></span></div>
+              <div class="tr"><span class="cell"></span><div class="tagrow"><span class="marker"></span><span class="cell" style="flex:1"></span></div><span class="cell w90"></span><span class="cell"></span><span class="cell"></span></div>
+              <div class="tr"><span class="cell"></span><div class="tagrow"><span class="marker"></span><span class="cell" style="flex:1"></span></div><span class="cell w70"></span><span class="cell"></span><span class="cell"></span></div>
+              <div class="tr"><span class="cell"></span><div class="tagrow"><span class="marker"></span><span class="cell" style="flex:1"></span></div><span class="cell w80"></span><span class="cell"></span><span class="cell"></span></div>
+              <div class="tr"><span class="cell"></span><div class="tagrow"><span class="marker"></span><span class="cell" style="flex:1"></span></div><span class="cell w60"></span><span class="cell"></span><span class="cell"></span></div>
+              <div class="tr"><span class="cell"></span><div class="tagrow"><span class="marker"></span><span class="cell" style="flex:1"></span></div><span class="cell w90"></span><span class="cell"></span><span class="cell"></span></div>
+            </div>
+          </div>
+          <div class="tagrow" style="justify-content:center;margin-top:12px"><span class="chip"></span><span class="chip solid"></span><span class="chip"></span><span class="chip"></span></div>
+        </section>
+      </div>
+    </div>
+    <aside class="sheet-notes">
+      <h4>Purpose</h4>
+      <p>Fast, forgiving, prominent. A query returns a ruled index, not cards. Facets refine; results stay legible and dense.</p>
+      <h4>DS components</h4>
+      <p><code>SearchField</code>, facet checklist, <code>IndexTable</code> (sortable headers), pagination.</p>
+      <h4>Drupal mapping</h4>
+      <ul><li>Search API + Views; Facets module for the left rail.</li><li>Forgiving search = fuzzy/typo tolerance in Search API.</li><li>Type column swatch from content type.</li></ul>
+    </aside>
+  </div>
+</section>
+
+<!-- 06 TIMELINE -->
+<section class="sheet" id="wf06">
+  <div class="sheet-head"><span class="sheet-no">06</span><h2>Timeline · first-class navigational surface</h2><span class="sheet-tag">Desktop · filterable</span></div>
+  <div class="sheet-body">
+    <div class="canvas">
+      <div class="t huge w50" style="margin-bottom:6px"></div><div class="t w60" style="margin-bottom:14px"></div>
+      <div class="rail" style="grid-template-columns:1fr 240px">
+        <div class="gb"><span class="gb-label">Timeline · spine + square nodes + theme filters</span>
+          <div class="chips" style="margin-bottom:14px"><span class="chip solid"></span><span class="chip"></span><span class="chip"></span><span class="chip"></span></div>
+          <div style="border-left:2px solid var(--wf-accent);padding-left:18px">
+            <div class="lines" style="margin-bottom:16px"><div class="t w25"></div><div class="t tall w70"></div><div class="t w80" style="margin:0"></div></div>
+            <div class="lines" style="margin-bottom:16px"><div class="t w25"></div><div class="t tall w60"></div><div class="t w90" style="margin:0"></div></div>
+            <div class="lines" style="margin-bottom:16px"><div class="t w25"></div><div class="t tall w80"></div><div class="t w70" style="margin:0"></div></div>
+            <div class="lines"><div class="t w25"></div><div class="t tall w65"></div><div class="t w85" style="margin:0"></div></div>
+          </div>
+        </div>
+        <aside class="stack">
+          <div class="gb--2 gb"><span class="gb-label">Filter by era · Tags</span><div class="chips"><span class="chip"></span><span class="chip solid"></span><span class="chip"></span><span class="chip"></span></div></div>
+          <div class="gb--2 gb"><span class="gb-label">Filter by place · Tags + counts</span><div class="chips"><span class="chip"></span><span class="chip"></span><span class="chip"></span></div></div>
+        </aside>
+      </div>
+    </div>
+    <aside class="sheet-notes">
+      <h4>Purpose</h4>
+      <p>Chronology as navigation. Filter the record by theme, era and place to trace one thread across four centuries.</p>
+      <h4>DS components</h4>
+      <p><code>Timeline</code> (filterable), <code>Tag</code> facets.</p>
+      <h4>Drupal mapping</h4>
+      <ul><li>Views of Event nodes sorted by date; exposed filters for theme/era/place.</li><li>Progressive load by era to keep payload small.</li></ul>
+    </aside>
+  </div>
+</section>
+
+<!-- 07 EDITORIAL FEATURE -->
+<section class="sheet" id="wf07">
+  <div class="sheet-head"><span class="sheet-no">07</span><h2>Editorial feature / campaign · the bold register</h2><span class="sheet-tag">Desktop · Archivo, image-led</span></div>
+  <div class="sheet-body">
+    <div class="canvas">
+      <div class="gb--dark gb" style="min-height:260px;display:flex;flex-direction:column;justify-content:flex-end;border-top:4px solid var(--wf-accent)"><span class="gb-label">Full-bleed hero · duotone image + Archivo Black masthead</span><div class="t huge w70" style="background:#7a7a72;height:34px"></div><div class="t huge w50" style="background:#8a6a2e;height:34px"></div><div class="t w40" style="background:#55554f;margin-top:10px"></div></div>
+      <div class="rail" style="margin-top:16px">
+        <div class="stack">
+          <div class="gb"><span class="gb-label">Standfirst + body · opinionated layout</span><div class="t tall w90" style="margin-bottom:10px"></div><div class="lines"><div class="t w90"></div><div class="t w80"></div><div class="t w90" style="margin:0"></div></div></div>
+          <div class="row"><div class="gb--2 gb"><span class="gb-label">Pull image</span><div class="img r43"></div></div><div class="gb"><span class="gb-label">Block quote (Archivo)</span><div class="t tall w90"></div><div class="t tall w70" style="margin:0"></div></div></div>
+          <div class="gb"><span class="gb-label">Body continued</span><div class="lines"><div class="t w90"></div><div class="t w85"></div><div class="t w70" style="margin:0"></div></div></div>
+        </div>
+        <aside class="stack">
+          <div class="gb--2 gb"><span class="gb-label">Linked records · people/events in this story</span><div class="lines"><div class="tagrow"><span class="marker"></span><div class="t w70" style="margin:0"></div></div><div class="tagrow"><span class="marker"></span><div class="t w60" style="margin:0"></div></div><div class="tagrow"><span class="marker"></span><div class="t w80" style="margin:0"></div></div></div></div>
+          <div class="gb"><span class="gb-label">ProvenanceBlock · sources</span><div class="lines"><div class="t w90"></div><div class="t w70" style="margin:0"></div></div></div>
+        </aside>
+      </div>
+    </div>
+    <aside class="sheet-notes">
+      <h4>Purpose</h4>
+      <p>Public history in action: commemorations and campaigns. The expressive register · bold Archivo, full-bleed duotone imagery · while drawing from the same colour discipline and still showing sources.</p>
+      <h4>DS components</h4>
+      <p><code>.saho-editorial-title</code> (Archivo Black), full-bleed <code>ImageCredit</code>, <code>RelatedList</code>, <code>ProvenanceBlock</code>.</p>
+      <h4>Drupal mapping</h4>
+      <ul><li>A “Feature” content type or Layout Builder layout with hero + flexible sections.</li><li>Still renders the provenance block · editorial never drops sourcing.</li></ul>
+    </aside>
+  </div>
+</section>
+
+<!-- 08 CLASSROOM -->
+<section class="sheet" id="wf08">
+  <div class="sheet-head"><span class="sheet-no">08</span><h2>Classroom / educator landing</h2><span class="sheet-tag">Desktop · grade-aligned entry points</span></div>
+  <div class="sheet-body">
+    <div class="canvas">
+      <div class="gb" style="border-top:3px solid var(--wf-accent)"><span class="gb-label">Header · “Classroom” + intro for educators</span><div class="t huge w50"></div><div class="t w60" style="margin-top:8px"></div></div>
+      <div class="gb--2 gb" style="margin:14px 0"><span class="gb-label">Grade / phase selector · Tags</span><div class="chips"><span class="chip solid"></span><span class="chip"></span><span class="chip"></span><span class="chip"></span><span class="chip"></span></div></div>
+      <div class="gb"><span class="gb-label">Curriculum-aligned collections · ArchiveCard grid</span>
+        <div class="grid3" style="margin-top:4px">
+          <div class="gb--2 gb" style="border-left:3px solid var(--wf-accent);min-height:140px"><div class="img r169" style="margin-bottom:8px"></div><div class="t w40"></div><div class="t tall w90"></div><div class="t w70" style="margin:0"></div></div>
+          <div class="gb--2 gb" style="border-left:3px solid var(--wf-accent);min-height:140px"><div class="img r169" style="margin-bottom:8px"></div><div class="t w40"></div><div class="t tall w90"></div><div class="t w70" style="margin:0"></div></div>
+          <div class="gb--2 gb" style="border-left:3px solid var(--wf-accent);min-height:140px"><div class="img r169" style="margin-bottom:8px"></div><div class="t w40"></div><div class="t tall w90"></div><div class="t w70" style="margin:0"></div></div>
+        </div>
+      </div>
+      <div class="row" style="margin-top:14px"><div class="gb"><span class="gb-label">How to use the archive in class</span><div class="lines"><div class="t w90"></div><div class="t w80" style="margin:0"></div></div></div><div class="gb--2 gb"><span class="gb-label">Downloadable lesson packs</span><div class="lines"><div class="t w70"></div><div class="t w60" style="margin:0"></div></div></div></div>
+    </div>
+    <aside class="sheet-notes">
+      <h4>Purpose</h4>
+      <p>Grade-aligned doors into the reference material. Educators pick a phase and get curated collections and lesson packs that link back into records.</p>
+      <h4>DS components</h4>
+      <p><code>RecordHeader</code> (landing), <code>Tag</code> grade selector, <code>ArchiveCard</code> grid, download list.</p>
+      <h4>Drupal mapping</h4>
+      <ul><li>Taxonomy: CAPS grade/phase; collections = curated node queues.</li><li>Lesson packs = file/media fields.</li></ul>
+    </aside>
+  </div>
+</section>
+
+<!-- 09-11 MOBILE -->
+<section class="sheet" id="wf09">
+  <div class="sheet-head"><span class="sheet-no">09</span><h2>Mobile · the majority case</h2><span class="sheet-tag">~360px · mid-range Android, metered data</span></div>
+  <div class="sheet-body">
+    <div>
+      <div class="phones">
+        <div class="phone"><span class="gb-label" style="margin-bottom:8px">Home</span><div class="stack">
+          <div class="row" style="align-items:center"><div class="t w50" style="margin:0"></div><span class="chip solid" style="min-width:28px;margin-left:auto"></span></div>
+          <div class="gb"><span class="gb-label">SearchField</span><div class="t tall" style="margin:0"></div></div>
+          <div class="gb--2 gb"><span class="gb-label">Status counts (scroll-x)</span><div class="chips"><span class="chip"></span><span class="chip"></span><span class="chip"></span></div></div>
+          <div class="gb--dark gb"><span class="gb-label">Feature (editorial)</span><div class="t tall w80" style="background:#6f6f68"></div><div class="t tall w60" style="background:#8a6a2e;margin:0"></div></div>
+          <div class="gb"><span class="gb-label">Browse types (stacked)</span><div class="lines"><div class="t w90"></div><div class="t w90"></div><div class="t w90" style="margin:0"></div></div></div>
+          <div class="gb"><span class="gb-label">Recent records (card list, not table)</span><div class="lines"><div class="t w90"></div><div class="t w80"></div><div class="t w90" style="margin:0"></div></div></div>
+        </div></div>
+        <div class="phone" id="wf10-frame"><span class="gb-label" style="margin-bottom:8px">Record / article <span style="color:var(--wf-accent)">(#wf10)</span></span><div class="stack">
+          <div class="gb" style="border-top:3px solid var(--wf-accent)"><span class="gb-label">RecordHeader (stacked)</span><span class="chip solid" style="min-width:60px"></span><div class="t tall w90" style="margin-top:8px"></div></div>
+          <div class="gb--2 gb"><span class="gb-label">Key fields (full-width table)</span><div class="lines"><div class="t w90"></div><div class="t w80" style="margin:0"></div></div></div>
+          <div class="gb"><span class="gb-label">Body · Caslon, single column</span><div class="lines"><div class="t w90"></div><div class="t w85"></div><div class="t w90"></div><div class="t w60" style="margin:0"></div></div></div>
+          <div class="gb--2 gb" style="border-left:3px solid var(--wf-accent)"><span class="gb-label">Provenance (collapsible)</span><div class="t w80" style="margin:0"></div></div>
+          <div class="gb"><span class="gb-label">Related (accordion)</span><div class="t w70" style="margin:0"></div></div>
+        </div></div>
+        <div class="phone" id="wf11-frame"><span class="gb-label" style="margin-bottom:8px">Search <span style="color:var(--wf-accent)">(#wf11)</span></span><div class="stack">
+          <div class="gb"><span class="gb-label">SearchField</span><div class="t tall" style="margin:0"></div></div>
+          <div class="gb--2 gb"><span class="gb-label">Filters (bottom-sheet trigger)</span><div class="tagrow"><span class="chip"></span><span class="chip"></span><span class="chip" style="margin-left:auto"></span></div></div>
+          <div class="gb"><span class="gb-label">Results · stacked rows (ref · type · title)</span><div class="lines"><div class="tagrow"><span class="marker"></span><div class="t w70" style="margin:0"></div></div><div class="hairline" style="margin:6px 0"></div><div class="tagrow"><span class="marker"></span><div class="t w60" style="margin:0"></div></div><div class="hairline" style="margin:6px 0"></div><div class="tagrow"><span class="marker"></span><div class="t w80" style="margin:0"></div></div></div></div>
+        </div></div>
+      </div>
+    </div>
+    <aside class="sheet-notes">
+      <h4>Purpose</h4>
+      <p>Mobile is the majority case on mid-range Android over metered data. Tables collapse to stacked rows; rails move below content; facets become a bottom sheet. Hit targets ≥ 44px.</p>
+      <h4>Performance</h4>
+      <ul><li>Self-hosted, subset fonts; system-font fallback while swapping.</li><li>Progressive image loading; duotone via CSS, not baked assets.</li><li>No table horizontal-scroll · re-layout to cards.</li></ul>
+      <h4>Drupal mapping</h4>
+      <ul><li>Single responsive theme; Views row templates switch format by breakpoint via CSS.</li></ul>
+    </aside>
+  </div>
+</section>
+<section id="wf10" style="height:0"></section>
+<section id="wf11" style="height:0"></section>
+
+</body>
+</html>

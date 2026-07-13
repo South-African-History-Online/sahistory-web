@@ -1,11 +1,17 @@
 # Drupal 11 Single Directory Component (SDC) Definition
-# SAHO Hero Banner Component - Full-width hero banner with responsive images and CTA
+# SAHO Hero Banner - the wf07 editorial-feature hero (Open Record register).
+#
+# Contract (#461): bottom-left anchored content on a flat ink band, duotone
+# image, mono kicker, mandatory image credit, max two CTAs (solid + ghost),
+# content-type accent top rule. Nothing centered, no overlay, no text-shadow.
+# The graphic display mode (full-image clickable banner, no text) is a
+# separate promotional use and keeps its own rendering path.
 
 '$schema': https://git.drupalcode.org/project/drupal/-/raw/11.0.x/core/modules/sdc/src/metadata.schema.json
 
 name: SAHO Hero Banner
 machine_name: saho_hero_banner
-description: 'Full-width hero banner with background image, overlay, and CTA button. Optimized for mobile with responsive images and smooth animations.'
+description: 'wf07 editorial hero: duotone image over a flat ink band with mono kicker, masthead, standfirst, up to two CTAs and a mono image credit.'
 status: stable
 group: Layout
 category: Sections
@@ -15,37 +21,44 @@ props:
   properties:
     title:
       type: string
-      title: Hero Title
+      title: Masthead
       description: Main heading text
-    title_color:
+    heading_level:
       type: string
-      title: Title Color
-      description: Color variant for title text
-      enum: [white, red, gold, green]
-      default: white
+      title: Heading level
+      description: Heading element for the masthead (h2 unless the hero owns the page title)
+      enum: [h1, h2]
+      default: h2
+    kicker:
+      type: string
+      title: Kicker
+      description: 'Mono eyebrow line, e.g. CURRENT FEATURE · COMMEMORATION. Required editorially for every filled hero.'
     subtitle:
       type: string
-      title: Subtitle
-      description: Optional subtitle text
+      title: Standfirst
+      description: Optional one-line standfirst (Caslon, soft on ink)
     body:
       type: string
       title: Body Content
-      description: Optional body content (HTML allowed)
+      description: Optional supporting copy (HTML allowed)
+    accent:
+      type: string
+      title: Content-type accent
+      description: Paints the 4px top rule
+      enum: [article, biography, place, archive, event, topic]
+      default: archive
     background_image:
       type: string
       title: Background Image URL
-      description: Desktop background image URL
+      description: Desktop background image URL (rendered duotone)
     background_image_mobile:
       type: string
       title: Mobile Background Image URL
       description: Optional mobile-optimized image URL
-    overlay_opacity:
-      type: number
-      title: Overlay Opacity
-      description: Dark overlay opacity (0-100)
-      minimum: 0
-      maximum: 100
-      default: 40
+    credit:
+      type: string
+      title: Image credit
+      description: 'Mono provenance line for the image. Required editorially whenever an image is set (enforced in the block form).'
     display_mode:
       type: string
       title: Display Mode
@@ -54,49 +67,51 @@ props:
       default: standard
     button_text:
       type: string
-      title: CTA Button Text
-      description: Call-to-action button text
+      title: Primary CTA text
+      description: Verb-led label; renders as the solid oxblood action
     button_url:
       type: string
-      title: CTA Button URL
-      description: Call-to-action button URL
+      title: Primary CTA URL
     button_target:
       type: string
-      title: Button Link Target
+      title: Primary CTA target
       description: Link target (_self or _blank)
       default: _self
     button_rel:
       type: string
-      title: Button Link Rel
+      title: Primary CTA rel
       description: Link rel attribute for external links
-    button_style:
+    button2_text:
       type: string
-      title: Button Style
-      description: Visual style of the button
-      enum: [solid, ghost]
-      default: solid
+      title: Secondary CTA text
+      description: Optional second action; renders as the ghost button. The contract allows at most two CTAs.
+    button2_url:
+      type: string
+      title: Secondary CTA URL
     image_width:
-      type: number
+      # Nullable: hero often renders without explicit dimensions (Drupal 11.4
+      # SDC validation rejects a bare `number` when null is passed).
+      type: [number, 'null']
       title: Image Width
       description: Image width for CLS prevention
     image_height:
-      type: number
+      type: [number, 'null']
       title: Image Height
       description: Image height for CLS prevention
+    title_color:
+      type: string
+      title: 'Deprecated: Title Color'
+      description: 'Legacy prop, no longer rendered - the masthead is always paper on ink.'
+    overlay_opacity:
+      type: number
+      title: 'Deprecated: Overlay Opacity'
+      description: 'Legacy prop, no longer rendered - the system is flat; legibility comes from the ink band.'
     attributes:
-      type: object
+      # Accept the Drupal Attribute object or an empty string (11.4 passes the
+      # rendered attributes which can arrive as a string).
+      type: [object, string]
       title: HTML Attributes
       description: Additional HTML attributes (class, id, data-*, etc.)
-      properties:
-        class:
-          type: array
-          title: CSS Classes
-          description: Additional CSS classes
-          items:
-            type: string
-        id:
-          type: string
-          title: Element ID
   required:
     - title
     - background_image

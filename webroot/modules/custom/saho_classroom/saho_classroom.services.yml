@@ -1,0 +1,33 @@
+# Service wiring for the SAHO Classroom topic spine (issue #435 / #445).
+#
+# The module is not enabled yet; this file registers the read-only topic-spine
+# assembler so it is ready the moment the module is turned on. The interface is
+# aliased to the concrete service so consumers (blocks, controllers, JSON:API
+# resources) can type-hint TopicSpineInterface and get autowired.
+services:
+  saho_classroom.topic_spine:
+    class: Drupal\saho_classroom\TopicSpineBuilderImpl
+    arguments:
+      - '@entity_type.manager'
+
+  Drupal\saho_classroom\TopicSpineInterface: '@saho_classroom.topic_spine'
+
+  # Reproducible content sync: builds presentation nodes from the committed
+  # slide-schema JSON files (source of truth). Invoked by the deploy hook so the
+  # classroom reproduces identically on local, staging and production.
+  saho_classroom.term_seeder:
+    class: Drupal\saho_classroom\TermSeeder
+    arguments:
+      - '@entity_type.manager'
+      - '@extension.list.module'
+      - '@logger.factory'
+
+  saho_classroom.deck_sync:
+    class: Drupal\saho_classroom\DeckSync
+    arguments:
+      - '@entity_type.manager'
+      - '@extension.list.module'
+      - '@logger.factory'
+      - '@language_manager'
+      # Optional: alias refresh is skipped when pathauto is not installed.
+      - '@?pathauto.generator'

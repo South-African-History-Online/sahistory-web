@@ -1,0 +1,20 @@
+{#
+/**
+ * @file SAHO Search field SDC. props: placeholder, action, size, button_label, scopes[]
+ */
+#}
+<div{{ attributes.addClass(['saho-search', 'saho-search--' ~ (size|default('lg'))]) }}>
+  <form class="saho-search__form" action="{{ action|default('/search') }}" method="get" role="search">
+    <span class="saho-search__icon" aria-hidden="true">&#9906;</span>
+    <label class="visually-hidden" for="saho-search-input">{{ placeholder }}</label>
+    <input class="saho-search__input" id="saho-search-input" type="search" name="q" placeholder="{{ placeholder|default('Search people, events, places, dates…') }}" />
+    <button class="saho-search__submit" type="submit">{{ button_label|default('Search') }}</button>
+  </form>
+  {% if scopes %}
+    <div class="saho-search__scopes" data-saho-scopes role="group" aria-label="Search scope">
+      {% for s in scopes %}
+        <button type="button" class="saho-search__scope{{ loop.first ? ' is-active' : '' }}" data-scope="{{ s }}">{{ s }}</button>
+      {% endfor %}
+    </div>
+  {% endif %}
+</div>

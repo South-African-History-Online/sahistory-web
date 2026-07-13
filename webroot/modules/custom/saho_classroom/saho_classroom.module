@@ -1,0 +1,524 @@
+<?php
+
+/**
+ * @file
+ * Hook implementations for the SAHO Classroom module.
+ */
+
+declare(strict_types=1);
+
+use Drupal\Core\Cache\Cache;
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Language\LanguageInterface;
+use Drupal\Core\Url;
+use Drupal\node\NodeInterface;
+use Drupal\views\ViewExecutable;
+
+/**
+ * Implements hook_theme().
+ */
+function saho_classroom_theme(): array {
+  return [
+    'saho_translation_switcher' => [
+      'variables' => [
+        'links' => [],
+        'count' => 0,
+      ],
+    ],
+  ];
+}
+
+/**
+ * Implements hook_views_pre_view().
+ *
+ * The CAPS-topic facet depends on grade (#466): with no grade selected the
+ * topic chips are hidden, so a topic value left in the URL must not keep
+ * filtering the results invisibly.
+ */
+function saho_classroom_views_pre_view(ViewExecutable $view, $display_id, array &$args): void {
+  if ($view->id() !== 'classroom') {
+    return;
+  }
+  $input = $view->getExposedInput();
+  $changed = FALSE;
+  if (empty($input['grade']) && isset($input['caps_topic'])) {
+    unset($input['caps_topic']);
+    $changed = TRUE;
+  }
+  // Selecting a phase means its grades (#466): expand phase terms into
+  // their grade children so the OR-group actually returns results (content
+  // is tagged with grades, not phases).
+  if (!empty($input['grade']) && is_array($input['grade'])) {
+    $term_storage = \Drupal::entityTypeManager()->getStorage('taxonomy_term');
+    $expanded = [];
+    foreach ($input['grade'] as $tid) {
+      if (!is_numeric($tid)) {
+        continue;
+      }
+      $children = $term_storage->loadChildren((int) $tid, 'classroom_grade');
+      if ($children) {
+        foreach ($children as $child) {
+          $expanded[(int) $child->id()] = (int) $child->id();
+        }
+        $changed = TRUE;
+      }
+      else {
+        $expanded[(int) $tid] = (int) $tid;
+      }
+    }
+    if ($changed) {
+      $input['grade'] = $expanded;
+    }
+  }
+  if ($changed) {
+    $view->setExposedInput($input);
+  }
+}
+
+/**
+ * Implements hook_form_alter().
+ *
+ * Turns the CAPS-topic exposed filter into a grade-dependent facet (#466):
+ * teachers arrive knowing their grade, not our taxonomy. With no grade
+ * selected the topic group is hidden entirely; with grades selected, only
+ * the CAPS topics of those grades render (as chips - the widget is a BEF
+ * links element, styled by the classroom-hub chip CSS). The caps_topic
+ * vocabulary nests topics under one parent term per grade, so parentage
+ * is matched to the selected classroom_grade labels; picking a phase term
+ * means all of its grade children.
+ */
+function saho_classroom_form_views_exposed_form_alter(array &$form, FormStateInterface $form_state, string $form_id): void {
+  if (($form['#id'] ?? '') !== 'views-exposed-form-classroom-page-1') {
+    return;
+  }
+
+  // wf08 composition (#466): grade (and topic) lead; resource type and
+  // subject fold into a collapsed Refine row so resources render above the
+  // fold. The details wrapper stays flat (#tree off) so input names and the
+  // view's exposed identifiers keep matching.
+  $form['refine'] = [
+    '#type' => 'details',
+    '#title' => t('Refine'),
+    '#open' => FALSE,
+    '#weight' => 40,
+    '#attributes' => ['class' => ['saho-classroom-refine']],
+  ];
+  foreach (['resource_type', 'subject'] as $key) {
+    if (isset($form[$key])) {
+      $form['refine'][$key] = $form[$key];
+      unset($form[$key]);
+    }
+  }
+
+  if (empty($form['caps_topic']['#options'])) {
+    return;
+  }
+
+  $grade_input = $form_state->getUserInput()['grade'] ?? [];
+  $grade_tids = array_filter(is_array($grade_input) ? $grade_input : [$grade_input], 'is_numeric');
+  if (!$grade_tids) {
+    $form['caps_topic']['#access'] = FALSE;
+    return;
+  }
+
+  $term_storage = \Drupal::entityTypeManager()->getStorage('taxonomy_term');
+
+  // Selected grade labels; a phase selection expands to its grade children.
+  $grade_names = [];
+  foreach ($term_storage->loadMultiple($grade_tids) as $grade_term) {
+    $children = $term_storage->loadChildren($grade_term->id(), 'classroom_grade');
+    $terms = $children ?: [$grade_term];
+    foreach ($terms as $term) {
+      $grade_names[mb_strtolower((string) $term->label())] = TRUE;
+    }
+  }
+
+  // Keep only the CAPS topics whose parent term matches a selected grade;
+  // the per-grade parent rows themselves are grouping, not topics.
+  $topic_tids = array_filter(array_keys($form['caps_topic']['#options']), 'is_numeric');
+  $topics = $term_storage->loadMultiple($topic_tids);
+  foreach ($form['caps_topic']['#options'] as $tid => $label) {
+    if (!is_numeric($tid)) {
+      continue;
+    }
+    $topic = $topics[$tid] ?? NULL;
+    $parent_id = $topic ? (int) ($topic->get('parent')->target_id ?? 0) : 0;
+    if (!$topic || !$parent_id) {
+      unset($form['caps_topic']['#options'][$tid]);
+      continue;
+    }
+    $parent = $topics[$parent_id] ?? $term_storage->load($parent_id);
+    if (!$parent || empty($grade_names[mb_strtolower((string) $parent->label())])) {
+      unset($form['caps_topic']['#options'][$tid]);
+      continue;
+    }
+    // Strip the hierarchy indent dashes the select-based options carry.
+    $form['caps_topic']['#options'][$tid] = ltrim((string) $label, '- ');
+  }
+
+  // Nothing matched for the selected grades: hide, not an empty group.
+  if (!array_filter(array_keys($form['caps_topic']['#options']), 'is_numeric')) {
+    $form['caps_topic']['#access'] = FALSE;
+  }
+}
+
+/**
+ * Implements hook_preprocess_node().
+ *
+ * Attaches the resource-type badge styling to presentation nodes.
+ */
+function saho_classroom_preprocess_node(array &$variables): void {
+  $node = $variables['node'] ?? NULL;
+  if ($node instanceof EntityInterface && $node->bundle() === 'presentation') {
+    $variables['#attached']['library'][] = 'saho_classroom/badge';
+  }
+}
+
+/**
+ * Implements hook_preprocess_views_view().
+ *
+ * Loads the badge styling on the classroom presentations browse.
+ */
+function saho_classroom_preprocess_views_view(array &$variables): void {
+  $view = $variables['view'] ?? NULL;
+  if ($view && $view->id() === 'classroom_presentations') {
+    $variables['#attached']['library'][] = 'saho_classroom/badge';
+  }
+}
+
+/**
+ * Implements hook_node_view().
+ *
+ * Adds a prominent teacher quick-link to legacy classroom content. When a
+ * presentation deck matches the topic (by comparing the article title with each
+ * deck's caps_topic), it links straight to that deck; otherwise it links to the
+ * presentations browse. The match is computed in code from the committed decks,
+ * so it reproduces identically on every environment.
+ */
+function saho_classroom_node_view(array &$build, EntityInterface $node, $display, $view_mode): void {
+  if ($view_mode !== 'full' || !$node instanceof NodeInterface) {
+    return;
+  }
+  // Presentations get the reverse link: back to the article they came from.
+  if ($node->bundle() === 'presentation') {
+    _saho_classroom_add_origin_link($build, $node);
+    return;
+  }
+  $is_classroom = FALSE;
+  foreach (['field_classroom_categories', 'field_classroom'] as $field) {
+    if ($node->hasField($field) && !$node->get($field)->isEmpty()) {
+      $is_classroom = TRUE;
+      break;
+    }
+  }
+  if (!$is_classroom) {
+    return;
+  }
+
+  $deck = _saho_classroom_match_deck($node);
+  // Follow the reader into their language: link the matching deck translation
+  // rather than always the English default.
+  if ($deck) {
+    $deck = _saho_classroom_active_translation($deck);
+  }
+  $url = $deck ? $deck->toUrl() : Url::fromUserInput('/classroom/presentations');
+  $link_text = $deck ? t('Open the presentation') : t('Open presentations');
+  $title = $deck
+    ? t('Teach this topic with a ready-made, print-friendly presentation deck.')
+    : t('Teach this in the classroom - interactive, print-ready presentations.');
+
+  $build['saho_classroom_presentations_cta'] = [
+    '#type' => 'container',
+    '#weight' => -100,
+    '#attributes' => ['class' => ['saho-classroom-cta']],
+    '#attached' => ['library' => ['saho_classroom/badge']],
+    // Recompute if the set of presentation decks changes; the resolved link
+    // varies by the reader's content language.
+    '#cache' => [
+      'tags' => ['node_list'],
+      'contexts' => ['languages:language_content'],
+    ],
+    'text' => [
+      '#type' => 'html_tag',
+      '#tag' => 'div',
+      '#attributes' => ['class' => ['saho-classroom-cta__text']],
+      'eyebrow' => [
+        '#type' => 'html_tag',
+        '#tag' => 'span',
+        '#attributes' => ['class' => ['saho-classroom-cta__eyebrow']],
+        '#value' => t('For teachers'),
+      ],
+      'title' => [
+        '#type' => 'html_tag',
+        '#tag' => 'span',
+        '#attributes' => ['class' => ['saho-classroom-cta__title']],
+        '#value' => $title,
+      ],
+    ],
+    'link' => [
+      '#type' => 'link',
+      '#title' => $link_text,
+      '#url' => $url,
+      '#attributes' => ['class' => ['saho-classroom-cta__btn']],
+    ],
+  ];
+}
+
+/**
+ * Adds a strip under a presentation deck linking back to its origin article.
+ *
+ * The reverse of the teacher CTA on legacy articles: learners and teachers
+ * arriving at a deck can step back into the full SAHO article the lesson
+ * covers, with its sources and further reading.
+ */
+function _saho_classroom_add_origin_link(array &$build, NodeInterface $deck): void {
+  $article = _saho_classroom_match_article($deck);
+  if (!$article) {
+    return;
+  }
+  // Link the article translation the reader is on, when it exists.
+  $article = _saho_classroom_active_translation($article);
+  $build['saho_classroom_origin'] = [
+    '#type' => 'container',
+    // Directly under the deck (weight 0), above sharing/body/meta fields.
+    '#weight' => 10,
+    '#attributes' => ['class' => ['saho-classroom-origin']],
+    '#attached' => ['library' => ['saho_classroom/badge']],
+    // Recompute when articles change so the match stays current; the resolved
+    // link and title vary by the reader's content language.
+    '#cache' => [
+      'tags' => Cache::mergeTags(['node_list'], $article->getCacheTags()),
+      'contexts' => ['languages:language_content'],
+    ],
+    'text' => [
+      '#type' => 'html_tag',
+      '#tag' => 'div',
+      '#attributes' => ['class' => ['saho-classroom-origin__text']],
+      'eyebrow' => [
+        '#type' => 'html_tag',
+        '#tag' => 'span',
+        '#attributes' => ['class' => ['saho-classroom-origin__eyebrow']],
+        '#value' => t('Go deeper'),
+      ],
+      'title' => [
+        '#type' => 'html_tag',
+        '#tag' => 'span',
+        '#attributes' => ['class' => ['saho-classroom-origin__title']],
+        '#value' => t('This lesson is based on the article "@title".', ['@title' => $article->label()]),
+      ],
+    ],
+    'link' => [
+      '#type' => 'link',
+      '#title' => t('Read the full article'),
+      '#url' => $article->toUrl(),
+      '#attributes' => ['class' => ['saho-classroom-origin__btn']],
+    ],
+  ];
+}
+
+/**
+ * Finds the article a presentation deck was made from, if any.
+ *
+ * Reverse of _saho_classroom_match_deck(): the same deterministic token
+ * overlap between the deck's caps_topic term (falling back to the deck's
+ * source-language title, since translated titles share no tokens with the
+ * English article titles) and each published classroom article's title.
+ * Pure code + a runtime query - no stored mapping - so it reproduces on
+ * any environment.
+ *
+ * @param \Drupal\node\NodeInterface $deck
+ *   The presentation node (any translation).
+ *
+ * @return \Drupal\node\NodeInterface|null
+ *   The best-matching classroom article, or NULL when none is confident.
+ */
+function _saho_classroom_match_article(NodeInterface $deck): ?NodeInterface {
+  // Memoise per request keyed by the source deck: a page that renders the
+  // same node more than once must not re-scan the article corpus each time.
+  $resolved = &drupal_static(__FUNCTION__, []);
+  $source_id = (int) $deck->getUntranslated()->id();
+
+  if (!array_key_exists($source_id, $resolved)) {
+    $resolved[$source_id] = NULL;
+    $topic = '';
+    if ($deck->hasField('field_caps_topic') && !$deck->get('field_caps_topic')->isEmpty()) {
+      $term = $deck->get('field_caps_topic')->entity;
+      if ($term) {
+        $topic = (string) $term->label();
+      }
+    }
+    if ($topic === '') {
+      $topic = (string) $deck->getUntranslated()->label();
+    }
+    $topic_tokens = _saho_classroom_tokens($topic);
+    if ($topic_tokens) {
+      $storage = \Drupal::entityTypeManager()->getStorage('node');
+      $query = $storage->getQuery()
+        ->accessCheck(TRUE)
+        ->condition('type', 'article')
+        ->condition('status', 1);
+      $query->condition($query->orConditionGroup()
+        ->exists('field_classroom_categories')
+        ->exists('field_classroom'));
+      $ids = $query->execute();
+      if ($ids) {
+        // Titles only - matching every classroom article needs no full loads.
+        $titles = \Drupal::database()->select('node_field_data', 'n')
+          ->fields('n', ['nid', 'title'])
+          ->condition('n.nid', $ids, 'IN')
+          ->condition('n.default_langcode', 1)
+          ->execute()
+          ->fetchAllKeyed();
+        $candidates = [];
+        foreach ($titles as $nid => $title) {
+          $candidates[$nid] = _saho_classroom_tokens((string) $title);
+        }
+        // Score every article against the fixed deck topic (denominator is
+        // the deck's own token count).
+        $resolved[$source_id] = _saho_classroom_best_match($topic_tokens, $candidates, FALSE);
+      }
+    }
+  }
+
+  if ($resolved[$source_id] === NULL) {
+    return NULL;
+  }
+  $article = \Drupal::entityTypeManager()->getStorage('node')->load($resolved[$source_id]);
+  return $article instanceof NodeInterface ? $article : NULL;
+}
+
+/**
+ * Finds the presentation deck whose topic best matches an article, if any.
+ *
+ * Deterministic token overlap between the article title and each published
+ * deck's caps_topic term (falling back to the deck title). Pure code + a
+ * runtime query - no stored mapping - so it reproduces on any environment.
+ *
+ * @param \Drupal\node\NodeInterface $article
+ *   The legacy classroom article.
+ *
+ * @return \Drupal\node\NodeInterface|null
+ *   The best-matching presentation node, or NULL when none is confident.
+ */
+function _saho_classroom_match_deck(NodeInterface $article): ?NodeInterface {
+  // Memoise per request keyed by the source article: a presentation page may
+  // resolve the same article context more than once per render.
+  $resolved = &drupal_static(__FUNCTION__, []);
+  $source_id = (int) $article->getUntranslated()->id();
+
+  if (!array_key_exists($source_id, $resolved)) {
+    $resolved[$source_id] = NULL;
+    $article_tokens = _saho_classroom_tokens((string) $article->getUntranslated()->label());
+    if ($article_tokens) {
+      $storage = \Drupal::entityTypeManager()->getStorage('node');
+      $ids = $storage->getQuery()
+        ->accessCheck(TRUE)
+        ->condition('type', 'presentation')
+        ->condition('status', 1)
+        ->execute();
+      if ($ids) {
+        $candidates = [];
+        foreach ($storage->loadMultiple($ids) as $deck) {
+          $topic = '';
+          if ($deck->hasField('field_caps_topic') && !$deck->get('field_caps_topic')->isEmpty()) {
+            $term = $deck->get('field_caps_topic')->entity;
+            if ($term) {
+              $topic = (string) $term->label();
+            }
+          }
+          if ($topic === '') {
+            $topic = (string) $deck->label();
+          }
+          $candidates[$deck->id()] = _saho_classroom_tokens($topic);
+        }
+        // Score every deck against the fixed article (denominator is each
+        // deck's own token count).
+        $resolved[$source_id] = _saho_classroom_best_match($article_tokens, $candidates, TRUE);
+      }
+    }
+  }
+
+  if ($resolved[$source_id] === NULL) {
+    return NULL;
+  }
+  $deck = \Drupal::entityTypeManager()->getStorage('node')->load($resolved[$source_id]);
+  return $deck instanceof NodeInterface ? $deck : NULL;
+}
+
+/**
+ * Picks the id of the best token-overlap match above the confidence bar.
+ *
+ * Shared by both directions of the article <-> deck cross-link so the scoring
+ * and the 0.6 confidence bar live in one place.
+ *
+ * @param array $query_tokens
+ *   The fixed token set to match against (see _saho_classroom_tokens()).
+ * @param array $candidates
+ *   Map of entity id => candidate token set.
+ * @param bool $normalise_by_candidate
+ *   When TRUE the overlap is divided by each candidate's token count (article
+ *   -> deck); when FALSE it is divided by the query token count (deck ->
+ *   article).
+ *
+ * @return int|null
+ *   The winning entity id, or NULL when nothing clears the threshold.
+ */
+function _saho_classroom_best_match(array $query_tokens, array $candidates, bool $normalise_by_candidate): ?int {
+  if (!$query_tokens) {
+    return NULL;
+  }
+  $best_id = NULL;
+  $best_score = 0.0;
+  foreach ($candidates as $id => $tokens) {
+    if (!$tokens) {
+      continue;
+    }
+    $denominator = $normalise_by_candidate ? count($tokens) : count($query_tokens);
+    if ($denominator === 0) {
+      continue;
+    }
+    $score = count(array_intersect_key($query_tokens, $tokens)) / $denominator;
+    if ($score > $best_score) {
+      $best_score = $score;
+      $best_id = (int) $id;
+    }
+  }
+  // Require a strong overlap so we never link to a loosely-related record.
+  return ($best_id !== NULL && $best_score >= 0.6) ? $best_id : NULL;
+}
+
+/**
+ * Returns a node in the active content language when that translation exists.
+ *
+ * The cross-link matchers resolve nodes in their default (English) language;
+ * this swaps in the translation the visitor is currently reading so the CTA
+ * points at - and is labelled in - the right language variant.
+ */
+function _saho_classroom_active_translation(NodeInterface $node): NodeInterface {
+  $langcode = \Drupal::languageManager()
+    ->getCurrentLanguage(LanguageInterface::TYPE_CONTENT)
+    ->getId();
+  return $node->hasTranslation($langcode) ? $node->getTranslation($langcode) : $node;
+}
+
+/**
+ * Tokenises a title into a set of significant lowercase words.
+ */
+function _saho_classroom_tokens(string $text): array {
+  $text = strtolower($text);
+  // Drop "Grade N" / "Term N" scaffolding that legacy titles carry.
+  $text = preg_replace('/\bgrade\s*\d+\b|\bterm\s*\d+\b/', ' ', $text);
+  $text = preg_replace('/[^a-z0-9\s]/', ' ', $text);
+  $stop = [
+    'the' => 1, 'and' => 1, 'for' => 1, 'from' => 1, 'with' => 1, 'into' => 1,
+    'history' => 1, 'south' => 1, 'african' => 1, 'africa' => 1,
+  ];
+  $tokens = [];
+  foreach (preg_split('/\s+/', trim($text)) as $t) {
+    if (strlen($t) >= 3 && empty($stop[$t])) {
+      $tokens[$t] = TRUE;
+    }
+  }
+  return $tokens;
+}

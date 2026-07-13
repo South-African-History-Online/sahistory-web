@@ -2,12 +2,26 @@ style:
   css:
     theme:
       dist/css/main.css: {}
+      # Degraded-image classes must exist globally: the broken-image guard
+      # swaps placeholders into any page at runtime (R3 X-1).
+      components/media/saho-degraded-image/saho-degraded-image.css: {}
+      css/scroll-top.css: {}
       css/dropdown-button-fix.css: {}
       css/modern-modals.css: {}
       css/layout-builder-overrides.css: {}
   js:
     dist/js/main.script.js: { attributes: { defer: true } }
     js/sticky-header.js: { attributes: { defer: true } }
+    src/js/broken-image-guard.js: { attributes: { defer: true } }
+    src/js/scroll-top.js: { attributes: { defer: true } }
+    src/js/search-suggest.js: { attributes: { defer: true } }
+  dependencies:
+    - core/drupal
+    - core/once
+
+archive-refine:
+  js:
+    src/js/archive-refine-drawer.js: { attributes: { defer: true } }
   dependencies:
     - core/drupal
     - core/once
@@ -70,6 +84,8 @@ search.enhancements:
     src/js/search-enhancements.js: {}
   dependencies:
     - core/drupal
+    - core/once
+    - core/drupalSettings
 
 advanced.search:
   js:
@@ -150,6 +166,111 @@ saho-button:
       components/utilities/saho-button/saho-button.css: {}
   dependencies:
     - core/drupal
+
+saho-section-heading:
+  css:
+    component:
+      components/content/saho-section-heading/saho-section-heading.css: {}
+
+# 2027 "Open Record" shared SDC kit (S1).
+saho-record-header:
+  css:
+    component:
+      components/content/saho-record-header/saho-record-header.css: {}
+saho-record-toolbar:
+  css:
+    component:
+      components/content/saho-record-toolbar/saho-record-toolbar.css: {}
+  js:
+    components/content/saho-record-toolbar/saho-record-toolbar.js: { attributes: { defer: true } }
+  dependencies:
+    - core/drupal
+    - core/once
+saho-index-table:
+  css:
+    component:
+      components/content/saho-index-table/saho-index-table.css: {}
+  js:
+    components/content/saho-index-table/saho-index-table.js: {}
+    components/content/saho-index-table/saho-view-toggle.js: {}
+  dependencies:
+    - core/drupal
+    - core/once
+saho-archive-card:
+  css:
+    component:
+      components/content/saho-archive-card/saho-archive-card.css: {}
+saho-archive-status-bar:
+  css:
+    component:
+      components/content/saho-archive-status-bar/saho-archive-status-bar.css: {}
+saho-browse-index:
+  css:
+    component:
+      components/content/saho-browse-index/saho-browse-index.css: {}
+saho-home-feature:
+  css:
+    component:
+      components/content/saho-home-feature/saho-home-feature.css: {}
+saho-metadata-block:
+  css:
+    component:
+      components/content/saho-metadata-block/saho-metadata-block.css: {}
+saho-provenance-block:
+  css:
+    component:
+      components/content/saho-provenance-block/saho-provenance-block.css: {}
+saho-detention-record:
+  css:
+    component:
+      components/content/saho-detention-record/saho-detention-record.css: {}
+saho-related-tabs:
+  css:
+    component:
+      components/navigation/saho-related-tabs/saho-related-tabs.css: {}
+  js:
+    components/navigation/saho-related-tabs/saho-related-tabs.js: {}
+  dependencies:
+    - core/drupal
+    - core/once
+saho-search-field:
+  css:
+    component:
+      components/navigation/saho-search-field/saho-search-field.css: {}
+saho-timeline:
+  css:
+    component:
+      components/navigation/saho-timeline/saho-timeline.css: {}
+saho-chronology:
+  css:
+    component:
+      components/content/saho-chronology/saho-chronology.css: {}
+  js:
+    components/content/saho-chronology/saho-chronology.js: {}
+  dependencies:
+    - core/drupal
+    - core/once
+saho-image-credit:
+  css:
+    component:
+      components/media/saho-image-credit/saho-image-credit.css: {}
+saho-citation:
+  css:
+    component:
+      components/utilities/saho-citation/saho-citation.css: {}
+  js:
+    components/utilities/saho-citation/saho-citation.js: {}
+  dependencies:
+    - core/drupal
+    - core/once
+saho-tag:
+  css:
+    component:
+      components/utilities/saho-tag/saho-tag.css: {}
+badge:
+  css:
+    component:
+      components/utilities/badge/badge.css: {}
 
 saho-card:
   css:
@@ -235,6 +356,15 @@ table.scroll:
 exposed.filters:
   js:
     src/js/exposed-filters.js: {}
+  dependencies:
+    - core/drupal
+    - core/once
+
+archive-index:
+  js:
+    src/js/archive-sort.js: {}
+    src/js/facet-narrow.js: {}
+    src/js/facet-collapse.js: {}
   dependencies:
     - core/drupal
     - core/once

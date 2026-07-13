@@ -36,6 +36,9 @@
                         'click',
                         function (e) {
                             e.preventDefault();
+                            // Remember the invoker so focus can return to it
+                            // when the modal closes (accessibility).
+                            Drupal.sahoCitation.lastTrigger = this;
                             Drupal.sahoCitation.openCitationModal();
                         }
                     );
@@ -62,6 +65,20 @@
      */
     Drupal.sahoCitation = Drupal.sahoCitation || {
         /**
+         * The element that opened the modal, for focus restoration on close.
+         */
+        lastTrigger: null,
+
+        /**
+         * Return focus to the trigger that opened the modal.
+         */
+        restoreTriggerFocus: function () {
+            if (this.lastTrigger && typeof this.lastTrigger.focus === 'function') {
+                this.lastTrigger.focus();
+            }
+        },
+
+        /**
          * Open the citation modal and load citation data.
          */
         openCitationModal: function () {
@@ -81,6 +98,11 @@
                             self.modal = new bootstrap.Modal(modalElement, {
                                 keyboard: true,
                                 backdrop: true
+                            });
+                            // Return focus to the trigger once Bootstrap has
+                            // fully torn the modal down (accessibility).
+                            modalElement.addEventListener('hidden.bs.modal', function () {
+                                self.restoreTriggerFocus();
                             });
                         } catch (error) {
                             // Modal might already be initialized
@@ -752,6 +774,9 @@
             $(document).off('keydown.citationModal');
             $modal.find('[data-bs-toggle="tab"]').off('click');
 
+            // Return focus to the trigger that opened the modal (covers the
+            // Escape, dismiss and backdrop close paths that all route here).
+            Drupal.sahoCitation.restoreTriggerFocus();
         },
 
         /**
@@ -1187,7 +1212,7 @@
                 e.preventDefault();
                 e.stopPropagation();
                 self.copyAllCitations();
-                return FALSE;
+                return false;
             });
         },
 
@@ -1254,7 +1279,7 @@
                     this.fallbackCopyAllText(allCitationsText);
                 }
             } else {
-                this.showCopyAllFeedback('No citations available', TRUE);
+                this.showCopyAllFeedback('No citations available', true);
             }
         },
 
@@ -1280,10 +1305,10 @@
                 if (successful) {
                     this.showCopyAllFeedback('All formats copied!');
                 } else {
-                    this.showCopyAllFeedback('Copy failed', TRUE);
+                    this.showCopyAllFeedback('Copy failed', true);
                 }
             } catch (err) {
-                this.showCopyAllFeedback('Copy failed', TRUE);
+                this.showCopyAllFeedback('Copy failed', true);
             }
 
             // Clean up
@@ -1354,7 +1379,7 @@
             allCitationsText = allCitationsText.trim();
 
             // Copy the text and show feedback, auto-close the modal
-            this.copyTextToClipboard(allCitationsText, $('.citation-format'), TRUE);
+            this.copyTextToClipboard(allCitationsText, $('.citation-format'), true);
 
             // Update the button text temporarily
             const $button = $('.copy-citation');

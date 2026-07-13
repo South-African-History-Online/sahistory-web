@@ -1,0 +1,41 @@
+{#
+/**
+ * @file
+ * Classroom presentation deck (Open Record).
+ *
+ * The deck embed, origin-article strip and sharing row render in their
+ * configured order; the classroom apparatus (grade, subject, CAPS topic,
+ * resource type) is pulled out of the field flow and set as the same mono
+ * facts band the classroom clips use, instead of the default inline
+ * label+link runs.
+ */
+#}
+<article{{ attributes.addClass('saho-presentation') }}>
+
+  {{ content|without(
+    'field_classroom_grade',
+    'field_classroom_subject',
+    'field_caps_topic',
+    'field_classroom_resource_type',
+    'field_file_upload',
+    'links'
+  ) }}
+
+  {% set facts = [
+    { label: 'Grade'|t, term: node.field_classroom_grade.isEmpty ? null : node.field_classroom_grade.entity },
+    { label: 'Subject'|t, term: node.field_classroom_subject.isEmpty ? null : node.field_classroom_subject.entity },
+    { label: 'CAPS topic'|t, term: node.field_caps_topic.isEmpty ? null : node.field_caps_topic.entity },
+    { label: 'Resource type'|t, term: node.field_classroom_resource_type.isEmpty ? null : node.field_classroom_resource_type.entity },
+  ] %}
+  <dl class="saho-presentation__facts">
+    {% for fact in facts %}
+      {% if fact.term %}
+        <div class="saho-presentation__fact">
+          <dt>{{ fact.label }}</dt>
+          <dd>{{ fact.term.label() }}</dd>
+        </div>
+      {% endif %}
+    {% endfor %}
+  </dl>
+
+</article>

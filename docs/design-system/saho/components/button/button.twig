@@ -1,0 +1,20 @@
+{#
+/**
+ * @file SAHO Button SDC.
+ * props: variant, size, href, icon_after, full_width, disabled
+ * slots: label
+ */
+#}
+{% set tag = href ? 'a' : 'button' %}
+{% set classes = [
+  'saho-btn',
+  'saho-btn--' ~ (variant|default('primary')),
+  'saho-btn--' ~ (size|default('md')),
+  full_width ? 'saho-btn--full' : '',
+] %}
+<{{ tag }}{{ attributes.addClass(classes) }}
+  {%- if href %} href="{{ href }}"{% endif %}
+  {%- if disabled %} aria-disabled="true"{% if tag == 'button' %} disabled{% endif %}{% endif %}>
+  {%- if label %}<span class="saho-btn__label">{{ label }}</span>{% endif -%}
+  {%- if icon_after %}<span class="saho-btn__icon" aria-hidden="true">{{ icon_after }}</span>{% endif -%}
+</{{ tag }}>

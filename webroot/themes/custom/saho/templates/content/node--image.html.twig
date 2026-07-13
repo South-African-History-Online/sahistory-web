@@ -1,64 +1,71 @@
 {#
 /**
  * @file
- * Custom SAHO node template for Image content type.
- *
- * Surfaces the relationship fields (field_feature_parent and
- * field_people_related_tab) as crawlable <a> links so image nodes are no
- * longer dead-end pages for users or search engines.
+ * Custom SAHO node template for Image content type - Open Record treatment.
  *
  * Title is handled globally and not rendered here.
  * Layout Builder is disabled - fields are output directly via Twig.
+ *
+ * The photograph is the record: lead image-credit figure, then any further
+ * plates, with the catalogue apparatus (record details, cross-references,
+ * citation, reading list) around it. All links stay crawlable so image
+ * records are never dead ends.
  */
 #}
 
-{# Variable to track if sidebar has content #}
 {% set sidebar_has_content = false %}
 
+{# Related-cards footer renders .saho-button as static spans; ensure its CSS loads. #}
+{{ attach_library('saho/saho-button') }}
+
 <article{{ attributes.addClass('saho-article-wrapper') }}>
+
+  {# 2027 "Open Record" record header (typed tab + display ref + status + key fields). #}
+  {% if record is defined %}
+    {% set record_lead_mobile = (record_image.orientation is defined and record_image.orientation in ['portrait', 'square']) ? record_image : {} %}
+    {{ include('saho:saho-record-header', {
+      type: record.type,
+      reference: record.reference,
+      status: record.status,
+      kicker: record.kicker,
+      title: record.title,
+      facts: record.facts,
+      image: record_lead_mobile,
+    }, with_context = false) }}
+  {% endif %}
+
+  {# The record toolbar rides directly under the key-field strip. #}
+  {% if record_toolbar is defined %}
+    {{ include('saho:saho-record-toolbar', record_toolbar|merge({
+      connections_count: record_related.tabs is defined ? record_related.tabs|reduce((c, t) => c + t.count, 0) : 0,
+    }), with_context = false) }}
+  {% endif %}
 
   <div class="saho-article-grid">
 
     {# LEFT: Main content column #}
     <div class="saho-main-content">
 
-      {% if content.field_image %}
-        <div class="saho-image-detail">
-          {{ content.field_image }}
-        </div>
+      {# Lead image: duotone image-credit figure, captioned by field_source
+         (the external credit). Guarded on src - .entity alone is truthy on
+         an empty reference field. #}
+      {% if record_image.src is defined and record_image.src %}
+        {{ include('saho:saho-image-credit', record_image, with_context = false) }}
       {% endif %}
-
-      <div class="saho-article-meta">
-        {% if node.getCreatedTime() %}
-          <span>Published {{ node.getCreatedTime()|date("j F Y") }}</span>
-        {% endif %}
-        {% if node.getChangedTime() != node.getCreatedTime() %}
-          <span>Updated {{ node.getChangedTime()|date("j F Y") }}</span>
-        {% endif %}
-        <div class="saho-tools-wrapper">
-          {% if citation_button %}
-            <div class="saho-citation-wrapper">
-              {{ citation_button }}
-            </div>
-          {% endif %}
-          {% if sharing_button %}
-            <div class="saho-sharing-wrapper">
-              {{ sharing_button }}
-            </div>
-          {% endif %}
-        </div>
-      </div>
 
       {% if content.body %}
         <div class="saho-article-body">
-          {# Remove the label by accessing the content directly #}
           {{ content.body.0 }}
         </div>
       {% endif %}
 
-      {% if content.field_source|render|trim %}
-        <div class="saho-image-source">
-          {{ content.field_source }}
+      {# Additional plates: further field_image / field_archive_image deltas,
+         deduped against the lead, each in its own-orientation frame. #}
+      {% if record_plates %}
+        <div class="saho-record-plates">
+          {% for plate in record_plates %}
+            {{ include('saho:saho-image-credit', plate, with_context = false) }}
+          {% endfor %}
         </div>
       {% endif %}
 
@@ -66,50 +73,66 @@
       {{ content|without(
         'body',
         'field_image',
+        'field_archive_image',
         'field_source',
+        'field_gallery_tag',
+        'field_media_library_type',
         'field_feature_parent',
-        'field_people_related_tab'
+        'field_feature_link',
+        'field_african_country',
+        'field_search_words',
+        'field_status_value',
+        'field_home_page_feature',
+        'field_home_page_feature_weight',
+        'field_file_upload',
+        'field_people_related_tab',
+        'field_organizations_related_tab',
+        'field_topics_related_tab',
+        'links',
+        'sharing_buttons',
+        'comment_node_image'
       ) }}
+
+      {# Cite this entry (Harvard / APA / Oxford, from CitationService). #}
+      {% if record_citation %}
+        {{ include('saho:saho-citation', record_citation, with_context = false) }}
+      {% endif %}
+
+      {# Open Record reading list: derived related records (siblings, shared
+         topics, popular) - the record's onward-reading engine. #}
+      {% if record_reading %}
+        {{ include('saho:saho-reading-list', { title: 'Further reading'|t, items: record_reading }, with_context = false) }}
+      {% endif %}
+
+      <p class="saho-record-support">
+        {{ 'SAHO is free because readers fund it.'|t }}
+        <a href="/donate">{{ 'Donate'|t }} &rarr;</a>
+      </p>
+      {{ content.comment_node_image ?? '' }}
 
     </div>
 
-    {# RIGHT: Sidebar #}
-    {% if content.field_feature_parent is defined and content.field_feature_parent|render|trim %}
-      {% set sidebar_has_content = true %}
-    {% endif %}
-
-    {% if content.field_people_related_tab is defined and content.field_people_related_tab|render|trim %}
+    {# RIGHT: Sidebar (the Open Record rail) #}
+    {% if record_meta or record_related %}
       {% set sidebar_has_content = true %}
     {% endif %}
 
     {% if sidebar_has_content %}
     <aside class="saho-article-sidebar">
 
-      {# Featured in: link back to the parent feature/article this image
-         belongs to, keeping the image node connected to the wider archive. #}
-      {% if content.field_feature_parent is defined and content.field_feature_parent|render|trim %}
-        <div class="saho-taxonomy-group">
-          <h4>Featured in</h4>
-          {{ content.field_feature_parent }}
-        </div>
+      {# Vital record: format, source, galleries, Part of. #}
+      {% if record_meta %}
+        {{ include('saho:saho-metadata-block', record_meta, with_context = false) }}
       {% endif %}
 
-      {# Related people referenced by this image. #}
-      {% if content.field_people_related_tab is defined and content.field_people_related_tab|render|trim %}
-        <div class="saho-taxonomy-group">
-          <h4>Related People</h4>
-          {{ content.field_people_related_tab }}
-        </div>
+      {# Cross-references: typed entity relations. #}
+      {% if record_related %}
+        {{ include('saho:saho-related-tabs', record_related, with_context = false) }}
       {% endif %}
 
     </aside>
     {% endif %}
 
   </div>
-
-  {# Suggested reading: interlinks this image node into the wider archive so the
-     ~18k image nodes are no longer SEO/engagement orphans. Built by
-     saho_suggested_reading_preprocess_node() (image bundle now supported). #}
-  {% include '@saho/content/saho-suggested-reading.html.twig' %}
 
 </article>

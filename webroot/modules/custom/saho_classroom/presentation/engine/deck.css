@@ -1,0 +1,385 @@
+/*
+ * SAHO Classroom - presentation engine stylesheet.
+ *
+ * Standalone, dependency-free deck styling factored out of the Classroom 2.0
+ * proof-of-concept prototype (prototype/group-areas-act.html, issue #436).
+ *
+ * This file is inlined verbatim into every self-contained deck by render.php,
+ * and is also suitable for attachment as a Drupal asset library when the same
+ * markup is produced by a Twig template from a presentation entity.
+ *
+ * No @import, no external fonts, no url() references - so a rendered deck makes
+ * zero external requests and works from file:// fully offline.
+ */
+
+:root {
+  /* SAHO brand tokens (docs/COLOR-SYSTEM.md). WCAG 2.1 AA on paper. */
+  --saho-red: #990000;
+  --saho-red-dark: #7a0000;
+  --saho-slate: #3a4a64;
+  --saho-gold: #b88a2e;
+  --saho-green: #2d5016;
+  --ink: #1e293b;
+  --ink-soft: #475569;
+  --paper: #ffffff;
+  --paper-tint: #f6f2ec;
+  --line: #d9cfc2;
+  --focus: #b88a2e;
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: #201a17;
+  color: var(--ink);
+  font-family: var(--font);
+  -webkit-text-size-adjust: 100%;
+}
+
+/* Skip link for keyboard / screen reader users. */
+.skip-link {
+  position: absolute;
+  left: -999px;
+  top: 0;
+  z-index: 100;
+  background: var(--saho-red);
+  color: #fff;
+  padding: 0.6rem 1rem;
+  border-radius: 0 0 6px 0;
+}
+.skip-link:focus { left: 0; }
+
+/* App shell -------------------------------------------------------------- */
+.deck {
+  position: relative;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.deck__stage {
+  flex: 1 1 auto;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(0.5rem, 2vw, 2rem);
+}
+
+/* One slide fills the stage. Aspect box keeps a 16:9 feel but wraps on
+   narrow screens so the deck stays responsive rather than clipping. */
+.slide {
+  display: none;
+  width: min(1120px, 100%);
+  max-height: 100%;
+  overflow-y: auto;
+  background: var(--paper);
+  border-radius: 14px;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+  padding: clamp(1.4rem, 3.4vw, 3rem);
+}
+.slide.is-active {
+  display: block;
+  animation: fade 0.28s ease;
+}
+@keyframes fade {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.slide__eyebrow {
+  display: inline-block;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--saho-red);
+  border-bottom: 3px solid var(--saho-gold);
+  padding-bottom: 0.2rem;
+  margin-bottom: 0.9rem;
+}
+
+.slide h1 {
+  font-size: clamp(1.9rem, 4.6vw, 3.2rem);
+  line-height: 1.08;
+  margin: 0 0 0.6rem;
+  color: var(--saho-red-dark);
+}
+.slide h2 {
+  font-size: clamp(1.4rem, 3.2vw, 2.2rem);
+  line-height: 1.15;
+  margin: 0 0 1rem;
+  color: var(--saho-slate);
+}
+.slide h3 { color: var(--saho-slate); }
+.slide p { font-size: clamp(1rem, 1.7vw, 1.22rem); line-height: 1.55; margin: 0 0 0.9rem; }
+.slide ul, .slide ol { font-size: clamp(1rem, 1.7vw, 1.22rem); line-height: 1.5; padding-left: 1.2rem; }
+.slide li { margin-bottom: 0.55rem; }
+.lead { font-size: clamp(1.1rem, 2.1vw, 1.5rem); color: var(--ink-soft); }
+.slide .muted { color: var(--ink-soft); font-size: 0.95rem; }
+
+.cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(1rem, 3vw, 2.4rem);
+  align-items: start;
+}
+@media (max-width: 720px) { .cols { grid-template-columns: 1fr; } }
+
+.card {
+  background: var(--paper-tint);
+  border: 1px solid var(--line);
+  border-left: 5px solid var(--saho-gold);
+  border-radius: 8px;
+  padding: 1rem 1.2rem;
+}
+.card h3 { margin: 0 0 0.4rem; color: var(--saho-slate); font-size: 1.1rem; }
+
+blockquote {
+  margin: 0;
+  padding: 1.1rem 1.4rem;
+  background: var(--paper-tint);
+  border-left: 6px solid var(--saho-red);
+  border-radius: 0 8px 8px 0;
+  font-size: clamp(1.15rem, 2.4vw, 1.7rem);
+  font-style: italic;
+  color: var(--ink);
+}
+blockquote cite {
+  display: block;
+  margin-top: 0.7rem;
+  font-size: 0.95rem;
+  font-style: normal;
+  color: var(--ink-soft);
+}
+
+.figure { margin: 0; }
+.figure svg, .figure img { width: 100%; height: auto; display: block; border-radius: 8px; }
+.figure figcaption {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+}
+
+.title-slide { text-align: left; }
+.title-slide .meta {
+  margin-top: 1.4rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.pill {
+  background: var(--saho-slate);
+  color: #fff;
+  border-radius: 999px;
+  padding: 0.32rem 0.85rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.pill--gold { background: var(--saho-gold); color: #23180a; }
+.pill--green { background: var(--saho-green); }
+
+.qa {
+  background: var(--paper-tint);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 1rem 1.2rem;
+  margin-top: 0.6rem;
+}
+.qa b { color: var(--saho-red); }
+
+/* Toolbar ---------------------------------------------------------------- */
+.toolbar {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem clamp(0.6rem, 2vw, 1.4rem);
+  background: #17120f;
+  color: #f4ece2;
+  border-top: 2px solid var(--saho-gold);
+}
+.brand {
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  margin-right: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-size: 0.95rem;
+}
+.brand .mark {
+  width: 26px; height: 26px;
+  display: inline-grid;
+  place-items: center;
+  background: var(--saho-red);
+  color: #fff;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 900;
+}
+.brand small { color: #c9bdae; font-weight: 500; }
+
+.btn {
+  appearance: none;
+  border: 1px solid #4a3f36;
+  background: #241d18;
+  color: #f4ece2;
+  font: inherit;
+  font-size: 0.85rem;
+  padding: 0.42rem 0.7rem;
+  border-radius: 6px;
+  cursor: pointer;
+  line-height: 1;
+}
+.btn:hover { background: #322820; }
+.btn:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.btn[aria-pressed="true"] { background: var(--saho-gold); color: #23180a; border-color: var(--saho-gold); }
+.btn--icon { min-width: 2.3rem; text-align: center; }
+
+.counter {
+  font-variant-numeric: tabular-nums;
+  font-size: 0.9rem;
+  padding: 0 0.6rem;
+  color: #d8ccbd;
+}
+
+/* Edge nav arrows -------------------------------------------------------- */
+.edge {
+  position: absolute;
+  top: 0; bottom: 0;
+  width: clamp(48px, 8vw, 90px);
+  border: 0;
+  background: transparent;
+  color: #fff;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  opacity: 0.55;
+  transition: opacity 0.15s, background 0.15s;
+}
+.edge:hover { opacity: 1; background: rgba(0, 0, 0, 0.22); }
+.edge:focus-visible { outline: 3px solid var(--focus); outline-offset: -6px; opacity: 1; }
+.edge--prev { left: 0; }
+.edge--next { right: 0; }
+.edge svg { width: 34px; height: 34px; filter: drop-shadow(0 1px 3px rgba(0,0,0,0.6)); }
+
+/* Progress dots ---------------------------------------------------------- */
+.dots {
+  position: absolute;
+  left: 0; right: 0; bottom: 0.6rem;
+  display: flex;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0 1rem;
+}
+.dot {
+  width: 11px; height: 11px;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.7);
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+}
+.dot.is-active { background: var(--saho-gold); border-color: var(--saho-gold); }
+.dot:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+
+/* Progress bar ----------------------------------------------------------- */
+.progress {
+  position: absolute;
+  left: 0; top: 0;
+  height: 4px;
+  background: var(--saho-gold);
+  width: 0;
+  transition: width 0.3s ease;
+}
+
+/* Speaker notes ---------------------------------------------------------- */
+.notes {
+  flex: 0 0 auto;
+  display: none;
+  background: #fbf7f0;
+  color: var(--ink);
+  border-top: 3px solid var(--saho-red);
+  padding: 0.9rem clamp(0.8rem, 3vw, 2rem);
+  max-height: 32vh;
+  overflow-y: auto;
+}
+.notes.is-open { display: block; }
+.notes h4 {
+  margin: 0 0 0.4rem;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--saho-red);
+}
+.notes p { margin: 0 0 0.5rem; line-height: 1.5; }
+
+/* On-load help hint ------------------------------------------------------ */
+.hint {
+  position: absolute;
+  bottom: 2.2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(23,18,15,0.92);
+  color: #f4ece2;
+  padding: 0.5rem 0.9rem;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  border: 1px solid var(--saho-gold);
+}
+.hint kbd {
+  background: #2c2018;
+  border: 1px solid #5a4a3a;
+  border-radius: 4px;
+  padding: 0.05rem 0.35rem;
+  font-family: inherit;
+}
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0);
+  white-space: nowrap; border: 0;
+}
+
+/* Print / save-as-PDF ---------------------------------------------------- */
+@media print {
+  html, body { background: #fff; height: auto; }
+  .toolbar, .edge, .dots, .progress, .hint, .skip-link { display: none !important; }
+  .deck, .deck__stage { display: block; height: auto; overflow: visible; padding: 0; }
+  .slide {
+    display: block !important;
+    width: 100%;
+    max-height: none;
+    box-shadow: none;
+    border: none;
+    border-radius: 0;
+    page-break-after: always;
+    break-after: page;
+    padding: 1.4cm;
+  }
+  .slide.is-active { animation: none; }
+  /* Speaker notes always print beneath their slide as a handout. */
+  .notes {
+    display: block !important;
+    max-height: none;
+    border-top: 1px dashed #999;
+    background: #fff;
+    page-break-inside: avoid;
+    margin-top: 0.6cm;
+  }
+  .slide svg, blockquote { break-inside: avoid; }
+  @page { margin: 1cm; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .slide.is-active { animation: none; }
+  .progress { transition: none; }
+}

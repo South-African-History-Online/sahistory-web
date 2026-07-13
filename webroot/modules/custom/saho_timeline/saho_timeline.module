@@ -6,6 +6,32 @@
  */
 
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\views\Plugin\views\query\QueryPluginBase;
+use Drupal\views\Plugin\views\query\Sql;
+use Drupal\views\ViewExecutable;
+
+/**
+ * Implements hook_views_query_alter().
+ *
+ * The /timelines landing sorts by period start parsed from the title
+ * ("... timeline 1919-1989"): chronology is the register for timelines,
+ * not node-changed recency. Titles with no parseable year sort last;
+ * an explicit exposed-sort choice wins. MariaDB REGEXP_SUBSTR - remove
+ * this alter to fall back to the view's configured sort.
+ */
+function saho_timeline_views_query_alter(ViewExecutable $view, QueryPluginBase $query) {
+  if ($view->id() !== 'timelines' || $view->current_display !== 'page_1') {
+    return;
+  }
+  if (!empty(\Drupal::request()->query->get('sort_by'))) {
+    return;
+  }
+  if ($query instanceof Sql) {
+    $query->orderby = [];
+    $query->addOrderBy(NULL, "COALESCE(REGEXP_SUBSTR(node_field_data.title, '(1[0-9]{3}|20[0-9]{2})'), '9999')", 'ASC', 'timeline_period_start');
+    $query->addOrderBy('node_field_data', 'title', 'ASC');
+  }
+}
 
 /**
  * Implements hook_help().

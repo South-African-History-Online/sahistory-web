@@ -1,0 +1,121 @@
+{#
+/**
+ * @file
+ * SAHO content-type landing - 2027 "Open Record" shell (wireframe wf02).
+ *
+ * Rows are NOT printed via {{ rows }}: saho_preprocess_views_view__saho_landing()
+ * shapes every result into record_rows (saho-index-table SDC) and record_cards
+ * (saho-archive-card SDC), rendered behind the shared table/cards toggle
+ * (saho-view-toggle.js in the saho-index-table library). Same results contract
+ * as the /search shell, minus the search field, plus a landing header.
+ *
+ * Available variables (beyond the standard views-view set):
+ * - landing_type: Accent key for the content type (article, biography, ...).
+ * - landing_label: Human plural label for the type (e.g. Biographies).
+ * - landing_count: Total record count across all pages.
+ * - record_columns: Column definitions for the index-table SDC.
+ * - record_rows: One row per result (ref/type/title/href/dates/src).
+ * - record_cards: One archive-card prop set per result.
+ * - result_total: Total result count across all pages.
+ * - results_layout: 'table' or 'grid' - the server-side default layout.
+ *
+ * The landing header owns the page H1 (the global page title is suppressed
+ * for view.saho_landing.page_1 in saho_preprocess_page_title()).
+ */
+#}
+<div{{ attributes.addClass('saho-page', 'is-wide', 'saho-landing-page', 'saho-landing--' ~ landing_type) }}>
+
+  {# Landing header (wf02): type chip, plural title, mono record count. #}
+  <header class="saho-landing-head">
+    <span class="saho-landing-head__tab saho-landing-head__tab--{{ landing_type }}">{{ landing_label }}</span>
+    <h1 class="saho-landing-head__title">{{ landing_label }}</h1>
+    <p class="saho-landing-head__count">{{ landing_count }} records</p>
+  </header>
+
+  {% if header %}
+    <div class="saho-landing-intro">
+      {{ header }}
+    </div>
+  {% endif %}
+
+  {# The view ships without exposed filters for now (the era/place facet rail
+     arrives with the reindex follow-up), so the refine rail only renders when
+     the exposed form is non-empty; otherwise results run full width. #}
+  {% set exposed_markup = exposed|render %}
+  {% set has_rail = exposed_markup|trim is not empty %}
+  <div class="saho-search-layout{{ has_rail ? '' : ' saho-search-layout--single' }}">
+
+    {% if has_rail %}
+      <aside class="saho-search-rail" aria-label="Refine results">
+        <h2 class="saho-search-rail__title">Refine</h2>
+        {{ exposed_markup }}
+        {% if feed_icons %}
+          <div class="saho-search-rail__feeds">{{ feed_icons }}</div>
+        {% endif %}
+      </aside>
+    {% endif %}
+
+    <section class="saho-search-results" data-saho-results>
+
+      {# Head row: mono record count anchors the table/cards toggle (#464). #}
+      <div class="saho-search-head">
+        <p class="saho-search-count">{{ landing_count }} records</p>
+        <div class="saho-search-toolbar">
+          <div class="saho-view-toggle" data-saho-view-toggle role="tablist" aria-label="Result layout">
+            <button type="button" role="tab" data-view="table"
+                    class="saho-view-toggle__btn{{ results_layout == 'table' ? ' is-active' : '' }}"
+                    aria-selected="{{ results_layout == 'table' ? 'true' : 'false' }}">Table</button>
+            <button type="button" role="tab" data-view="grid"
+                    class="saho-view-toggle__btn{{ results_layout == 'grid' ? ' is-active' : '' }}"
+                    aria-selected="{{ results_layout == 'grid' ? 'true' : 'false' }}">Cards</button>
+          </div>
+        </div>
+      </div>
+
+      {% if record_rows is not empty %}
+        <div class="saho-results--table"{% if results_layout == 'grid' %} hidden{% endif %}>
+          {% include 'saho:saho-index-table' with {
+            columns: record_columns,
+            rows: record_rows,
+            caption: landing_label,
+          } only %}
+        </div>
+        <div class="saho-results--grid"{% if results_layout == 'table' %} hidden{% endif %}>
+          <div class="saho-card-grid saho-card-grid--columns-three">
+            {% for card in record_cards %}
+              {% include 'saho:saho-archive-card' with card only %}
+            {% endfor %}
+          </div>
+        </div>
+      {% else %}
+        {% if empty %}
+          <div class="saho-view-empty">
+            {{ empty }}
+          </div>
+        {% else %}
+          <p class="saho-search-empty">No records found.</p>
+        {% endif %}
+      {% endif %}
+
+      {% if pager %}
+        <div class="saho-search-pager">
+          {{ pager }}
+        </div>
+      {% endif %}
+
+      {% if more %}
+        <div class="saho-search-more">
+          {{ more }}
+        </div>
+      {% endif %}
+
+    </section>
+  </div>
+
+  {% if attachment_after %}
+    <div class="saho-landing-attachment">
+      {{ attachment_after }}
+    </div>
+  {% endif %}
+
+</div>

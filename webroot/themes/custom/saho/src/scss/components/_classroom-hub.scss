@@ -1,0 +1,390 @@
+// =============================================================================
+// SAHO 2027 "Open Record" - /classroom educator landing (wireframe wf08)
+// =============================================================================
+// Header on a 3px --type-article accent edge, BEF-links exposed filters as
+// square tag chips, archive-card collections grid, two-up bordered extras.
+// Paper/ink, square corners, borders not shadows, mono for labels and meta.
+
+.saho-classroom-hub {
+  padding-block: var(--space-4) var(--space-8);
+}
+
+// ---- Header: accent top edge, Caslon title, serif intro, mono count ----
+.saho-classroom-hub__head {
+  margin-bottom: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: var(--bw-accent) solid var(--type-article);
+}
+
+.saho-classroom-hub__title {
+  margin: 0 0 var(--space-3);
+}
+
+.saho-classroom-hub__intro {
+  margin: 0 0 var(--space-2);
+  max-width: 60ch;
+  font-family: var(--font-serif);
+  color: var(--text-muted);
+}
+
+.saho-classroom-hub__count {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+// ---- Grade / phase selector: BEF-links filters as square tag chips ----
+.saho-classroom-hub__grades {
+  // The global link rule paints anchors via --link-rest/--link-hover at
+  // higher specificity than the chip classes; re-scope so chips read ink
+  // at rest and paper when selected.
+  --link-rest: var(--text-primary);
+  --link-hover: var(--text-primary);
+
+  // One slim ruled band, not a raised box-in-a-frame (#466).
+  margin-bottom: var(--space-5);
+  padding: var(--space-4) 0;
+  border-top: var(--bw-hair) solid var(--border-default);
+  border-bottom: var(--bw-hair) solid var(--border-default);
+  background: transparent;
+
+  // The generic exposed-form panel chrome would put a raised white box
+  // inside the band - one border does the job here.
+  .views-exposed-form {
+    margin-bottom: 0;
+    padding: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .form-item {
+    margin: 0 0 var(--space-3);
+  }
+  .form-item:last-of-type {
+    margin-bottom: 0;
+  }
+
+  // Filter labels (Grade, Resource type) as mono apparatus headings.
+  .form-label {
+    display: block;
+    margin-bottom: var(--space-2);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: var(--fw-semibold);
+    letter-spacing: var(--ls-wide);
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  // Flatten the (nested) BEF link lists into one wrapping chip row.
+  .bef-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+  .bef-links ul,
+  .bef-links li {
+    display: contents;
+    list-style: none;
+  }
+
+  .bef-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2rem;
+    padding: var(--space-1) var(--space-3);
+    border: var(--bw-hair) solid var(--border-default);
+    background: var(--saho-paper);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: var(--ls-label);
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--text-primary);
+    transition: border-color var(--t-fast), background var(--t-fast);
+  }
+
+  .bef-link:hover {
+    border-color: var(--border-strong);
+    color: var(--text-primary);
+  }
+
+  .bef-link--selected,
+  .bef-link--selected:hover {
+    --link-rest: var(--text-on-accent);
+    --link-hover: var(--text-on-accent);
+
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--text-on-accent);
+  }
+
+  // Grade widget hierarchy (#466): the classroom_grade vocabulary nests
+  // grades under phase terms, and BEF renders that as nested lists. Phases
+  // read as mono group headings; their grades chip beneath. Selecting a
+  // phase still works - the view expands it to its grade children.
+  .js-form-item-grade .bef-links > ul {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    // Tablet and up: the three phase groups sit side by side in one row,
+    // wrapping back to a stack only when space runs out.
+    @media (min-width: 48rem) {
+      flex-direction: row;
+      flex-wrap: wrap;
+      gap: var(--space-3) var(--space-6);
+    }
+  }
+  .js-form-item-grade .bef-links > ul > li {
+    display: block;
+  }
+  .js-form-item-grade .bef-links > ul > li > .bef-link {
+    display: inline-block;
+    min-height: 0;
+    margin-bottom: var(--space-2);
+    padding: 0;
+    border: 0;
+    background: transparent;
+    font-size: 11px;
+    letter-spacing: var(--ls-wide);
+    color: var(--text-muted);
+  }
+  .js-form-item-grade .bef-links > ul > li > .bef-link:hover {
+    color: var(--text-primary);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .js-form-item-grade .bef-links > ul > li > .bef-link--selected,
+  .js-form-item-grade .bef-links > ul > li > .bef-link--selected:hover {
+    --link-rest: var(--accent);
+    --link-hover: var(--accent);
+
+    background: transparent;
+    border: 0;
+    color: var(--accent);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .js-form-item-grade .bef-links li > ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .js-form-item-grade .bef-links li li {
+    display: block;
+  }
+
+  // Collapsed Refine group: quiet mono summary over a hairline (#466).
+  .saho-classroom-refine {
+    margin-top: var(--space-3);
+    border: 0;
+    border-top: var(--bw-hair) solid var(--border-faint);
+    background: transparent;
+    padding: var(--space-3) 0 0;
+  }
+  .saho-classroom-refine > summary {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: var(--fw-semibold);
+    letter-spacing: var(--ls-wide);
+    text-transform: uppercase;
+    color: var(--text-muted);
+    cursor: pointer;
+    list-style-position: outside;
+  }
+  .saho-classroom-refine[open] > summary {
+    margin-bottom: var(--space-3);
+  }
+}
+
+// ---- Collections grid + pager ----
+.saho-classroom-hub__collections {
+  margin-bottom: var(--space-7);
+}
+.saho-classroom-hub__pager {
+  margin-top: var(--space-5);
+}
+
+.saho-classroom-hub__empty {
+  margin: var(--space-4) 0 0;
+  font-family: var(--font-serif);
+  color: var(--text-muted);
+}
+
+// ---- Two-up extras: square bordered paper cards, mono headings ----
+.saho-classroom-hub__extras {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+.saho-classroom-hub__extra {
+  padding: var(--space-4);
+  border: var(--bw-hair) solid var(--border-default);
+  background: var(--surface-card);
+}
+
+.saho-classroom-hub__extra-title {
+  margin: 0 0 var(--space-3);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: var(--fw-semibold);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.saho-classroom-hub__extra-copy {
+  margin: 0 0 var(--space-3);
+  font-family: var(--font-serif);
+  color: var(--text-primary);
+}
+
+.saho-classroom-hub__extra-links {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li + li {
+    margin-top: var(--space-2);
+  }
+
+  a {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--accent);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+}
+
+// ---- Mobile: one column, >=44px chip hit targets ----
+@media (max-width: 40rem) {
+  .saho-classroom-hub__extras {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .saho-classroom-hub__grades .bef-link {
+    min-height: 44px;
+  }
+}
+
+// ---- Presentation deck page: classroom apparatus facts band ----
+// Same register as the clip facts (saho_classroom/clip-player CSS): ruled
+// band, mono labels over semibold values, cells split by hairlines.
+.saho-presentation__facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  margin: var(--space-4) 0 0;
+  border-top: var(--bw-hair) solid var(--border-default);
+  border-bottom: var(--bw-hair) solid var(--border-default);
+}
+
+.saho-presentation__fact {
+  padding: 10px 18px 10px 0;
+  margin-right: 18px;
+  border-right: var(--bw-hair) solid var(--border-faint);
+
+  &:last-child {
+    border-right: 0;
+    margin-right: 0;
+  }
+
+  dt {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  dd {
+    margin: 3px 0 0;
+    font-size: 14px;
+    font-weight: var(--fw-semibold);
+    color: var(--text-primary);
+  }
+}
+
+@media (max-width: 480px) {
+  .saho-presentation__facts {
+    display: block;
+  }
+
+  .saho-presentation__fact {
+    padding: 8px 0;
+    margin-right: 0;
+    border-right: 0;
+    border-bottom: var(--bw-hair) solid var(--border-faint);
+
+    &:last-child {
+      border-bottom: 0;
+    }
+  }
+}
+
+// ---- Topic spine (/classroom/topic/%, issue #444): grouped by type ----
+.saho-classroom-topic {
+  padding-block: var(--space-6) var(--space-8);
+}
+
+.saho-classroom-topic__head {
+  margin-bottom: var(--space-6);
+  padding-top: var(--space-4);
+  border-top: var(--bw-accent) solid var(--type-article);
+}
+
+.saho-classroom-topic__kicker {
+  margin: 0 0 var(--space-2);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: var(--fw-semibold);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.saho-classroom-topic__title {
+  margin: 0 0 var(--space-2);
+}
+
+.saho-classroom-topic__count {
+  margin: 0 0 var(--space-2);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.saho-classroom-topic__back {
+  margin: 0;
+
+  a {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--accent);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+}
+
+.saho-classroom-topic__group {
+  margin-bottom: var(--space-7);
+}
+
+.saho-classroom-topic__empty {
+  margin: 0 0 var(--space-3);
+  font-family: var(--font-serif);
+  color: var(--text-muted);
+}

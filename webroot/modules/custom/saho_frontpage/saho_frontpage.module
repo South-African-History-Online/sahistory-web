@@ -1,0 +1,37 @@
+<?php
+
+/**
+ * @file
+ * Hooks for the SAHO front page module.
+ */
+
+declare(strict_types=1);
+
+use Drupal\node\NodeInterface;
+use Drupal\saho_frontpage\HomeLayoutRebuilder;
+
+/**
+ * Implements hook_ENTITY_TYPE_presave() for node entities.
+ *
+ * The Open Record home is a Layout Builder override on node 144647, so any
+ * Layout tab save - including a stale per-user draft from before the layout
+ * was rebuilt - can silently replace it. Saves are not blocked (editors may
+ * legitimately redesign the home), but replacing the layout should never
+ * happen silently: warn the editor and log it, with the one-command repair.
+ */
+function saho_frontpage_node_presave(NodeInterface $node): void {
+  if ((int) $node->id() !== HomeLayoutRebuilder::HOME_NID || !$node->hasField('layout_builder__layout')) {
+    return;
+  }
+  /** @var \Drupal\saho_frontpage\HomeLayoutRebuilder $rebuilder */
+  $rebuilder = \Drupal::service('saho_frontpage.home_layout');
+  /** @var \Drupal\layout_builder\Field\LayoutSectionItemList $layout_field */
+  $layout_field = $node->get('layout_builder__layout');
+  $sections = $layout_field->getSections();
+  if ($rebuilder->isOpenRecordLayout($sections)) {
+    return;
+  }
+  $message = t('This save replaces the Open Record home layout on the front page. If that was not intended, restore it with: drush saho:frontpage-rebuild');
+  \Drupal::messenger()->addWarning($message);
+  \Drupal::logger('saho_frontpage')->warning('Node 144647 was saved without the Open Record home layout signature. Restore with: drush saho:frontpage-rebuild');
+}

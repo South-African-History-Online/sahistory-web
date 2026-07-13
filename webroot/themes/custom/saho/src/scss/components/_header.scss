@@ -1,43 +1,33 @@
 // ==================================================
-// SAHO HEADER - SINGLE FIXED BAR
+// SAHO HEADER - OPEN RECORD 2027 STICKY BAR
 // ==================================================
 //
-// .saho-primary-bar  position: fixed, always 60px, zero CLS.
-// Layout: [logo] [saho-primary-nav - flex: 1] [saho-primary-actions]
+// .saho-header-wrapper  position: sticky, in-flow - zero CLS, no body offset.
+// .saho-primary-bar     container-wide row on the paper-raised surface.
+// Layout: [logo + wordmark] [saho-primary-nav - flex: 1] [saho-primary-actions]
 //
-// ≥1200px: nav items inline between logo and icons (single row)
-// <1200px: nav hidden, hamburger opens offcanvas
-//
-// Body offset: padding-top: 60px - STATIC CSS, no JS.
+// ≥1024px: nav items inline between wordmark and actions (single row)
+// <1024px: nav hidden, hamburger opens offcanvas
 //
 
 // ==================================================
-// HEADER WRAPPER
+// HEADER WRAPPER - sticky, carries the accent rule
 // ==================================================
 
-.saho-header-wrapper {
-  padding-top: 60px; // Compensates for fixed bar - never changes, zero CLS.
-}
+// Element + class selector (0,1,1) so the paper surface outranks the inline
+// critical-CSS rule header[role="banner"] { background: #990000 } from
+// saho_performance.module.
+header.saho-header-wrapper {
+  position: sticky;
+  top: var(--drupal-displace-offset-top, 0px); // Clears the admin toolbar
+  z-index: 1030;
+  background: var(--saho-paper-raised);
+  color: var(--text-primary); // Counter the critical-CSS "color: white"
+  padding-bottom: 3px; // Reserves the accent rule strip below the bar
 
-// ==================================================
-// PRIMARY BAR - fixed, 60px
-// ==================================================
-
-.saho-primary-bar {
-  position: fixed;
-  top: var(--drupal-displace-offset-top, 0px);
-  left: 0;
-  right: 0;
-  height: 60px;
-  z-index: 500;
-  background: var(--saho-color-white);
-  box-shadow: var(--saho-shadow-md);
-  display: flex;
-  align-items: center;
-  gap: 0;
-  padding: 0 1.25rem;
-
-  // Red → gold → red gradient accent along the bottom edge
+  // Open Record accent rule - hard 2-tone oxblood/ochre split at 62%,
+  // full-bleed along the header's bottom edge (below the hairline border).
+  // Matches Chrome.jsx AccentBar.
   &::after {
     content: "";
     position: absolute;
@@ -45,14 +35,25 @@
     left: 0;
     right: 0;
     height: 3px;
-    background: linear-gradient(
-      90deg,
-      var(--saho-color-primary) 0%,
-      var(--saho-color-accent) 50%,
-      var(--saho-color-primary) 100%
-    );
+    background: linear-gradient(90deg, var(--saho-oxblood) 0 62%, var(--saho-ochre) 62% 100%);
     pointer-events: none;
   }
+}
+
+// ==================================================
+// PRIMARY BAR - in-flow, container-wide
+// ==================================================
+
+.saho-primary-bar {
+  position: relative;
+  max-width: var(--container-wide);
+  margin-inline: auto;
+  padding: 14px var(--gutter-page);
+  background: var(--saho-paper-raised);
+  border-bottom: 1px solid var(--border-default);
+  display: flex;
+  align-items: center;
+  gap: 0;
 }
 
 // ==================================================
@@ -80,51 +81,44 @@
   }
 
   &:focus-visible {
-    outline: 2px solid var(--saho-color-primary);
+    outline: 2px solid var(--focus-ring);
     outline-offset: 3px;
-    border-radius: 4px;
+    border-radius: var(--radius-sm);
   }
 }
 
-// Wordmark - "South African / History Online" in two stacked lines.
-// Hidden on mobile (<768px) where space is tight; visible on tablet+.
+// Wordmark - "South African / History Online" stacked, plus the mono tagline.
+// Hidden on mobile (<768px) where space is tight; visible on tablet and up at
+// ALL breakpoints - nav item spacing is tightened instead of hiding it.
 .saho-logo-wordmark {
   display: none;
 
   @media (min-width: 768px) {
     display: flex;
     flex-direction: column;
-    line-height: 1.2;
+    line-height: 1.04;
     gap: 1px;
-  }
-
-  // Hide wordmark when nav items are inline to reclaim space for nav
-  @media (min-width: 1200px) {
-    display: none;
-  }
-
-  // Show again on very wide screens where there's ample space
-  @media (min-width: 1440px) {
-    display: flex;
   }
 }
 
-.saho-logo-wordmark__line1 {
-  font-size: 0.6rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--saho-color-primary);
+.saho-logo-wordmark__line1,
+.saho-logo-wordmark__line2 {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.015em;
+  color: var(--text-primary);
   white-space: nowrap;
 }
 
-.saho-logo-wordmark__line2 {
-  font-size: 0.6rem;
-  font-weight: 500;
+.saho-logo-wordmark__tagline {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--saho-color-text-primary);
-  opacity: 0.7;
+  color: var(--saho-oxblood);
+  margin-top: 2px;
+  display: block;
   white-space: nowrap;
 }
 
@@ -139,20 +133,20 @@
 }
 
 // ==================================================
-// ICON BUTTON - shared base for search, tools, hamburger
+// ICON BUTTON - shared base for tools dropdown, hamburger
 // ==================================================
 
 .saho-icon-btn {
   background: none;
   border: none;
-  color: var(--saho-color-text-primary);
+  color: var(--text-primary);
   padding: 0.5rem;
   min-width: 44px;
   min-height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: var(--saho-radius-md);
+  border-radius: var(--radius-sm);
   cursor: pointer;
   transition: color var(--saho-transition-base), background-color var(--saho-transition-base);
 
@@ -162,8 +156,8 @@
   }
 
   &:hover {
-    color: var(--saho-color-primary);
-    background-color: var(--saho-color-primary-alpha-10);
+    color: var(--saho-oxblood);
+    background-color: var(--saho-oxblood-10);
   }
 
   &:focus {
@@ -171,26 +165,60 @@
   }
 
   &:focus-visible {
-    outline: 2px solid var(--saho-color-primary);
+    outline: 2px solid var(--focus-ring);
     outline-offset: 2px;
-    box-shadow: 0 0 0 3px var(--saho-color-primary-alpha-25);
+    box-shadow: 0 0 0 3px var(--saho-oxblood-25);
   }
 
   &.show {
-    color: var(--saho-color-primary);
-    background-color: var(--saho-color-primary-alpha-10);
+    color: var(--saho-oxblood);
+    background-color: var(--saho-oxblood-10);
   }
 }
 
 // ==================================================
-// PRIMARY NAV - inline at ≥1200px, hidden below
+// SEARCH GLYPH - Open Record accent square (Chrome.jsx)
+// ==================================================
+
+.saho-search-glyph {
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent);
+  color: var(--text-on-accent);
+  border-radius: var(--radius-sm);
+  font-size: 19px;
+  line-height: 1;
+  border: 0;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background-color var(--saho-transition-base);
+
+  &:hover {
+    background: var(--link-hover);
+  }
+
+  &:focus {
+    outline: none;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 3px var(--saho-oxblood-25);
+  }
+}
+
+// ==================================================
+// PRIMARY NAV - inline at ≥1024px, hidden below
 // ==================================================
 //
-// drupal_menu('main') → menu--main.html.twig → {% include 'saho:nav' with {
-//   nav_utility_classes: ['saho-main-menu'] } %}
+// drupal_menu('saho_primary') → menu.html.twig → {% include 'saho:nav' %}
 //
 // Actual rendered structure:
-//   <ul class="nav saho-main-menu">
+//   <ul class="nav">
 //     <li class="nav-item [active active-trail] [dropdown]">
 //       <a class="nav-link [active]" href="...">Title</a>
 //       <ul class="dropdown-menu">          ← only when item has children
@@ -199,110 +227,100 @@
 //     </li>
 //   </ul>
 //
+// Note: the generic menu.html.twig does NOT add the .saho-main-menu utility
+// class, so all selectors here target the saho:nav base classes (.nav,
+// .nav-item, .nav-link) scoped by context.
+//
 // Desktop context (.saho-primary-nav):  horizontal flex row, hover dropdowns.
 // Mobile context (.saho-mobile-nav): vertical flex column, tap-friendly.
 //
 
 .saho-primary-nav {
-  display: none; // Hidden below ≥1200px - hamburger handles nav
+  display: none; // Hidden below ≥1024px - hamburger handles nav
 
-  @media (min-width: 1200px) {
+  @media (min-width: 1024px) {
     display: flex;
     flex: 1;
-    align-self: stretch; // Fill the full 60px bar height so ::after anchors to bar bottom
-    align-items: stretch;
+    align-items: center;
+    justify-content: flex-end; // Nav sits against the actions, Chrome.jsx style
     min-width: 0;
-    padding: 0 0.5rem;
-    margin-left: 1.5rem; // Breathing room between logo/wordmark and first nav item
+    margin-left: 1rem; // Breathing room between wordmark and first nav item
   }
 
   // ── Desktop horizontal menu ──────────────────────────────────────────────
 
-  .saho-main-menu {
+  .nav {
     display: flex;
     flex-direction: row;
+    flex-wrap: nowrap;
     list-style: none;
     margin: 0;
     padding: 0;
-    align-items: stretch;
-    height: 100%;
+    align-items: center;
+    gap: 2px;
 
-    // Override Bootstrap .nav margin/padding
-    &.nav {
-      flex-wrap: nowrap;
+    // Slightly wider air once the row has room to spare
+    @media (min-width: 1280px) {
+      gap: 4px;
     }
   }
 
   .nav-item {
     position: relative;
     display: flex;
-    align-items: stretch;
-    height: 100%; // Stretch full 60px bar height
+    align-items: center;
 
     // Active section indicator
     &.active,
     &.active-trail {
       > .nav-link {
-        color: var(--saho-color-primary);
-        font-weight: 700;
-
-        &::after {
-          transform: scaleX(1);
-        }
+        color: var(--saho-oxblood);
+        border-bottom-color: var(--saho-oxblood);
       }
     }
   }
 
   .nav-link {
-    color: var(--saho-color-text-primary);
-    text-decoration: none;
+    font-family: var(--font-sans);
+    font-size: 14px;
     font-weight: 600;
-    font-size: 0.8125rem; // 13px - all 7 items fit comfortably
-    letter-spacing: 0.04em; // Slight institutional register - archive typography
-    padding: 0 0.75rem;
-    height: 100%; // Fill full bar height so ::after anchors to bar bottom
+    color: var(--text-primary);
+    text-decoration: none;
+    padding: 8px 8px;
+    border-bottom: 2px solid transparent;
     display: flex;
     align-items: center;
     white-space: nowrap;
-    position: relative;
-    transition: color var(--saho-transition-base);
+    transition: color var(--saho-transition-base), border-color var(--saho-transition-base);
+
+    // Full 11px side padding once the row has room (6 items + glyph + donate
+    // must fit alongside the wordmark at 1024-1280)
+    @media (min-width: 1280px) {
+      padding: 8px 11px;
+    }
 
     // Bootstrap overrides
     &:hover,
     &:focus {
-      color: var(--saho-color-primary);
+      color: var(--saho-oxblood);
     }
 
-    // Bottom indicator - 8px above the bar base, clearing the 3px gradient accent.
-    // Slides in on hover/active.
-    &::after {
-      content: ""; // Override Bootstrap dropdown caret
-      position: absolute;
-      bottom: 8px; // 3px gradient + 5px gap
-      left: 0.5rem;
-      right: 0.5rem;
-      height: 3px;
-      background: var(--saho-color-primary);
-      transform: scaleX(0);
-      transform-origin: center;
-      transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-      border: none;
-      border-radius: 2px 2px 0 0;
-      width: auto;
-      margin: 0;
-      vertical-align: unset;
-      display: block;
+    &.active,
+    &.is-active,
+    &[aria-current="page"],
+    &[aria-current="true"] {
+      color: var(--saho-oxblood);
+      border-bottom-color: var(--saho-oxblood);
     }
 
-    &:hover::after,
-    &.active::after,
-    &.is-active::after {
-      transform: scaleX(1);
+    &:focus-visible {
+      outline: 2px solid var(--focus-ring);
+      outline-offset: 2px;
     }
 
     // Dropdown toggle caret - suppress Bootstrap's, use saho:nav's ▾ span
-    &.dropdown-toggle {
-      padding-right: 0.75rem;
+    &.dropdown-toggle::after {
+      display: none;
     }
   }
 
@@ -312,9 +330,9 @@
     position: absolute;
     top: 100%;
     left: 0;
-    background: var(--saho-color-white);
-    border: 1px solid var(--saho-color-border-subtle);
-    border-radius: var(--saho-radius-sm);
+    background: var(--saho-paper-raised);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-sm);
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
     padding: 6px 0;
     min-width: 215px;
@@ -340,7 +358,7 @@
   }
 
   .dropdown-item {
-    color: var(--saho-color-text-primary);
+    color: var(--text-primary);
     font-weight: 500;
     font-size: 0.875rem;
     padding: 8px 16px;
@@ -351,8 +369,8 @@
     &:focus,
     &.active,
     &.is-active {
-      background: var(--saho-color-surface);
-      color: var(--saho-color-primary);
+      background: var(--saho-paper-sunk);
+      color: var(--saho-oxblood);
     }
   }
 }
@@ -375,7 +393,7 @@
   transition: background-color var(--saho-transition-base);
 
   &:hover {
-    background-color: var(--saho-color-primary-alpha-10);
+    background-color: var(--saho-oxblood-10);
   }
 
   &:focus {
@@ -383,7 +401,7 @@
   }
 
   &:focus-visible {
-    outline: 2px solid var(--saho-color-primary);
+    outline: 2px solid var(--focus-ring);
     outline-offset: 2px;
   }
 }
@@ -399,7 +417,7 @@
     display: block;
     height: 2.5px;
     width: 100%;
-    background: var(--saho-color-primary);
+    background: var(--saho-oxblood);
     border-radius: 2px;
     transition: transform 0.25s ease, opacity 0.25s ease;
   }
@@ -407,12 +425,12 @@
 
 // ==================================================
 // HAMBURGER VISIBILITY
-// <1200px: always visible (offcanvas is the nav)
-// ≥1200px: always hidden (nav items inline in primary bar)
+// <1024px: always visible (offcanvas is the nav)
+// ≥1024px: always hidden (nav items inline in primary bar)
 // No JS needed - no layout impact.
 // ==================================================
 
-@media (min-width: 1200px) {
+@media (min-width: 1024px) {
   .saho-hamburger-btn {
     display: none;
   }
@@ -425,20 +443,20 @@
 // Drupal's displace.js sets --drupal-displace-offset-top on <html>
 // to the exact combined height of all fixed displacing elements
 // (toolbar bar + any open trays). This is handled directly in the
-// .saho-primary-bar rule above - no additional rules needed.
+// .saho-header-wrapper rule above - no additional rules needed.
 
 // ==================================================
-// SCROLL ANCHOR OFFSET - fixed primary bar compensation
+// SCROLL ANCHOR OFFSET - sticky header compensation
 // ==================================================
 
 html {
-  scroll-padding-top: 75px; // 60px bar + 15px buffer
+  scroll-padding-top: 95px; // ~80px sticky bar + buffer
 }
 
 .page-title,
 h1.node__title,
 .article-header {
-  scroll-margin-top: 75px;
+  scroll-margin-top: 95px;
 }
 
 // ==================================================
@@ -462,9 +480,9 @@ h1.node__title,
   // ── Hero zone ────────────────────────────────────────────────────────────
 
   .saho-search-hero {
-    background:
-      radial-gradient(ellipse at 50% -5%, rgba(153, 0, 0, 0.22) 0%, transparent 60%),
-      linear-gradient(160deg, #0f1923 0%, #1a0505 55%, #0f1923 100%);
+    // Open Record ink surface - flat; legibility and drama come from the
+    // ground and the type, never a scrim (#453).
+    background: var(--saho-ink);
     padding: 2.5rem 2rem 2.25rem;
     position: relative;
     flex-shrink: 0;
@@ -474,31 +492,57 @@ h1.node__title,
     }
   }
 
+  // ── Search field SDC glue (saho:saho-search-field) ──────────────────────
+
+  .saho-search {
+    max-width: 680px;
+    margin: 0 auto;
+  }
+
+  // Scope chips sit on the ink hero - lift them out of paper-surface defaults
+  .saho-search__scopes {
+    justify-content: center;
+  }
+
+  .saho-search__scope {
+    color: var(--text-on-dark);
+    border-color: rgba(243, 236, 221, 0.35);
+
+    &:hover {
+      border-color: var(--text-on-dark);
+    }
+
+    &.is-active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: var(--text-on-accent);
+    }
+  }
+
   .saho-search-close {
     position: absolute;
     top: 1.25rem;
     right: 1.25rem;
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    color: rgba(255, 255, 255, 0.65);
+    background: transparent;
+    border: var(--bw-hair, 1px) solid rgba(243, 236, 221, 0.35);
+    color: rgba(243, 236, 221, 0.75);
     width: 40px;
     height: 40px;
-    border-radius: 50%;
+    border-radius: 0;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: border-color 0.2s ease, color 0.2s ease;
     z-index: 10;
 
     &:hover {
-      background: rgba(255, 255, 255, 0.15);
-      color: #fff;
-      transform: rotate(90deg);
+      border-color: var(--text-on-dark, #f3ecdd);
+      color: var(--text-on-dark, #f3ecdd);
     }
 
     &:focus-visible {
-      outline: 2px solid $saho-deep-heritage-red;
+      outline: 2px solid var(--saho-oxblood-bright);
       outline-offset: 3px;
     }
   }
@@ -528,91 +572,15 @@ h1.node__title,
 
     em {
       font-style: normal;
-      color: $saho-deep-heritage-red;
+      color: var(--saho-oxblood-bright); // Readable oxblood on the ink surface
       text-decoration: underline;
-      text-decoration-color: rgba(153, 0, 0, 0.4);
+      text-decoration-color: var(--saho-oxblood-25);
       text-underline-offset: 4px;
     }
 
     @include media-breakpoint-down(sm) {
       font-size: 1.5rem;
       margin-bottom: 1.25rem;
-    }
-  }
-
-  .saho-search-input-wrap {
-    position: relative;
-    max-width: 680px;
-    margin: 0 auto;
-  }
-
-  .saho-search-field-icon {
-    position: absolute;
-    left: 1.125rem;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #9ca3af;
-    pointer-events: none;
-    z-index: 2;
-  }
-
-  .saho-search-input {
-    width: 100%;
-    padding: 1.125rem 2.5rem 1.125rem 3.125rem;
-    font-size: 1.0625rem;
-    border: 2px solid transparent;
-    border-radius: 14px;
-    background: rgba(255, 255, 255, 0.97);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45), 0 2px 8px rgba(153, 0, 0, 0.12);
-    color: #1a202c;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
-    appearance: none;
-
-    &::placeholder {
-      color: #a0aec0;
-    }
-
-    &:focus {
-      outline: none;
-      border-color: $saho-deep-heritage-red;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45), 0 0 0 4px rgba(153, 0, 0, 0.18);
-    }
-
-    @include media-breakpoint-down(sm) {
-      padding-right: 1rem;
-      font-size: 1rem;
-    }
-  }
-
-  .saho-search-actions {
-    text-align: center;
-    margin-top: 1.125rem;
-  }
-
-  .saho-search-submit-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    background: $saho-deep-heritage-red;
-    color: #fff;
-    border: none;
-    border-radius: 9999px;
-    padding: 0.75rem 2.25rem;
-    font-size: 0.9375rem;
-    font-weight: 600;
-    letter-spacing: 0.01em;
-    cursor: pointer;
-    transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
-
-    &:hover {
-      background: var(--saho-color-primary-dark);
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(153, 0, 0, 0.4);
-    }
-
-    &:focus-visible {
-      outline: 2px solid #fff;
-      outline-offset: 3px;
     }
   }
 
@@ -634,9 +602,10 @@ h1.node__title,
 
     strong {
       display: block;
+      font-family: var(--font-mono);
       font-size: 1.0625rem;
       font-weight: 700;
-      color: rgba(255, 255, 255, 0.88);
+      color: var(--text-on-dark);
       line-height: 1.2;
     }
 
@@ -645,15 +614,20 @@ h1.node__title,
       font-weight: 500;
       letter-spacing: 0.08em;
       text-transform: uppercase;
-      color: rgba(255, 255, 255, 0.4);
+      color: rgba(243, 236, 221, 0.5); // --text-on-dark at half strength
     }
   }
 
   // ── Discovery zone ──────────────────────────────────────────────────────
 
   .saho-search-discovery {
+    // The global link rule paints anchors via --link-rest at higher
+    // specificity than the chip classes; re-scope for the chip register.
+    --link-rest: var(--text-primary);
+    --link-hover: var(--text-primary);
+
     flex: 1;
-    background: #fff;
+    background: var(--saho-paper);
     padding: 2rem 2rem 2.5rem;
     overflow-y: auto;
 
@@ -671,11 +645,12 @@ h1.node__title,
   }
 
   .saho-search-section-label {
+    font-family: var(--font-mono);
     font-size: 0.6875rem;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.12em;
-    color: #9ca3af;
+    color: var(--saho-ink-muted);
     margin-bottom: 0.75rem;
   }
 
@@ -685,75 +660,30 @@ h1.node__title,
     gap: 0.5rem;
   }
 
-  .saho-search-chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.25rem;
-    padding: 0.4rem 0.9375rem;
-    background: rgba(153, 0, 0, 0.06);
-    color: $saho-deep-heritage-red;
-    border: 1px solid rgba(153, 0, 0, 0.18);
-    border-radius: 9999px;
-    font-size: 0.875rem;
-    font-weight: 500;
-    text-decoration: none;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: all 0.18s ease;
-
-    &:hover,
-    &:focus-visible {
-      background: $saho-deep-heritage-red;
-      color: #fff;
-      border-color: $saho-deep-heritage-red;
-      transform: translateY(-1px);
-      box-shadow: 0 3px 10px rgba(153, 0, 0, 0.28);
-      text-decoration: none;
-    }
-  }
-
-  .saho-search-chip--era {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.25rem;
-    padding: 0.4rem 0.9375rem;
-    background: rgba(184, 138, 46, 0.09);
-    color: #7a5c12;
-    border: 1px solid rgba(184, 138, 46, 0.28);
-    border-radius: 9999px;
-    font-size: 0.875rem;
-    font-weight: 500;
-    text-decoration: none;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: all 0.18s ease;
-
-    &:hover,
-    &:focus-visible {
-      background: $saho-muted-gold;
-      color: #fff;
-      border-color: $saho-muted-gold;
-      transform: translateY(-1px);
-      box-shadow: 0 3px 10px rgba(184, 138, 46, 0.3);
-      text-decoration: none;
-    }
-  }
-
+  // Discovery chips: the classroom chip register - square mono tags on
+  // paper, hover darkens the hairline, press fills oxblood. No tinted
+  // fills, no lift, no shadow (#453).
+  .saho-search-chip,
+  .saho-search-chip--era,
   .saho-search-chip--type {
     display: inline-flex;
     align-items: center;
     gap: 0.375rem;
-    padding: 0.4rem 0.9375rem;
-    background: rgba(58, 74, 100, 0.06);
-    color: $saho-slate-blue;
-    border: 1px solid rgba(58, 74, 100, 0.2);
-    border-radius: 9999px;
-    font-size: 0.875rem;
+    min-height: 2rem;
+    padding: 0.3rem 0.75rem;
+    background: var(--saho-paper);
+    color: var(--text-primary);
+    border: var(--bw-hair, 1px) solid var(--border-default);
+    border-radius: 0;
+    font-family: var(--font-mono);
+    font-size: 12px;
     font-weight: 500;
+    letter-spacing: var(--ls-label, 0.04em);
+    text-transform: uppercase;
     text-decoration: none;
     cursor: pointer;
     white-space: nowrap;
-    transition: all 0.18s ease;
+    transition: border-color 0.18s ease, background 0.18s ease;
 
     svg {
       flex-shrink: 0;
@@ -761,12 +691,15 @@ h1.node__title,
 
     &:hover,
     &:focus-visible {
-      background: $saho-slate-blue;
-      color: #fff;
-      border-color: $saho-slate-blue;
-      transform: translateY(-1px);
-      box-shadow: 0 3px 10px rgba(58, 74, 100, 0.3);
+      border-color: var(--border-strong, #1b1c17);
+      color: var(--text-primary);
       text-decoration: none;
+    }
+
+    &:active {
+      background: var(--accent, #990000);
+      border-color: var(--accent, #990000);
+      color: var(--text-on-accent, #fbf3ee);
     }
   }
 
@@ -791,12 +724,13 @@ h1.node__title,
 
 .saho-donate-btn {
   background: transparent;
-  color: var(--saho-color-primary);
-  border: 1.5px solid var(--saho-color-primary);
+  color: var(--saho-oxblood);
+  border: 1.5px solid var(--saho-oxblood);
   animation: saho-donate-ring 3s ease-in-out 2s infinite; // Delayed start, subtle repeat
   text-decoration: none;
   padding: 7px 14px;
-  border-radius: var(--saho-button-radius-pill);
+  border-radius: var(--radius-sm); // Open Record hard edges
+  font-family: var(--font-sans);
   font-weight: 700;
   font-size: 0.8125rem;
   letter-spacing: 0.02em;
@@ -825,11 +759,11 @@ h1.node__title,
   position: relative;
 
   &:hover {
-    background: var(--saho-color-primary);
-    color: #fff;
+    background: var(--saho-oxblood);
+    color: var(--text-on-accent);
     text-decoration: none;
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px var(--saho-color-primary-alpha-25);
+    box-shadow: 0 4px 12px var(--saho-oxblood-25);
     animation: none; // Stop pulse once engaged
 
     .saho-donate-icon {
@@ -838,7 +772,7 @@ h1.node__title,
   }
 
   &:focus-visible {
-    outline: 2px solid var(--saho-color-primary);
+    outline: 2px solid var(--focus-ring);
     outline-offset: 2px;
   }
 
@@ -941,21 +875,24 @@ h1.node__title,
 }
 
 .dropdown-menu {
-  border: 1px solid var(--saho-color-border);
+  background: var(--saho-paper-raised);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
   box-shadow: var(--saho-shadow-lg);
 
   .dropdown-item {
     padding: 0.5rem 1rem;
     font-size: 0.875rem;
+    color: var(--text-primary);
 
     &:hover,
     &:focus {
-      background-color: var(--saho-color-surface);
-      color: var(--saho-color-primary);
+      background-color: var(--saho-paper-sunk);
+      color: var(--saho-oxblood);
     }
 
     svg {
-      color: var(--saho-color-primary);
+      color: var(--saho-oxblood);
       flex-shrink: 0;
     }
   }
@@ -1007,7 +944,7 @@ h1.node__title,
     transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
     visibility 0.35s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 4px 0 16px rgba(0, 0, 0, 0.15);
-  background: #fff;
+  background: var(--saho-paper);
   visibility: hidden;
 
   &.show {
@@ -1025,12 +962,10 @@ h1.node__title,
     transition: opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
-  // ── Hero header (dark gradient, matching search modal) ──────────────────
+  // ── Hero header (Open Record ink surface, matching search modal) ────────
 
   .offcanvas-header.saho-mobile-menu-hero {
-    background:
-      radial-gradient(ellipse at 50% -10%, rgba(153, 0, 0, 0.2) 0%, transparent 60%),
-      linear-gradient(160deg, #0f1923 0%, #1a0505 55%, #0f1923 100%);
+    background: var(--saho-ink);
     border-bottom: none;
     padding: 1rem 1.25rem 1.25rem;
     flex-direction: column;
@@ -1051,7 +986,8 @@ h1.node__title,
   }
 
   .saho-mobile-menu-label {
-    color: rgba(255, 255, 255, 0.75);
+    color: var(--text-on-dark);
+    font-family: var(--font-mono);
     font-size: 0.75rem;
     font-weight: 700;
     letter-spacing: 0.15em;
@@ -1079,80 +1015,7 @@ h1.node__title,
     }
 
     &:focus-visible {
-      outline: 2px solid $saho-deep-heritage-red;
-      outline-offset: 2px;
-    }
-  }
-
-  // ── Search form inside hero ──────────────────────────────────────────────
-
-  .saho-mobile-search {
-    margin: 0;
-  }
-
-  .saho-mobile-search-wrap {
-    position: relative;
-    display: flex;
-    align-items: center;
-  }
-
-  .saho-mobile-search-icon {
-    position: absolute;
-    left: 0.875rem;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #9ca3af;
-    pointer-events: none;
-    z-index: 2;
-  }
-
-  .saho-mobile-search-input {
-    width: 100%;
-    padding: 0.875rem 2.75rem 0.875rem 2.75rem;
-    font-size: 0.9375rem;
-    border: 2px solid transparent;
-    border-radius: 12px;
-    background: rgba(255, 255, 255, 0.97);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
-    color: #1a202c;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
-    appearance: none;
-
-    &::placeholder {
-      color: #a0aec0;
-    }
-
-    &:focus {
-      outline: none;
-      border-color: $saho-deep-heritage-red;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35), 0 0 0 3px rgba(153, 0, 0, 0.18);
-    }
-  }
-
-  .saho-mobile-search-submit {
-    position: absolute;
-    right: 0.5rem;
-    top: 50%;
-    transform: translateY(-50%);
-    background: $saho-deep-heritage-red;
-    border: none;
-    border-radius: 8px;
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #fff;
-    cursor: pointer;
-    flex-shrink: 0;
-    transition: background-color 0.2s ease;
-
-    &:hover {
-      background: var(--saho-color-primary-dark);
-    }
-
-    &:focus-visible {
-      outline: 2px solid #fff;
+      outline: 2px solid var(--saho-oxblood-bright);
       outline-offset: 2px;
     }
   }
@@ -1161,7 +1024,7 @@ h1.node__title,
     padding: 1.25rem;
     overflow-y: auto;
     flex: 1;
-    background: #fff;
+    background: var(--saho-paper);
 
     &::-webkit-scrollbar {
       width: 6px;
@@ -1172,11 +1035,11 @@ h1.node__title,
     }
 
     &::-webkit-scrollbar-thumb {
-      background: var(--saho-color-primary-alpha-25);
+      background: var(--saho-oxblood-25);
       border-radius: 3px;
 
       &:hover {
-        background: var(--saho-color-primary-alpha-25);
+        background: var(--saho-oxblood-25);
       }
     }
   }
@@ -1231,13 +1094,14 @@ body.offcanvas-open {
 // MOBILE NAVIGATION (offcanvas)
 // ==================================================
 //
-// Same saho:nav output as desktop, but rendered vertically inside offcanvas.
-// .saho-main-menu gets flex-column; .nav-link gets full-width tap targets.
+// Same saho:nav output as desktop, rendered vertically inside the offcanvas.
+// Selectors target the saho:nav base classes (.nav, .nav-item, .nav-link) -
+// the generic menu.html.twig adds no utility class.
 // Dropdown menus (when items have children) stack below their parent link.
 //
 
 .saho-mobile-nav {
-  .saho-main-menu {
+  .nav {
     display: flex;
     flex-direction: column;
     list-style: none;
@@ -1251,11 +1115,12 @@ body.offcanvas-open {
   }
 
   .nav-link {
-    color: var(--saho-color-text-primary);
+    color: var(--text-primary);
+    font-family: var(--font-sans);
     font-weight: 600;
     font-size: 1rem;
     padding: 0.75rem 1rem;
-    border-radius: var(--saho-radius-md);
+    border-radius: var(--radius-sm);
     border-left: 4px solid transparent;
     min-height: 44px;
     display: flex;
@@ -1269,17 +1134,17 @@ body.offcanvas-open {
 
     &:hover,
     &:focus {
-      background: var(--saho-color-surface);
-      color: var(--saho-color-primary);
-      border-left-color: var(--saho-color-primary);
+      background: var(--saho-paper-raised);
+      color: var(--saho-oxblood);
+      border-left-color: var(--saho-oxblood);
       transform: translateX(3px);
     }
 
     &.active,
     &.is-active {
-      background: var(--saho-color-primary-alpha-10);
-      color: var(--saho-color-primary);
-      border-left-color: var(--saho-color-primary);
+      background: var(--saho-oxblood-10);
+      color: var(--saho-oxblood);
+      border-left-color: var(--saho-oxblood);
       font-weight: 700;
     }
 
@@ -1295,9 +1160,9 @@ body.offcanvas-open {
   .nav-item.active,
   .nav-item.active-trail {
     > .nav-link {
-      background: var(--saho-color-primary-alpha-10);
-      color: var(--saho-color-primary);
-      border-left-color: var(--saho-color-primary);
+      background: var(--saho-oxblood-10);
+      color: var(--saho-oxblood);
+      border-left-color: var(--saho-oxblood);
       font-weight: 700;
     }
   }
@@ -1312,7 +1177,7 @@ body.offcanvas-open {
     box-shadow: none;
     padding: 0 0 0.5rem 1rem;
     margin: 0;
-    border-left: 3px solid var(--saho-color-primary-alpha-25);
+    border-left: 3px solid var(--saho-oxblood-25);
     margin-left: 1rem;
 
     &.show {
@@ -1320,24 +1185,24 @@ body.offcanvas-open {
     }
 
     .dropdown-item {
-      color: var(--saho-color-secondary);
+      color: var(--text-secondary);
       font-weight: 500;
       font-size: 0.9rem;
       padding: 0.55rem 0.75rem;
-      border-radius: 6px;
+      border-radius: var(--radius-sm);
       min-height: 40px;
       display: flex;
       align-items: center;
 
       &:hover,
       &:focus {
-        background: var(--saho-color-surface);
-        color: var(--saho-color-primary);
+        background: var(--saho-paper-raised);
+        color: var(--saho-oxblood);
       }
 
       &.active,
       &.is-active {
-        color: var(--saho-color-primary);
+        color: var(--saho-oxblood);
         font-weight: 600;
       }
     }
@@ -1350,16 +1215,16 @@ body.offcanvas-open {
 
 @media print {
   .saho-header-wrapper {
-    padding-top: 0; // Remove fixed bar offset for print
+    position: static; // No sticky behaviour on paper
+    padding-bottom: 0;
+
+    &::after {
+      display: none; // Drop the accent rule
+    }
   }
 
   .saho-primary-bar {
-    position: relative;
-    box-shadow: none;
-
-    &::after {
-      display: none;
-    }
+    border-bottom: none;
   }
 
   .saho-primary-nav,
@@ -1436,4 +1301,200 @@ body.offcanvas-open {
   ol {
     break-inside: avoid;
   }
+}
+
+// R3 #476: quiet mono pathway to the full query builder.
+.saho-search-advanced-link {
+  margin: 0.5rem 0 0;
+  text-align: right;
+
+  a {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-xs);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--saho-ink-muted);
+    text-decoration: none;
+
+    &:hover {
+      color: var(--saho-oxblood, #990000);
+    }
+  }
+}
+
+.saho-search-advanced-link--inline {
+  margin-left: 1rem;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--saho-ink-muted);
+  text-decoration: none;
+}
+
+// R3 #478: recently-added band - three live rows, RelatedList register.
+.saho-search-latest__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.saho-search-latest__row a {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  padding: 0.5rem 0.25rem;
+  border-bottom: var(--bw-hair) solid rgb(240 236 225 / 15%);
+  color: inherit;
+  text-decoration: none;
+
+  &:hover .saho-search-latest__title {
+    text-decoration: underline;
+  }
+}
+
+.saho-search-latest__marker {
+  flex: 0 0 auto;
+  width: 0.55rem;
+  height: 0.55rem;
+  background: var(--saho-ochre, #c8a441);
+}
+
+.saho-search-latest__title {
+  font-family: var(--font-serif);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.saho-search-latest__added {
+  margin-left: auto;
+  flex: 0 0 auto;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  letter-spacing: 0.06em;
+  opacity: 0.7;
+}
+
+// R3 #478: mobile menu - ledger register (48px rows, hairlines) + the
+// ruled mono secondary group; Donate is the one solid row at sheet foot.
+.saho-mobile-nav .nav-link,
+.saho-mobile-nav a {
+  min-height: 48px;
+  font-size: var(--fs-h4, 1.25rem);
+  border-bottom: var(--bw-hair) solid var(--border-default);
+}
+
+.saho-mobile-secondary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 1.25rem;
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: var(--bw-hair) solid var(--border-default);
+}
+
+.saho-mobile-secondary__link {
+  padding: 0.6rem 0;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--saho-ink);
+  text-decoration: none;
+}
+
+.saho-mobile-donate {
+  display: block;
+  margin-top: 1rem;
+  padding: 0.8rem 1rem;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-sm);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--saho-paper, #f0ece1);
+  background: var(--saho-oxblood, #990000);
+  text-decoration: none;
+}
+
+// R3 #478: typeahead listbox.
+.saho-search-suggest {
+  margin-top: 0.5rem;
+  background: var(--saho-paper, #f0ece1);
+  border: var(--bw-hair) solid var(--saho-ink);
+}
+
+.saho-suggest__row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  padding: 0.55rem 0.75rem;
+  border-bottom: var(--bw-hair) solid var(--border-default);
+  color: var(--saho-ink);
+  text-decoration: none;
+
+  &:last-child {
+    border-bottom: 0;
+  }
+
+  &.is-active,
+  &:hover {
+    background: var(--saho-paper-raised, #f5f2e9);
+  }
+}
+
+.saho-suggest__marker {
+  flex: 0 0 auto;
+  width: 0.55rem;
+  height: 0.55rem;
+  background: var(--saho-ink-soft);
+}
+
+.saho-suggest__title {
+  font-family: var(--font-serif);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.saho-suggest__ref {
+  margin-left: auto;
+  flex: 0 0 auto;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  letter-spacing: 0.06em;
+  color: var(--saho-ink-muted);
+}
+
+.saho-suggest__all {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.saho-search-discovery.is-dimmed {
+  opacity: 0.4;
+  transition: opacity 0.2s ease;
+}
+
+// R3 #479: classroom hub multilingual apparatus line.
+.saho-classroom-hub__languages {
+  margin: 0.5rem 0 0;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--saho-ink-muted);
+}
+
+// Browse-cell note (classroom: LESSONS IN 11 LANGUAGES).
+.saho-browse-index__note {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--saho-ink-muted);
 }

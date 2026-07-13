@@ -1,31 +1,46 @@
 /**
- * Hero Banner Component - SAHO Design System
- * Full-width hero banner with responsive images and smooth animations
+ * Hero Banner - wf07 editorial-feature hero (Open Record register, #461).
+ *
+ * Standard mode: duotone image above a flat ink band; content bottom-left,
+ * credit bottom-right. Flat surfaces only - no overlay, no text-shadow,
+ * square corners. Graphic mode (promotional full-image link) is separate.
  */
 
 .saho-hero-banner {
   position: relative;
   width: 100%;
-  min-height: 400px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
   margin: 0;
-  border-radius: 0;
-  padding: 4rem 0;
-  opacity: 1;
-  transform: translateY(0);
+  overflow: hidden;
+  border-top: 4px solid var(--hero-accent, var(--type-archive, #8a6420));
 }
 
-/* LCP-optimized picture element */
+/* Content-type accent for the top rule. */
+.saho-hero-banner--accent-article {
+  --hero-accent: var(--type-article);
+}
+.saho-hero-banner--accent-biography {
+  --hero-accent: var(--type-biography);
+}
+.saho-hero-banner--accent-place {
+  --hero-accent: var(--type-place);
+}
+.saho-hero-banner--accent-archive {
+  --hero-accent: var(--type-archive);
+}
+.saho-hero-banner--accent-event {
+  --hero-accent: var(--type-event);
+}
+.saho-hero-banner--accent-topic {
+  --hero-accent: var(--type-topic);
+}
+
+/* Image zone: in-flow above the ink band, clipped to a wide editorial ratio. */
 .saho-hero-banner__picture {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
   display: block;
   width: 100%;
-  height: 100%;
+  aspect-ratio: 21 / 9;
+  min-height: 260px;
+  max-height: 520px;
 }
 
 .saho-hero-banner__image {
@@ -33,114 +48,70 @@
   height: 100%;
   object-fit: cover;
   object-position: center;
-  transition:
-    transform 0.4s cubic-bezier(0.4, 0, 0.2, 1),
-    filter 0.3s ease;
 }
 
-/* Dark overlay */
-.saho-hero-banner__overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.45);
-  z-index: 1;
-  pointer-events: none;
-  transition: opacity 0.3s ease;
-}
+/* The flat ink band that carries all text - legibility by ground, not scrim. */
+.saho-hero-banner__band {
+  /* The global link rule paints anchors via --link-rest/--link-hover;
+     re-scope for the ink ground so buttons and links stay paper. */
+  --link-rest: var(--saho-paper, #e7e4d8);
+  --link-hover: var(--saho-paper, #e7e4d8);
 
-/* Content container */
-.saho-hero-banner__content {
-  position: relative;
-  z-index: 2;
-  text-align: center;
-  padding: 2rem;
-  max-width: 700px;
-  margin: 0 auto;
-  width: 100%;
-}
-
-/* In graphic mode, allow full-width clickable area */
-.saho-hero-banner--graphic .saho-hero-banner__content {
-  max-width: 100%;
-  padding: 0;
-  width: 100%;
-  height: 100%;
-}
-
-/* Inner wrapper */
-.saho-hero-banner__inner {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1rem;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-4, 1rem);
+  background: var(--saho-ink, #1b1c17);
+  padding: var(--space-6, 2rem);
 }
 
-/* In graphic mode, center the inner content within the link */
-.saho-hero-banner--graphic .saho-hero-banner__inner {
-  max-width: 700px;
-  margin: 0 auto;
-  padding: 2rem;
-  width: 100%;
+.saho-hero-banner__inner {
+  max-width: 46rem;
+  text-align: left;
 }
 
-/* Title styling */
+/* Mono eyebrow - ochre on ink. */
+.saho-hero-banner__kicker {
+  margin: 0 0 var(--space-3, 0.75rem);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs, 0.75rem);
+  font-weight: 500;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--saho-ochre, #b88a2e);
+}
+
+/* Masthead - Archivo heavy, paper on ink. */
 .saho-hero-banner__title {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif;
-  font-size: clamp(1.4rem, 4vw, 2.5rem);
-  font-weight: 600;
-  line-height: 1.25;
-  letter-spacing: -0.5px;
-  margin: 0 0 0.5rem 0;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  margin: 0 0 var(--space-3, 0.75rem);
+  font-family: var(--font-sans);
+  font-weight: 900;
+  font-size: clamp(1.75rem, 1.2rem + 2.6vw, 3rem);
+  line-height: 1.08;
+  letter-spacing: -0.01em;
+  color: var(--saho-paper, #e7e4d8);
 }
 
-/* Title color variations */
-.saho-hero-banner__title--white {
-  color: #ffffff !important;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5) !important;
+/* One-line standfirst - Caslon, soft on ink. */
+.saho-hero-banner__standfirst {
+  margin: 0 0 var(--space-3, 0.75rem);
+  font-family: var(--font-display);
+  font-size: var(--fs-lg, 1.375rem);
+  line-height: 1.35;
+  color: rgba(231, 228, 216, 0.85);
 }
 
-.saho-hero-banner__title--red {
-  color: #990000 !important;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
-}
-
-.saho-hero-banner__title--gold {
-  color: #d4af37 !important;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
-}
-
-.saho-hero-banner__title--green {
-  color: #2d5016 !important;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
-}
-
-/* Subtitle styling */
-.saho-hero-banner__subtitle {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif;
-  font-size: 1.125rem;
-  color: #ffffff;
-  margin: 0 0 0.5rem 0;
-  font-weight: 400;
-  line-height: 1.5;
-  opacity: 0.95;
-}
-
-/* Body text */
 .saho-hero-banner__body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif;
+  margin: 0 0 var(--space-4, 1rem);
+  max-width: 60ch;
   font-size: 1rem;
-  color: rgba(255, 255, 255, 0.9);
-  margin: 0 0 1rem 0;
   line-height: 1.6;
-  max-width: 500px;
+  color: rgba(231, 228, 216, 0.78);
 }
 
 .saho-hero-banner__body p {
-  margin: 0 0 0.5rem 0;
+  margin: 0 0 0.5rem;
   color: inherit;
 }
 
@@ -148,17 +119,90 @@
   margin-bottom: 0;
 }
 
-.saho-hero-banner__body * {
-  color: inherit;
+/* CTA row: left-aligned, solid oxblood primary + paper ghost secondary. */
+.saho-hero-banner__cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3, 0.75rem);
+  margin-top: var(--space-4, 1rem);
 }
 
-/* CTA Button */
-.saho-hero-banner__cta {
-  margin-top: 1rem;
+.saho-hero-banner__btn {
+  display: inline-block;
+  padding: 0.65rem 1.4rem;
+  font-family: var(--font-sans);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  line-height: 1.2;
+  text-decoration: none;
+  border: 1px solid transparent;
+}
+
+.saho-hero-banner__btn--solid {
+  background: var(--saho-oxblood, #990000);
+  border-color: var(--saho-oxblood, #990000);
+  color: var(--saho-paper, #e7e4d8);
+}
+
+.saho-hero-banner__btn--solid:hover,
+.saho-hero-banner__btn--solid:focus {
+  background: var(--saho-oxblood-deep, #6e0000);
+  border-color: var(--saho-oxblood-deep, #6e0000);
+  color: var(--saho-paper, #e7e4d8);
+}
+
+.saho-hero-banner__btn--ghost {
+  background: transparent;
+  border-color: rgba(231, 228, 216, 0.55);
+  color: var(--saho-paper, #e7e4d8);
+}
+
+.saho-hero-banner__btn--ghost:hover,
+.saho-hero-banner__btn--ghost:focus {
+  border-color: var(--saho-paper, #e7e4d8);
+  background: rgba(231, 228, 216, 0.08);
+  color: var(--saho-paper, #e7e4d8);
+}
+
+.saho-hero-banner__btn:focus-visible {
+  outline: 2px solid var(--saho-ochre, #b88a2e);
+  outline-offset: 2px;
+}
+
+/* Mono provenance line for the image - bottom-right of the band. */
+.saho-hero-banner__credit {
+  margin: 0 0 0 auto;
+  align-self: flex-end;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs, 0.75rem);
+  letter-spacing: 0.04em;
+  color: rgba(231, 228, 216, 0.55);
+  text-align: right;
+}
+
+/* Responsive: tighter band, squarer image. */
+@media (max-width: 767.98px) {
+  .saho-hero-banner__picture {
+    aspect-ratio: 16 / 10;
+    min-height: 200px;
+  }
+
+  .saho-hero-banner__band {
+    padding: var(--space-4, 1rem) var(--space-4, 1rem) var(--space-5, 1.5rem);
+  }
+
+  .saho-hero-banner__standfirst {
+    font-size: 1.125rem;
+  }
+
+  .saho-hero-banner__credit {
+    margin-left: 0;
+    text-align: left;
+  }
 }
 
 /* =============================================================================
- * Graphic Mode - Full Banner Link (Simple & Reliable)
+ * Graphic Mode - Full Banner Link (promotional image, no text)
  * ============================================================================= */
 
 /**
@@ -168,47 +212,33 @@
 .saho-hero-banner--graphic {
   min-height: 0;
   height: auto;
-  padding: 0 !important;
+  padding: 0;
+  border-top: 0;
   cursor: pointer;
   aspect-ratio: 1640 / 720;
   width: 100%;
 }
 
-/* Remove ALL content constraints in graphic mode */
-.saho-hero-banner--graphic .saho-hero-banner__content {
-  position: static !important;
-  max-width: none !important;
-  padding: 0 !important;
-  width: 100%;
-  height: auto;
-}
-
-.saho-hero-banner--graphic .saho-hero-banner__inner {
-  padding: 0 !important;
-  margin: 0 !important;
-  max-width: none !important;
-}
-
-/* Picture container: maintains 1640:720 aspect ratio */
 .saho-hero-banner--graphic .saho-hero-banner__picture {
-  position: relative !important;
-  height: 100% !important;
+  position: relative;
+  height: 100%;
   width: 100%;
+  min-height: 0;
+  max-height: none;
   aspect-ratio: 1640 / 720;
 }
 
-/* Image: fills container at 1640:720 proportions */
 .saho-hero-banner--graphic .saho-hero-banner__image {
-  object-fit: cover !important;
-  object-position: center !important;
-  width: 100% !important;
-  height: 100% !important;
-  position: absolute !important;
+  object-fit: cover;
+  object-position: center;
+  width: 100%;
+  height: 100%;
+  position: absolute;
   top: 0;
   left: 0;
 }
 
-/* Make the ENTIRE banner clickable - simple and direct */
+/* Make the ENTIRE banner clickable - simple and direct. */
 .saho-hero-banner__link {
   position: absolute;
   top: 0;
@@ -222,283 +252,34 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-/* Remove ALL link styling that could interfere */
 .saho-hero-banner__link,
 .saho-hero-banner__link:hover,
 .saho-hero-banner__link:focus,
 .saho-hero-banner__link:active,
 .saho-hero-banner__link:visited {
-  text-decoration: none !important;
-  color: inherit !important;
-  outline: none;
+  text-decoration: none;
+  color: inherit;
 }
 
-/* Simple hover effect - just lighten overlay */
-.saho-hero-banner--graphic:hover .saho-hero-banner__overlay {
-  opacity: 0.3 !important;
-  transition: opacity 0.3s ease;
-}
-
-/* Focus state for keyboard navigation only */
 .saho-hero-banner__link:focus-visible {
-  outline: 3px solid #990000 !important;
+  outline: 3px solid var(--saho-oxblood, #990000);
   outline-offset: -3px;
 }
 
-/* Animation keyframes for mobile fade-in */
-@keyframes heroFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* =============================================================================
- * Responsive Design
- * ============================================================================= */
-
-/* Tablet (< 768px) */
-@media (max-width: 767.98px) {
-  .saho-hero-banner {
-    min-height: 320px;
-    padding: 2rem 0;
-  }
-
-  .saho-hero-banner__content {
-    padding: 1.5rem;
-  }
-
-  .saho-hero-banner__title {
-    font-size: clamp(1.5rem, 4.5vw, 1.875rem);
-  }
-
-  .saho-hero-banner__subtitle {
-    font-size: 1rem;
-  }
-
-  .saho-hero-banner__body {
-    font-size: 0.875rem;
-  }
-}
-
-/* Mobile (< 576px) */
-@media (max-width: 575.98px) {
-  .saho-hero-banner {
-    min-height: 280px;
-    animation: heroFadeIn 0.6s ease-out;
-  }
-
-  .saho-hero-banner__content {
-    padding: 1rem;
-    max-width: 100%;
-  }
-
-  .saho-hero-banner__inner {
-    gap: 0.5rem;
-  }
-
-  .saho-hero-banner__title {
-    font-size: clamp(1.4rem, 5vw, 1.625rem);
-    margin-bottom: 0.5rem;
-  }
-
-  .saho-hero-banner__subtitle {
-    font-size: 0.9375rem;
-    margin-bottom: 0.5rem;
-  }
-
-  .saho-hero-banner__body {
-    font-size: 0.8125rem;
-    margin-bottom: 1rem;
-    line-height: 1.5;
-  }
-}
-
-/* Extra Small (< 360px) */
-@media (max-width: 360px) {
-  .saho-hero-banner {
-    min-height: 280px;
-  }
-
-  .saho-hero-banner__content {
-    padding: 0.75rem;
-  }
-
-  .saho-hero-banner__inner {
-    gap: 0.5rem;
-  }
-
-  .saho-hero-banner__title {
-    font-size: 1.4rem;
-    line-height: 1.1;
-    margin-bottom: 0.4rem;
-  }
-
-  .saho-hero-banner__subtitle {
-    font-size: 0.875rem;
-    margin-bottom: 0.4rem;
-  }
-
-  .saho-hero-banner__body {
-    font-size: 0.75rem;
-  }
-}
-
-/* =============================================================================
- * Graphic Mode Responsive Overrides
- * ============================================================================= */
-
-/* Ensure graphic mode stays full width with natural height on ALL screen sizes */
 @media (max-width: 767.98px) {
   .saho-hero-banner--graphic {
-    min-height: 0;
-    height: auto;
-    padding: 0 !important;
-    width: 100% !important;
-    display: block;
+    aspect-ratio: auto;
   }
 
   .saho-hero-banner--graphic .saho-hero-banner__picture {
-    display: block;
-    width: 100% !important;
-    height: auto !important;
+    aspect-ratio: auto;
+    height: auto;
   }
 
   .saho-hero-banner--graphic .saho-hero-banner__image {
     display: block;
-    width: 100% !important;
-    height: auto !important;
-    position: static !important;
-  }
-
-  .saho-hero-banner--graphic .saho-hero-banner__content {
-    padding: 0 !important;
-    height: auto;
     width: 100%;
-  }
-
-  .saho-hero-banner--graphic .saho-hero-banner__inner {
-    padding: 0 !important;
-  }
-}
-
-@media (max-width: 575.98px) {
-  .saho-hero-banner--graphic {
-    min-height: 0;
     height: auto;
-    padding: 0 !important;
-    width: 100% !important;
-  }
-
-  .saho-hero-banner--graphic .saho-hero-banner__picture {
-    display: block;
-    width: 100% !important;
-    height: auto !important;
-  }
-
-  .saho-hero-banner--graphic .saho-hero-banner__image {
-    display: block;
-    width: 100% !important;
-    height: auto !important;
-    position: static !important;
-  }
-
-  .saho-hero-banner--graphic .saho-hero-banner__content {
-    padding: 0 !important;
-    max-width: none !important;
-    height: auto;
-    width: 100%;
-  }
-
-  .saho-hero-banner--graphic .saho-hero-banner__inner {
-    padding: 0 !important;
-    gap: 0 !important;
-  }
-}
-
-@media (max-width: 360px) {
-  .saho-hero-banner--graphic {
-    min-height: 0;
-    height: auto;
-    padding: 0 !important;
-    width: 100% !important;
-  }
-
-  .saho-hero-banner--graphic .saho-hero-banner__picture {
-    display: block;
-    width: 100% !important;
-    height: auto !important;
-  }
-
-  .saho-hero-banner--graphic .saho-hero-banner__image {
-    display: block;
-    width: 100% !important;
-    height: auto !important;
-    position: static !important;
-  }
-
-  .saho-hero-banner--graphic .saho-hero-banner__content {
-    padding: 0 !important;
-    height: auto;
-    width: 100%;
-  }
-}
-
-/* =============================================================================
- * Accessibility & Enhanced States
- * ============================================================================= */
-
-/**
- * Reduce motion for users who prefer it
- */
-@media (prefers-reduced-motion: reduce) {
-  .saho-hero-banner {
-    animation: none;
-  }
-
-  .saho-hero-banner__image {
-    transition: none;
-  }
-
-  .saho-hero-banner--graphic {
-    transition: none;
-  }
-
-  .saho-hero-banner--graphic:hover {
-    transform: none;
-  }
-
-  .saho-hero-banner--graphic:hover .saho-hero-banner__image {
-    transform: none;
-    filter: brightness(1.05);
-  }
-}
-
-/**
- * Touch Device Optimizations
- * Disable hover effects on touch devices, only show on active state
- */
-@media (hover: none) and (pointer: coarse) {
-  .saho-hero-banner--graphic:hover {
-    transform: none;
-    box-shadow: none;
-  }
-
-  .saho-hero-banner--graphic:hover .saho-hero-banner__image {
-    transform: none;
-    filter: none;
-  }
-
-  .saho-hero-banner--graphic:hover .saho-hero-banner__overlay {
-    opacity: inherit !important;
-  }
-
-  /* Keep active state for tap feedback */
-  .saho-hero-banner--graphic:active .saho-hero-banner__image {
-    transform: scale(0.98);
+    position: static;
   }
 }

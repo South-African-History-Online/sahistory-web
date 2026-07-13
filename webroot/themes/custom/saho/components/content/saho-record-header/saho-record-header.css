@@ -1,0 +1,185 @@
+/* SAHO Record header — every page is a catalogue record. Mobile-first. */
+.saho-record {
+  border-top: var(--bw-rule) solid var(--type-article);
+}
+.saho-record--article {
+  border-top-color: var(--type-article);
+}
+.saho-record--biography {
+  border-top-color: var(--type-biography);
+}
+.saho-record--place {
+  border-top-color: var(--type-place);
+}
+.saho-record--archive {
+  border-top-color: var(--type-archive);
+}
+.saho-record--event {
+  border-top-color: var(--type-event);
+}
+.saho-record--topic {
+  border-top-color: var(--type-topic);
+}
+.saho-record--image {
+  border-top-color: var(--type-image);
+}
+
+.saho-record__strip {
+  display: flex;
+  align-items: stretch;
+  flex-wrap: wrap;
+  border-bottom: var(--bw-hair) solid var(--border-default);
+}
+.saho-record__tab {
+  display: inline-flex;
+  align-items: center;
+  background: var(--type-article);
+  color: #fff;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: var(--fw-bold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 7px 12px;
+}
+.saho-record--biography .saho-record__tab {
+  background: var(--type-biography);
+}
+.saho-record--place .saho-record__tab {
+  background: var(--type-place);
+}
+.saho-record--archive .saho-record__tab {
+  background: var(--type-archive);
+}
+.saho-record--event .saho-record__tab {
+  background: var(--type-event);
+}
+.saho-record--topic .saho-record__tab {
+  background: var(--type-topic);
+}
+.saho-record--image .saho-record__tab {
+  background: var(--type-image);
+}
+
+.saho-record__ref {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+  padding: 7px 12px;
+  border-left: var(--bw-hair) solid var(--border-default);
+}
+.saho-record__ref b {
+  color: var(--text-primary);
+  font-weight: var(--fw-semibold);
+}
+.saho-record__spacer {
+  flex: 1;
+}
+.saho-record__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 7px 12px;
+  border-left: var(--bw-hair) solid var(--border-default);
+}
+.saho-record__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: var(--radius-full);
+  background: var(--saho-success);
+}
+
+.saho-record__titleblock {
+  padding: var(--space-5) 0 var(--space-4);
+}
+.saho-record__kicker {
+  margin: 0 0 10px;
+}
+.saho-record__title {
+  margin: 0;
+}
+
+/* Mobile lead image: leads the record on narrow screens, capped so it reads as
+   a portrait plate rather than a full-bleed hero. Hidden on desktop, where the
+   content column carries the lead. */
+.saho-record__lead-mobile {
+  margin: 0 0 var(--space-4);
+  max-width: 240px;
+}
+@media (min-width: 768px) {
+  .saho-record__lead-mobile {
+    display: none;
+  }
+}
+
+.saho-record__facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  margin: 0;
+  border-top: var(--bw-hair) solid var(--border-default);
+  border-bottom: var(--bw-hair) solid var(--border-default);
+}
+.saho-record__fact {
+  padding: 10px 18px 10px 0;
+  margin-right: 18px;
+  border-right: var(--bw-hair) solid var(--border-faint);
+}
+.saho-record__fact:last-child {
+  border-right: 0;
+  margin-right: 0;
+}
+.saho-record__fact dt {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.saho-record__fact dd {
+  margin: 3px 0 0;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: var(--fw-semibold);
+  color: var(--text-primary);
+}
+
+.saho-record__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: var(--space-4);
+}
+
+/* Mobile: rein the masthead in (long names must not fill the viewport) and
+   stack the key fields as one ruled column - no hanging divider cells. */
+@media (max-width: 480px) {
+  .saho-record__title {
+    font-size: clamp(1.75rem, 1.1rem + 2.9vw, 2rem);
+    line-height: 1.15;
+  }
+
+  .saho-record__facts {
+    display: block;
+  }
+
+  .saho-record__fact {
+    padding: 8px 0;
+    margin-right: 0;
+    border-right: 0;
+    border-bottom: var(--bw-hair) solid var(--border-faint);
+  }
+
+  .saho-record__fact:last-child {
+    border-bottom: 0;
+  }
+}

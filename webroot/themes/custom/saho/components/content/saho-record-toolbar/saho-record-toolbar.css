@@ -1,0 +1,70 @@
+/* Record toolbar (R3 #476): the single sticky apparatus row (X-2). */
+.saho-record-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  min-height: 40px;
+  padding: 0.3rem 0;
+  background: var(--saho-paper, #f0ece1);
+  border-bottom: var(--bw-hair, 1px) solid var(--border-default, rgb(26 26 24 / 20%));
+}
+
+.saho-record-toolbar__ref {
+  display: none;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  letter-spacing: 0.08em;
+  color: var(--saho-ink-muted);
+}
+
+.saho-record-toolbar.is-stuck {
+  background: var(--saho-paper-raised, #f5f2e9);
+}
+
+.saho-record-toolbar.is-stuck .saho-record-toolbar__ref {
+  display: inline;
+}
+
+.saho-record-toolbar__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1.25rem;
+  margin-left: auto;
+}
+
+.saho-record-toolbar__action {
+  padding: 0.25rem 0;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--saho-ink);
+  background: none;
+  border: 0;
+  border-radius: 0;
+}
+
+.saho-record-toolbar__action:hover,
+.saho-record-toolbar__action:focus-visible {
+  color: var(--saho-oxblood, #990000);
+}
+
+.saho-record-toolbar__glyph {
+  color: var(--saho-oxblood, #990000);
+}
+
+.saho-record-toolbar__hint {
+  color: var(--saho-ink-muted);
+  text-transform: none;
+}
+
+/* X-2: on chronology articles the decade strip owns the mobile sticky
+   slot - the toolbar yields and stays in the flow. */
+@media (max-width: 47.9375rem) {
+  .saho-has-chronology .saho-record-toolbar {
+    position: static;
+  }
+}

@@ -1,0 +1,26 @@
+{#
+/**
+ * @file SAHO Citation SDC. props: default_format, formats{} | chicago/apa/mla
+ * Format switching + copy are progressive enhancement (saho.behaviours.js).
+ */
+#}
+{% set map = formats ?: { 'Chicago': chicago, 'APA': apa, 'MLA': mla } %}
+{% set active = default_format|default('Chicago') %}
+<section{{ attributes.addClass('saho-cite') }} data-saho-citation>
+  <header class="saho-cite__head">
+    <span class="saho-cite__label">Cite this entry</span>
+    <div class="saho-cite__formats" role="tablist">
+      {% for name, value in map %}
+        <button type="button" class="saho-cite__fmt{{ name == active ? ' is-active' : '' }}"
+                role="tab" aria-selected="{{ name == active ? 'true' : 'false' }}"
+                data-format="{{ name }}">{{ name }}</button>
+      {% endfor %}
+    </div>
+  </header>
+  <div class="saho-cite__body">
+    {% for name, value in map %}
+      <p class="saho-cite__text{{ name == active ? ' is-active' : '' }}" data-format="{{ name }}">{{ value }}</p>
+    {% endfor %}
+    <button type="button" class="saho-cite__copy" data-saho-copy>Copy</button>
+  </div>
+</section>

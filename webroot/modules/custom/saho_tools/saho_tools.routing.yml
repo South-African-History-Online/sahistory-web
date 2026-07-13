@@ -5,6 +5,7 @@ saho_tools.citation:
     _title: 'Citation'
   requirements:
     _permission: 'access content'
+    _entity_access: 'node.view'
   options:
     parameters:
       node:
@@ -15,6 +16,15 @@ saho_tools.llm_txt:
   defaults:
     _controller: '\Drupal\saho_tools\Controller\LlmTxtController::generate'
     _title: 'LLM.txt - AI/LLM Discovery'
+  requirements:
+    _permission: 'access content'
+
+# The community llms.txt spec uses this filename; serve the same document.
+saho_tools.llms_txt:
+  path: '/llms.txt'
+  defaults:
+    _controller: '\Drupal\saho_tools\Controller\LlmTxtController::generate'
+    _title: 'llms.txt - AI/LLM Discovery'
   requirements:
     _permission: 'access content'
 
@@ -49,5 +59,12 @@ saho_tools.schema_api_types:
   defaults:
     _controller: '\Drupal\saho_tools\Controller\SchemaApiController::listSchemaTypes'
     _title: 'Schema.org Types List'
+  requirements:
+    _permission: 'access content'
+saho_tools.search_suggest:
+  path: '/api/search/suggest'
+  defaults:
+    _controller: '\Drupal\saho_tools\Controller\SearchSuggestController::suggest'
+    _title: 'Search suggestions'
   requirements:
     _permission: 'access content'

@@ -14,10 +14,14 @@ const purgeCSSConfig = {
     './templates/**/*.twig',
     './templates/**/*.html.twig',
     './components/**/*.twig',
+    './layouts/**/*.twig',
     './src/js/**/*.js',
     './components/**/*.js',
     './js/**/*.js',
     '../../../contrib/radix/templates/**/*.twig',
+    // tdih's block template emits theme-styled .block-section band classes
+    // (the theme copy was a dead override and got removed - #453).
+    '../../../modules/custom/saho_utils/tdih/templates/**/*.twig',
   ],
   safelist: {
     standard: [
@@ -49,6 +53,10 @@ const purgeCSSConfig = {
       /^alert-/,
       /^breadcrumb/,
       /^saho-/,
+      /^layout--/,   // 2027 Open Record LB layouts (layout--saho-*)
+      /^region--/,   // LB region wrappers (region--main/rail/grid/lead/aside)
+      /^node-type--/,          // runtime body class (record-page title suppression)
+      /^block-page-title/,     // page-title block (hidden on Open Record record pages)
       /^drupal-/,
       /^js-/,
       /^form-/,
@@ -84,6 +92,39 @@ const purgeCSSConfig = {
       /tooltip/,
       /popover/,
       /bs-/,
+    ],
+    // Keep the full design-token API even when a token is not yet referenced
+    // (e.g. 2027 "Open Record" semantic aliases consumed by future SDC).
+    variables: [
+      /^--saho-/,
+      /^--surface-/,
+      /^--text-/,
+      /^--border-/,
+      /^--link-/,
+      /^--accent/,
+      /^--type-/,
+      /^--font-/,
+      /^--fs-/,
+      /^--bw-/,
+      /^--img-/,
+      /^--focus-/,
+      /^--archivo-/,
+      /^--bs-/,
+      // 2027 scale tokens consumed by the ported layout system + SDC
+      /^--container-/,
+      /^--gutter-/,
+      /^--space-/,
+      /^--rail-/,
+      /^--grid-/,
+      /^--measure/,
+      /^--lh-/,
+      /^--ls-/,
+      /^--fw-/,
+      /^--t-/,
+      /^--ease-/,
+      /^--radius-/,
+      /^--shadow-/,
+      /^--z-/,
     ],
   },
   variables: true,

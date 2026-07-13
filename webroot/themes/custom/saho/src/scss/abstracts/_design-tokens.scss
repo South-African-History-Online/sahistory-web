@@ -274,11 +274,13 @@ $saho-breakpoint-xxl: 1400px;
  * Standard (8px) used for most cards and blocks.
  */
 
-$saho-radius-sm: 4px;
-$saho-radius-md: 8px; // STANDARD for cards and blocks
-$saho-radius-lg: 12px;
-$saho-radius-xl: 16px;
-$saho-radius-pill: 9999px; // Fully rounded (pills, badges)
+// 2027 "Open Record": square by discipline. All radii collapse to 0; genuine
+// circles use .rounded-circle / 50% / --saho-radius-full (see _variables.scss).
+$saho-radius-sm: 0;
+$saho-radius-md: 0; // was 8px - cards and blocks are now square
+$saho-radius-lg: 0;
+$saho-radius-xl: 0;
+$saho-radius-pill: 0; // was 9999px - no pills
 
 :root {
   --saho-radius-sm: #{$saho-radius-sm};
@@ -299,11 +301,13 @@ $saho-radius-pill: 9999px; // Fully rounded (pills, badges)
  * Standard (md) used for cards, hover states use more prominent shadows.
  */
 
-$saho-shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
-$saho-shadow-md: 0 3px 10px rgba(0, 0, 0, 0.05); // STANDARD
-$saho-shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.08);
-$saho-shadow-xl: 0 10px 25px rgba(0, 0, 0, 0.15);
-$saho-shadow-hover: 0 2px 8px rgba(0, 0, 0, 0.1);
+// 2027 "Open Record": borders do the structural work; shadows near-absent.
+// lg/xl remain only for true overlays (modals, popovers).
+$saho-shadow-sm: 0 1px 0 rgba(27, 28, 23, 0.05);
+$saho-shadow-md: 0 1px 2px rgba(27, 28, 23, 0.07);
+$saho-shadow-lg: 0 4px 14px rgba(27, 28, 23, 0.1);
+$saho-shadow-xl: 0 10px 30px rgba(27, 28, 23, 0.14);
+$saho-shadow-hover: none; // records select (border + sunk bg), never lift
 
 :root {
   --saho-shadow-sm: #{$saho-shadow-sm};
@@ -416,19 +420,19 @@ $saho-button-ghost-border-hover: transparent;
 $saho-button-padding-sm-y: 0.5rem; // 8px - rounded from ~6px
 $saho-button-padding-sm-x: 1rem; // 16px - rounded from ~13px
 $saho-button-font-size-sm: 0.85rem; // ~14px
-$saho-button-radius-sm: 4px;
+$saho-button-radius-sm: 0; // 2027 "Open Record": square buttons - no pills
 
 // Button sizing - Medium (default) (8px baseline grid)
 $saho-button-padding-md-y: 0.5rem; // 8px - rounded from ~10px
 $saho-button-padding-md-x: 2rem; // 32px - rounded from ~30px
 $saho-button-font-size-md: 0.9rem; // ~14px
-$saho-button-radius-md: 8px; // 8px - rounded from 6px
+$saho-button-radius-md: 0; // 2027: square - was 8px, overrode the _variables zeros
 
 // Button sizing - Large (8px baseline grid)
 $saho-button-padding-lg-y: 1rem; // 16px - rounded from ~12px
 $saho-button-padding-lg-x: 2rem; // 32px
 $saho-button-font-size-lg: 1rem; // 16px
-$saho-button-radius-lg: 24px; // 24px - rounded from 25px (pill-shaped)
+$saho-button-radius-lg: 0; // 2027: square - was 24px pill, overrode the _variables zeros
 
 // Button control sizes (carousel, icon buttons) - 8px baseline grid
 $saho-button-size-sm: 32px;
@@ -574,9 +578,9 @@ $saho-grid-gap-spacious: $saho-space-6; // Spacious gap (48px)
 $saho-card-padding: $saho-space-4; // 32px
 $saho-card-padding-compact: $saho-space-3; // 24px
 $saho-card-gap: $saho-space-3; // 24px internal spacing
-$saho-card-radius: $saho-radius-md; // 8px
-$saho-card-shadow: $saho-shadow-md;
-$saho-card-shadow-hover: $saho-shadow-hover;
+$saho-card-radius: $saho-radius-md; // 0 - square records
+$saho-card-shadow: none; // flat: a hairline frame, no elevation
+$saho-card-shadow-hover: none; // hover selects (border + sunk bg), never lifts
 $saho-card-border: 1px solid $saho-color-border;
 
 // Block section tokens
