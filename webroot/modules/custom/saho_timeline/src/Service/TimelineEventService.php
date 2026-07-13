@@ -732,7 +732,7 @@ class TimelineEventService {
    * Light rows for one decade bucket, date ascending.
    *
    * @param string $bucket
-   *   'pre1500' or a decade token like '1900'.
+   *   Either 'pre1500' or a decade token like '1900'.
    *
    * @return object[]
    *   stdClass rows {id, title, date, precision}.

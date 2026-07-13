@@ -14,6 +14,9 @@ use Drupal\saho_timeline_dates\Service\DateExtractor;
  */
 final class DateExtractorTest extends UnitTestCase {
 
+  /**
+   * The extractor under test.
+   */
   protected DateExtractor $extractor;
 
   /**
@@ -25,6 +28,8 @@ final class DateExtractorTest extends UnitTestCase {
   }
 
   /**
+   * Each pattern-table row extracts the expected best candidate.
+   *
    * @dataProvider providerExtract
    */
   public function testExtract(string $title, string $body, ?array $expected): void {

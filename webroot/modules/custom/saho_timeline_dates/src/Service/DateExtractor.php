@@ -157,7 +157,11 @@ final class DateExtractor {
     }
 
     // 7. "in 1651" - year precision.
-    foreach ([[$title_text, 0.7, 'title_in_year'], [$body_text, 0.65, 'body_in_year']] as [$haystack, $confidence, $method]) {
+    $in_year_passes = [
+      [$title_text, 0.7, 'title_in_year'],
+      [$body_text, 0.65, 'body_in_year'],
+    ];
+    foreach ($in_year_passes as [$haystack, $confidence, $method]) {
       if (preg_match('/\bin\s+' . self::YEAR_RX . '\b/i', $haystack, $m, PREG_OFFSET_CAPTURE)) {
         $year = $this->boundedYear($m[1][0]);
         if ($year) {
@@ -221,7 +225,7 @@ final class DateExtractor {
   }
 
   /**
-   *
+   * A year within 1000..(current year + 1), or NULL.
    */
   private function boundedYear(string $value): ?int {
     $year = (int) $value;
@@ -229,7 +233,7 @@ final class DateExtractor {
   }
 
   /**
-   *
+   * An integer within [min, max], or NULL.
    */
   private function boundedInt(string $value, int $min, int $max): ?int {
     $int = (int) $value;

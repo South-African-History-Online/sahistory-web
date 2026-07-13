@@ -34,6 +34,9 @@ final class DateWriterTest extends KernelTestBase {
     'saho_timeline_dates',
   ];
 
+  /**
+   * The writer under test.
+   */
   protected DateWriter $writer;
 
   /**
@@ -234,8 +237,10 @@ final class DateWriterTest extends KernelTestBase {
   }
 
   /**
-   * The TDIH invariant: day/month matching on field_event_date returns
-   * identical results before and after a full apply + rollback cycle.
+   * The TDIH invariant survives a full apply + rollback cycle.
+   *
+   * Day/month matching on field_event_date must return identical results
+   * before and after the backfill runs.
    */
   public function testTdihQueryUnchangedByBackfill(): void {
     // TDIH-visible fixture: curated dates whose day/month matter.

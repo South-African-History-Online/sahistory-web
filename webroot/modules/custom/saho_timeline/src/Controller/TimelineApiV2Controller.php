@@ -117,8 +117,8 @@ class TimelineApiV2Controller extends ControllerBase {
    * Full cards for one decade bucket.
    *
    * @param string $bucket
-   *   'pre1500' or a decade token ('1500'..'2020'), enforced by the route
-   *   regex; the range check below rejects tokens outside the corpus.
+   *   Either 'pre1500' or a decade token ('1500'..'2020'), enforced by the
+   *   route regex; the range check below rejects tokens outside the corpus.
    */
   public function bucket(string $bucket) {
     if ($bucket !== 'pre1500') {
