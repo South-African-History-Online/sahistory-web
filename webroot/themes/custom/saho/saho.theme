@@ -3072,6 +3072,7 @@ function _saho_record_related_props(NodeInterface $node): array {
     'field_timelines_related_tab' => ['id' => 'timelines', 'label' => 'Timelines'],
   ];
   $tabs = [];
+  $rerouted = [];
   foreach ($map as $field => $tab) {
     if (!$node->hasField($field) || $node->get($field)->isEmpty()) {
       continue;
@@ -3079,13 +3080,39 @@ function _saho_record_related_props(NodeInterface $node): array {
     $items = [];
     foreach ($node->get($field)->referencedEntities() as $ref) {
       $item = _saho_record_related_item($ref);
-      if ($item !== NULL) {
-        $items[] = $item;
+      if ($item === NULL) {
+        continue;
       }
+      // The People tab must list people. field_people_related_tab's legacy
+      // config accepts article targets, and the sibling enrichment fills it
+      // with whole collections ("people-relation-capable" was the only typed
+      // field biographies carry) - so route every non-biography reference to
+      // the tab its actual bundle belongs on instead of mislabelling it.
+      // The other typed fields are article-target fields where the editor's
+      // field choice IS the classification; they pass through untouched.
+      if ($field === 'field_people_related_tab' && $item['type'] !== 'biography') {
+        $home = _saho_record_tab_for_bundle($item['type']);
+        $rerouted[$home['id']]['tab'] = $home;
+        $rerouted[$home['id']]['items'][] = $item;
+        continue;
+      }
+      $items[] = $item;
     }
     if ($items !== []) {
       $tabs[$tab['id']] = $tab + ['count' => count($items), 'items' => $items];
     }
+  }
+  foreach ($rerouted as $id => $bucket) {
+    if (!isset($tabs[$id])) {
+      $tabs[$id] = $bucket['tab'] + ['count' => 0, 'items' => []];
+    }
+    $seen = array_column($tabs[$id]['items'], 'href');
+    foreach ($bucket['items'] as $item) {
+      if (!in_array($item['href'], $seen, TRUE)) {
+        $tabs[$id]['items'][] = $item;
+      }
+    }
+    $tabs[$id]['count'] = count($tabs[$id]['items']);
   }
 
   // The curated feature-children (the legacy rail accordion) join the same
@@ -3134,6 +3161,31 @@ function _saho_record_related_props(NodeInterface $node): array {
 
   $tabs = array_values($tabs);
   return $tabs !== [] ? ['title' => 'Cross-references', 'tabs' => $tabs] : [];
+}
+
+/**
+ * Maps a related item's bundle to the cross-reference tab it belongs on.
+ *
+ * Ids reuse the curated-tab slots so the same-id merge folds everything
+ * into one tab per kind. Articles read as Topics (the dictionary's own
+ * article -> topic kind mapping); unknown bundles land there too rather
+ * than under People.
+ *
+ * @param string $bundle
+ *   The referenced node's bundle.
+ *
+ * @return array
+ *   ['id' => string, 'label' => string].
+ */
+function _saho_record_tab_for_bundle(string $bundle): array {
+  return match ($bundle) {
+    'biography' => ['id' => 'people', 'label' => 'People'],
+    'place' => ['id' => 'places', 'label' => 'Places'],
+    'archive' => ['id' => 'archive', 'label' => 'Archive'],
+    'event' => ['id' => 'events', 'label' => 'Events'],
+    'image' => ['id' => 'galleries', 'label' => 'Galleries'],
+    default => ['id' => 'topics', 'label' => 'Topics'],
+  };
 }
 
 /**
