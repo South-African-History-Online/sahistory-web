@@ -40,7 +40,7 @@ jobs:
 
       - name: Deploy to Staging
         run: |
-          ssh -i ~/.ssh/deploy_key -p 2278 ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} << 'ENDSSH'
+          ssh -i ~/.ssh/deploy_key -p 2278 -o ServerAliveInterval=30 -o ServerAliveCountMax=20 ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} << 'ENDSSH'
             set -e
             cd ${{ secrets.DEPLOY_PATH_STAGING }}
             echo "========================================="
@@ -95,7 +95,7 @@ jobs:
 
       - name: Deploy to Production
         run: |
-          ssh -i ~/.ssh/deploy_key -p 2278 ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} << 'ENDSSH'
+          ssh -i ~/.ssh/deploy_key -p 2278 -o ServerAliveInterval=30 -o ServerAliveCountMax=20 ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} << 'ENDSSH'
             set -e
             cd ${{ secrets.DEPLOY_PATH_PROD }}
             echo "========================================="
@@ -150,7 +150,7 @@ jobs:
       - name: Deploy to Production
         if: github.event.inputs.environment == 'production'
         run: |
-          ssh -i ~/.ssh/deploy_key -p 2278 ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} << 'ENDSSH'
+          ssh -i ~/.ssh/deploy_key -p 2278 -o ServerAliveInterval=30 -o ServerAliveCountMax=20 ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} << 'ENDSSH'
             set -e
             cd ${{ secrets.DEPLOY_PATH_PROD }}
             echo "========================================="
@@ -166,7 +166,7 @@ jobs:
       - name: Deploy to Staging
         if: github.event.inputs.environment == 'staging'
         run: |
-          ssh -i ~/.ssh/deploy_key -p 2278 ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} << 'ENDSSH'
+          ssh -i ~/.ssh/deploy_key -p 2278 -o ServerAliveInterval=30 -o ServerAliveCountMax=20 ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} << 'ENDSSH'
             set -e
             cd ${{ secrets.DEPLOY_PATH_STAGING }}
             echo "========================================="

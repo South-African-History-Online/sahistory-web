@@ -567,12 +567,23 @@ final class SahoRelationsCommands extends DrushCommands {
       $batch = [];
       $batch_sources = 0;
     };
+    $total_sources = count($by_source_edges);
+    $done_sources = 0;
     foreach ($by_source_edges as $source_edges) {
       foreach ($source_edges as $e) {
         $batch[] = $e;
       }
+      $done_sources++;
       if (++$batch_sources >= 200) {
         $flush();
+        // Per-batch progress: operator visibility, and a deploy run over SSH
+        // needs periodic output - a silent multi-minute write got the
+        // connection dropped mid-enrichment (staging, 2026-07-13).
+        $this->logger()->notice('Progress: {done}/{total} source records, {added} edges added so far.', [
+          'done' => $done_sources,
+          'total' => $total_sources,
+          'added' => $totals['edges_added'],
+        ]);
       }
     }
     $flush();
