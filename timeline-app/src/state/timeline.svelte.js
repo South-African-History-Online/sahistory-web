@@ -31,6 +31,17 @@ function createTimeline() {
   const cards = new Map();
   const loadedBuckets = new Set();
 
+  // Search over skeleton titles - all client-side, zero round trips.
+  // The lowercase haystack builds lazily on first use.
+  let query = $state('');
+  let visible = $state(null);
+  let matchCounts = $state(null);
+  let titlesLower = null;
+
+  // Era chapter starts: row index -> era object, derived once per
+  // skeleton load from the settings-supplied era list.
+  let eraStarts = new Map();
+
   async function load() {
     try {
       const data = await getSkeleton();
@@ -49,10 +60,36 @@ function createTimeline() {
       }
       count = data.count;
       range = data.range;
+      buildEraStarts();
       ready = true;
     }
     catch (e) {
       error = e;
+    }
+  }
+
+  function buildEraStarts() {
+    eraStarts = new Map();
+    for (const era of settings?.eras ?? []) {
+      if (era.start === null) {
+        eraStarts.set(0, era);
+        continue;
+      }
+      // First row at/after the era's start year.
+      let lo = 0;
+      let hi = count;
+      while (lo < hi) {
+        const mid = (lo + hi) >> 1;
+        if (years[mid] < era.start) {
+          lo = mid + 1;
+        }
+        else {
+          hi = mid;
+        }
+      }
+      if (lo < count && !eraStarts.has(lo)) {
+        eraStarts.set(lo, era);
+      }
     }
   }
 
@@ -141,6 +178,43 @@ function createTimeline() {
     /** Row index for a nid, or -1. */
     indexOfNid(nid) {
       return nids.indexOf(nid);
+    },
+
+    /** The era starting at this row index, if any. */
+    eraStartAt(index) {
+      return eraStarts.get(index) ?? null;
+    },
+
+    get query() { return query; },
+    get visible() { return visible; },
+    get matchCounts() { return matchCounts; },
+
+    /**
+     * Client-side title search over the skeleton. Sets the visible row
+     * subset and per-bucket match counts (the Ruler's density overlay).
+     */
+    setQuery(text) {
+      const q = text.trim().toLowerCase();
+      query = text;
+      if (q.length < 2) {
+        visible = null;
+        matchCounts = null;
+        return;
+      }
+      if (!titlesLower) {
+        titlesLower = titles.map((t) => t.toLowerCase());
+      }
+      const matches = [];
+      const buckets = {};
+      for (let i = 0; i < count; i += 1) {
+        if (titlesLower[i].includes(q)) {
+          matches.push(i);
+          const token = bucketForYear(years[i]);
+          buckets[token] = (buckets[token] ?? 0) + 1;
+        }
+      }
+      visible = Int32Array.from(matches);
+      matchCounts = buckets;
     },
   };
 }

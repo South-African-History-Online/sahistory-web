@@ -13,7 +13,7 @@
    * The page itself scrolls (no inner scrollbox): natural on mobile.
    */
 
-  let { onopen = null, visible = null } = $props();
+  let { onopen = null, visible = null, onviewchange = null } = $props();
 
   const ESTIMATE = 96;
   const BUFFER = 10;
@@ -70,10 +70,21 @@
       // every row below. Without compensation the viewport slides onto
       // different rows, requests THEIR buckets, and the register crawls
       // away from where the reader actually was. Pin the first visible
-      // row across the rebuild.
+      // row across the rebuild - unless a jump target is pending, which
+      // takes precedence and re-glues the view to the target row.
+      const targetActive = pendingTarget !== null && performance.now() < pendingUntil;
+      if (pendingTarget !== null && !targetActive) {
+        pendingTarget = null;
+      }
+      if (targetActive) {
+        // Heights are still settling - keep gluing while rebuilds keep
+        // coming (rolling window; user input cancels outright).
+        pendingUntil = performance.now() + 900;
+      }
+
       let anchorPos = -1;
       let anchorOldOffset = 0;
-      if (containerEl && heights.length > 0) {
+      if (!targetActive && containerEl && heights.length > 0) {
         const viewTop = -containerEl.getBoundingClientRect().top;
         if (viewTop > 0) {
           anchorPos = indexAt(viewTop);
@@ -83,10 +94,13 @@
 
       rebuildOffsets();
 
-      if (anchorPos >= 0) {
+      if (targetActive) {
+        applyTarget();
+      }
+      else if (anchorPos >= 0) {
         const delta = offsets[anchorPos] - anchorOldOffset;
         if (delta !== 0) {
-          window.scrollBy(0, delta);
+          window.scrollBy({ top: delta, behavior: 'instant' });
         }
       }
       updateWindow();
@@ -122,6 +136,7 @@
     lo = Math.max(0, first - BUFFER);
     hi = Math.min(heights.length - 1, last + BUFFER);
     timeline.requestRange(rowAt(lo), rowAt(hi));
+    onviewchange?.(timeline.years[rowAt(first)]);
   }
 
   let ticking = false;
@@ -176,14 +191,51 @@
     };
   }
 
-  /** Scrolls the register so the given display position tops the view. */
-  export function scrollToPosition(pos, behavior = 'auto') {
-    if (!containerEl || pos < 0 || pos >= heights.length) {
+  // A jump target stays "pending" while nearby buckets hydrate: heights
+  // above the target keep growing, so a single scrollTo computed from
+  // estimate offsets lands short (observed: 'Apartheid 1948' landing in
+  // 1685). Each offset rebuild re-applies the target until heights
+  // settle, a timeout passes, or the user takes over.
+  let pendingTarget = null;
+  let pendingUntil = 0;
+
+  function applyTarget() {
+    if (pendingTarget === null || !containerEl) {
       return;
     }
     const rect = containerEl.getBoundingClientRect();
-    const target = window.scrollY + rect.top + offsets[pos] - 140;
-    window.scrollTo({ top: Math.max(0, target), behavior });
+    const target = window.scrollY + rect.top + offsets[pendingTarget] - 140;
+    // ALWAYS instant: Bootstrap reboot sets :root{scroll-behavior:smooth},
+    // and a smooth scroll restarted by every rebuild turns a jump into an
+    // endless crawl through history that fetches every bucket it passes.
+    window.scrollTo({ top: Math.max(0, target), behavior: 'instant' });
+  }
+
+  function cancelTarget() {
+    pendingTarget = null;
+  }
+
+  $effect(() => {
+    const options = { passive: true };
+    window.addEventListener('wheel', cancelTarget, options);
+    window.addEventListener('touchstart', cancelTarget, options);
+    window.addEventListener('pointerdown', cancelTarget, options);
+    return () => {
+      window.removeEventListener('wheel', cancelTarget);
+      window.removeEventListener('touchstart', cancelTarget);
+      window.removeEventListener('pointerdown', cancelTarget);
+    };
+  });
+
+  /** Scrolls the register so the given display position tops the view. */
+  export function scrollToPosition(pos) {
+    if (!containerEl || pos < 0 || pos >= heights.length) {
+      return;
+    }
+    pendingTarget = pos;
+    pendingUntil = performance.now() + 2500;
+    applyTarget();
+    updateWindow();
   }
 
   // Rendered slice - recomputed when the window or hydration state
@@ -192,7 +244,12 @@
     void timeline.cardVersion;
     void layoutVersion;
     const out = [];
-    for (let pos = lo; pos <= hi; pos += 1) {
+    // Clamp against the CURRENT row set: when a filter shrinks it, this
+    // derived re-runs (rowAt reads `visible`) before the rAF resets
+    // lo/hi - unclamped positions would map to undefined rows and crash
+    // the keyed each with duplicate keys.
+    const last = Math.min(hi, rowCount - 1, offsets.length - 2);
+    for (let pos = Math.min(lo, last < 0 ? 0 : last); pos <= last; pos += 1) {
       const index = rowAt(pos);
       out.push({
         pos,

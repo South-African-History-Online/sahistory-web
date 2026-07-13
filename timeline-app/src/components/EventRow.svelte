@@ -23,6 +23,20 @@
     return timeline.card(nid);
   });
 
+  // Era chapter banner above the first row of each era - rendered
+  // inside the row slot so the virtualizer's ResizeObserver measures it
+  // for free.
+  const era = $derived(timeline.eraStartAt(index));
+  const eraSpan = $derived.by(() => {
+    if (!era) {
+      return '';
+    }
+    if (era.start === null) {
+      return `before ${era.end}`;
+    }
+    return era.end === null ? `${era.start} onward` : `${era.start} - ${era.end}`;
+  });
+
   function open(event) {
     if (onopen) {
       event.preventDefault();
@@ -30,6 +44,16 @@
     }
   }
 </script>
+
+{#if era}
+  <div class="tl-era-banner">
+    <span class="tl-era-banner__label">{era.label}</span>
+    <span class="tl-era-banner__span">{eraSpan}</span>
+    {#if era.blurb}
+      <p class="tl-era-banner__blurb">{era.blurb}</p>
+    {/if}
+  </div>
+{/if}
 
 <article class="tl-row" class:tl-row--hydrated={!!card}>
   <span class="tl-row__year">{showYear ? year : ''}</span>
@@ -55,6 +79,40 @@
 </article>
 
 <style>
+  .tl-era-banner {
+    margin: var(--space-4, 1.5rem) 0 var(--space-2, 0.75rem);
+    padding: var(--space-3, 1rem);
+    background: var(--saho-paper-raised, #f1efe7);
+    border: var(--bw-hair, 1px) solid var(--border-default, #bdb9a6);
+    border-left: 3px solid var(--saho-ochre, #b88a2e);
+  }
+
+  .tl-era-banner__label {
+    display: block;
+    font-family: var(--font-serif-display, 'Libre Caslon Display', georgia, serif);
+    font-size: var(--font-size-xl, 1.375rem);
+    color: var(--text-primary, #1b1c17);
+  }
+
+  .tl-era-banner__span {
+    display: block;
+    font-family: var(--font-mono, 'IBM Plex Mono', monospace);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted, #5d5e52);
+    margin-top: 2px;
+  }
+
+  .tl-era-banner__blurb {
+    font-family: var(--font-serif, 'Libre Caslon Text', georgia, serif);
+    font-size: var(--font-size-sm, 0.9375rem);
+    line-height: 1.55;
+    color: var(--text-secondary, #3a3b33);
+    margin: var(--space-1, 0.5rem) 0 0;
+    max-width: var(--measure, 65ch);
+  }
+
   .tl-row {
     position: relative;
     display: grid;
