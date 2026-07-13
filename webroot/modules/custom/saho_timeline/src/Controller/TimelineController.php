@@ -232,13 +232,17 @@ class TimelineController extends ControllerBase {
       }
     }
 
+    // JSON_HEX_TAG: this string is printed raw inside a <script
+    // type="application/ld+json"> block, so a literal '</script>' in an
+    // event title must never survive encoding (script-block breakout =
+    // stored XSS from editor-authored titles).
     return json_encode([
       '@context' => 'https://schema.org',
       '@type' => 'ItemList',
       'name' => 'Timeline of South African History',
       'numberOfItems' => $position,
       'itemListElement' => $items,
-    ], JSON_UNESCAPED_SLASHES);
+    ], JSON_HEX_TAG | JSON_HEX_AMP);
   }
 
 }
