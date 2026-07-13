@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\saho_timeline\Kernel;
 
+use Drupal\Core\Field\FieldPurger;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\field\Entity\FieldStorageConfig;
@@ -211,7 +212,7 @@ final class TimelineApiV2Test extends KernelTestBase {
     // Deleting the last field of a storage cascades to the storage itself.
     FieldConfig::loadByName('node', 'event', 'field_timeline_date')->delete();
     FieldConfig::loadByName('node', 'event', 'field_timeline_date_precision')->delete();
-    field_purge_batch(50);
+    $this->container->get(FieldPurger::class)->purgeBatch(50);
 
     $this->createEvent('Curated only', ['field_event_date' => '1912-01-08']);
 
