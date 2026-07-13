@@ -36,6 +36,20 @@
       {% if show_today_history and all_events|length > 0 %}
         <div class="tdih-today-events">
           <h3 id="tdih-today-heading" class="visually-hidden">{{ 'Today in history'|t }}</h3>
+          {# The panel's editorial lead: the first entry carrying one of the
+             editor-curated event images. The block guarantees item.image is a
+             real, existing file (saho_hero_mobile derivative). #}
+          {% set lead = (all_events|slice(0, 10)|filter(item => item.image)|first) ?: null %}
+          {% if lead %}
+            <a href="{{ lead.url }}" class="tdih-lead-figure" tabindex="-1" aria-hidden="true">
+              <img
+                src="{{ lead.image }}"
+                alt=""
+                loading="lazy"
+                decoding="async"
+              >
+            </a>
+          {% endif %}
           <div class="tdih-entry-list">
             {% for item in all_events|slice(0, 10) %}
               <a href="{{ item.url }}" class="tdih-event-item tdih-entry">

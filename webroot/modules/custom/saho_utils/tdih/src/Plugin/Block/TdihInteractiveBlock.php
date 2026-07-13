@@ -337,12 +337,13 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
       }
 
       // Route through saho_hero_mobile (480w WebP) so the LCP-region TDIH
-      // image is ~50 KB instead of the raw 600+ KB jpg.
+      // image is ~50 KB instead of the raw 600+ KB jpg. The file_exists
+      // guard keeps the missing-file backlog from emitting broken frames.
       $image_url = '';
       if ($node->hasField('field_event_image') && !$node->get('field_event_image')->isEmpty()) {
         /** @var \Drupal\file\FileInterface $file */
         $file = $node->get('field_event_image')->entity;
-        if ($file) {
+        if ($file && file_exists($file->getFileUri())) {
           $uri = $file->getFileUri();
           $style = ImageStyle::load('saho_hero_mobile');
           $image_url = $style ? $style->buildUrl($uri) : \Drupal::service('file_url_generator')->generateAbsoluteString($uri);
@@ -485,12 +486,13 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
     }
 
     // Route through saho_hero_mobile (480w WebP) so the LCP-region TDIH
-    // image is ~50 KB instead of the raw 600+ KB jpg.
+    // image is ~50 KB instead of the raw 600+ KB jpg. The file_exists
+    // guard keeps the missing-file backlog from emitting broken frames.
     $image_url = '';
     if ($node->hasField('field_event_image') && !$node->get('field_event_image')->isEmpty()) {
       /** @var \Drupal\file\FileInterface $file */
       $file = $node->get('field_event_image')->entity;
-      if ($file) {
+      if ($file && file_exists($file->getFileUri())) {
         $uri = $file->getFileUri();
         $style = ImageStyle::load('saho_hero_mobile');
         $image_url = $style ? $style->buildUrl($uri) : $this->fileUrlGenerator->generateAbsoluteString($uri);
