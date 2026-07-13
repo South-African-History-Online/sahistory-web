@@ -8,6 +8,39 @@
 declare(strict_types=1);
 
 /**
+ * Removes phantom modules from core.extension before config import runs.
+ *
+ * A module enabled on an environment whose code later left the codebase
+ * (staging carried saho_example_block) stays listed in the active
+ * core.extension config. That phantom breaks ANY config import that
+ * installs modules: ModuleInstaller re-resolves the full extension list and
+ * throws UnknownExtensionException - which is exactly how the Open Record
+ * staging deploy died. Post-updates run during updatedb, which drush deploy
+ * executes BEFORE config:import, so this strips phantoms in time on every
+ * environment without hand surgery.
+ */
+function saho_cleanup_post_update_remove_phantom_extensions(&$sandbox = NULL): string {
+  $module_list = \Drupal::service('extension.list.module');
+  $extension_config = \Drupal::configFactory()->getEditable('core.extension');
+  $schema = \Drupal::keyValue('system.schema');
+  $modules = $extension_config->get('module') ?? [];
+  $removed = [];
+  foreach (array_keys($modules) as $name) {
+    if (!$module_list->exists($name)) {
+      unset($modules[$name]);
+      $schema->delete($name);
+      $removed[] = $name;
+    }
+  }
+  if ($removed !== []) {
+    $extension_config->set('module', $modules)->save();
+  }
+  return $removed === []
+    ? 'No phantom modules in core.extension.'
+    : 'Removed phantom modules from core.extension: ' . implode(', ', $removed) . '.';
+}
+
+/**
  * Removes stale system.schema entries for modules gone from the codebase.
  *
  * The statistics module (dropped for performance, see #327/#328) and dev-only
