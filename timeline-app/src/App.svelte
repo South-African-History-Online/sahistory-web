@@ -1,0 +1,205 @@
+<script>
+  import { timeline } from './state/timeline.svelte.js';
+  import { readUrlState, replaceUrlState, pushUrlState, onUrlChange } from './lib/url.js';
+  import Register from './components/Register.svelte';
+  import DensityRuler from './components/DensityRuler.svelte';
+  import EraRail from './components/EraRail.svelte';
+  import SearchBox from './components/SearchBox.svelte';
+  import DetailPanel from './components/DetailPanel.svelte';
+  import OnThisDayChip from './components/OnThisDayChip.svelte';
+
+  let register = $state(null);
+  let searchBox = $state(null);
+  let currentYear = $state(null);
+  let currentEraId = $state(null);
+  let openNid = $state(null);
+  let booted = false;
+
+  // The server-rendered era shell stays visible until the skeleton has
+  // arrived and the app has something better to show.
+  $effect(() => {
+    if (timeline.ready) {
+      document.querySelector('[data-timeline-ssr]')?.remove();
+    }
+  });
+
+  function jumpToYear(year) {
+    if (!register || !timeline.ready) {
+      return;
+    }
+    let position = timeline.firstIndexForYear(year);
+    if (timeline.visible) {
+      // Filtered view: first match at/after the year.
+      position = 0;
+      while (position < timeline.visible.length - 1 && timeline.years[timeline.visible[position]] < year) {
+        position += 1;
+      }
+    }
+    register.scrollToPosition(position);
+    currentYear = year;
+  }
+
+  function onRulerJump(year) {
+    jumpToYear(year);
+    replaceUrlState({ year, q: timeline.query, era: currentEraId });
+  }
+
+  function onEraJump(era) {
+    currentEraId = era.id;
+    jumpToYear(era.start ?? timeline.range[0]);
+    pushUrlState({ era: era.id, q: timeline.query });
+  }
+
+  function onViewChange(year) {
+    currentYear = year;
+    // Scrolling clearly out of an explicitly chosen era hands the chip
+    // highlight back to the year-based logic.
+    if (currentEraId !== null) {
+      const era = (timeline.settings?.eras ?? []).find((e) => e.id === currentEraId);
+      if (era && (year < (era.start ?? -10000) - 1 || year >= (era.end ?? 10000))) {
+        currentEraId = null;
+      }
+    }
+    if (booted && window.scrollY > 100) {
+      replaceUrlState({ year, q: timeline.query, era: currentEraId });
+    }
+  }
+
+  function onSearch(text) {
+    pushUrlState({ q: text || null, year: currentYear });
+  }
+
+  function jumpToNid(nid) {
+    const index = timeline.indexOfNid(nid);
+    if (index < 0 || !register) {
+      return;
+    }
+    let position = index;
+    if (timeline.visible) {
+      position = timeline.visible.indexOf(index);
+      if (position < 0) {
+        return;
+      }
+    }
+    register.scrollToPosition(position);
+    currentYear = timeline.years[index];
+  }
+
+  function openEvent(nid) {
+    openNid = nid;
+    jumpToNid(nid);
+    pushUrlState({ event: nid, year: currentYear, q: timeline.query, era: currentEraId });
+  }
+
+  function navigatePanel(nid) {
+    if (nid === null) {
+      return;
+    }
+    openNid = nid;
+    jumpToNid(nid);
+    replaceUrlState({ event: nid, year: currentYear, q: timeline.query, era: currentEraId }, true);
+  }
+
+  function onPanelClose() {
+    if (openNid === null) {
+      return;
+    }
+    openNid = null;
+    if (readUrlState().event !== null) {
+      history.back();
+    }
+  }
+
+  function applyUrlState(state) {
+    if (state.q) {
+      timeline.setQuery(state.q);
+      searchBox?.setValue(state.q);
+    }
+    else if (timeline.query) {
+      timeline.setQuery('');
+      searchBox?.setValue('');
+    }
+    if (state.era) {
+      const era = (timeline.settings?.eras ?? []).find((e) => e.id === state.era);
+      if (era) {
+        currentEraId = era.id;
+        jumpToYear(era.start ?? timeline.range[0]);
+      }
+    }
+    if (state.year) {
+      jumpToYear(state.year);
+    }
+    openNid = state.event;
+    if (state.event) {
+      jumpToNid(state.event);
+    }
+  }
+
+  // Boot: apply the entry URL once the register exists, then listen for
+  // back/forward.
+  $effect(() => {
+    if (!timeline.ready || !register || booted) {
+      return;
+    }
+    applyUrlState(readUrlState());
+    // URL writes stay quiet until the entry state has been applied.
+    setTimeout(() => {
+      booted = true;
+    }, 1200);
+    return onUrlChange((state) => applyUrlState(state));
+  });
+</script>
+
+{#if timeline.error}
+  <div class="tl-app" data-timeline-live>
+    <p class="tl-app__error">
+      The interactive timeline could not load its data. The era links
+      below still lead to individual records.
+    </p>
+  </div>
+{:else if timeline.ready}
+  <div class="tl-app" data-timeline-live>
+    <EraRail {currentYear} {currentEraId} onjump={onEraJump} />
+    <div class="tl-controls">
+      <SearchBox bind:this={searchBox} onsearch={onSearch} />
+      <DensityRuler {currentYear} onjump={onRulerJump} />
+    </div>
+    <OnThisDayChip />
+    {#if timeline.visible && timeline.visible.length === 0}
+      <p class="tl-app__empty" role="status">
+        No titles match &ldquo;{timeline.query}&rdquo;. Try a shorter
+        term, or search the whole site from the header.
+      </p>
+    {:else}
+      <Register
+        bind:this={register}
+        visible={timeline.visible}
+        onviewchange={onViewChange}
+        onopen={openEvent}
+      />
+    {/if}
+    <DetailPanel nid={openNid} onclose={onPanelClose} onnavigate={navigatePanel} />
+  </div>
+{/if}
+
+<style>
+  .tl-controls {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    display: grid;
+    gap: 4px;
+    padding: var(--space-2, 0.75rem) 0 var(--space-1, 0.5rem);
+    background: var(--saho-paper, #e7e4d8);
+    border-bottom: var(--bw-hair, 1px) solid var(--border-default, #bdb9a6);
+    margin-bottom: var(--space-2, 0.75rem);
+  }
+
+  .tl-app__error,
+  .tl-app__empty {
+    font-family: var(--font-mono, 'IBM Plex Mono', monospace);
+    font-size: 13px;
+    color: var(--text-muted, #5d5e52);
+    padding: var(--space-4, 1.5rem) 0;
+  }
+</style>

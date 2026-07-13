@@ -1,0 +1,91 @@
+<?php
+
+/**
+ * @file
+ * Install schema for the timeline date-rescue log.
+ */
+
+/**
+ * Implements hook_schema().
+ */
+function saho_timeline_dates_schema() {
+  $schema['saho_timeline_dates_log'] = [
+    'description' => 'Every extracted date candidate: the review queue and the rollback ledger in one table.',
+    'fields' => [
+      'id' => [
+        'type' => 'serial',
+        'not null' => TRUE,
+      ],
+      'nid' => [
+        'description' => 'The event node.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ],
+      'extracted_date' => [
+        'description' => 'ISO date (YYYY-MM-DD).',
+        'type' => 'varchar',
+        'length' => 10,
+        'not null' => TRUE,
+      ],
+      'date_end' => [
+        'description' => 'Range end, if precision is range.',
+        'type' => 'varchar',
+        'length' => 10,
+        'not null' => FALSE,
+      ],
+      'precision' => [
+        'description' => 'day | month | year | range | circa',
+        'type' => 'varchar',
+        'length' => 8,
+        'not null' => TRUE,
+      ],
+      'confidence' => [
+        'type' => 'float',
+        'not null' => TRUE,
+        'default' => 0,
+      ],
+      'method' => [
+        'description' => 'Extractor pattern id that produced the candidate.',
+        'type' => 'varchar',
+        'length' => 32,
+        'not null' => TRUE,
+      ],
+      'snippet' => [
+        'description' => 'Evidence: the matched text with surrounding context.',
+        'type' => 'text',
+        'not null' => FALSE,
+      ],
+      'status' => [
+        'description' => 'pending | applied | rejected | rolled_back',
+        'type' => 'varchar',
+        'length' => 16,
+        'not null' => TRUE,
+        'default' => 'pending',
+      ],
+      'batch_id' => [
+        'description' => 'Apply-batch marker for rollback.',
+        'type' => 'varchar',
+        'length' => 64,
+        'not null' => FALSE,
+      ],
+      'created' => [
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ],
+      'changed' => [
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ],
+    ],
+    'primary key' => ['id'],
+    'indexes' => [
+      'nid' => ['nid'],
+      'status' => ['status'],
+      'batch' => ['batch_id'],
+    ],
+  ];
+  return $schema;
+}

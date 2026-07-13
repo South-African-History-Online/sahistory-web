@@ -1,25 +1,15 @@
-timeline-premium-lib:
-  version: 1.x
+timeline-app:
+  version: 2.0.0
   css:
     theme:
-      https://cdn.knightlab.com/libs/timeline3/latest/css/timeline.css: { type: external }
+      # Authored directly (not built): styles the server-rendered shell,
+      # so it must load even when JS never runs. Svelte component styles
+      # ship inside timeline.js (IIFE build inlines them).
+      css/timeline-app.css: {}
   js:
-    https://cdn.knightlab.com/libs/timeline3/latest/js/timeline.js: { type: external, minified: true }
-
-timeline-premium:
-  version: 1.x
-  css:
-    theme:
-      # The premium page styles live in timeline.css (a dedicated
-      # timeline-premium.css never existed - the old reference 404'd).
-      css/timeline.css: {}
-  js:
-    js/timeline-premium.js: {}
+    dist/timeline.js: { minified: true, attributes: { defer: true } }
   dependencies:
-    - core/drupal
-    - core/jquery
-    - core/once
-    - saho_timeline/timeline-premium-lib
+    - core/drupalSettings
 
 timeline-interactive:
   version: 1.x

@@ -697,6 +697,143 @@ class TimelineEventService {
   }
 
   /**
+   * The v2 skeleton index: every plottable event as one light row.
+   *
+   * COALESCEs the curated field_event_date with the machine-extracted
+   * field_timeline_date (curated always wins), so date-rescue batches
+   * surface here automatically. Rows carry a precision code: curated
+   * dates are 'day' by definition of the editorial field; extracted
+   * dates carry their recorded precision.
+   *
+   * @return object[]
+   *   stdClass rows {id, title, date, precision}, date ascending.
+   */
+  public function getTimelineIndexV2(): array {
+    $cache_id = 'saho_timeline:index_v2';
+    if ($cached = $this->cache->get($cache_id)) {
+      return $cached->data;
+    }
+
+    $rows = [];
+    foreach ($this->buildIndexV2Query()->execute() as $row) {
+      $rows[] = (object) [
+        'id' => (int) $row->nid,
+        'title' => (string) $row->title,
+        'date' => (string) $row->event_date,
+        'precision' => (string) $row->date_precision,
+      ];
+    }
+
+    $this->cache->set($cache_id, $rows, $this->time->getRequestTime() + 3600, ['node_list:event']);
+    return $rows;
+  }
+
+  /**
+   * Light rows for one decade bucket, date ascending.
+   *
+   * @param string $bucket
+   *   Either 'pre1500' or a decade token like '1900'.
+   *
+   * @return object[]
+   *   stdClass rows {id, title, date, precision}.
+   */
+  public function getBucketRows(string $bucket): array {
+    $query = $this->buildIndexV2Query();
+    $date_expr = $this->coalescedDateExpression();
+    if ($bucket === 'pre1500') {
+      $query->where("$date_expr < '1500-01-01'");
+    }
+    else {
+      $decade = (int) $bucket;
+      $query->where("$date_expr >= :bucket_start AND $date_expr < :bucket_end", [
+        ':bucket_start' => sprintf('%04d-01-01', $decade),
+        ':bucket_end' => sprintf('%04d-01-01', $decade + 10),
+      ]);
+    }
+
+    $rows = [];
+    foreach ($query->execute() as $row) {
+      $rows[] = (object) [
+        'id' => (int) $row->nid,
+        'title' => (string) $row->title,
+        'date' => (string) $row->event_date,
+        'precision' => (string) $row->date_precision,
+      ];
+    }
+    return $rows;
+  }
+
+  /**
+   * Per-bucket event counts for the density histogram.
+   *
+   * Derived from the cached v2 index - no extra query on the warm path.
+   *
+   * @return array
+   *   ['pre1500' => n, '1500' => n, ...] in chronological order.
+   */
+  public function getDecadeCounts(): array {
+    $counts = [];
+    foreach ($this->getTimelineIndexV2() as $row) {
+      $counts[static::bucketForDate($row->date)] = ($counts[static::bucketForDate($row->date)] ?? 0) + 1;
+    }
+    return $counts;
+  }
+
+  /**
+   * Maps a stored YYYY-MM-DD date to its bucket token.
+   */
+  public static function bucketForDate(string $date): string {
+    $year = (int) substr($date, 0, 4);
+    if ($year < 1500) {
+      return 'pre1500';
+    }
+    return (string) (intdiv($year, 10) * 10);
+  }
+
+  /**
+   * Shared SELECT for the v2 index and bucket queries.
+   *
+   * LEFT JOINs both date sources; the timeline_date joins degrade to
+   * plain NULL columns when the field tables do not exist yet (fresh
+   * installs before config import, kernel tests without the fields).
+   */
+  protected function buildIndexV2Query() {
+    $has_extracted = $this->database->schema()->tableExists('node__field_timeline_date');
+
+    $query = $this->database->select('node_field_data', 'n');
+    $query->leftJoin('node__field_event_date', 'fed', 'fed.entity_id = n.nid AND fed.deleted = 0');
+    if ($has_extracted) {
+      $query->leftJoin('node__field_timeline_date', 'ftd', 'ftd.entity_id = n.nid AND ftd.deleted = 0');
+      $query->leftJoin('node__field_timeline_date_precision', 'ftp', 'ftp.entity_id = n.nid AND ftp.deleted = 0');
+    }
+    $query->fields('n', ['nid', 'title']);
+    $date_expr = $this->coalescedDateExpression();
+    $query->addExpression($date_expr, 'event_date');
+    if ($has_extracted) {
+      $query->addExpression("CASE WHEN fed.field_event_date_value IS NOT NULL THEN 'day' ELSE COALESCE(ftp.field_timeline_date_precision_value, 'day') END", 'date_precision');
+    }
+    else {
+      $query->addExpression("'day'", 'date_precision');
+    }
+    $query->condition('n.type', 'event');
+    $query->condition('n.status', 1);
+    $query->where("$date_expr IS NOT NULL");
+    $query->orderBy('event_date', 'ASC');
+    $query->orderBy('n.nid', 'ASC');
+    return $query;
+  }
+
+  /**
+   * The COALESCE expression both v2 queries filter and sort on.
+   */
+  protected function coalescedDateExpression(): string {
+    if ($this->database->schema()->tableExists('node__field_timeline_date')) {
+      return 'COALESCE(fed.field_event_date_value, ftd.field_timeline_date_value)';
+    }
+    return 'fed.field_event_date_value';
+  }
+
+  /**
    * Dateless-event summary (count, optionally the first 500 rows).
    *
    * @param bool $full
