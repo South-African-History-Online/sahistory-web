@@ -1,0 +1,54 @@
+<?php
+
+/**
+ * @file
+ * Adds a lightweight contributor dashboard to the user profile page.
+ */
+
+use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
+use Drupal\user\UserInterface;
+
+/**
+ * Implements hook_theme().
+ */
+function saho_dashboard_theme($existing, $type, $theme, $path) {
+  return [
+    'saho_dashboard' => [
+      'variables' => [
+        'stats' => [],
+        'recent' => [],
+        'review' => [],
+      ],
+    ],
+  ];
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_view() for user entities.
+ */
+function saho_dashboard_user_view(array &$build, UserInterface $account, EntityViewDisplayInterface $display, $view_mode) {
+  if ($view_mode !== 'full') {
+    return;
+  }
+  // Own profile only: this is a personal worklist, not a public byline.
+  if ((int) $account->id() !== (int) \Drupal::currentUser()->id()) {
+    return;
+  }
+
+  $data = \Drupal::service('saho_dashboard.builder')->build($account);
+  if ($data === NULL) {
+    return;
+  }
+
+  $build['saho_dashboard'] = [
+    '#theme' => 'saho_dashboard',
+    '#stats' => $data['stats'],
+    '#recent' => $data['recent'],
+    '#review' => $data['review'],
+    '#weight' => -10,
+    '#cache' => [
+      'contexts' => ['user'],
+      'max-age' => 3600,
+    ],
+  ];
+}

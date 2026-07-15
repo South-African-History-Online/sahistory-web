@@ -1,0 +1,90 @@
+{#
+/**
+ * @file
+ * Contributor dashboard on the user's own profile page.
+ *
+ * Available variables:
+ * - stats: { authored: int, worked_on: int }.
+ * - recent: List of items the user recently worked on.
+ * - review: List of stale published items suggested for review.
+ *   Each item: title, url, edit_url, type, published, changed, changed_ago.
+ */
+#}
+<div class="saho-dashboard mb-4">
+
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+      <div class="card h-100 text-center">
+        <div class="card-body py-3">
+          <div class="fs-3 fw-bold">{{ stats.worked_on }}</div>
+          <div class="text-muted small">{{ 'Pieces worked on'|t }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="card h-100 text-center">
+        <div class="card-body py-3">
+          <div class="fs-3 fw-bold">{{ stats.authored }}</div>
+          <div class="text-muted small">{{ 'Authored by you'|t }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-lg-6">
+      <div class="card h-100">
+        <div class="card-header bg-transparent fw-semibold">
+          {{ 'Recently worked on'|t }}
+        </div>
+        <ul class="list-group list-group-flush">
+          {% for item in recent %}
+            <li class="list-group-item d-flex justify-content-between align-items-start gap-2">
+              <div>
+                <a href="{{ item.url }}">{{ item.title }}</a>
+                <div class="text-muted small">
+                  {{ item.type }} - {{ 'you edited'|t }} {{ item.changed }}
+                  {% if not item.published %}
+                    <span class="badge text-bg-secondary ms-1">{{ 'Unpublished'|t }}</span>
+                  {% endif %}
+                </div>
+              </div>
+              {% if item.edit_url %}
+                <a class="btn btn-sm btn-outline-secondary flex-shrink-0" href="{{ item.edit_url }}">{{ 'Edit'|t }}</a>
+              {% endif %}
+            </li>
+          {% else %}
+            <li class="list-group-item text-muted">{{ 'Nothing yet.'|t }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+
+    <div class="col-lg-6">
+      <div class="card h-100">
+        <div class="card-header bg-transparent fw-semibold">
+          {{ 'Worth a review'|t }}
+          <span class="text-muted small fw-normal">{{ 'not updated in over 3 years'|t }}</span>
+        </div>
+        <ul class="list-group list-group-flush">
+          {% for item in review %}
+            <li class="list-group-item d-flex justify-content-between align-items-start gap-2">
+              <div>
+                <a href="{{ item.url }}">{{ item.title }}</a>
+                <div class="text-muted small">
+                  {{ item.type }} - {{ 'last updated'|t }} {{ item.changed_ago }} {{ 'ago'|t }}
+                </div>
+              </div>
+              {% if item.edit_url %}
+                <a class="btn btn-sm btn-outline-secondary flex-shrink-0" href="{{ item.edit_url }}">{{ 'Edit'|t }}</a>
+              {% endif %}
+            </li>
+          {% else %}
+            <li class="list-group-item text-muted">{{ 'All caught up - nothing stale.'|t }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+
+</div>
