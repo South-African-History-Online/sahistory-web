@@ -8,6 +8,7 @@
  * - recent: List of items the user recently worked on.
  * - review: List of stale published items suggested for review.
  *   Each item: title, url, edit_url, type, published, changed, changed_ago.
+ * - owner: TRUE when the viewer is looking at their own profile.
  */
 #}
 <div class="saho-dashboard mb-4">
@@ -25,7 +26,7 @@
       <div class="card h-100 text-center">
         <div class="card-body py-3">
           <div class="fs-3 fw-bold">{{ stats.authored }}</div>
-          <div class="text-muted small">{{ 'Authored by you'|t }}</div>
+          <div class="text-muted small">{{ owner ? 'Authored by you'|t : 'Authored'|t }}</div>
         </div>
       </div>
     </div>
@@ -43,7 +44,7 @@
               <div>
                 <a href="{{ item.url }}">{{ item.title }}</a>
                 <div class="text-muted small">
-                  {{ item.type }} - {{ 'you edited'|t }} {{ item.changed }}
+                  {{ item.type }} - {{ owner ? 'you edited'|t : 'edited'|t }} {{ item.changed }}
                   {% if not item.published %}
                     <span class="badge text-bg-secondary ms-1">{{ 'Unpublished'|t }}</span>
                   {% endif %}

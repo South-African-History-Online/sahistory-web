@@ -18,6 +18,7 @@ function saho_dashboard_theme($existing, $type, $theme, $path) {
         'stats' => [],
         'recent' => [],
         'review' => [],
+        'owner' => TRUE,
       ],
     ],
   ];
@@ -30,8 +31,10 @@ function saho_dashboard_user_view(array &$build, UserInterface $account, EntityV
   if ($view_mode !== 'full') {
     return;
   }
-  // Own profile only: this is a personal worklist, not a public byline.
-  if ((int) $account->id() !== (int) \Drupal::currentUser()->id()) {
+  // Own profile, or any profile for user admins: this is a worklist for
+  // the small editorial team, not a public byline.
+  $owner = (int) $account->id() === (int) \Drupal::currentUser()->id();
+  if (!$owner && !\Drupal::currentUser()->hasPermission('administer users')) {
     return;
   }
 
@@ -45,6 +48,7 @@ function saho_dashboard_user_view(array &$build, UserInterface $account, EntityV
     '#stats' => $data['stats'],
     '#recent' => $data['recent'],
     '#review' => $data['review'],
+    '#owner' => $owner,
     '#weight' => -10,
     '#cache' => [
       'contexts' => ['user'],
