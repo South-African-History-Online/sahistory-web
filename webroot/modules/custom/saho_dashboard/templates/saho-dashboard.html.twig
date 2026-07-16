@@ -1,36 +1,90 @@
 {#
 /**
  * @file
- * Contributor dashboard on the user's own profile page.
+ * Contributor dashboard on the user profile page.
  *
  * Available variables:
  * - stats: { authored: int, worked_on: int }.
+ * - roles: Role badge pills (label, icon, variant).
+ * - achievements: Medallions (id, icon, name, blurb, metric, value, tier,
+ *   next, progress). tier is bronze|silver|gold|null (locked).
+ * - tasks: Permission-gated task tiles (id, icon, title, count, all_clear,
+ *   url, blurb, optional samples list).
  * - recent: List of items the user recently worked on.
  * - review: List of stale published items suggested for review.
  *   Each item: title, url, edit_url, type, published, changed, changed_ago.
  * - owner: TRUE when the viewer is looking at their own profile.
  */
 #}
+{% import '@saho_dashboard/saho-dashboard-icons.html.twig' as icons %}
 <div class="saho-dashboard mb-4">
 
-  <div class="row g-3 mb-4">
-    <div class="col-6 col-md-3">
-      <div class="card h-100 text-center">
-        <div class="card-body py-3">
-          <div class="fs-3 fw-bold">{{ stats.worked_on }}</div>
-          <div class="text-muted small">{{ 'Pieces worked on'|t }}</div>
-        </div>
-      </div>
+  <div class="saho-dash-header mb-4">
+    <div class="saho-dash-header__roles">
+      {% for role in roles %}
+        <span class="saho-badge saho-badge--{{ role.variant }} saho-badge--small saho-badge--rounded saho-dash-role">
+          {{ icons.icon(role.icon, 14) }}
+          <span class="saho-badge__text">{{ role.label }}</span>
+        </span>
+      {% endfor %}
     </div>
-    <div class="col-6 col-md-3">
-      <div class="card h-100 text-center">
-        <div class="card-body py-3">
-          <div class="fs-3 fw-bold">{{ stats.authored }}</div>
-          <div class="text-muted small">{{ owner ? 'Authored by you'|t : 'Authored'|t }}</div>
-        </div>
-      </div>
-    </div>
+    <p class="saho-dash-header__stats text-muted mb-0">
+      {{ stats.worked_on|number_format }} {{ 'pieces worked on'|t }} &middot;
+      {{ stats.authored|number_format }} {{ owner ? 'authored by you'|t : 'authored'|t }}
+    </p>
   </div>
+
+  <div class="saho-dash-achievements mb-4" role="list" aria-label="{{ 'Achievements'|t }}">
+    {% for a in achievements %}
+      <div class="saho-medallion{{ a.tier ? ' saho-medallion--' ~ a.tier : ' saho-medallion--locked' }}" role="listitem"
+           title="{{ a.blurb }}">
+        <span class="saho-medallion__disc">{{ icons.icon(a.icon, 22) }}</span>
+        <span class="saho-medallion__name">{{ a.name }}</span>
+        {% if a.tier %}
+          <span class="saho-medallion__status saho-medallion__status--{{ a.tier }}">{{ a.tier|capitalize }}</span>
+          <span class="saho-medallion__metric">{{ a.value }} {{ a.metric }}</span>
+        {% else %}
+          <span class="saho-medallion__status">{{ a.value }} / {{ a.next }}</span>
+          <span class="saho-medallion__metric">{{ a.metric }}</span>
+        {% endif %}
+        {% if a.next %}
+          <span class="saho-medallion__track" aria-hidden="true">
+            <span class="saho-medallion__bar" style="width: {{ a.progress }}%"></span>
+          </span>
+        {% endif %}
+      </div>
+    {% endfor %}
+  </div>
+
+  {% if tasks %}
+    <h3 class="saho-dash-section-title">{{ 'Keep the record healthy'|t }}</h3>
+    <div class="saho-dash-tasks mb-4">
+      {% for task in tasks %}
+        {% set tile_classes = 'saho-task-tile' ~ (task.all_clear ? ' saho-task-tile--clear' : '') %}
+        {% if task.url %}
+          <a class="{{ tile_classes }}" href="{{ task.url }}">
+        {% else %}
+          <div class="{{ tile_classes }}">
+        {% endif %}
+          <span class="saho-task-tile__icon">{{ icons.icon(task.icon, 18) }}</span>
+          <span class="saho-task-tile__body">
+            <span class="saho-task-tile__count">{{ task.all_clear ? 'All clear'|t : task.count }}</span>
+            <span class="saho-task-tile__title">{{ task.title }}</span>
+            <span class="saho-task-tile__blurb">{{ task.blurb }}</span>
+            {% if task.samples %}
+              <span class="saho-task-tile__samples">
+                {% for item in task.samples %}
+                  {% if item.edit_url %}
+                    <a href="{{ item.edit_url }}">{{ item.title|length > 40 ? item.title|slice(0, 40) ~ '...' : item.title }}</a>
+                  {% endif %}
+                {% endfor %}
+              </span>
+            {% endif %}
+          </span>
+        {% if task.url %}</a>{% else %}</div>{% endif %}
+      {% endfor %}
+    </div>
+  {% endif %}
 
   <div class="row g-4">
     <div class="col-lg-6">

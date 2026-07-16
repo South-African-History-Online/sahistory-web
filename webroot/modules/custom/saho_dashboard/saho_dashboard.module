@@ -16,6 +16,9 @@ function saho_dashboard_theme($existing, $type, $theme, $path) {
     'saho_dashboard' => [
       'variables' => [
         'stats' => [],
+        'roles' => [],
+        'achievements' => [],
+        'tasks' => [],
         'recent' => [],
         'review' => [],
         'owner' => TRUE,
@@ -33,12 +36,13 @@ function saho_dashboard_user_view(array &$build, UserInterface $account, EntityV
   }
   // Own profile, or any profile for user admins: this is a worklist for
   // the small editorial team, not a public byline.
-  $owner = (int) $account->id() === (int) \Drupal::currentUser()->id();
-  if (!$owner && !\Drupal::currentUser()->hasPermission('administer users')) {
+  $viewer = \Drupal::currentUser();
+  $owner = (int) $account->id() === (int) $viewer->id();
+  if (!$owner && !$viewer->hasPermission('administer users')) {
     return;
   }
 
-  $data = \Drupal::service('saho_dashboard.builder')->build($account);
+  $data = \Drupal::service('saho_dashboard.builder')->build($account, $viewer, $owner);
   if ($data === NULL) {
     return;
   }
@@ -46,13 +50,19 @@ function saho_dashboard_user_view(array &$build, UserInterface $account, EntityV
   $build['saho_dashboard'] = [
     '#theme' => 'saho_dashboard',
     '#stats' => $data['stats'],
+    '#roles' => $data['roles'],
+    '#achievements' => $data['achievements'],
+    '#tasks' => $data['tasks'],
     '#recent' => $data['recent'],
     '#review' => $data['review'],
     '#owner' => $owner,
     '#weight' => -10,
+    '#attached' => [
+      'library' => ['saho_dashboard/dashboard'],
+    ],
     '#cache' => [
       'contexts' => ['user'],
-      'max-age' => 3600,
+      'max-age' => 900,
     ],
   ];
 }
