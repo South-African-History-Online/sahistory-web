@@ -3,11 +3,8 @@
 namespace Drupal\saho_tools\Service\Builder;
 
 use Drupal\Core\Entity\ContentEntityInterface;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\File\FileUrlGeneratorInterface;
 use Drupal\file\Entity\File;
 use Drupal\node\NodeInterface;
-use Drupal\saho_tools\Service\SchemaOrgBuilderInterface;
 
 /**
  * Builds Schema.org Article structured data for Article nodes.
@@ -17,12 +14,7 @@ use Drupal\saho_tools\Service\SchemaOrgBuilderInterface;
  * as additionalType to preserve semantics without sacrificing GSC
  * visibility).
  */
-class ArticleSchemaBuilder implements SchemaOrgBuilderInterface {
-
-  public function __construct(
-    protected EntityTypeManagerInterface $entityTypeManager,
-    protected FileUrlGeneratorInterface $fileUrlGenerator,
-  ) {}
+class ArticleSchemaBuilder extends SchemaBuilderBase {
 
   /**
    * {@inheritdoc}
@@ -39,21 +31,14 @@ class ArticleSchemaBuilder implements SchemaOrgBuilderInterface {
       return [];
     }
 
-    $url = $node->toUrl()->setAbsolute()->toString();
-
     $schema = [
       '@context' => 'https://schema.org',
       '@type' => 'Article',
       'additionalType' => 'https://schema.org/ScholarlyArticle',
       'headline' => $node->getTitle(),
-      'url' => $url,
-      'mainEntityOfPage' => [
-        '@type' => 'WebPage',
-        '@id' => $url,
-      ],
       'datePublished' => date('c', $node->getCreatedTime()),
       'dateModified' => date('c', $node->getChangedTime()),
-    ];
+    ] + $this->identityProperties($node);
 
     // Synopsis -> abstract; body -> articleBody + description + wordCount.
     if ($node->hasField('field_synopsis') && !$node->get('field_synopsis')->isEmpty()) {
@@ -227,21 +212,10 @@ class ArticleSchemaBuilder implements SchemaOrgBuilderInterface {
   }
 
   /**
-   * Publisher with logo dimensions (Google AMP/Article rich-result spec).
+   * Returns the @id-linked sitewide organization stub as publisher.
    */
   protected function getPublisherSchema(): array {
-    $base_url = \Drupal::request()->getSchemeAndHttpHost();
-    return [
-      '@type' => 'Organization',
-      'name' => 'South African History Online',
-      'url' => $base_url,
-      'logo' => [
-        '@type' => 'ImageObject',
-        'url' => $base_url . '/themes/custom/saho/logo.png',
-        'width' => 600,
-        'height' => 60,
-      ],
-    ];
+    return $this->organizationRef();
   }
 
 }

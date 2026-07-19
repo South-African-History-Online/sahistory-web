@@ -2,11 +2,8 @@
 
 namespace Drupal\saho_tools\Service\Builder;
 
-use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\File\FileUrlGeneratorInterface;
 use Drupal\file\Entity\File;
 use Drupal\node\NodeInterface;
-use Drupal\saho_tools\Service\SchemaOrgBuilderInterface;
 
 /**
  * Builds Schema.org ImageObject structured data for Image nodes.
@@ -14,20 +11,7 @@ use Drupal\saho_tools\Service\SchemaOrgBuilderInterface;
  * Maps SAHO image/gallery content to Schema.org ImageObject
  * vocabulary for optimal image discovery and attribution.
  */
-class ImageSchemaBuilder implements SchemaOrgBuilderInterface {
-
-  /**
-   * Constructs an ImageSchemaBuilder.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
-   *   The entity type manager.
-   * @param \Drupal\Core\File\FileUrlGeneratorInterface $fileUrlGenerator
-   *   The file URL generator service.
-   */
-  public function __construct(
-    protected EntityTypeManagerInterface $entityTypeManager,
-    protected FileUrlGeneratorInterface $fileUrlGenerator,
-  ) {}
+class ImageSchemaBuilder extends SchemaBuilderBase {
 
   /**
    * {@inheritdoc}
@@ -48,8 +32,7 @@ class ImageSchemaBuilder implements SchemaOrgBuilderInterface {
       '@context' => 'https://schema.org',
       '@type' => 'ImageObject',
       'name' => $node->getTitle(),
-      'url' => $node->toUrl()->setAbsolute()->toString(),
-    ];
+    ] + $this->identityProperties($node);
 
     // Get the image field based on node type.
     $image_field = $node->getType() === 'gallery_image' ? 'field_gallery_image' : 'field_image';
@@ -110,28 +93,18 @@ class ImageSchemaBuilder implements SchemaOrgBuilderInterface {
       ];
     }
     else {
-      $schema['creator'] = [
-        '@type' => 'Organization',
-        'name' => 'South African History Online',
-        'url' => \Drupal::request()->getSchemeAndHttpHost(),
-      ];
+      $schema['creator'] = $this->organizationRef();
     }
 
     // Add copyright holder.
-    $schema['copyrightHolder'] = [
-      '@type' => 'Organization',
-      'name' => 'South African History Online',
-    ];
+    $schema['copyrightHolder'] = $this->organizationRef();
 
     // Add license.
     $schema['license'] = 'https://creativecommons.org/licenses/by-nc-sa/4.0/';
     $schema['isAccessibleForFree'] = TRUE;
 
     // Add IPTC Photo Metadata properties (schema.org 2020 update).
-    $request = \Drupal::request();
-    $base_url = $request->getSchemeAndHttpHost();
-
-    $schema['acquireLicensePage'] = $base_url . '/about/copyright-licensing';
+    $schema['acquireLicensePage'] = $this->canonicalBaseUrl() . '/about/copyright-licensing';
 
     $schema['copyrightNotice'] = '© ' . date('Y') . ' South African History Online. Licensed under CC BY-NC-SA 4.0.';
 

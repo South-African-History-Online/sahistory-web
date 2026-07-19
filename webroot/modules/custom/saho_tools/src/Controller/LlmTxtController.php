@@ -5,6 +5,7 @@ namespace Drupal\saho_tools\Controller;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Render\RendererInterface;
+use Drupal\Core\Site\Settings;
 use Drupal\saho_tools\Service\Builder\WebSiteSchemaBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Response;
@@ -76,8 +77,8 @@ class LlmTxtController extends ControllerBase {
 
     // Always advertise the canonical production host: this file is read by
     // crawlers and cached copies, so it must never carry a local or staging
-    // hostname.
-    $base_url = rtrim(WebSiteSchemaBuilder::CANONICAL_URL, '/');
+    // hostname. Same override knob as the schema builders.
+    $base_url = rtrim(Settings::get('saho_canonical_url', WebSiteSchemaBuilder::CANONICAL_URL), '/');
 
     // Build llm.txt content using Twig template.
     $build = [

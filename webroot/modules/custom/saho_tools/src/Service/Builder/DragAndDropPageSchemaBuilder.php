@@ -2,10 +2,7 @@
 
 namespace Drupal\saho_tools\Service\Builder;
 
-use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\File\FileUrlGeneratorInterface;
 use Drupal\node\NodeInterface;
-use Drupal\saho_tools\Service\SchemaOrgBuilderInterface;
 
 /**
  * Builds Schema.org WebPage structured data for Drag and Drop Page nodes.
@@ -13,20 +10,7 @@ use Drupal\saho_tools\Service\SchemaOrgBuilderInterface;
  * Maps SAHO landing pages and homepage to Schema.org WebPage vocabulary
  * for optimal discovery by search engines and AI systems.
  */
-class DragAndDropPageSchemaBuilder implements SchemaOrgBuilderInterface {
-
-  /**
-   * Constructs a DragAndDropPageSchemaBuilder.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
-   *   The entity type manager.
-   * @param \Drupal\Core\File\FileUrlGeneratorInterface $fileUrlGenerator
-   *   The file URL generator service.
-   */
-  public function __construct(
-    protected EntityTypeManagerInterface $entityTypeManager,
-    protected FileUrlGeneratorInterface $fileUrlGenerator,
-  ) {}
+class DragAndDropPageSchemaBuilder extends SchemaBuilderBase {
 
   /**
    * {@inheritdoc}
@@ -47,10 +31,9 @@ class DragAndDropPageSchemaBuilder implements SchemaOrgBuilderInterface {
       '@context' => 'https://schema.org',
       '@type' => 'WebPage',
       'name' => $node->getTitle(),
-      'url' => $node->toUrl()->setAbsolute()->toString(),
       'datePublished' => date('c', $node->getCreatedTime()),
       'dateModified' => date('c', $node->getChangedTime()),
-    ];
+    ] + $this->identityProperties($node);
 
     // Add description from body field.
     if ($node->hasField('body') && !$node->get('body')->isEmpty()) {
@@ -81,13 +64,13 @@ class DragAndDropPageSchemaBuilder implements SchemaOrgBuilderInterface {
             '@type' => 'ListItem',
             'position' => 1,
             'name' => 'Home',
-            'item' => \Drupal::request()->getSchemeAndHttpHost(),
+            'item' => $this->canonicalBaseUrl(),
           ],
           [
             '@type' => 'ListItem',
             'position' => 2,
             'name' => $node->getTitle(),
-            'item' => $node->toUrl()->setAbsolute()->toString(),
+            'item' => $this->canonicalNodeUrl($node),
           ],
         ],
       ];
@@ -104,24 +87,13 @@ class DragAndDropPageSchemaBuilder implements SchemaOrgBuilderInterface {
   }
 
   /**
-   * Get SAHO publisher schema.
+   * Returns the @id-linked sitewide organization stub as publisher.
    *
    * @return array
-   *   Publisher organization schema.
+   *   Publisher organization stub.
    */
   protected function getPublisherSchema(): array {
-    $request = \Drupal::request();
-    $base_url = $request->getSchemeAndHttpHost();
-
-    return [
-      '@type' => 'Organization',
-      'name' => 'South African History Online',
-      'url' => $base_url,
-      'logo' => [
-        '@type' => 'ImageObject',
-        'url' => $base_url . '/themes/custom/saho/logo.png',
-      ],
-    ];
+    return $this->organizationRef();
   }
 
 }

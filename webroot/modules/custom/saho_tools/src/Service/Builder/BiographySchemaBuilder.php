@@ -2,11 +2,9 @@
 
 namespace Drupal\saho_tools\Service\Builder;
 
-use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\File\FileUrlGeneratorInterface;
 use Drupal\file\Entity\File;
 use Drupal\node\NodeInterface;
-use Drupal\saho_tools\Service\SchemaOrgBuilderInterface;
+use Drupal\saho_tools\Schema\SchemaDates;
 
 /**
  * Builds Schema.org ProfilePage structured data for Biography nodes.
@@ -15,12 +13,7 @@ use Drupal\saho_tools\Service\SchemaOrgBuilderInterface;
  * person pages) with the Person nested under mainEntity. ProfilePage IS
  * reported in GSC's enhancement reports; bare Person is not.
  */
-class BiographySchemaBuilder implements SchemaOrgBuilderInterface {
-
-  public function __construct(
-    protected EntityTypeManagerInterface $entityTypeManager,
-    protected FileUrlGeneratorInterface $fileUrlGenerator,
-  ) {}
+class BiographySchemaBuilder extends SchemaBuilderBase {
 
   /**
    * {@inheritdoc}
@@ -37,10 +30,12 @@ class BiographySchemaBuilder implements SchemaOrgBuilderInterface {
       return [];
     }
 
-    $url = $node->toUrl()->setAbsolute()->toString();
+    $url = $this->canonicalNodeUrl($node);
+    $ref_url = $this->refUrl($node);
 
     $person = [
       '@type' => 'Person',
+      '@id' => ($ref_url ?? $url) . '#person',
       'name' => $node->getTitle(),
       'url' => $url,
       'mainEntityOfPage' => [
@@ -67,18 +62,17 @@ class BiographySchemaBuilder implements SchemaOrgBuilderInterface {
       $person['name'] = implode(' ', $name_parts);
     }
 
-    // Dates.
-    if ($node->hasField('field_drupal_birth_date') && !$node->get('field_drupal_birth_date')->isEmpty()) {
-      $birth_date = $node->get('field_drupal_birth_date')->value;
-      if (!empty($birth_date)) {
-        $person['birthDate'] = $birth_date;
-      }
+    // Dates: the structured datetime pair covers ~900 records; the legacy
+    // free-text field_dob/field_dod pair covers ~2,200/2,600 more in shapes
+    // SchemaDates can normalise ("19-September-1925", "1918"). Prose stays
+    // out of Date properties.
+    $birth = $this->firstDate($node, ['field_drupal_birth_date', 'field_dob']);
+    if ($birth !== NULL) {
+      $person['birthDate'] = $birth;
     }
-    if ($node->hasField('field_drupal_death_date') && !$node->get('field_drupal_death_date')->isEmpty()) {
-      $death_date = $node->get('field_drupal_death_date')->value;
-      if (!empty($death_date)) {
-        $person['deathDate'] = $death_date;
-      }
+    $death = $this->firstDate($node, ['field_drupal_death_date', 'field_dod']);
+    if ($death !== NULL) {
+      $person['deathDate'] = $death;
     }
 
     // Birth/death places.
@@ -172,19 +166,22 @@ class BiographySchemaBuilder implements SchemaOrgBuilderInterface {
       }
     }
 
-    // knowsAbout from tags.
-    if ($node->hasField('field_tags') && !$node->get('field_tags')->isEmpty()) {
-      $topics = [];
-      foreach ($node->get('field_tags') as $tag) {
-        // @phpstan-ignore-next-line
-        $term = $tag->entity;
-        if ($term) {
-          $topics[] = $term->getName();
+    // knowsAbout from tags plus people categories (the far better-populated
+    // vocabulary: 11k+ records carry field_people_category, only ~80 tags).
+    $topics = [];
+    foreach (['field_tags', 'field_people_category'] as $topic_field) {
+      if ($node->hasField($topic_field) && !$node->get($topic_field)->isEmpty()) {
+        foreach ($node->get($topic_field) as $tag) {
+          // @phpstan-ignore-next-line
+          $term = $tag->entity;
+          if ($term) {
+            $topics[] = $term->getName();
+          }
         }
       }
-      if (!empty($topics)) {
-        $person['knowsAbout'] = $topics;
-      }
+    }
+    if (!empty($topics)) {
+      $person['knowsAbout'] = array_values(array_unique($topics));
     }
 
     // Description (up to 300 chars; Google accommodates the longer cap).
@@ -222,15 +219,37 @@ class BiographySchemaBuilder implements SchemaOrgBuilderInterface {
     $schema = [
       '@context' => 'https://schema.org',
       '@type' => 'ProfilePage',
-      'url' => $url,
       'dateCreated' => date('c', $node->getCreatedTime()),
       'dateModified' => date('c', $node->getChangedTime()),
       'mainEntity' => $person,
-    ];
+    ] + $this->identityProperties($node);
     if (!empty($citations)) {
       $schema['citation'] = $citations;
     }
     return $schema;
+  }
+
+  /**
+   * Returns the first schema-safe date found across the given fields.
+   *
+   * @param \Drupal\node\NodeInterface $node
+   *   The biography node.
+   * @param string[] $fields
+   *   Field names in order of preference.
+   *
+   * @return string|null
+   *   A normalised ISO (partial) date, or NULL when none normalises.
+   */
+  protected function firstDate(NodeInterface $node, array $fields): ?string {
+    foreach ($fields as $field) {
+      if ($node->hasField($field) && !$node->get($field)->isEmpty()) {
+        $date = SchemaDates::normalize((string) $node->get($field)->value);
+        if ($date !== NULL) {
+          return $date;
+        }
+      }
+    }
+    return NULL;
   }
 
 }

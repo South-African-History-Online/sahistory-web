@@ -2,11 +2,8 @@
 
 namespace Drupal\saho_tools\Service\Builder;
 
-use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\File\FileUrlGeneratorInterface;
 use Drupal\file\Entity\File;
 use Drupal\node\NodeInterface;
-use Drupal\saho_tools\Service\SchemaOrgBuilderInterface;
 
 /**
  * Builds Schema.org Book/Product structured data for Product nodes.
@@ -14,20 +11,7 @@ use Drupal\saho_tools\Service\SchemaOrgBuilderInterface;
  * Maps SAHO product content (books, publications) to Schema.org
  * Book/Product vocabulary for e-commerce and catalog discovery.
  */
-class ProductSchemaBuilder implements SchemaOrgBuilderInterface {
-
-  /**
-   * Constructs a ProductSchemaBuilder.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
-   *   The entity type manager.
-   * @param \Drupal\Core\File\FileUrlGeneratorInterface $fileUrlGenerator
-   *   The file URL generator service.
-   */
-  public function __construct(
-    protected EntityTypeManagerInterface $entityTypeManager,
-    protected FileUrlGeneratorInterface $fileUrlGenerator,
-  ) {}
+class ProductSchemaBuilder extends SchemaBuilderBase {
 
   /**
    * {@inheritdoc}
@@ -44,12 +28,15 @@ class ProductSchemaBuilder implements SchemaOrgBuilderInterface {
       return [];
     }
 
+    // Only claim Book when an ISBN backs it up; otherwise fall back to
+    // the generic Product type.
+    $has_isbn = $node->hasField('field_isbn') && !$node->get('field_isbn')->isEmpty();
+
     $schema = [
       '@context' => 'https://schema.org',
-      '@type' => 'Book',
+      '@type' => $has_isbn ? 'Book' : 'Product',
       'name' => $node->getTitle(),
-      'url' => $node->toUrl()->setAbsolute()->toString(),
-    ];
+    ] + $this->identityProperties($node);
 
     // Add description.
     if ($node->hasField('body') && !$node->get('body')->isEmpty()) {
@@ -75,7 +62,7 @@ class ProductSchemaBuilder implements SchemaOrgBuilderInterface {
     }
 
     // Add ISBN if available.
-    if ($node->hasField('field_isbn') && !$node->get('field_isbn')->isEmpty()) {
+    if ($has_isbn) {
       $schema['isbn'] = $node->get('field_isbn')->value;
     }
 
