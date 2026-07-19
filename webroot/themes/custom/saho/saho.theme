@@ -14,6 +14,7 @@ use Drupal\taxonomy\TermInterface;
 use Drupal\Component\Utility\Html;
 use Drupal\Component\Utility\Unicode;
 use Drupal\Core\Render\Markup;
+use Drupal\Core\Site\Settings;
 use Drupal\Core\Url;
 use Drupal\image\Entity\ImageStyle;
 use Drupal\file\Entity\File;
@@ -764,6 +765,12 @@ function saho_preprocess_page(array &$variables) {
   // Make logo available to all templates using page.html.twig.
   $logo = \Drupal::theme()->getActiveTheme()->getLogo();
   $variables['site_logo'] = $logo;
+
+  // Donations are handled on the shop site; the base URL differs per
+  // environment (shop.ddev.site locally), so allow a settings.php override.
+  // Consumed by content/header.html.twig, included from page.html.twig.
+  $shop_url = Settings::get('saho_shop_url', 'https://shop.sahistory.org.za');
+  $variables['shop_donate_url'] = rtrim($shop_url, '/') . '/donate';
 
   // Search overlay apparatus (R3 #478): one count vocabulary - the same
   // cached live counts as the home status bar, exact numbers - plus the
