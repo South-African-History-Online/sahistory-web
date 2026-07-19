@@ -206,7 +206,9 @@ function saho_classroom_node_view(array &$build, EntityInterface $node, $display
     return;
   }
   $is_classroom = FALSE;
-  foreach (['field_classroom_categories', 'field_classroom'] as $field) {
+  // The CAPS fields count as classroom membership too: parts of the retagged
+  // corpus carry a topic/grade but neither legacy classroom term.
+  foreach (['field_classroom_categories', 'field_classroom', 'field_caps_topic', 'field_classroom_grade'] as $field) {
     if ($node->hasField($field) && !$node->get($field)->isEmpty()) {
       $is_classroom = TRUE;
       break;
@@ -409,9 +411,34 @@ function _saho_classroom_match_deck(NodeInterface $article): ?NodeInterface {
 
   if (!array_key_exists($source_id, $resolved)) {
     $resolved[$source_id] = NULL;
-    $article_tokens = _saho_classroom_tokens((string) $article->getUntranslated()->label());
+    $storage = \Drupal::entityTypeManager()->getStorage('node');
+
+    // Structured match first: an article tagged with a CAPS topic pairs with
+    // the deck teaching that same topic (and grade, when tagged). Exact, and
+    // immune to the numbered "History Grade N - Topic M" legacy titles that
+    // token scoring cannot read - those used to fall back to the browse page.
+    $source = $article->getUntranslated();
+    if ($source->hasField('field_caps_topic') && !$source->get('field_caps_topic')->isEmpty()) {
+      $query = $storage->getQuery()
+        ->accessCheck(TRUE)
+        ->condition('type', 'presentation')
+        ->condition('status', 1)
+        ->condition('field_caps_topic', $source->get('field_caps_topic')->target_id)
+        ->sort('nid')
+        ->range(0, 1);
+      if ($source->hasField('field_classroom_grade') && !$source->get('field_classroom_grade')->isEmpty()) {
+        $query->condition('field_classroom_grade', $source->get('field_classroom_grade')->target_id);
+      }
+      $ids = $query->execute();
+      if ($ids) {
+        $resolved[$source_id] = (int) reset($ids);
+      }
+    }
+
+    $article_tokens = $resolved[$source_id] === NULL
+      ? _saho_classroom_tokens((string) $source->label())
+      : [];
     if ($article_tokens) {
-      $storage = \Drupal::entityTypeManager()->getStorage('node');
       $ids = $storage->getQuery()
         ->accessCheck(TRUE)
         ->condition('type', 'presentation')
