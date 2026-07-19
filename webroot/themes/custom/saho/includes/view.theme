@@ -1080,7 +1080,16 @@ function saho_preprocess_views_view__saho_landing_shell(array &$variables): void
   $variables['record_rows'] = $record_rows;
   $variables['record_cards'] = $record_cards;
   $variables['result_total'] = $variables['landing_count'];
-  $variables['results_layout'] = \Drupal::request()->query->get('layout') === 'grid' ? 'grid' : 'table';
+  // Places: the clustered Leaflet register (places_map view) rides along as
+  // a third results layout - same records, spatial reading. It is unpaged
+  // and unfiltered (all geolocated places); the exposed filters and pager
+  // above drive the table/cards layouts only.
+  if ($view_id === 'places') {
+    $variables['map_embed'] = views_embed_view('places_map', 'default');
+  }
+  $layout_param = \Drupal::request()->query->get('layout');
+  $layouts = isset($variables['map_embed']) ? ['grid', 'map'] : ['grid'];
+  $variables['results_layout'] = in_array($layout_param, $layouts, TRUE) ? $layout_param : 'table';
   $variables['landing_registers'] = _saho_landing_registers($view_id);
 
   $variables['#attached']['library'][] = 'saho/saho-index-table';
@@ -1121,9 +1130,14 @@ function _saho_landing_registers(string $view_id): array {
       ['label' => 'The 1900s', 'query' => ['tid_1' => ['97']]],
     ],
     'places' => [
-      ['label' => 'Historical Sites', 'query' => ['tid' => ['35628']]],
-      ['label' => 'Group Areas', 'query' => ['tid' => ['35623']]],
-      ['label' => 'World Heritage Sites', 'query' => ['tid' => ['35629']]],
+      // Only the biography-category registers tile here: places filtered by
+      // who is connected to them (URL-only "bio" param, EXISTS subquery in
+      // saho_utils_views_query_alter). Place-category registers (Historical
+      // Sites etc.) are NOT tiled - they duplicate the Categories chips in
+      // the filter rail directly below.
+      ['label' => 'Women in the Record', 'query' => ['bio' => '13']],
+      ['label' => 'Lives of Courage', 'query' => ['bio' => '21903']],
+      ['label' => 'Deaths in Detention', 'query' => ['bio' => '21904']],
     ],
     'politics_society' => [
       ['label' => '20th Century South Africa', 'query' => ['tid' => ['46']]],
