@@ -1084,7 +1084,10 @@ function saho_preprocess_views_view__saho_landing_shell(array &$variables): void
   // a third results layout - same records, spatial reading. It is unpaged
   // and unfiltered (all geolocated places); the exposed filters and pager
   // above drive the table/cards layouts only.
-  if ($view_id === 'places') {
+  // saho_lite marks the load-more fetches (saho-load-more.js): they only
+  // need rows, cards and the pager, and the map embed is megabytes of
+  // location markup per request.
+  if ($view_id === 'places' && !\Drupal::request()->query->has('saho_lite')) {
     $variables['map_embed'] = views_embed_view('places_map', 'default');
   }
   $layout_param = \Drupal::request()->query->get('layout');

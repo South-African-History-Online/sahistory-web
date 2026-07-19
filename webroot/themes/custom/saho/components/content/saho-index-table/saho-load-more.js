@@ -114,7 +114,12 @@
       button.disabled = true;
       button.textContent = Drupal.t('Loading…');
       try {
-        const response = await fetch(state.next);
+        // saho_lite asks the landing to skip heavyweight extras (the /places
+        // map embed) - the fetch only needs rows, cards and the pager. The
+        // response's own pager links inherit the flag.
+        const url = new URL(state.next, window.location.href);
+        url.searchParams.set('saho_lite', '1');
+        const response = await fetch(url);
         if (!response.ok) {
           throw new Error(`HTTP ${response.status}`);
         }
