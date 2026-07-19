@@ -8,6 +8,7 @@ use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Url;
+use Drupal\tdih\Service\NodeFetcher;
 use Drupal\user\UserInterface;
 
 /**
@@ -29,6 +30,11 @@ class DashboardBuilder {
    * Maximum items listed per section.
    */
   const ITEMS_PER_SECTION = 6;
+
+  /**
+   * South African Standard Time offset from UTC in seconds (fixed, no DST).
+   */
+  const SAST_OFFSET = 7200;
 
   /**
    * Achievement catalog: thresholds are bronze / silver / gold.
@@ -64,7 +70,44 @@ class DashboardBuilder {
       'blurb' => 'Keeping the fire going right now.',
       'tiers' => [5, 20, 50],
     ],
+    'night_watch' => [
+      'name' => 'The Night Watch',
+      'icon' => 'moon',
+      'metric' => 'edits after dark',
+      'blurb' => 'Revisions saved between 22:00 and 05:00 SAST.',
+      'tiers' => [5, 25, 100],
+      'secret' => TRUE,
+    ],
+    'timekeeper' => [
+      'name' => 'The Timekeeper',
+      'icon' => 'clock',
+      'metric' => 'events touched on their anniversary',
+      'blurb' => 'Edited an event on the very day history remembers it.',
+      'tiers' => [1, 5, 25],
+      'secret' => TRUE,
+    ],
+    'cartographer' => [
+      'name' => 'The Cartographer',
+      'icon' => 'map',
+      'metric' => 'places worked on',
+      'blurb' => 'Mapping South Africa one place page at a time.',
+      'tiers' => [5, 25, 100],
+      'secret' => TRUE,
+    ],
+    'biographer' => [
+      'name' => 'The Biographer',
+      'icon' => 'book',
+      'metric' => 'biographies worked on',
+      'blurb' => 'Keeping the people of the record alive.',
+      'tiers' => [10, 100, 500],
+      'secret' => TRUE,
+    ],
   ];
+
+  /**
+   * Teaser shown in place of an unrevealed secret achievement's details.
+   */
+  const SECRET_TEASER = 'A secret achievement - keep working the record.';
 
   /**
    * Role badge map: role id => [label, icon, badge variant].
@@ -107,13 +150,28 @@ class DashboardBuilder {
   protected $time;
 
   /**
+   * The TDIH event fetcher, when the tdih module is enabled.
+   *
+   * @var \Drupal\tdih\Service\NodeFetcher|null
+   */
+  protected $tdihFetcher;
+
+  /**
+   * Per-uid cache of the user's first revision timestamp.
+   *
+   * @var int[]
+   */
+  protected $firstRevision = [];
+
+  /**
    * Constructs a DashboardBuilder.
    */
-  public function __construct(Connection $database, EntityTypeManagerInterface $entity_type_manager, DateFormatterInterface $date_formatter, TimeInterface $time) {
+  public function __construct(Connection $database, EntityTypeManagerInterface $entity_type_manager, DateFormatterInterface $date_formatter, TimeInterface $time, ?NodeFetcher $tdih_fetcher = NULL) {
     $this->database = $database;
     $this->entityTypeManager = $entity_type_manager;
     $this->dateFormatter = $date_formatter;
     $this->time = $time;
+    $this->tdihFetcher = $tdih_fetcher;
   }
 
   /**
@@ -143,6 +201,10 @@ class DashboardBuilder {
       'tasks' => $this->getTasks($uid, $viewer, $owner),
       'recent' => $this->getRecentItems($uid),
       'review' => $this->getReviewItems($uid),
+      'impact' => $this->getImpact($uid),
+      'on_this_day' => $this->getOnThisDay($uid),
+      'anniversary' => $this->getAnniversary($uid),
+      'easter' => $owner ? $this->getEasterEgg($uid) : NULL,
     ];
   }
 
@@ -210,10 +272,7 @@ class DashboardBuilder {
       [':uid' => $uid, ':age' => self::REVIEW_AGE_SECONDS]
     )->fetchField();
 
-    $first = (int) $this->database->query(
-      'SELECT MIN(revision_timestamp) FROM {node_revision} WHERE revision_uid = :uid',
-      [':uid' => $uid]
-    )->fetchField();
+    $first = $this->getFirstRevisionTimestamp($uid);
     $years = $first ? (int) floor(($now - $first) / 31557600) : 0;
 
     $ember = (int) $this->database->query(
@@ -221,12 +280,48 @@ class DashboardBuilder {
       [':uid' => $uid, ':since' => $now - 2592000]
     )->fetchField();
 
+    // Secret achievement: revisions saved in the small hours, SAST. The hour
+    // bucket is derived arithmetically from the epoch (UTC + fixed offset),
+    // which is exact because SAST has no daylight saving.
+    $night_watch = (int) $this->database->query(
+      'SELECT COUNT(*) FROM {node_revision}
+       WHERE revision_uid = :uid
+       AND MOD(FLOOR(revision_timestamp / 3600) + 2, 24) NOT BETWEEN 5 AND 21',
+      [':uid' => $uid]
+    )->fetchField();
+
+    // Secret achievement: event nodes edited on their own anniversary.
+    // DATE_FORMAT/FROM_UNIXTIME are MySQL/MariaDB-specific, matching the
+    // window-function SQL above in portability.
+    $timekeeper = (int) $this->database->query(
+      "SELECT COUNT(DISTINCT r.nid) FROM {node_revision} r
+       INNER JOIN {node__field_event_date} fed
+         ON fed.entity_id = r.nid AND fed.deleted = 0
+       WHERE r.revision_uid = :uid
+       AND DATE_FORMAT(FROM_UNIXTIME(r.revision_timestamp + :offset), '%m-%d')
+           = SUBSTRING(fed.field_event_date_value, 6, 5)",
+      [':uid' => $uid, ':offset' => self::SAST_OFFSET]
+    )->fetchField();
+
+    // Secret achievements: distinct place / biography nodes worked on.
+    $by_type = $this->database->query(
+      "SELECT n.type, COUNT(DISTINCT r.nid) AS c FROM {node_revision} r
+       INNER JOIN {node_field_data} n ON n.nid = r.nid AND n.default_langcode = 1
+       WHERE r.revision_uid = :uid AND n.type IN ('place', 'biography')
+       GROUP BY n.type",
+      [':uid' => $uid]
+    )->fetchAllKeyed();
+
     $values = [
       'quill' => $worked_on,
       'compass' => $types,
       'lantern' => $lantern,
       'laurel' => $years,
       'ember' => $ember,
+      'night_watch' => $night_watch,
+      'timekeeper' => $timekeeper,
+      'cartographer' => (int) ($by_type['place'] ?? 0),
+      'biographer' => (int) ($by_type['biography'] ?? 0),
     ];
 
     $achievements = [];
@@ -242,9 +337,11 @@ class DashboardBuilder {
           $next = $threshold;
         }
       }
-      $achievements[] = [
+      $secret = !empty($def['secret']);
+      $revealed = !$secret || $tier !== NULL;
+      $row = [
         'id' => $id,
-        'icon' => $id,
+        'icon' => $def['icon'] ?? $id,
         'name' => $def['name'],
         'blurb' => $def['blurb'],
         'metric' => $def['metric'],
@@ -252,9 +349,205 @@ class DashboardBuilder {
         'tier' => $tier,
         'next' => $next ? number_format($next) : NULL,
         'progress' => $next ? min(100, (int) round($value / max($next, 1) * 100)) : 100,
+        'secret' => $secret,
+        'revealed' => $revealed,
       ];
+      if (!$revealed) {
+        // Strip everything that could spoil the surprise - these values must
+        // never reach the markup, not merely be hidden by the template.
+        $row = [
+          'name' => '???',
+          'icon' => 'mystery',
+          'blurb' => self::SECRET_TEASER,
+          'metric' => self::SECRET_TEASER,
+          'value' => NULL,
+          'next' => NULL,
+          'progress' => NULL,
+        ] + $row;
+      }
+      $achievements[] = $row;
     }
     return $achievements;
+  }
+
+  /**
+   * Returns the timestamp of the user's first revision, memoized per uid.
+   */
+  protected function getFirstRevisionTimestamp(int $uid): int {
+    if (!isset($this->firstRevision[$uid])) {
+      $this->firstRevision[$uid] = (int) $this->database->query(
+        'SELECT MIN(revision_timestamp) FROM {node_revision} WHERE revision_uid = :uid',
+        [':uid' => $uid]
+      )->fetchField();
+    }
+    return $this->firstRevision[$uid];
+  }
+
+  /**
+   * Readership impact: total views of the user's pages, plus their top page.
+   *
+   * View counts come from the custom saho_statistics module; when it is not
+   * installed the whole section quietly disappears.
+   */
+  protected function getImpact(int $uid): ?array {
+    if (!$this->database->schema()->tableExists('saho_node_counter')) {
+      return NULL;
+    }
+
+    $total = (int) $this->database->query(
+      'SELECT COALESCE(SUM(c.totalcount), 0) FROM {saho_node_counter} c
+       INNER JOIN {node_field_data} n ON n.nid = c.nid AND n.default_langcode = 1
+       WHERE n.uid = :uid',
+      [':uid' => $uid]
+    )->fetchField();
+    if ($total === 0) {
+      return NULL;
+    }
+
+    $top = $this->database->queryRange(
+      'SELECT c.nid, c.totalcount FROM {saho_node_counter} c
+       INNER JOIN {node_field_data} n ON n.nid = c.nid AND n.default_langcode = 1 AND n.status = 1
+       WHERE n.uid = :uid ORDER BY c.totalcount DESC',
+      0, 1,
+      [':uid' => $uid]
+    )->fetchAssoc();
+
+    $most_read = NULL;
+    if ($top) {
+      $items = $this->loadItems([(int) $top['nid']]);
+      if ($items) {
+        $most_read = $items[0];
+        $most_read['views'] = (int) $top['totalcount'];
+        $most_read['views_formatted'] = $this->compact((int) $top['totalcount']);
+      }
+    }
+
+    return [
+      'readers_reached' => $total,
+      'readers_reached_formatted' => $this->compact($total),
+      'most_read' => $most_read,
+    ];
+  }
+
+  /**
+   * Picks today's "on this day in the record" event for this user.
+   *
+   * Each contributor gets their own deterministic pick from the day's
+   * featured events, so two colleagues comparing dashboards see different
+   * moments of the same day.
+   */
+  protected function getOnThisDay(int $uid): ?array {
+    if (!$this->tdihFetcher) {
+      return NULL;
+    }
+    try {
+      $tz = new \DateTimeZone('Africa/Johannesburg');
+      $today = (new \DateTime('@' . $this->time->getRequestTime()))->setTimezone($tz);
+      $month_day = $today->format('m-d');
+
+      // The fetcher's LIKE match is a prefilter; keep only events whose date
+      // really is today's month-day (mirrors TdihBlock's own re-filter).
+      $matches = [];
+      foreach ($this->tdihFetcher->loadPotentialEvents($month_day) as $node) {
+        $raw = (string) $node->get('field_event_date')->value;
+        if (preg_match('/^(\d{4})-(\d{2}-\d{2})/', $raw, $m) && $m[2] === $month_day) {
+          $matches[$node->id()] = ['node' => $node, 'year' => $m[1]];
+        }
+      }
+      if (!$matches) {
+        return NULL;
+      }
+      ksort($matches);
+      $matches = array_values($matches);
+      $pick = $matches[abs(crc32($uid . '-' . $month_day)) % count($matches)];
+
+      return [
+        'year' => $pick['year'],
+        'title' => $pick['node']->label(),
+        'url' => $pick['node']->toUrl()->toString(),
+        'date_label' => $today->format('j F'),
+      ];
+    }
+    catch (\Exception $e) {
+      return NULL;
+    }
+  }
+
+  /**
+   * Detects the anniversary of the user's very first edit (SAST).
+   */
+  protected function getAnniversary(int $uid): ?array {
+    $first = $this->getFirstRevisionTimestamp($uid);
+    if (!$first) {
+      return NULL;
+    }
+    $tz = new \DateTimeZone('Africa/Johannesburg');
+    $first_date = (new \DateTime('@' . $first))->setTimezone($tz);
+    $today = (new \DateTime('@' . $this->time->getRequestTime()))->setTimezone($tz);
+    $years = (int) $today->format('Y') - (int) $first_date->format('Y');
+    if ($years >= 1 && $first_date->format('m-d') === $today->format('m-d')) {
+      return [
+        'years' => $years,
+        'since' => $first_date->format('j F Y'),
+      ];
+    }
+    return NULL;
+  }
+
+  /**
+   * Hidden vault data: the user's first edit and the record's oldest entry.
+   *
+   * Rendered server-side but hidden; the front end reveals it on the Konami
+   * code. Owner-only (gated in build()).
+   */
+  protected function getEasterEgg(int $uid): ?array {
+    $first = NULL;
+    $first_nid = $this->database->queryRange(
+      'SELECT nid FROM {node_revision} WHERE revision_uid = :uid ORDER BY revision_timestamp ASC',
+      0, 1,
+      [':uid' => $uid]
+    )->fetchField();
+    if ($first_nid) {
+      $items = $this->loadItems([(int) $first_nid]);
+      if ($items) {
+        $first = $items[0];
+        $first['date'] = $this->dateFormatter->format($this->getFirstRevisionTimestamp($uid), 'custom', 'j F Y');
+      }
+    }
+
+    $oldest = NULL;
+    $oldest_row = $this->database->queryRange(
+      'SELECT nid, created FROM {node_field_data} WHERE status = 1 AND default_langcode = 1 ORDER BY created ASC',
+      0, 1
+    )->fetchAssoc();
+    if ($oldest_row) {
+      $nid = (int) $oldest_row['nid'];
+      // Override the displayed date with the creation date - "first entry"
+      // should show when it entered the record, not its last edit.
+      $items = $this->loadItems([$nid], [$nid => (int) $oldest_row['created']]);
+      if ($items) {
+        $oldest = $items[0];
+      }
+    }
+
+    if (!$first && !$oldest) {
+      return NULL;
+    }
+    return ['first' => $first, 'oldest' => $oldest];
+  }
+
+  /**
+   * Formats a large count compactly: 1234 -> 1,234, 34567 -> 35k, 1.2M.
+   */
+  protected function compact(int $n): string {
+    if ($n >= 1000000) {
+      $m = round($n / 1000000, 1);
+      return rtrim(rtrim(number_format($m, 1), '0'), '.') . 'M';
+    }
+    if ($n >= 10000) {
+      return number_format(round($n / 1000)) . 'k';
+    }
+    return number_format($n);
   }
 
   /**

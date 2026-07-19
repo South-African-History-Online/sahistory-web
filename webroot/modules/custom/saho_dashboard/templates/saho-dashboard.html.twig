@@ -7,12 +7,20 @@
  * - stats: { authored: int, worked_on: int }.
  * - roles: Role badge pills (label, icon, variant).
  * - achievements: Medallions (id, icon, name, blurb, metric, value, tier,
- *   next, progress). tier is bronze|silver|gold|null (locked).
+ *   next, progress, secret, revealed). tier is bronze|silver|gold|null
+ *   (locked). Unrevealed secrets arrive pre-masked ("???", mystery icon,
+ *   null value/next/progress).
  * - tasks: Permission-gated task tiles (id, icon, title, count, all_clear,
  *   url, blurb, optional samples list).
  * - recent: List of items the user recently worked on.
  * - review: List of stale published items suggested for review.
  *   Each item: title, url, edit_url, type, published, changed, changed_ago.
+ * - impact: null or { readers_reached: int, readers_reached_formatted,
+ *   most_read: item + views/views_formatted or null }.
+ * - on_this_day: null or { year, title, url, date_label }.
+ * - anniversary: null or { years: int, since: formatted date }.
+ * - easter: null or { first: item + date, oldest: item } - rendered hidden,
+ *   revealed by the front end (owner only).
  * - owner: TRUE when the viewer is looking at their own profile.
  */
 #}
@@ -22,25 +30,73 @@
   <div class="saho-dash-header mb-4">
     <div class="saho-dash-header__roles">
       {% for role in roles %}
-        <span class="saho-badge saho-badge--{{ role.variant }} saho-badge--small saho-badge--rounded saho-dash-role">
+        <span class="saho-badge saho-badge--{{ role.variant }} saho-badge--small saho-badge--rounded saho-dash-role"
+              data-bs-toggle="tooltip" data-bs-title="{{ role.label }}">
           {{ icons.icon(role.icon, 14) }}
           <span class="saho-badge__text">{{ role.label }}</span>
         </span>
       {% endfor %}
     </div>
     <p class="saho-dash-header__stats text-muted mb-0">
-      {{ stats.worked_on|number_format }} {{ 'pieces worked on'|t }} &middot;
-      {{ stats.authored|number_format }} {{ owner ? 'authored by you'|t : 'authored'|t }}
+      <span data-countup="{{ stats.worked_on }}">{{ stats.worked_on|number_format }}</span> {{ 'pieces worked on'|t }} &middot;
+      <span data-countup="{{ stats.authored }}">{{ stats.authored|number_format }}</span> {{ owner ? 'authored by you'|t : 'authored'|t }}
     </p>
+    {% if anniversary %}
+      <div class="saho-dash-ribbon mt-3" role="status">
+        {{ icons.icon('laurel', 18) }}
+        <span>
+          {{ anniversary.years }} {{ anniversary.years == 1 ? 'year'|t : 'years'|t }}
+          {{ 'to the day since your first edit'|t }} - {{ anniversary.since }}. {{ 'Thank you.'|t }}
+        </span>
+      </div>
+    {% endif %}
+    {% if on_this_day %}
+      <div class="saho-dash-otd mt-3">
+        {{ icons.icon('calendar', 16) }}
+        <span class="saho-dash-otd__kicker">{{ 'On this day in the record'|t }} &middot; {{ on_this_day.date_label }}</span>
+        <span class="saho-dash-otd__event">
+          <span class="saho-dash-otd__year">{{ on_this_day.year }}</span>
+          <a href="{{ on_this_day.url }}">{{ on_this_day.title }}</a>
+        </span>
+      </div>
+    {% endif %}
   </div>
+
+  {% if impact %}
+    <div class="saho-dash-impact mb-4">
+      <div class="saho-impact-tile">
+        <span class="saho-impact-tile__icon">{{ icons.icon('eye', 20) }}</span>
+        <span class="saho-impact-tile__body">
+          <span class="saho-impact-tile__count" data-countup="{{ impact.readers_reached }}" data-countup-compact>{{ impact.readers_reached_formatted }}</span>
+          <span class="saho-impact-tile__label">{{ owner ? 'readers reached by your pages'|t : 'readers reached'|t }}</span>
+        </span>
+      </div>
+      {% if impact.most_read %}
+        <div class="saho-impact-tile">
+          <span class="saho-impact-tile__icon">{{ icons.icon('star', 20) }}</span>
+          <span class="saho-impact-tile__body">
+            <span class="saho-impact-tile__title"><a href="{{ impact.most_read.url }}">{{ impact.most_read.title }}</a></span>
+            <span class="saho-impact-tile__label">
+              {{ owner ? 'your most-read page'|t : 'most-read page'|t }} &middot;
+              {{ impact.most_read.views_formatted }} {{ 'views'|t }}
+            </span>
+          </span>
+        </div>
+      {% endif %}
+    </div>
+  {% endif %}
 
   <div class="saho-dash-achievements mb-4" role="list" aria-label="{{ 'Achievements'|t }}">
     {% for a in achievements %}
-      <div class="saho-medallion{{ a.tier ? ' saho-medallion--' ~ a.tier : ' saho-medallion--locked' }}" role="listitem"
-           title="{{ a.blurb }}">
+      {% set mystery = a.secret and not a.revealed %}
+      <div class="saho-medallion{{ a.tier ? ' saho-medallion--' ~ a.tier : ' saho-medallion--locked' }}{{ mystery ? ' saho-medallion--mystery' : '' }}" role="listitem"
+           title="{{ a.blurb }}" data-achievement="{{ a.id }}" data-tier="{{ a.tier ?: '' }}">
         <span class="saho-medallion__disc">{{ icons.icon(a.icon, 22) }}</span>
         <span class="saho-medallion__name">{{ a.name }}</span>
-        {% if a.tier %}
+        {% if mystery %}
+          <span class="saho-medallion__status">???</span>
+          <span class="saho-medallion__metric">{{ 'Secret'|t }}</span>
+        {% elseif a.tier %}
           <span class="saho-medallion__status saho-medallion__status--{{ a.tier }}">{{ a.tier|capitalize }}</span>
           <span class="saho-medallion__metric">{{ a.value }} {{ a.metric }}</span>
         {% else %}
@@ -49,7 +105,7 @@
         {% endif %}
         {% if a.next %}
           <span class="saho-medallion__track" aria-hidden="true">
-            <span class="saho-medallion__bar" style="width: {{ a.progress }}%"></span>
+            <span class="saho-medallion__bar" style="width: {{ a.progress }}%" data-progress="{{ a.progress }}"></span>
           </span>
         {% endif %}
       </div>
@@ -141,5 +197,30 @@
       </div>
     </div>
   </div>
+
+  {% if easter %}
+    <div class="saho-dash-easter card mt-4" hidden data-saho-easter tabindex="-1">
+      <div class="card-header bg-transparent fw-semibold">
+        {{ icons.icon('lantern', 16) }} {{ 'The vault'|t }}
+        <span class="text-muted small fw-normal">{{ 'you found the hidden shelf'|t }}</span>
+      </div>
+      <ul class="list-group list-group-flush">
+        {% if easter.first %}
+          <li class="list-group-item">
+            <span class="saho-dash-easter__label">{{ 'Your opening line in the record'|t }}</span>
+            <a href="{{ easter.first.url }}">{{ easter.first.title }}</a>
+            <span class="text-muted small">- {{ easter.first.date }}</span>
+          </li>
+        {% endif %}
+        {% if easter.oldest %}
+          <li class="list-group-item">
+            <span class="saho-dash-easter__label">{{ "The record's first entry"|t }}</span>
+            <a href="{{ easter.oldest.url }}">{{ easter.oldest.title }}</a>
+            <span class="text-muted small">- {{ easter.oldest.changed }}</span>
+          </li>
+        {% endif %}
+      </ul>
+    </div>
+  {% endif %}
 
 </div>
