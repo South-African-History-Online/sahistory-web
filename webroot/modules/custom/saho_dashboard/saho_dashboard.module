@@ -1,0 +1,97 @@
+<?php
+
+/**
+ * @file
+ * Adds a lightweight contributor dashboard to the user profile page.
+ */
+
+use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
+use Drupal\user\UserInterface;
+
+/**
+ * Implements hook_theme().
+ */
+function saho_dashboard_theme($existing, $type, $theme, $path) {
+  return [
+    'saho_dashboard' => [
+      'variables' => [
+        'stats' => [],
+        'roles' => [],
+        'achievements' => [],
+        'tasks' => [],
+        'recent' => [],
+        'review' => [],
+        'impact' => NULL,
+        'on_this_day' => NULL,
+        'anniversary' => NULL,
+        'easter' => NULL,
+        'owner' => TRUE,
+      ],
+    ],
+  ];
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_view() for user entities.
+ */
+function saho_dashboard_user_view(array &$build, UserInterface $account, EntityViewDisplayInterface $display, $view_mode) {
+  if ($view_mode !== 'full') {
+    return;
+  }
+  // Own profile, or any profile for user admins: this is a worklist for
+  // the small editorial team, not a public byline.
+  $viewer = \Drupal::currentUser();
+  $owner = (int) $account->id() === (int) $viewer->id();
+  if (!$owner && !$viewer->hasPermission('administer users')) {
+    return;
+  }
+
+  $data = \Drupal::service('saho_dashboard.builder')->build($account, $viewer, $owner);
+  if ($data === NULL) {
+    return;
+  }
+
+  // Achievement names go to JS only for revealed rows, so an unearned
+  // secret cannot be read out of drupalSettings.
+  $tiers = [];
+  $names = [];
+  foreach ($data['achievements'] as $achievement) {
+    $tiers[$achievement['id']] = $achievement['tier'];
+    if ($achievement['revealed']) {
+      $names[$achievement['id']] = $achievement['name'];
+    }
+  }
+
+  $build['saho_dashboard'] = [
+    '#theme' => 'saho_dashboard',
+    '#stats' => $data['stats'],
+    '#roles' => $data['roles'],
+    '#achievements' => $data['achievements'],
+    '#tasks' => $data['tasks'],
+    '#recent' => $data['recent'],
+    '#review' => $data['review'],
+    '#impact' => $data['impact'],
+    '#on_this_day' => $data['on_this_day'],
+    '#anniversary' => $data['anniversary'],
+    '#easter' => $data['easter'],
+    '#owner' => $owner,
+    '#weight' => -10,
+    '#attached' => [
+      'library' => ['saho_dashboard/dashboard'],
+      'drupalSettings' => [
+        'sahoDashboard' => [
+          'uid' => (int) $account->id(),
+          'owner' => $owner,
+          'tiers' => $tiers,
+          'names' => $names,
+        ],
+      ],
+    ],
+    // 15 minutes; the on-this-day strip and anniversary ribbon are at worst
+    // that stale across SAST midnight, which is fine for a profile page.
+    '#cache' => [
+      'contexts' => ['user'],
+      'max-age' => 900,
+    ],
+  ];
+}

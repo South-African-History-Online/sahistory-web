@@ -1,0 +1,432 @@
+/**
+ * Contributor dashboard - role pills, achievement medallions, task tiles.
+ *
+ * Built on the theme's design tokens (CSS custom properties from
+ * _design-tokens.scss). Light surface only - the theme has no dark mode.
+ */
+
+.saho-dash-header__roles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.saho-dash-role {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.saho-dash-role .saho-dash-icon {
+  flex-shrink: 0;
+}
+
+.saho-dash-header__stats {
+  font-size: var(--saho-font-size-sm, 0.875rem);
+}
+
+/* Achievements strip. */
+
+.saho-dash-achievements {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 0.75rem;
+}
+
+.saho-medallion {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 0.9rem 0.6rem 0.8rem;
+  border: 1px solid var(--saho-color-border, #e2ded6);
+  border-radius: 0.5rem;
+  background: var(--saho-color-surface, #fff);
+}
+
+.saho-medallion__disc {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  margin-bottom: 0.45rem;
+}
+
+.saho-medallion--gold .saho-medallion__disc {
+  color: #8a6414;
+  background: linear-gradient(160deg, #f4e3b8, #d9b45c);
+  border-color: #b88a2e;
+}
+
+.saho-medallion--silver .saho-medallion__disc {
+  color: #4c5259;
+  background: linear-gradient(160deg, #eceff2, #c3c9d0);
+  border-color: #9aa2ab;
+}
+
+.saho-medallion--bronze .saho-medallion__disc {
+  color: #6d3a17;
+  background: linear-gradient(160deg, #ecc9a8, #c98a52);
+  border-color: #a05a2c;
+}
+
+.saho-medallion--locked {
+  border-style: dashed;
+}
+
+.saho-medallion--locked .saho-medallion__disc {
+  color: #b4aea3;
+  border-color: #d6d3cd;
+  background: #f6f4f0;
+}
+
+.saho-medallion__name {
+  font-weight: 600;
+  font-size: 0.85rem;
+  line-height: 1.2;
+}
+
+.saho-medallion__status {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #6b6b66;
+}
+
+.saho-medallion__status--gold { color: #8a6414; }
+.saho-medallion__status--silver { color: #4c5259; }
+.saho-medallion__status--bronze { color: #6d3a17; }
+
+.saho-medallion__metric {
+  font-size: 0.72rem;
+  color: var(--saho-color-text-muted, #5d5e52);
+  line-height: 1.25;
+}
+
+.saho-medallion__track {
+  width: 100%;
+  height: 4px;
+  margin-top: 0.5rem;
+  border-radius: 2px;
+  background: #eceae4;
+  overflow: hidden;
+}
+
+.saho-medallion__bar {
+  display: block;
+  height: 100%;
+  border-radius: 2px;
+  background: var(--saho-color-accent, #b88a2e);
+}
+
+/* Task tiles. */
+
+.saho-dash-section-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+}
+
+.saho-dash-tasks {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 0.75rem;
+}
+
+.saho-task-tile {
+  display: flex;
+  gap: 0.7rem;
+  padding: 0.85rem 0.9rem;
+  border: 1px solid var(--saho-color-border, #e2ded6);
+  border-left: 3px solid var(--saho-color-primary, #990000);
+  border-radius: 0.5rem;
+  background: var(--saho-color-surface, #fff);
+  color: inherit;
+  text-decoration: none;
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+a.saho-task-tile:hover {
+  box-shadow: var(--saho-color-shadow-sm, 0 2px 8px rgba(0, 0, 0, 0.12));
+  transform: translateY(-1px);
+  color: inherit;
+}
+
+.saho-task-tile--clear {
+  border-left-color: var(--saho-color-success, #22c55e);
+}
+
+.saho-task-tile__icon {
+  color: var(--saho-color-primary, #990000);
+  margin-top: 0.15rem;
+}
+
+.saho-task-tile--clear .saho-task-tile__icon {
+  color: var(--saho-color-success, #22c55e);
+}
+
+.saho-task-tile__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.saho-task-tile__count {
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.saho-task-tile__title {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.saho-task-tile__blurb {
+  font-size: 0.78rem;
+  color: var(--saho-color-text-muted, #5d5e52);
+  line-height: 1.35;
+}
+
+.saho-task-tile__samples {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  margin-top: 0.4rem;
+  font-size: 0.78rem;
+}
+
+.saho-task-tile__samples a {
+  color: var(--saho-color-primary, #990000);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Anniversary ribbon + on-this-day strip. */
+
+.saho-dash-ribbon {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.85rem;
+  border: 1px solid #e7d9ae;
+  border-radius: 0.5rem;
+  background: linear-gradient(160deg, #fbf6e8, #f4e9cc);
+  color: var(--saho-color-primary, #990000);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.saho-dash-otd {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem 0.6rem;
+  padding: 0.55rem 0.85rem;
+  border: 1px solid var(--saho-color-border, #e2ded6);
+  border-left: 3px solid var(--saho-color-accent, #b88a2e);
+  border-radius: 0.5rem;
+  background: var(--saho-color-surface, #fff);
+  font-size: 0.85rem;
+}
+
+.saho-dash-otd .saho-dash-icon {
+  color: var(--saho-color-accent, #b88a2e);
+  align-self: center;
+}
+
+.saho-dash-otd__kicker {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--saho-color-text-muted, #5d5e52);
+}
+
+.saho-dash-otd__year {
+  font-weight: 700;
+  color: var(--saho-color-accent, #b88a2e);
+}
+
+/* Impact tiles. */
+
+.saho-dash-impact {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 0.75rem;
+}
+
+.saho-impact-tile {
+  display: flex;
+  gap: 0.7rem;
+  padding: 0.85rem 0.9rem;
+  border: 1px solid var(--saho-color-border, #e2ded6);
+  border-left: 3px solid var(--saho-color-accent, #b88a2e);
+  border-radius: 0.5rem;
+  background: var(--saho-color-surface, #fff);
+}
+
+.saho-impact-tile__icon {
+  color: var(--saho-color-accent, #b88a2e);
+  margin-top: 0.15rem;
+}
+
+.saho-impact-tile__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.saho-impact-tile__count {
+  font-size: 1.6rem;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--saho-color-primary, #990000);
+  font-variant-numeric: tabular-nums;
+}
+
+.saho-impact-tile__title {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.saho-impact-tile__title a {
+  color: var(--saho-color-primary, #990000);
+}
+
+.saho-impact-tile__label {
+  font-size: 0.78rem;
+  color: var(--saho-color-text-muted, #5d5e52);
+  line-height: 1.35;
+}
+
+/* Mystery (secret, unrevealed) medallions. */
+
+.saho-medallion--mystery .saho-medallion__disc {
+  color: #6b6b66;
+  border-style: dashed;
+  border-color: #b4aea3;
+  background: #efede8;
+}
+
+.saho-medallion--mystery .saho-medallion__name {
+  letter-spacing: 0.15em;
+}
+
+/* Hover shine and lift (pointer devices only). */
+
+@media (hover: hover) {
+  .saho-medallion {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .saho-medallion:hover {
+    transform: translateY(-2px) rotate(-0.5deg);
+    box-shadow: var(--saho-color-shadow-sm, 0 2px 8px rgba(0, 0, 0, 0.12));
+  }
+
+  .saho-medallion__disc {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .saho-medallion__disc::after {
+    content: '';
+    position: absolute;
+    top: -60%;
+    left: -80%;
+    width: 60%;
+    height: 220%;
+    transform: rotate(25deg) translateX(0);
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0));
+    transition: transform 0.6s ease;
+    pointer-events: none;
+  }
+
+  .saho-medallion:hover .saho-medallion__disc::after {
+    transform: rotate(25deg) translateX(320%);
+  }
+}
+
+/* Progress bars animate when JS drives them into view. */
+
+.saho-medallion__bar {
+  transition: width 0.9s ease;
+}
+
+/* Vault card (Konami reveal). */
+
+.saho-dash-easter {
+  outline: none;
+  border-left: 3px solid var(--saho-color-accent, #b88a2e);
+}
+
+.saho-dash-easter .saho-dash-icon {
+  color: var(--saho-color-accent, #b88a2e);
+}
+
+.saho-dash-easter__label {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--saho-color-text-muted, #5d5e52);
+}
+
+/* Toast + confetti. */
+
+.saho-dash-toast {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 1080;
+  max-width: 320px;
+  padding: 0.7rem 1rem;
+  border-radius: 0.5rem;
+  border-left: 3px solid var(--saho-color-accent, #b88a2e);
+  background: var(--saho-color-primary, #990000);
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 600;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  opacity: 0;
+  transform: translateY(0.75rem);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.saho-dash-toast--visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.saho-dash-confetti {
+  position: fixed;
+  inset: 0;
+  z-index: 1090;
+  pointer-events: none;
+}
+
+/* Reduced motion: no lifts, shines, fills or slides. */
+
+@media (prefers-reduced-motion: reduce) {
+  .saho-medallion,
+  .saho-medallion__disc::after,
+  .saho-medallion__bar,
+  .saho-dash-toast,
+  .saho-task-tile {
+    transition: none;
+  }
+
+  .saho-medallion:hover {
+    transform: none;
+  }
+}
