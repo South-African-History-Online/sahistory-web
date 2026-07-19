@@ -3,16 +3,17 @@
  * SAHO results view toggle - switches search results between the index
  * table and the card grid.
  *
- * Markup contract: a wrapper [data-saho-view-toggle] containing two
- * button[role="tab"][data-view="table|grid"], with result containers
- * .saho-results--table and .saho-results--grid inside the closest
- * [data-saho-results] ancestor (document as fallback). The chosen layout
- * persists in localStorage and in the "layout" URL query param.
+ * Markup contract: a wrapper [data-saho-view-toggle] containing
+ * button[role="tab"][data-view="<name>"] tabs, with a result container
+ * .saho-results--<name> per tab inside the closest [data-saho-results]
+ * ancestor (document as fallback). The available views are derived from
+ * the buttons present (table/grid everywhere; map on landings that embed
+ * one). The chosen layout persists in localStorage and in the "layout"
+ * URL query param; a stored choice only applies where its tab exists.
  */
 
 ((Drupal, once) => {
   const STORAGE_KEY = 'saho.resultsLayout';
-  const VIEWS = ['table', 'grid'];
 
   /**
    * Reads the stored layout choice; null in private mode or when unset.
@@ -50,14 +51,19 @@
   }
 
   /**
-   * Shows the container matching the view and hides the other.
+   * Returns the view names this toggle offers (from its buttons).
+   */
+  function availableViews(toggle) {
+    return Array.from(toggle.querySelectorAll('button[data-view]')).map((button) =>
+      button.getAttribute('data-view')
+    );
+  }
+
+  /**
+   * Shows the container matching the view and hides the others.
    */
   function applyView(toggle, view) {
     const scope = toggle.closest('[data-saho-results]') || document;
-    const containers = {
-      table: scope.querySelector('.saho-results--table'),
-      grid: scope.querySelector('.saho-results--grid'),
-    };
 
     toggle.querySelectorAll('button[data-view]').forEach((button) => {
       const active = button.getAttribute('data-view') === view;
@@ -65,8 +71,8 @@
       button.setAttribute('aria-selected', active ? 'true' : 'false');
     });
 
-    VIEWS.forEach((name) => {
-      const container = containers[name];
+    availableViews(toggle).forEach((name) => {
+      const container = scope.querySelector(`.saho-results--${name}`);
       if (!container) {
         return;
       }
@@ -76,6 +82,24 @@
         container.setAttribute('hidden', '');
       }
     });
+
+    // The pager drives the paged layouts only; the map is unpaged.
+    const pager = scope.querySelector('.saho-search-pager');
+    if (pager) {
+      if (view === 'map') {
+        pager.setAttribute('hidden', '');
+      } else {
+        pager.removeAttribute('hidden');
+      }
+    }
+
+    // Leaflet sizes itself at init; a map revealed from a hidden pane has a
+    // zero-size viewport until it hears a resize.
+    if (view === 'map') {
+      window.setTimeout(() => {
+        window.dispatchEvent(new Event('resize'));
+      }, 0);
+    }
   }
 
   /**
@@ -92,15 +116,16 @@
    * Wires one toggle: restores the stored choice, then handles clicks.
    */
   function initToggle(toggle) {
+    const views = availableViews(toggle);
     const stored = readStoredView();
-    if (VIEWS.includes(stored) && stored !== defaultView(toggle)) {
+    if (views.includes(stored) && stored !== defaultView(toggle)) {
       applyView(toggle, stored);
     }
 
     toggle.querySelectorAll('button[data-view]').forEach((button) => {
       button.addEventListener('click', () => {
         const view = button.getAttribute('data-view');
-        if (!VIEWS.includes(view)) {
+        if (!views.includes(view)) {
           return;
         }
         applyView(toggle, view);

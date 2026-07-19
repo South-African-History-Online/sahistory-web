@@ -1,15 +1,19 @@
+uuid: null
 langcode: en
 status: true
 dependencies:
   config:
     - field.storage.node.field_geolocation
+    - field.storage.node.field_people_related_tab
     - field.storage.node.field_place_type
-    - field.storage.node.field_places_level3
+    - node.type.place
+    - taxonomy.vocabulary.field_place_type_category
+    - taxonomy.vocabulary.field_places_level3
   module:
     - geolocation
     - geolocation_leaflet
-    - image
     - node
+    - taxonomy
     - user
 id: places_map
 label: 'Places Map'
@@ -89,6 +93,42 @@ display:
           type: entity_reference_label
           settings:
             link: false
+        field_people_related_tab:
+          id: field_people_related_tab
+          table: node__field_people_related_tab
+          field: field_people_related_tab
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: field
+          label: 'People of this place'
+          exclude: false
+          element_type: ''
+          element_class: saho-map-teaser-people
+          element_label_type: ''
+          element_label_class: ''
+          element_label_colon: true
+          element_wrapper_type: ''
+          element_wrapper_class: ''
+          element_default_classes: true
+          empty: ''
+          hide_empty: true
+          empty_zero: false
+          hide_alter_empty: true
+          click_sort_column: target_id
+          type: entity_reference_label
+          settings:
+            link: true
+          group_column: target_id
+          group_columns: {  }
+          group_rows: true
+          delta_limit: 3
+          delta_offset: 0
+          delta_reversed: false
+          delta_first_last: false
+          multi_type: separator
+          separator: ' · '
+          field_api_classes: false
         field_geolocation:
           id: field_geolocation
           table: node__field_geolocation
@@ -191,6 +231,36 @@ display:
           granularity: second
       arguments: {  }
       filters:
+        title:
+          id: title
+          table: node_field_data
+          field: title
+          relationship: none
+          group_type: group
+          admin_label: ''
+          entity_type: node
+          entity_field: title
+          plugin_id: string
+          operator: contains
+          value: ''
+          group: 1
+          exposed: true
+          expose:
+            operator_id: title_op
+            label: Search
+            description: ''
+            use_operator: false
+            operator: title_op
+            operator_limit_selection: false
+            operator_list: {  }
+            identifier: search
+            required: false
+            remember: false
+            multiple: false
+            remember_roles:
+              authenticated: authenticated
+            placeholder: 'Search places by name...'
+          is_grouped: false
         status:
           id: status
           table: node_field_data
@@ -216,10 +286,10 @@ display:
           expose:
             operator_limit_selection: false
             operator_list: {  }
-        field_place_type_target_id:
-          id: field_place_type_target_id
-          table: node__field_place_type
-          field: field_place_type_target_id
+        tid:
+          id: tid
+          table: taxonomy_index
+          field: tid
           relationship: none
           group_type: group
           admin_label: ''
@@ -229,17 +299,17 @@ display:
           group: 1
           exposed: true
           expose:
-            operator_id: field_place_type_target_id_op
-            label: 'Place type'
+            operator_id: tid_op
+            label: Categories
             description: ''
             use_operator: false
-            operator: field_place_type_target_id_op
+            operator: tid_op
             operator_limit_selection: false
             operator_list: {  }
-            identifier: type
+            identifier: tid
             required: false
             remember: false
-            multiple: false
+            multiple: true
             remember_roles:
               authenticated: authenticated
             reduce: false
@@ -256,15 +326,15 @@ display:
             default_group_multiple: {  }
             group_items: {  }
           reduce_duplicates: false
-          vid: field_place_type
+          vid: field_place_type_category
           type: select
           hierarchy: false
           limit: true
-          error_message: true
-        field_places_level3_target_id:
-          id: field_places_level3_target_id
-          table: node__field_places_level3
-          field: field_places_level3_target_id
+          error_message: false
+        tid_2:
+          id: tid_2
+          table: taxonomy_index
+          field: tid
           relationship: none
           group_type: group
           admin_label: ''
@@ -274,17 +344,17 @@ display:
           group: 1
           exposed: true
           expose:
-            operator_id: field_places_level3_target_id_op
-            label: Category
+            operator_id: tid_2_op
+            label: 'Geographic Region'
             description: ''
             use_operator: false
-            operator: field_places_level3_target_id_op
+            operator: tid_2_op
             operator_limit_selection: false
             operator_list: {  }
-            identifier: category
+            identifier: tid_2
             required: false
             remember: false
-            multiple: false
+            multiple: true
             remember_roles:
               authenticated: authenticated
             reduce: false
@@ -305,7 +375,7 @@ display:
           type: select
           hierarchy: false
           limit: true
-          error_message: true
+          error_message: false
       style:
         type: maps_common
         options:
@@ -1010,11 +1080,13 @@ display:
       contexts:
         - 'languages:language_content'
         - 'languages:language_interface'
-        - url.query_args
+        - url
         - 'user.node_grants:view'
         - user.permissions
       tags:
         - 'config:field.storage.node.field_geolocation'
+        - 'config:field.storage.node.field_people_related_tab'
+        - 'config:field.storage.node.field_place_type'
   page_1:
     id: page_1
     display_title: Page
@@ -1030,8 +1102,10 @@ display:
       contexts:
         - 'languages:language_content'
         - 'languages:language_interface'
-        - url.query_args
+        - url
         - 'user.node_grants:view'
         - user.permissions
       tags:
         - 'config:field.storage.node.field_geolocation'
+        - 'config:field.storage.node.field_people_related_tab'
+        - 'config:field.storage.node.field_place_type'

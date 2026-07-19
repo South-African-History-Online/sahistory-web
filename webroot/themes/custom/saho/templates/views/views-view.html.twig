@@ -153,11 +153,13 @@
         {# On tablet and desktop, display content on right (order-md-2) #}
         <div class="col-12 col-md-8 col-lg-9 order-1 order-md-2">
       {% elseif exposed %}
+        {# The column stays open: rows/pager render inside it and the shared
+           close below ends it - a second close here unbalances the DOM of
+           every page this view is embedded into. #}
         <div class="col-12">
           <div class="saho-view-filters mb-4">
             {{ exposed }}
           </div>
-        </div>
       {% else %}
         <div class="col-12">
       {% endif %}

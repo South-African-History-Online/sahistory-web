@@ -8,6 +8,8 @@
 use Drupal\Component\Utility\Html;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Markup;
+use Drupal\views\Plugin\views\query\QueryPluginBase;
+use Drupal\views\Plugin\views\query\Sql;
 use Drupal\views\ViewExecutable;
 
 /**
@@ -125,4 +127,33 @@ function saho_utils_views_pre_view(ViewExecutable $view, $display_id, array &$ar
       $view->setExposedInput($input);
     }
   }
+}
+
+/**
+ * Implements hook_views_query_alter().
+ */
+function saho_utils_views_query_alter(ViewExecutable $view, QueryPluginBase $query) {
+  // /places biography-category registers ("bio" URL param): places filtered
+  // by who is connected to them. An EXISTS subquery instead of a views
+  // relationship - a relationship LEFT JOINs the multi-value people field on
+  // every query and multiplies each place into one row per connected person,
+  // which DISTINCT cannot fully undo (the joined id lands in the SELECT).
+  // Both views vary render cache on url.query_args via their exposed
+  // filters, so the non-exposed param is cache-safe.
+  if (!in_array($view->id(), ['places', 'places_map'], TRUE) || !$query instanceof Sql) {
+    return;
+  }
+  // InputBag::get() throws on non-scalar input - read from all() instead.
+  $bio = \Drupal::request()->query->all()['bio'] ?? NULL;
+  if (!is_string($bio) || !ctype_digit($bio)) {
+    return;
+  }
+  $query->addWhereExpression(0,
+    "EXISTS (SELECT 1 FROM {node__field_people_related_tab} saho_bp
+      JOIN {taxonomy_index} saho_bti ON saho_bti.nid = saho_bp.field_people_related_tab_target_id
+      WHERE saho_bp.entity_id = node_field_data.nid
+        AND saho_bp.deleted = 0
+        AND saho_bti.tid = :saho_bio_tid)",
+    [':saho_bio_tid' => (int) $bio]
+  );
 }
