@@ -2468,6 +2468,8 @@ function saho_preprocess_node__image(array &$variables): void {
   $source = '';
   if ($node->hasField('field_source') && !$node->get('field_source')->isEmpty()) {
     $source = trim(strip_tags((string) $node->get('field_source')->value));
+    // Never surface the factory's machine marker.
+    $source = trim((string) preg_replace('/\[saho_import:[^\]]*\]/', '', $source));
   }
 
   $facts = [];
@@ -2545,10 +2547,44 @@ function saho_preprocess_node__archive(array &$variables): void {
     return implode(', ', $labels);
   };
   $language = $term_labels('field_language');
+
+  // Effective creator (#494): structured original-creator names, each with
+  // its role when the deltas pair up, falling back to the legacy free-text
+  // author string. Machine-name roles render Title Case.
+  $creator = '';
+  if ($node->hasField('field_original_creator') && !$node->get('field_original_creator')->isEmpty()) {
+    $names = array_column($node->get('field_original_creator')->getValue(), 'value');
+    $roles = $node->hasField('field_original_creator_role')
+      ? array_column($node->get('field_original_creator_role')->getValue(), 'value')
+      : [];
+    $parts = [];
+    foreach ($names as $i => $name) {
+      $role = trim((string) ($roles[$i] ?? ''));
+      $parts[] = $role !== '' ? $name . ' (' . ucfirst($role) . ')' : $name;
+    }
+    $creator = implode('; ', $parts);
+  }
+  if ($creator === '') {
+    $creator = $value('field_author');
+  }
+
+  // Recording/creation date - distinct from first publication.
+  $recorded = '';
+  if ($node->hasField('field_original_created_date') && !$node->get('field_original_created_date')->isEmpty()) {
+    $recorded_date = $node->get('field_original_created_date')->date;
+    $recorded = $recorded_date ? $recorded_date->format('j M Y') : '';
+  }
+
+  // The factory's [saho_import: ...] marker is machine housekeeping - it
+  // must never reach readers' eyes.
+  $source_text = trim(strip_tags((string) ($node->hasField('field_source') && !$node->get('field_source')->isEmpty() ? $node->get('field_source')->value : '')));
+  $source_text = trim((string) preg_replace('/\[saho_import:[^\]]*\]/', '', $source_text));
+
   $rows = [
     'Origin date' => $origin,
+    'Recorded' => $recorded,
     'Format' => $term_labels('field_media_library_type'),
-    'Creator' => $value('field_author'),
+    'Creator' => $creator,
     // Editors + Contributors complete the statement of responsibility.
     'Editors' => trim(strip_tags((string) $value('field_editors'))),
     'Contributors' => trim(strip_tags((string) $value('field_contributor'))),
@@ -2556,9 +2592,55 @@ function saho_preprocess_node__archive(array &$variables): void {
       'value' => $language,
       'lang' => _saho_record_lang_code($language),
     ] : '',
-    'Source' => trim(strip_tags((string) ($node->hasField('field_source') && !$node->get('field_source')->isEmpty() ? $node->get('field_source')->value : ''))),
+    'Source' => $source_text,
+    'Rights' => trim(strip_tags((string) $value('field_copyright'))),
     'Holding ref' => $refs->getRef($node),
   ];
+
+  // Original source URL(s) (#494): the resolved provider page first, then
+  // persistent identifiers (ARK/DOI) as their own rows - readers get the
+  // deep link, citations get the stable one.
+  if ($node->hasField('field_original_source_url') && !$node->get('field_original_source_url')->isEmpty()) {
+    foreach ($node->get('field_original_source_url')->getValue() as $delta => $link_item) {
+      $link_uri = (string) ($link_item['uri'] ?? '');
+      if ($link_uri === '') {
+        continue;
+      }
+      $link_title = trim((string) ($link_item['title'] ?? ''));
+      // Persistent-ID detection is by HOST - provider pages (Calisphere)
+      // legitimately embed ark:/ in their item paths.
+      $link_host = strtolower((string) (parse_url($link_uri, PHP_URL_HOST) ?: ''));
+      $is_persistent = stripos($link_title, 'persistent') !== FALSE
+        || in_array($link_host, ['ark.cdlib.org', 'n2t.net', 'doi.org', 'dx.doi.org', 'hdl.handle.net', 'purl.org'], TRUE);
+      if ($delta === 0 && !$is_persistent) {
+        $link_label = $link_title;
+        if ($link_label === '' || $link_label === 'Original record') {
+          $link_label = (string) (parse_url($link_uri, PHP_URL_HOST) ?: $link_uri);
+          $link_label = preg_replace('/^www\./', '', $link_label);
+        }
+        $rows['Original source'] = [
+          'value' => $link_label,
+          'href' => Url::fromUri($link_uri)->toString(),
+        ];
+      }
+      else {
+        // Short display form: the identifier path beats a naked host.
+        $short = preg_replace('#^https?://[^/]+/#', '', $link_uri);
+        $rows['Persistent ID'] = [
+          'value' => $short !== '' ? $short : $link_uri,
+          'href' => Url::fromUri($link_uri)->toString(),
+        ];
+      }
+    }
+  }
+
+  // Provenance note (#494): the free-text acknowledgement, plain-rendered.
+  if ($node->hasField('field_provenance_note') && !$node->get('field_provenance_note')->isEmpty()) {
+    $prov_text = trim(strip_tags((string) $node->get('field_provenance_note')->value));
+    if ($prov_text !== '') {
+      $rows['Provenance'] = $prov_text;
+    }
+  }
 
   // Legacy source-link pair (field_link_url + field_link_title): a designed
   // row in Record details instead of an unstyled dump in the main column.

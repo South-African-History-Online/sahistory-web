@@ -1,0 +1,62 @@
+<?php
+
+/**
+ * @file
+ * Access guardrails for service-account (JSON:API) content writes.
+ */
+
+use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Session\AccountInterface;
+use Drupal\node\NodeInterface;
+
+/**
+ * Implements hook_node_access().
+ *
+ * Two guardrails keyed on marker permissions rather than role IDs, so the
+ * rules are visible on the permissions page and reusable for future agents:
+ *
+ * - Accounts "restricted to unpublished content" can never update or delete
+ *   a published node, no matter what edit-any permissions they hold. A
+ *   forbidden result here always wins over the role-based allow (see the
+ *   access-combining docs on node_node_access()).
+ * - Accounts with the view marker may read unpublished nodes owned by other
+ *   accounts. Core only offers "view own unpublished content"; the AI editor
+ *   service account has to read harvester-owned drafts. Safe here because no
+ *   module in this codebase implements hook_node_grants(), so the grants
+ *   storage stays neutral for unpublished view and this allow takes effect.
+ */
+function saho_api_guard_node_access(NodeInterface $node, $operation, AccountInterface $account) {
+  if (in_array($operation, ['update', 'delete'], TRUE)
+    && $node->isPublished()
+    && $account->hasPermission('restricted to unpublished content (api guard)')) {
+    return AccessResult::forbidden('API guard: this account may not modify published content.')
+      ->cachePerPermissions()
+      ->addCacheableDependency($node);
+  }
+  if ($operation === 'view'
+    && !$node->isPublished()
+    && $account->hasPermission('view any unpublished content (api guard)')) {
+    return AccessResult::allowed()
+      ->cachePerPermissions()
+      ->addCacheableDependency($node);
+  }
+  return AccessResult::neutral();
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_presave() for node.
+ *
+ * The node status base field defaults to published, and only some bundles
+ * override that default - so a JSON:API POST that simply omits status would
+ * create a PUBLISHED node. Field access alone cannot catch an omitted field;
+ * this presave is the structural never-publish guarantee for restricted
+ * accounts.
+ */
+function saho_api_guard_node_presave(NodeInterface $node) {
+  $account = \Drupal::currentUser();
+  if ($node->isPublished()
+    && $account->hasPermission('restricted to unpublished content (api guard)')
+    && !$account->hasPermission('administer nodes')) {
+    $node->setUnpublished();
+  }
+}
