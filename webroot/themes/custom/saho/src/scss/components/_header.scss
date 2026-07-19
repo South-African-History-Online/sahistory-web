@@ -88,8 +88,10 @@ header.saho-header-wrapper {
 }
 
 // Wordmark - "South African / History Online" stacked, plus the mono tagline.
-// Hidden on mobile (<768px) where space is tight; visible on tablet and up at
-// ALL breakpoints - nav item spacing is tightened instead of hiding it.
+// Hidden on mobile (<768px) where space is tight. Also hidden in the narrow
+// band right after the inline nav appears (1024-1119px): seven items plus
+// the wordmark cannot share that row, and the roundel alone carries the
+// brand there.
 .saho-logo-wordmark {
   display: none;
 
@@ -98,6 +100,10 @@ header.saho-header-wrapper {
     flex-direction: column;
     line-height: 1.04;
     gap: 1px;
+  }
+
+  @media (min-width: 1024px) and (max-width: 1149px) {
+    display: none;
   }
 }
 
@@ -1108,6 +1114,12 @@ body.offcanvas-open {
     margin: 0;
     padding: 0;
     gap: 0.25rem;
+  }
+
+  // saho:nav supplies its own ▾ span; Bootstrap's caret would double it
+  // (the desktop nav suppresses it the same way).
+  .dropdown-toggle::after {
+    display: none;
   }
 
   .nav-item {
