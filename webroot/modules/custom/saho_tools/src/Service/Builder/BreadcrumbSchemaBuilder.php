@@ -2,10 +2,7 @@
 
 namespace Drupal\saho_tools\Service\Builder;
 
-use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\File\FileUrlGeneratorInterface;
 use Drupal\node\NodeInterface;
-use Drupal\saho_tools\Service\SchemaOrgBuilderInterface;
 
 /**
  * Builds Schema.org BreadcrumbList structured data.
@@ -13,20 +10,7 @@ use Drupal\saho_tools\Service\SchemaOrgBuilderInterface;
  * Generates breadcrumb navigation schema for improved search engine
  * understanding of site hierarchy and navigation.
  */
-class BreadcrumbSchemaBuilder implements SchemaOrgBuilderInterface {
-
-  /**
-   * Constructs a BreadcrumbSchemaBuilder.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
-   *   The entity type manager.
-   * @param \Drupal\Core\File\FileUrlGeneratorInterface $fileUrlGenerator
-   *   The file URL generator service.
-   */
-  public function __construct(
-    protected EntityTypeManagerInterface $entityTypeManager,
-    protected FileUrlGeneratorInterface $fileUrlGenerator,
-  ) {}
+class BreadcrumbSchemaBuilder extends SchemaBuilderBase {
 
   /**
    * {@inheritdoc}
@@ -40,8 +24,7 @@ class BreadcrumbSchemaBuilder implements SchemaOrgBuilderInterface {
    * {@inheritdoc}
    */
   public function build(?NodeInterface $node = NULL): array {
-    $request = \Drupal::request();
-    $base_url = $request->getSchemeAndHttpHost();
+    $base_url = $this->canonicalBaseUrl();
     $route_match = \Drupal::routeMatch();
 
     // Start with home.
@@ -96,7 +79,7 @@ class BreadcrumbSchemaBuilder implements SchemaOrgBuilderInterface {
         '@type' => 'ListItem',
         'position' => $position,
         'name' => $node->getTitle(),
-        'item' => $node->toUrl()->setAbsolute()->toString(),
+        'item' => $this->canonicalNodeUrl($node),
       ];
     }
 

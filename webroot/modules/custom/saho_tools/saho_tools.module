@@ -7,6 +7,7 @@
 
 use Drupal\file\Entity\File;
 use Drupal\node\NodeInterface;
+use Drupal\Core\Cache\Cache;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Url;
 use Drupal\Core\Entity\FieldableEntityInterface;
@@ -173,6 +174,12 @@ function saho_tools_preprocess_html(&$variables) {
     // Schema.org JSON-LD injection.
     $schema_service = \Drupal::service('saho_tools.schema_org_service');
 
+    // The injected JSON-LD varies by path (breadcrumb, node schema) and by
+    // site config; without these the page cache serves stale structured
+    // data after an edit until it expires on its own.
+    $variables['#cache']['contexts'][] = 'url.path';
+    $variables['#cache']['tags'][] = 'config:system.site';
+
     // Add meta tag for AI/LLM discovery.
     $variables['#attached']['html_head'][] = [
       [
@@ -231,6 +238,8 @@ function saho_tools_preprocess_html(&$variables) {
     // For nodes, use the canonical URL.
     $node = \Drupal::routeMatch()->getParameter('node');
     if ($node instanceof NodeInterface) {
+      // Invalidate the cached page (and its embedded JSON-LD) on node edit.
+      $variables['#cache']['tags'] = Cache::mergeTags($variables['#cache']['tags'] ?? [], $node->getCacheTags());
       $canonical_url = $node->toUrl('canonical')->setAbsolute()->toString();
 
       // Add canonical link to head.

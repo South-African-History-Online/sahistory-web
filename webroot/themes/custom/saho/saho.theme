@@ -15,6 +15,7 @@ use Drupal\Component\Utility\Html;
 use Drupal\Component\Utility\Unicode;
 use Drupal\Core\Render\Markup;
 use Drupal\Core\Site\Settings;
+use Drupal\saho_tools\Schema\ProvenanceIds;
 use Drupal\Core\Url;
 use Drupal\image\Entity\ImageStyle;
 use Drupal\file\Entity\File;
@@ -63,41 +64,10 @@ function saho_page_attachments_alter(array &$page) {
     ];
   }
 
-  // Add Organization Schema.org JSON-LD for site-wide recognition.
-  // Only for anonymous users (not admin/editors).
-  if (!\Drupal::currentUser()->isAuthenticated()) {
-    $organization_schema = [
-      '@context' => 'https://schema.org',
-      '@type' => 'EducationalOrganization',
-      'name' => 'South African History Online',
-      'alternateName' => 'SAHO',
-      'url' => 'https://sahistory.org.za',
-      'logo' => 'https://sahistory.org.za/themes/custom/saho/logo.svg',
-      'description' => 'Towards a People\'s History of South Africa',
-      'foundingDate' => '2000',
-      'sameAs' => [
-        'https://www.facebook.com/sahistoryonline',
-        'https://twitter.com/sahistoryonline',
-      ],
-      'contactPoint' => [
-        '@type' => 'ContactPoint',
-        'contactType' => 'General Inquiries',
-        'url' => 'https://sahistory.org.za/contact',
-      ],
-    ];
-
-    $page['#attached']['html_head'][] = [
-      [
-        '#type' => 'html_tag',
-        '#tag' => 'script',
-        '#attributes' => [
-          'type' => 'application/ld+json',
-        ],
-        '#value' => json_encode($organization_schema, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT),
-      ],
-      'saho_organization_schema',
-    ];
-  }
+  // Organization JSON-LD deliberately NOT emitted here: saho_tools already
+  // injects the single sitewide [Organization, EducationalOrganization]
+  // entity (with its stable @id) on every page. A second theme-side copy
+  // used to ship conflicting host/logo values to anonymous visitors.
 
   // Preload the LCP image for the current node. Lives in this _alter hook
   // because hook_page_attachments() is not invoked for themes.
@@ -2608,10 +2578,9 @@ function saho_preprocess_node__archive(array &$variables): void {
       }
       $link_title = trim((string) ($link_item['title'] ?? ''));
       // Persistent-ID detection is by HOST - provider pages (Calisphere)
-      // legitimately embed ark:/ in their item paths.
-      $link_host = strtolower((string) (parse_url($link_uri, PHP_URL_HOST) ?: ''));
-      $is_persistent = stripos($link_title, 'persistent') !== FALSE
-        || in_array($link_host, ['ark.cdlib.org', 'n2t.net', 'doi.org', 'dx.doi.org', 'hdl.handle.net', 'purl.org'], TRUE);
+      // legitimately embed ark:/ in their item paths. Shared with the
+      // schema.org identifier mapping so the two never drift.
+      $is_persistent = ProvenanceIds::isPersistent($link_uri, $link_title);
       if ($delta === 0 && !$is_persistent) {
         $link_label = $link_title;
         if ($link_label === '' || $link_label === 'Original record') {

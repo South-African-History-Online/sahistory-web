@@ -6,6 +6,7 @@ use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\File\FileUrlGeneratorInterface;
 use Drupal\Core\Render\RendererInterface;
+use Drupal\Core\Site\Settings;
 use Drupal\node\NodeInterface;
 
 /**
@@ -140,13 +141,12 @@ class SchemaOrgService {
    *   Basic organization schema.
    */
   protected function buildBasicOrganizationSchema(): array {
-    $config = \Drupal::config('system.site');
-    $request = \Drupal::request();
-    $base_url = $request->getSchemeAndHttpHost();
+    $base_url = rtrim(Settings::get('saho_canonical_url', 'https://sahistory.org.za'), '/');
 
     return [
       '@context' => 'https://schema.org',
       '@type' => ['Organization', 'EducationalOrganization'],
+      '@id' => $base_url . '/#organization',
       'name' => 'South African History Online',
       'alternateName' => 'SAHO',
       'url' => $base_url,

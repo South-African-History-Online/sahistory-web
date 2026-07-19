@@ -2,11 +2,10 @@
 
 namespace Drupal\saho_tools\Service\Builder;
 
-use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\File\FileUrlGeneratorInterface;
 use Drupal\file\Entity\File;
 use Drupal\node\NodeInterface;
-use Drupal\saho_tools\Service\SchemaOrgBuilderInterface;
+use Drupal\saho_tools\Schema\ProvenanceIds;
+use Drupal\saho_tools\Schema\SchemaDates;
 
 /**
  * Builds Schema.org structured data for Archive nodes.
@@ -16,13 +15,18 @@ use Drupal\saho_tools\Service\SchemaOrgBuilderInterface;
  * as additionalType to preserve archival semantics. Bare ArchiveComponent
  * has no Google rich-result template, which is why ~30k archive nodes
  * have been invisible to GSC.
+ *
+ * Carries the Catalyst provenance fields (#494): original creators with
+ * their roles, creation date, provider source pages (sameAs), persistent
+ * identifiers (ARK/DOI/Handle as PropertyValue identifiers) and the
+ * provenance note as creditText.
  */
-class ArchiveSchemaBuilder implements SchemaOrgBuilderInterface {
+class ArchiveSchemaBuilder extends SchemaBuilderBase {
 
-  public function __construct(
-    protected EntityTypeManagerInterface $entityTypeManager,
-    protected FileUrlGeneratorInterface $fileUrlGenerator,
-  ) {}
+  /**
+   * Creator roles that describe an organisation rather than a person.
+   */
+  private const ORG_ROLES = ['institution' => TRUE, 'publisher' => TRUE];
 
   /**
    * {@inheritdoc}
@@ -39,7 +43,6 @@ class ArchiveSchemaBuilder implements SchemaOrgBuilderInterface {
       return [];
     }
 
-    $url = $node->toUrl()->setAbsolute()->toString();
     $has_isbn = $node->hasField('field_isbn') && !$node->get('field_isbn')->isEmpty();
 
     $schema = [
@@ -47,56 +50,117 @@ class ArchiveSchemaBuilder implements SchemaOrgBuilderInterface {
       '@type' => $has_isbn ? 'Book' : 'CreativeWork',
       'additionalType' => 'https://schema.org/ArchiveComponent',
       'name' => $node->getTitle(),
-      'url' => $url,
-      'mainEntityOfPage' => [
-        '@type' => 'WebPage',
-        '@id' => $url,
-      ],
       'dateModified' => date('c', $node->getChangedTime()),
-    ];
+    ] + $this->identityProperties($node);
 
     // Prefer the publication title when set.
     if ($node->hasField('field_publication_title') && !$node->get('field_publication_title')->isEmpty()) {
       $schema['name'] = $node->get('field_publication_title')->value;
     }
 
-    // Authors (also surfaced as creator for GSC-friendly CreativeWork).
-    $authors = [];
-    if ($node->hasField('field_author') && !$node->get('field_author')->isEmpty()) {
-      foreach ($node->get('field_author') as $author) {
-        if (!empty($author->value)) {
-          $authors[] = [
-            '@type' => 'Person',
-            'name' => $author->value,
+    // Statement of responsibility: original creators (with roles) beat the
+    // legacy author string, which beats the institutional fallback.
+    $creators = $this->buildCreators($node);
+    if ($creators) {
+      $schema['creator'] = count($creators) === 1 ? $creators[0] : $creators;
+      // Only flat Person/Organization entries make sense as "author";
+      // Role wrappers stay on creator.
+      $schema['author'] = $schema['creator'];
+    }
+    else {
+      $authors = [];
+      if ($node->hasField('field_author') && !$node->get('field_author')->isEmpty()) {
+        foreach ($node->get('field_author') as $author) {
+          if (!empty($author->value)) {
+            $authors[] = [
+              '@type' => 'Person',
+              'name' => $author->value,
+            ];
+          }
+        }
+      }
+      if (!empty($authors)) {
+        $schema['author'] = count($authors) === 1 ? $authors[0] : $authors;
+        $schema['creator'] = $schema['author'];
+      }
+      else {
+        // Fall back to SAHO as institutional creator so the field is never
+        // empty (Google flags missing creator on CreativeWork-like items).
+        $schema['creator'] = $this->organizationRef();
+      }
+    }
+
+    // When the work itself predates its publication (a 1976 photograph
+    // published by an archive in 2019), say so.
+    if ($node->hasField('field_original_created_date') && !$node->get('field_original_created_date')->isEmpty()) {
+      $created = SchemaDates::normalize((string) $node->get('field_original_created_date')->value);
+      if ($created !== NULL) {
+        $schema['dateCreated'] = $created;
+      }
+    }
+
+    // Publication date: the structured datetime slot wins; the 21k free-text
+    // legacy values only pass through when they normalise to a real ISO
+    // (partial) date - prose like "circa 1918" is omitted, not emitted.
+    $published = NULL;
+    if ($node->hasField('field_archive_publication_date') && !$node->get('field_archive_publication_date')->isEmpty()) {
+      $published = SchemaDates::normalize((string) $node->get('field_archive_publication_date')->value);
+    }
+    if ($published === NULL && $node->hasField('field_publication_date_archive') && !$node->get('field_publication_date_archive')->isEmpty()) {
+      $published = SchemaDates::normalize((string) $node->get('field_publication_date_archive')->value);
+    }
+    if ($published !== NULL) {
+      $schema['datePublished'] = $published;
+    }
+
+    // Original source links: provider pages become sameAs, persistent IDs
+    // (ARK/DOI/Handle/PURL) become typed identifiers alongside the SAHO ref.
+    $same_as = [];
+    $persistent = [];
+    if ($node->hasField('field_original_source_url') && !$node->get('field_original_source_url')->isEmpty()) {
+      foreach ($node->get('field_original_source_url') as $link) {
+        // @phpstan-ignore-next-line
+        $uri = (string) $link->uri;
+        if ($uri === '') {
+          continue;
+        }
+        // @phpstan-ignore-next-line
+        $title = (string) ($link->title ?? '');
+        if (ProvenanceIds::isPersistent($uri, $title)) {
+          $persistent[] = [
+            '@type' => 'PropertyValue',
+            'propertyID' => ProvenanceIds::propertyId($uri) ?? 'persistent',
+            'value' => $uri,
           ];
+        }
+        else {
+          $same_as[] = $uri;
         }
       }
     }
-    if (!empty($authors)) {
-      $schema['author'] = count($authors) === 1 ? $authors[0] : $authors;
-      $schema['creator'] = $schema['author'];
+    if ($same_as) {
+      $schema['sameAs'] = count($same_as) === 1 ? $same_as[0] : $same_as;
     }
-    else {
-      // Fall back to SAHO as institutional creator so the field is never
-      // empty (Google flags missing creator on CreativeWork-like items).
-      $schema['creator'] = [
-        '@type' => 'Organization',
-        'name' => 'South African History Online',
-        'url' => \Drupal::request()->getSchemeAndHttpHost(),
-      ];
+    if ($persistent) {
+      $identifiers = isset($schema['identifier']) ? [$schema['identifier']] : [];
+      $identifiers = array_merge($identifiers, $persistent);
+      $schema['identifier'] = count($identifiers) === 1 ? $identifiers[0] : $identifiers;
     }
 
-    // Publication date.
-    if ($node->hasField('field_archive_publication_date') && !$node->get('field_archive_publication_date')->isEmpty()) {
-      $pub_date = $node->get('field_archive_publication_date')->value;
-      if (!empty($pub_date)) {
-        $schema['datePublished'] = $pub_date;
+    // Provenance note: the human acknowledgement of where the work came from.
+    if ($node->hasField('field_provenance_note') && !$node->get('field_provenance_note')->isEmpty()) {
+      $note = trim(strip_tags((string) $node->get('field_provenance_note')->value));
+      $note = trim(preg_replace('/\[saho_import:[^\]]*\]/', '', $note) ?? $note);
+      if ($note !== '') {
+        $schema['creditText'] = $note;
       }
     }
-    elseif ($node->hasField('field_publication_date_archive') && !$node->get('field_publication_date_archive')->isEmpty()) {
-      $pub_date = $node->get('field_publication_date_archive')->value;
-      if (!empty($pub_date)) {
-        $schema['datePublished'] = $pub_date;
+
+    // Rights statement.
+    if ($node->hasField('field_copyright') && !$node->get('field_copyright')->isEmpty()) {
+      $rights = trim(strip_tags((string) $node->get('field_copyright')->value));
+      if ($rights !== '') {
+        $schema['copyrightNotice'] = $rights;
       }
     }
 
@@ -162,7 +226,7 @@ class ArchiveSchemaBuilder implements SchemaOrgBuilderInterface {
       $schema['contributor'] = count($contributors) === 1 ? $contributors[0] : $contributors;
     }
 
-    // Keywords from tags.
+    // Keywords from tags; format taxonomy carries genre.
     if ($node->hasField('field_tags') && !$node->get('field_tags')->isEmpty()) {
       $keywords = [];
       foreach ($node->get('field_tags') as $tag) {
@@ -174,6 +238,19 @@ class ArchiveSchemaBuilder implements SchemaOrgBuilderInterface {
       }
       if (!empty($keywords)) {
         $schema['keywords'] = implode(', ', $keywords);
+      }
+    }
+    if ($node->hasField('field_media_library_type') && !$node->get('field_media_library_type')->isEmpty()) {
+      $genres = [];
+      foreach ($node->get('field_media_library_type') as $format) {
+        // @phpstan-ignore-next-line
+        $term = $format->entity;
+        if ($term) {
+          $genres[] = $term->getName();
+        }
+      }
+      if (!empty($genres)) {
+        $schema['genre'] = count($genres) === 1 ? $genres[0] : $genres;
       }
     }
 
@@ -232,14 +309,9 @@ class ArchiveSchemaBuilder implements SchemaOrgBuilderInterface {
       }
     }
 
-    // Holdings, publisher, license.
-    $base_url = \Drupal::request()->getSchemeAndHttpHost();
-    $org = [
-      '@type' => 'ArchiveOrganization',
-      'name' => 'South African History Online',
-      'url' => $base_url,
-    ];
-    $schema['holdingArchive'] = $org;
+    // Holdings, publisher, license - all SAHO references collapse onto the
+    // single sitewide organization entity via @id.
+    $schema['holdingArchive'] = $this->organizationRef('ArchiveOrganization');
 
     // Real publisher (e.g. "Sanchar Publishing House") when the record carries
     // one - what a Book rich result wants; SAHO remains the holding archive and
@@ -250,11 +322,7 @@ class ArchiveSchemaBuilder implements SchemaOrgBuilderInterface {
     }
     if ($publisher_name !== '') {
       $schema['publisher'] = ['@type' => 'Organization', 'name' => $publisher_name];
-      $schema['provider'] = [
-        '@type' => 'Organization',
-        'name' => 'South African History Online',
-        'url' => $base_url,
-      ];
+      $schema['provider'] = $this->organizationRef();
       if ($node->hasField('field_publication_place') && !$node->get('field_publication_place')->isEmpty()) {
         $place = trim(strip_tags((string) $node->get('field_publication_place')->value));
         if ($place !== '') {
@@ -263,26 +331,58 @@ class ArchiveSchemaBuilder implements SchemaOrgBuilderInterface {
       }
     }
     else {
-      $schema['publisher'] = [
-        '@type' => 'Organization',
-        'name' => 'South African History Online',
-        'url' => $base_url,
-        'logo' => [
-          '@type' => 'ImageObject',
-          'url' => $base_url . '/themes/custom/saho/logo.png',
-          'width' => 600,
-          'height' => 60,
-        ],
-      ];
+      $schema['publisher'] = $this->organizationRef();
     }
-    $schema['copyrightHolder'] = [
-      '@type' => 'Organization',
-      'name' => 'South African History Online',
-    ];
+    $schema['copyrightHolder'] = $this->organizationRef();
     $schema['license'] = 'https://creativecommons.org/licenses/by-nc-sa/4.0/';
     $schema['isAccessibleForFree'] = TRUE;
 
     return $schema;
+  }
+
+  /**
+   * Builds creator entries from the Catalyst provenance fields.
+   *
+   * Creators pair with roles by delta; a role wraps the entry in the
+   * schema.org Role pattern, and organisational roles type the inner
+   * entity as Organization.
+   *
+   * @return array
+   *   Creator entries, empty when the provenance fields are unpopulated.
+   */
+  protected function buildCreators(NodeInterface $node): array {
+    if (!$node->hasField('field_original_creator') || $node->get('field_original_creator')->isEmpty()) {
+      return [];
+    }
+    $roles = [];
+    if ($node->hasField('field_original_creator_role')) {
+      foreach ($node->get('field_original_creator_role') as $delta => $item) {
+        // @phpstan-ignore-next-line
+        $roles[$delta] = (string) $item->value;
+      }
+    }
+    $creators = [];
+    foreach ($node->get('field_original_creator') as $delta => $item) {
+      // @phpstan-ignore-next-line
+      $name = trim((string) $item->value);
+      if ($name === '') {
+        continue;
+      }
+      $role = $roles[$delta] ?? '';
+      $entity_type = isset(self::ORG_ROLES[$role]) ? 'Organization' : 'Person';
+      $entity = ['@type' => $entity_type, 'name' => $name];
+      if ($role !== '') {
+        $creators[] = [
+          '@type' => 'Role',
+          'roleName' => $role,
+          'creator' => $entity,
+        ];
+      }
+      else {
+        $creators[] = $entity;
+      }
+    }
+    return $creators;
   }
 
 }

@@ -2,31 +2,17 @@
 
 namespace Drupal\saho_tools\Service\Builder;
 
-use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\File\FileUrlGeneratorInterface;
 use Drupal\node\NodeInterface;
-use Drupal\saho_tools\Service\SchemaOrgBuilderInterface;
 
 /**
  * Builds Schema.org Organization structured data for SAHO site-wide.
  *
  * Provides comprehensive organization information for search engines
- * and AI systems to understand SAHO's identity and mission.
+ * and AI systems to understand SAHO's identity and mission. This is the
+ * ONE sitewide organization entity - every builder that references SAHO
+ * (publisher, provider, holdingArchive) points at its @id.
  */
-class OrganizationSchemaBuilder implements SchemaOrgBuilderInterface {
-
-  /**
-   * Constructs an OrganizationSchemaBuilder.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
-   *   The entity type manager.
-   * @param \Drupal\Core\File\FileUrlGeneratorInterface $fileUrlGenerator
-   *   The file URL generator service.
-   */
-  public function __construct(
-    protected EntityTypeManagerInterface $entityTypeManager,
-    protected FileUrlGeneratorInterface $fileUrlGenerator,
-  ) {}
+class OrganizationSchemaBuilder extends SchemaBuilderBase {
 
   /**
    * {@inheritdoc}
@@ -40,12 +26,12 @@ class OrganizationSchemaBuilder implements SchemaOrgBuilderInterface {
    * {@inheritdoc}
    */
   public function build(?NodeInterface $node = NULL): array {
-    $request = \Drupal::request();
-    $base_url = $request->getSchemeAndHttpHost();
+    $base_url = $this->canonicalBaseUrl();
 
     $schema = [
       '@context' => 'https://schema.org',
       '@type' => ['Organization', 'EducationalOrganization'],
+      '@id' => $this->organizationId(),
       'name' => 'South African History Online',
       'alternateName' => 'SAHO',
       'legalName' => 'South African History Online',

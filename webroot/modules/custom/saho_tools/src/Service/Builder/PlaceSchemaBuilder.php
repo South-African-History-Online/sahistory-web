@@ -2,11 +2,8 @@
 
 namespace Drupal\saho_tools\Service\Builder;
 
-use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\File\FileUrlGeneratorInterface;
 use Drupal\file\Entity\File;
 use Drupal\node\NodeInterface;
-use Drupal\saho_tools\Service\SchemaOrgBuilderInterface;
 
 /**
  * Builds Schema.org structured data for Place nodes.
@@ -31,7 +28,7 @@ use Drupal\saho_tools\Service\SchemaOrgBuilderInterface;
  *   the top-level @type because Google requires phone/hours/address
  *   for those - they survive as additionalType instead.
  */
-class PlaceSchemaBuilder implements SchemaOrgBuilderInterface {
+class PlaceSchemaBuilder extends SchemaBuilderBase {
 
   /**
    * Maps SAHO field_place_type term names to Schema.org @type values.
@@ -213,19 +210,6 @@ class PlaceSchemaBuilder implements SchemaOrgBuilderInterface {
   ];
 
   /**
-   * Constructs a PlaceSchemaBuilder.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
-   *   The entity type manager.
-   * @param \Drupal\Core\File\FileUrlGeneratorInterface $fileUrlGenerator
-   *   The file URL generator service.
-   */
-  public function __construct(
-    protected EntityTypeManagerInterface $entityTypeManager,
-    protected FileUrlGeneratorInterface $fileUrlGenerator,
-  ) {}
-
-  /**
    * {@inheritdoc}
    */
   public function supports(string $node_type): bool {
@@ -240,20 +224,14 @@ class PlaceSchemaBuilder implements SchemaOrgBuilderInterface {
       return [];
     }
 
-    $url = $node->toUrl()->setAbsolute()->toString();
     [$type, $additional_type] = $this->resolvePlaceType($node);
 
     $schema = [
       '@context' => 'https://schema.org',
       '@type' => $type,
       'name' => $node->getTitle(),
-      'url' => $url,
-      'mainEntityOfPage' => [
-        '@type' => 'WebPage',
-        '@id' => $url,
-      ],
       'dateModified' => date('c', $node->getChangedTime()),
-    ];
+    ] + $this->identityProperties($node);
 
     if ($additional_type !== NULL) {
       $schema['additionalType'] = 'https://schema.org/' . $additional_type;

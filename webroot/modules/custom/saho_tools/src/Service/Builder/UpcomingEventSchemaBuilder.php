@@ -3,11 +3,8 @@
 namespace Drupal\saho_tools\Service\Builder;
 
 use Drupal\Core\Entity\ContentEntityInterface;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\File\FileUrlGeneratorInterface;
 use Drupal\file\Entity\File;
 use Drupal\node\NodeInterface;
-use Drupal\saho_tools\Service\SchemaOrgBuilderInterface;
 
 /**
  * Builds Schema.org Event structured data for Upcoming Event nodes.
@@ -15,20 +12,7 @@ use Drupal\saho_tools\Service\SchemaOrgBuilderInterface;
  * Maps SAHO upcoming events (exhibitions, conferences, museum openings)
  * to Schema.org Event vocabulary for optimal discovery by search engines.
  */
-class UpcomingEventSchemaBuilder implements SchemaOrgBuilderInterface {
-
-  /**
-   * Constructs an UpcomingEventSchemaBuilder.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
-   *   The entity type manager.
-   * @param \Drupal\Core\File\FileUrlGeneratorInterface $fileUrlGenerator
-   *   The file URL generator service.
-   */
-  public function __construct(
-    protected EntityTypeManagerInterface $entityTypeManager,
-    protected FileUrlGeneratorInterface $fileUrlGenerator,
-  ) {}
+class UpcomingEventSchemaBuilder extends SchemaBuilderBase {
 
   /**
    * {@inheritdoc}
@@ -49,8 +33,7 @@ class UpcomingEventSchemaBuilder implements SchemaOrgBuilderInterface {
       '@context' => 'https://schema.org',
       '@type' => 'Event',
       'name' => $node->getTitle(),
-      'url' => $node->toUrl()->setAbsolute()->toString(),
-    ];
+    ] + $this->identityProperties($node);
 
     // Add start date.
     $start_date = NULL;
@@ -144,7 +127,7 @@ class UpcomingEventSchemaBuilder implements SchemaOrgBuilderInterface {
       'price' => '0',
       'priceCurrency' => 'ZAR',
       'availability' => 'https://schema.org/InStock',
-      'url' => $node->toUrl()->setAbsolute()->toString(),
+      'url' => $this->canonicalNodeUrl($node),
     ];
 
     // Add event status and attendance mode.
@@ -198,20 +181,13 @@ class UpcomingEventSchemaBuilder implements SchemaOrgBuilderInterface {
   }
 
   /**
-   * Get SAHO organization schema.
+   * Returns the @id-linked sitewide organization stub.
    *
    * @return array
-   *   Organization schema for organizer.
+   *   Organization stub for organizer/performer.
    */
   protected function getOrganizationSchema(): array {
-    $request = \Drupal::request();
-    $base_url = $request->getSchemeAndHttpHost();
-
-    return [
-      '@type' => 'Organization',
-      'name' => 'South African History Online',
-      'url' => $base_url,
-    ];
+    return $this->organizationRef();
   }
 
 }

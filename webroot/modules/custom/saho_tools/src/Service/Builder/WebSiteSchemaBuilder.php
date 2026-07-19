@@ -2,10 +2,7 @@
 
 namespace Drupal\saho_tools\Service\Builder;
 
-use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\File\FileUrlGeneratorInterface;
 use Drupal\node\NodeInterface;
-use Drupal\saho_tools\Service\SchemaOrgBuilderInterface;
 
 /**
  * Builds Schema.org WebSite structured data for SAHO site-wide.
@@ -15,29 +12,18 @@ use Drupal\saho_tools\Service\SchemaOrgBuilderInterface;
  * target points at the canonical Search API view (/search) and its exposed
  * fulltext filter parameter (search_api_fulltext).
  */
-class WebSiteSchemaBuilder implements SchemaOrgBuilderInterface {
+class WebSiteSchemaBuilder extends SchemaBuilderBase {
 
   /**
-   * The canonical production host for SAHO.
+   * The canonical production base URL for SAHO.
    *
-   * This matches the host advertised in robots.txt (Sitemap) and the
-   * canonical apex that www.sahistory.org.za redirects to. Using the apex
-   * here avoids the 301 redirect in the SearchAction target.
+   * The apex host: www.sahistory.org.za 301s to it (verified live), and it
+   * matches the Sitemap host advertised in robots.txt. Kept as a public
+   * const because LlmTxtController also reads it; the schema output itself
+   * goes through canonicalBaseUrl() so $settings['saho_canonical_url'] can
+   * override per environment.
    */
-  const CANONICAL_URL = 'https://www.sahistory.org.za/';
-
-  /**
-   * Constructs a WebSiteSchemaBuilder.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
-   *   The entity type manager.
-   * @param \Drupal\Core\File\FileUrlGeneratorInterface $fileUrlGenerator
-   *   The file URL generator service.
-   */
-  public function __construct(
-    protected EntityTypeManagerInterface $entityTypeManager,
-    protected FileUrlGeneratorInterface $fileUrlGenerator,
-  ) {}
+  const CANONICAL_URL = 'https://sahistory.org.za/';
 
   /**
    * {@inheritdoc}
@@ -51,17 +37,20 @@ class WebSiteSchemaBuilder implements SchemaOrgBuilderInterface {
    * {@inheritdoc}
    */
   public function build(?NodeInterface $node = NULL): array {
+    $base_url = $this->canonicalBaseUrl();
     return [
       '@context' => 'https://schema.org',
       '@type' => 'WebSite',
-      'url' => self::CANONICAL_URL,
+      '@id' => $this->websiteId(),
+      'url' => $base_url . '/',
       'name' => 'South African History Online',
       'alternateName' => 'SAHO',
+      'publisher' => $this->organizationRef(),
       'potentialAction' => [
         '@type' => 'SearchAction',
         'target' => [
           '@type' => 'EntryPoint',
-          'urlTemplate' => self::CANONICAL_URL . 'search?search_api_fulltext={search_term_string}',
+          'urlTemplate' => $base_url . '/search?search_api_fulltext={search_term_string}',
         ],
         'query-input' => 'required name=search_term_string',
       ],
