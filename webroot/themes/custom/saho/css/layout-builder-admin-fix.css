@@ -1,0 +1,155 @@
+/**
+ * @file
+ * Layout Builder admin UI remediation (off-canvas tray + layout_builder_modal).
+ *
+ * Why this file exists:
+ * - bootstrap_styles ships a light re-skin written for the pre-Drupal-11
+ *   off-canvas markup (#drupal-off-canvas). Drupal 11 moved the tray chrome to
+ *   #drupal-off-canvas-wrapper, so only the module's inner text rules still
+ *   apply: dark #383a40 labels/links land on core's dark #444 tray (1.06:1
+ *   contrast - unreadable). This file completes the light re-skin by
+ *   redefining core's tray custom properties.
+ * - bootstrap_styles also styles ".form-text" as a text INPUT (the classic
+ *   Drupal meaning), but Radix/Bootstrap 5 puts "form-text" on every field
+ *   DESCRIPTION. Result: help texts dressed as ghost input boxes in
+ *   #layout-builder-modal. Reset below.
+ *
+ * Loaded via libraries-extend on bootstrap_styles/theme.light, so it only
+ * loads when the clashing stylesheet loads, and always after it.
+ */
+
+/* 1. Complete the light tray re-skin: core's Drupal 11 off-canvas is fully
+   custom-property driven, so restyling = redefining the variables. */
+#drupal-off-canvas-wrapper {
+  --off-canvas-background-color: #ffffff;
+  --off-canvas-background-color-light: #f3f3f3;
+  --off-canvas-background-color-medium: #ffffff;
+  --off-canvas-background-color-dark: #ececec;
+  --off-canvas-text-color: #383a40;
+  --off-canvas-link-color: #0a58ca;
+  --off-canvas-border-color: #dbdbdb;
+  --off-canvas-focus-outline-color: #383a40;
+  --off-canvas-font-family: "PT Sans", sans-serif;
+  --off-canvas-title-background-color: #ffffff;
+  --off-canvas-title-text-color: #383a40;
+  --off-canvas-wrapper-border-color: #dbdbdb;
+  --off-canvas-details-background-color: transparent;
+  --off-canvas-details-summary-background-color: #f0f0f0;
+  --off-canvas-details-summary-background-color-hover: #e4e4e4;
+  --off-canvas-details-summary-text-color: #383a40;
+  --off-canvas-details-summary-text-color-hover: #1b1c17;
+  --off-canvas-details-text-color: #383a40;
+  --off-canvas-button-background-color: #e9e9e9;
+  --off-canvas-button-background-color-hover: #dcdcdc;
+  --off-canvas-button-text-color: #383a40;
+  --off-canvas-button-text-color-hover: #1b1c17;
+  --off-canvas-primary-button-background-color: #990000;
+  --off-canvas-primary-button-background-color-hover: #7a0000;
+  /* Core's inputs are white with a transparent border (fine on the dark
+     tray); on a white tray they need a visible border. */
+  --drupal-off-canvas-input-border: solid 1px #dbdbdb;
+}
+
+/* Links inside the tray content: bootstrap_styles paints them #26a5ff, which
+   fails contrast on white. Same specificity as its "#drupal-off-canvas a",
+   later in the cascade, so this wins. */
+#drupal-off-canvas a,
+#drupal-off-canvas .link {
+  color: #0a58ca;
+}
+
+#drupal-off-canvas a:hover,
+#drupal-off-canvas a:focus {
+  color: #084298;
+}
+
+/* Block-chooser category headers: bootstrap_styles' #26a5ff accent fails
+   contrast on the light tray. The [open]/[aria-expanded] variants must be
+   restated at equal specificity to out-cascade light.css. */
+#drupal-off-canvas summary,
+#drupal-off-canvas details summary {
+  color: #383a40;
+}
+
+#drupal-off-canvas details[open] > summary,
+#drupal-off-canvas details[open] > summary:hover,
+#drupal-off-canvas summary[aria-expanded="true"],
+#drupal-off-canvas summary:hover,
+#drupal-off-canvas summary:focus {
+  color: #084298;
+}
+
+/* "Create content block" action: white on #26a5ff fails contrast.
+   !important mirrors light.css, which also uses it here. */
+#drupal-off-canvas .inline-block-create-button,
+#layout-builder-modal .inline-block-create-button {
+  color: #ffffff !important;
+  background: #990000 !important;
+}
+
+#drupal-off-canvas .inline-block-create-button:hover,
+#drupal-off-canvas .inline-block-create-button:focus,
+#layout-builder-modal .inline-block-create-button:hover,
+#layout-builder-modal .inline-block-create-button:focus {
+  background: #7a0000 !important;
+}
+
+/* Labels and descriptions in the tray: keep bootstrap_styles' ink but lift
+   the half-opacity descriptions to a WCAG AA tone. */
+#drupal-off-canvas label {
+  color: #383a40;
+}
+
+#drupal-off-canvas .description,
+#drupal-off-canvas .form-item .description,
+#drupal-off-canvas .details-description {
+  color: #5d5e52;
+}
+
+/* 2. Undo the ".form-text = input" costume on field descriptions, in both
+   surfaces. Element-qualified selectors out-rank the module's ID + class
+   groups where needed; otherwise equal specificity + later order wins. */
+#layout-builder-modal small.form-text,
+#layout-builder-modal .description.form-text,
+#drupal-off-canvas small.form-text,
+#drupal-off-canvas .description.form-text {
+  display: block;
+  width: auto;
+  margin: 0.25rem 0 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: #5d5e52;
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+/* Checkbox/radio help texts sat beside their label once boxed; keep them on
+   their own line under the control. */
+#layout-builder-modal .form-check small.form-text,
+#drupal-off-canvas .form-check small.form-text {
+  margin-left: 0;
+}
+
+/* 3. Modal primary actions: white-on-#26a5ff fails contrast. Use the SAHO
+   primary action colour. */
+#layout-builder-modal button.button--primary,
+#layout-builder-modal input.form-submit.button--primary,
+#layout-builder-modal input.form-submit.btn-primary {
+  background: #990000;
+  border-color: #990000;
+  color: #ffffff;
+}
+
+#layout-builder-modal button.button--primary:hover,
+#layout-builder-modal button.button--primary:focus,
+#layout-builder-modal input.form-submit.button--primary:hover,
+#layout-builder-modal input.form-submit.button--primary:focus,
+#layout-builder-modal input.form-submit.btn-primary:hover,
+#layout-builder-modal input.form-submit.btn-primary:focus {
+  background: #7a0000;
+  border-color: #7a0000;
+  color: #ffffff;
+}
