@@ -40,9 +40,14 @@ function saho_performance_page_attachments_alter(array &$page) {
     ];
   }
 
-  // Add preload hints for critical resources (front-end only)
-  _saho_performance_add_preload_hints($page);
-
+  // NO font preloads - measured decision (2026-07-21, 3-run Lighthouse
+  // medians, mobile/Slow 4G): this hook preloaded three Inter weights that
+  // outlasted the redesign ("preloaded but not used" in every console),
+  // spending ~150 KB of critical-path bandwidth. Removing them took the
+  // front page from LCP 3.9 s / score 87 to LCP 2.3 s / score 97-98; even
+  // a single Caslon preload measurably regressed it (median 3.0 s / 87).
+  // The metric-matched fallback faces (_fonts.scss) keep the font swap
+  // dimensionally invisible, so late fonts are safe by design.
   // Add resource hints for faster connections (front-end only)
   _saho_performance_add_resource_hints($page);
 }
@@ -527,36 +532,6 @@ function _saho_performance_get_critical_css() {
   $critical_css = str_replace(';}', '}', $critical_css);
 
   return trim($critical_css);
-}
-
-/**
- * Add preload hints for critical resources.
- */
-function _saho_performance_add_preload_hints(array &$page) {
-  // Preload self-hosted Inter fonts.
-  $fonts = [
-    '/themes/custom/saho/fonts/inter/Inter-Regular.woff2',
-    '/themes/custom/saho/fonts/inter/Inter-Medium.woff2',
-    '/themes/custom/saho/fonts/inter/Inter-Bold.woff2',
-  ];
-
-  foreach ($fonts as $font) {
-    $page['#attached']['html_head'][] = [
-      [
-        '#type' => 'html_tag',
-        '#tag' => 'link',
-        '#attributes' => [
-          'rel' => 'preload',
-          'href' => $font,
-          'as' => 'font',
-          'type' => 'font/woff2',
-          'crossorigin' => 'anonymous',
-        ],
-      ],
-      'font_preload_' . basename($font),
-    ];
-  }
-
 }
 
 /**
