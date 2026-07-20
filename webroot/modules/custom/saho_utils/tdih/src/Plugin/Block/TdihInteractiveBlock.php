@@ -113,6 +113,7 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
       'show_today_history' => TRUE,
       'show_details_button' => TRUE,
       'show_header_title' => TRUE,
+      'show_more_link' => TRUE,
       'use_todays_date' => FALSE,
     ] + parent::defaultConfiguration();
   }
@@ -178,6 +179,13 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
       '#default_value' => $this->configuration['show_details_button'],
     ];
 
+    $form['show_more_link'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Show "View more events from this day" link'),
+      '#description' => $this->t('Enable to show the link to the This Day in History page under the events.'),
+      '#default_value' => $this->configuration['show_more_link'],
+    ];
+
     $form['use_todays_date'] = [
       '#type' => 'checkbox',
       '#title' => $this->t("Pre-fill date picker with today's date"),
@@ -199,6 +207,7 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
     $this->configuration['date_picker_mode'] = $form_state->getValue('date_picker_mode');
     $this->configuration['show_today_history'] = $form_state->getValue('show_today_history');
     $this->configuration['show_details_button'] = $form_state->getValue('show_details_button');
+    $this->configuration['show_more_link'] = $form_state->getValue('show_more_link');
     $this->configuration['use_todays_date'] = $form_state->getValue('use_todays_date');
   }
 
@@ -471,6 +480,7 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
       '#show_header_title' => $this->configuration['show_header_title'],
       '#show_today_history' => $show_events,
       '#show_details_button' => $this->configuration['show_details_button'],
+      '#show_more_link' => $this->configuration['show_more_link'] ?? TRUE,
       '#use_todays_date' => $this->configuration['use_todays_date'],
       '#attached' => [
         'library' => [
