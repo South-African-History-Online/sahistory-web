@@ -90,10 +90,12 @@ class LlmTxtController extends ControllerBase {
 
     $content = $this->renderer->renderInIsolation($build);
 
-    // Return as plain text response. The file is host-canonical and identical
-    // for every visitor, so it is safe to cache publicly for a day.
+    // Return as Markdown, per the llms.txt convention (single H1 title,
+    // blockquote summary, sections of markdown link lists). The file is
+    // host-canonical and identical for every visitor, so it is safe to
+    // cache publicly for a day.
     $response = new Response($content);
-    $response->headers->set('Content-Type', 'text/plain; charset=UTF-8');
+    $response->headers->set('Content-Type', 'text/markdown; charset=UTF-8');
     $response->headers->set('X-Robots-Tag', 'noindex');
     $response->setPublic();
     $response->setMaxAge(self::MAX_AGE);

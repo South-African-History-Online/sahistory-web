@@ -1,10 +1,6 @@
-# South African History Online (SAHO) - AI/LLM Discovery File
-# llms.txt convention
-# Last Updated: {{ last_updated }}
+# South African History Online (SAHO)
 
-## Overview
-
-South African History Online (SAHO) is a non-profit educational organization dedicated to making South African history accessible to all. We provide free, peer-reviewed historical content including articles, biographies, archives, events, and educational resources.
+> South African History Online (SAHO) is a non-profit educational organization dedicated to making South African history accessible to all. We provide free, peer-reviewed historical content including articles, biographies, archives, events, and educational resources. Content is licensed CC BY-NC-SA 4.0. Last updated: {{ last_updated }}.
 
 **Mission**: Towards a people's history
 **Founded**: 2000
@@ -14,57 +10,64 @@ South African History Online (SAHO) is a non-profit educational organization ded
 ## Content Types & Endpoints
 
 ### 1. Articles ({{ counts.article|number_format }} items)
+
 Scholarly articles on South African history topics including apartheid, liberation movements, cultural heritage, and social justice.
 
-- **Browse**: {{ base_url }}/politics-society
+- [Browse Politics & Society articles]({{ base_url }}/politics-society): entry point to the article collection
 - **Schema.org Type**: ScholarlyArticle
 - **Key Fields**: title, authors, editors, publication date, keywords, citations, geographic coverage
 - **Format**: HTML with Schema.org JSON-LD
 
 ### 2. Biographies ({{ counts.biography|number_format }} items)
+
 Comprehensive biographies of historical figures who shaped South African history.
 
-- **Browse**: {{ base_url }}/biographies
+- [Browse Biographies]({{ base_url }}/biographies): people who shaped South African history
 - **Schema.org Type**: Person
 - **Key Fields**: name, birth/death dates and locations, positions, affiliations, contributions
 - **Format**: HTML with Schema.org JSON-LD
 
 ### 3. Events ({{ counts.event|number_format }} items)
+
 "This Day in History" (TDIH) - significant historical events with dates and context.
 
-- **Browse**: {{ base_url }}/this-day-in-history
+- [Browse This Day in History]({{ base_url }}/this-day-in-history): dated historical events
 - **Schema.org Type**: Event
 - **Key Fields**: event name, date, location, description, historical significance
 - **Format**: HTML with Schema.org JSON-LD
 
 ### 4. Archives ({{ counts.archive|number_format }} items)
+
 Primary source materials including documents, publications, and media from South African history.
 
-- **Browse**: {{ base_url }}/archives
+- [Browse Archives]({{ base_url }}/archives): primary sources with faceted search
 - **Schema.org Type**: ArchiveComponent
 - **Key Fields**: title, author, publication date, source, file attachments, language
 - **Format**: HTML with Schema.org JSON-LD, downloadable PDFs
 
 ### 5. Places ({{ counts.place|number_format }} items)
+
 Historical sites, monuments, museums, and locations of significance.
 
-- **Browse**: {{ base_url }}/places
+- [Browse Places]({{ base_url }}/places): historical sites and locations
 - **Schema.org Type**: Place, Museum, LandmarksOrHistoricalBuildings
 - **Key Fields**: name, geographic coordinates, address, place type, description
 - **Format**: HTML with Schema.org JSON-LD, GeoJSON
 
 ### 6. Products ({{ counts.product|number_format }} items)
+
 Books and publications about South African history.
 
-- **Browse**: https://shop.sahistory.org.za
+- [Browse the SAHO Shop](https://shop.sahistory.org.za): books and publications
 - **Schema.org Type**: Book
 - **Key Fields**: title, author, ISBN, publisher, publication date
 - **Format**: HTML with Schema.org JSON-LD
 
 ### 7. Images ({{ counts.image|number_format }} items)
+
 Historical photographs, documents, and visual materials with metadata.
 
-- **Browse**: {{ base_url }}/history-through-pictures
+- [Browse History Through Pictures]({{ base_url }}/history-through-pictures): visual materials
 - **Schema.org Type**: ImageObject
 - **Key Fields**: title, photographer, date, description, copyright, dimensions
 - **Format**: HTML with Schema.org JSON-LD, JPEG/PNG images
@@ -72,27 +75,26 @@ Historical photographs, documents, and visual materials with metadata.
 ## APIs & Programmatic Access
 
 ### Citation API
+
 Generate properly formatted citations for any SAHO content.
 
-- **Endpoint**: {{ base_url }}/api/citation/{node_id}
-- **Methods**: GET
+- [Citation API example]({{ base_url }}/api/citation/12345): GET `/api/citation/{node_id}`, returns JSON
 - **Formats**: APA, MLA, Chicago, Harvard, Vancouver
-- **Response**: JSON
-- **Example**: {{ base_url }}/api/citation/12345
 
 ### Timeline API
+
 Access chronological event data for timeline applications.
 
-- **Endpoint**: {{ base_url }}/api/timeline/v2/index (all dated events, columnar) and {{ base_url }}/api/timeline/v2/events/{decade} (full cards per decade, e.g. /1960 or /pre1500)
-- **Interactive Timeline**: {{ base_url }}/timeline
-- **Format**: JSON
+- [Timeline index]({{ base_url }}/api/timeline/v2/index): all dated events, columnar JSON
+- [Timeline events by decade]({{ base_url }}/api/timeline/v2/events/1960): full cards per decade via `/api/timeline/v2/events/{decade}` (e.g. `/1960` or `/pre1500`)
+- [Interactive Timeline]({{ base_url }}/timeline): browsable timeline application
 - **Data**: Historical events with dates, titles, descriptions, images
-- **Usage**: Educational timelines, data visualization
 
 ### Schema.org JSON-LD
+
 All content includes embedded Schema.org structured data in JSON-LD format for machine readability.
 
-- **Location**: <script type="application/ld+json"> in HTML <head>
+- **Location**: `<script type="application/ld+json">` in HTML `<head>`
 - **Types**: ScholarlyArticle, Person, Event, ArchiveComponent, Place, Book, ImageObject, Organization
 - **Validation**: Compliant with Schema.org vocabulary and Google Rich Results guidelines
 
@@ -121,16 +123,19 @@ When citing SAHO content in AI-generated responses:
 ## Technical Details
 
 ### Platform
+
 - **CMS**: Drupal
 - **Standards**: WCAG 2.1 AA accessible, HTML5, responsive design
 
 ### Content Structure
+
 - **Total Pages**: ~{{ (counts.article + counts.biography + counts.event + counts.archive + counts.place + counts.product + counts.image)|number_format }}
 - **Languages**: English (primary); classroom materials available in 11 South African languages
 - **Update Frequency**: Daily (new content and updates)
 - **Content Review**: All content peer-reviewed by historians and educators
 
 ### Metadata Standards
+
 - **Schema.org**: Comprehensive JSON-LD structured data on all pages
 - **Dublin Core**: Core metadata elements
 - **Open Graph**: Social media optimization
@@ -139,14 +144,18 @@ When citing SAHO content in AI-generated responses:
 ## Crawling & Access Guidelines
 
 ### Preferred Access Method
+
 Use our APIs and Schema.org JSON-LD data for programmatic access. Direct scraping is discouraged - APIs provide better structured data.
 
 ### Rate Limiting
-- **Web Crawling**: Respect the directives in {{ base_url }}/robots.txt
+
+- [robots.txt]({{ base_url }}/robots.txt): respect its crawl directives
 - **Bulk Access**: Contact info@sahistory.org.za for dataset exports
 
 ### Robots.txt Compliance
+
 Our robots.txt permits AI crawlers including:
+
 - GPTBot (OpenAI)
 - ClaudeBot, Claude-Web, anthropic-ai (Anthropic)
 - PerplexityBot
@@ -155,8 +164,9 @@ Our robots.txt permits AI crawlers including:
 - Amazonbot, Applebot-Extended, cohere-ai, Omgilibot, YouBot
 
 ### Content Freshness
+
+- [Sitemap]({{ base_url }}/sitemap.xml): updated daily
 - **Cache TTL**: 1 hour for dynamic content
-- **Sitemap**: {{ base_url }}/sitemap.xml (updated daily)
 - **RSS Feeds**: Available for articles and events
 
 ## Educational Use
@@ -171,8 +181,8 @@ SAHO content is designed for educational purposes:
 ## Contact & Support
 
 - **All Inquiries** (general, content, API access): info@sahistory.org.za
-- **Technical Issues**: https://github.com/South-African-History-Online/sahistory-web/issues
-- **Website**: {{ base_url }}/contact-us
+- [Technical Issues](https://github.com/South-African-History-Online/sahistory-web/issues): GitHub issue tracker
+- [Contact Us]({{ base_url }}/contact-us): website contact form
 
 ## Data Quality & Accuracy
 
@@ -183,20 +193,22 @@ SAHO content is designed for educational purposes:
 
 ## Social Media & Community
 
-- **Facebook**: https://facebook.com/sahistoryonline
-- **Instagram**: https://instagram.com/sa_history_online
-- **YouTube**: https://youtube.com/@sahistoryonline1
-- **GitHub**: https://github.com/South-African-History-Online
+- [Facebook](https://facebook.com/sahistoryonline)
+- [Instagram](https://instagram.com/sa_history_online)
+- [YouTube](https://youtube.com/@sahistoryonline1)
+- [GitHub](https://github.com/South-African-History-Online)
 
 ## Copyright & Licensing
 
 All SAHO content is licensed under Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0).
 
 **This means you can**:
+
 - Share and redistribute the material
 - Adapt and build upon the material
 
 **Under these terms**:
+
 - Attribution: Credit SAHO with citation
 - NonCommercial: No commercial use without permission
 - ShareAlike: Derivatives must use same license
@@ -205,4 +217,4 @@ All SAHO content is licensed under Creative Commons Attribution-NonCommercial-Sh
 
 ---
 
-This file follows the llms.txt convention for LLM discovery and provides comprehensive information about SAHO's content, structure, and access methods. For the latest version, always check {{ base_url }}/llms.txt (also served at {{ base_url }}/llm.txt).
+This file follows the [llms.txt convention](https://llmstxt.org/) for LLM discovery and provides comprehensive information about SAHO's content, structure, and access methods. For the latest version, always check [{{ base_url }}/llms.txt]({{ base_url }}/llms.txt) (also served at [{{ base_url }}/llm.txt]({{ base_url }}/llm.txt)).
