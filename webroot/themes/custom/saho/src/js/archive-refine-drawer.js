@@ -30,6 +30,44 @@
         place();
         MOBILE.addEventListener('change', place);
 
+        const show = document.querySelector('[data-saho-refine-show]');
+
+        // Live count: with autosubmit suppressed the server-rendered
+        // "Show N records" freezes while selections change, so each change
+        // re-fetches the narrowed count via the same lightweight saho_lite
+        // response the load-more flow uses. The form serializes exactly as
+        // a native submit would, so the count always matches what SHOW
+        // will deliver.
+        let countTimer = null;
+        let countRequest = 0;
+        const updateCount = () => {
+          const form = drawerBody.querySelector('form');
+          if (!form || !show) {
+            return;
+          }
+          window.clearTimeout(countTimer);
+          countTimer = window.setTimeout(() => {
+            const params = new URLSearchParams(new FormData(form));
+            params.set('saho_lite', '1');
+            const action = form.getAttribute('action') || window.location.pathname;
+            const request = ++countRequest;
+            fetch(`${action}?${params.toString()}`, { headers: { Accept: 'text/html' } })
+              .then((response) => response.text())
+              .then((text) => {
+                if (request !== countRequest) {
+                  return; // A newer selection superseded this fetch.
+                }
+                const match = text.match(/([\d,]+)\s+records/i);
+                show.textContent = match
+                  ? Drupal.t('Show @count records', { '@count': match[1] })
+                  : Drupal.t('Show records');
+              })
+              .catch(() => {
+                show.textContent = Drupal.t('Show records');
+              });
+          }, 450);
+        };
+
         // Capture-phase interception keeps BEF's change handlers from
         // firing (and full-page reloading) per checkbox tap while the
         // form is inside the drawer.
@@ -38,12 +76,12 @@
           (event) => {
             if (MOBILE.matches) {
               event.stopPropagation();
+              updateCount();
             }
           },
           true
         );
 
-        const show = document.querySelector('[data-saho-refine-show]');
         if (show) {
           show.addEventListener('click', () => {
             const form = drawerBody.querySelector('form');
