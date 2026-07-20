@@ -534,21 +534,16 @@
   }
 }
 
-/* Accessibility - Keyboard navigation */
-.saho-card[role="link"] {
-  cursor: pointer;
-}
-
-.saho-card[role="link"]:focus {
-  outline: 2px solid var(--card-color-primary);
-  outline-offset: 2px;
-}
-
-/* Accessibility - Focus visible for keyboard navigation */
-.saho-card:focus-visible {
+/* Accessibility - keyboard focus. The stretched-link anchor is the single
+   tab stop; the visible ring renders on the card that the link fills. */
+.saho-card:has(.saho-card__link:focus-visible) {
   outline: 2px solid var(--card-color-primary);
   outline-offset: 2px;
   box-shadow: 0 0 0 4px var(--card-primary-alpha-25);
+}
+
+.saho-card:has(.saho-card__link:focus-visible) .saho-card__link {
+  outline: none;
 }
 
 /* Accessibility - High contrast mode support */
