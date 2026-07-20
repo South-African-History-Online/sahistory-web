@@ -3597,13 +3597,46 @@ function _saho_record_citation_props(NodeInterface $node): array {
   }
   $cites = \Drupal::service('saho_tools.citation_service')->generateCitations($node);
   $formats = [];
-  foreach (['harvard' => 'Harvard', 'apa' => 'APA', 'oxford' => 'Oxford'] as $key => $label) {
+  // Same five styles, same order and same default as the Cite modal
+  // (saho_tools citation.js) - one citation register, two surfaces.
+  $labels = [
+    'apa' => 'APA 7th',
+    'harvard' => 'Harvard',
+    'oxford' => 'Oxford',
+    'mla' => 'MLA 9th',
+    'chicago' => 'Chicago',
+  ];
+  foreach ($labels as $key => $label) {
     $text = trim(html_entity_decode(strip_tags((string) ($cites[$key] ?? '')), ENT_QUOTES | ENT_HTML5));
     if ($text !== '') {
       $formats[$label] = $text;
     }
   }
-  return $formats !== [] ? ['default_format' => 'Harvard', 'formats' => $formats] : [];
+  if ($formats === []) {
+    return [];
+  }
+
+  // Reference-manager exports ride as plain payloads: the component turns
+  // them into data: downloads, so exporting works without JavaScript.
+  $props = ['default_format' => 'APA 7th', 'formats' => $formats];
+  $bibtex = trim((string) ($cites['bibtex'] ?? ''));
+  $ris = trim((string) ($cites['ris'] ?? ''));
+  if ($bibtex !== '' || $ris !== '') {
+    $name = 'saho-citation';
+    if (\Drupal::hasService('saho_refs.display_ref')) {
+      $ref = \Drupal::service('saho_refs.display_ref')->getRef($node);
+      if ($ref) {
+        $name = $ref;
+      }
+    }
+    $props['exports'] = array_filter([
+      'bibtex' => $bibtex,
+      'ris' => $ris,
+    ]);
+    $props['export_name'] = $name;
+  }
+  $props['learn_more'] = '/content/referencing-resources-historical-research';
+  return $props;
 }
 
 /**

@@ -815,11 +815,13 @@
                         break;
 
                     case 'mla':
-                        citationText = self.generateMLACitation() || 'MLA citation coming soon';
+                        // Server-built (CitationService) with the permanent
+                        // /ref/ URL; the JS builder is only a fallback.
+                        citationText = self.citationData.mla || self.generateMLACitation() || 'MLA citation not available';
                         break;
 
                     case 'chicago':
-                        citationText = self.generateChicagoCitation() || 'Chicago citation coming soon';
+                        citationText = self.citationData.chicago || self.generateChicagoCitation() || 'Chicago citation not available';
                         break;
 
                     default:

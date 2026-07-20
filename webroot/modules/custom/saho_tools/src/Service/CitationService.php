@@ -94,6 +94,8 @@ class CitationService {
       'harvard' => $this->generateHarvardCitation($data),
       'apa' => $this->generateApaCitation($data),
       'oxford' => $this->generateOxfordCitation($data),
+      'mla' => $this->generateMlaCitation($data),
+      'chicago' => $this->generateChicagoCitation($data),
       'bibtex' => $this->generateBibtexCitation($data),
       'ris' => $this->generateRisCitation($data),
     ];
@@ -416,6 +418,72 @@ class CitationService {
       );
 
     return $citation;
+  }
+
+  /**
+   * Generates an MLA 9th edition citation.
+   *
+   * @param array $data
+   *   The node data for citation generation.
+   *
+   * @return string
+   *   The MLA style citation.
+   */
+  protected function generateMlaCitation(array $data) {
+    // MLA month abbreviations (May, June and July stay unabbreviated).
+    $mla_months = [
+      'January' => 'Jan.', 'February' => 'Feb.', 'March' => 'Mar.',
+      'April' => 'Apr.', 'May' => 'May', 'June' => 'June', 'July' => 'July',
+      'August' => 'Aug.', 'September' => 'Sept.', 'October' => 'Oct.',
+      'November' => 'Nov.', 'December' => 'Dec.',
+    ];
+
+    $created_date = new DrupalDateTime($data['created_formatted']);
+    $created = $created_date->format('j') . ' '
+      . ($mla_months[$created_date->format('F')] ?? $created_date->format('F')) . ' '
+      . $created_date->format('Y');
+
+    $access_date = new DrupalDateTime($data['accessed_date']);
+    $accessed = $access_date->format('j') . ' '
+      . ($mla_months[$access_date->format('F')] ?? $access_date->format('F')) . ' '
+      . $access_date->format('Y');
+
+    // MLA 9 web page with a corporate author identical to the container:
+    // start with the title, italicise the container, day-month-year dates.
+    return sprintf(
+      '"%s." <em>%s</em>, %s, %s. Accessed %s.',
+      Html::escape($data['title']),
+      $data['site_name'],
+      $created,
+      $data['url'],
+      $accessed
+    );
+  }
+
+  /**
+   * Generates a Chicago (17th edition, bibliography) citation.
+   *
+   * @param array $data
+   *   The node data for citation generation.
+   *
+   * @return string
+   *   The Chicago style citation.
+   */
+  protected function generateChicagoCitation(array $data) {
+    $created_date = new DrupalDateTime($data['created_formatted']);
+    $created = $created_date->format('F j, Y');
+
+    // Chicago website citation with a corporate author: Author. "Title."
+    // Site name. Month Day, Year. URL. (Access dates only appear when no
+    // publication date exists, and every record carries one.)
+    return sprintf(
+      '%s. "%s." %s. %s. %s.',
+      $data['site_name'],
+      Html::escape($data['title']),
+      $data['site_name'],
+      $created,
+      $data['url']
+    );
   }
 
   /**

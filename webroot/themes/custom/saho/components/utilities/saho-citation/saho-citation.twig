@@ -23,4 +23,24 @@
     {% endfor %}
     <button type="button" class="saho-cite__copy" data-saho-copy>Copy</button>
   </div>
+  {# Reference-manager exports as data: downloads - no JS involved. EndNote
+     imports RIS, so it shares the payload (same as the Cite modal). #}
+  {% if exports %}
+    <footer class="saho-cite__foot">
+      <span class="saho-cite__foot-label">{{ 'Export'|t }}</span>
+      {% if exports.bibtex %}
+        <a class="saho-cite__export" download="{{ export_name|default('saho-citation') }}.bib"
+           href="data:application/x-bibtex;charset=utf-8,{{ exports.bibtex|url_encode }}">BibTeX (.bib)</a>
+      {% endif %}
+      {% if exports.ris %}
+        <a class="saho-cite__export" download="{{ export_name|default('saho-citation') }}.ris"
+           href="data:application/x-research-info-systems;charset=utf-8,{{ exports.ris|url_encode }}">RIS (.ris)</a>
+        <a class="saho-cite__export" download="{{ export_name|default('saho-citation') }}.ris"
+           href="data:application/x-research-info-systems;charset=utf-8,{{ exports.ris|url_encode }}">EndNote</a>
+      {% endif %}
+      {% if learn_more %}
+        <a class="saho-cite__learn" href="{{ learn_more }}">{{ 'About citation formats'|t }} &rarr;</a>
+      {% endif %}
+    </footer>
+  {% endif %}
 </section>
