@@ -114,10 +114,16 @@ echo -e "${GREEN}✓ Front page rebuilt${NC}"
 # inside the maintenance window (this is a bulk node write and must not race
 # live traffic). Idempotent (append-only, capped per node, skips existing) and
 # reversible via relations_siblings_rollback.json + drush saho:relations-rollback.
-echo -e "${YELLOW}Enriching record cross-links...${NC}"
-vendor/bin/drush saho:relations-siblings --apply -l "${SITE_URI}" 2>&1 | tee -a "${LOG_FILE}" \
-    || echo -e "${YELLOW}⚠ Relations enrichment skipped/failed (non-fatal)${NC}"
-echo -e "${GREEN}✓ Record cross-links enriched${NC}"
+if [ "${ENVIRONMENT}" = "production" ]; then
+    echo -e "${YELLOW}Enriching record cross-links...${NC}"
+    vendor/bin/drush saho:relations-siblings --apply -l "${SITE_URI}" 2>&1 | tee -a "${LOG_FILE}" \
+        || echo -e "${YELLOW}⚠ Relations enrichment skipped/failed (non-fatal)${NC}"
+    echo -e "${GREEN}✓ Record cross-links enriched${NC}"
+else
+    # ~3 minutes of heavy DB scanning per run; staging does not need 64k
+    # records re-verified on every merge, and it shares mysqld with prod.
+    echo -e "${YELLOW}Skipping relations enrichment on ${ENVIRONMENT}${NC}"
+fi
 
 # Disable maintenance mode (production only, staging stays in maintenance)
 if [ "${ENVIRONMENT}" = "production" ]; then

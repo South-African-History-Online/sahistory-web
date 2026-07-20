@@ -26,6 +26,13 @@ jobs:
     runs-on: ubuntu-latest
     environment: staging
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    # Merges landing in quick succession must not stack parallel full
+    # pipelines on the shared server (2026-07-20: five overlapping staging
+    # deploys drove load ~7 on the box that also serves production).
+    # Queued runs wait; never cancel a deploy mid-flight.
+    concurrency:
+      group: staging-deploy
+      cancel-in-progress: false
 
     steps:
       - name: Checkout code
