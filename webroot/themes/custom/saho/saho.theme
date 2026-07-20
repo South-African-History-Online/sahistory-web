@@ -47,27 +47,12 @@ function saho_page_attachments_alter(array &$page) {
   // preloads outlived the redesign - browsers warned "preloaded but not
   // used" while the faces actually blocking render were discovered late,
   // at the CSSOM's leisure (PSI: ~400 ms font chain).
-  $preload_fonts = [
-    'libre-caslon/LibreCaslonText-Variable.woff2',
-    'archivo/Archivo-Variable.woff2',
-    'ibm-plex-mono/IBMPlexMono-Regular.woff2',
-  ];
-  foreach ($preload_fonts as $woff2) {
-    $page['#attached']['html_head'][] = [
-      [
-        '#type' => 'html_tag',
-        '#tag' => 'link',
-        '#attributes' => [
-          'rel' => 'preload',
-          'as' => 'font',
-          'type' => 'font/woff2',
-          'href' => '/themes/custom/saho/fonts/' . $woff2,
-          'crossorigin' => 'anonymous',
-        ],
-      ],
-      'saho_font_preload_' . strtolower(preg_replace('/[^a-z0-9]+/i', '_', basename($woff2))),
-    ];
-  }
+  // NO font preloads - measured decision (2026-07-20, 3-run Lighthouse
+  // medians on mobile/Slow 4G): preloading fonts at highest priority starves
+  // the render-critical CSS chain and inflates LCP. All 3 faces preloaded:
+  // LCP 5.5 s / score 74. Serif only: 4.2 s / 84. None: 3.9 s / 87. The
+  // metric-matched fallback faces in _fonts.scss make late fonts safe -
+  // the swap changes letterforms, never text dimensions.
 
   // Organization JSON-LD deliberately NOT emitted here: saho_tools already
   // injects the single sitewide [Organization, EducationalOrganization]
