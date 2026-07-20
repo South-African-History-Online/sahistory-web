@@ -853,10 +853,21 @@ function saho_form_alter(array &$form, $form_state, $form_id): void {
       $form_state->setUserInput($input);
     }
   }
+  // The header search-field SDC owns keyword entry; the rail hides the
+  // duplicate input VISUALLY (the shared rail-cleanup CSS). Never use
+  // #access FALSE here: Form API then ignores the submitted value and the
+  // keyword stops filtering entirely.
   if (isset($form['search_api_fulltext'])) {
-    $form['search_api_fulltext']['#type'] = 'hidden';
     unset($form['search_api_fulltext']['#title'], $form['search_api_fulltext']['#description']);
   }
+
+  // Strongest facets lead the rail (the /archives register recipe).
+  foreach (['type' => -10, 'people_category_label' => -9, 'place_category_label' => -8] as $facet_key => $weight) {
+    if (isset($form[$facet_key])) {
+      $form[$facet_key]['#weight'] = $weight;
+    }
+  }
+
   if (isset($form['type']['#options'])) {
     // Not a record type - the type facet lists archive material only.
     unset($form['type']['#options']['page']);
@@ -869,6 +880,22 @@ function saho_form_alter(array &$form, $form_state, $form_id): void {
         // Keep the facet count the original label carries, e.g. "(1678)".
         $count = preg_match('/(\(\d+\))\s*$/', (string) $label, $m) ? ' ' . $m[1] : '';
         $form['type']['#options'][$bundle] = $bundle_labels[$bundle] . $count;
+      }
+    }
+  }
+
+  // The trailing " (123)" counts become the rail's mono count chip -
+  // the same treatment _saho_utils_archive_refine_alter() gives /archives.
+  foreach (['type', 'people_category_label', 'place_category_label'] as $facet_key) {
+    if (!isset($form[$facet_key]['#options'])) {
+      continue;
+    }
+    foreach ($form[$facet_key]['#options'] as $value => $label) {
+      if (preg_match('/^(.*) \((\d+)\)$/s', (string) $label, $m)) {
+        $form[$facet_key]['#options'][$value] = Markup::create(
+          Html::escape($m[1])
+          . ' <span class="saho-facet-count">' . number_format((int) $m[2]) . '</span>'
+        );
       }
     }
   }

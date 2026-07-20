@@ -6,6 +6,7 @@ dependencies:
     - search_api.index.saho_content
   module:
     - better_exposed_filters
+    - facets_exposed_filters
     - search_api
 id: saho_global_search
 label: 'SAHO global search'
@@ -473,7 +474,7 @@ display:
           label_display: visible
           facet:
             query_operator: or
-            hard_limit: 10
+            hard_limit: 0
             min_count: 1
             missing: false
             missing_label: others
@@ -510,7 +511,7 @@ display:
           label_display: visible
           facet:
             query_operator: or
-            hard_limit: 10
+            hard_limit: 0
             min_count: 1
             missing: false
             missing_label: others
@@ -541,7 +542,11 @@ display:
         - 'languages:language_interface'
         - url
         - url.query_args
-      tags: {  }
+        - 'url.query_args:sort_by'
+        - 'user.node_grants:view'
+      tags:
+        - 'config:search_api.index.saho_content'
+        - 'search_api_list:saho_content'
   page_1:
     id: page_1
     display_title: Page
@@ -557,4 +562,8 @@ display:
         - 'languages:language_interface'
         - url
         - url.query_args
-      tags: {  }
+        - 'url.query_args:sort_by'
+        - 'user.node_grants:view'
+      tags:
+        - 'config:search_api.index.saho_content'
+        - 'search_api_list:saho_content'

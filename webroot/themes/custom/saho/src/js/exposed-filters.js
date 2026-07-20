@@ -90,9 +90,10 @@
       if (group.hasAttribute('data-show-more-initialized')) {
         return;
       }
-      // Long lists on /archives get the facet-narrow lookup well instead
-      // of a SHOW MORE chip wall (facet-narrow.js).
-      if (group.closest('.saho-archive-index')) {
+      // Long lists in the Open Record refine rails (/archives, /search)
+      // get the facet-narrow lookup well instead of a SHOW MORE chip
+      // wall (facet-narrow.js).
+      if (group.closest('.saho-archive-index, .saho-search-rail')) {
         return;
       }
       group.setAttribute('data-show-more-initialized', 'true');
