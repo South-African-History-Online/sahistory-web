@@ -60,6 +60,32 @@
 // IBM Plex Mono : the typed record - provenance, citations, tabular metadata.
 // Sources: google/fonts (Libre Caslon, OFL), Omnibus-Type/Archivo (OFL), IBM/plex (OFL).
 
+// ---- Metric-matched fallbacks (LCP) --------------------------------------
+// The largest text block (front-page standfirst) painted its fallback face,
+// then re-rendered LARGER when the web font swapped in - and Lighthouse
+// stamps LCP at the re-render (~4 s after FCP on Slow 4G). These local
+// fallback faces are size-adjusted to the web fonts' metrics (computed from
+// the font tables: Caslon avg lowercase width 0.530 em vs Times 0.452 em;
+// Archivo 0.508 em vs Arial 0.482 em), so the swap no longer changes text
+// size and the first fallback paint counts as the LCP.
+@font-face {
+  font-family: "Libre Caslon Text Fallback";
+  src: local("Times New Roman");
+  size-adjust: 117.35%;
+  ascent-override: 82.66%;
+  descent-override: 22.16%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: "Archivo Fallback";
+  src: local(Arial);
+  size-adjust: 105.53%;
+  ascent-override: 83.2%;
+  descent-override: 19.9%;
+  line-gap-override: 0%;
+}
+
 // ---- Libre Caslon Text (variable wght 400-700) - reading + reference titles ----
 @font-face {
   font-family: "Libre Caslon Text";
