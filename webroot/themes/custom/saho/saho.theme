@@ -42,12 +42,17 @@ function saho_page_attachments_alter(array &$page) {
   // Removed. If a future template needs AOS, attach it via a proper
   // Drupal library on the specific render path.
 
-  // Preload the two Inter weights that body copy + hero captions use.
-  // PSI flagged Inter-SemiBold as the longest critical-chain item
-  // (1,424 ms). A preload hint lets the browser pull both weights
-  // during HTML parse instead of after the CSSOM resolves their.
-  // @font-face declarations.
-  foreach (['Inter-SemiBold.woff2', 'Inter-Regular.woff2'] as $woff2) {
+  // Preload the Open Record faces on the critical path: Caslon (titles +
+  // body), Archivo (all chrome) and Plex Mono (refs/labels). The old Inter
+  // preloads outlived the redesign - browsers warned "preloaded but not
+  // used" while the faces actually blocking render were discovered late,
+  // at the CSSOM's leisure (PSI: ~400 ms font chain).
+  $preload_fonts = [
+    'libre-caslon/LibreCaslonText-Variable.woff2',
+    'archivo/Archivo-Variable.woff2',
+    'ibm-plex-mono/IBMPlexMono-Regular.woff2',
+  ];
+  foreach ($preload_fonts as $woff2) {
     $page['#attached']['html_head'][] = [
       [
         '#type' => 'html_tag',
@@ -56,11 +61,11 @@ function saho_page_attachments_alter(array &$page) {
           'rel' => 'preload',
           'as' => 'font',
           'type' => 'font/woff2',
-          'href' => '/themes/custom/saho/fonts/inter/' . $woff2,
+          'href' => '/themes/custom/saho/fonts/' . $woff2,
           'crossorigin' => 'anonymous',
         ],
       ],
-      'saho_font_preload_' . strtolower(str_replace('.', '_', $woff2)),
+      'saho_font_preload_' . strtolower(preg_replace('/[^a-z0-9]+/i', '_', basename($woff2))),
     ];
   }
 
