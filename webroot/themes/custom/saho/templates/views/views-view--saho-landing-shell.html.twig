@@ -84,7 +84,10 @@
             <button type="button" role="tab" data-view="grid"
                     class="saho-view-toggle__btn{{ results_layout == 'grid' ? ' is-active' : '' }}"
                     aria-selected="{{ results_layout == 'grid' ? 'true' : 'false' }}">Cards</button>
-            {% if map_embed %}
+            {% if map_available|default(false) or map_embed %}
+              {# The map pane only renders under ?layout=map (it is megabytes
+                 of location markup); on other layouts the toggle JS turns
+                 this tab into a navigation to that URL. #}
               <button type="button" role="tab" data-view="map"
                       class="saho-view-toggle__btn{{ results_layout == 'map' ? ' is-active' : '' }}"
                       aria-selected="{{ results_layout == 'map' ? 'true' : 'false' }}">Map</button>

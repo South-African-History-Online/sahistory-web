@@ -113,12 +113,25 @@
   }
 
   /**
+   * True when the result container for a view exists in this scope.
+   *
+   * The map pane only renders under ?layout=map (it is megabytes of
+   * location markup) - its tab can exist without its pane.
+   */
+  function paneExists(toggle, view) {
+    const scope = toggle.closest('[data-saho-results]') || document;
+    return !!scope.querySelector(`.saho-results--${view}`);
+  }
+
+  /**
    * Wires one toggle: restores the stored choice, then handles clicks.
    */
   function initToggle(toggle) {
     const views = availableViews(toggle);
     const stored = readStoredView();
-    if (views.includes(stored) && stored !== defaultView(toggle)) {
+    // A stored choice only auto-applies when its pane is present - a
+    // remembered "map" must never navigate the reader by surprise.
+    if (views.includes(stored) && stored !== defaultView(toggle) && paneExists(toggle, stored)) {
       applyView(toggle, stored);
     }
 
@@ -126,6 +139,17 @@
       button.addEventListener('click', () => {
         const view = button.getAttribute('data-view');
         if (!views.includes(view)) {
+          return;
+        }
+        if (!paneExists(toggle, view)) {
+          // Server-rendered layout: navigate, keeping the active filters.
+          try {
+            const url = new URL(window.location.href);
+            url.searchParams.set('layout', view);
+            window.location.assign(url);
+          } catch (_e) {
+            window.location.search = `layout=${view}`;
+          }
           return;
         }
         applyView(toggle, view);
