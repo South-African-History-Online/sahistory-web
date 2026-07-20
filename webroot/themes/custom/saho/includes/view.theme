@@ -1084,13 +1084,17 @@ function saho_preprocess_views_view__saho_landing_shell(array &$variables): void
   // a third results layout - same records, spatial reading. It is unpaged
   // and unfiltered (all geolocated places); the exposed filters and pager
   // above drive the table/cards layouts only.
+  // The embed is ~2.3 MB of inline GeoJSON + Leaflet and took the page to
+  // ~17 s origin renders, so it only renders when the map layout is actually
+  // requested (?layout=map). The Map tab still shows on the default layouts
+  // (map_available) - the toggle JS navigates to ?layout=map on first use.
   // saho_lite marks the load-more fetches (saho-load-more.js): they only
-  // need rows, cards and the pager, and the map embed is megabytes of
-  // location markup per request.
-  if ($view_id === 'places' && !\Drupal::request()->query->has('saho_lite')) {
+  // need rows, cards and the pager.
+  $layout_param = \Drupal::request()->query->get('layout');
+  $variables['map_available'] = ($view_id === 'places');
+  if ($view_id === 'places' && $layout_param === 'map' && !\Drupal::request()->query->has('saho_lite')) {
     $variables['map_embed'] = views_embed_view('places_map', 'default');
   }
-  $layout_param = \Drupal::request()->query->get('layout');
   $layouts = isset($variables['map_embed']) ? ['grid', 'map'] : ['grid'];
   $variables['results_layout'] = in_array($layout_param, $layouts, TRUE) ? $layout_param : 'table';
   $variables['landing_registers'] = _saho_landing_registers($view_id);
