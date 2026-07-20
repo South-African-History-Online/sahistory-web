@@ -66,8 +66,12 @@ class ResponseSubscriber implements EventSubscriberInterface {
       $response->headers->set('Vary', 'Accept-Encoding');
     }
 
-    // Add performance hints.
-    $this->addLinkHeaders($response, $request);
+    // Add performance hints. Only anonymous-cacheable pages: Cloudflare
+    // serves Early Hints from cache per URL, and those are the responses
+    // it caches.
+    if ($request->isMethodCacheable() && $is_public && !$has_session) {
+      $this->addLinkHeaders($response, $request);
+    }
 
     // Do NOT set Content-Encoding header here - let Apache handle compression.
     // Setting this header without actual compression causes encoding errors.
@@ -95,17 +99,32 @@ class ResponseSubscriber implements EventSubscriberInterface {
    *   The request object.
    */
   protected function addLinkHeaders($response, $request) {
-    // DNS prefetch for external resources.
-    $dns_prefetch = [
-      '</www.google-analytics.com>; rel=dns-prefetch',
-      '</fonts.gstatic.com>; rel=dns-prefetch',
-    ];
-
-    // Set Link header with resource hints.
-    // Note: Font preloads are handled via HTML <link> tags in saho_performance_page_attachments()
-    // to avoid duplicate fetches. CSS/JS are loaded by Drupal's library system with versioned
-    // query params that won't match a static Link header URL.
-    $response->headers->set('Link', implode(', ', $dns_prefetch));
+    // Preload the page's render-blocking stylesheets via HTTP Link headers.
+    // Cloudflare's Early Hints feature turns exactly these into 103
+    // responses, so browsers fetch the blocking CSS before the HTML body
+    // arrives - attacking the render chain without touching any stylesheet.
+    // The aggregate URLs are hashed per page-set, so they are read from the
+    // response itself rather than configured statically. (The old static
+    // dns-prefetch hints pointed at hosts the redesign no longer uses.)
+    $content = $response->getContent();
+    if (!is_string($content) || $content === '') {
+      return;
+    }
+    // Only the <head> section, and only same-origin stylesheet links.
+    $head_end = strpos($content, '</head>');
+    $head = $head_end === FALSE ? substr($content, 0, 65536) : substr($content, 0, $head_end);
+    if (!preg_match_all('/<link[^>]+rel="stylesheet"[^>]+href="(\/[^"]+\.css[^"]*)"/', $head, $matches)) {
+      return;
+    }
+    $hints = [];
+    foreach (array_slice($matches[1], 0, 4) as $href) {
+      // & in HTML attributes arrives as &amp;.
+      $href = str_replace('&amp;', '&', $href);
+      $hints[] = '<' . $href . '>; rel=preload; as=style';
+    }
+    if ($hints) {
+      $response->headers->set('Link', implode(', ', $hints));
+    }
   }
 
 }
