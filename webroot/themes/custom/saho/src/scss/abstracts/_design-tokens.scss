@@ -186,6 +186,15 @@ $saho-line-height-relaxed: 1.75;
 :root {
   --saho-font-size-xs: #{$saho-font-size-xs};
   --saho-font-size-sm: #{$saho-font-size-sm};
+
+  // Bare scale aliases: Open Record components (record-toolbar, chronology,
+  // record refs/labels) consume var(--font-size-xs/-sm) WITHOUT fallbacks.
+  // These were never defined in the theme - anonymous visitors fell back to
+  // the 16px browser default while authenticated users accidentally
+  // inherited core admin CSS's own --font-size-xs (12px), so the two saw
+  // different records. Alias them to the canonical tokens for everyone.
+  --font-size-xs: var(--saho-font-size-xs);
+  --font-size-sm: var(--saho-font-size-sm);
   --saho-font-size-base: #{$saho-font-size-base};
   --saho-font-size-md: #{$saho-font-size-md};
   --saho-font-size-lg: #{$saho-font-size-lg};
