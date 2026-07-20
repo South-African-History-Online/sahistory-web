@@ -220,12 +220,51 @@ function saho_preprocess_views_view__saho_global_search(array &$variables) {
   $variables['record_rows'] = $record_rows;
   $variables['record_cards'] = $record_cards;
   $variables['result_total'] = number_format((int) ($variables['view']->total_rows ?? count($variables['view']->result)));
-  $variables['results_layout'] = \Drupal::request()->query->get('layout') === 'grid' ? 'grid' : 'table';
+  $request = \Drupal::request();
+  $variables['results_layout'] = $request->query->get('layout') === 'grid' ? 'grid' : 'table';
+
+  // The mobile refine drawer needs the applied-facet count for its trigger
+  // chip and a clear-all URL that keeps the query itself (the /archives
+  // register recipe on the search facet identifiers).
+  $facet_params = ['type', 'people_category_label', 'place_category_label'];
+  $refine_count = 0;
+  foreach ($facet_params as $facet_param) {
+    $facet_value = $request->query->all()[$facet_param] ?? NULL;
+    if (is_array($facet_value)) {
+      $refine_count += count(array_filter($facet_value, fn($v): bool => (string) $v !== '' && $v !== 'All'));
+    }
+    elseif ($facet_value !== NULL && (string) $facet_value !== '' && $facet_value !== 'All') {
+      $refine_count++;
+    }
+  }
+  $variables['refine_count'] = $refine_count;
+  $clear_query = array_diff_key($request->query->all(), array_flip(array_merge($facet_params, ['page'])));
+  $variables['refine_clear_url'] = Url::fromUserInput('/search', $clear_query !== [] ? ['query' => $clear_query] : [])->toString();
+
+  // One quiet sort control; archive-sort.js maps the choice back onto the
+  // views sort_by/sort_order parameters. With a keyword query the default
+  // is relevance (mirrored by saho_utils_views_pre_view()).
+  $has_query = trim((string) $request->query->get('search_api_fulltext', '')) !== '';
+  $sort_by = $request->query->get('sort_by', $has_query ? 'search_api_relevance' : 'changed');
+  $sort_order = strtoupper((string) $request->query->get('sort_order', 'DESC'));
+  $sort_options = $has_query ? ['search_api_relevance|DESC' => 'RELEVANCE'] : [];
+  $sort_options += [
+    'changed|DESC' => 'RECENTLY UPDATED',
+    'changed|ASC' => 'OLDEST UPDATED',
+  ];
+  $variables['search_sort'] = [
+    'current' => $sort_by . '|' . ($sort_order === 'ASC' ? 'ASC' : 'DESC'),
+    'options' => $sort_options,
+  ];
 
   $variables['#attached']['library'][] = 'saho/saho-index-table';
   $variables['#attached']['library'][] = 'saho/saho-archive-card';
   $variables['#attached']['library'][] = 'saho/saho-search-field';
-  $variables['#cache']['contexts'][] = 'url.query_args:layout';
+  $variables['#attached']['library'][] = 'saho/archive-index';
+  $variables['#attached']['library'][] = 'saho/archive-refine';
+  foreach (['layout', 'sort_by', 'sort_order', 'search_api_fulltext', 'type', 'people_category_label', 'place_category_label'] as $arg) {
+    $variables['#cache']['contexts'][] = 'url.query_args:' . $arg;
+  }
 }
 
 /**

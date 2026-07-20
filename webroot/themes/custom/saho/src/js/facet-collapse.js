@@ -1,6 +1,6 @@
 /**
  * @file
- * Collapsible facet groups for the /archives refine rail.
+ * Collapsible facet groups for the Open Record refine rails (/archives, /search).
  *
  * Five facet groups stacked open would wall the rail, so each group's
  * heading becomes a toggle. A group starts open when it is one of the
@@ -12,7 +12,7 @@
 ((Drupal, once) => {
   Drupal.behaviors.sahoFacetCollapse = {
     attach: (context) => {
-      once('saho-facet-collapse', '.saho-archive-index .saho-search-rail form', context).forEach(
+      once('saho-facet-collapse', '.saho-search-layout .saho-search-rail form', context).forEach(
         (form) => {
           const groups = [...form.querySelectorAll('fieldset, .form-item-collection')];
 

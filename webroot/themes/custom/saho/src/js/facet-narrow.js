@@ -1,6 +1,6 @@
 /**
  * @file
- * In-rail facet lookup for long checkbox lists (/archives).
+ * In-rail facet lookup for long checkbox lists (/archives, /search).
  *
  * Facet groups with more than 12 values render as a scrollable sunk well
  * with a mono filter input above it: typing narrows the checkbox list
@@ -20,7 +20,7 @@
     attach: (context) => {
       once(
         'saho-facet-narrow',
-        '.saho-archive-index .saho-search-rail .bef-checkboxes',
+        '.saho-search-layout .saho-search-rail .bef-checkboxes',
         context
       ).forEach((group) => {
         const items = [...group.querySelectorAll('.form-item')];

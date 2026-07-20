@@ -117,11 +117,17 @@ function _saho_utils_archive_refine_alter(array &$form): void {
  * Implements hook_views_pre_view().
  */
 function saho_utils_views_pre_view(ViewExecutable $view, $display_id, array &$args) {
-  // /archives: a keyword query ranks by relevance unless the person picked
-  // a sort; without a query the catalogue leads with recently updated.
-  if ($view->id() === 'saho_archive_search' && $display_id === 'page_1') {
+  // /archives and /search: a keyword query ranks by relevance unless the
+  // person picked a sort; without a query the register leads with recently
+  // updated. Same rule, different keyword identifiers.
+  $keyword_keys = [
+    'saho_archive_search' => 'combine',
+    'saho_global_search' => 'search_api_fulltext',
+  ];
+  $keyword_key = $keyword_keys[$view->id()] ?? NULL;
+  if ($keyword_key !== NULL && $display_id === 'page_1') {
     $input = $view->getExposedInput();
-    if (trim((string) ($input['combine'] ?? '')) !== '' && empty($input['sort_by'])) {
+    if (trim((string) ($input[$keyword_key] ?? '')) !== '' && empty($input['sort_by'])) {
       $input['sort_by'] = 'search_api_relevance';
       $input['sort_order'] = 'DESC';
       $view->setExposedInput($input);
