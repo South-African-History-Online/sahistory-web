@@ -43,12 +43,19 @@ code {
   overflow-x: auto;
 }
 
-// Handle embedded content
+// Handle embedded content. height:auto is only safe on elements with an
+// intrinsic ratio (video); on iframes it collapses to the 150px replaced-
+// element default and squashes body-embedded players. The responsive 16:9
+// video-host rules live in css/media-embeds.css (raw, outside PurgeCSS -
+// their attribute values never appear in scanned templates).
 iframe,
 embed,
 object,
 video {
   max-width: 100%;
+}
+
+video {
   height: auto;
 }
 

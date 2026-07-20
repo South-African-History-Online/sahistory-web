@@ -1,0 +1,24 @@
+/**
+ * @file
+ * Body-embedded media players - responsive sizing.
+ *
+ * Lives OUTSIDE the Vite/PurgeCSS pipeline on purpose: these attribute
+ * selectors match values (youtube.com, vimeo...) that only ever occur in
+ * node body HTML, never in the twig/js content PurgeCSS scans, so a purged
+ * bundle silently drops them. Served raw via the theme's global `style`
+ * library (same pattern as saho-degraded-image.css).
+ *
+ * The legacy 560x315 width/height attributes cannot track a fluid column;
+ * 16:9 derives the height at any width instead. Explicit-height rules
+ * (PDF viewers at 1500px) still win where both dimensions are set.
+ */
+
+iframe[src*="youtube.com"],
+iframe[src*="youtube-nocookie.com"],
+iframe[src*="youtu.be"],
+iframe[src*="player.vimeo.com"],
+iframe[src*="facebook.com/plugins/video"] {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+}
