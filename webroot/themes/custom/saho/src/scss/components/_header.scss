@@ -136,6 +136,18 @@ header.saho-header-wrapper {
   display: flex;
   align-items: center;
   gap: 0.125rem;
+  // Below 1024px the inline nav (the flex:1 spacer) is display:none, so
+  // without this the whole action cluster hugs the logo on the left and
+  // the right half of the bar sits empty. Right-align the cluster; the
+  // logo stands alone as the brand anchor. Harmless on desktop, where
+  // the nav's flex:1 already fills the middle.
+  margin-left: auto;
+
+  // Touch rhythm: with the reclaimed space, even breathing between the
+  // search glyph, tools, Donate and hamburger instead of a 2px huddle.
+  @media (max-width: 1023.98px) {
+    gap: 0.5rem;
+  }
 }
 
 // ==================================================
@@ -751,7 +763,13 @@ h1.node__title,
   white-space: nowrap;
   margin-left: 0.5rem;
 
-  // Subtle left separator from icon group
+  // Mobile: the right-aligned cluster's even gap carries the grouping -
+  // the extra margin and hairline separator would break the rhythm.
+  @media (max-width: 1023.98px) {
+    margin-left: 0;
+  }
+
+  // Subtle left separator from icon group (desktop only).
   &::before {
     content: "";
     display: block;
@@ -760,6 +778,10 @@ h1.node__title,
     height: 20px;
     width: 1px;
     background: rgba(0, 0, 0, 0.12);
+
+    @media (max-width: 1023.98px) {
+      display: none;
+    }
   }
 
   position: relative;
