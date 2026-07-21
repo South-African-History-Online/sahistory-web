@@ -1,13 +1,23 @@
 name: Deploy
 
+# Release pipeline (2026-07-22 redesign):
+#
+#   git tag vX.Y.Z && git push origin vX.Y.Z
+#     └─> Deploy release to STAGING   (automatic - rehearses the exact tag)
+#           └─> Deploy release to PRODUCTION  (HELD - the run pauses on the
+#               "production" environment's required-reviewer gate; the
+#               "Review deployments" button in the run promotes the same
+#               tag to production)
+#
+# Main-branch pushes deploy NOTHING - staging is a release rehearsal
+# surface, not a merge mirror (five overlapping staging deploys once drove
+# load ~7 on the shared box). Ad-hoc deploys stay available via Run
+# workflow (workflow_dispatch); its production path passes through the
+# same approval gate.
 on:
-  # Auto-deploy to staging on main push, production on version tags
   push:
-    branches:
-      - main
     tags:
-      - 'v*'  # Trigger on version tags (v1.0.0, v1.0.1, etc.)
-  # Manual deployment option
+      - 'v*'
   workflow_dispatch:
     inputs:
       environment:
@@ -20,16 +30,15 @@ on:
           - staging
 
 jobs:
-  # Auto-deploy to staging when main branch is updated
-  deploy-staging:
-    name: Deploy to Staging
+  # Stage the release: automatic on every version tag, deploys THE TAG
+  # (not main - the rehearsal must match what the button will promote).
+  deploy-release-staging:
+    name: Stage release ${{ github.ref_name }}
     runs-on: ubuntu-latest
     environment: staging
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    # Merges landing in quick succession must not stack parallel full
-    # pipelines on the shared server (2026-07-20: five overlapping staging
-    # deploys drove load ~7 on the box that also serves production).
-    # Queued runs wait; never cancel a deploy mid-flight.
+    if: startsWith(github.ref, 'refs/tags/v')
+    # Never stack parallel full pipelines on the shared server. Queued
+    # runs wait; never cancel a deploy mid-flight.
     concurrency:
       group: staging-deploy
       cancel-in-progress: false
@@ -45,20 +54,20 @@ jobs:
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -p 2278 -H ${{ secrets.DEPLOY_HOST }} >> ~/.ssh/known_hosts
 
-      - name: Deploy to Staging
+      - name: Deploy release to Staging
         run: |
           ssh -i ~/.ssh/deploy_key -p 2278 -o ServerAliveInterval=30 -o ServerAliveCountMax=20 ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} << 'ENDSSH'
             set -e
             cd ${{ secrets.DEPLOY_PATH_STAGING }}
             echo "========================================="
-            echo "Auto-deploying to STAGING"
-            echo "Commit: ${{ github.sha }}"
+            echo "Staging release rehearsal"
+            echo "Tag: ${{ github.ref_name }}"
             echo "========================================="
-            git fetch origin
-            git reset --hard origin/main
+            git fetch origin --tags
+            git checkout ${{ github.ref_name }}
             scripts/deploy-all.sh staging
             echo ""
-            echo "✓ Staging deployment complete"
+            echo "✓ Release staged - production awaits approval"
           ENDSSH
 
       - name: Cleanup
@@ -75,17 +84,19 @@ jobs:
       - name: Notify on Success
         if: success()
         run: |
-          echo "::notice::Auto-deployment to staging completed successfully"
+          echo "::notice::Release ${{ github.ref_name }} staged - approve the production job to promote it"
 
       - name: Notify on Failure
         if: failure()
         run: |
-          echo "::error::Auto-deployment to staging failed"
+          echo "::error::Staging rehearsal of ${{ github.ref_name }} failed - production hold remains"
 
-  # Deploy to production only on version tags
-  deploy-production:
-    name: Deploy to Production
+  # Promote the held release: waits for the staging rehearsal AND the
+  # production environment's required-reviewer approval (the button).
+  deploy-release-production:
+    name: Promote ${{ github.ref_name }} to Production
     runs-on: ubuntu-latest
+    needs: deploy-release-staging
     environment: production
     if: startsWith(github.ref, 'refs/tags/v')
 
@@ -106,7 +117,7 @@ jobs:
             set -e
             cd ${{ secrets.DEPLOY_PATH_PROD }}
             echo "========================================="
-            echo "Deploying to PRODUCTION"
+            echo "Promoting release to PRODUCTION"
             echo "Tag: ${{ github.ref_name }}"
             echo "========================================="
             git fetch origin --tags
@@ -136,7 +147,10 @@ jobs:
         run: |
           echo "::error::Production deployment failed for ${{ github.ref_name }}"
 
-  # Manual deployment job (workflow_dispatch)
+  # Ad-hoc deploys (Run workflow). The production choice passes through
+  # the same environment approval gate as a release promotion. NOTE: this
+  # path deploys origin/main HEAD, not a tag - it is the escape hatch,
+  # not the release path.
   deploy-manual:
     name: Manual Deploy to ${{ github.event.inputs.environment }}
     runs-on: ubuntu-latest
