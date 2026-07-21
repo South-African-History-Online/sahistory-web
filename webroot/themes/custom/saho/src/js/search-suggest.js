@@ -112,7 +112,13 @@
         return;
       }
       timer = setTimeout(() => {
-        fetch(`/api/search/suggest?q=${encodeURIComponent(keyword)}`)
+        // Section fields (e.g. /archives) scope their typeahead to their
+        // own material via data-suggest-scope - global records in a
+        // section's suggest list read as the search running "outside" it.
+        const scope = input.dataset.suggestScope
+          ? `&type=${encodeURIComponent(input.dataset.suggestScope)}`
+          : '';
+        fetch(`/api/search/suggest?q=${encodeURIComponent(keyword)}${scope}`)
           .then((r) => (r.ok ? r.json() : { total: 0, suggestions: [] }))
           .then((data) => {
             if (input.value.trim() === keyword) {
