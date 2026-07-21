@@ -120,28 +120,33 @@
     </section>
     {% endif %}
 
-    {# Main Content Grid Section #}
-    <section class="africa-content-section" id="all-content">
+    {# Main Content Grid Section. data-saho-results + the results/pager
+       wrappers opt this section into the shared scroll-to-load behaviour
+       (saho-load-more.js), same as the entity overview pages. #}
+    {{ attach_library('saho/saho-index-table') }}
+    <section class="africa-content-section" id="all-content" data-saho-results>
       <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="h3 mb-0">
           <i class="fas fa-th-large me-2 text-danger"></i>
           All Content from {{ region_data.name }}
         </h2>
-        <div class="text-muted small">
+        <div class="text-muted small" data-saho-result-total>
           {{ view.total_rows }} items
         </div>
       </div>
 
       {# Main content grid from views-view-grid template #}
-      {{ rows }}
-    </section>
-
-    {# Footer/Pager #}
-    {% if pager %}
-      <div class="africa-pager mt-5">
-        {{ pager }}
+      <div class="saho-results--grid">
+        {{ rows }}
       </div>
-    {% endif %}
+
+      {# Footer/Pager - inside the results scope so load-more can walk it. #}
+      {% if pager %}
+        <div class="saho-search-pager africa-pager mt-5">
+          {{ pager }}
+        </div>
+      {% endif %}
+    </section>
 
   </div>
 </div>
