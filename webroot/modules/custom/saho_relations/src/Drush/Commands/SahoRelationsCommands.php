@@ -463,12 +463,20 @@ final class SahoRelationsCommands extends DrushCommands {
     $source_bundles = ['article', 'biography', 'event', 'place', 'image'];
     $target_bundles = ['biography', 'article'];
 
-    // One pass: published parent -> [child => bundle].
+    // One pass: published parent -> [child => bundle]. ORDER BY matters:
+    // without it, MySQL's physical row order decides which candidates fill
+    // each node's cap - and that order shifts whenever tables are rebuilt
+    // (backups, OPTIMIZE/repair). A shifted order made the 2026-07-21
+    // deploy append 10,112 "new" edges to already-converged nodes. With a
+    // deterministic order the same candidates win every run, so a
+    // converged graph stays converged.
     $q = $this->database->select('node__field_feature_parent', 'p');
     $q->join('node_field_data', 'n', 'n.nid = p.entity_id AND n.status = 1');
     $q->addField('p', 'field_feature_parent_target_id', 'pid');
     $q->addField('p', 'entity_id', 'nid');
     $q->addField('n', 'type', 'bundle');
+    $q->orderBy('p.field_feature_parent_target_id');
+    $q->orderBy('p.entity_id');
     $collections = [];
     foreach ($q->execute() as $row) {
       $collections[(int) $row->pid][(int) $row->nid] = $row->bundle;
@@ -501,7 +509,14 @@ final class SahoRelationsCommands extends DrushCommands {
       }
     }
 
-    // Build capped edges (cap is now a real per-node total).
+    // Build capped edges (cap is now a real per-node total). Sorting the
+    // sources and each node's targets pins WHICH candidates fill the cap
+    // (lowest nid first) - the second half of the determinism guarantee.
+    ksort($by_source);
+    foreach ($by_source as &$sort_targets) {
+      ksort($sort_targets);
+    }
+    unset($sort_targets);
     $edges = [];
     $processed = 0;
     foreach ($by_source as $nid => $targets) {
