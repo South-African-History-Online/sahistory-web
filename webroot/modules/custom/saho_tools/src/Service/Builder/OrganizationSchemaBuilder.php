@@ -37,7 +37,7 @@ class OrganizationSchemaBuilder extends SchemaBuilderBase {
       'legalName' => 'South African History Online',
       'url' => $base_url,
       'description' => 'South African History Online (SAHO) is a non-profit organization dedicated to making South African history accessible to all. We provide free, educational resources about South African history, including articles, biographies, archives, and educational materials.',
-      'foundingDate' => '2000',
+      'foundingDate' => '1998',
       'slogan' => 'Towards a people\'s history',
     ];
 
