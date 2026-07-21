@@ -1,20 +1,16 @@
 /**
  * @file
- * In-rail facet lookup for long checkbox lists (/archives, /search).
+ * Scroll wells for long facet checkbox lists (/archives, /search).
  *
  * Facet groups with more than 12 values render as a scrollable sunk well
- * with a mono filter input above it: typing narrows the checkbox list
- * client-side (diacritic-insensitive), checked values always stay visible.
- * Long lists need lookup, not SHOW MORE chip walls.
+ * with a mono total on the heading - the visible rows are a window onto
+ * the full count-ordered list. Long lists get a well, not SHOW MORE chip
+ * walls. (A per-group filter input was tried and retired 2026-07-21:
+ * count-ordered lists put the strong values on top, so the input was
+ * apparatus clutter ahead of the actual options.)
  */
 ((Drupal, once) => {
   const THRESHOLD = 12;
-
-  const normalize = (text) =>
-    text
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .toLowerCase();
 
   Drupal.behaviors.sahoFacetNarrow = {
     attach: (context) => {
@@ -31,7 +27,6 @@
         group.classList.add('saho-facet-narrow');
 
         const legend = group.closest('fieldset')?.querySelector('legend');
-        const groupLabel = legend?.textContent.trim();
 
         // A mono total on the heading says how much the well holds - the
         // visible rows are a window, not the full list.
@@ -41,31 +36,6 @@
           total.textContent = items.length;
           (legend.querySelector('.saho-facet-group__toggle') || legend).appendChild(total);
         }
-        const input = document.createElement('input');
-        input.type = 'search';
-        input.className = 'saho-facet-narrow__input';
-        input.placeholder = groupLabel
-          ? Drupal.t('Filter @label…', { '@label': groupLabel.toLowerCase() })
-          : Drupal.t('Filter options…');
-        input.setAttribute('aria-label', input.placeholder);
-        group.parentNode.insertBefore(input, group);
-
-        // Match on the value's name only - not its record count.
-        const labelText = (label) =>
-          [...(label?.childNodes || [])]
-            .filter((node) => !(node.nodeType === 1 && node.classList.contains('saho-facet-count')))
-            .map((node) => node.textContent)
-            .join('');
-
-        input.addEventListener('input', () => {
-          const query = normalize(input.value.trim());
-          items.forEach((item) => {
-            const checked = item.querySelector('input[type="checkbox"]')?.checked;
-            const match =
-              query === '' || normalize(labelText(item.querySelector('label'))).includes(query);
-            item.hidden = !(checked || match);
-          });
-        });
       });
     },
   };

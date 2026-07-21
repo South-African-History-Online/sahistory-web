@@ -70,6 +70,13 @@ class SearchSuggestController extends ControllerBase {
     $keyword = trim((string) $request->query->get('q', ''));
     // Cap the keyword length before it reaches Solr.
     $keyword = mb_substr($keyword, 0, self::MAX_KEYWORD_LENGTH);
+    // Optional bundle scope (?type=archive): section search fields must not
+    // tease global records - the /archives field suggests archive material
+    // only. Allowlisted so the parameter cannot probe arbitrary values.
+    $type = (string) $request->query->get('type', '');
+    if (!in_array($type, ['archive', 'biography', 'article', 'event', 'place'], TRUE)) {
+      $type = '';
+    }
     $payload = ['total' => 0, 'suggestions' => []];
 
     if (mb_strlen($keyword) >= 2 && $this->moduleHandler()->moduleExists('search_api')) {
@@ -82,6 +89,9 @@ class SearchSuggestController extends ControllerBase {
             ->keys($keyword)
             ->range(0, self::LIMIT)
             ->sort('search_api_relevance', 'DESC');
+          if ($type !== '') {
+            $query->addCondition('type_string', $type);
+          }
           $results = $query->execute();
           $payload['total'] = (int) $results->getResultCount();
           foreach ($results as $item) {
@@ -108,7 +118,7 @@ class SearchSuggestController extends ControllerBase {
 
     $response = new CacheableJsonResponse($payload);
     $meta = new CacheableMetadata();
-    $meta->addCacheContexts(['url.query_args:q']);
+    $meta->addCacheContexts(['url.query_args:q', 'url.query_args:type']);
     $meta->addCacheTags(['node_list']);
     $meta->setCacheMaxAge(300);
     $response->addCacheableDependency($meta);

@@ -79,7 +79,13 @@
             `<span class="saho-suggest__ref">${escapeHtml(s.ref || s.type)}</span></a>`
         )
         .join('');
-      const allUrl = `/search?search_api_fulltext=${encodeURIComponent(keyword)}`;
+      // The "search all" row submits WHERE THIS FIELD searches: its own
+      // form's action and input name (/archives?combine=... on the archive
+      // page), so a scoped field never hands off to the global search.
+      const form = input.closest('form');
+      const action = form?.getAttribute('action') || '/search';
+      const param = input.name || 'search_api_fulltext';
+      const allUrl = `${action}?${encodeURIComponent(param)}=${encodeURIComponent(keyword)}`;
       const footer =
         `<a class="saho-suggest__row saho-suggest__all" role="option" id="${uid}-all" href="${allUrl}">` +
         `${Drupal.t('Search all @count results for "@q"', { '@count': data.total.toLocaleString(), '@q': keyword })} &rarr;</a>`;
@@ -112,7 +118,13 @@
         return;
       }
       timer = setTimeout(() => {
-        fetch(`/api/search/suggest?q=${encodeURIComponent(keyword)}`)
+        // Section fields (e.g. /archives) scope their typeahead to their
+        // own material via data-suggest-scope - global records in a
+        // section's suggest list read as the search running "outside" it.
+        const scope = input.dataset.suggestScope
+          ? `&type=${encodeURIComponent(input.dataset.suggestScope)}`
+          : '';
+        fetch(`/api/search/suggest?q=${encodeURIComponent(keyword)}${scope}`)
           .then((r) => (r.ok ? r.json() : { total: 0, suggestions: [] }))
           .then((data) => {
             if (input.value.trim() === keyword) {
