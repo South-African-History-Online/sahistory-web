@@ -43,7 +43,7 @@ final class TermRegisterRedirectSubscriberTest extends KernelTestBase {
     $this->installEntitySchema('taxonomy_term');
     $this->installEntitySchema('user');
     $this->installConfig(['term_registers']);
-    foreach (['member_of_organisation', 'saldru_archive_topic', 'african_country'] as $vid) {
+    foreach (['member_of_organisation', 'saldru_archive_topic', 'african_country', 'field_arts_culture_categories'] as $vid) {
       Vocabulary::create(['vid' => $vid, 'name' => $vid])->save();
     }
   }
@@ -88,6 +88,19 @@ final class TermRegisterRedirectSubscriberTest extends KernelTestBase {
     $response = $event->getResponse();
     $this->assertInstanceOf(LocalRedirectResponse::class, $response);
     $this->assertSame('/archives?saldru%5BLabour%5D=Labour', $response->getTargetUrl());
+  }
+
+  /**
+   * Topic-section categories land on their topic shell with the chip set.
+   */
+  public function testTopicCategoryRedirect(): void {
+    $term = Term::create(['vid' => 'field_arts_culture_categories', 'name' => 'Sport']);
+    $term->save();
+    $event = $this->dispatch($term);
+    $response = $event->getResponse();
+    $this->assertInstanceOf(LocalRedirectResponse::class, $response);
+    $tid = $term->id();
+    $this->assertSame("/art-culture?tid_1%5B$tid%5D=$tid", $response->getTargetUrl());
   }
 
   /**

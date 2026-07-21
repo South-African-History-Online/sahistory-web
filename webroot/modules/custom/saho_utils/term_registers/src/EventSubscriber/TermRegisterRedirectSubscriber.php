@@ -47,6 +47,10 @@ final class TermRegisterRedirectSubscriber implements EventSubscriberInterface {
     'field_places_level3' => ['path' => '/places', 'param' => 'tid_2', 'mode' => 'tid'],
     'saldru_archive_topic' => ['path' => '/archives', 'param' => 'saldru', 'mode' => 'label'],
     'field_media_library_type' => ['path' => '/archives', 'param' => 'type', 'mode' => 'label'],
+    // Topic-section categories land on their topic shell; both filters are
+    // EXPOSED chips there, so the applied term ticks visibly on arrival.
+    'field_arts_culture_categories' => ['path' => '/art-culture', 'param' => 'tid_1', 'mode' => 'tid'],
+    'field_politics_society_categorie' => ['path' => '/politics-society', 'param' => 'tid', 'mode' => 'tid'],
   ];
 
   public function __construct(
