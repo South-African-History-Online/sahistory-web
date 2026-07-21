@@ -16,6 +16,10 @@
   const NEXT_SELECTOR =
     '.saho-search-pager li[class*="--next"] a, .saho-search-pager a[rel="next"]';
 
+  // Landing shells use .saho-card-grid; the africa regional pages render the
+  // same paged cards through a Bootstrap column grid (.saho-cards-grid).
+  const GRID_SELECTOR = '.saho-results--grid .saho-card-grid, .saho-results--grid .saho-cards-grid';
+
   function nextHref(root) {
     const link = root.querySelector(NEXT_SELECTOR);
     return link ? link.href : null;
@@ -28,7 +32,7 @@
 
   function appendResults(scope, sourceScope) {
     const tbody = scope.querySelector('.saho-results--table tbody');
-    const grid = scope.querySelector('.saho-results--grid .saho-card-grid');
+    const grid = scope.querySelector(GRID_SELECTOR);
     let appended = 0;
 
     if (tbody) {
@@ -38,7 +42,8 @@
       });
     }
     if (grid) {
-      const cards = sourceScope.querySelectorAll('.saho-results--grid .saho-card-grid > *');
+      const sourceGrid = sourceScope.querySelector(GRID_SELECTOR);
+      const cards = sourceGrid ? [...sourceGrid.children] : [];
       cards.forEach((card) => {
         grid.appendChild(document.importNode(card, true));
       });
@@ -52,7 +57,7 @@
     if (tbody) {
       return tbody.rows.length;
     }
-    const grid = scope.querySelector('.saho-results--grid .saho-card-grid');
+    const grid = scope.querySelector(GRID_SELECTOR);
     return grid ? grid.children.length : 0;
   }
 
