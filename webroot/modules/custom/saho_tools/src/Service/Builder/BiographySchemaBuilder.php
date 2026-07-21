@@ -38,10 +38,6 @@ class BiographySchemaBuilder extends SchemaBuilderBase {
       '@id' => ($ref_url ?? $url) . '#person',
       'name' => $node->getTitle(),
       'url' => $url,
-      'mainEntityOfPage' => [
-        '@type' => 'WebPage',
-        '@id' => $url,
-      ],
     ];
 
     // Build full name from components.
@@ -216,6 +212,10 @@ class BiographySchemaBuilder extends SchemaBuilderBase {
     }
 
     // Wrap Person in ProfilePage (Google rich-result type for profiles).
+    // mainEntityOfPage never appears here: on a ProfilePage the page IS
+    // the entity's page (mainEntity carries the relationship), and Search
+    // Console flags the field as unrecognized on Profile page items - the
+    // property is for content entities (Article etc.), not page types.
     $schema = [
       '@context' => 'https://schema.org',
       '@type' => 'ProfilePage',
@@ -223,6 +223,7 @@ class BiographySchemaBuilder extends SchemaBuilderBase {
       'dateModified' => date('c', $node->getChangedTime()),
       'mainEntity' => $person,
     ] + $this->identityProperties($node);
+    unset($schema['mainEntityOfPage']);
     if (!empty($citations)) {
       $schema['citation'] = $citations;
     }

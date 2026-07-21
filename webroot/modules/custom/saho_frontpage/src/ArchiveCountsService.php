@@ -255,13 +255,17 @@ final class ArchiveCountsService {
       return $cached->data;
     }
     $rows = [];
-    // Count only published members (c.status = 1) of published collection
-    // parents (n.status = 1); the field row itself must not be deleted.
+    // Count only published ARCHIVE members (c.status = 1, c.type = archive)
+    // of published collection parents (n.status = 1); the field row itself
+    // must not be deleted. The bundle condition matters: these links land on
+    // the /archives register, which only lists archive records - a collection
+    // whose members are biographies (Lives of Courage: 4,114 members, zero
+    // archives) would otherwise rank top-3 and link to an empty result page.
     $result = $this->database->query(
       "SELECT p.field_feature_parent_target_id AS nid, n.title, COUNT(*) AS members
        FROM {node__field_feature_parent} p
        JOIN {node_field_data} n ON n.nid = p.field_feature_parent_target_id AND n.status = 1
-       JOIN {node_field_data} c ON c.nid = p.entity_id AND c.status = 1
+       JOIN {node_field_data} c ON c.nid = p.entity_id AND c.status = 1 AND c.type = 'archive'
        WHERE p.deleted = 0
        GROUP BY p.field_feature_parent_target_id, n.title
        ORDER BY members DESC LIMIT 3"
