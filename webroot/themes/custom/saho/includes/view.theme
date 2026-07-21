@@ -1119,6 +1119,43 @@ function saho_preprocess_views_view__saho_landing_shell(array &$variables): void
   $variables['record_rows'] = $record_rows;
   $variables['record_cards'] = $record_cards;
   $variables['result_total'] = $variables['landing_count'];
+
+  // Hidden URL-only filters (org/prison/ptype/register/bio - the term
+  // register redirects and register tiles) have no visible widget; resolve
+  // their term labels into a "Filtered:" head with a clear link so readers
+  // landing from a term page can SEE and drop the applied scope. The
+  // wholesale url.query_args cache context below covers the params.
+  $request = \Drupal::request();
+  $filter_labels = [];
+  $present_params = [];
+  $term_storage = \Drupal::entityTypeManager()->getStorage('taxonomy_term');
+  foreach (['org', 'prison', 'ptype', 'register', 'bio'] as $hidden_param) {
+    $raw = $request->query->all()[$hidden_param] ?? NULL;
+    $ids = is_array($raw) ? array_values($raw) : (($raw !== NULL && (string) $raw !== '') ? [$raw] : []);
+    if ($ids === []) {
+      continue;
+    }
+    $present_params[] = $hidden_param;
+    foreach ($ids as $id) {
+      if (!ctype_digit((string) $id)) {
+        continue;
+      }
+      $term = $term_storage->load((int) $id);
+      if ($term !== NULL) {
+        $filter_labels[] = $term->label();
+        $variables['#cache']['tags'][] = 'taxonomy_term:' . $term->id();
+      }
+    }
+  }
+  if ($filter_labels !== []) {
+    $clear_query = array_diff_key($request->query->all(), array_flip(array_merge($present_params, ['page'])));
+    $landing_path = '/' . $variables['view']->getDisplay()->getPath();
+    $variables['filter_head'] = [
+      'labels' => $filter_labels,
+      'clear_url' => Url::fromUserInput($landing_path, $clear_query !== [] ? ['query' => $clear_query] : [])->toString(),
+    ];
+  }
+
   // Places: the clustered Leaflet register (places_map view) rides along as
   // a third results layout - same records, spatial reading. It is unpaged
   // and unfiltered (all geolocated places); the exposed filters and pager

@@ -7,6 +7,7 @@ dependencies:
     - image.style.lp_new
     - node.type.place
     - system.menu.main
+    - taxonomy.vocabulary.field_place_type
     - taxonomy.vocabulary.field_place_type_category
     - taxonomy.vocabulary.field_places_level3
   module:
@@ -215,6 +216,13 @@ display:
                   is_secondary: false
                   hide_label: false
                   sort_options_order: count_desc
+              field_place_type_target_id:
+                plugin_id: bef_hidden
+                advanced:
+                  rewrite:
+                    filter_rewrite_values: ''
+                  collapsible: false
+                  is_secondary: false
       access:
         type: perm
         options:
@@ -456,6 +464,40 @@ display:
             default_group: All
             default_group_multiple: {  }
             group_items: {  }
+        field_place_type_target_id:
+          id: field_place_type_target_id
+          table: node__field_place_type
+          field: field_place_type_target_id
+          relationship: none
+          group_type: group
+          admin_label: 'Place type (URL-driven, BEF hidden)'
+          plugin_id: taxonomy_index_tid
+          operator: or
+          value: {  }
+          group: 1
+          exposed: true
+          expose:
+            operator_id: ptype_op
+            label: 'Place type'
+            description: ''
+            use_operator: false
+            operator: ptype_op
+            operator_limit_selection: false
+            operator_list: {  }
+            identifier: ptype
+            required: false
+            remember: false
+            multiple: false
+            remember_roles:
+              authenticated: authenticated
+            reduce: false
+          is_grouped: false
+          reduce_duplicates: false
+          vid: field_place_type
+          type: select
+          hierarchy: false
+          limit: true
+          error_message: true
       style:
         type: grid
         options:

@@ -33,6 +33,16 @@
        (the chip earns its keep on record pages, where type != title). #}
     <h1 class="saho-landing-head__title">{{ landing_label }}</h1>
     <p class="saho-landing-head__count">{{ landing_count }} records</p>
+    {# Hidden URL-only filters made visible (term-register redirects):
+       mono head line in the archive collection-head register. #}
+    {% if filter_head %}
+      <p class="saho-archive-collection">
+        <span class="saho-archive-collection__label">{{ 'Filtered:'|t }}</span>
+        {{ filter_head.labels|join(' · ') }}
+        <a class="saho-archive-collection__clear" href="{{ filter_head.clear_url }}"
+           aria-label="{{ 'Clear this filter'|t }}">&#215;</a>
+      </p>
+    {% endif %}
     {# Places carry coordinates, but the map is a results layout (the Map tab
        below), not a separate destination - no header link needed. #}
     {# Timelines carry dates: offer the interactive timeline as an alternate
