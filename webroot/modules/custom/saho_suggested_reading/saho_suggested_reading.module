@@ -375,6 +375,12 @@ function _saho_suggested_reading_get_entity_image_url(FieldableEntityInterface $
  * Thin shim over the cached SuggestedReadingQuery service - the 10-join
  * query behind this was the site's biggest database consumer, so its nid
  * lists are cached per condition set (6h TTL, saho_suggested_reading tag).
+ *
+ * Note the two caches here have deliberately different invalidation: the
+ * render array below carries node_list:{bundle} tags (busts on any save),
+ * while the nid-list data cache is TTL-only behind its own tag - so a cold
+ * render stays cheap even though the query result is intentionally allowed
+ * to lag saves by up to its TTL. This mismatch is by design, not a bug.
  */
 function _saho_suggested_reading_query_entities_with_images($conditions = [], $limit = 6) {
   return \Drupal::service('saho_suggested_reading.query')

@@ -179,14 +179,14 @@ class NodeFetcher {
    *   Array of month-day combinations that have events.
    */
   public function getAvailableDates() {
-    $cached = $this->cache->get('tdih:available_dates');
-    if ($cached !== FALSE) {
-      return $cached->data;
-    }
-
     $dates = [];
 
     try {
+      $cached = $this->cache->get('tdih:available_dates');
+      if ($cached !== FALSE) {
+        return $cached->data;
+      }
+
       // Query to extract month and day from the date field.
       $query = $this->database->select('node_field_data', 'n');
       $query->join('node__field_event_date', 'f', 'n.nid = f.entity_id');
