@@ -79,9 +79,12 @@
        a quiet mono invitation, not a form block. On instances that do
        NOT show the today-ledger (the /this-day-in-history page), the
        form and its default today results ARE the page's content, so the
-       disclosure defaults open - a closed one left that page empty. #}
+       disclosure defaults open - a closed one left that page empty.
+       picker_open (when set) overrides that heuristic: the event-node
+       embed hides the ledger too but is an aside, not the page. #}
     {% if date_picker_form %}
-      <details class="tdih-birthday-disclosure"{% if not show_today_history %} open{% endif %}>
+      {% set birthday_open = picker_open is same as(null) ? not show_today_history : picker_open %}
+      <details class="tdih-birthday-disclosure"{% if birthday_open %} open{% endif %}>
         <summary class="tdih-birthday-summary">{{ 'What happened on your birthday?'|t }} <span aria-hidden="true">&rarr;</span></summary>
         <div class="tdih-birthday-picker" role="search" aria-label="{{ 'Search historical events by date'|t }}">
           {{ date_picker_form }}

@@ -25,17 +25,6 @@
         }
       });
 
-      // Ensure Today in History section is always visible
-      once('tdih-visibility', '.tdih-interactive-block', context).forEach(function (element) {
-        var $block = $(element);
-        var $wrapper = $block.find('.tdih-today-history-wrapper');
-
-        // Ensure the wrapper is always visible
-        if ($wrapper.length) {
-          $wrapper.show();
-        }
-      });
-
       // Add hover effects to event items.
       once('tdih-hover', '.tdih-event-item', context).forEach(function (element) {
         $(element).hover(

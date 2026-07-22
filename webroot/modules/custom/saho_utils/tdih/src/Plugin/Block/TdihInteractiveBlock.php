@@ -482,6 +482,7 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
       '#show_details_button' => $this->configuration['show_details_button'],
       '#show_more_link' => $this->configuration['show_more_link'] ?? TRUE,
       '#use_todays_date' => $this->configuration['use_todays_date'],
+      '#picker_open' => $this->configuration['picker_open'] ?? NULL,
       '#attached' => [
         'library' => [
           'tdih/tdih-interactive',
