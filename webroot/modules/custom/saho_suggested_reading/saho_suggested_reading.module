@@ -371,72 +371,12 @@ function _saho_suggested_reading_get_entity_image_url(FieldableEntityInterface $
 
 /**
  * Query entities that have images using database joins.
+ *
+ * Thin shim over the cached SuggestedReadingQuery service - the 10-join
+ * query behind this was the site's biggest database consumer, so its nid
+ * lists are cached per condition set (6h TTL, saho_suggested_reading tag).
  */
 function _saho_suggested_reading_query_entities_with_images($conditions = [], $limit = 6) {
-  $database = \Drupal::database();
-
-  // Build the base query.
-  $query = $database->select('node_field_data', 'n');
-  $query->fields('n', ['nid']);
-  $query->condition('n.status', 1);
-  $query->condition('n.type', ['article', 'biography', 'archive', 'place', 'event'], 'IN');
-
-  // Exclude specific node if provided.
-  if (!empty($conditions['exclude_nid'])) {
-    $query->condition('n.nid', $conditions['exclude_nid'], '!=');
-  }
-
-  // Join with image field tables to ensure images exist.
-  $image_joins = [
-    // Articles: field_article_image OR field_feature_banner.
-    'article' => ['field_article_image', 'field_feature_banner'],
-    // Biographies: field_bio_pic OR field_feature_banner.
-    'biography' => ['field_bio_pic', 'field_feature_banner'],
-    // Archives: field_archive_image OR field_image.
-    'archive' => ['field_archive_image', 'field_image'],
-    // Places: field_place_image OR field_feature_banner.
-    'place' => ['field_place_image', 'field_feature_banner'],
-    // Events: field_event_image OR field_tdih_image.
-    'event' => ['field_event_image', 'field_tdih_image'],
-  ];
-
-  // Create a complex OR condition for images across all content types.
-  $image_condition = $query->orConditionGroup();
-
-  foreach ($image_joins as $bundle => $fields) {
-    $bundle_condition = $query->andConditionGroup();
-    $bundle_condition->condition('n.type', $bundle);
-
-    $field_condition = $query->orConditionGroup();
-    foreach ($fields as $field) {
-      $alias = 'img_' . $bundle . '_' . str_replace('field_', '', $field);
-      $query->leftJoin('node__' . $field, $alias, $alias . '.entity_id = n.nid AND ' . $alias . '.bundle = :bundle_' . $alias, [':bundle_' . $alias => $bundle]);
-      $field_condition->isNotNull($alias . '.' . $field . '_target_id');
-    }
-
-    $bundle_condition->condition($field_condition);
-    $image_condition->condition($bundle_condition);
-  }
-
-  $query->condition($image_condition);
-
-  // Add specific field conditions.
-  if (!empty($conditions['field_feature_parent'])) {
-    $query->join('node__field_feature_parent', 'fp', 'fp.entity_id = n.nid');
-    $query->condition('fp.field_feature_parent_target_id', $conditions['field_feature_parent']);
-  }
-
-  if (!empty($conditions['field_tags'])) {
-    $query->join('node__field_tags', 'ft', 'ft.entity_id = n.nid');
-    $query->condition('ft.field_tags_target_id', $conditions['field_tags'], 'IN');
-  }
-
-  // Order and limit.
-  $query->orderBy('n.created', 'DESC');
-  $query->range(0, $limit);
-
-  $result = $query->execute();
-  $nids = $result->fetchCol();
-
-  return !empty($nids) ? \Drupal::entityTypeManager()->getStorage('node')->loadMultiple($nids) : [];
+  return \Drupal::service('saho_suggested_reading.query')
+    ->getEntitiesWithImages($conditions, (int) $limit);
 }
