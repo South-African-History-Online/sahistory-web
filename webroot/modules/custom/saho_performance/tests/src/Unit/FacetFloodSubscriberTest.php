@@ -102,6 +102,37 @@ class FacetFloodSubscriberTest extends UnitTestCase {
   /**
    * @covers ::onRequest
    */
+  public function testHubPageSweepIsRejected(): void {
+    // Shape taken from the crawler sweep of /classroom: resource_type[] +
+    // subject[] checkbox enumeration on the hub route.
+    $params = [];
+    foreach ([35797, 35798, 35799, 35800, 35801, 35802] as $tid) {
+      $params[] = "resource_type%5B$tid%5D=$tid";
+    }
+    foreach ([35791, 35792, 35793] as $tid) {
+      $params[] = "subject%5B$tid%5D=$tid";
+    }
+    $response = $this->runFor(
+      'view.classroom.page_1',
+      '/classroom?' . implode('&', $params)
+    );
+    $this->assertNotNull($response);
+    $this->assertSame(400, $response->getStatusCode());
+  }
+
+  /**
+   * @covers ::onRequest
+   */
+  public function testHubPageRealisticSelectionPassesThrough(): void {
+    $this->assertNull($this->runFor(
+      'view.classroom.page_1',
+      '/classroom?resource_type%5B35797%5D=35797&subject%5B35791%5D=35791'
+    ));
+  }
+
+  /**
+   * @covers ::onRequest
+   */
   public function testBareBrowsePagePassesThrough(): void {
     $this->assertNull($this->runFor(
       'view.classroom_presentations.page_1',

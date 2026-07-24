@@ -96,11 +96,16 @@ class SeoRobotsSubscriberTest extends UnitTestCase {
   /**
    * @covers ::onResponse
    */
-  public function testFilteredClassroomUrlGetsNoindex(): void {
+  public function testFilteredClassroomUrlsGetNoindex(): void {
     $request = Request::create('/classroom/presentations?grade%5B35779%5D=35779');
     $this->assertSame(
       'noindex, follow',
       $this->runFor('view.classroom_presentations.page_1', $this->htmlResponse(), $request)
+    );
+    $hub = Request::create('/classroom?resource_type%5B35797%5D=35797');
+    $this->assertSame(
+      'noindex, follow',
+      $this->runFor('view.classroom.page_1', $this->htmlResponse(), $hub)
     );
   }
 

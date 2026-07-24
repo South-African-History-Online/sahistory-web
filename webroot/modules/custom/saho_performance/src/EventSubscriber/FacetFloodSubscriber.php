@@ -26,14 +26,19 @@ use Symfony\Component\HttpKernel\KernelEvents;
 class FacetFloodSubscriber implements EventSubscriberInterface {
 
   /**
-   * Route name of the classroom deck browse page.
+   * Route names of the classroom pages with checkbox facets.
    */
-  protected const CLASSROOM_ROUTE = 'view.classroom_presentations.page_1';
+  protected const CLASSROOM_ROUTES = [
+    // /classroom - hub page.
+    'view.classroom.page_1',
+    // /classroom/presentations - deck browse page.
+    'view.classroom_presentations.page_1',
+  ];
 
   /**
    * Exposed filter identifiers whose selected values are counted.
    */
-  protected const FACET_PARAMS = ['caps_topic', 'grade'];
+  protected const FACET_PARAMS = ['caps_topic', 'grade', 'resource_type', 'subject'];
 
   /**
    * Maximum total selected facet values before the request is rejected.
@@ -79,7 +84,7 @@ class FacetFloodSubscriber implements EventSubscriberInterface {
    */
   public function onRequest(RequestEvent $event) {
     if (!$event->isMainRequest()
-      || $this->routeMatch->getRouteName() !== static::CLASSROOM_ROUTE) {
+      || !in_array($this->routeMatch->getRouteName(), static::CLASSROOM_ROUTES, TRUE)) {
       return;
     }
 

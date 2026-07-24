@@ -49,6 +49,10 @@ class SeoRobotsSubscriber implements EventSubscriberInterface {
    * /search, and the target of a 20k-URL scraper sweep on 2026-07-24.
    */
   protected const NOINDEX_FILTERED_ROUTES = [
+    // /classroom - hub page with resource_type/subject/grade/caps_topic
+    // checkboxes (the crawler pack moved here once the deck page was
+    // challenged at the edge).
+    'view.classroom.page_1',
     // /classroom/presentations - deck browse page with facet checkboxes.
     'view.classroom_presentations.page_1',
   ];
