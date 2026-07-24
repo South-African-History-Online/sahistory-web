@@ -41,6 +41,19 @@ class SeoRobotsSubscriber implements EventSubscriberInterface {
   ];
 
   /**
+   * Routes de-indexed only when a query string is present.
+   *
+   * These are real landing pages whose bare URL should stay indexed, but
+   * whose exposed checkbox filters (caps_topic[]/grade[] on the classroom
+   * browse page) span a combinatorial URL space - the same trap shape as
+   * /search, and the target of a 20k-URL scraper sweep on 2026-07-24.
+   */
+  protected const NOINDEX_FILTERED_ROUTES = [
+    // /classroom/presentations - deck browse page with facet checkboxes.
+    'view.classroom_presentations.page_1',
+  ];
+
+  /**
    * The current route match.
    *
    * @var \Drupal\Core\Routing\RouteMatchInterface
@@ -73,7 +86,11 @@ class SeoRobotsSubscriber implements EventSubscriberInterface {
    *   The response event.
    */
   public function onResponse(ResponseEvent $event) {
-    if (!in_array($this->routeMatch->getRouteName(), static::NOINDEX_ROUTES, TRUE)) {
+    $route_name = $this->routeMatch->getRouteName();
+    $always = in_array($route_name, static::NOINDEX_ROUTES, TRUE);
+    $filtered = in_array($route_name, static::NOINDEX_FILTERED_ROUTES, TRUE)
+      && $event->getRequest()->getQueryString() !== NULL;
+    if (!$always && !$filtered) {
       return;
     }
 

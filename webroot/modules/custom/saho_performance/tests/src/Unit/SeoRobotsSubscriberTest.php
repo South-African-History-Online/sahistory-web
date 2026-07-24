@@ -30,17 +30,19 @@ class SeoRobotsSubscriberTest extends UnitTestCase {
    *   The current route name.
    * @param \Symfony\Component\HttpFoundation\Response $response
    *   The response to pass through the subscriber.
+   * @param \Symfony\Component\HttpFoundation\Request|null $request
+   *   The request, or NULL for a bare query-string-less request.
    *
    * @return string|null
    *   The X-Robots-Tag header value, or NULL if unset.
    */
-  private function runFor(string $route_name, Response $response): ?string {
+  private function runFor(string $route_name, Response $response, ?Request $request = NULL): ?string {
     $route_match = $this->createMock(RouteMatchInterface::class);
     $route_match->method('getRouteName')->willReturn($route_name);
 
     $event = new ResponseEvent(
       $this->createMock(HttpKernelInterface::class),
-      new Request(),
+      $request ?? new Request(),
       HttpKernelInterface::MAIN_REQUEST,
       $response
     );
@@ -89,6 +91,27 @@ class SeoRobotsSubscriberTest extends UnitTestCase {
   public function testNonHtmlResponseOnSearchRouteIsUntouched(): void {
     $json = new Response('{}', 200, ['Content-Type' => 'application/json']);
     $this->assertNull($this->runFor('view.saho_global_search.page_1', $json));
+  }
+
+  /**
+   * @covers ::onResponse
+   */
+  public function testFilteredClassroomUrlGetsNoindex(): void {
+    $request = Request::create('/classroom/presentations?grade%5B35779%5D=35779');
+    $this->assertSame(
+      'noindex, follow',
+      $this->runFor('view.classroom_presentations.page_1', $this->htmlResponse(), $request)
+    );
+  }
+
+  /**
+   * @covers ::onResponse
+   */
+  public function testBareClassroomBrowsePageStaysIndexable(): void {
+    $request = Request::create('/classroom/presentations');
+    $this->assertNull(
+      $this->runFor('view.classroom_presentations.page_1', $this->htmlResponse(), $request)
+    );
   }
 
 }
