@@ -12,7 +12,6 @@ use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\node\NodeInterface;
 use Drupal\taxonomy\TermInterface;
 use Drupal\Component\Utility\Html;
-use Drupal\Component\Utility\Unicode;
 use Drupal\Core\Render\Markup;
 use Drupal\Core\Site\Settings;
 use Drupal\saho_tools\Schema\ProvenanceIds;
@@ -2045,8 +2044,7 @@ function saho_preprocess_node__biography(array &$variables) {
   }
   // Summary/abstract from the curator-written synopsis.
   $variables['record_summary'] = _saho_record_summary_props($node);
-  $variables['record_related'] = _saho_record_related_props($node);
-  _saho_record_related_cache_tags($variables);
+  _saho_record_related_assign($variables, $node);
   $variables['record_provenance'] = _saho_record_provenance_props($node);
   $variables['record_citation'] = _saho_record_citation_props($node);
   $variables['record_image'] = _saho_record_image_props($node, 'field_bio_pic');
@@ -2480,8 +2478,7 @@ function saho_preprocess_node__image(array &$variables): void {
     'Galleries' => $term_labels('field_gallery_tag'),
   ]);
 
-  $variables['record_related'] = _saho_record_related_props($node);
-  _saho_record_related_cache_tags($variables);
+  _saho_record_related_assign($variables, $node);
   $variables['record_citation'] = _saho_record_citation_props($node);
   $variables['record_image'] = _saho_record_image_props($node, 'field_image', 'field_source', '16 / 9');
   if ($variables['record_image'] === []) {
@@ -2914,8 +2911,7 @@ function _saho_record_header_props(array &$variables, NodeInterface $node, strin
  *   Image field candidates, first populated one wins.
  */
 function _saho_record_common_props(array &$variables, NodeInterface $node, array $image_fields): void {
-  $variables['record_related'] = _saho_record_related_props($node);
-  _saho_record_related_cache_tags($variables);
+  _saho_record_related_assign($variables, $node);
   $variables['record_provenance'] = _saho_record_provenance_props($node);
   $variables['record_citation'] = _saho_record_citation_props($node);
   $variables['record_image'] = [];
@@ -2944,7 +2940,14 @@ function _saho_record_common_props(array &$variables, NodeInterface $node, array
  */
 function _saho_record_related_cache_tags(array &$variables): void {
   // Image joins the set for the reverse Galleries tab (images referencing
-  // this record change what the tab shows).
+  // this record change what the tab shows). The list lives on the builder so
+  // the hub page depends on the identical set.
+  if (\Drupal::hasService('saho_connections.builder')) {
+    foreach (\Drupal::service('saho_connections.builder')->cacheTags() as $tag) {
+      $variables['#cache']['tags'][] = $tag;
+    }
+    return;
+  }
   foreach (['article', 'biography', 'place', 'archive', 'image'] as $child_bundle) {
     $variables['#cache']['tags'][] = 'node_list:' . $child_bundle;
   }
@@ -3144,428 +3147,33 @@ function _saho_record_meta_props(string $title, string $accent, array $rows): ar
  *   saho:saho-related-tabs props, or [] when there are no relations.
  */
 function _saho_record_related_props(NodeInterface $node): array {
-  $threshold = _saho_related_collapse_threshold();
-  $map = [
-    'field_people_related_tab' => ['id' => 'people', 'label' => 'People'],
-    'field_organizations_related_tab' => ['id' => 'organisations', 'label' => 'Organisations'],
-    'field_topics_related_tab' => ['id' => 'topics', 'label' => 'Topics'],
-    'field_timelines_related_tab' => ['id' => 'timelines', 'label' => 'Timelines'],
-  ];
-  $tabs = [];
-  $rerouted = [];
-  foreach ($map as $field => $tab) {
-    if (!$node->hasField($field) || $node->get($field)->isEmpty()) {
-      continue;
-    }
-    $items = [];
-    foreach ($node->get($field)->referencedEntities() as $ref) {
-      $item = _saho_record_related_item($ref);
-      if ($item === NULL) {
-        continue;
-      }
-      // The People tab must list people. field_people_related_tab's legacy
-      // config accepts article targets, and the sibling enrichment fills it
-      // with whole collections ("people-relation-capable" was the only typed
-      // field biographies carry) - so route every non-biography reference to
-      // the tab its actual bundle belongs on instead of mislabelling it.
-      // The other typed fields are article-target fields where the editor's
-      // field choice IS the classification; they pass through untouched.
-      if ($field === 'field_people_related_tab' && $item['type'] !== 'biography') {
-        $home = _saho_record_tab_for_bundle($item['type']);
-        $rerouted[$home['id']]['tab'] = $home;
-        $rerouted[$home['id']]['items'][] = $item;
-        continue;
-      }
-      $items[] = $item;
-    }
-    if ($items !== []) {
-      $tabs[$tab['id']] = $tab + ['count' => count($items), 'items' => $items];
-    }
-  }
-  foreach ($rerouted as $id => $bucket) {
-    if (!isset($tabs[$id])) {
-      $tabs[$id] = $bucket['tab'] + ['count' => 0, 'items' => []];
-    }
-    $seen = array_column($tabs[$id]['items'], 'href');
-    foreach ($bucket['items'] as $item) {
-      if (!in_array($item['href'], $seen, TRUE)) {
-        $tabs[$id]['items'][] = $item;
-      }
-    }
-    $tabs[$id]['count'] = count($tabs[$id]['items']);
-  }
-
-  // The curated feature-children (the legacy rail accordion) join the same
-  // cross-reference engine as tabs, per wireframes wf03/wf04: one engine,
-  // typed dots, counts. Same-id tabs merge and dedupe by href; a collapsed
-  // curated tab (collection summary) owns its slot wholesale - the whole
-  // point is that the full list never renders in-page.
-  $merged_tabs = _saho_record_curated_tabs($node);
-  $gallery_tab = _saho_record_gallery_tab($node);
-  if ($gallery_tab !== NULL) {
-    $merged_tabs[] = $gallery_tab;
-  }
-  foreach ($merged_tabs as $tab) {
-    $id = $tab['id'];
-    if (isset($tab['summary']) && isset($tabs[$id]['summary'])) {
-      // Two collapsed summaries for one slot cannot merge honestly; the
-      // curated one (first in) wins.
-      continue;
-    }
-    if (isset($tab['summary']) || !isset($tabs[$id])) {
-      $tabs[$id] = $tab;
-      continue;
-    }
-    $seen = array_column($tabs[$id]['items'], 'href');
-    foreach ($tab['items'] as $item) {
-      if (!in_array($item['href'], $seen, TRUE)) {
-        $tabs[$id]['items'][] = $item;
-      }
-    }
-    $tabs[$id]['count'] = count($tabs[$id]['items']);
-  }
-
-  // Past the threshold a tab gets a count line, but the typed *_related_tab
-  // sets are editorially curated, already fully loaded, and have no index page
-  // to defer to - so keep every item and let the panel scroll (the count line
-  // pins to the top), instead of stranding the reader at three rows with no
-  // way to reach the rest. Curated feature-children tabs keep their own
-  // count-plus-samples summary and browse CTA (set above), untouched here.
-  foreach ($tabs as $id => $tab) {
-    if (!isset($tab['summary']) && count($tab['items']) > $threshold) {
-      $tabs[$id]['summary'] = [
-        'count_line' => number_format($tab['count']) . ' ' . mb_strtoupper($tab['label']),
-      ];
-    }
-  }
-
-  $tabs = array_values($tabs);
-  return $tabs !== [] ? ['title' => 'Cross-references', 'tabs' => $tabs] : [];
-}
-
-/**
- * Maps a related item's bundle to the cross-reference tab it belongs on.
- *
- * Ids reuse the curated-tab slots so the same-id merge folds everything
- * into one tab per kind. Articles read as Topics (the dictionary's own
- * article -> topic kind mapping); unknown bundles land there too rather
- * than under People.
- *
- * @param string $bundle
- *   The referenced node's bundle.
- *
- * @return array
- *   ['id' => string, 'label' => string].
- */
-function _saho_record_tab_for_bundle(string $bundle): array {
-  return match ($bundle) {
-    'biography' => ['id' => 'people', 'label' => 'People'],
-    'place' => ['id' => 'places', 'label' => 'Places'],
-    'archive' => ['id' => 'archive', 'label' => 'Archive'],
-    'event' => ['id' => 'events', 'label' => 'Events'],
-    'image' => ['id' => 'galleries', 'label' => 'Galleries'],
-    default => ['id' => 'topics', 'label' => 'Topics'],
-  };
-}
-
-/**
- * Cross-reference lists past this length collapse to count + samples.
- *
- * "A rail is for apparatus; 20k records is a query": high-degree nodes
- * render a bounded collection summary, and the index page IS the list.
- */
-function _saho_related_collapse_threshold(): int {
-  return 10;
-}
-
-/**
- * Builds one related-tabs item from a referenced node, or NULL.
- *
- * @param mixed $ref
- *   The candidate entity.
- *
- * @return array|null
- *   Item props (label/href/note/type), or NULL when not viewable.
- */
-function _saho_record_related_item($ref): ?array {
-  $known_types = ['article', 'biography', 'place', 'archive', 'event', 'topic', 'image'];
-  if (!$ref instanceof NodeInterface || !$ref->access('view')) {
-    return NULL;
-  }
-  $note = '';
-  foreach (['field_synopsis', 'body'] as $note_field) {
-    if ($ref->hasField($note_field) && !$ref->get($note_field)->isEmpty()) {
-      $note = trim(html_entity_decode(strip_tags((string) $ref->get($note_field)->value), ENT_QUOTES | ENT_HTML5));
-      if ($note !== '') {
-        break;
-      }
-    }
-  }
-  return [
-    'label' => (string) $ref->label(),
-    'href' => $ref->toUrl()->toString(),
-    'note' => $note !== '' ? Unicode::truncate($note, 90, TRUE, TRUE) : '',
-    'type' => in_array($ref->bundle(), $known_types, TRUE) ? $ref->bundle() : 'article',
-  ];
-}
-
-/**
- * Builds cross-reference tabs from the curated feature_children views.
- *
- * These curated per-bundle child listings used to render as the rail
- * accordion; the Open Record design folds them into related-tabs.
- *
- * @param \Drupal\node\NodeInterface $node
- *   The record node.
- *
- * @return array
- *   Tabs keyed by id.
- */
-function _saho_record_curated_tabs(NodeInterface $node): array {
-  if (!in_array($node->bundle(), ['article', 'archive', 'biography', 'place'], TRUE)) {
+  // The builder lives in the saho_connections module so the hub page and the
+  // rail read one spec. hasService() guards the enable-order window during
+  // the deploy that ships the module.
+  if (!\Drupal::hasService('saho_connections.builder')) {
     return [];
   }
-  // Per-request memo: a record page can build its rail more than once.
-  static $memo = [];
-  $nid = (int) $node->id();
-  if (isset($memo[$nid])) {
-    return $memo[$nid];
-  }
-  // Parity with the retired feature_children views, whose parent-status
-  // filter meant an unpublished record rendered no curated tabs.
-  if (!$node->isPublished()) {
-    return $memo[$nid] = [];
-  }
-
-  // One indexed inventory query replaces the seven feature_children view
-  // executions (and their per-display COUNTs) this function used to run.
-  // The views' rendered output was discarded anyway - only each child's
-  // bundle plus two flags decide its bucket, mirroring the view displays:
-  // Organisations = article carrying term 51, Timelines = article with
-  // field_article_type 2985, Articles = article with neither (an article
-  // carrying both appears under Organisations AND Timelines, as the views
-  // did). Children are deduped across translations (default_langcode) and,
-  // unlike the views, counted only when published - the old totals silently
-  // included unpublished children the visitor could never see.
-  $rows = \Drupal::database()->query(
-    'SELECT DISTINCT c.nid, c.type, c.title, c.created,
-      (org.nid IS NOT NULL) AS is_org,
-      (tl.entity_id IS NOT NULL) AS is_timeline
-    FROM {node__field_feature_parent} p
-    INNER JOIN {node_field_data} c
-      ON c.nid = p.entity_id AND c.status = 1 AND c.default_langcode = 1
-    LEFT JOIN {taxonomy_index} org
-      ON org.nid = c.nid AND org.tid = :org_tid
-    LEFT JOIN {node__field_article_type} tl
-      ON tl.entity_id = c.nid AND tl.deleted = 0
-      AND tl.field_article_type_target_id = :timeline_type
-    WHERE p.field_feature_parent_target_id = :nid AND p.deleted = 0',
-    [
-      ':nid' => $nid,
-      // Term 51 "Organisations" and article-type 2985 "Timeline" - the two
-      // classifiers the feature_children displays filtered on.
-      ':org_tid' => 51,
-      ':timeline_type' => 2985,
-    ]
-  )->fetchAll();
-  if ($rows === []) {
-    return $memo[$nid] = [];
-  }
-
-  $buckets = [
-    'articles' => ['label' => 'Articles', 'rows' => []],
-    'people' => ['label' => 'People', 'rows' => []],
-    'places' => ['label' => 'Places', 'rows' => []],
-    'organisations' => ['label' => 'Organisations', 'rows' => []],
-    'timelines' => ['label' => 'Timelines', 'rows' => []],
-    'archive' => ['label' => 'Archive', 'rows' => []],
-  ];
-  foreach ($rows as $row) {
-    switch ($row->type) {
-      case 'biography':
-        $buckets['people']['rows'][] = $row;
-        break;
-
-      case 'place':
-        $buckets['places']['rows'][] = $row;
-        break;
-
-      case 'archive':
-        $buckets['archive']['rows'][] = $row;
-        break;
-
-      case 'article':
-        if ($row->is_org) {
-          $buckets['organisations']['rows'][] = $row;
-        }
-        if ($row->is_timeline) {
-          $buckets['timelines']['rows'][] = $row;
-        }
-        if (!$row->is_org && !$row->is_timeline) {
-          $buckets['articles']['rows'][] = $row;
-        }
-        break;
-    }
-  }
-
-  // Ordering parity: the Timelines/Archive views sorted the child title
-  // ascending; the other displays only sorted parent columns (constant per
-  // query), leaving child order undefined - newest-first is the
-  // deterministic replacement. Nid tiebreaks keep runs stable.
-  $by_title = static fn(object $a, object $b): int => strcasecmp($a->title, $b->title) ?: $a->nid <=> $b->nid;
-  $by_newest = static fn(object $a, object $b): int => $b->created <=> $a->created ?: $b->nid <=> $a->nid;
-  $threshold = _saho_related_collapse_threshold();
-
-  // Fetch one row past the collapse threshold per bucket (never an unbounded
-  // child list - the DISA head has 20k+); one loadMultiple covers every tab.
-  $slices = [];
-  $load_nids = [];
-  foreach ($buckets as $id => $bucket) {
-    if ($bucket['rows'] === []) {
-      continue;
-    }
-    usort($bucket['rows'], in_array($id, ['timelines', 'archive'], TRUE) ? $by_title : $by_newest);
-    $slice = array_slice($bucket['rows'], 0, $threshold + 1);
-    $slices[$id] = [
-      'label' => $bucket['label'],
-      'total' => count($bucket['rows']),
-      'nids' => array_map(static fn(object $row): int => (int) $row->nid, $slice),
-    ];
-    $load_nids = array_merge($load_nids, $slices[$id]['nids']);
-  }
-  $children = Node::loadMultiple(array_unique($load_nids));
-
-  $tabs = [];
-  foreach ($slices as $id => $spec) {
-    $items = [];
-    foreach ($spec['nids'] as $child_nid) {
-      $item = isset($children[$child_nid]) ? _saho_record_related_item($children[$child_nid]) : NULL;
-      if ($item !== NULL) {
-        $items[] = $item;
-      }
-    }
-    if ($items === []) {
-      continue;
-    }
-    $total = max($spec['total'], count($items));
-    if ($total > $threshold) {
-      // Collection summary: mono count line, then the bounded set of already
-      // loaded rows (up to the threshold) inside a scrollable panel, and one
-      // CTA to the pre-filtered index. The full list still lives on the index
-      // - we never load 20k rows into the rail - but a dead 3-row stub gave
-      // no sense of the collection, so surface as many as were cheaply
-      // fetched. Only the archive index exists today, so only the Archive tab
-      // gets the browse CTA.
-      $summary = [
-        'count_line' => number_format($total) . ' ' . ($id === 'archive' ? 'ARCHIVE ITEMS' : mb_strtoupper($spec['label'])),
-      ];
-      if ($id === 'archive') {
-        $summary['cta'] = [
-          'label' => 'Browse the ' . $node->label() . ' collection',
-          'href' => Url::fromUserInput('/archives', ['query' => ['collection' => $node->id()]])->toString(),
-        ];
-      }
-      $tabs[$id] = [
-        'id' => $id,
-        'label' => $spec['label'],
-        'count' => $total,
-        'items' => array_slice($items, 0, $threshold),
-        'summary' => $summary,
-      ];
-    }
-    else {
-      $tabs[$id] = [
-        'id' => $id,
-        'label' => $spec['label'],
-        'count' => $total,
-        'items' => $items,
-      ];
-    }
-  }
-
-  // Galleries parity: the block_7 display aggregated the record's OWN
-  // field_gallery_tag (no child in sight), so a gallery-tagged collection
-  // head surfaced itself as a single Galleries item. Quirk preserved
-  // verbatim - the tab still only appears when the record has children,
-  // exactly as the old has-children short-circuit guaranteed.
-  if ($node->hasField('field_gallery_tag') && !$node->get('field_gallery_tag')->isEmpty()) {
-    $self = _saho_record_related_item($node);
-    if ($self !== NULL) {
-      $tabs['galleries'] = [
-        'id' => 'galleries',
-        'label' => 'Galleries',
-        'count' => 1,
-        'items' => [$self],
-      ];
-    }
-  }
-
-  return $memo[$nid] = $tabs;
+  return \Drupal::service('saho_connections.builder')->tabs($node);
 }
 
 /**
- * Builds the reverse Galleries tab: images that reference this record.
+ * Assigns record_related, its cache tags, and the toolbar connections count.
  *
- * The image -> biography edges written by the saho_relations title-match
- * pipeline live on the IMAGE side (field_people_related_tab), so the
- * biography surfaces them at render time - one indexed COUNT when empty
- * (the common case), threshold+1 loads when not. Rolling back the image
- * edges empties this tab automatically.
+ * One call site per record preprocess keeps the pill count and the rail
+ * counts reading the same builder - they can never drift apart.
  *
+ * @param array $variables
+ *   The preprocess variables, by reference.
  * @param \Drupal\node\NodeInterface $node
  *   The record node.
- *
- * @return array|null
- *   A tab shaped like a curated tab (id 'galleries', so the same-id merge
- *   folds it into any existing Galleries tab), or NULL when no images
- *   reference this record.
  */
-function _saho_record_gallery_tab(NodeInterface $node): ?array {
-  // Phase A: biographies. Places follow once image.field_topics_related_tab
-  // accepts place targets.
-  if ($node->bundle() !== 'biography') {
-    return NULL;
+function _saho_record_related_assign(array &$variables, NodeInterface $node): void {
+  $variables['record_related'] = _saho_record_related_props($node);
+  _saho_record_related_cache_tags($variables);
+  if (isset($variables['record_toolbar']) && \Drupal::hasService('saho_connections.builder')) {
+    $variables['record_toolbar']['connections_count'] =
+      \Drupal::service('saho_connections.builder')->totalCount($node);
   }
-  $nid = (int) $node->id();
-  static $memo = [];
-  if (array_key_exists($nid, $memo)) {
-    return $memo[$nid];
-  }
-  $threshold = _saho_related_collapse_threshold();
-  $query = \Drupal::entityQuery('node')
-    ->condition('type', 'image')
-    ->condition('status', 1)
-    ->condition('field_people_related_tab', $nid)
-    ->accessCheck(FALSE);
-  $total = (int) (clone $query)->count()->execute();
-  if ($total === 0) {
-    return $memo[$nid] = NULL;
-  }
-  $image_nids = $query->sort('created', 'DESC')
-    ->range(0, $threshold + 1)
-    ->execute();
-  $items = [];
-  foreach (Node::loadMultiple($image_nids) as $image) {
-    $item = _saho_record_related_item($image);
-    if ($item !== NULL) {
-      $items[] = $item;
-    }
-  }
-  if ($items === []) {
-    return $memo[$nid] = NULL;
-  }
-  $tab = [
-    'id' => 'galleries',
-    'label' => 'Galleries',
-    'count' => max($total, count($items)),
-    'items' => $total > $threshold ? array_slice($items, 0, $threshold) : $items,
-  ];
-  if ($total > $threshold) {
-    $tab['summary'] = [
-      'count_line' => number_format($total) . ' IMAGES',
-    ];
-  }
-  return $memo[$nid] = $tab;
 }
 
 /**
