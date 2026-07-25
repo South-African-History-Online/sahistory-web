@@ -121,6 +121,8 @@ final class ConnectionsBuilderTest extends KernelTestBase {
 
     // Admin current user: relatedItem() honours access('view').
     $this->setUpCurrentUser(['uid' => 1]);
+    // The per-tab hub CTAs generate saho_connections.hub URLs.
+    $this->container->get('router.builder')->rebuild();
 
     $this->builder = $this->container->get('saho_connections.builder');
   }
@@ -234,6 +236,13 @@ final class ConnectionsBuilderTest extends KernelTestBase {
     $this->assertSame('12 ARCHIVE ITEMS', $archive['summary']['count_line']);
     $this->assertSame('Browse the Collection head collection', $archive['summary']['cta']['label']);
     $this->assertStringContainsString('collection=' . $parent->id(), $archive['summary']['cta']['href']);
+    // Every tab carries a hub exit; nouns match the count-line vocabulary.
+    $this->assertSame('View all 12 archive items', $archive['cta']['label']);
+    $this->assertStringContainsString('/node/' . $parent->id() . '/connections?tab=archive', $archive['cta']['href']);
+    $this->assertSame('View all 2 organisations', $this->tab($props, 'organisations')['cta']['label']);
+    // Single-item tabs get the neutral label ("View all 1 articles" reads
+    // wrong).
+    $this->assertSame('View in the connections register', $this->tab($props, 'articles')['cta']['label']);
     // Title-ascending order.
     $this->assertSame('Doc 01', $archive['items'][0]['label']);
     $this->assertSame('Doc 10', $archive['items'][9]['label']);
@@ -310,6 +319,7 @@ final class ConnectionsBuilderTest extends KernelTestBase {
     $this->assertSame(12, $galleries['count']);
     $this->assertCount(ConnectionsBuilder::THRESHOLD, $galleries['items']);
     $this->assertSame('12 IMAGES', $galleries['summary']['count_line']);
+    $this->assertSame('View all 12 images', $galleries['cta']['label']);
     // Newest first.
     $this->assertSame('Photo 12', $galleries['items'][0]['label']);
 

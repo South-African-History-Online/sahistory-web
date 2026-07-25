@@ -39,12 +39,21 @@
             </a>
           </li>
         {% endfor %}
-        {% if t.summary and t.summary.cta %}
-          <li class="saho-reltabs__summary-cta">
-            <a href="{{ t.summary.cta.href }}">{{ t.summary.cta.label }} &#8594;</a>
-          </li>
-        {% endif %}
       </ul>
+      {# The exits pin to the panel's bottom edge (sticky, mirroring the
+         sticky-top count line) so they never scroll out of the 480px box:
+         the hub link on every tab, plus the archive index link when the
+         builder provides one. #}
+      {% if t.cta or (t.summary and t.summary.cta) %}
+        <div class="saho-reltabs__cta">
+          {% if t.cta %}
+            <a class="saho-reltabs__cta-link" href="{{ t.cta.href }}">{{ t.cta.label }} &#8594;</a>
+          {% endif %}
+          {% if t.summary and t.summary.cta %}
+            <a class="saho-reltabs__cta-link" href="{{ t.summary.cta.href }}">{{ t.summary.cta.label }} &#8594;</a>
+          {% endif %}
+        </div>
+      {% endif %}
     </div>
   {% endfor %}
 </section>
