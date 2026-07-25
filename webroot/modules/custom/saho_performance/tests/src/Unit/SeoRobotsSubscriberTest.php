@@ -114,4 +114,41 @@ class SeoRobotsSubscriberTest extends UnitTestCase {
     );
   }
 
+  /**
+   * @covers ::onResponse
+   */
+  public function testFilteredClassroomHubGetsNoindex(): void {
+    $request = Request::create('/classroom?resource_type%5BWorksheet%5D=Worksheet');
+    $this->assertSame(
+      'noindex, follow',
+      $this->runFor('view.classroom.page_1', $this->htmlResponse(), $request)
+    );
+    $this->assertNull(
+      $this->runFor('view.classroom.page_1', $this->htmlResponse(), Request::create('/classroom'))
+    );
+  }
+
+  /**
+   * @covers ::onResponse
+   */
+  public function testConnectionsHubVariantsGetNoindexBarePageStaysIndexable(): void {
+    // The bare hub is a deliberate internal-linking asset.
+    $this->assertNull(
+      $this->runFor('saho_connections.hub', $this->htmlResponse(), Request::create('/node/16528/connections'))
+    );
+    // Every query variant (?tab=, ?page=, both) is a working view of the
+    // same list - noindex, follow.
+    foreach ([
+      '/node/16528/connections?tab=people',
+      '/node/16528/connections?page=3',
+      '/node/16528/connections?tab=archive&page=12',
+    ] as $uri) {
+      $this->assertSame(
+        'noindex, follow',
+        $this->runFor('saho_connections.hub', $this->htmlResponse(), Request::create($uri)),
+        "$uri should be de-indexed."
+      );
+    }
+  }
+
 }

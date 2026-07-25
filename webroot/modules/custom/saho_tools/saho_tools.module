@@ -240,20 +240,26 @@ function saho_tools_preprocess_html(&$variables) {
     if ($node instanceof NodeInterface) {
       // Invalidate the cached page (and its embedded JSON-LD) on node edit.
       $variables['#cache']['tags'] = Cache::mergeTags($variables['#cache']['tags'] ?? [], $node->getCacheTags());
-      $canonical_url = $node->toUrl('canonical')->setAbsolute()->toString();
 
-      // Add canonical link to head.
-      $variables['#attached']['html_head'][] = [
-        [
-          '#type' => 'html_tag',
-          '#tag' => 'link',
-          '#attributes' => [
-            'rel' => 'canonical',
-            'href' => $canonical_url,
+      // Add canonical link to head - but only on the node's own canonical
+      // route. Sub-routes carrying a {node} parameter (the connections hub
+      // at /node/N/connections, previews, revisions) are distinct documents;
+      // pointing their canonical at the node page would de-index them.
+      // They fall through to Metatag's [current-page:url] self-canonical.
+      if (\Drupal::routeMatch()->getRouteName() === 'entity.node.canonical') {
+        $canonical_url = $node->toUrl('canonical')->setAbsolute()->toString();
+        $variables['#attached']['html_head'][] = [
+          [
+            '#type' => 'html_tag',
+            '#tag' => 'link',
+            '#attributes' => [
+              'rel' => 'canonical',
+              'href' => $canonical_url,
+            ],
           ],
-        ],
-        'canonical_url',
-      ];
+          'canonical_url',
+        ];
+      }
 
       // 2. Node-specific schema.
       $node_schema = $schema_service->generateSchemaForNode($node);

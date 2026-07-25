@@ -1,0 +1,64 @@
+{#
+/**
+ * @file
+ * The per-record connections hub - the full list behind the rail's counts.
+ *
+ * Available variables:
+ * - record: title, href, type, reference, total (all connected records).
+ * - total: count for the active tab.
+ * - chips: type-selector links (id, label, count, href, active).
+ * - active: the selected tab (id, label).
+ * - items: rows (label, href, note, type).
+ * - pager: pager render array.
+ * - collection_url: /archives?collection= link for big archive tabs, or ''.
+ */
+#}
+<div class="saho-connections">
+  <header class="saho-connections__head">
+    <p class="saho-connections__kicker">Connections</p>
+    <h1 class="saho-connections__title">
+      <a href="{{ record.href }}">{{ record.title }}</a>
+    </h1>
+    <p class="saho-connections__meta">
+      {% if record.reference %}<span class="saho-connections__ref">{{ record.reference }}</span> ·{% endif %}
+      {{ record.total|number_format }} connected record{{ record.total == 1 ? '' : 's' }}
+    </p>
+  </header>
+
+  <nav class="saho-connections__chips" aria-label="{{ 'Connected record types'|t }}">
+    {% for chip in chips %}
+      <a href="{{ chip.href }}"
+         class="saho-connections__chip{{ chip.active ? ' is-active' : '' }}"
+         {% if chip.active %}aria-current="page"{% endif %}>
+        <span class="saho-connections__chip-label">{{ chip.label }}</span><span class="saho-connections__chip-count">{{ chip.count|number_format }}</span>
+      </a>
+    {% endfor %}
+  </nav>
+
+  <p class="saho-connections__count-line">{{ total|number_format }} {{ active.label|upper }}</p>
+
+  <ul class="saho-connections__list">
+    {% for item in items %}
+      <li class="saho-connections__item">
+        <a class="saho-connections__link" href="{{ item.href }}">
+          <span class="saho-connections__dot saho-connections__dot--{{ item.type|default('article') }}" aria-hidden="true"></span>
+          <span class="saho-connections__text">
+            <span class="saho-connections__label">{{ item.label }}</span>
+            {% if item.note %}
+              <span class="saho-connections__note">{{ item.note }}</span>
+            {% endif %}
+          </span>
+        </a>
+      </li>
+    {% endfor %}
+  </ul>
+
+  {{ pager }}
+
+  <footer class="saho-connections__foot">
+    <a class="saho-connections__back" href="{{ record.href }}">&#8592; Back to {{ record.title }}</a>
+    {% if collection_url %}
+      <a class="saho-connections__browse" href="{{ collection_url }}">Browse the collection in the archive index &#8594;</a>
+    {% endif %}
+  </footer>
+</div>

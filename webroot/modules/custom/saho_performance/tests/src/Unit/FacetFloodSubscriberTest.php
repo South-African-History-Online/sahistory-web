@@ -120,4 +120,46 @@ class FacetFloodSubscriberTest extends UnitTestCase {
     ));
   }
 
+  /**
+   * @covers ::onRequest
+   */
+  public function testClassroomHubSweepIsRejected(): void {
+    // The 2026-07-24 follow-up sweep: resource_type[] x subject[] on the
+    // /classroom hub once the deck browse page got challenged.
+    $params = [];
+    foreach (range(1, 6) as $i) {
+      $params[] = "resource_type%5BType$i%5D=Type$i";
+    }
+    foreach (range(1, 4) as $i) {
+      $params[] = "subject%5BSubject$i%5D=Subject$i";
+    }
+    $response = $this->runFor('view.classroom.page_1', '/classroom?' . implode('&', $params));
+    $this->assertNotNull($response);
+    $this->assertSame(400, $response->getStatusCode());
+    // A realistic narrowing passes.
+    $this->assertNull($this->runFor(
+      'view.classroom.page_1',
+      '/classroom?resource_type%5BWorksheet%5D=Worksheet&subject%5BHistory%5D=History'
+    ));
+  }
+
+  /**
+   * @covers ::onRequest
+   */
+  public function testConnectionsHubArrayAbuseIsRejected(): void {
+    // Legitimate hub requests carry scalar ?tab= and ?page=.
+    $this->assertNull($this->runFor(
+      'saho_connections.hub',
+      '/node/16528/connections?tab=people&page=3'
+    ));
+    // Array enumeration over the same params is the scraper shape.
+    $abuse = implode('&', array_map(
+      static fn(int $i): string => "tab%5B%5D=t$i",
+      range(1, 9)
+    ));
+    $response = $this->runFor('saho_connections.hub', '/node/16528/connections?' . $abuse);
+    $this->assertNotNull($response);
+    $this->assertSame(400, $response->getStatusCode());
+  }
+
 }

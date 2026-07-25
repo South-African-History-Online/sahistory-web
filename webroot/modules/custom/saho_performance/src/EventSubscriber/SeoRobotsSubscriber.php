@@ -49,8 +49,16 @@ class SeoRobotsSubscriber implements EventSubscriberInterface {
    * /search, and the target of a 20k-URL scraper sweep on 2026-07-24.
    */
   protected const NOINDEX_FILTERED_ROUTES = [
+    // /classroom - hub page; the crawler pack moved here once the edge
+    // rule challenged /classroom/presentations (2026-07-24, ~1.5k
+    // resource_type[]/subject[] combinations in two hours).
+    'view.classroom.page_1',
     // /classroom/presentations - deck browse page with facet checkboxes.
     'view.classroom_presentations.page_1',
+    // /node/{nid}/connections - the per-record connections hub. The bare
+    // page is a deliberate internal-linking asset; its ?tab=/?page=
+    // variants are working views of the same list.
+    'saho_connections.hub',
   ];
 
   /**
