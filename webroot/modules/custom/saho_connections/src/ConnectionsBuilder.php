@@ -274,6 +274,17 @@ final class ConnectionsBuilder implements ConnectionsBuilderInterface {
       }
     }
 
+    // Every tab gets a hub exit: the rail is a bounded sample, the hub page
+    // IS the list. Pinned to the panel foot by the component.
+    foreach ($tabs as $id => $tab) {
+      $tabs[$id]['cta'] = [
+        'label' => $tab['count'] > 1
+          ? 'View all ' . number_format($tab['count']) . ' ' . $this->ctaNoun($id, $tab['label'])
+          : 'View in the connections register',
+        'href' => Url::fromRoute('saho_connections.hub', ['node' => $nid], ['query' => ['tab' => $id]])->toString(),
+      ];
+    }
+
     $spec = ['tabs' => []];
     foreach ($tabs as $id => $tab) {
       $spec['tabs'][$id] = $sources[$id] + ['props' => $tab];
@@ -613,6 +624,29 @@ final class ConnectionsBuilder implements ConnectionsBuilderInterface {
       'note' => $note !== '' ? Unicode::truncate($note, 90, TRUE, TRUE) : '',
       'type' => in_array($ref->bundle(), $known_types, TRUE) ? $ref->bundle() : 'article',
     ];
+  }
+
+  /**
+   * The noun for a tab's "View all N ..." hub exit.
+   *
+   * Matches the count-line vocabulary: the archive tab counts ARCHIVE
+   * ITEMS, the galleries tab counts IMAGES; every other tab's label
+   * lowercases cleanly.
+   *
+   * @param string $id
+   *   The tab id.
+   * @param string $label
+   *   The tab label.
+   *
+   * @return string
+   *   A plural noun phrase.
+   */
+  private function ctaNoun(string $id, string $label): string {
+    return match ($id) {
+      'archive' => 'archive items',
+      'galleries' => 'images',
+      default => mb_strtolower($label),
+    };
   }
 
   /**
