@@ -26,14 +26,23 @@ use Symfony\Component\HttpKernel\KernelEvents;
 class FacetFloodSubscriber implements EventSubscriberInterface {
 
   /**
-   * Route name of the classroom deck browse page.
+   * Facet parameters counted per protected route.
+   *
+   * Keyed by route name; the value lists the exposed filter identifiers
+   * whose selected values count toward the cap on that route.
    */
-  protected const CLASSROOM_ROUTE = 'view.classroom_presentations.page_1';
-
-  /**
-   * Exposed filter identifiers whose selected values are counted.
-   */
-  protected const FACET_PARAMS = ['caps_topic', 'grade'];
+  protected const ROUTE_FACET_PARAMS = [
+    // /classroom - hub page; the crawler pack moved here once the edge rule
+    // challenged /classroom/presentations (2026-07-24, ~1.5k
+    // resource_type[]/subject[] combinations in two hours).
+    'view.classroom.page_1' => ['caps_topic', 'grade', 'resource_type', 'subject'],
+    // /classroom/presentations - deck browse page.
+    'view.classroom_presentations.page_1' => ['caps_topic', 'grade', 'resource_type', 'subject'],
+    // /node/{nid}/connections - the per-record connections hub. Legitimate
+    // requests carry at most scalar ?tab= and ?page=; array abuse
+    // (tab[]=a&tab[]=b&...) is the same enumeration shape.
+    'saho_connections.hub' => ['tab', 'page'],
+  ];
 
   /**
    * Maximum total selected facet values before the request is rejected.
@@ -78,13 +87,14 @@ class FacetFloodSubscriber implements EventSubscriberInterface {
    *   The request event.
    */
   public function onRequest(RequestEvent $event) {
+    $route_name = $this->routeMatch->getRouteName();
     if (!$event->isMainRequest()
-      || $this->routeMatch->getRouteName() !== static::CLASSROOM_ROUTE) {
+      || !isset(static::ROUTE_FACET_PARAMS[$route_name])) {
       return;
     }
 
     $selected = 0;
-    foreach (static::FACET_PARAMS as $param) {
+    foreach (static::ROUTE_FACET_PARAMS[$route_name] as $param) {
       $values = $event->getRequest()->query->all()[$param] ?? [];
       $selected += is_array($values) ? count($values) : 1;
     }
