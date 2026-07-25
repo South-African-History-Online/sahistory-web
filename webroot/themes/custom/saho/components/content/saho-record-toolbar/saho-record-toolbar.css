@@ -1,7 +1,10 @@
-/* Record toolbar (R3 #476): the single sticky apparatus row (X-2). */
+/* Record toolbar (R3 #476): the single sticky apparatus row (X-2).
+   It sticks BELOW the sticky site header (which sits at z-index 1030 and
+   would otherwise swallow it) - the displace offset keeps it honest when
+   the admin toolbar pushes the header down. */
 .saho-record-toolbar {
   position: sticky;
-  top: 0;
+  top: calc(var(--drupal-displace-offset-top, 0px) + var(--saho-header-height, 78px));
   z-index: 30;
   display: flex;
   align-items: center;
@@ -64,6 +67,33 @@
 .saho-record-toolbar__hint {
   color: var(--saho-ink-muted);
   text-transform: none;
+}
+
+/* The mobile pill: while stuck below 768px the toolbar collapses from the
+   wrapped multi-row stack to one compact row - REF, Cite, and a prominent
+   "Connections · N". Permanent link and Share are deliberate low-frequency
+   acts the reader scrolls up for; display:none takes them out of the tab
+   order honestly. At rest the toolbar renders exactly as before. */
+@media (max-width: 47.9375rem) {
+  .saho-record-toolbar.is-stuck .saho-record-toolbar__actions {
+    flex-wrap: nowrap;
+  }
+
+  .saho-record-toolbar.is-stuck [data-saho-permanent-link],
+  .saho-record-toolbar.is-stuck [data-sharing-trigger],
+  .saho-record-toolbar.is-stuck [data-citation-trigger] .saho-record-toolbar__hint {
+    display: none;
+  }
+
+  .saho-record-toolbar.is-stuck [data-saho-connections] {
+    font-weight: 600;
+    color: var(--saho-oxblood, #990000);
+  }
+
+  .saho-record-toolbar.is-stuck [data-saho-connections] .saho-record-toolbar__hint {
+    /* The count is the payload - keep it as prominent as the verb. */
+    color: inherit;
+  }
 }
 
 /* X-2: on chronology articles the decade strip owns the mobile sticky
