@@ -1,0 +1,11 @@
+services:
+  # Single source of truth for a record's connections: the related-tabs rail,
+  # the toolbar pill count, and the hub page all read this one builder so the
+  # numbers can never drift apart.
+  saho_connections.builder:
+    class: Drupal\saho_connections\ConnectionsBuilder
+    arguments: ['@database', '@entity_type.manager']
+
+  # Interface alias so blocks, controllers and other services can type-hint
+  # ConnectionsBuilderInterface and get autowired (saho_classroom pattern).
+  Drupal\saho_connections\ConnectionsBuilderInterface: '@saho_connections.builder'
