@@ -69,14 +69,30 @@
   text-transform: none;
 }
 
-/* The mobile pill: while stuck below 768px the toolbar collapses from the
-   wrapped multi-row stack to one compact row - REF, Cite, and a prominent
-   "Connections · N". Permanent link and Share are deliberate low-frequency
-   acts the reader scrolls up for; display:none takes them out of the tab
-   order honestly. At rest the toolbar renders exactly as before. */
+/* The mobile pill row: below 768px the toolbar is ONE constant-height
+   swipeable row at every scroll position (the decade-strip pattern). The
+   stuck flip must never change the toolbar's flow height - v2.3.0
+   collapsed a wrapped multi-row stack down to one row on stick, and every
+   crossing was a 0.12+ layout shift felt as a scroll hitch on phones.
+   While stuck, Permanent link and Share hide (width-only change inside
+   the scrollable row; display:none keeps the tab order honest) and
+   "Connections · N" takes the accent - REF appears via the base rule. */
 @media (max-width: 47.9375rem) {
-  .saho-record-toolbar.is-stuck .saho-record-toolbar__actions {
+  .saho-record-toolbar__actions {
     flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .saho-record-toolbar__action {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+
+  /* Connections leads the swipeable row - it is the toolbar's star action
+     on a phone; Permanent link and Share sit past the right edge. */
+  .saho-record-toolbar__actions [data-saho-connections] {
+    order: -1;
   }
 
   .saho-record-toolbar.is-stuck [data-saho-permanent-link],

@@ -22,10 +22,12 @@
   };
   const headerOffset = () => headerHeight() + displaceTop();
   const publishHeaderHeight = () => {
-    document.documentElement.style.setProperty(
-      '--saho-header-height',
-      `${Math.round(headerHeight())}px`
-    );
+    const next = `${Math.round(headerHeight())}px`;
+    const root = document.documentElement;
+    // Same-value writes still dirty styles page-wide - skip them.
+    if (root.style.getPropertyValue('--saho-header-height') !== next) {
+      root.style.setProperty('--saho-header-height', next);
+    }
   };
 
   Drupal.behaviors.sahoRecordToolbar = {
@@ -55,11 +57,24 @@
         observe();
 
         let resizeTimer;
+        let lastWidth = window.innerWidth;
+        let lastOffset = Math.ceil(headerOffset());
         window.addEventListener('resize', () => {
           clearTimeout(resizeTimer);
           resizeTimer = setTimeout(() => {
+            // Phones fire resize for every URL-bar show/hide during scroll;
+            // only a width change can alter the header's height. Rebuild the
+            // observer only when the offset really moved.
+            if (window.innerWidth === lastWidth) {
+              return;
+            }
+            lastWidth = window.innerWidth;
             publishHeaderHeight();
-            observe();
+            const offset = Math.ceil(headerOffset());
+            if (offset !== lastOffset) {
+              lastOffset = offset;
+              observe();
+            }
           }, 250);
         });
 
