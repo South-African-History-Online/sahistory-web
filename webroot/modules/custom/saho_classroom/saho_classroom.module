@@ -268,6 +268,57 @@ function saho_classroom_node_view(array &$build, EntityInterface $node, $display
 }
 
 /**
+ * Implements hook_page_attachments().
+ *
+ * Completes the hreflang cluster on translated deck pages with x-default.
+ * Core content_translation already emits one hreflang alternate per
+ * viewable translation on canonical entity routes, but never x-default -
+ * without it Google has no designated fallback for the ~10 language
+ * variants of each deck. Points at the default-language (English) URL.
+ * Untranslated nodes get nothing extra (their prefixed variants 301 away).
+ */
+function saho_classroom_page_attachments(array &$attachments): void {
+  $route_match = \Drupal::routeMatch();
+  if ($route_match->getRouteName() !== 'entity.node.canonical') {
+    return;
+  }
+  $node = $route_match->getParameter('node');
+  if (!$node instanceof NodeInterface) {
+    return;
+  }
+
+  $attachments['#cache']['tags'] = Cache::mergeTags(
+    $attachments['#cache']['tags'] ?? [],
+    $node->getCacheTags()
+  );
+
+  $default = $node->getUntranslated();
+  if (count($node->getTranslationLanguages()) < 2 || !$default->isPublished()) {
+    return;
+  }
+
+  $generated = $default->toUrl('canonical', [
+    'absolute' => TRUE,
+    'language' => $default->language(),
+  ])->toString(TRUE);
+  $attachments['#attached']['html_head_link'][] = [
+    [
+      'rel' => 'alternate',
+      'hreflang' => 'x-default',
+      'href' => $generated->getGeneratedUrl(),
+    ],
+  ];
+  $attachments['#cache']['tags'] = Cache::mergeTags(
+    $attachments['#cache']['tags'],
+    $generated->getCacheTags()
+  );
+  $attachments['#cache']['contexts'] = array_merge(
+    $attachments['#cache']['contexts'] ?? [],
+    $generated->getCacheContexts()
+  );
+}
+
+/**
  * Adds a strip under a presentation deck linking back to its origin article.
  *
  * The reverse of the teacher CTA on legacy articles: learners and teachers
