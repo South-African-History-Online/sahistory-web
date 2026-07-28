@@ -123,6 +123,18 @@ class PerformanceSettingsForm extends ConfigFormBase {
       '#default_value' => $config->get('enable_preload_hints') ?? TRUE,
     ];
 
+    $form['seo'] = [
+      '#type' => 'fieldset',
+      '#title' => $this->t('SEO'),
+    ];
+
+    $form['seo']['language_redirect_enabled'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Redirect untranslated language-prefixed URLs to English'),
+      '#description' => $this->t('301 requests like /nso/people/foo to /people/foo when no translation exists in that language. Published node translations (classroom decks) are served as-is. Unticking invalidates all cached redirects immediately.'),
+      '#default_value' => $config->get('language_redirect_enabled') ?? TRUE,
+    ];
+
     return parent::buildForm($form, $form_state);
   }
 
@@ -136,6 +148,7 @@ class PerformanceSettingsForm extends ConfigFormBase {
       ->set('critical_css_size', $form_state->getValue('critical_css_size'))
       ->set('enable_monitoring', $form_state->getValue('enable_monitoring'))
       ->set('enable_preload_hints', $form_state->getValue('enable_preload_hints'))
+      ->set('language_redirect_enabled', (bool) $form_state->getValue('language_redirect_enabled'))
       ->save();
 
     // Clear CSS cache to apply changes.

@@ -27,6 +27,25 @@ function saho_performance_install() {
 }
 
 /**
+ * Seed saho_performance.settings so the full object exists in active config.
+ */
+function saho_performance_update_10001() {
+  // config/install never runs for an already-installed module, and the
+  // settings form only writes keys it knows about - so seed every key
+  // (form defaults) plus the new language-redirect kill-switch. Existing
+  // form-saved values win via ?? on each key.
+  $config = \Drupal::configFactory()->getEditable('saho_performance.settings');
+  $config
+    ->set('enable_css_removal', $config->get('enable_css_removal') ?? TRUE)
+    ->set('aggressive_css_minify', $config->get('aggressive_css_minify') ?? TRUE)
+    ->set('critical_css_size', $config->get('critical_css_size') ?? 14000)
+    ->set('enable_monitoring', $config->get('enable_monitoring') ?? TRUE)
+    ->set('enable_preload_hints', $config->get('enable_preload_hints') ?? TRUE)
+    ->set('language_redirect_enabled', $config->get('language_redirect_enabled') ?? TRUE)
+    ->save();
+}
+
+/**
  * Implements hook_uninstall().
  */
 function saho_performance_uninstall() {
