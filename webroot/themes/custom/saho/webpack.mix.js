@@ -93,7 +93,8 @@ mix.browserSync({
   | SASS with PurgeCSS (Production only)
   |--------------------------------------------------------------------------
 */
-const purgecss = require('@fullhuman/postcss-purgecss');
+// v7 ships named exports; the module itself is no longer callable.
+const { purgeCSSPlugin: purgecss } = require('@fullhuman/postcss-purgecss');
 
 // Configure PurgeCSS
 const purgeCSSConfig = {
