@@ -132,20 +132,20 @@ function saho_statistics_entity_update(EntityInterface $entity) {
  * drupalSettings so the search modal can render live data instead of
  * hardcoded chips. Falls back gracefully to an empty array so the Twig
  * fallback chips remain visible if no data exists yet.
+ *
+ * The list is precomputed hourly in saho_statistics_cron() and stored in
+ * state, so this hook never queries the database. The previous cache-based
+ * implementation ran a multi-second GROUP BY over saho_search_queries on
+ * every cache miss, which stampeded under load whenever Redis evicted the
+ * entry (2026-07-31 production incident).
  */
 function saho_statistics_page_attachments(array &$attachments) {
-  $cid = 'saho_statistics:popular_searches';
-  $cache = \Drupal::cache()->get($cid);
-
-  if ($cache) {
-    $popular = $cache->data;
-  }
-  else {
-    $popular = _saho_statistics_get_popular_searches(8);
-    // Cache for 15 minutes so trending topics stay reasonably fresh.
-    \Drupal::cache()->set($cid, $popular, \Drupal::time()->getRequestTime() + 900);
+  // The search modal only renders on the public-facing theme.
+  if (\Drupal::service('router.admin_context')->isAdminRoute()) {
+    return;
   }
 
+  $popular = \Drupal::state()->get('saho_statistics.popular_searches', []);
   $attachments['#attached']['drupalSettings']['sahoSearch']['popularSearches'] = $popular;
 }
 
@@ -274,5 +274,14 @@ function saho_statistics_cron() {
       '@count' => $deleted,
       '@days' => $retention_days,
     ]);
+  }
+
+  // Rebuild the popular-searches list at most once per hour. The GROUP BY
+  // over the full table is too slow for the request path, so cron is the
+  // only place it runs; hook_page_attachments() reads the state value.
+  $last_build = \Drupal::state()->get('saho_statistics.popular_searches_last_build', 0);
+  if (($now - $last_build) >= 3600) {
+    \Drupal::state()->set('saho_statistics.popular_searches', _saho_statistics_get_popular_searches(8));
+    \Drupal::state()->set('saho_statistics.popular_searches_last_build', $now);
   }
 }

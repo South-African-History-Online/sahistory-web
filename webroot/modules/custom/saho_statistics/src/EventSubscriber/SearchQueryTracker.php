@@ -21,6 +21,16 @@ use Symfony\Component\HttpFoundation\RequestStack;
 class SearchQueryTracker implements EventSubscriberInterface {
 
   /**
+   * Case-insensitive User-Agent pattern identifying crawlers and scrapers.
+   *
+   * Searches performed by bots are not user intent and would dominate the
+   * popular-searches analytics (honest bots alone accounted for thousands of
+   * requests per log sample during the 2026-07-31 incident). Names sourced
+   * from .htaccess-bot-blocking and the saho_tools robots.txt list.
+   */
+  protected const BOT_UA_PATTERN = '/bot|crawl|spider|slurp|scrape|python-requests|go-http-client|httpclient|curl|wget|petalbot|bytespider|bytedance|baiduspider|sogou|yandex|semrush|ahrefs|mj12|blexbot/i';
+
+  /**
    * The database connection.
    *
    * @var \Drupal\Core\Database\Connection
@@ -104,6 +114,12 @@ class SearchQueryTracker implements EventSubscriberInterface {
       return;
     }
 
+    // Skip crawlers and scrapers - their searches are not user intent and
+    // inflate both the table and the popular-searches analytics built on it.
+    if ($this->isBotRequest()) {
+      return;
+    }
+
     $query = $event->getQuery();
 
     // Only track queries that originate from a real Views search page. The
@@ -169,6 +185,29 @@ class SearchQueryTracker implements EventSubscriberInterface {
       // Clean up temporary storage.
       unset($this->tempStorage[$query_id]);
     }
+  }
+
+  /**
+   * Determines whether the current request comes from a known bot.
+   *
+   * An absent or empty User-Agent is also treated as a bot: every real
+   * browser sends one, while primitive scrapers frequently omit it.
+   *
+   * @return bool
+   *   TRUE if the request has no User-Agent or a bot-like one.
+   */
+  protected function isBotRequest(): bool {
+    $request = $this->requestStack->getCurrentRequest();
+    if (!$request) {
+      return FALSE;
+    }
+
+    $user_agent = (string) $request->headers->get('User-Agent', '');
+    if ($user_agent === '') {
+      return TRUE;
+    }
+
+    return (bool) preg_match(static::BOT_UA_PATTERN, $user_agent);
   }
 
   /**
