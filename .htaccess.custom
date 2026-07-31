@@ -95,9 +95,27 @@ RewriteRule ^(.+)\.(jpe?g|png)$ $1.webp [T=image/webp,E=accept:1,L]
   FallbackResource /index.php
 </IfModule>
 
+# Serve 403s from a static file. cPanel defines ErrorDocument 403 /403.shtml;
+# without the file the error subrequest falls through the front controller
+# into Drupal, whose response status (301/404) then REPLACES the 403 - which
+# silently neutralized every [F] rule below during the 2026-07-31 incident.
+ErrorDocument 403 /403.shtml
+
 # Various rewrite rules.
 <IfModule mod_rewrite.c>
   RewriteEngine on
+
+  # Scraper mitigation (2026-07-31 incident): a distributed fleet walks the
+  # faceted /classroom URL space on the language-prefixed variants at
+  # ~1,700 req/min. Only the prefixed variants are blocked - the English
+  # /classroom facets stay functional for real users; Cloudflare WAF
+  # challenges handle the remainder at the edge.
+  RewriteCond %{QUERY_STRING} !^$
+  RewriteRule ^[a-z]{2,3}/classroom - [F,L]
+
+  # Malformed JSON-LD @id parses: /LANG/ref/R-0123456. (trailing dot) is
+  # never a valid URL and each hit costs a full Drupal 404 bootstrap.
+  RewriteRule ^([a-z]{2,3}/)?ref/[A-Z]-[0-9]+\.$ - [F,L]
 
   # Set "protossl" to "s" if we were accessed via https://.  This is used later
   # if you enable "www." stripping or enforcement, in order to ensure that
