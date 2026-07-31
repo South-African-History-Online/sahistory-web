@@ -2,7 +2,7 @@ import { defineConfig } from 'vite';
 import { resolve } from 'path';
 import { glob } from 'glob';
 import autoprefixer from 'autoprefixer';
-import purgecss from '@fullhuman/postcss-purgecss';
+import { purgeCSSPlugin as purgecss } from '@fullhuman/postcss-purgecss';
 
 // Get all component SCSS files
 const componentScssFiles = glob.sync('components/**/*.scss');
