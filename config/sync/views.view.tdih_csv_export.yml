@@ -6,12 +6,14 @@ dependencies:
     - field.storage.node.field_event_date
     - field.storage.node.field_event_type
     - node.type.event
+    - system.menu.admin
   module:
     - better_exposed_filters
     - csv_serialization
     - datetime
     - node
-    - taxonomy
+    - rest
+    - serialization
     - tdih
     - user
     - views_data_export
@@ -498,6 +500,7 @@ display:
       contexts:
         - 'languages:language_content'
         - 'languages:language_interface'
+        - url
         - url.query_args
         - 'user.node_grants:view'
         - user.permissions
@@ -536,13 +539,14 @@ display:
       automatic_download: true
       export_method: standard
       export_batch_size: 200
+      export_filesystem: private
     cache_metadata:
       max-age: -1
       contexts:
         - 'languages:language_content'
         - 'languages:language_interface'
         - request_format
-        - url.query_args
+        - url
         - 'user.node_grants:view'
         - user.permissions
       tags:
@@ -593,6 +597,7 @@ display:
       contexts:
         - 'languages:language_content'
         - 'languages:language_interface'
+        - url
         - url.query_args
         - 'user.node_grants:view'
         - user.permissions
