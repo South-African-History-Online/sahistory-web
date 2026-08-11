@@ -3,6 +3,7 @@ langcode: en
 status: true
 dependencies:
   config:
+    - field.storage.node.body
     - field.storage.node.field_caps_topic
     - field.storage.node.field_classroom_grade
     - field.storage.node.field_classroom_subject
@@ -13,6 +14,7 @@ dependencies:
     - better_exposed_filters
     - node
     - taxonomy
+    - text
     - user
 id: classroom_presentations
 label: 'Classroom presentations'
@@ -272,6 +274,9 @@ display:
                 select_all_none: false
                 select_all_none_nested: false
                 display_inline: true
+                soft_limit_include_children: false
+                scrollable: false
+                scrollable_height: 300
               caps_topic:
                 plugin_id: bef_links
                 advanced:
@@ -286,6 +291,9 @@ display:
                 select_all_none: false
                 select_all_none_nested: false
                 display_inline: true
+                soft_limit_include_children: false
+                scrollable: false
+                scrollable_height: 300
       access:
         type: perm
         options:
@@ -529,13 +537,16 @@ display:
     cache_metadata:
       max-age: -1
       contexts:
-        - 'languages:language_content'
         - 'languages:language_interface'
         - url
         - url.query_args
         - 'user.node_grants:view'
         - user.permissions
-      tags: {  }
+      tags:
+        - 'config:field.storage.node.body'
+        - 'config:field.storage.node.field_caps_topic'
+        - 'config:field.storage.node.field_classroom_grade'
+        - 'config:field.storage.node.field_classroom_subject'
   page_1:
     id: page_1
     display_title: 'Browse page'
@@ -554,4 +565,8 @@ display:
         - url.query_args
         - 'user.node_grants:view'
         - user.permissions
-      tags: {  }
+      tags:
+        - 'config:field.storage.node.body'
+        - 'config:field.storage.node.field_caps_topic'
+        - 'config:field.storage.node.field_classroom_grade'
+        - 'config:field.storage.node.field_classroom_subject'

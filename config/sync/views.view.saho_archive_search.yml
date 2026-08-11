@@ -8,6 +8,7 @@ dependencies:
     - better_exposed_filters
     - facets_exposed_filters
     - search_api
+    - user
 id: saho_archive_search
 label: 'SAHO archive search'
 module: views
@@ -174,6 +175,9 @@ display:
                 select_all_none: false
                 select_all_none_nested: false
                 display_inline: false
+                soft_limit_include_children: false
+                scrollable: false
+                scrollable_height: 300
               facets_collection_nid:
                 plugin_id: default
                 advanced:
@@ -198,6 +202,9 @@ display:
                 select_all_none: false
                 select_all_none_nested: false
                 display_inline: false
+                soft_limit_include_children: false
+                scrollable: false
+                scrollable_height: 300
               facets_saldru_topic_label:
                 plugin_id: bef
                 advanced:
@@ -212,6 +219,9 @@ display:
                 select_all_none: false
                 select_all_none_nested: false
                 display_inline: false
+                soft_limit_include_children: false
+                scrollable: false
+                scrollable_height: 300
               facets_african_country_label:
                 plugin_id: bef
                 advanced:
@@ -226,6 +236,9 @@ display:
                 select_all_none: false
                 select_all_none_nested: false
                 display_inline: false
+                soft_limit_include_children: false
+                scrollable: false
+                scrollable_height: 300
       access:
         type: perm
         options:
@@ -586,7 +599,13 @@ display:
         - 'languages:language_interface'
         - url
         - url.query_args
-      tags: {  }
+        - 'url.query_args:sort_by'
+        - 'url.query_args:sort_order'
+        - 'user.node_grants:view'
+        - user.permissions
+      tags:
+        - 'config:search_api.index.saho_content'
+        - 'search_api_list:saho_content'
   page_1:
     id: page_1
     display_title: Page
@@ -602,4 +621,10 @@ display:
         - 'languages:language_interface'
         - url
         - url.query_args
-      tags: {  }
+        - 'url.query_args:sort_by'
+        - 'url.query_args:sort_order'
+        - 'user.node_grants:view'
+        - user.permissions
+      tags:
+        - 'config:search_api.index.saho_content'
+        - 'search_api_list:saho_content'
