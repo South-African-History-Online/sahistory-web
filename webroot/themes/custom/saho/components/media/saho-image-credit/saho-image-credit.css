@@ -14,6 +14,12 @@
   object-fit: cover;
   display: block;
 }
+/* Optional link wrapper (image records link the plate to the full-size
+   original); fills the frame so the image sizing above is unchanged. */
+.saho-figure__link {
+  display: block;
+  height: 100%;
+}
 /* Lead figure sizing follows the image's true orientation (set in
    _saho_record_image_props). A landscape lead spans the full text column; a
    portrait or square lead is capped and left-aligned so a tall photo can't
@@ -38,6 +44,20 @@
   .saho-main-content > .saho-figure--portrait,
   .saho-main-content > .saho-figure--square {
     display: none;
+  }
+}
+/* Image records (node type "image"): the photograph is the record, so neither
+   the portrait/square lead cap nor the mobile hoist applies - the lead spans
+   the column at every width, exactly like the further plates (#583). */
+.node-type--image .saho-main-content > .saho-figure--portrait,
+.node-type--image .saho-main-content > .saho-figure--square {
+  max-width: none;
+  margin-bottom: 24px;
+}
+@media (max-width: 767px) {
+  .node-type--image .saho-main-content > .saho-figure--portrait,
+  .node-type--image .saho-main-content > .saho-figure--square {
+    display: block;
   }
 }
 .saho-figure__caption {

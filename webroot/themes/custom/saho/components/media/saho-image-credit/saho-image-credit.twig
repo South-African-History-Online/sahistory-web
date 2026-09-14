@@ -1,12 +1,19 @@
 {#
 /**
- * @file SAHO Image credit SDC. props: src, alt, credit, source, caption, duotone, ratio
+ * @file SAHO Image credit SDC. props: src, alt, credit, source, caption, duotone, ratio, orientation, href, loading
  */
 #}
 <figure{{ attributes.addClass(['saho-figure', 'saho-figure--' ~ (orientation|default('landscape'))]) }}>
   <div class="saho-figure__frame" style="aspect-ratio: {{ ratio|default('4 / 3') }};">
     {% if src %}
-      <img class="saho-figure__img{{ duotone ? ' saho-duotone' : '' }}" src="{{ src }}" alt="{{ alt|default('') }}" loading="lazy" />
+      {% set image %}
+        <img class="saho-figure__img{{ duotone ? ' saho-duotone' : '' }}" src="{{ src }}" alt="{{ alt|default('') }}" loading="{{ loading|default('lazy') }}" />
+      {% endset %}
+      {% if href %}
+        <a class="saho-figure__link" href="{{ href }}">{{ image }}</a>
+      {% else %}
+        {{ image }}
+      {% endif %}
     {% endif %}
   </div>
   <figcaption class="saho-figure__caption">

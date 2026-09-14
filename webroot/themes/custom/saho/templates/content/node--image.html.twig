@@ -20,9 +20,11 @@
 
 <article{{ attributes.addClass('saho-article-wrapper') }}>
 
-  {# 2027 "Open Record" record header (typed tab + display ref + status + key fields). #}
+  {# 2027 "Open Record" record header (typed tab + display ref + status + key fields).
+     No mobile lead hoist here: on an image record the lead figure stays in the
+     column at every width (see saho-image-credit.css), so a hoisted copy would
+     show the photograph twice. #}
   {% if record is defined %}
-    {% set record_lead_mobile = (record_image.orientation is defined and record_image.orientation in ['portrait', 'square']) ? record_image : {} %}
     {{ include('saho:saho-record-header', {
       type: record.type,
       reference: record.reference,
@@ -30,7 +32,7 @@
       kicker: record.kicker,
       title: record.title,
       facts: record.facts,
-      image: record_lead_mobile,
+      image: {},
     }, with_context = false) }}
   {% endif %}
 
@@ -44,9 +46,10 @@
     {# LEFT: Main content column #}
     <div class="saho-main-content">
 
-      {# Lead image: duotone image-credit figure, captioned by field_source
-         (the external credit). Guarded on src - .entity alone is truthy on
-         an empty reference field. #}
+      {# Lead image: full-colour image-credit figure at the photograph's own
+         ratio, served as the 1200w derivative and linked to the original,
+         captioned by field_source (the external credit). Guarded on src -
+         .entity alone is truthy on an empty reference field. #}
       {% if record_image.src is defined and record_image.src %}
         {{ include('saho:saho-image-credit', record_image, with_context = false) }}
       {% endif %}

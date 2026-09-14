@@ -2480,11 +2480,22 @@ function saho_preprocess_node__image(array &$variables): void {
 
   _saho_record_related_assign($variables, $node);
   $variables['record_citation'] = _saho_record_citation_props($node);
-  $variables['record_image'] = _saho_record_image_props($node, 'field_image', 'field_source', '16 / 9');
+  // The photograph IS the record on an image node (#583): full colour rather
+  // than the archival duotone, framed at its true ratio (no clamp), served as
+  // the 1200w WebP derivative instead of the multi-MB original, eager-loaded
+  // as the LCP, and linked to the original so newspaper scans stay legible.
+  $image_options = [
+    'duotone' => FALSE,
+    'clamp' => FALSE,
+    'image_style' => 'saho_image_detail',
+    'link_original' => TRUE,
+  ];
+  $lead_options = $image_options + ['loading' => 'eager'];
+  $variables['record_image'] = _saho_record_image_props($node, 'field_image', 'field_source', '16 / 9', $lead_options);
   if ($variables['record_image'] === []) {
-    $variables['record_image'] = _saho_record_image_props($node, 'field_archive_image', 'field_source', '16 / 9');
+    $variables['record_image'] = _saho_record_image_props($node, 'field_archive_image', 'field_source', '16 / 9', $lead_options);
   }
-  $variables['record_plates'] = _saho_record_additional_images($node, $variables['record_image']['src'] ?? '');
+  $variables['record_plates'] = _saho_record_additional_images($node, $variables['record_image']['src'] ?? '', $image_options);
   _saho_record_add_collection_membership($variables, $node);
   _saho_record_attach_libraries($variables);
 }
@@ -3280,11 +3291,19 @@ function _saho_record_citation_props(NodeInterface $node): array {
  *   The caption field name.
  * @param string $ratio
  *   The CSS aspect-ratio.
+ * @param array $options
+ *   Optional treatment overrides (defaults keep the record-page treatment):
+ *   - duotone (bool, TRUE): apply the archival duotone filter.
+ *   - clamp (bool, TRUE): clamp the frame ratio to [0.75, 1.7778].
+ *   - image_style (string|null, NULL): image style to serve; NULL = original.
+ *   - link_original (bool, FALSE): wrap the image in a link to the original.
+ *   - loading (string, 'lazy'): the img loading attribute (lazy|eager).
  *
  * @return array
  *   saho:saho-image-credit props, or [] when there is no real image.
  */
-function _saho_record_image_props(NodeInterface $node, string $image_field, string $caption_field = 'field_node_image_caption', string $ratio = '3 / 4'): array {
+function _saho_record_image_props(NodeInterface $node, string $image_field, string $caption_field = 'field_node_image_caption', string $ratio = '3 / 4', array $options = []): array {
+  $options = _saho_record_image_options($options);
   if (!$node->hasField($image_field) || $node->get($image_field)->isEmpty()) {
     return [];
   }
@@ -3312,7 +3331,7 @@ function _saho_record_image_props(NodeInterface $node, string $image_field, stri
   $width = (int) $item->get('width')->getValue();
   $height = (int) $item->get('height')->getValue();
   if ($width > 0 && $height > 0) {
-    $r = max(0.75, min(1.7778, $width / $height));
+    $r = _saho_record_image_ratio($width, $height, $options['clamp']);
     $ratio = (string) round($r, 4);
   }
   else {
@@ -3324,13 +3343,85 @@ function _saho_record_image_props(NodeInterface $node, string $image_field, stri
   $orientation = $r < 0.95 ? 'portrait' : ($r <= 1.05 ? 'square' : 'landscape');
 
   return [
-    'src' => \Drupal::service('file_url_generator')->generateString($file->getFileUri()),
+    'src' => _saho_record_image_src($file, $options['image_style']),
+    'href' => $options['link_original'] ? \Drupal::service('file_url_generator')->generateString($file->getFileUri()) : '',
     'alt' => $alt !== '' ? $alt : $node->label() . ' portrait',
     'caption' => $caption !== '' ? Markup::create($caption) : '',
-    'duotone' => TRUE,
+    'duotone' => $options['duotone'],
     'ratio' => $ratio,
     'orientation' => $orientation,
+    'loading' => $options['loading'],
   ];
+}
+
+/**
+ * Normalises the record image treatment options.
+ *
+ * @param array $options
+ *   Caller overrides; see _saho_record_image_props().
+ *
+ * @return array
+ *   The options with every key present.
+ */
+function _saho_record_image_options(array $options): array {
+  $options += [
+    'duotone' => TRUE,
+    'clamp' => TRUE,
+    'image_style' => NULL,
+    'link_original' => FALSE,
+    'loading' => 'lazy',
+  ];
+  $options['loading'] = $options['loading'] === 'eager' ? 'eager' : 'lazy';
+  return $options;
+}
+
+/**
+ * Derives a figure frame ratio from stored image dimensions.
+ *
+ * Clamping keeps an extreme shape from blowing the record grid; an image
+ * record opts out so the frame matches the photograph exactly and
+ * object-fit: cover crops nothing.
+ *
+ * @param int $width
+ *   Image width in pixels.
+ * @param int $height
+ *   Image height in pixels.
+ * @param bool $clamp
+ *   Whether to clamp to [0.75, 1.7778].
+ *
+ * @return float
+ *   The width / height ratio.
+ */
+function _saho_record_image_ratio(int $width, int $height, bool $clamp): float {
+  $r = $width / $height;
+  return $clamp ? max(0.75, min(1.7778, $r)) : $r;
+}
+
+/**
+ * Returns the relative URL to serve for a record image.
+ *
+ * With an image style, the derivative URL is returned (core generates the
+ * derivative on first request - no disk I/O at render time); without one, or
+ * when the style cannot handle the file, the original file URL.
+ *
+ * @param \Drupal\file\Entity\File $file
+ *   The image file.
+ * @param string|null $style_name
+ *   An image style id, or NULL for the original.
+ *
+ * @return string
+ *   The root-relative URL.
+ */
+function _saho_record_image_src(File $file, ?string $style_name): string {
+  $uri = $file->getFileUri();
+  $url_generator = \Drupal::service('file_url_generator');
+  if ($style_name !== NULL) {
+    $style = ImageStyle::load($style_name);
+    if ($style && $style->supportsUri($uri)) {
+      return $url_generator->transformRelative($style->buildUrl($uri));
+    }
+  }
+  return $url_generator->generateString($uri);
 }
 
 /**
@@ -3345,12 +3436,16 @@ function _saho_record_image_props(NodeInterface $node, string $image_field, stri
  * @param \Drupal\node\NodeInterface $node
  *   The record node.
  * @param string $exclude_src
- *   The lead image's generated URL, or '' when the record has no lead.
+ *   The lead image's generated URL, or '' when the record has no lead. Must
+ *   be built with the same $options['image_style'] so the URLs compare.
+ * @param array $options
+ *   Treatment overrides; see _saho_record_image_props().
  *
  * @return array
  *   A list of saho:saho-image-credit props (possibly empty).
  */
-function _saho_record_additional_images(NodeInterface $node, string $exclude_src = ''): array {
+function _saho_record_additional_images(NodeInterface $node, string $exclude_src = '', array $options = []): array {
+  $options = _saho_record_image_options($options);
   $plates = [];
   $seen_fids = [];
   $url_generator = \Drupal::service('file_url_generator');
@@ -3367,23 +3462,25 @@ function _saho_record_additional_images(NodeInterface $node, string $exclude_src
         continue;
       }
       $seen_fids[$file->id()] = TRUE;
-      $src = $url_generator->generateString($file->getFileUri());
+      $src = _saho_record_image_src($file, $options['image_style']);
       if ($exclude_src !== '' && $src === $exclude_src) {
         continue;
       }
-      // Same clamped own-orientation frame as the lead image, so a portrait
-      // plate is never sliced into a landscape band.
+      // Same own-orientation frame as the lead image, so a portrait plate is
+      // never sliced into a landscape band.
       $width = (int) $item->get('width')->getValue();
       $height = (int) $item->get('height')->getValue();
-      $r = $width > 0 && $height > 0 ? max(0.75, min(1.7778, $width / $height)) : 4 / 3;
+      $r = $width > 0 && $height > 0 ? _saho_record_image_ratio($width, $height, $options['clamp']) : 4 / 3;
       $alt = trim((string) $item->get('alt')->getValue());
       $plates[] = [
         'src' => $src,
+        'href' => $options['link_original'] ? $url_generator->generateString($file->getFileUri()) : '',
         'alt' => $alt !== '' ? $alt : $node->label(),
         'caption' => '',
-        'duotone' => TRUE,
+        'duotone' => $options['duotone'],
         'ratio' => (string) round($r, 4),
         'orientation' => $r < 0.95 ? 'portrait' : ($r <= 1.05 ? 'square' : 'landscape'),
+        'loading' => $options['loading'],
       ];
       if (count($plates) >= 12) {
         return $plates;
