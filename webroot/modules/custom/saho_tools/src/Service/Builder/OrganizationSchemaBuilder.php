@@ -60,7 +60,7 @@ class OrganizationSchemaBuilder extends SchemaBuilderBase {
       '@type' => 'ContactPoint',
       'contactType' => 'General Inquiries',
       'email' => 'info@sahistory.org.za',
-      'url' => $base_url . '/contact',
+      'url' => $base_url . '/contact-us',
     ];
 
     // Add address (if available).

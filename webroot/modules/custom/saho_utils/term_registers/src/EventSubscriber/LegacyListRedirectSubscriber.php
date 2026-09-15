@@ -55,6 +55,13 @@ final class LegacyListRedirectSubscriber implements EventSubscriberInterface {
     'archives-by-publication-date' => ['path' => '/archives'],
     'archives-books' => ['path' => '/archives', 'query' => ['type' => ['Online book' => 'Online book']]],
     'online-book-list' => ['path' => '/archives', 'query' => ['type' => ['Online book' => 'Online book']]],
+    // Core contact module retired (#80): its routes fold into the contact
+    // page, which now carries the single Contact webform.
+    'contact' => ['path' => '/contact-us'],
+    'contact/contact_us' => ['path' => '/contact-us'],
+    'contact/contribute' => ['path' => '/form/contribute'],
+    'contact/feedback' => ['path' => '/contact-us'],
+    'contact/website_feedback' => ['path' => '/contact-us'],
   ];
 
   public function __construct(
