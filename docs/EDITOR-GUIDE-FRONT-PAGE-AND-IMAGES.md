@@ -1,6 +1,6 @@
 # Editor guide: the front page and article images
 
-For SAHO editors (Jeeva, Omar, Ravi) and site administrators (Leander, Mads).
+For SAHO editors (Jeeva, Leander, Phoenix) and site administrators (Leander, Mads).
 Written September 2026 for the current site (Drupal 11, "Open Record" front page).
 
 The old Drupal 7 site let you tick a box and a biography appeared on the front
