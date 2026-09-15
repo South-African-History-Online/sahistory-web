@@ -18,6 +18,8 @@ use Drupal\saho_tools\Schema\ProvenanceIds;
 use Drupal\Core\Url;
 use Drupal\image\Entity\ImageStyle;
 use Drupal\file\Entity\File;
+use Drupal\Core\Field\FieldItemInterface;
+use Drupal\media\MediaInterface;
 
 /**
  * @file
@@ -503,31 +505,34 @@ function saho_preprocess_node(array &$variables) {
 
   // For article and biography pages, preload the main image for better LCP.
   if ($variables['view_mode'] == 'full' && in_array($node->bundle(), ['article', 'biography'])) {
-    // Check if the node has a field_image.
-    if ($node->hasField('field_image') && !$node->get('field_image')->isEmpty()) {
-      $image_field = $node->get('field_image')->first();
-      if ($image_field) {
-        $file = $image_field->entity;
-        if ($file) {
-          $image_uri = $file->getFileUri();
-          $image_url = \Drupal::service('file_url_generator')->generateAbsoluteString($image_uri);
-
-          // Add preload link to page attachments.
-          $variables['#attached']['html_head'][] = [
-            [
-              '#type' => 'html_tag',
-              '#tag' => 'link',
-              '#attributes' => [
-                'rel' => 'preload',
-                'as' => 'image',
-                'href' => $image_url,
-                'fetchpriority' => 'high',
-              ],
-            ],
-            'preload_main_image',
-          ];
-        }
+    // Same candidate chain as the article lead (legacy uploads first, media
+    // Image as fallback), so the image that actually leads is the one preloaded.
+    $preload_fields = $node->bundle() === 'article'
+      ? ['field_article_image', 'field_image', 'field_main_image']
+      : ['field_image'];
+    foreach ($preload_fields as $preload_field) {
+      $image_item = _saho_record_image_item($node, $preload_field);
+      if (!$image_item) {
+        continue;
       }
+      $file = $image_item->get('entity')->getValue();
+      $image_url = \Drupal::service('file_url_generator')->generateAbsoluteString($file->getFileUri());
+
+      // Add preload link to page attachments.
+      $variables['#attached']['html_head'][] = [
+        [
+          '#type' => 'html_tag',
+          '#tag' => 'link',
+          '#attributes' => [
+            'rel' => 'preload',
+            'as' => 'image',
+            'href' => $image_url,
+            'fetchpriority' => 'high',
+          ],
+        ],
+        'preload_main_image',
+      ];
+      break;
     }
   }
 
@@ -2171,7 +2176,11 @@ function saho_preprocess_node__article(array &$variables): void {
   ]);
   // Summary/abstract from the curator-written synopsis.
   $variables['record_summary'] = _saho_record_summary_props($node);
-  _saho_record_common_props($variables, $node, ['field_article_image', 'field_image']);
+  // Legacy plain uploads keep leading where they exist (no visible change on
+  // ~1,100 older articles); the media "Image" (field_main_image, what editors
+  // fill today) is the fallback, so media-only articles finally get a lead.
+  // Editors promote the media image by removing the legacy upload.
+  _saho_record_common_props($variables, $node, ['field_article_image', 'field_image', 'field_main_image']);
 
   // Collection heads (articles with archive children, e.g. DISA): the
   // image is an identity mark, not editorial imagery - it rides the rail
@@ -3304,10 +3313,7 @@ function _saho_record_citation_props(NodeInterface $node): array {
  */
 function _saho_record_image_props(NodeInterface $node, string $image_field, string $caption_field = 'field_node_image_caption', string $ratio = '3 / 4', array $options = []): array {
   $options = _saho_record_image_options($options);
-  if (!$node->hasField($image_field) || $node->get($image_field)->isEmpty()) {
-    return [];
-  }
-  $item = $node->get($image_field)->first();
+  $item = _saho_record_image_item($node, $image_field);
   $file = $item ? $item->get('entity')->getValue() : NULL;
   if (!$file instanceof File) {
     return [];
@@ -3352,6 +3358,43 @@ function _saho_record_image_props(NodeInterface $node, string $image_field, stri
     'orientation' => $orientation,
     'loading' => $options['loading'],
   ];
+}
+
+/**
+ * Resolves a node image field to the image field item that holds the file.
+ *
+ * Plain image fields (field_article_image, field_bio_pic, ...) resolve to
+ * their own first item. Media reference fields (field_main_image, the media
+ * library "Image" editors fill on articles) resolve through the referenced
+ * media entity to its source image item, so alt/width/height/file are read
+ * from the media's own image field. Anything else yields NULL.
+ *
+ * @param \Drupal\node\NodeInterface $node
+ *   The node.
+ * @param string $image_field
+ *   The node field to resolve.
+ *
+ * @return \Drupal\Core\Field\FieldItemInterface|null
+ *   An image field item whose 'entity' is a file, or NULL.
+ */
+function _saho_record_image_item(NodeInterface $node, string $image_field): ?FieldItemInterface {
+  if (!$node->hasField($image_field) || $node->get($image_field)->isEmpty()) {
+    return NULL;
+  }
+  $item = $node->get($image_field)->first();
+  if (!$item instanceof FieldItemInterface) {
+    return NULL;
+  }
+  $target = $item->get('entity')->getValue();
+  if ($target instanceof MediaInterface) {
+    $source_field = $target->getSource()->getConfiguration()['source_field'] ?? '';
+    if ($source_field === '' || !$target->hasField($source_field) || $target->get($source_field)->isEmpty()) {
+      return NULL;
+    }
+    $item = $target->get($source_field)->first();
+    $target = $item instanceof FieldItemInterface ? $item->get('entity')->getValue() : NULL;
+  }
+  return $target instanceof File ? $item : NULL;
 }
 
 /**

@@ -201,11 +201,23 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
       '#title' => $this->t('Selection Method'),
       '#description' => $this->t('Choose how to select biographies to display.'),
       '#options' => [
+        'flagged' => $this->t('Flagged biographies (editors tick "Home Page Feature Biography Section" on the biography)'),
         'specific' => $this->t('Specific Biographies (manual selection)'),
         'category' => $this->t('By Category (all biographies in selected category)'),
       ],
       '#default_value' => $config['selection_method'],
       '#required' => TRUE,
+    ];
+
+    $form['flagged_help'] = [
+      '#type' => 'item',
+      '#title' => $this->t('How flagged mode works'),
+      '#description' => $this->t('The most recently saved biographies with the "Home Page Feature Biography Section" box ticked are shown, up to the number chosen below. Editors add a biography by ticking the box and saving; they remove it by unticking and saving. No layout change is needed.'),
+      '#states' => [
+        'visible' => [
+          ':input[name="settings[selection_method]"]' => ['value' => 'flagged'],
+        ],
+      ],
     ];
 
     $form['entity_count'] = [
@@ -281,12 +293,26 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
       ],
     ];
 
-    // Use this field for both single and multiple biography selection.
+    // Use this field for both single and multiple biography selection. The
+    // stored value stays a comma-separated node ID string (so existing block
+    // configuration and HomeLayoutRebuilder carry-forward keep working); the
+    // form shows a type-ahead picker instead of raw node IDs.
     $form['specific_nids'] = [
-      '#type' => 'textarea',
-      '#title' => $this->t('Biography Node IDs'),
-      '#description' => $this->t('Enter node IDs separated by commas (e.g., 123, 456, 789). For single biography display, enter just one ID. For multiple biographies, enter up to @count IDs.', ['@count' => 9]),
-      '#default_value' => !empty($config['specific_nids']) ? $config['specific_nids'] : $config['specific_nid'],
+      '#type' => 'entity_autocomplete',
+      '#target_type' => 'node',
+      '#selection_handler' => 'default:node',
+      '#selection_settings' => [
+        'target_bundles' => ['biography'],
+      ],
+      '#tags' => TRUE,
+      // Textfields default to 128 characters; nine "Name (nid)" tags need
+      // far more, so the picker would otherwise fail validation silently.
+      '#maxlength' => 2048,
+      '#title' => $this->t('Biographies'),
+      '#description' => $this->t('Start typing a name and pick from the list. Separate several with commas. Up to @count biographies are shown (see "Number of Biographies").', ['@count' => 9]),
+      '#default_value' => $this->loadSpecificBiographies(
+        !empty($config['specific_nids']) ? $config['specific_nids'] : (string) $config['specific_nid']
+      ),
       '#states' => [
         'visible' => [
           ':input[name="settings[selection_method]"]' => ['value' => 'specific'],
@@ -295,7 +321,6 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
           ':input[name="settings[selection_method]"]' => ['value' => 'specific'],
         ],
       ],
-      '#rows' => 3,
     ];
 
     // Add helpful message if no categories are found.
@@ -379,7 +404,7 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
     $this->configuration['block_description'] = $form_state->getValue('block_description');
     $this->configuration['selection_method'] = $form_state->getValue('selection_method');
     $this->configuration['specific_nid'] = $form_state->getValue('specific_nid');
-    $this->configuration['specific_nids'] = $form_state->getValue('specific_nids');
+    $this->configuration['specific_nids'] = static::normalizeSpecificNids($form_state->getValue('specific_nids'));
     $this->configuration['category'] = $form_state->getValue('category');
     $this->configuration['display_mode'] = $form_state->getValue('display_mode');
     $this->configuration['highlight_category'] = $form_state->getValue('highlight_category');
@@ -387,6 +412,64 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
     $this->configuration['category_label'] = $form_state->getValue('category_label');
     $this->configuration['sort_by'] = $form_state->getValue('sort_by');
     $this->configuration['enable_carousel'] = $form_state->getValue('enable_carousel');
+  }
+
+  /**
+   * Normalises the manual-selection form value to the stored ID string.
+   *
+   * The entity_autocomplete element with #tags submits
+   * [['target_id' => 12], ...]; legacy block configuration (and the previous
+   * textarea) used a comma-separated string. Both shapes collapse to
+   * "12,34" so stored configuration keeps one format.
+   *
+   * @param mixed $value
+   *   The submitted form value.
+   *
+   * @return string
+   *   Comma-separated positive node IDs, in submission order, or ''.
+   */
+  public static function normalizeSpecificNids($value): string {
+    if (is_array($value)) {
+      $ids = [];
+      foreach ($value as $item) {
+        $ids[] = is_array($item) ? ($item['target_id'] ?? '') : $item;
+      }
+    }
+    else {
+      $ids = explode(',', str_replace([' ', "\n", "\r"], '', (string) $value));
+    }
+    $ids = array_filter($ids, static fn($id) => is_numeric($id) && (int) $id > 0);
+    return implode(',', array_map('intval', array_values($ids)));
+  }
+
+  /**
+   * Loads the biography nodes behind a stored comma-separated ID string.
+   *
+   * @param string $nids
+   *   Comma-separated node IDs (missing or non-biography IDs are dropped).
+   *
+   * @return \Drupal\node\NodeInterface[]
+   *   Loaded nodes in the stored order, for entity_autocomplete #tags.
+   */
+  protected function loadSpecificBiographies(string $nids): array {
+    $normalized = static::normalizeSpecificNids($nids);
+    if ($normalized === '') {
+      return [];
+    }
+    $ids = array_map('intval', explode(',', $normalized));
+    try {
+      $nodes = $this->entityTypeManager->getStorage('node')->loadMultiple($ids);
+    }
+    catch (\Exception $e) {
+      return [];
+    }
+    $ordered = [];
+    foreach ($ids as $id) {
+      if (isset($nodes[$id]) && $nodes[$id]->bundle() === 'biography') {
+        $ordered[] = $nodes[$id];
+      }
+    }
+    return $ordered;
   }
 
   /**
@@ -528,6 +611,21 @@ class FeaturedBiographyBlock extends BlockBase implements ContainerFactoryPlugin
 
           if (!empty($nids_to_load)) {
             $query->condition('nid', $nids_to_load, 'IN');
+          }
+          break;
+
+        case 'flagged':
+          // Editors curate this mode from the biography edit form: the
+          // "Home Page Feature Biography Section" checkbox
+          // (field_home_page_feature_biograph). Newest save wins so a freshly
+          // ticked biography enters the band and an unticked one leaves it.
+          $field_definitions = $this->entityFieldManager->getFieldDefinitions('node', $content_type);
+          if (!isset($field_definitions['field_home_page_feature_biograph'])) {
+            return NULL;
+          }
+          $query->condition('field_home_page_feature_biograph', 1);
+          if (empty($this->configuration['sort_by']) || $this->configuration['sort_by'] === 'none') {
+            $query->sort('changed', 'DESC');
           }
           break;
 
