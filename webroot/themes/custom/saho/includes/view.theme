@@ -13,6 +13,7 @@ use Drupal\image\Entity\ImageStyle;
 use Drupal\media\Entity\Media;
 use Drupal\node\NodeInterface;
 use Drupal\taxonomy\TermInterface;
+use Drupal\saho_utils\LandingTypes;
 
 /**
  * Resolves the node behind a search result row, if any.
@@ -302,7 +303,9 @@ function saho_preprocess_views_view__saho_archive_search__page_1(array &$variabl
     // year is the register for the narrow ledger column.
     $dates = '';
     if ($node->hasField('field_archive_publication_date') && !$node->get('field_archive_publication_date')->isEmpty()) {
-      $value = (string) $node->get('field_archive_publication_date')->value;
+      // Humanise legacy shapes first so "19-September-1925" and partial ISO
+      // dates yield their year like the biography ledger does.
+      $value = _saho_record_date((string) $node->get('field_archive_publication_date')->value);
       $dates = preg_match('/\b(\d{4})\b/', $value, $m) ? $m[1] : '';
     }
 
@@ -668,16 +671,7 @@ function saho_preprocess_views_view__saho_landing(array &$variables) {
   $landing_type = $arg === '' ? 'article' : ($type_map[$arg] ?? $arg);
   // Explicit archive vocabulary for the record bundles; bundle labels are
   // unreliable here (event's label is "This day in history").
-  $label_map = [
-    'biography' => 'Biographies',
-    'article' => 'Articles',
-    'event' => 'Events',
-    'place' => 'Places',
-    'archive' => 'Archive',
-    'topic' => 'Topics',
-    'upcomingevent' => 'Events',
-    'book' => 'Archive',
-  ];
+  $label_map = LandingTypes::LABELS;
   $landing_label = 'Records';
   if ($arg !== '') {
     if (isset($label_map[$arg])) {

@@ -14,6 +14,7 @@ use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\search_api\Query\QueryInterface as SearchApiQueryInterface;
 use Solarium\Core\Query\QueryInterface as SolariumQueryInterface;
 use Solarium\QueryType\Select\Query\Query as SolrSelectQuery;
+use Drupal\saho_utils\LandingTypes;
 
 /**
  * Returns the node bundles that surface the Cite and Share tools.
@@ -576,9 +577,24 @@ function saho_tools_theme_suggestions_node_alter(array &$suggestions, array $var
 }
 
 /**
- * Implements hook_metatag_tags_alter().
+ * Implements hook_metatags_alter().
+ *
+ * Note: this was declared as hook_metatag_tags_alter() until 2026-09 and
+ * therefore never ran; Metatag's alter hook is hook_metatags_alter().
  */
-function saho_tools_metatag_tags_alter(array &$metatags, $context) {
+function saho_tools_metatags_alter(array &$metatags, array &$context) {
+  // /index/{type} landings are views pages with no entity: give each public
+  // record type its own description (the route title callback already gives
+  // it a distinct <title>), instead of the global default inherited by all.
+  $route_match = \Drupal::routeMatch();
+  if ($route_match->getRouteName() === 'view.saho_landing.page_1') {
+    $description = LandingTypes::description((string) $route_match->getParameter('arg_0'));
+    if ($description !== NULL) {
+      $metatags['description'] = $description;
+    }
+    return;
+  }
+
   // Check if context is an array and contains an entity.
   if (!is_array($context) || empty($context['entity'])) {
     return;
