@@ -177,9 +177,11 @@
   function updateActiveFiltersSummary(form) {
     const activeFilters = getActiveFilters(form);
 
-    // On the Open Record shells the row sits above the results head,
-    // not inside the rail form.
-    const resultsHost = form.closest('.saho-archive-index')?.querySelector('[data-saho-results]');
+    // On the Open Record shells (/archives, /search) the row sits above the
+    // results head, not inside the rail form; other exposed forms keep it
+    // in place (#470 item 5: one placement for both shells).
+    const shell = form.closest('.saho-archive-index, .saho-search-page');
+    const resultsHost = shell?.querySelector('[data-saho-results]');
     const host = resultsHost || form;
 
     // Remove existing summary
