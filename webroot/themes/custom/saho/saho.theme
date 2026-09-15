@@ -880,8 +880,15 @@ function saho_form_alter(array &$form, $form_state, $form_id): void {
   }
 
   if (isset($form['type']['#options'])) {
-    // Not a record type - the type facet lists archive material only.
-    unset($form['type']['#options']['page']);
+    // The type facet lists record types only: the index also carries basic
+    // pages and shop products, which must never surface as archive material.
+    // Filter the default value too, so a stale ?type[page]=page in a shared
+    // URL does not trip Form API's illegal-choice validation.
+    $record_types = array_flip(['archive', 'article', 'biography', 'book', 'event', 'place', 'upcomingevent']);
+    $form['type']['#options'] = array_intersect_key($form['type']['#options'], $record_types);
+    if (isset($form['type']['#default_value']) && is_array($form['type']['#default_value'])) {
+      $form['type']['#default_value'] = array_values(array_intersect($form['type']['#default_value'], array_keys($record_types)));
+    }
     $bundle_labels = [];
     foreach (\Drupal::entityTypeManager()->getStorage('node_type')->loadMultiple() as $bundle => $node_type) {
       $bundle_labels[$bundle] = $node_type->label();
@@ -1955,7 +1962,9 @@ function saho_preprocess_node__biography(array &$variables) {
       // strip shows "President (1952 - 1967)", not "<p>President...</p>".
       $value = trim(strip_tags((string) $node->get($field)->value));
       if ($value !== '') {
-        $facts[] = ['label' => $label, 'value' => _saho_record_date($value)];
+        // Only the two date facts go through the date humaniser; a role such
+        // as "President (1952 - 1967)" must print verbatim.
+        $facts[] = ['label' => $label, 'value' => $field === 'field_position' ? $value : _saho_record_date($value)];
       }
     }
   }
@@ -2169,6 +2178,12 @@ function saho_preprocess_node__article(array &$variables): void {
       $variables['#attached']['library'][] = 'saho/saho-chronology';
       $span = _saho_timeline_period($node->label());
       $kicker = 'Timeline · ' . ($span !== '' ? $span : $chronology['span']);
+    }
+    else {
+      // Prose-shaped timelines (fewer than three dated entries) still carry
+      // the genre: a bare TIMELINE kicker, with the title's period if any.
+      $span = _saho_timeline_period($node->label());
+      $kicker = 'Timeline' . ($span !== '' ? ' · ' . $span : '');
     }
   }
   _saho_record_header_props($variables, $node, 'article', $kicker, $facts);
@@ -2384,7 +2399,9 @@ function saho_preprocess_node__event(array &$variables): void {
   $event_date = '';
   if ($node->hasField('field_event_date') && !$node->get('field_event_date')->isEmpty()) {
     $date = $node->get('field_event_date')->date;
-    $event_date = $date ? $date->format('j M Y') : trim((string) $node->get('field_event_date')->value);
+    // Legacy rows store free-text shapes the datetime item cannot parse;
+    // humanise those instead of printing the raw stored string.
+    $event_date = $date ? $date->format('j M Y') : _saho_record_date((string) $node->get('field_event_date')->value);
   }
 
   $facts = [];

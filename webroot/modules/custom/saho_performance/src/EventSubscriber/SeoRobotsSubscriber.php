@@ -59,6 +59,10 @@ class SeoRobotsSubscriber implements EventSubscriberInterface {
     // page is a deliberate internal-linking asset; its ?tab=/?page=
     // variants are working views of the same list.
     'saho_connections.hub',
+    // /index/{type} - the per-type record landings. Bare URLs are indexed
+    // (each now has its own title/description); their sort/filter query
+    // variants are working views of the same register.
+    'view.saho_landing.page_1',
   ];
 
   /**
