@@ -315,17 +315,17 @@ class TopReadContentBlock extends BlockBase implements ContainerFactoryPluginInt
    *   The relative image URL or NULL if not available.
    */
   protected function getNodeImageUrl($node) {
-    // Get the image field name for this content type.
-    $field_name = $this->imageExtractor->findImageFieldForContentType($node->bundle());
-
-    // Check if field exists and has a value.
-    if (!$node->hasField($field_name) || $node->get($field_name)->isEmpty()) {
+    // First populated image field for this bundle (articles fall back from
+    // the legacy uploads to the media Image).
+    $field_name = $this->imageExtractor->findImageFieldForEntity($node);
+    if ($field_name === NULL) {
       return NULL;
     }
 
     // Skip files missing on disk (the pre-2019 loss class) so the ledger
-    // never publishes a knowingly broken figure.
-    $file = $node->get($field_name)->first()->entity ?? NULL;
+    // never publishes a knowingly broken figure. resolveFile() walks media
+    // references to their source file.
+    $file = $this->imageExtractor->resolveFile($node, $field_name);
     if (!$file instanceof FileInterface || !file_exists($file->getFileUri())) {
       return NULL;
     }

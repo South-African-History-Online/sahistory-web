@@ -83,17 +83,28 @@ class BlockQueryBuilderService {
    *
    * @param \Drupal\Core\Entity\Query\QueryInterface $query
    *   The query to modify.
-   * @param string $field_name
-   *   The machine name of the image field to check (e.g., 'field_image').
+   * @param string|string[] $field_names
+   *   The image field machine name, or an ordered list of candidates
+   *   (e.g. ['field_article_image', 'field_image', 'field_main_image']);
+   *   with several, an entity qualifies when ANY of them is populated.
    *
    * @return \Drupal\Core\Entity\Query\QueryInterface
    *   The modified query object for method chaining.
    */
-  public function addImageFilter(QueryInterface $query, string $field_name): QueryInterface {
-    if (!empty($field_name)) {
-      $query->condition($field_name, NULL, 'IS NOT NULL');
-      $query->exists($field_name);
+  public function addImageFilter(QueryInterface $query, string|array $field_names): QueryInterface {
+    $field_names = array_values(array_filter((array) $field_names));
+    if ($field_names === []) {
+      return $query;
     }
+    if (count($field_names) === 1) {
+      $query->exists($field_names[0]);
+      return $query;
+    }
+    $or_group = $query->orConditionGroup();
+    foreach ($field_names as $field_name) {
+      $or_group->exists($field_name);
+    }
+    $query->condition($or_group);
     return $query;
   }
 

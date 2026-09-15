@@ -135,8 +135,8 @@ class SuggestedReadingQuery {
 
     // Join with image field tables to ensure images exist.
     $image_joins = [
-      // Articles: field_article_image OR field_feature_banner.
-      'article' => ['field_article_image', 'field_feature_banner'],
+      // Articles: legacy uploads, the media Image, OR field_feature_banner.
+      'article' => ['field_article_image', 'field_main_image', 'field_feature_banner'],
       // Biographies: field_bio_pic OR field_feature_banner.
       'biography' => ['field_bio_pic', 'field_feature_banner'],
       // Archives: field_archive_image OR field_image.
