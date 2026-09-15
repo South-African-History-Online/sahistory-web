@@ -303,8 +303,10 @@ class EntityOverviewBlock extends BlockBase implements ContainerFactoryPluginInt
 
     // Apply image filter if required or if sort is random_with_images.
     if ($require_images || $sort_order === 'random_with_images') {
-      $image_field = $this->imageExtractor->findImageFieldForContentType($content_type);
-      $query = $this->queryBuilder->addImageFilter($query, $image_field);
+      // Any populated candidate counts (articles: legacy uploads OR the
+      // media Image), so media-only articles are no longer filtered out.
+      $image_fields = $this->imageExtractor->findImageFieldsForContentType($content_type);
+      $query = $this->queryBuilder->addImageFilter($query, $image_fields);
     }
 
     // For random sorting, fetch more items for better variety before shuffling.

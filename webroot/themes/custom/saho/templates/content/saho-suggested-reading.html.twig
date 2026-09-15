@@ -45,6 +45,10 @@
               {% if entity.field_article_image.entity.uri.value %}
                 {% set image_url = file_url(entity.field_article_image.entity.uri.value) %}
                 {% set image_alt = entity.field_article_image.alt %}
+              {% elseif entity.field_main_image.entity.field_media_image.entity.uri.value %}
+                {# Media library "Image": media item -> its source image -> file. #}
+                {% set image_url = file_url(entity.field_main_image.entity.field_media_image.entity.uri.value) %}
+                {% set image_alt = entity.field_main_image.entity.field_media_image.alt %}
               {% elseif entity.field_feature_banner.entity.uri.value %}
                 {% set image_url = file_url(entity.field_feature_banner.entity.uri.value) %}
                 {% set image_alt = entity.field_feature_banner.alt %}

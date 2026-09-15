@@ -7,6 +7,8 @@
 
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\node\NodeInterface;
+use Drupal\Core\Entity\ContentEntityInterface;
+use Drupal\file\FileInterface;
 
 /**
  * Implements hook_preprocess_node().
@@ -321,6 +323,7 @@ function _saho_suggested_reading_get_popular_content(NodeInterface $node, $limit
 function _saho_suggested_reading_entity_has_image(FieldableEntityInterface $entity) {
   $image_fields = [
     'field_article_image',
+    'field_main_image',
     'field_bio_pic',
     'field_image',
     'field_event_image',
@@ -345,6 +348,7 @@ function _saho_suggested_reading_entity_has_image(FieldableEntityInterface $enti
 function _saho_suggested_reading_get_entity_image_url(FieldableEntityInterface $entity) {
   $image_fields = [
     'field_article_image',
+    'field_main_image',
     'field_bio_pic',
     'field_image',
     'field_event_image',
@@ -355,12 +359,11 @@ function _saho_suggested_reading_get_entity_image_url(FieldableEntityInterface $
   ];
 
   foreach ($image_fields as $field_name) {
-    if ($entity->hasField($field_name) && !$entity->get($field_name)->isEmpty()) {
-      $image_field = $entity->get($field_name)->first();
-      /** @var \Drupal\image\Plugin\Field\FieldType\ImageItem $image_field */
-      if ($image_field && $image_field->entity) {
-        /** @var \Drupal\file\FileInterface $file */
-        $file = $image_field->entity;
+    if ($entity instanceof ContentEntityInterface && $entity->hasField($field_name) && !$entity->get($field_name)->isEmpty()) {
+      // resolveFile() handles plain image fields and media references alike
+      // (field_main_image points at a media item, not a file).
+      $file = \Drupal::service('saho_utils.image_extractor')->resolveFile($entity, $field_name);
+      if ($file instanceof FileInterface) {
         return $file->createFileUrl();
       }
     }

@@ -31,12 +31,18 @@ class ImageExtractorService {
   protected FileUrlGeneratorInterface $fileUrlGenerator;
 
   /**
-   * Mapping of content types to their primary image field names.
+   * Mapping of content types to their image field candidates.
+   *
+   * A string is a single field; an array is an ordered fallback chain - the
+   * first populated field wins. Articles: the legacy plain uploads lead so
+   * ~1,100 older records render exactly as before, and the media library
+   * "Image" (field_main_image, what editors fill today) is the fallback.
+   * Same order as the article page lead in saho.theme.
    *
    * @var array
    */
   protected const CONTENT_TYPE_IMAGE_FIELDS = [
-    'article' => 'field_article_image',
+    'article' => ['field_article_image', 'field_image', 'field_main_image'],
     'biography' => 'field_bio_pic',
     'archive' => 'field_archive_image',
     'event' => 'field_event_image',
@@ -85,9 +91,11 @@ class ImageExtractorService {
       return $this->fileUrlGenerator->generateAbsoluteString($entity->getFileUri());
     }
 
-    // Auto-detect field name if not provided.
+    // Auto-detect field name if not provided: the first populated candidate
+    // for the bundle, else its primary field (so the empty-field checks below
+    // still behave for entities with no image at all).
     if ($field_name === NULL) {
-      $field_name = $this->findImageFieldForContentType($entity->bundle());
+      $field_name = $this->findImageFieldForEntity($entity) ?? $this->findImageFieldForContentType($entity->bundle());
     }
 
     // Check if field exists and has a value.
@@ -104,7 +112,7 @@ class ImageExtractorService {
     if ($field_value->getFieldDefinition()->getType() === 'entity_reference' &&
         $field_value->getFieldDefinition()->getSetting('target_type') === 'media') {
       $referenced_entity = $field_value->get('entity')->getValue();
-      return $this->extractImageFromMedia($referenced_entity);
+      return $referenced_entity instanceof MediaInterface ? $this->extractImageFromMedia($referenced_entity) : NULL;
     }
 
     // Handle direct image fields.
@@ -182,9 +190,11 @@ class ImageExtractorService {
       return NULL;
     }
 
-    // Auto-detect field name if not provided.
+    // Auto-detect field name if not provided: the first populated candidate
+    // for the bundle, else its primary field (so the empty-field checks below
+    // still behave for entities with no image at all).
     if ($field_name === NULL) {
-      $field_name = $this->findImageFieldForContentType($entity->bundle());
+      $field_name = $this->findImageFieldForEntity($entity) ?? $this->findImageFieldForContentType($entity->bundle());
     }
 
     // Check if field exists and has a value.
@@ -192,39 +202,7 @@ class ImageExtractorService {
       return NULL;
     }
 
-    $field_value = $entity->get($field_name)->first();
-    if (!$field_value) {
-      return NULL;
-    }
-
-    // Get the file entity.
-    $file = NULL;
-
-    // Handle Media reference fields.
-    if ($field_value->getFieldDefinition()->getType() === 'entity_reference' &&
-        $field_value->getFieldDefinition()->getSetting('target_type') === 'media') {
-      $media = $field_value->get('entity')->getValue();
-      if ($media instanceof MediaInterface) {
-        $source = $media->getSource();
-        $source_field = $source->getConfiguration()['source_field'];
-        if ($media->hasField($source_field) && !$media->get($source_field)->isEmpty()) {
-          $media_field_value = $media->get($source_field)->first();
-          if ($media_field_value) {
-            $file = $media_field_value->get('entity')->getValue();
-          }
-        }
-      }
-    }
-    // Handle direct image fields.
-    elseif ($field_value->getFieldDefinition()->getType() === 'image') {
-      $file = $field_value->get('entity')->getValue();
-    }
-    // Handle direct file reference fields.
-    elseif ($field_value->getFieldDefinition()->getType() === 'entity_reference' &&
-            $field_value->getFieldDefinition()->getSetting('target_type') === 'file') {
-      $file = $field_value->get('entity')->getValue();
-    }
-
+    $file = $this->resolveFile($entity, $field_name);
     if (!$file instanceof FileInterface) {
       return NULL;
     }
@@ -263,9 +241,55 @@ class ImageExtractorService {
   }
 
   /**
+   * Resolves the file behind an image, media or file reference field.
+   *
+   * @param \Drupal\Core\Entity\ContentEntityInterface $entity
+   *   The entity.
+   * @param string $field_name
+   *   The field to resolve.
+   *
+   * @return \Drupal\file\FileInterface|null
+   *   The file, or NULL when the field is empty or does not point at a file.
+   */
+  public function resolveFile(ContentEntityInterface $entity, string $field_name): ?FileInterface {
+    if (!$entity->hasField($field_name) || $entity->get($field_name)->isEmpty()) {
+      return NULL;
+    }
+    $field_value = $entity->get($field_name)->first();
+    if (!$field_value) {
+      return NULL;
+    }
+    $type = $field_value->getFieldDefinition()->getType();
+    $target_type = $field_value->getFieldDefinition()->getSetting('target_type');
+    $file = NULL;
+
+    // Media reference: walk to the media type's source field.
+    if ($type === 'entity_reference' && $target_type === 'media') {
+      $media = $field_value->get('entity')->getValue();
+      if ($media instanceof MediaInterface) {
+        $source_field = $media->getSource()->getConfiguration()['source_field'] ?? '';
+        if ($source_field !== '' && $media->hasField($source_field) && !$media->get($source_field)->isEmpty()) {
+          $media_field_value = $media->get($source_field)->first();
+          if ($media_field_value) {
+            $file = $media_field_value->get('entity')->getValue();
+          }
+        }
+      }
+    }
+    // Plain image fields and direct file references.
+    elseif ($type === 'image' || ($type === 'entity_reference' && $target_type === 'file')) {
+      $file = $field_value->get('entity')->getValue();
+    }
+
+    return $file instanceof FileInterface ? $file : NULL;
+  }
+
+  /**
    * Find the primary image field for a content type.
    *
-   * Maps content types to their standard image field names.
+   * Maps content types to their standard image field names. For bundles
+   * with a fallback chain this is the first (preferred) field; callers that
+   * need the whole chain use findImageFieldsForContentType().
    *
    * @param string $bundle
    *   The content type bundle (e.g., 'article', 'biography').
@@ -274,7 +298,42 @@ class ImageExtractorService {
    *   The image field name for this content type.
    */
   public function findImageFieldForContentType(string $bundle): string {
-    return self::CONTENT_TYPE_IMAGE_FIELDS[$bundle] ?? self::CONTENT_TYPE_IMAGE_FIELDS['default'];
+    return $this->findImageFieldsForContentType($bundle)[0];
+  }
+
+  /**
+   * Returns the ordered image field candidates for a content type.
+   *
+   * @param string $bundle
+   *   The content type bundle.
+   *
+   * @return string[]
+   *   One or more field names, preferred first.
+   */
+  public function findImageFieldsForContentType(string $bundle): array {
+    $fields = self::CONTENT_TYPE_IMAGE_FIELDS[$bundle] ?? self::CONTENT_TYPE_IMAGE_FIELDS['default'];
+    return array_values((array) $fields);
+  }
+
+  /**
+   * Returns the first populated image field on an entity, if any.
+   *
+   * Walks the bundle's candidate chain and returns the first field that
+   * exists on the entity and holds a value.
+   *
+   * @param \Drupal\Core\Entity\ContentEntityInterface $entity
+   *   The entity.
+   *
+   * @return string|null
+   *   The field name, or NULL when no candidate is populated.
+   */
+  public function findImageFieldForEntity(ContentEntityInterface $entity): ?string {
+    foreach ($this->findImageFieldsForContentType($entity->bundle()) as $field_name) {
+      if ($entity->hasField($field_name) && !$entity->get($field_name)->isEmpty()) {
+        return $field_name;
+      }
+    }
+    return NULL;
   }
 
   /**
@@ -298,9 +357,11 @@ class ImageExtractorService {
       return TRUE;
     }
 
-    // Auto-detect field name if not provided.
+    // Auto-detect field name if not provided: the first populated candidate
+    // for the bundle, else its primary field (so the empty-field checks below
+    // still behave for entities with no image at all).
     if ($field_name === NULL) {
-      $field_name = $this->findImageFieldForContentType($entity->bundle());
+      $field_name = $this->findImageFieldForEntity($entity) ?? $this->findImageFieldForContentType($entity->bundle());
     }
 
     // Check if field exists and has a value.
@@ -327,9 +388,11 @@ class ImageExtractorService {
       return NULL;
     }
 
-    // Auto-detect field name if not provided.
+    // Auto-detect field name if not provided: the first populated candidate
+    // for the bundle, else its primary field (so the empty-field checks below
+    // still behave for entities with no image at all).
     if ($field_name === NULL) {
-      $field_name = $this->findImageFieldForContentType($entity->bundle());
+      $field_name = $this->findImageFieldForEntity($entity) ?? $this->findImageFieldForContentType($entity->bundle());
     }
 
     // Check if field exists and has a value.
