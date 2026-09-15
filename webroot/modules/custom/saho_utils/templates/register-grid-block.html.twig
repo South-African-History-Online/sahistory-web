@@ -1,0 +1,54 @@
+{#
+/**
+ * @file
+ * Register grid block: grades, provinces, regions or resource types as cards.
+ *
+ * Open Record idiom (#462): section heading SDC, optional standfirst, then a
+ * card grid of saho-archive-card items. Whole card is the link; no
+ * medallions, numerals, icons or carousels.
+ *
+ * Available variables:
+ * - register: register id (classroom_grades, sa_provinces, africa_regions,
+ *   educational_resources) - also the block's modifier class.
+ * - items: cards (type, badge_label, kicker, title, excerpt, meta, href,
+ *   image, image_alt).
+ * - block_title: heading text.
+ * - intro_text: standfirst, empty by default.
+ * - display_mode: grid | list.
+ * - empty_text: shown when there are no items.
+ *
+ * @ingroup themeable
+ */
+#}
+<div class="register-grid-block register-grid-block--{{ register|replace({'_': '-'}) }}">
+  {% if block_title %}
+    {{ include('saho:saho-section-heading', {
+      title: block_title,
+      level: 'h2',
+    }, with_context = false) }}
+  {% endif %}
+
+  {% if intro_text %}
+    <p class="block-intro">{{ intro_text }}</p>
+  {% endif %}
+
+  {% if items %}
+    <div class="saho-cards-grid register-grid{{ display_mode == 'list' ? ' register-grid--list' : '' }}">
+      {% for item in items %}
+        {{ include('saho:saho-archive-card', {
+          type: item.type|default('archive'),
+          badge_label: item.badge_label|default(''),
+          dates: item.kicker|default(''),
+          title: item.title,
+          excerpt: item.excerpt|default(''),
+          meta: item.meta|default(''),
+          href: item.href,
+          image: item.image|default(''),
+          image_alt: item.image_alt|default(''),
+        }, with_context = false) }}
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="saho-view-empty">{{ empty_text }}</p>
+  {% endif %}
+</div>
