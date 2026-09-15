@@ -101,6 +101,17 @@
               {% endif %}
             {% endif %}
           {% endfor %}
+          {# Media library "Image" (articles): media item -> source image -> file. #}
+          {% if not card_data.image_url and node.hasField('field_main_image') and not node.get('field_main_image').isEmpty() %}
+            {% set media_file = node.get('field_main_image').entity.field_media_image.entity %}
+            {% if media_file %}
+              {% set card_data = card_data|merge({image_url: file_url(media_file.uri.value)}) %}
+              {% set media_item = node.get('field_main_image').entity.field_media_image %}
+              {% if media_item.alt %}
+                {% set card_data = card_data|merge({image_alt: media_item.alt}) %}
+              {% endif %}
+            {% endif %}
+          {% endif %}
         {% endif %}
 
         {# Render SAHO card #}

@@ -55,7 +55,9 @@
   {% set content_type = row._entity.bundle() %}
 {% endif %}
 
-{# Check for images #}
+{# Check for images. The media library "Image" (field_main_image) is not a
+   view field, so it is read off the row entity: media item -> source image. #}
+{% set media_file = row._entity.field_main_image.entity.field_media_image.entity ?? null %}
 {% set image_url = '' %}
 {% if fields.field_archive_image is defined and fields.field_archive_image.content %}
   {% set image_url = 'has_image' %}
@@ -64,6 +66,8 @@
 {% elseif fields.field_bio_pic is defined and fields.field_bio_pic.content %}
   {% set image_url = 'has_image' %}
 {% elseif fields.field_image is defined and fields.field_image.content %}
+  {% set image_url = 'has_image' %}
+{% elseif media_file %}
   {% set image_url = 'has_image' %}
 {% endif %}
 
@@ -80,6 +84,8 @@
           {{ fields.field_bio_pic.content }}
         {% elseif fields.field_image is defined and fields.field_image.content %}
           {{ fields.field_image.content }}
+        {% elseif media_file %}
+          <img src="{{ file_url(media_file.uri.value) }}" alt="{{ row._entity.field_main_image.entity.field_media_image.alt|default(title_text) }}" loading="lazy" decoding="async">
         {% endif %}
 
         <div class="position-absolute top-0 end-0 m-2">
