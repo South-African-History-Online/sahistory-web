@@ -108,6 +108,7 @@ class HomeLayoutRebuilder {
       'saho_top_read_content' => NULL,
       'featured_biography_block' => NULL,
       'saho_upcoming_events_block' => NULL,
+      'register_grid_block' => NULL,
       'tdih_interactive_block' => [
         'label' => 'This day in history',
         'label_display' => '0',
@@ -160,7 +161,11 @@ class HomeLayoutRebuilder {
         $make('featured_biography_block', 'content', 1),
         $make('saho_upcoming_events_block', 'content', 2),
       ]),
-      new Section('saho_standard', [], [$make('saho_classroom_strip', 'content', 0)]),
+      new Section('saho_standard', [], [
+        $make('saho_classroom_strip', 'content', 0),
+        // History by Grade doors (register_grid_block, classroom_grades).
+        $make('register_grid_block', 'content', 1),
+      ]),
     ];
 
     $node->set('layout_builder__layout', $new_sections);
