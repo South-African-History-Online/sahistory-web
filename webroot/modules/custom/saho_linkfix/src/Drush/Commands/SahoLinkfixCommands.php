@@ -7,6 +7,7 @@ namespace Drupal\saho_linkfix\Drush\Commands;
 use Drupal\Core\Database\Connection;
 use Drupal\path_alias\AliasManagerInterface;
 use Drupal\saho_linkfix\Service\BodyLinkRewriter;
+use Drupal\saho_linkfix\Service\HotlinkResolver;
 use Drupal\saho_linkfix\Service\LegacyLinkResolver;
 use Drupal\saho_linkfix\Service\LegacyRedirectWriter;
 use Drush\Attributes as CLI;
@@ -27,6 +28,7 @@ final class SahoLinkfixCommands extends DrushCommands {
     protected readonly BodyLinkRewriter $bodyRewriter,
     protected readonly Connection $database,
     protected readonly AliasManagerInterface $aliasManager,
+    protected readonly ?HotlinkResolver $hotlinks = NULL,
   ) {
     parent::__construct();
   }
@@ -41,7 +43,86 @@ final class SahoLinkfixCommands extends DrushCommands {
       $container->get('saho_linkfix.body_rewriter'),
       $container->get('database'),
       $container->get('path_alias.manager'),
+      $container->get('saho_linkfix.hotlink_resolver'),
     );
+  }
+
+  /**
+   * Inventory hot-linked images in body text (issue #456). Writes JSON + CSV.
+   */
+  #[CLI\Command(name: 'saho:hotlink-scan', aliases: ['shls'])]
+  #[CLI\Option(name: 'out', description: 'Candidates JSON output path.')]
+  #[CLI\Option(name: 'report', description: 'CSV of images that cannot be auto-fixed (self_missing, external).')]
+  public function hotlinkScan(
+    array $options = [
+      'out' => 'public://saho_linkfix_work/hotlinks.json',
+      'report' => 'public://saho_linkfix_work/hotlinks_report.csv',
+    ],
+  ): void {
+    $this->ensureDir(dirname($options['out']));
+    $candidates = $this->hotlinks->scan();
+    $this->writeJson($options['out'], $candidates);
+
+    $by_kind = ['self_present' => 0, 'self_missing' => 0, 'external' => 0];
+    $hosts = [];
+    $report = fopen($options['report'], 'w');
+    fputcsv($report, ['nid', 'bundle', 'kind', 'host', 'src']);
+    foreach ($candidates as $c) {
+      $by_kind[$c['kind']] = ($by_kind[$c['kind']] ?? 0) + 1;
+      if ($c['kind'] !== 'self_present') {
+        $hosts[$c['host']] = ($hosts[$c['host']] ?? 0) + 1;
+        fputcsv($report, [$c['nid'], $c['bundle'], $c['kind'], $c['host'], $c['src']]);
+      }
+    }
+    fclose($report);
+
+    $this->io()->title('HOTLINK SCAN');
+    $this->io()->writeln(sprintf('  %-18s %d', 'images', count($candidates)));
+    $this->io()->writeln(sprintf('  %-18s %d', 'nodes', count(array_unique(array_column($candidates, 'nid')))));
+    foreach ($by_kind as $k => $v) {
+      $this->io()->writeln(sprintf('  %-18s %d', $k, $v));
+    }
+    arsort($hosts);
+    $this->io()->section('Not auto-fixable, by host');
+    foreach (array_slice($hosts, 0, 15, TRUE) as $host => $n) {
+      $this->io()->writeln(sprintf('  %5d  %s', $n, $host));
+    }
+    $this->logger()->success(sprintf('Candidates: %s | Report: %s', $options['out'], $options['report']));
+  }
+
+  /**
+   * Rewrite self-hosted hot-linked images to site-relative paths. Dry run.
+   *
+   * Only the self_present class is touched: the file is on disk, so the page
+   * looks identical afterwards. Roll back with saho:linkfix-rewrite-rollback.
+   */
+  #[CLI\Command(name: 'saho:hotlink-rewrite', aliases: ['shlw'])]
+  #[CLI\Option(name: 'in', description: 'Candidates JSON path (from saho:hotlink-scan).')]
+  #[CLI\Option(name: 'apply', description: 'Actually rewrite bodies.')]
+  #[CLI\Option(name: 'rollback-out', description: 'Where to write the body snapshot rollback.')]
+  public function hotlinkRewrite(
+    array $options = [
+      'in' => 'public://saho_linkfix_work/hotlinks.json',
+      'apply' => FALSE,
+      'rollback-out' => 'public://saho_linkfix_work/hotlink_rewrite_rollback.json',
+    ],
+  ): void {
+    $jobs = [];
+    foreach ($this->readJson($options['in']) as $c) {
+      if (($c['kind'] ?? '') !== 'self_present' || empty($c['to'])) {
+        continue;
+      }
+      $nid = (int) $c['nid'];
+      $jobs[$nid]['nid'] = $nid;
+      $jobs[$nid]['field'] = 'body';
+      $jobs[$nid]['replacements'][] = ['from' => $c['src'], 'to' => $c['to'], 'attr' => 'src'];
+    }
+    $result = $this->bodyRewriter->apply(array_values($jobs), ['dry_run' => !$options['apply']]);
+    $this->printStats($options['apply'] ? 'HOTLINK REWRITE (APPLY)' : 'HOTLINK REWRITE (DRY RUN)', $result['stats']);
+    if ($options['apply'] && $result['applied']) {
+      $this->writeJson($options['rollback-out'], $result['applied']);
+      $this->logger()->success(sprintf('Body rollback written to %s', $options['rollback-out']));
+    }
   }
 
   /**
