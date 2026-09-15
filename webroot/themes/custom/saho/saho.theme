@@ -505,10 +505,10 @@ function saho_preprocess_node(array &$variables) {
 
   // For article and biography pages, preload the main image for better LCP.
   if ($variables['view_mode'] == 'full' && in_array($node->bundle(), ['article', 'biography'])) {
-    // Same candidate chain as the article lead (media Image first), so the
-    // image that actually leads the page is the one preloaded.
+    // Same candidate chain as the article lead (legacy uploads first, media
+    // Image as fallback), so the image that actually leads is the one preloaded.
     $preload_fields = $node->bundle() === 'article'
-      ? ['field_main_image', 'field_article_image', 'field_image']
+      ? ['field_article_image', 'field_image', 'field_main_image']
       : ['field_image'];
     foreach ($preload_fields as $preload_field) {
       $image_item = _saho_record_image_item($node, $preload_field);
@@ -2176,9 +2176,11 @@ function saho_preprocess_node__article(array &$variables): void {
   ]);
   // Summary/abstract from the curator-written synopsis.
   $variables['record_summary'] = _saho_record_summary_props($node);
-  // Media "Image" (field_main_image, what editors fill today) leads; the
-  // legacy plain upload fields remain as fallbacks for older articles.
-  _saho_record_common_props($variables, $node, ['field_main_image', 'field_article_image', 'field_image']);
+  // Legacy plain uploads keep leading where they exist (no visible change on
+  // ~1,100 older articles); the media "Image" (field_main_image, what editors
+  // fill today) is the fallback, so media-only articles finally get a lead.
+  // Editors promote the media image by removing the legacy upload.
+  _saho_record_common_props($variables, $node, ['field_article_image', 'field_image', 'field_main_image']);
 
   // Collection heads (articles with archive children, e.g. DISA): the
   // image is an identity mark, not editorial imagery - it rides the rail

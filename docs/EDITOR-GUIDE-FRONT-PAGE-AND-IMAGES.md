@@ -74,18 +74,23 @@ For the band, tick **Home Page Feature Biography Section** instead.
 
 ## 4. Article images
 
-The article form has an **"Article Image"** section with one image field,
-labelled **Image**, plus an **Article image caption** field.
+The article form has an **"Article Image"** section with:
 
-- **Image** uses the media library. Click **Add media**, then either drag a file
-  into the upload area or pick an existing image from the library, then
-  **Insert selected**. The image appears as a thumbnail with an x to remove it.
-- The image is **optional**. You can save an article without one.
-- The image you choose here is the lead image on the public article page and
-  the one used for social sharing previews.
-- The old plain "Article Image" upload has been removed from the form. Images
-  uploaded that way in the past still show on the site; if you add a media
-  **Image** to such an article, the media image takes over as the lead.
+- **Image** (media library): click **Add media**, then drag a file into the
+  upload area or pick an existing image from the library, then **Insert
+  selected**. The image appears as a thumbnail with an x to remove it. This is
+  the field to use for all new work. It is **optional**, so older articles save
+  without one.
+- **Legacy article image (old upload)**: only present on articles from before
+  the media library. While this field holds an image, that image leads the
+  public article page. Remove it (the "Remove" button) and save if you want the
+  media **Image** to take over. Nothing is deleted from the archive when you do.
+- **Article image caption**: shown under the lead image.
+
+Which image shows on the public page, in order: the legacy upload if present,
+otherwise the media **Image**. So on an old article, adding a media Image does
+not change what visitors see until the legacy upload is removed. The media
+Image is always used for social-sharing previews.
 
 **If you see "You don't have sufficient permissions to use the DropzoneJS
 uploader"**: your account is missing the media upload permission. Editors and
