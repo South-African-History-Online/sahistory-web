@@ -546,4 +546,127 @@ class FeaturedBiographyBlockTest extends UnitTestCase {
     $this->assertArrayHasKey('#biography_item', $build);
   }
 
+  /**
+   * Tests flagged mode filters on the editor checkbox and sorts newest-first.
+   *
+   * @covers ::getBiographyItem
+   */
+  public function testFlaggedModeUsesCheckboxAndNewestSave() {
+    $block = $this->createBlockInstance([
+      'selection_method' => 'flagged',
+      'entity_count' => 6,
+      'sort_by' => 'none',
+    ]);
+
+    $node_storage = $this->createMock(EntityStorageInterface::class);
+    $node_type_storage = $this->createMock(EntityStorageInterface::class);
+    $query = $this->getMockBuilder('\Drupal\Core\Entity\Query\QueryInterface')
+      ->disableOriginalConstructor()
+      ->getMock();
+
+    $this->entityTypeManager->method('getStorage')
+      ->willReturnCallback(function ($entity_type) use ($node_storage, $node_type_storage) {
+        return $entity_type === 'node' ? $node_storage : $node_type_storage;
+      });
+    $node_type_storage->method('load')->willReturn((object) []);
+    $node_storage->method('getQuery')->willReturn($query);
+
+    // The flag field must exist on the biography bundle.
+    $this->entityFieldManager->method('getFieldDefinitions')
+      ->with('node', 'biography')
+      ->willReturn(['field_home_page_feature_biograph' => (object) []]);
+
+    $conditions = [];
+    // PHPUnit passes the mocked method's default arguments too, so keep only
+    // the (field, value) pair for the assertions below.
+    $query->method('condition')->willReturnCallback(function () use (&$conditions, $query) {
+      $conditions[] = array_slice(func_get_args(), 0, 2);
+      return $query;
+    });
+    $query->method('accessCheck')->willReturnSelf();
+    $query->expects($this->once())->method('sort')->with('changed', 'DESC')->willReturnSelf();
+    $query->expects($this->once())->method('range')->with(0, 6)->willReturnSelf();
+    $query->method('execute')->willReturn([7, 8]);
+
+    $node_storage->method('loadMultiple')->with([7, 8])->willReturn([
+      7 => $this->createMock(NodeInterface::class),
+      8 => $this->createMock(NodeInterface::class),
+    ]);
+
+    // Flagged mode never uses the sorting service when sort_by is 'none'.
+    $this->sortingService->expects($this->never())->method('applySorting');
+    $this->entityItemBuilder->method('buildItemWithImage')->willReturn(['id' => 7, 'title' => 'T', 'url' => '/node/7']);
+    $this->cacheHelper->method('buildNodeListCache')->willReturn(['contexts' => []]);
+
+    $build = $block->build();
+
+    $this->assertIsArray($build);
+    $this->assertContains(['field_home_page_feature_biograph', 1], $conditions);
+    $this->assertContains(['type', 'biography'], $conditions);
+    $this->assertContains(['status', 1], $conditions);
+    // No manual nid filter in flagged mode.
+    foreach ($conditions as $condition) {
+      $this->assertNotSame('nid', $condition[0]);
+    }
+  }
+
+  /**
+   * Tests flagged mode returns nothing when the checkbox field is missing.
+   *
+   * @covers ::getBiographyItem
+   */
+  public function testFlaggedModeWithoutFlagFieldReturnsEmpty() {
+    $block = $this->createBlockInstance([
+      'selection_method' => 'flagged',
+      'entity_count' => 6,
+    ]);
+
+    $node_storage = $this->createMock(EntityStorageInterface::class);
+    $node_type_storage = $this->createMock(EntityStorageInterface::class);
+    $query = $this->getMockBuilder('\Drupal\Core\Entity\Query\QueryInterface')
+      ->disableOriginalConstructor()
+      ->getMock();
+    $this->entityTypeManager->method('getStorage')
+      ->willReturnCallback(function ($entity_type) use ($node_storage, $node_type_storage) {
+        return $entity_type === 'node' ? $node_storage : $node_type_storage;
+      });
+    $node_type_storage->method('load')->willReturn((object) []);
+    $node_storage->method('getQuery')->willReturn($query);
+    $query->method('condition')->willReturnSelf();
+    $query->method('accessCheck')->willReturnSelf();
+    $this->entityFieldManager->method('getFieldDefinitions')->willReturn([]);
+    $query->expects($this->never())->method('execute');
+    // Anonymous visitors get an empty render array, never the demo fixture.
+    $this->currentUser->method('hasPermission')->willReturn(FALSE);
+    $this->cacheHelper->method('buildNodeListCache')->willReturn(['contexts' => []]);
+    $this->cacheHelper->method('addCacheContext')->willReturn(['contexts' => ['user.permissions']]);
+
+    $build = $block->build();
+
+    $this->assertSame(['#cache' => ['contexts' => ['user.permissions']]], $build);
+  }
+
+  /**
+   * Tests the manual picker value collapses to the stored ID string.
+   *
+   * @covers ::normalizeSpecificNids
+   * @dataProvider specificNidsProvider
+   */
+  public function testNormalizeSpecificNids($input, string $expected) {
+    $this->assertSame($expected, FeaturedBiographyBlock::normalizeSpecificNids($input));
+  }
+
+  /**
+   * Data provider for testNormalizeSpecificNids().
+   */
+  public static function specificNidsProvider(): array {
+    return [
+      'autocomplete tags' => [[['target_id' => 12], ['target_id' => '34']], '12,34'],
+      'legacy string with spaces' => ['12, 34,abc, -1, 0', '12,34'],
+      'empty string' => ['', ''],
+      'null' => [NULL, ''],
+      'empty tags' => [[], ''],
+    ];
+  }
+
 }
