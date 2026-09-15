@@ -113,8 +113,12 @@
                     {% set image_field = 'field_archive_image' %}
                   {% endif %}
                   
-                  {% if image_field %}
-                    {% set file_entity = node.get(image_field).entity %}
+                  {% set file_entity = image_field ? node.get(image_field).entity : null %}
+                  {# Media library "Image" (articles): media item -> source image -> file. #}
+                  {% if not file_entity and node.hasField('field_main_image') and not node.get('field_main_image').isEmpty() %}
+                    {% set file_entity = node.get('field_main_image').entity.field_media_image.entity %}
+                  {% endif %}
+                  {% if file_entity %}
                     {% if file_entity %}
                       <img src="{{ file_url(file_entity.uri.value) }}" alt="{{ title }}" class="img-fluid w-100 h-100" style="object-fit: cover;" loading="lazy" decoding="async">
                       {% set has_image = true %}
