@@ -8,7 +8,8 @@
  * - same_day_events: Array of events that happened on the same month/day in other years.
  * - birth_date: The full birth date (YYYY-MM-DD format).
  * - month_day_pattern: The month-day pattern (MM-DD format).
- * - selected_year: The selected birth year.
+ * - selected_year: The selected birth year (NULL for a shared day-of-year link).
+ * - share_url: Link that reproduces this result (?date=MM-DD), or NULL.
  * - attributes: An array of HTML attributes for the container.
  */
 #}
@@ -63,7 +64,11 @@
           <h5 class="tdih-subheading">{{ 'Other events that happened on'|t }} {{ birth_date|date('F j') }}:</h5>
         {% else %}
           <div class="tdih-notice tdih-notice--info">
-            {{ 'These events happened on the same day you were born:'|t }}
+            {% if selected_year %}
+              {{ 'These events happened on the same day you were born:'|t }}
+            {% else %}
+              {{ 'Events in the record on this day:'|t }}
+            {% endif %}
             <strong>{{ birth_date|date('F j') }}</strong>
           </div>
         {% endif %}
@@ -80,7 +85,7 @@
               <div class="tdih-event-content">
                 <div class="tdih-event-date">
                   {{ item.event_date|date('F j, Y') }}
-                  {% set years_difference = selected_year - item.event_date|date('Y') %}
+                  {% set years_difference = selected_year ? selected_year - item.event_date|date('Y') : 0 %}
                   {% if years_difference > 0 %}
                     <span class="years-before">({{ years_difference }} {{ 'years before you were born'|t }})</span>
                   {% elseif years_difference < 0 %}
@@ -106,7 +111,16 @@
     
   {% else %}
     <div class="tdih-no-events">
-      {{ 'No historical events found for'|t }} {{ birth_date|date('F j, Y') }} {{ 'or'|t }} {{ birth_date|date('F j') }} {{ 'in other years.'|t }}
+      {% if selected_year %}
+        {{ 'No historical events found for'|t }} {{ birth_date|date('F j, Y') }} {{ 'or'|t }} {{ birth_date|date('F j') }} {{ 'in other years.'|t }}
+      {% else %}
+        {{ 'No historical events found for'|t }} {{ birth_date|date('F j') }}.
+      {% endif %}
     </div>
+  {% endif %}
+  {% if share_url %}
+    <p class="tdih-share-date">
+      <a href="{{ share_url }}" class="tdih-share-date__link">{{ 'Share this date'|t }} <span aria-hidden="true">&rarr;</span></a>
+    </p>
   {% endif %}
 </div>

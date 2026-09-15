@@ -13,7 +13,7 @@
     {% for t in tabs %}
       <button type="button" class="saho-reltabs__tab{{ loop.first ? ' is-active' : '' }}"
               role="tab" id="reltab-tab-{{ t.id }}" aria-controls="reltab-panel-{{ t.id }}"
-              aria-selected="{{ loop.first ? 'true' : 'false' }}" data-tab="{{ t.id }}">
+              aria-selected="{{ loop.first ? 'true' : 'false' }}" tabindex="{{ loop.first ? '0' : '-1' }}" data-tab="{{ t.id }}">
         {{ t.label }}{% if t.count is not null %}<span class="saho-reltabs__count">{{ t.count|number_format }}</span>{% endif %}
       </button>
     {% endfor %}
@@ -22,7 +22,7 @@
     {# Each panel is a container (div role=tabpanel) wrapping its list, so the
        <li> children are never orphaned under a role=tabpanel (WAI-ARIA APG). #}
     <div class="saho-reltabs__panel{{ loop.first ? ' is-active' : '' }}{{ t.summary ? ' saho-reltabs__panel--summary' : '' }}"
-         data-panel="{{ t.id }}" role="tabpanel" id="reltab-panel-{{ t.id }}"
+         data-panel="{{ t.id }}" role="tabpanel" id="reltab-panel-{{ t.id }}" tabindex="0"
          aria-labelledby="reltab-tab-{{ t.id }}">
       <ul class="saho-reltabs__list">
         {% if t.summary %}

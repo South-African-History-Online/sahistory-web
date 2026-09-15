@@ -10,6 +10,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\RendererInterface;
 use Drupal\tdih\Service\NodeFetcher;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\tdih\Plugin\Block\TdihInteractiveBlock;
 
 /**
  * Provides a form for selecting day and month to see historical events.
@@ -256,6 +257,7 @@ class DayMonthDateForm extends FormBase {
         $form['events_container']['events'] = [
           '#theme' => 'tdih_events',
           '#tdih_nodes' => $events,
+          '#share_url' => TdihInteractiveBlock::shareUrl($month_day_pattern),
           '#attributes' => [
             'class' => ['tdih-events-list'],
           ],
@@ -338,6 +340,7 @@ class DayMonthDateForm extends FormBase {
         $events_html = [
           '#theme' => 'tdih_events',
           '#tdih_nodes' => $events,
+          '#share_url' => TdihInteractiveBlock::shareUrl($month_day_pattern),
           '#attributes' => [
             'class' => ['tdih-events-list'],
           ],

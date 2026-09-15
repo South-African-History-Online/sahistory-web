@@ -2,6 +2,7 @@
 
 /**
  * @file
+ * Theme functions and preprocess hooks for the SAHO theme.
  */
 
 use Drupal\node\Entity\Node;
@@ -346,7 +347,7 @@ function saho_theme_suggestions_alter_with_fallback(array &$suggestions, array $
 }
 
 /**
- *
+ * Implements hook_preprocess_HOOK() for node templates.
  */
 function saho_preprocess_node(array &$variables) {
   // Make logo available to all templates using page.html.twig.
@@ -728,7 +729,7 @@ function _saho_upcomingevent_status_props(NodeInterface $node, array &$variables
 }
 
 /**
- *
+ * Implements hook_preprocess_HOOK() for page templates.
  */
 function saho_preprocess_page(array &$variables) {
   // Make logo available to all templates using page.html.twig.
@@ -788,7 +789,8 @@ function saho_preprocess_page(array &$variables) {
   // Article/content pages - attach article.layout library.
   if ($route_name === 'entity.node.canonical') {
     $node = $route_match->getParameter('node');
-    if ($node && in_array($node->bundle(), ['article', 'biography', 'archive', 'place', 'event', 'upcomingevent', 'page', 'faq'])) {
+    $layout_bundles = ['article', 'biography', 'archive', 'place', 'event', 'upcomingevent', 'page', 'faq'];
+    if ($node && in_array($node->bundle(), $layout_bundles)) {
       $variables['#attached']['library'][] = 'saho/article.layout';
     }
   }
@@ -1550,6 +1552,7 @@ function saho_create_webp_image($source_path, $webp_path) {
 
 /**
  * Implements hook_preprocess_views_view().
+ *
  * Add preprocessing for featured content view.
  */
 function saho_preprocess_views_view_featured_content(&$variables) {
@@ -2109,7 +2112,8 @@ function _saho_overlay_recent(): array {
  *   One or two uppercase initials, or '' when nothing usable remains.
  */
 function _saho_record_initials(string $name): string {
-  $clean = trim((string) preg_replace(['/["\x{201C}\x{201D}\x{2018}\x{2019}\'].*?["\x{201C}\x{201D}\x{2018}\x{2019}\']/u', '/\s+/'], ['', ' '], $name));
+  $quoted_fragment = '/["\x{201C}\x{201D}\x{2018}\x{2019}\'].*?["\x{201C}\x{201D}\x{2018}\x{2019}\']/u';
+  $clean = trim((string) preg_replace([$quoted_fragment, '/\s+/'], ['', ' '], $name));
   if ($clean === '') {
     return '';
   }

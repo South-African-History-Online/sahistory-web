@@ -262,7 +262,16 @@ function saho_preprocess_views_view__saho_global_search(array &$variables) {
   $variables['#attached']['library'][] = 'saho/saho-search-field';
   $variables['#attached']['library'][] = 'saho/archive-index';
   $variables['#attached']['library'][] = 'saho/archive-refine';
-  foreach (['layout', 'sort_by', 'sort_order', 'search_api_fulltext', 'type', 'people_category_label', 'place_category_label'] as $arg) {
+  $query_args = [
+    'layout',
+    'sort_by',
+    'sort_order',
+    'search_api_fulltext',
+    'type',
+    'people_category_label',
+    'place_category_label',
+  ];
+  foreach ($query_args as $arg) {
     $variables['#cache']['contexts'][] = 'url.query_args:' . $arg;
   }
 }

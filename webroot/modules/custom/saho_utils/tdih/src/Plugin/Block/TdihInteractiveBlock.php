@@ -13,6 +13,8 @@ use Drupal\tdih\Service\NodeFetcher;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\ReplaceCommand;
+use Drupal\Core\Cache\Cache;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
  * Provides an interactive TDIH Block with date picker.
@@ -70,6 +72,8 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
    *   The form builder service.
    * @param \Drupal\Component\Datetime\TimeInterface $time
    *   The time service.
+   * @param \Symfony\Component\HttpFoundation\RequestStack|null $request_stack
+   *   The request stack (for the shareable ?date=MM-DD parameter).
    */
   public function __construct(
     array $configuration,
@@ -79,12 +83,112 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
     FileUrlGeneratorInterface $file_url_generator,
     FormBuilderInterface $form_builder,
     TimeInterface $time,
+    ?RequestStack $request_stack = NULL,
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->nodeFetcher = $nodeFetcher;
     $this->fileUrlGenerator = $file_url_generator;
     $this->formBuilder = $form_builder;
     $this->time = $time;
+    $this->requestStack = $request_stack;
+  }
+
+  /**
+   * The request stack.
+   *
+   * @var \Symfony\Component\HttpFoundation\RequestStack|null
+   */
+  protected $requestStack;
+
+  /**
+   * Validates a shareable ?date=MM-DD value.
+   *
+   * Accepts exactly two-digit month and day (leap day allowed, so 02-29 is
+   * a valid pattern); anything else - a year, single digits, junk - is NULL.
+   *
+   * @param string|null $raw
+   *   The raw query value.
+   *
+   * @return string|null
+   *   The normalised MM-DD pattern, or NULL when not a valid day of year.
+   */
+  public static function parseSharedDate(?string $raw): ?string {
+    if ($raw === NULL || !preg_match('/^(\d{2})-(\d{2})$/', trim($raw), $m)) {
+      return NULL;
+    }
+    $month = (int) $m[1];
+    $day = (int) $m[2];
+    // 2024 is a leap year so 29 February validates; year is otherwise unused.
+    if ($month < 1 || $month > 12 || $day < 1 || !checkdate($month, $day, 2024)) {
+      return NULL;
+    }
+    return sprintf('%02d-%02d', $month, $day);
+  }
+
+  /**
+   * Builds the share URL for a day-of-year on the current page.
+   *
+   * Form AJAX posts back to the page the form sits on, so the current path
+   * is the page both at build time and inside the AJAX callbacks.
+   */
+  public static function shareUrl(string $month_day_pattern): string {
+    $path = \Drupal::service('path.current')->getPath();
+    $alias = \Drupal::service('path_alias.manager')->getAliasByPath($path);
+    return $alias . '?date=' . $month_day_pattern;
+  }
+
+  /**
+   * Builds the birthday/day-of-year events render array.
+   *
+   * Shared by the AJAX callback (with a year: exact matches split out) and
+   * the server-side ?date= render (no year: every event on that day).
+   *
+   * @param string $month_day_pattern
+   *   MM-DD.
+   * @param int|null $year
+   *   The visitor's year, or NULL for a plain day-of-year listing.
+   *
+   * @return array
+   *   A tdih_birthday_events render array.
+   */
+  public static function buildBirthdayEvents(string $month_day_pattern, ?int $year): array {
+    $node_fetcher = \Drupal::service('tdih.node_fetcher');
+    $birth_date = $year !== NULL
+      ? sprintf('%04d-%s', $year, $month_day_pattern)
+      : (new \DateTime('now', new \DateTimeZone('Africa/Johannesburg')))->format('Y') . '-' . $month_day_pattern;
+
+    $nodes = $node_fetcher->loadAllBirthdayEvents($month_day_pattern);
+    $exact_match_items = [];
+    $same_day_items = [];
+    foreach ($nodes as $node) {
+      $item = self::buildNodeItems([$node])[0] ?? NULL;
+      if (!$item || empty($item['raw_date'])) {
+        continue;
+      }
+      if ($year !== NULL && $item['raw_date'] === $birth_date) {
+        $exact_match_items[] = $item;
+      }
+      elseif (preg_match('/\d{4}-(\d{2})-(\d{2})/', $item['raw_date'], $matches)) {
+        if ($matches[1] . '-' . $matches[2] === $month_day_pattern) {
+          $same_day_items[] = $item;
+        }
+      }
+    }
+    usort($exact_match_items, fn($a, $b) => $a['event_date'] <=> $b['event_date']);
+    usort($same_day_items, fn($a, $b) => $a['event_date'] <=> $b['event_date']);
+
+    return [
+      '#theme' => 'tdih_birthday_events',
+      '#exact_match_events' => $exact_match_items,
+      '#same_day_events' => $same_day_items,
+      '#birth_date' => $birth_date,
+      '#month_day_pattern' => $month_day_pattern,
+      '#selected_year' => $year,
+      '#share_url' => self::shareUrl($month_day_pattern),
+      '#attributes' => [
+        'class' => ['tdih-events-container'],
+      ],
+    ];
   }
 
   /**
@@ -98,7 +202,8 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
       $container->get('tdih.node_fetcher'),
       $container->get('file_url_generator'),
       $container->get('form_builder'),
-      $container->get('datetime.time')
+      $container->get('datetime.time'),
+      $container->get('request_stack')
     );
   }
 
@@ -214,6 +319,14 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
   /**
    * {@inheritdoc}
    */
+  public function getCacheContexts() {
+    // The shareable ?date=MM-DD parameter renders a different aside.
+    return Cache::mergeContexts(parent::getCacheContexts(), ['url.query_args:date']);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function getCacheMaxAge() {
     // Force South African timezone for consistent TDIH functionality.
     $sa_timezone = new \DateTimeZone('Africa/Johannesburg');
@@ -258,62 +371,8 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
     $selected_year = $form_state->getValue('birthday_year');
 
     if (!empty($selected_day) && !empty($selected_month) && !empty($selected_year)) {
-      // Format the date components.
-      $day = sprintf('%02d', (int) $selected_day);
-      $month = sprintf('%02d', (int) $selected_month);
-      $year = (int) $selected_year;
-
-      // Get the NodeFetcher service via dependency injection.
-      $node_fetcher = \Drupal::service('tdih.node_fetcher');
-
-      // Create the full birth date and month-day pattern.
-      $birth_date = sprintf('%04d-%02d-%02d', $year, $month, $day);
-      $month_day_pattern = sprintf('%02d-%02d', $month, $day);
-
-      // Load all events for month-day combination - get ALL events
-      // not just those featured on the home page.
-      $nodes = $node_fetcher->loadAllBirthdayEvents($month_day_pattern);
-      $exact_match_items = [];
-      $same_day_items = [];
-
-      // Separate exact date matches from same month-day matches.
-      foreach ($nodes as $node) {
-        $item = self::buildNodeItems([$node])[0] ?? NULL;
-        if ($item && !empty($item['raw_date'])) {
-          // Check if this is an exact date match (same year, month, day).
-          if ($item['raw_date'] === $birth_date) {
-            $exact_match_items[] = $item;
-          }
-          // Check if this is same month-day but different year.
-          elseif (preg_match('/\d{4}-(\d{2})-(\d{2})/', $item['raw_date'], $matches)) {
-            $item_month_day = $matches[1] . '-' . $matches[2];
-            if ($item_month_day === $month_day_pattern) {
-              $same_day_items[] = $item;
-            }
-          }
-        }
-      }
-
-      // Sort both arrays chronologically (oldest first).
-      usort($exact_match_items, function ($a, $b) {
-        return $a['event_date'] <=> $b['event_date'];
-      });
-      usort($same_day_items, function ($a, $b) {
-        return $a['event_date'] <=> $b['event_date'];
-      });
-
-      // Build the render array for the birthday events.
-      $events_html = [
-        '#theme' => 'tdih_birthday_events',
-        '#exact_match_events' => $exact_match_items,
-        '#same_day_events' => $same_day_items,
-        '#birth_date' => $birth_date,
-        '#month_day_pattern' => $month_day_pattern,
-        '#selected_year' => $year,
-        '#attributes' => [
-          'class' => ['tdih-events-container'],
-        ],
-      ];
+      $month_day_pattern = sprintf('%02d-%02d', (int) $selected_month, (int) $selected_day);
+      $events_html = self::buildBirthdayEvents($month_day_pattern, (int) $selected_year);
 
       // Replace the events container with the new content.
       $response->addCommand(new ReplaceCommand('.tdih-events-container', \Drupal::service('renderer')->render($events_html)));
@@ -440,6 +499,18 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
       }
     }
 
+    // A shared ?date=MM-DD link renders that day's events server-side and
+    // opens the picker on it (R3 #478: shareable birthday result).
+    $shared_pattern = NULL;
+    $shared_events = [];
+    $request = $this->requestStack?->getCurrentRequest();
+    if ($request && $this->configuration['show_date_picker']) {
+      $shared_pattern = self::parseSharedDate($request->query->get('date'));
+      if ($shared_pattern !== NULL) {
+        $shared_events = self::buildBirthdayEvents($shared_pattern, NULL);
+      }
+    }
+
     // Build the date picker form if enabled.
     $form = [];
     if ($this->configuration['show_date_picker']) {
@@ -450,6 +521,10 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
         $today = new \DateTime('now', $sa_timezone);
         $default_day = (int) $today->format('d');
         $default_month = $today->format('m');
+      }
+      if ($shared_pattern !== NULL) {
+        $default_month = substr($shared_pattern, 0, 2);
+        $default_day = (int) substr($shared_pattern, 3, 2);
       }
 
       if ($this->configuration['date_picker_mode'] === 'day_month') {
@@ -482,7 +557,8 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
       '#show_details_button' => $this->configuration['show_details_button'],
       '#show_more_link' => $this->configuration['show_more_link'] ?? TRUE,
       '#use_todays_date' => $this->configuration['use_todays_date'],
-      '#picker_open' => $this->configuration['picker_open'] ?? NULL,
+      '#picker_open' => $shared_pattern !== NULL ? TRUE : ($this->configuration['picker_open'] ?? NULL),
+      '#shared_date_events' => $shared_events,
       '#attached' => [
         'library' => [
           'tdih/tdih-interactive',
