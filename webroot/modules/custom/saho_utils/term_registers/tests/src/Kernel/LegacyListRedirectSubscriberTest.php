@@ -69,6 +69,15 @@ final class LegacyListRedirectSubscriberTest extends KernelTestBase {
   }
 
   /**
+   * The retired core contact routes fold into the contact page.
+   */
+  public function testContactRoutesRedirect(): void {
+    $this->assertSame('/contact-us', $this->dispatch('/contact')->getResponse()->getTargetUrl());
+    $this->assertSame('/contact-us', $this->dispatch('/contact/feedback')->getResponse()->getTargetUrl());
+    $this->assertSame('/form/contribute', $this->dispatch('/contact/contribute')->getResponse()->getTargetUrl());
+  }
+
+  /**
    * Paths without a register land on the landing root.
    */
   public function testRootFallback(): void {
