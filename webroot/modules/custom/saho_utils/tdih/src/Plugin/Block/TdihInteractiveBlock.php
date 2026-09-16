@@ -506,7 +506,12 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
     $request = $this->requestStack?->getCurrentRequest();
     if ($request && $this->configuration['show_date_picker']) {
       $shared_pattern = self::parseSharedDate($request->query->get('date'));
-      if ($shared_pattern !== NULL) {
+      // In day_month mode the picker below pre-fills to the shared date and
+      // renders that day's events itself (with its own share link), so a
+      // second server-side render here would duplicate the whole list. Only
+      // the birthday picker, which does not pre-fill from the shared pattern,
+      // needs the events rendered separately.
+      if ($shared_pattern !== NULL && $this->configuration['date_picker_mode'] !== 'day_month') {
         $shared_events = self::buildBirthdayEvents($shared_pattern, NULL);
       }
     }
