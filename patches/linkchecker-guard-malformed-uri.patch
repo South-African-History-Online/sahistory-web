@@ -1,0 +1,47 @@
+--- a/src/LinkCheckerService.php
++++ b/src/LinkCheckerService.php
+@@ -193,18 +193,33 @@
+       'synchronous' => FALSE,
+     ];
+ 
+-    return $this->httpClient
+-      ->requestAsync($link->getRequestMethod(), $link->getUrl(), $options)
+-      ->then(function (ResponseInterface $response) use ($link, $uri) {
+-        if (!empty($uri['fragment'])) {
+-          $response = $response->withHeader('Fragment', $uri['fragment']);
++    try {
++      return $this->httpClient
++        ->requestAsync($link->getRequestMethod(), $link->getUrl(), $options)
++        ->then(function (ResponseInterface $response) use ($link, $uri) {
++          if (!empty($uri['fragment'])) {
++            $response = $response->withHeader('Fragment', $uri['fragment']);
++          }
++          $this->statusHandling($response, $link);
++        },
++        function (RequestException $e) use ($link) {
++          $this->exceptionHandling($e, $link);
+         }
+-        $this->statusHandling($response, $link);
+-      },
+-      function (RequestException $e) use ($link) {
+-        $this->exceptionHandling($e, $link);
+-      }
+-    );
++      );
++    }
++    catch (\GuzzleHttp\Psr7\Exception\MalformedUriException $e) {
++      // A link whose href is not a valid URL (e.g. a person's name stored as a
++      // link) makes Guzzle throw synchronously from requestAsync(), before the
++      // rejection handler runs, which aborts the whole cron/queue run. Record
++      // it as a broken link instead of letting it crash the run.
++      $link->setStatusCode('400');
++      $link->setErrorMessage($e->getMessage());
++      $link->setFailCount($link->getFailCount() + 1);
++      $link->setLastCheckTime($this->time->getCurrentTime());
++      $link->save();
++      $this->updateSameLinks($link);
++      return NULL;
++    }
+   }
+ 
+   /**
