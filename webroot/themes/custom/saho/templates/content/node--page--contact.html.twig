@@ -1,0 +1,44 @@
+{#
+/**
+ * @file
+ * SAHO Contact page.
+ *
+ * A utility page: the contact webform on the left, the address / phone / email
+ * details as an aside on the right. No record apparatus (cite / share /
+ * published dates) - those belong on content records, not a contact form.
+ *
+ * Available variables:
+ * - contact_form: Rendered contact webform (from saho_preprocess_node).
+ * - content: Rendered content fields (body holds the address details).
+ * - attributes: HTML attributes for the wrapper.
+ */
+#}
+{{ attach_library('saho/contact-page') }}
+
+<article{{ attributes.addClass('saho-contact-wrapper') }}>
+  <div class="saho-contact-grid">
+
+    {# ─── Contact form ─────────────────────────────────────────────────── #}
+    <div class="saho-contact-form-col">
+      {% if contact_form %}
+        <div class="saho-contact-card">
+          <h2 class="saho-contact-card__title">{{ 'Send us a message'|t }}</h2>
+          {{ contact_form }}
+        </div>
+      {% endif %}
+    </div>
+
+    {# ─── Address details ──────────────────────────────────────────────── #}
+    <aside class="saho-contact-details-col" aria-label="{{ 'Get in touch'|t }}">
+      <div class="saho-contact-details">
+        <h2 class="saho-contact-details__title">{{ 'Get in touch'|t }}</h2>
+        {% if contact_details %}
+          <div class="saho-contact-details__body">{{ contact_details }}</div>
+        {% elseif content.body %}
+          <div class="saho-contact-details__body">{{ content.body.0 }}</div>
+        {% endif %}
+      </div>
+    </aside>
+
+  </div>{# /.saho-contact-grid #}
+</article>
