@@ -35,6 +35,8 @@ final class BodyLinkRewriter {
    *   List of jobs:
    *   ['nid' => int, 'field' => 'body',
    *    'replacements' => [['from' => raw href, 'to' => new href], ...]].
+   *   A replacement may carry 'attr' => 'src' to target image sources
+   *   instead of link hrefs (default 'href').
    * @param array $options
    *   Keys: dry_run (bool, default TRUE).
    *
@@ -170,8 +172,9 @@ final class BodyLinkRewriter {
   /**
    * Replace exact legacy hrefs within an HTML string.
    *
-   * Matches the href only inside double- or single-quoted attribute values, so
-   * arbitrary body prose containing the same substring is never altered.
+   * Matches the href (or src) only inside double- or single-quoted attribute
+   * values, so arbitrary body prose containing the same substring is never
+   * altered.
    *
    * @return array
    *   [string $new_html, int $replacements].
@@ -184,9 +187,11 @@ final class BodyLinkRewriter {
       if ($from === '' || $to === '' || $from === $to) {
         continue;
       }
+      // Only href and src are ever rewritten; anything else is a bug upstream.
+      $attr = ($rep['attr'] ?? 'href') === 'src' ? 'src' : 'href';
       foreach (['"', "'"] as $q) {
-        $needle = 'href=' . $q . $from . $q;
-        $replace = 'href=' . $q . $to . $q;
+        $needle = $attr . '=' . $q . $from . $q;
+        $replace = $attr . '=' . $q . $to . $q;
         $count = 0;
         $html = str_replace($needle, $replace, $html, $count);
         $total += $count;

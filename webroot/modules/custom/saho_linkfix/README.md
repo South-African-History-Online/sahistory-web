@@ -79,3 +79,21 @@ enabled - it will not be silently disabled by a config import on deploy.
 4. Confirm a sample legacy URL 301s to the exact node and an unmapped one falls
    back to typed search. Cloudflare caches the 301s.
    `BASE_URL=https://sahistory.org.za bash scripts/linkfix/verify-legacy-urls.sh`
+
+## Hot-linked images (#456)
+
+Body text still carries `<img src="http://...">` pointing at SAHO's own past
+hostnames (`www.sahistory.org.za`, `v1.sahistory.org.za`, the old dev host
+`sahoseventhree.dd:8083`) and at third-party sites. Same pipeline shape, same
+rollback file format:
+
+```
+drush saho:hotlink-scan            # inventory -> hotlinks.json + hotlinks_report.csv
+drush saho:hotlink-rewrite         # dry run: what would change
+drush saho:hotlink-rewrite --apply # rewrite self_present images to relative paths
+drush saho:linkfix-rewrite-rollback --in=public://saho_linkfix_work/hotlink_rewrite_rollback.json --apply
+```
+
+Only `self_present` images are rewritten (own host, file on disk): the page
+looks identical, mixed-content and host-rot risk are gone. `self_missing` and
+`external` rows land in the CSV for the restoration backlog and the editors.
