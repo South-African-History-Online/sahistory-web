@@ -132,4 +132,22 @@ final class DisplayRefService {
     return NULL;
   }
 
+  /**
+   * Strips trailing punctuation a crawler may append to a display reference.
+   *
+   * Reference codes are scraped from citation text where they are followed by
+   * a comma or full stop (e.g. "/ref/B-0079873,"), so the raw reference from
+   * the URL can carry that trailing punctuation. Removing it lets the code
+   * still resolve instead of 404ing.
+   *
+   * @param string $ref
+   *   The raw reference from the URL.
+   *
+   * @return string
+   *   The reference with trailing whitespace and punctuation removed.
+   */
+  public function normalizeRef(string $ref): string {
+    return rtrim($ref, " \t\n\r,.;:)]}'\"");
+  }
+
 }

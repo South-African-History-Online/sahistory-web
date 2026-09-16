@@ -43,6 +43,10 @@ final class RefController extends ControllerBase {
    *   A permanent redirect to the node's canonical URL.
    */
   public function resolve(string $ref): RedirectResponse {
+    // Crawlers often request the reference with trailing punctuation scraped
+    // from citation text (e.g. "/ref/B-0079873,"). Strip it so the address
+    // resolves to the record instead of returning 404.
+    $ref = $this->displayRef->normalizeRef($ref);
     $nid = $this->displayRef->nidFromRef($ref);
     $node = $nid ? $this->entityTypeManager()->getStorage('node')->load($nid) : NULL;
     if (!$node instanceof NodeInterface || !$node->access('view')) {
