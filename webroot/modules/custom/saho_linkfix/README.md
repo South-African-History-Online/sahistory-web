@@ -97,3 +97,16 @@ drush saho:linkfix-rewrite-rollback --in=public://saho_linkfix_work/hotlink_rewr
 Only `self_present` images are rewritten (own host, file on disk): the page
 looks identical, mixed-content and host-rot risk are gone. `self_missing` and
 `external` rows land in the CSV for the restoration backlog and the editors.
+
+## Weekly link-rot report (#397)
+
+```
+drush saho:linkrot-report --top=30 --min-count=5
+```
+
+Prints Markdown built from two tables the site already fills: `redirect_404`
+(every 404 served, with hit counts; scanner probes filtered by
+`LinkRotReport::NOISE`, URLs built from a JS `null` called out as site bugs)
+and `linkchecker_link` (dead links in content with the pages that carry them).
+`.github/workflows/linkrot.yml` runs it on production every Monday and posts
+the result as a comment on the "Weekly link-rot report" issue.

@@ -1,0 +1,92 @@
+name: Link-rot report
+
+# Weekly broken-link and 404 report (#397).
+#
+# No crawler: the site already records every 404 it serves (redirect_404) and
+# re-checks links found in content on cron (linkchecker). The report command
+# in saho_linkfix filters scanner noise, separates site-script bugs (URLs
+# built from null) from real missing pages, and lists dead links with the
+# pages that carry them. This job runs it on production over the deploy SSH
+# key and posts the Markdown to one tracking issue, so the history lives in
+# GitHub and nothing else needs a login.
+
+on:
+  schedule:
+    # Mondays 07:00 UTC, after the Sunday cron windows.
+    - cron: '0 7 * * 1'
+  workflow_dispatch:
+    inputs:
+      top:
+        description: 'Rows per table'
+        default: '30'
+        required: false
+      min_count:
+        description: 'Minimum 404 hits for a path to be listed'
+        default: '5'
+        required: false
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: linkrot-report
+  cancel-in-progress: false
+
+jobs:
+  report:
+    name: Build and post the report
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -p 2278 -H ${{ secrets.DEPLOY_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Run the report on production
+        env:
+          TOP: ${{ github.event.inputs.top || '30' }}
+          MIN_COUNT: ${{ github.event.inputs.min_count || '5' }}
+        run: |
+          ssh -i ~/.ssh/deploy_key -p 2278 -o ServerAliveInterval=30 ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} \
+            "cd ${{ secrets.DEPLOY_PATH_PROD }} && vendor/bin/drush saho:linkrot-report --top=${TOP} --min-count=${MIN_COUNT} --base-url=https://sahistory.org.za" \
+            > report.md
+          test -s report.md
+          head -5 report.md
+
+      - name: Cleanup SSH key
+        if: always()
+        run: rm -f ~/.ssh/deploy_key
+
+      - name: Post to the tracking issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -e
+          TITLE="Weekly link-rot report"
+          NUMBER=$(gh issue list --state open --search "\"$TITLE\" in:title" --json number,title \
+            --jq '[.[] | select(.title == "'"$TITLE"'")][0].number // empty')
+          if [ -z "$NUMBER" ]; then
+            NUMBER=$(gh issue create --title "$TITLE" \
+              --body "Automated weekly report from \`drush saho:linkrot-report\` (redirect_404 + linkchecker). Each run posts a comment; fix the sources, then mark 404 rows resolved in the site. Tracks #397." \
+              --label "cross-cutting" | grep -oE '[0-9]+$')
+          fi
+          {
+            echo "Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            echo
+            cat report.md
+          } > comment.md
+          gh issue comment "$NUMBER" --body-file comment.md
+          echo "Posted to issue #$NUMBER"
+
+      - name: Upload report artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: linkrot-report
+          path: report.md
+          retention-days: 90
