@@ -901,6 +901,14 @@ function saho_preprocess_page_title(array &$variables): void {
  * bundles and gets human labels instead of raw machine names.
  */
 function saho_form_alter(array &$form, $form_state, $form_id): void {
+  // Contribute webform: frame the standalone form in a styled card with an
+  // intro, instead of the bare full-bleed stack of fields.
+  if ($form_id === 'webform_submission_contribute_add_form') {
+    $form['#attached']['library'][] = 'saho/contribute-form';
+    $form['#attributes']['class'][] = 'saho-contribute-form';
+    return;
+  }
+
   if (($form['#id'] ?? '') !== 'views-exposed-form-saho-global-search-page-1') {
     return;
   }
