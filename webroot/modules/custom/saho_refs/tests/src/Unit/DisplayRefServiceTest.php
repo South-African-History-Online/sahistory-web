@@ -56,6 +56,23 @@ final class DisplayRefServiceTest extends UnitTestCase {
   }
 
   /**
+   * @covers ::normalizeRef
+   * @covers ::nidFromRef
+   */
+  public function testNormalizeRefStripsTrailingPunctuation(): void {
+    $s = $this->service();
+    // Trailing punctuation a crawler appends from citation text is stripped.
+    $this->assertSame('B-0079873', $s->normalizeRef('B-0079873,'));
+    $this->assertSame('B-0079873', $s->normalizeRef('B-0079873.'));
+    $this->assertSame('B-0079873', $s->normalizeRef('B-0079873;) '));
+    // A clean reference is unchanged.
+    $this->assertSame('B-0079873', $s->normalizeRef('B-0079873'));
+    // After normalising, the node id is recoverable (the raw comma form fails).
+    $this->assertNull($s->nidFromRef('B-0079873,'));
+    $this->assertSame(79873, $s->nidFromRef($s->normalizeRef('B-0079873,')));
+  }
+
+  /**
    * @covers ::getStatus
    * @covers ::getStatusKey
    */

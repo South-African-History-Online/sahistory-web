@@ -4,4 +4,6 @@ saho_refs.resolve:
     _controller: 'Drupal\saho_refs\Controller\RefController::resolve'
   requirements:
     _permission: 'access content'
-    ref: '[A-Za-z]-\d+'
+    # Trailing punctuation (comma, full stop, etc.) is tolerated so a reference
+    # scraped from citation text still routes; RefController::resolve strips it.
+    ref: '[A-Za-z]-\d+[.,;:]*'
