@@ -10,6 +10,7 @@ use Drupal\saho_linkfix\Service\BodyLinkRewriter;
 use Drupal\saho_linkfix\Service\HotlinkResolver;
 use Drupal\saho_linkfix\Service\LegacyLinkResolver;
 use Drupal\saho_linkfix\Service\LegacyRedirectWriter;
+use Drupal\saho_linkfix\Service\LinkRotReport;
 use Drush\Attributes as CLI;
 use Drush\Commands\DrushCommands;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -29,6 +30,7 @@ final class SahoLinkfixCommands extends DrushCommands {
     protected readonly Connection $database,
     protected readonly AliasManagerInterface $aliasManager,
     protected readonly ?HotlinkResolver $hotlinks = NULL,
+    protected readonly ?LinkRotReport $linkRot = NULL,
   ) {
     parent::__construct();
   }
@@ -44,7 +46,32 @@ final class SahoLinkfixCommands extends DrushCommands {
       $container->get('database'),
       $container->get('path_alias.manager'),
       $container->get('saho_linkfix.hotlink_resolver'),
+      $container->get('saho_linkfix.linkrot_report'),
     );
+  }
+
+  /**
+   * Print the weekly link-rot report (Markdown) from redirect_404 + linkchecker.
+   */
+  #[CLI\Command(name: 'saho:linkrot-report', aliases: ['slrr'])]
+  #[CLI\Option(name: 'top', description: 'Rows per table.')]
+  #[CLI\Option(name: 'min-count', description: 'Minimum 404 hits for a path to be listed.')]
+  #[CLI\Option(name: 'base-url', description: 'Public base URL used for the links in the report.')]
+  public function linkRotReport(
+    array $options = [
+      'top' => 30,
+      'min-count' => 5,
+      'base-url' => 'https://sahistory.org.za',
+    ],
+  ): void {
+    $top = max(1, (int) $options['top']);
+    $this->output()->write(LinkRotReport::render(
+      $this->linkRot->notFound($top, max(1, (int) $options['min-count'])),
+      $this->linkRot->brokenLinks($top),
+      $this->linkRot->totals(),
+      rtrim((string) $options['base-url'], '/'),
+      date('Y-m-d'),
+    ));
   }
 
   /**
