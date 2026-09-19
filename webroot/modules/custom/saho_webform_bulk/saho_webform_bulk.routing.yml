@@ -1,0 +1,13 @@
+saho_webform_bulk.delete_filtered:
+  path: '/admin/structure/webform/manage/{webform}/results/delete-filtered'
+  defaults:
+    _form: '\Drupal\saho_webform_bulk\Form\DeleteFilteredConfirmForm'
+    _title: 'Delete filtered submissions'
+  requirements:
+    _entity_access: 'webform.submission_delete_any'
+    _custom_access: '\Drupal\webform\Access\WebformEntityAccess::checkResultsAccess'
+  options:
+    _admin_route: TRUE
+    parameters:
+      webform:
+        type: 'entity:webform'
