@@ -1,0 +1,98 @@
+<?php
+
+/**
+ * @file
+ * Applies Webform's bulk Delete to every submission matching the filter.
+ *
+ * Webform's results table only offers "select all" for the rows on the current
+ * page. With 130k+ contact submissions that is useless for cleanup, so the bulk
+ * form gets a checkbox that targets every submission matching the current
+ * search/state filter and hands off to a confirm page that deletes in batches.
+ */
+
+declare(strict_types=1);
+
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\saho_webform_bulk\FilteredSubmissionQuery;
+
+/**
+ * Marker placed in the tableselect value when "all filtered" is requested.
+ */
+const SAHO_WEBFORM_BULK_ALL_FILTERED = '__saho_all_filtered__';
+
+/**
+ * Implements hook_form_FORM_ID_alter() for webform_submission_bulk_form.
+ */
+function saho_webform_bulk_form_webform_submission_bulk_form_alter(array &$form, FormStateInterface $form_state): void {
+  // Only on a webform's own results page, and only when the user may delete.
+  if (\Drupal::routeMatch()->getRouteName() !== 'entity.webform.results_submissions') {
+    return;
+  }
+  if (empty($form['operations']['action']['#options']['webform_submission_delete_action'])) {
+    return;
+  }
+  $webform = \Drupal::service('webform.request')->getCurrentWebform();
+  if (!$webform) {
+    return;
+  }
+
+  $request = \Drupal::request();
+  $total = FilteredSubmissionQuery::forFilter(
+    \Drupal::getContainer(),
+    $webform,
+    $request->query->get('search'),
+    $request->query->get('state')
+  )->total();
+
+  $form['operations']['action']['#weight'] = 0;
+  $form['operations']['all_filtered'] = [
+    '#type' => 'checkbox',
+    '#title' => t('All @count results matching the current filter (not only this page)', [
+      '@count' => number_format($total),
+    ]),
+    '#weight' => 1,
+    '#wrapper_attributes' => ['class' => ['saho-webform-bulk-all']],
+  ];
+  $form['operations']['apply_above']['#weight'] = 2;
+
+  array_unshift($form['#validate'], 'saho_webform_bulk_validate');
+  $form['#submit'][] = 'saho_webform_bulk_submit';
+}
+
+/**
+ * Validate handler: only Delete may be applied to all filtered results.
+ *
+ * Runs before WebformBulkFormBase::validateForm(), which rejects an empty
+ * selection; the marker satisfies it and is recognised by the submit handler.
+ */
+function saho_webform_bulk_validate(array &$form, FormStateInterface $form_state): void {
+  if (!$form_state->getValue('all_filtered')) {
+    return;
+  }
+  if ($form_state->getValue('action') !== 'webform_submission_delete_action') {
+    $form_state->setErrorByName('action', t('Applying an operation to all filtered results is only available for Delete.'));
+    return;
+  }
+  $form_state->setValue('items', [SAHO_WEBFORM_BULK_ALL_FILTERED => SAHO_WEBFORM_BULK_ALL_FILTERED]);
+}
+
+/**
+ * Submit handler: hand off to the confirm page carrying the current filter.
+ *
+ * WebformBulkFormBase::submitForm() runs first; it loads nothing for the marker
+ * id and returns without a message or redirect, so the redirect set here wins.
+ */
+function saho_webform_bulk_submit(array &$form, FormStateInterface $form_state): void {
+  $items = $form_state->getValue('items') ?? [];
+  if (!isset($items[SAHO_WEBFORM_BULK_ALL_FILTERED])) {
+    return;
+  }
+  $webform = \Drupal::service('webform.request')->getCurrentWebform();
+  $request = \Drupal::request();
+  $form_state->setRedirect('saho_webform_bulk.delete_filtered', ['webform' => $webform->id()], [
+    'query' => array_filter([
+      'search' => $request->query->get('search'),
+      'state' => $request->query->get('state'),
+    ]),
+  ]);
+}
