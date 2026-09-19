@@ -109,20 +109,21 @@ vendor/bin/drush saho:frontpage-rebuild -l "${SITE_URI}" 2>&1 | tee -a "${LOG_FI
     || echo -e "${YELLOW}⚠ Front-page rebuild skipped/failed (non-fatal)${NC}"
 echo -e "${GREEN}✓ Front page rebuilt${NC}"
 
-# Cross-link enrichment: sibling records in the same collection become typed
-# "related people" (field_feature_parent -> field_people_related_tab). Runs
-# inside the maintenance window (this is a bulk node write and must not race
-# live traffic). Idempotent (append-only, capped per node, skips existing) and
-# reversible via relations_siblings_rollback.json + drush saho:relations-rollback.
-if [ "${ENVIRONMENT}" = "production" ]; then
-    echo -e "${YELLOW}Enriching record cross-links...${NC}"
+# Cross-link enrichment (sibling records -> typed "related people") is NOT part
+# of the routine deploy any more. It scanned ~64k records for ~3 minutes inside
+# the production maintenance window on every release and, since the 2026-07-31
+# apply, adds 0 edges (2026-09-19: "APPLIED: 0 added, 33646 present"). Run it
+# on demand when collections have actually changed:
+#   DEPLOY_RELATIONS_ENRICH=1 scripts/deploy-all.sh production
+# or by hand: vendor/bin/drush saho:relations-siblings --apply
+# (reversible via relations_siblings_rollback.json + drush saho:relations-rollback).
+if [ "${ENVIRONMENT}" = "production" ] && [ "${DEPLOY_RELATIONS_ENRICH:-0}" = "1" ]; then
+    echo -e "${YELLOW}Enriching record cross-links (DEPLOY_RELATIONS_ENRICH=1)...${NC}"
     vendor/bin/drush saho:relations-siblings --apply -l "${SITE_URI}" 2>&1 | tee -a "${LOG_FILE}" \
         || echo -e "${YELLOW}⚠ Relations enrichment skipped/failed (non-fatal)${NC}"
     echo -e "${GREEN}✓ Record cross-links enriched${NC}"
 else
-    # ~3 minutes of heavy DB scanning per run; staging does not need 64k
-    # records re-verified on every merge, and it shares mysqld with prod.
-    echo -e "${YELLOW}Skipping relations enrichment on ${ENVIRONMENT}${NC}"
+    echo -e "${YELLOW}Skipping relations enrichment (opt-in via DEPLOY_RELATIONS_ENRICH=1)${NC}"
 fi
 
 # Disable maintenance mode (production only, staging stays in maintenance)
