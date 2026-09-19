@@ -117,6 +117,20 @@ ErrorDocument 403 /403.shtml
   # never a valid URL and each hit costs a full Drupal 404 bootstrap.
   RewriteRule ^([a-z]{2,3}/)?ref/[A-Z]-[0-9]+\.$ - [F,L]
 
+  # Contribute-form fleet (2026-09-19): ~9k residential-proxy IPs/day each
+  # GET /form/contribute?referrernid=N&referrertitle=... once, with no
+  # Referer. Every URL is unique, so every hit is an uncacheable webform
+  # build (~0.65s PHP) plus page/render-cache churn in Redis. Real visitors
+  # reach this link from a node page and carry a same-origin Referer
+  # (Referrer-Policy: strict-origin-when-cross-origin), so a referrer-less
+  # GET carrying the tracking params is bounced to the bare form: zero PHP,
+  # one cacheable target URL, and the form still works (only the
+  # "referring page" prefill is lost).
+  RewriteCond %{REQUEST_METHOD} =GET
+  RewriteCond %{HTTP_REFERER} ^$
+  RewriteCond %{QUERY_STRING} (^|&)referrernid= [NC]
+  RewriteRule ^((?:[a-z]{2,3}/)?form/contribute)$ /$1? [R=302,L]
+
   # Set "protossl" to "s" if we were accessed via https://.  This is used later
   # if you enable "www." stripping or enforcement, in order to ensure that
   # you don't bounce between http and https.
