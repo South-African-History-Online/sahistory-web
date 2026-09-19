@@ -117,6 +117,14 @@ ErrorDocument 403 /403.shtml
   # never a valid URL and each hit costs a full Drupal 404 bootstrap.
   RewriteRule ^([a-z]{2,3}/)?ref/[A-Z]-[0-9]+\.$ - [F,L]
 
+  # Meta's crawler (meta-externalagent) walks /search pagination in bursts
+  # of 4-5k req/hour (2026-09-19: 7,961 /search hits in a day, up to
+  # page=790), each a Solr query plus a full bootstrap. /search is noindex
+  # and robots.txt now disallows it, but the crawler kept going on an
+  # edge-cached robots.txt, so serve it the static 403 at the origin.
+  RewriteCond %{HTTP_USER_AGENT} meta-externalagent [NC]
+  RewriteRule ^([a-z]{2,3}/)?search$ - [F,L]
+
   # Contribute-form fleet (2026-09-19): ~9k residential-proxy IPs/day each
   # GET /form/contribute?referrernid=N&referrertitle=... once, with no
   # Referer. Every URL is unique, so every hit is an uncacheable webform
