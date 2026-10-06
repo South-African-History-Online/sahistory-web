@@ -1,0 +1,129 @@
+/**
+ * @file
+ * Event (this day in history) record layout.
+ *
+ * Events are short texts with a small image. Without rail content the record
+ * renders as one compact column at a reading measure, the image beside the
+ * text; with rail content it keeps the standard two-column record grid.
+ */
+
+/* --- Dated header: the date leads the record ------------------------------ */
+.saho-event-record--dated .saho-record__kicker {
+  font-size: 1.0625rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--saho-oxblood, #990000);
+}
+
+/* --- Compact record: narrower panel, text held at a reading measure ------- */
+.saho-event-record--compact {
+  max-width: 58rem;
+}
+.saho-event-record .saho-event-lead .saho-article-body {
+  max-width: var(--measure, 68ch);
+}
+.saho-event-record .saho-event-lead .saho-article-body p:last-child {
+  margin-bottom: 0;
+}
+
+/* The lead (image + text) is followed directly by the sources block, which
+   carries no top margin of its own. */
+.saho-event-record .saho-event-lead {
+  margin-bottom: var(--space-6, 2rem);
+}
+
+/* --- Lead image ----------------------------------------------------------- */
+.saho-event-record .saho-event-lead > .saho-figure {
+  margin-bottom: 20px;
+}
+/* Upright leads keep the record-page caps (they no longer match the
+   .saho-main-content > .saho-figure rules inside the lead wrapper). */
+.saho-event-record .saho-event-lead > .saho-figure--portrait {
+  max-width: min(340px, 60%, var(--saho-figure-native, 340px));
+}
+.saho-event-record .saho-event-lead > .saho-figure--square {
+  max-width: min(460px, 75%, var(--saho-figure-native, 460px));
+}
+/* Mobile: an upright lead is hoisted into the record header, so the in-column
+   copy is hidden - same rule the other record types follow. */
+@media (max-width: 767px) {
+  .saho-event-record .saho-event-lead > .saho-figure--portrait,
+  .saho-event-record .saho-event-lead > .saho-figure--square {
+    display: none;
+  }
+}
+
+/* Compact + small image: text left at its measure, image right at its own
+   size. The figure stays first in the DOM so it still leads on mobile. */
+@media (min-width: 768px) {
+  .saho-event-record--compact .saho-event-lead--aside {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: 2rem;
+    align-items: start;
+  }
+  .saho-event-record--compact .saho-event-lead--aside > .saho-figure {
+    grid-column: 2;
+    grid-row: 1;
+    width: min(20rem, var(--saho-figure-native, 20rem));
+    max-width: none;
+    margin-bottom: 0;
+  }
+  .saho-event-record--compact .saho-event-lead--aside > .saho-article-body {
+    grid-column: 1;
+    grid-row: 1;
+  }
+}
+
+/* --- Also on this day: a year-led register of same-day events ------------- */
+.saho-event-sameday {
+  margin: var(--space-6, 2rem) 0 var(--space-4, 1rem);
+  padding-top: var(--space-4, 1rem);
+  border-top: var(--bw-rule, 2px) solid var(--border-default, #1b1c17);
+}
+.saho-event-sameday__title {
+  margin: 0 0 var(--space-4, 1rem);
+  font-family: var(--font-mono, "IBM Plex Mono", monospace);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-primary, #1b1c17);
+}
+/* The ol selector outranks the record column's generic list indent. */
+.saho-event-sameday ol.saho-event-sameday__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.saho-event-sameday__item {
+  display: grid;
+  grid-template-columns: 3.5rem minmax(0, 1fr);
+  column-gap: 1rem;
+  align-items: baseline;
+  padding: 0.625rem 0;
+  border-top: var(--bw-hair, 1px) solid var(--border-default, #bdb9a6);
+}
+.saho-event-sameday__item:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+.saho-event-sameday__year {
+  font-family: var(--font-mono, "IBM Plex Mono", monospace);
+  font-size: 0.875rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-secondary, #41433a);
+}
+.saho-event-sameday__link {
+  font-family: var(--font-serif, "Libre Caslon Text", georgia, serif);
+  font-size: 1rem;
+  line-height: 1.45;
+  color: var(--saho-oxblood, #990000);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+.saho-event-sameday__link:hover,
+.saho-event-sameday__link:focus-visible {
+  text-decoration-thickness: 2px;
+}

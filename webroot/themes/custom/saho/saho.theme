@@ -2464,27 +2464,154 @@ function saho_preprocess_node__event(array &$variables): void {
 
   // field_event_date is a real datetime field, so formatting is allowed.
   $event_date = '';
+  $event_date_long = '';
+  $stored_date = '';
   if ($node->hasField('field_event_date') && !$node->get('field_event_date')->isEmpty()) {
+    $stored_date = (string) $node->get('field_event_date')->value;
     $date = $node->get('field_event_date')->date;
     // Legacy rows store free-text shapes the datetime item cannot parse;
     // humanise those instead of printing the raw stored string.
-    $event_date = $date ? $date->format('j M Y') : _saho_record_date((string) $node->get('field_event_date')->value);
+    $event_date = $date ? $date->format('j M Y') : _saho_record_date($stored_date);
+    $event_date_long = $date ? $date->format('j F Y') : $event_date;
   }
 
-  $facts = [];
-  if ($event_date !== '') {
-    $facts[] = ['label' => 'Date', 'value' => $event_date];
-  }
-  $facts[] = [
-    'label' => 'Updated',
-    'value' => $date_formatter->format($node->getChangedTime(), 'custom', 'j M Y'),
+  // An event is its date: when one is stored it leads the record as the
+  // kicker, so the facts row no longer repeats it.
+  $facts = [
+    [
+      'label' => 'Updated',
+      'value' => $date_formatter->format($node->getChangedTime(), 'custom', 'j M Y'),
+    ],
   ];
-  _saho_record_header_props($variables, $node, 'event', 'Event record', $facts);
+  _saho_record_header_props($variables, $node, 'event', $event_date_long !== '' ? $event_date_long : 'Event record', $facts);
+  $variables['event_dated'] = $event_date_long !== '';
 
   $variables['record_meta'] = _saho_record_meta_props('Record details', 'event', [
     'Date' => $event_date,
   ]);
-  _saho_record_common_props($variables, $node, ['field_event_image', 'field_tdih_image']);
+  // Event images are small and often carry meaning in their colour (flags,
+  // maps, posters): keep the colour and never scale past the stored width.
+  _saho_record_common_props($variables, $node, ['field_event_image', 'field_tdih_image'], [
+    'duotone' => FALSE,
+    'native_width' => TRUE,
+  ]);
+
+  // The rail earns its column only when it holds more than the date the
+  // header already leads with (cross-references, further reading, "Part of").
+  // Without it the record renders as one compact column.
+  $meta_beyond_date = array_filter(
+    $variables['record_meta']['items'] ?? [],
+    static fn(array $item): bool => ($item['label'] ?? '') !== 'Date',
+  );
+  $variables['event_has_rail'] = !empty($variables['record_related'])
+    || !empty($variables['record_further'])
+    || $meta_beyond_date !== [];
+
+  // A small or upright image sits beside the text in the compact layout; a
+  // wide landscape one - or any image on a record with no text to sit beside -
+  // leads above it.
+  $image = $variables['record_image'];
+  $has_body = $node->hasField('body') && trim(strip_tags((string) $node->get('body')->value, '<img><iframe><drupal-media>')) !== '';
+  $variables['event_image_placement'] = 'none';
+  if ($image !== []) {
+    $small = ($image['max_width'] ?? 0) > 0 && $image['max_width'] < 560;
+    $variables['event_image_placement'] = ($has_body && ($small || ($image['orientation'] ?? '') !== 'landscape')) ? 'aside' : 'lead';
+  }
+
+  // Legacy bodies are plain text with bare newlines and full_html runs no
+  // autop filter, so they would render as one unbroken block.
+  if (isset($variables['content']['body'][0]['#text'])) {
+    $variables['content']['body'][0]['#text'] = _saho_event_body_paragraphs((string) $variables['content']['body'][0]['#text']);
+  }
+
+  $variables['event_same_day'] = _saho_event_same_day_props($node, $stored_date);
+  foreach ($variables['event_same_day']['items'] ?? [] as $item) {
+    $variables['#cache']['tags'][] = 'node:' . $item['nid'];
+  }
+  // With same-day events to read on to, the reading list keeps only records
+  // that are actually related - not the site-wide "Popular Content" filler.
+  if ($variables['event_same_day'] !== [] && !empty($variables['record_reading'])) {
+    $variables['record_reading'] = array_values(array_filter(
+      $variables['record_reading'],
+      static fn(array $card): bool => ($card['metadata']['category'] ?? '') !== 'Popular Content',
+    ));
+  }
+  $variables['#attached']['library'][] = 'saho/event-record';
+}
+
+/**
+ * Wraps a plain-text event body in paragraphs.
+ *
+ * Bodies that already carry block-level markup (or explicit line breaks) are
+ * returned untouched; only the legacy plain-text shape, where each bare
+ * newline separates a paragraph, is converted.
+ *
+ * @param string $text
+ *   The raw body value.
+ *
+ * @return string
+ *   The body with each line wrapped in a paragraph, or the original text.
+ */
+function _saho_event_body_paragraphs(string $text): string {
+  if (trim($text) === '' || preg_match('#<(p|div|br|ul|ol|li|table|h[1-6]|blockquote|pre|figure|drupal-media|iframe)\b#i', $text)) {
+    return $text;
+  }
+  $lines = array_filter(array_map('trim', preg_split('/\R+/', $text)), static fn(string $line): bool => $line !== '');
+  return '<p>' . implode("</p>\n<p>", $lines) . '</p>';
+}
+
+/**
+ * Builds the "Also on this day" list for an event record.
+ *
+ * Other published events sharing the record's day and month, the ones closest
+ * in time first so a busy day still shows its nearest neighbours, listed
+ * chronologically. The month-day nid lists are cached by tdih.node_fetcher.
+ *
+ * @param \Drupal\node\NodeInterface $node
+ *   The event node.
+ * @param string $stored_date
+ *   The stored field_event_date value (YYYY-MM-DD...), or ''.
+ * @param int $limit
+ *   The maximum number of events to list.
+ *
+ * @return array
+ *   ['label' => '11 December', 'items' => [...]] with each item carrying nid,
+ *   year, title and url - or [] when the date is unusable or the day is empty.
+ */
+function _saho_event_same_day_props(NodeInterface $node, string $stored_date, int $limit = 8): array {
+  if (!preg_match('/^(\d{4})-(\d{2})-(\d{2})/', $stored_date, $m) || !checkdate((int) $m[2], (int) $m[3], 2000)) {
+    return [];
+  }
+  if (!\Drupal::hasService('tdih.node_fetcher')) {
+    return [];
+  }
+  $year = (int) $m[1];
+  $items = [];
+  foreach (\Drupal::service('tdih.node_fetcher')->loadAllBirthdayEvents($m[2] . '-' . $m[3]) as $other) {
+    if ((int) $other->id() === (int) $node->id()) {
+      continue;
+    }
+    $other_year = (int) substr((string) $other->get('field_event_date')->value, 0, 4);
+    $items[] = [
+      'nid' => (int) $other->id(),
+      'year' => $other_year,
+      'title' => $other->label(),
+      'url' => $other->toUrl()->toString(),
+      'distance' => abs($other_year - $year),
+    ];
+  }
+  if ($items === []) {
+    return [];
+  }
+  usort($items, static fn(array $a, array $b): int => [$a['distance'], $a['nid']] <=> [$b['distance'], $b['nid']]);
+  $items = array_slice($items, 0, $limit);
+  usort($items, static fn(array $a, array $b): int => [$a['year'], $a['nid']] <=> [$b['year'], $b['nid']]);
+
+  return [
+    // Year 2000 is a leap year, so 29 February formats correctly.
+    'label' => date('j F', mktime(12, 0, 0, (int) $m[2], (int) $m[3], 2000)),
+    'items' => array_map(static fn(array $item): array => array_diff_key($item, ['distance' => TRUE]), $items),
+  ];
 }
 
 /**
@@ -3017,14 +3144,16 @@ function _saho_record_header_props(array &$variables, NodeInterface $node, strin
  *   The node.
  * @param string[] $image_fields
  *   Image field candidates, first populated one wins.
+ * @param array $image_options
+ *   Optional lead-image treatment overrides; see _saho_record_image_props().
  */
-function _saho_record_common_props(array &$variables, NodeInterface $node, array $image_fields): void {
+function _saho_record_common_props(array &$variables, NodeInterface $node, array $image_fields, array $image_options = []): void {
   _saho_record_related_assign($variables, $node);
   $variables['record_provenance'] = _saho_record_provenance_props($node);
   $variables['record_citation'] = _saho_record_citation_props($node);
   $variables['record_image'] = [];
   foreach ($image_fields as $field) {
-    $props = _saho_record_image_props($node, $field, 'field_node_image_caption', '16 / 9');
+    $props = _saho_record_image_props($node, $field, 'field_node_image_caption', '16 / 9', $image_options);
     if ($props !== []) {
       $variables['record_image'] = $props;
       break;
@@ -3395,6 +3524,8 @@ function _saho_record_citation_props(NodeInterface $node): array {
  *   - image_style (string|null, NULL): image style to serve; NULL = original.
  *   - link_original (bool, FALSE): wrap the image in a link to the original.
  *   - loading (string, 'lazy'): the img loading attribute (lazy|eager).
+ *   - native_width (bool, FALSE): cap the figure at the stored image width so
+ *     a small original is never upscaled.
  *
  * @return array
  *   saho:saho-image-credit props, or [] when there is no real image.
@@ -3436,7 +3567,7 @@ function _saho_record_image_props(NodeInterface $node, string $image_field, stri
   }
   $orientation = $r < 0.95 ? 'portrait' : ($r <= 1.05 ? 'square' : 'landscape');
 
-  return [
+  $props = [
     'src' => _saho_record_image_src($file, $options['image_style']),
     'href' => $options['link_original'] ? \Drupal::service('file_url_generator')->generateString($file->getFileUri()) : '',
     'alt' => $alt !== '' ? $alt : $node->label() . ' portrait',
@@ -3446,6 +3577,11 @@ function _saho_record_image_props(NodeInterface $node, string $image_field, stri
     'orientation' => $orientation,
     'loading' => $options['loading'],
   ];
+  // The stored width only describes the original file, not a derivative.
+  if ($options['native_width'] && $options['image_style'] === NULL && $width > 0) {
+    $props['max_width'] = $width;
+  }
+  return $props;
 }
 
 /**
@@ -3501,6 +3637,7 @@ function _saho_record_image_options(array $options): array {
     'image_style' => NULL,
     'link_original' => FALSE,
     'loading' => 'lazy',
+    'native_width' => FALSE,
   ];
   $options['loading'] = $options['loading'] === 'eager' ? 'eager' : 'lazy';
   return $options;
