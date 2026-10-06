@@ -8,13 +8,22 @@
  */
 #}
 
-{# Variable to track if sidebar has content #}
-{% set sidebar_has_content = false %}
+{# The rail renders only when it holds more than the date (see
+   saho_preprocess_node__event); otherwise the record is one compact column. #}
+{% set sidebar_has_content = event_has_rail or accordion_views is not empty %}
+{# The event-record classes (and css/event-record.css) apply to the full
+   record page only; other view modes share this template unstyled. #}
+{% set event_classes = record is defined ? [
+  'saho-article-wrapper',
+  'saho-event-record',
+  sidebar_has_content ? 'saho-event-record--rail' : 'saho-event-record--compact',
+  event_dated ? 'saho-event-record--dated',
+] : ['saho-article-wrapper'] %}
 
 {# Related-cards footer renders .saho-button as static spans; ensure its CSS loads. #}
 {{ attach_library('saho/saho-button') }}
 
-<article{{ attributes.addClass('saho-article-wrapper') }}>
+<article{{ attributes.addClass(event_classes) }}>
 
   {# 2027 "Open Record" record header (typed tab + display ref + status + key fields). #}
   {% if record is defined %}
@@ -43,36 +52,24 @@
       {# field_feature_banner does not exist on the event bundle (config/sync:
          article/biography/place only), so the old banner branch was dead. The
          lead image is the Open Record duotone image-credit figure (S3). #}
-      {% if record_image.src is defined and record_image.src %}
-        {{ include('saho:saho-image-credit', record_image, with_context = false) }}
-      {% endif %}
-
-      {# Article metadata (Published/Updated dates) #}
-
-      {# Event date now lives in the rail metadata-block (S3). #}
-
-      {# Main content with ID for TOC linking #}
-      <div id="event-details" class="saho-article-body">
-        {% if content.body %}
-          {# Remove the label by accessing the content directly #}
-          {{ content.body.0 }}
+      {# Image + text travel together: in the compact layout a small or upright
+         image sits beside the text (event_image_placement = aside), a wide
+         one leads above it. #}
+      <div class="saho-event-lead saho-event-lead--{{ event_image_placement|default('none') }}">
+        {% if record_image.src is defined and record_image.src %}
+          {{ include('saho:saho-image-credit', record_image, with_context = false) }}
         {% endif %}
-      </div>
 
-      {# Add minimal TDIH Interactive Block after body content #}
-      {% if tdih_minimal_block %}
-        <div class="saho-tdih-minimal-block mt-4">
-          <div class="card border-0 shadow-sm">
-            <div class="card-body p-3">
-              <h4 class="h6 mb-3 text-muted">
-                <i class="fas fa-search me-2"></i>
-                {{ 'Search events by date'|t }}
-              </h4>
-              {{ tdih_minimal_block }}
-            </div>
-          </div>
+        {# The event date leads the record header as its kicker. #}
+
+        {# Main content with ID for TOC linking #}
+        <div id="event-details" class="saho-article-body">
+          {% if content.body %}
+            {# Remove the label by accessing the content directly #}
+            {{ content.body.0 }}
+          {% endif %}
         </div>
-      {% endif %}
+      </div>
 
       {% if content.field_highlight %}
         <div id="highlights" class="saho-highlight">
@@ -122,8 +119,39 @@
          reader contributions - after the record, never inside it. #}
       {# Open Record reading list: derived related records (siblings, shared
          topics, popular) - the record's onward-reading engine. #}
+      {# Other events sharing this day and month - the onward read that fits a
+         this-day-in-history entry. #}
+      {% if event_same_day %}
+        <section class="saho-event-sameday" aria-labelledby="event-sameday-heading">
+          <h2 class="saho-event-sameday__title" id="event-sameday-heading">{{ 'Also on @date'|t({'@date': event_same_day.label}) }}</h2>
+          <ol class="saho-event-sameday__list">
+            {% for item in event_same_day.items %}
+              <li class="saho-event-sameday__item">
+                <span class="saho-event-sameday__year">{{ item.year }}</span>
+                <a class="saho-event-sameday__link" href="{{ item.url }}">{{ item.title }}</a>
+              </li>
+            {% endfor %}
+          </ol>
+        </section>
+      {% endif %}
+
       {% if record_reading %}
         {{ include('saho:saho-reading-list', { title: 'Further reading'|t, items: record_reading }, with_context = false) }}
+      {% endif %}
+
+      {# The date search follows the record and its sources, never splits them. #}
+      {% if tdih_minimal_block %}
+        <div class="saho-tdih-minimal-block mt-4">
+          <div class="card border-0 shadow-sm">
+            <div class="card-body p-3">
+              <h4 class="h6 mb-3 text-muted">
+                <i class="fas fa-search me-2"></i>
+                {{ 'Search events by date'|t }}
+              </h4>
+              {{ tdih_minimal_block }}
+            </div>
+          </div>
+        </div>
       {% endif %}
 
       <p class="saho-record-support">
@@ -137,10 +165,6 @@
     {# RIGHT: Sidebar (the Open Record rail - S3) #}
     {# No field_feature_banner on events, so the lead image always stays in the
        main column - there is no rail-image branch to gate here. #}
-    {% if record_meta or record_related or record_further or accordion_views is not empty %}
-      {% set sidebar_has_content = true %}
-    {% endif %}
-
     {% if sidebar_has_content %}
     <aside class="saho-article-sidebar">
 

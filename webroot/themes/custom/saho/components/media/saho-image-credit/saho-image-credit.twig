@@ -1,9 +1,15 @@
 {#
 /**
- * @file SAHO Image credit SDC. props: src, alt, credit, source, caption, duotone, ratio, orientation, href, loading
+ * @file SAHO Image credit SDC. props: src, alt, credit, source, caption, duotone, ratio, orientation, href, loading, max_width
  */
 #}
-<figure{{ attributes.addClass(['saho-figure', 'saho-figure--' ~ (orientation|default('landscape'))]) }}>
+{% set figure_attributes = attributes.addClass(['saho-figure', 'saho-figure--' ~ (orientation|default('landscape'))]) %}
+{# Optional native-width cap: a small original is shown at its own size
+   instead of being stretched across the column. #}
+{% if max_width %}
+  {% set figure_attributes = figure_attributes.addClass('saho-figure--native').setAttribute('style', '--saho-figure-native: ' ~ max_width ~ 'px;') %}
+{% endif %}
+<figure{{ figure_attributes }}>
   <div class="saho-figure__frame" style="aspect-ratio: {{ ratio|default('4 / 3') }};">
     {% if src %}
       {% set image %}
