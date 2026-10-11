@@ -19,6 +19,24 @@
   margin-bottom: 0;
 }
 
+/* Feature image: bleeds to the card edges under the oxblood rule. A fixed
+   ratio keeps the card height stable whatever the upload's shape; archival
+   portraits bias the crop upward to keep faces in frame. */
+.saho-home-feature__media {
+  margin: calc(-1 * var(--space-6)) calc(-1 * var(--space-6)) var(--space-5);
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: #000;
+}
+
+.saho-home-feature__image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 25%;
+}
+
 .saho-home-feature__kicker {
   font-family: var(--font-mono);
   font-size: 11px;
@@ -128,5 +146,9 @@
 @media (max-width: 40rem) {
   .saho-home-feature.saho-home-feature {
     padding: var(--space-5);
+  }
+
+  .saho-home-feature__media {
+    margin: calc(-1 * var(--space-5)) calc(-1 * var(--space-5)) var(--space-4);
   }
 }

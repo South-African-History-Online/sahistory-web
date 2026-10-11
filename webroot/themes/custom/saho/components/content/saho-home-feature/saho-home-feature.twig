@@ -1,13 +1,23 @@
 {#
 /**
  * @file SAHO Home feature SDC. props: kicker, title, standfirst, href,
- * cta_label, secondary_href, secondary_label, meta, heading_level.
+ * cta_label, secondary_href, secondary_label, meta, heading_level,
+ * image_src, image_srcset, image_alt, image_width, image_height.
  * The editorial register: Archivo black on ink. Defaults to owning the H1
  * (the front page suppresses the global page title).
  */
 #}
 {% set heading = heading_level|default('h1') %}
-<article{{ attributes.addClass('saho-home-feature') }}>
+<article{{ attributes.addClass('saho-home-feature', image_src ? 'saho-home-feature--has-image') }}>
+  {% if image_src %}
+    {# The front page's LCP candidate: eager, high priority, sized to the column. #}
+    <figure class="saho-home-feature__media">
+      <img class="saho-home-feature__image" src="{{ image_src }}"
+        {%- if image_srcset %} srcset="{{ image_srcset }}" sizes="(min-width: 62rem) 34rem, 100vw"{% endif %}
+        {%- if image_width and image_height %} width="{{ image_width }}" height="{{ image_height }}"{% endif %}
+        alt="{{ image_alt }}" loading="eager" fetchpriority="high" decoding="async">
+    </figure>
+  {% endif %}
   {% if kicker %}
     <span class="saho-home-feature__kicker">{{ kicker }}</span>
   {% endif %}
