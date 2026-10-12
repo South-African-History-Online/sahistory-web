@@ -73,7 +73,9 @@ final class ArchivePdfLocator {
    * Whether a public-relative path is a genuine, non-empty PDF on disk.
    */
   public function isGenuinePdf(string $relative): bool {
-    if (str_contains($relative, '..')) {
+    // Reject traversal by path segment, not substring: DISA names such as
+    // "art19870000.032.009.762..pdf" legitimately contain "..".
+    if (in_array('..', explode('/', str_replace('\\', '/', $relative)), TRUE)) {
       return FALSE;
     }
     $path = $this->publicRoot() . '/' . $relative;

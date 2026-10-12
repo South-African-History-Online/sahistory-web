@@ -45,10 +45,11 @@ final class ArchivePdfFallbackSubscriber implements EventSubscriberInterface {
    * {@inheritdoc}
    */
   public static function getSubscribedEvents(): array {
-    // Same slot as the legacy .htm fallback: after routing and the redirect
-    // module, before Drupal renders its 404 page. The path families differ,
-    // so the two never compete.
-    return [KernelEvents::EXCEPTION => ['onException', 50]];
+    // Above core's ExceptionLoggingSubscriber (50): a redirected request is
+    // not a 404, so it must not land in dblog as "page not found". Setting the
+    // response stops propagation, so the logger and redirect_404 never see it.
+    // Shares the slot with the legacy .htm fallback; the path families differ.
+    return [KernelEvents::EXCEPTION => ['onException', 60]];
   }
 
   /**
