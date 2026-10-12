@@ -26,3 +26,23 @@ services:
     class: Drupal\saho_linkfix\EventSubscriber\LegacyHtmFallbackSubscriber
     tags:
       - { name: event_subscriber }
+  saho_linkfix.archive_pdf_locator:
+    class: Drupal\saho_linkfix\Service\ArchivePdfLocator
+    arguments:
+      - '@database'
+      - '@file_system'
+  saho_linkfix.pdf_twin_repair:
+    class: Drupal\saho_linkfix\Service\PdfTwinRepair
+    arguments:
+      - '@database'
+      - '@entity_type.manager'
+      - '@entity_field.manager'
+      - '@saho_linkfix.archive_pdf_locator'
+      - '@logger.factory'
+  saho_linkfix.archive_pdf_fallback_subscriber:
+    class: Drupal\saho_linkfix\EventSubscriber\ArchivePdfFallbackSubscriber
+    arguments:
+      - '@saho_linkfix.archive_pdf_locator'
+      - '@file_url_generator'
+    tags:
+      - { name: event_subscriber }
