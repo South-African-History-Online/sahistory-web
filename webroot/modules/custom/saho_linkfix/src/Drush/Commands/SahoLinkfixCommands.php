@@ -11,6 +11,7 @@ use Drupal\saho_linkfix\Service\HotlinkResolver;
 use Drupal\saho_linkfix\Service\LegacyLinkResolver;
 use Drupal\saho_linkfix\Service\LegacyRedirectWriter;
 use Drupal\saho_linkfix\Service\LinkRotReport;
+use Drupal\saho_linkfix\Service\PdfTwinRepair;
 use Drush\Attributes as CLI;
 use Drush\Commands\DrushCommands;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -31,6 +32,7 @@ final class SahoLinkfixCommands extends DrushCommands {
     protected readonly AliasManagerInterface $aliasManager,
     protected readonly ?HotlinkResolver $hotlinks = NULL,
     protected readonly ?LinkRotReport $linkRot = NULL,
+    protected readonly ?PdfTwinRepair $pdfTwinRepair = NULL,
   ) {
     parent::__construct();
   }
@@ -47,6 +49,7 @@ final class SahoLinkfixCommands extends DrushCommands {
       $container->get('path_alias.manager'),
       $container->get('saho_linkfix.hotlink_resolver'),
       $container->get('saho_linkfix.linkrot_report'),
+      $container->get('saho_linkfix.pdf_twin_repair'),
     );
   }
 
@@ -335,6 +338,93 @@ final class SahoLinkfixCommands extends DrushCommands {
   ): void {
     $stats = $this->bodyRewriter->revert($this->readJson($options['in']), ['dry_run' => !$options['apply']]);
     $this->printStats($options['apply'] ? 'BODY ROLLBACK' : 'BODY ROLLBACK (DRY RUN)', $stats);
+  }
+
+  /**
+   * Classify managed PDFs and list broken ones with their genuine twin.
+   */
+  #[CLI\Command(name: 'saho:pdf-twin-scan', aliases: ['spts'])]
+  #[CLI\Option(name: 'out', description: 'CSV of every broken managed PDF and its planned action.')]
+  #[CLI\Option(name: 'include-unused', description: 'Plan repairs for broken files nothing references.')]
+  public function pdfTwinScan(
+    array $options = [
+      'out' => 'public://saho_linkfix_work/pdf_twin_scan.csv',
+      'include-unused' => FALSE,
+    ],
+  ): void {
+    $result = $this->pdfTwinRepair->scan((bool) $options['include-unused']);
+    $this->printStats('PDF TWIN SCAN', $result['counts']);
+    $this->writeCsv($options['out'], ['fid', 'uri', 'status', 'uses', 'twin', 'twin_fid', 'action'], array_map(
+      static fn(array $r): array => [
+        $r['fid'],
+        $r['uri'],
+        $r['status'],
+        $r['uses'],
+        $r['twin'] ?? '',
+        $r['twin_fid'] ?? '',
+        $r['action'],
+      ],
+      $result['rows'],
+    ));
+    $this->logger()->success(sprintf('Wrote %d rows to %s', count($result['rows']), $options['out']));
+  }
+
+  /**
+   * Point content at the genuine twin of broken PDFs. Dry run by default.
+   */
+  #[CLI\Command(name: 'saho:pdf-twin-repair', aliases: ['sptr'])]
+  #[CLI\Option(name: 'apply', description: 'Actually save the changes.')]
+  #[CLI\Option(name: 'limit', description: 'Only process the first N repairable files (0 = all).')]
+  #[CLI\Option(name: 'fids', description: 'Comma-separated broken file ids to process (trial runs).')]
+  #[CLI\Option(name: 'include-unused', description: 'Also repoint broken files nothing references.')]
+  #[CLI\Option(name: 'rollback-out', description: 'Where to write the rollback JSON.')]
+  public function pdfTwinRepair(
+    array $options = [
+      'apply' => FALSE,
+      'limit' => 0,
+      'fids' => '',
+      'include-unused' => FALSE,
+      'rollback-out' => 'public://saho_linkfix_work/pdf_twin_rollback.json',
+    ],
+  ): void {
+    $rows = array_values(array_filter(
+      $this->pdfTwinRepair->scan((bool) $options['include-unused'])['rows'],
+      static fn(array $r): bool => in_array($r['action'], ['swap', 'repoint'], TRUE),
+    ));
+    if ($options['fids'] !== '') {
+      $fids = array_map('intval', explode(',', (string) $options['fids']));
+      $rows = array_values(array_filter($rows, static fn(array $r): bool => in_array($r['fid'], $fids, TRUE)));
+    }
+    if ((int) $options['limit'] > 0) {
+      $rows = array_slice($rows, 0, (int) $options['limit']);
+    }
+    $result = $this->pdfTwinRepair->apply($rows, !$options['apply']);
+    $this->printStats($options['apply'] ? 'PDF TWIN REPAIR' : 'PDF TWIN REPAIR (DRY RUN)', $result['stats']);
+    if ($options['apply'] && $result['rollback']) {
+      // Never overwrite an earlier run's rollback file.
+      $out = $options['rollback-out'];
+      if (is_file($out)) {
+        $out = preg_replace('/\.json$/', '', $out) . '-' . date('Ymd-His') . '.json';
+      }
+      $this->writeJson($out, $result['rollback']);
+      $this->logger()->success(sprintf('Rollback written to %s', $out));
+    }
+  }
+
+  /**
+   * Revert a PDF twin repair run. Dry run by default.
+   */
+  #[CLI\Command(name: 'saho:pdf-twin-rollback', aliases: ['sptb'])]
+  #[CLI\Option(name: 'in', description: 'Rollback JSON written by saho:pdf-twin-repair.')]
+  #[CLI\Option(name: 'apply', description: 'Actually revert.')]
+  public function pdfTwinRollback(
+    array $options = [
+      'in' => 'public://saho_linkfix_work/pdf_twin_rollback.json',
+      'apply' => FALSE,
+    ],
+  ): void {
+    $stats = $this->pdfTwinRepair->revert($this->readJson($options['in']), !$options['apply']);
+    $this->printStats($options['apply'] ? 'PDF TWIN ROLLBACK' : 'PDF TWIN ROLLBACK (DRY RUN)', $stats);
   }
 
   /**

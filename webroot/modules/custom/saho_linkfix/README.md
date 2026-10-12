@@ -110,3 +110,12 @@ Prints Markdown built from two tables the site already fills: `redirect_404`
 and `linkchecker_link` (dead links in content with the pages that carry them).
 `.github/workflows/linkrot.yml` runs it on production every Monday and posts
 the result as a comment on the "Weekly link-rot report" issue.
+
+## Archive PDF repair
+
+`/archive/NAME.pdf` and dead `DC/`, `archivefiles/` PDF paths 301 to the
+genuine copy (`ArchivePdfFallbackSubscriber`). Broken managed PDFs (HTML saved
+as .pdf, missing, empty) are swapped for their genuine twin with
+`saho:pdf-twin-scan` / `saho:pdf-twin-repair [--apply]` /
+`saho:pdf-twin-rollback`. Goals, metrics and the runbook:
+`docs/ARCHIVE-PDF-REPAIR-PLAN.md`.
