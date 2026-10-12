@@ -30,9 +30,10 @@ final class LegacyHtmFallbackSubscriber implements EventSubscriberInterface {
    * {@inheritdoc}
    */
   public static function getSubscribedEvents(): array {
-    // Priority just above Drupal's own 404 handling so we answer first, but
-    // well below the redirect module's REQUEST-phase handling.
-    return [KernelEvents::EXCEPTION => ['onException', 50]];
+    // Above core's ExceptionLoggingSubscriber (50) so a redirected request is
+    // not logged as "page not found", but well below the redirect module's
+    // REQUEST-phase handling.
+    return [KernelEvents::EXCEPTION => ['onException', 60]];
   }
 
   /**

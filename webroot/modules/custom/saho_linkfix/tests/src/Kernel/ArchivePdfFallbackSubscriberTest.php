@@ -4,13 +4,17 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\saho_linkfix\Kernel;
 
+use Drupal\Core\EventSubscriber\ExceptionLoggingSubscriber;
 use Drupal\file\Entity\File;
 use Drupal\KernelTests\KernelTestBase;
+use Drupal\saho_linkfix\EventSubscriber\ArchivePdfFallbackSubscriber;
+use Drupal\saho_linkfix\EventSubscriber\LegacyHtmFallbackSubscriber;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
+use Symfony\Component\HttpKernel\KernelEvents;
 
 /**
  * Dead archive PDF URLs redirect to the genuine copy on disk.
@@ -128,6 +132,21 @@ final class ArchivePdfFallbackSubscriberTest extends KernelTestBase {
     $this->assertTrue($locator->isGenuinePdf('archive-files2/art19870000.762..pdf'));
     $this->assertFalse($locator->isGenuinePdf('archive-files2/../archive-files4/LaSep80.pdf'));
     $this->assertFalse($locator->isGenuinePdf('../files/archive-files4/LaSep80.pdf'));
+  }
+
+  /**
+   * Redirected requests are answered before core logs them as 404s.
+   */
+  public function testRunsBeforeCoreNotFoundLogging(): void {
+    $dispatcher = $this->container->get('event_dispatcher');
+    $priority = fn(string $class) => array_values(array_filter(
+      array_map(fn($l) => is_array($l) && $l[0] instanceof $class ? $dispatcher->getListenerPriority(KernelEvents::EXCEPTION, $l) : NULL,
+        $dispatcher->getListeners(KernelEvents::EXCEPTION)),
+      fn($p) => $p !== NULL))[0] ?? NULL;
+    $logger = $priority(ExceptionLoggingSubscriber::class);
+    $this->assertNotNull($logger);
+    $this->assertGreaterThan($logger, $priority(ArchivePdfFallbackSubscriber::class));
+    $this->assertGreaterThan($logger, $priority(LegacyHtmFallbackSubscriber::class));
   }
 
   /**
