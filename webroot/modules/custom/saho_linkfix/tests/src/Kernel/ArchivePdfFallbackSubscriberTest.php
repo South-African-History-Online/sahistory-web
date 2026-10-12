@@ -48,6 +48,8 @@ final class ArchivePdfFallbackSubscriberTest extends KernelTestBase {
     $this->writeFile('archive-files/AbJun73.pdf', "%PDF-1.6\n%test\n");
     // Only an HTML copy exists: nothing to redirect to.
     $this->writeFile('2019-05/onlyhtml.pdf', "<!DOCTYPE html><html></html>");
+    // DISA names may end in "..pdf"; that is a file name, not traversal.
+    $this->writeFile('archive-files2/art19870000.762..pdf', "%PDF-1.5\n%test\n");
     // An empty file is not a genuine copy either.
     $this->writeFile('archive-files/empty.pdf', '');
     // Mixed-case original known to file_managed.
@@ -115,6 +117,17 @@ final class ArchivePdfFallbackSubscriberTest extends KernelTestBase {
   public function testDeadPublicDirectoriesRedirect(): void {
     $this->assertStringEndsWith('/archive-files4/LaSep80.pdf', (string) $this->redirectFor('/sites/default/files/archivefiles/LaSep80.pdf'));
     $this->assertStringEndsWith('/archive-files4/LaSep80.pdf', (string) $this->redirectFor('/sites/default/files/DC/LaSep80/LaSep80.pdf'));
+  }
+
+  /**
+   * A double dot inside a file name is allowed; a ".." segment is not.
+   */
+  public function testDoubleDotFileNameRedirects(): void {
+    $this->assertStringEndsWith('/archive-files2/art19870000.762..pdf', (string) $this->redirectFor('/archive/art19870000.762..pdf'));
+    $locator = $this->container->get('saho_linkfix.archive_pdf_locator');
+    $this->assertTrue($locator->isGenuinePdf('archive-files2/art19870000.762..pdf'));
+    $this->assertFalse($locator->isGenuinePdf('archive-files2/../archive-files4/LaSep80.pdf'));
+    $this->assertFalse($locator->isGenuinePdf('../files/archive-files4/LaSep80.pdf'));
   }
 
   /**

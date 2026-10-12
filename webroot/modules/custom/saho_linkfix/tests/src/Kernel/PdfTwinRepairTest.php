@@ -150,6 +150,15 @@ final class PdfTwinRepairTest extends KernelTestBase {
   }
 
   /**
+   * A genuine PDF whose name contains ".." is not reported as broken.
+   */
+  public function testDoubleDotFileNameIsOk(): void {
+    $file = $this->file('archive-files2/let19710610.745..pdf', "%PDF-1.4\n");
+    EntityTest::create(['field_doc' => [$file->id()]])->save();
+    $this->assertNull($this->scanRow((int) $file->id()), 'Genuine double-dot PDF is not listed as broken.');
+  }
+
+  /**
    * No genuine copy anywhere: reported as missing, never touched.
    */
   public function testNoTwinIsReportedMissing(): void {
