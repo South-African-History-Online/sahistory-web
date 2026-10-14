@@ -2,7 +2,9 @@ import { defineConfig } from 'vite';
 import { resolve } from 'path';
 import { glob } from 'glob';
 import autoprefixer from 'autoprefixer';
-import { purgeCSSPlugin as purgecss } from '@fullhuman/postcss-purgecss';
+// v8 exports the plugin as the module's default (CommonJS module.exports),
+// so a named import no longer resolves under Node's ESM loader.
+import purgecss from '@fullhuman/postcss-purgecss';
 
 // Get all component SCSS files
 const componentScssFiles = glob.sync('components/**/*.scss');
