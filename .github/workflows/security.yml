@@ -21,6 +21,7 @@ on:
       - 'webroot/themes/custom/saho_shop/package-lock.json'
       - 'timeline-app/package-lock.json'
       - '.github/workflows/security.yml'
+      - '.github/npm-audit-allowlist.json'
       - '.trivyignore'
   push:
     branches:
@@ -32,6 +33,7 @@ on:
       - 'webroot/themes/custom/saho_shop/package-lock.json'
       - 'timeline-app/package-lock.json'
       - '.github/workflows/security.yml'
+      - '.github/npm-audit-allowlist.json'
       - '.trivyignore'
   schedule:
     # Mondays 05:00 UTC - advisory drift check, before the a11y run.
@@ -111,9 +113,41 @@ jobs:
       # there is nothing to cache. Dev dependencies are included on purpose:
       # theme packages are build tooling whose compiled output is committed
       # and shipped to production. Threshold: fail on high or critical.
-      - name: npm audit (gate on HIGH/CRITICAL)
+      - name: npm audit (report)
         working-directory: ${{ matrix.package }}
-        run: npm audit --audit-level=high
+        run: npm audit --audit-level=high || true
+
+      # Gate on the JSON report so that advisories listed in
+      # .github/npm-audit-allowlist.json (no fixed release, dev-only reach)
+      # can be suppressed without lowering the bar for everything else.
+      # Each allowlist entry carries an expiry date; an expired entry fails
+      # the gate until it is renewed or removed, so suppressions get
+      # re-reviewed instead of rotting. Allowlisted hits are printed as
+      # notices, everything else at HIGH/CRITICAL is an error.
+      - name: npm audit (gate on HIGH/CRITICAL, allowlist-aware)
+        working-directory: ${{ matrix.package }}
+        run: |
+          npm audit --audit-level=high --json > /tmp/npm-audit.json || true
+          TODAY=$(date -u +%F)
+          jq -r --arg today "$TODAY" \
+             --slurpfile allow "$GITHUB_WORKSPACE/.github/npm-audit-allowlist.json" '
+            ($allow[0].advisories // []) as $entries
+            | [$entries[] | select(.expires >= $today) | .id] as $active
+            | [$entries[] | select(.expires <  $today) | .id] as $expired
+            | ([.vulnerabilities // {} | to_entries[] | .value
+                | select(.severity == "high" or .severity == "critical")
+                | .via[] | objects
+                | select(.severity == "high" or .severity == "critical")
+                | {id: (.url | sub(".*/"; "")), name: .name, severity: .severity, title: .title}]
+               | unique_by(.id)) as $found
+            | ($found | map(select(.id as $i | ($active | index($i)) == null))) as $blocking
+            | ($found | map(select(.id as $i | ($active | index($i)) != null))) as $suppressed
+            | ($suppressed[] | "::notice::allowlisted \(.id) \(.name) (\(.severity)): \(.title)"),
+              ($expired[]   | "::error::allowlist entry \(.) has expired - renew it in .github/npm-audit-allowlist.json or fix the package"),
+              ($blocking[]  | "::error::\(.id) \(.name) (\(.severity)): \(.title)"),
+              "RESULT blocking=\($blocking | length) expired=\($expired | length) suppressed=\($suppressed | length)"
+          ' /tmp/npm-audit.json | tee /tmp/npm-gate.txt
+          grep -q "^RESULT blocking=0 expired=0" /tmp/npm-gate.txt
 
   trivy-scan:
     name: Trivy Filesystem Scan
