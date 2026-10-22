@@ -178,7 +178,14 @@ jobs:
             echo "Manual Deploy to PRODUCTION"
             echo "========================================="
             git fetch origin --tags
-            git reset --hard origin/main
+            # checkout, not reset --hard: reset rewrites every tracked file whose
+            # stat data is stale, and the shop site directory on the server is
+            # read-only (sites/shop.sahistory.org.za/services.yml), which aborted
+            # every manual deploy since 2026-06 with "unable to create file".
+            # checkout only touches files that differ between commits, exactly
+            # like the tag release path above, and leaves the server on a
+            # detached HEAD so deploy-default.sh skips its git pull.
+            git checkout --detach origin/main
             scripts/deploy-all.sh production
             echo ""
             echo "✓ Production deployment complete"
@@ -193,8 +200,9 @@ jobs:
             echo "========================================="
             echo "Manual Deploy to STAGING"
             echo "========================================="
-            git fetch origin
-            git reset --hard origin/main
+            git fetch origin --tags
+            # same reasoning as the production step above
+            git checkout --detach origin/main
             scripts/deploy-all.sh staging
             echo ""
             echo "✓ Staging deployment complete"
