@@ -181,6 +181,18 @@ These scripts:
 5. Disable maintenance mode (production only)
 6. Clear cache
 
+## Post-Deploy Checklist (every release)
+
+Run through this after each production deploy. Items 2-4 are the ones that have bitten us before.
+
+1. **Confirm the release landed**: `git describe --tags` on the server matches the tag you pushed, and `drush core:status` shows the expected Drupal version.
+2. **Purge Cloudflare cache for `/core/*` and `/modules/*`** after any core or contrib update. Static assets are served `immutable, max-age=2592000` (30 days) and are not versioned by URL, so the edge keeps serving the previous release's JS/CSS otherwise.
+3. **Modules that ship ES modules need their own purge**: `geolocation` imports sibling files by unversioned relative URL (`import ... from "../Base/GeolocationMapMarker.js"`). A half-cached mix of old and new files breaks map marker popups (`marker.getContentElement is not a function`, seen after the 4.0.0 -> 4.1.0 update). Purge `/modules/contrib/geolocation/*` and expect returning visitors' browsers to hold stale copies for up to 30 days.
+4. **Data rebuilds required by specific upgrades**: when `entity_usage` crosses a major version (8.x-2.x -> 5.x in Oct 2026), run `drush entity-usage:recreate` after `drush deploy`. It is a batch over every tracked entity and takes a while; the Popular Terms block in `saho_statistics` reads this table.
+5. **PHP parity and hardening**: `php -v` on the host must match the current PHP security release (PHP.net publishes on Wednesdays; the Drupal Security Team mirrors them as PSAs). Keep `session.upload_progress.enabled = 0` in the host php.ini; it mitigates CVE-2026-115560 and Drupal never uses the feature.
+6. **Check the logs**: `drush ws --severity=Error --count=20` on both sites (`--uri=https://shop.sahistory.org.za` for the shop) and watch for anything that was not there before the deploy.
+7. **Long drush batches vs `settings.php`**: the production `settings.php` (not in git) sets `ini_set('max_execution_time', 30)` unconditionally, and `ini_set` beats php.ini, so a drush batch that runs in one child process (`entity-usage:recreate`, big update hooks under `drush deploy`) dies with "Maximum execution time exceeded" part-way. Reproduced locally on 2026-10-26 (died at node 98,800 of 111,891, left `entity_usage` empty because 5.x only copies the bulk table at the end). Guard it: `if (PHP_SAPI !== 'cli') { ini_set('max_execution_time', 30); }` and verify with `drush php:eval 'echo ini_get("max_execution_time");'` (want `0`) before running any long batch.
+
 ## Security Best Practices
 
 ### SSH Key Security
