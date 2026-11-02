@@ -6,6 +6,7 @@ use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Url;
 use Drupal\saho_utils\Service\ContentExtractorService;
 use Drupal\saho_utils\Service\EntityItemBuilderService;
+use Drupal\saho_utils\Service\FocalPointPositionService;
 use Drupal\saho_utils\Service\ImageExtractorService;
 use Drupal\Tests\UnitTestCase;
 
@@ -39,6 +40,13 @@ class EntityItemBuilderServiceTest extends UnitTestCase {
   protected $contentExtractor;
 
   /**
+   * The focal point position service.
+   *
+   * @var \Drupal\saho_utils\Service\FocalPointPositionService|\PHPUnit\Framework\MockObject\MockObject
+   */
+  protected $focalPoint;
+
+  /**
    * {@inheritdoc}
    */
   protected function setUp(): void {
@@ -47,9 +55,11 @@ class EntityItemBuilderServiceTest extends UnitTestCase {
     $this->imageExtractor = $this->createMock(ImageExtractorService::class);
     $this->contentExtractor = $this->createMock(ContentExtractorService::class);
 
+    $this->focalPoint = $this->createMock(FocalPointPositionService::class);
     $this->entityItemBuilder = new EntityItemBuilderService(
       $this->imageExtractor,
-      $this->contentExtractor
+      $this->contentExtractor,
+      $this->focalPoint
     );
   }
 

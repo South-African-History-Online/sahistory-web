@@ -13,6 +13,7 @@ use Drupal\media\MediaInterface;
 use Drupal\node\NodeInterface;
 use Drupal\saho_frontpage\CurrentFeatureService;
 use Drupal\saho_refs\DisplayRefService;
+use Drupal\saho_utils\Service\FocalPointPositionService;
 use Drupal\saho_utils\Service\ImageExtractorService;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -63,6 +64,8 @@ final class EditorialFeatureBlock extends BlockBase implements ContainerFactoryP
    *   Resolves a node's image field (image, file or media) to its file.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
+   * @param \Drupal\saho_utils\Service\FocalPointPositionService|null $focalPoint
+   *   Resolves the editorial focal point to a CSS object-position.
    */
   public function __construct(
     array $configuration,
@@ -72,6 +75,7 @@ final class EditorialFeatureBlock extends BlockBase implements ContainerFactoryP
     private readonly DisplayRefService $displayRef,
     private readonly ImageExtractorService $imageExtractor,
     private readonly EntityTypeManagerInterface $entityTypeManager,
+    private readonly ?FocalPointPositionService $focalPoint = NULL,
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
   }
@@ -88,6 +92,7 @@ final class EditorialFeatureBlock extends BlockBase implements ContainerFactoryP
       $container->get('saho_refs.display_ref'),
       $container->get('saho_utils.image_extractor'),
       $container->get('entity_type.manager'),
+      $container->get('saho_utils.focal_point'),
     );
   }
 
@@ -135,7 +140,8 @@ final class EditorialFeatureBlock extends BlockBase implements ContainerFactoryP
    *   The feature node.
    *
    * @return array
-   *   image_src, image_srcset, image_alt, image_width and image_height, or an
+   *   image_src, image_srcset, image_alt, image_width, image_height and
+   *   image_position, or an
    *   empty array when the node has no usable image.
    */
   private function buildImage(NodeInterface $node): array {
@@ -200,6 +206,13 @@ final class EditorialFeatureBlock extends BlockBase implements ContainerFactoryP
       'image_alt' => trim((string) $alt) !== '' ? (string) $alt : (string) $node->label(),
       'image_width' => !empty($dimensions['width']) ? (int) $dimensions['width'] : NULL,
       'image_height' => !empty($dimensions['height']) ? (int) $dimensions['height'] : NULL,
+      // The editorial focal point steers the figure's object-fit crop;
+      // NULL leaves the component's default position.
+      'image_position' => $this->focalPoint?->objectPosition(
+        $uri,
+        $width !== NULL ? (int) $width : NULL,
+        $height !== NULL ? (int) $height : NULL,
+      ),
     ];
   }
 

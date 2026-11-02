@@ -15,9 +15,19 @@ services:
     class: Drupal\saho_utils\Service\ContentExtractorService
     arguments: []
 
+  saho_utils.focal_point:
+    class: Drupal\saho_utils\Service\FocalPointPositionService
+    arguments: ['@entity_type.manager', '@saho_utils.image_extractor', '@image.factory']
+
+  saho_utils.twig.focal_point:
+    class: Drupal\saho_utils\Twig\FocalPointTwigExtension
+    arguments: ['@saho_utils.focal_point']
+    tags:
+      - { name: twig.extension }
+
   saho_utils.entity_item_builder:
     class: Drupal\saho_utils\Service\EntityItemBuilderService
-    arguments: ['@saho_utils.image_extractor', '@saho_utils.content_extractor']
+    arguments: ['@saho_utils.image_extractor', '@saho_utils.content_extractor', '@saho_utils.focal_point']
 
   saho_utils.config_form_helper:
     class: Drupal\saho_utils\Service\ConfigurationFormHelperService

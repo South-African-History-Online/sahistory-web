@@ -125,9 +125,80 @@ function saho_js_alter(&$javascript, AttachedAssetsInterface $assets) {
 }
 
 /**
+ * Returns the editorial focal point of a file as a CSS object-position.
+ *
+ * Most SAHO crops are object-fit: cover in the stylesheet, so the focus an
+ * editor set in the Focal Point widget is delivered as an inline
+ * object-position. NULL (no focal point, no crop module) leaves the
+ * stylesheet default in charge, so untouched images render as before.
+ *
+ * @param string $uri
+ *   The original file URI.
+ * @param int|null $width
+ *   Original width when known.
+ * @param int|null $height
+ *   Original height when known.
+ *
+ * @return string|null
+ *   A value such as "30% 25%", or NULL.
+ */
+function saho_focal_object_position(string $uri, ?int $width = NULL, ?int $height = NULL): ?string {
+  if ($uri === '' || !\Drupal::hasService('saho_utils.focal_point')) {
+    return NULL;
+  }
+  return \Drupal::service('saho_utils.focal_point')->objectPosition($uri, $width, $height);
+}
+
+/**
+ * Appends an object-position declaration to an attributes style string.
+ *
+ * @param array $attributes
+ *   The attributes array, by reference.
+ * @param string|null $position
+ *   The object-position, or NULL for no change.
+ */
+function saho_focal_apply_position(array &$attributes, ?string $position): void {
+  if ($position === NULL) {
+    return;
+  }
+  $style = $attributes['style'] ?? '';
+  $style = is_array($style) ? implode(' ', $style) : (string) $style;
+  if (str_contains($style, 'object-position')) {
+    return;
+  }
+  $attributes['style'] = trim($style . ' object-position: ' . $position . ';');
+}
+
+/**
+ * Implements hook_preprocess_image_style().
+ *
+ * The original URI and dimensions live here; the inner image element only
+ * sees the derivative URL, so this is where the focal point is resolved.
+ */
+function saho_preprocess_image_style(&$variables) {
+  if (empty($variables['uri']) || !isset($variables['image']['#attributes'])) {
+    return;
+  }
+  $width = !empty($variables['width']) ? (int) $variables['width'] : NULL;
+  $height = !empty($variables['height']) ? (int) $variables['height'] : NULL;
+  saho_focal_apply_position(
+    $variables['image']['#attributes'],
+    saho_focal_object_position((string) $variables['uri'], $width, $height)
+  );
+}
+
+/**
  * Implements hook_preprocess_image().
  */
 function saho_preprocess_image(&$variables) {
+  // Unstyled originals carry the stream URI; styled images were handled in
+  // saho_preprocess_image_style() and arrive here with a derivative URL.
+  if (!empty($variables['uri']) && empty($variables['style_name']) && str_contains((string) $variables['uri'], '://') && !preg_match('#^https?://#i', (string) $variables['uri'])) {
+    $width = !empty($variables['attributes']['width']) ? (int) $variables['attributes']['width'] : NULL;
+    $height = !empty($variables['attributes']['height']) ? (int) $variables['attributes']['height'] : NULL;
+    saho_focal_apply_position($variables['attributes'], saho_focal_object_position((string) $variables['uri'], $width, $height));
+  }
+
   // Add width and height attributes to prevent CLS (Cumulative Layout Shift)
   if (!empty($variables['uri'])) {
     // Try to get image dimensions if not already set.
@@ -3576,6 +3647,9 @@ function _saho_record_image_props(NodeInterface $node, string $image_field, stri
     'ratio' => $ratio,
     'orientation' => $orientation,
     'loading' => $options['loading'],
+    // The editorial focal point steers the frame's object-fit crop; NULL
+    // keeps the component's default position.
+    'position' => saho_focal_object_position((string) $file->getFileUri(), $width > 0 ? $width : NULL, $height > 0 ? $height : NULL),
   ];
   // The stored width only describes the original file, not a derivative.
   if ($options['native_width'] && $options['image_style'] === NULL && $width > 0) {

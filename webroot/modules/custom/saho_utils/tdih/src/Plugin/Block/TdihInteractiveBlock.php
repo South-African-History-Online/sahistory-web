@@ -10,6 +10,7 @@ use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\File\FileUrlGeneratorInterface;
 use Drupal\image\Entity\ImageStyle;
 use Drupal\node\NodeInterface;
+use Drupal\saho_utils\Service\FocalPointPositionService;
 use Drupal\tdih\Excerpt;
 use Drupal\tdih\Service\NodeFetcher;
 use Drupal\tdih\SouthAfricanDay;
@@ -92,6 +93,8 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
    *   The time service.
    * @param \Symfony\Component\HttpFoundation\RequestStack|null $request_stack
    *   The request stack (for the shareable ?date=MM-DD parameter).
+   * @param \Drupal\saho_utils\Service\FocalPointPositionService|null $focal_point
+   *   Resolves the editorial focal point to a CSS object-position.
    */
   public function __construct(
     array $configuration,
@@ -102,6 +105,7 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
     FormBuilderInterface $form_builder,
     TimeInterface $time,
     ?RequestStack $request_stack = NULL,
+    ?FocalPointPositionService $focal_point = NULL,
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->nodeFetcher = $nodeFetcher;
@@ -109,6 +113,7 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
     $this->formBuilder = $form_builder;
     $this->time = $time;
     $this->requestStack = $request_stack;
+    $this->focalPoint = $focal_point;
   }
 
   /**
@@ -117,6 +122,13 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
    * @var \Symfony\Component\HttpFoundation\RequestStack|null
    */
   protected $requestStack;
+
+  /**
+   * The focal point position service.
+   *
+   * @var \Drupal\saho_utils\Service\FocalPointPositionService|null
+   */
+  protected $focalPoint;
 
   /**
    * Validates a shareable ?date=MM-DD value.
@@ -221,7 +233,8 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
       $container->get('file_url_generator'),
       $container->get('form_builder'),
       $container->get('datetime.time'),
-      $container->get('request_stack')
+      $container->get('request_stack'),
+      $container->get('saho_utils.focal_point')
     );
   }
 
@@ -343,6 +356,30 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
   }
 
   /**
+   * The editorial focal point of the event image as a CSS object-position.
+   *
+   * Static because buildNodeItems() is: the injected service is used when
+   * the caller has one, otherwise the container's.
+   *
+   * @param \Drupal\node\NodeInterface $node
+   *   The event node.
+   * @param \Drupal\saho_utils\Service\FocalPointPositionService|null $focal_point
+   *   The injected resolver, if any.
+   *
+   * @return string|null
+   *   A value such as "30% 25%", or NULL without a focal point.
+   */
+  protected static function imagePosition(NodeInterface $node, ?FocalPointPositionService $focal_point = NULL): ?string {
+    if ($focal_point === NULL && \Drupal::hasService('saho_utils.focal_point')) {
+      $focal_point = \Drupal::service('saho_utils.focal_point');
+    }
+    if ($focal_point === NULL || !$node->hasField('field_event_image') || $node->get('field_event_image')->isEmpty()) {
+      return NULL;
+    }
+    return $focal_point->forEntity($node, 'field_event_image');
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function getCacheMaxAge() {
@@ -441,6 +478,7 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
         'event_date' => $event_timestamp,
         'raw_date' => $raw_date,
         'image' => $image_url,
+        'image_position' => self::imagePosition($node),
         // Add alt text for accessibility.
         'image_alt' => $node->label(),
         'body' => $body_text,
@@ -700,6 +738,7 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
       'event_date' => $event_timestamp,
       'raw_date' => $raw_date,
       'image' => $image_url,
+      'image_position' => self::imagePosition($node, $this->focalPoint),
       // Add alt text for accessibility.
       'image_alt' => $node->label(),
       'body' => $body_text,
