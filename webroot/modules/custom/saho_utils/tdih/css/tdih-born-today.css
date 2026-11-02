@@ -1,0 +1,160 @@
+/**
+ * @file
+ * "Born on this day" aside strip (Open Record home, second aside register).
+ *
+ * Same hairline-box language as css/tdih-interactive.css: mono strip
+ * header, ruled rows, square corners, archival duotone on the portraits.
+ */
+
+.tdih-born-today {
+  border: var(--bw-hair, 1px) solid var(--border-default, #bdb9a6);
+  background: transparent;
+}
+
+.tdih-born-today__strip {
+  margin: 0;
+  padding: 11px 16px;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1.4;
+  color: var(--text-muted, #6b6c5f);
+  background: var(--surface-sunk, #dad6c7);
+  border-bottom: var(--bw-hair, 1px) solid var(--border-default, #bdb9a6);
+}
+
+.tdih-born-today__list {
+  margin: 0;
+  padding: 2px 16px 0;
+  list-style: none;
+}
+
+.tdih-born-today__row {
+  display: grid;
+  grid-template-columns: 56px 1fr;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: var(--bw-hair, 1px) solid var(--border-faint, #d3cfbf);
+}
+
+.tdih-born-today__row:last-child {
+  border-bottom: none;
+}
+
+.tdih-born-today__portrait {
+  display: block;
+  width: 56px;
+  height: 56px;
+  overflow: hidden;
+  border-radius: 50%;
+  border: var(--bw-hair, 1px) solid var(--border-default, #bdb9a6);
+  background: var(--surface-sunk, #dad6c7);
+}
+
+.tdih-born-today__portrait img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 20%;
+  filter: var(--img-duotone, grayscale(1) sepia(0.14) contrast(1.04));
+  transition: filter var(--saho-transition-base, 200ms) ease;
+}
+
+.tdih-born-today__row:hover .tdih-born-today__portrait img,
+.tdih-born-today__name:focus-visible ~ .tdih-born-today__portrait img {
+  filter: none;
+}
+
+.tdih-born-today__initial {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  font-family: var(--font-display, georgia, serif);
+  font-size: 22px;
+  color: var(--type-biography, #2f4a2f);
+}
+
+.tdih-born-today__text {
+  display: block;
+  min-width: 0;
+}
+
+.tdih-born-today__year {
+  display: block;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent, #990000);
+}
+
+.tdih-born-today__name {
+  display: block;
+  font-family: var(--font-display, georgia, serif);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--text-primary, #1b1c17);
+  text-decoration: none;
+}
+
+.tdih-born-today__row:hover .tdih-born-today__name,
+.tdih-born-today__name:focus-visible {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+
+.tdih-born-today__line {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  margin-top: 2px;
+  font-family: var(--font-serif, georgia, serif);
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--text-secondary, #41433a);
+}
+
+.tdih-born-today__more {
+  display: block;
+  padding: 10px 16px 12px;
+  border-top: var(--bw-hair, 1px) solid var(--border-default, #bdb9a6);
+  font-family: var(--font-sans, system-ui, sans-serif);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--link-rest, #990000);
+  text-decoration: none;
+}
+
+.tdih-born-today__more:hover,
+.tdih-born-today__more:focus-visible {
+  color: var(--link-hover, #6e0000);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.tdih-born-today a:focus-visible {
+  outline: 2px solid var(--accent, #990000);
+  outline-offset: 2px;
+}
+
+@media (max-width: 600px) {
+  .tdih-born-today__list {
+    padding-inline: 12px;
+  }
+
+  .tdih-born-today__strip,
+  .tdih-born-today__more {
+    padding-inline: 12px;
+  }
+
+  .tdih-born-today__row {
+    padding: 12px 0;
+  }
+}

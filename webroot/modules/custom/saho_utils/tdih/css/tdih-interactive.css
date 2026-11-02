@@ -575,3 +575,150 @@
   background: var(--saho-ochre, #c8a441);
   border-radius: 0;
 }
+
+/* ---------------------------------------------------------------------------
+ * Lead card + "Also on" ledger (home aside enrichment).
+ * The lead is the curated event: figure, year, title, a sentence-cut
+ * synopsis and the people in the event. The ledger under it lists the rest
+ * of the day so the aside holds its column next to the feature card.
+ * ------------------------------------------------------------------------- */
+.tdih-lead {
+  display: block;
+  margin: 0;
+}
+
+.tdih-entry--lead {
+  padding-bottom: 8px;
+  border-bottom: none;
+}
+
+.tdih-entry--lead .tdih-event-title {
+  font-size: 20px;
+  line-height: 1.15;
+}
+
+.tdih-entry .tdih-lead-synopsis {
+  margin-top: 8px;
+  font-size: 15px;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+}
+
+.tdih-lead-people {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  align-items: baseline;
+  margin: 0 0 4px 21px;
+  padding-bottom: 12px;
+  border-bottom: var(--bw-hair, 1px) solid var(--border-default, #bdb9a6);
+  font-family: var(--font-sans, system-ui, sans-serif);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.tdih-lead-people__label {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted, #6b6c5f);
+}
+
+.tdih-lead-people__link {
+  color: var(--text-primary, #1b1c17);
+  text-decoration: underline;
+  text-decoration-color: var(--border-default, #bdb9a6);
+  text-underline-offset: 2px;
+}
+
+.tdih-lead-people__link:hover,
+.tdih-lead-people__link:focus-visible {
+  color: var(--link-hover, #6e0000);
+  text-decoration-color: currentColor;
+}
+
+.tdih-lead-people__sep {
+  color: var(--text-muted, #6b6c5f);
+}
+
+/* The theme layer (base/_tdih-interactive.scss) gives every h3 inside the
+   today-wrapper a display size and an oxblood bar, and every .tdih-event-item
+   a sunk card. The lead keeps that card; the sub-heading and the ledger rows
+   under it are quiet mono + ruled rows, so both are re-declared here at a
+   higher specificity. */
+.tdih-interactive-block .tdih-today-history-wrapper .tdih-more-heading {
+  margin: 14px 0 0;
+  padding: 0;
+  border: 0;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted, #6b6c5f);
+}
+
+.tdih-interactive-block .tdih-entry-list--more .tdih-event-item {
+  padding: 10px 0;
+  background: transparent;
+  border: 0;
+  border-bottom: var(--bw-hair, 1px) solid var(--border-faint, #d3cfbf);
+}
+
+.tdih-interactive-block .tdih-entry-list--more .tdih-event-item:last-child {
+  border-bottom: 0;
+}
+
+.tdih-entry-list--more .tdih-event-title {
+  font-size: 15px;
+}
+
+/* Phones: the aside stacks under the feature, so keep the ledger to three
+   entries and the synopsis to three lines; the "View more" link covers the
+   rest of the day. */
+@media (max-width: 600px) {
+  .tdih-entry .tdih-lead-synopsis {
+    -webkit-line-clamp: 3;
+  }
+
+  .tdih-entry-list--more .tdih-entry:nth-child(n + 4) {
+    display: none;
+  }
+}
+
+/* A short day (one event, nothing born today) next to a tall feature: the
+   today-ledger stretches to the row's height, and the slack goes into the
+   lead figure (a taller photo, cover-cropped) instead of a gap between the
+   lead card and the "View more" link. Same recipe as the feature card's
+   figure in saho-home-feature.css. */
+.tdih-interactive-block .tdih-today-events {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.tdih-interactive-block .tdih-today-events .tdih-lead {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.tdih-interactive-block .tdih-lead .tdih-lead-figure {
+  flex: 1 0 auto;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+}
+
+.tdih-interactive-block .tdih-lead .tdih-lead-figure img {
+  height: 100%;
+  aspect-ratio: auto;
+}
+
+.tdih-interactive-block .tdih-lead .tdih-entry--lead,
+.tdih-interactive-block .tdih-lead .tdih-lead-people {
+  flex: 0 0 auto;
+}

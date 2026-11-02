@@ -28,3 +28,14 @@ declare(strict_types=1);
 function saho_frontpage_post_update_rebuild_node_144647_home(&$sandbox = NULL): string {
   return \Drupal::service('saho_frontpage.home_layout')->rebuild();
 }
+
+/**
+ * Adds the "Born on this day" aside under This day in history on the home.
+ *
+ * The home layout is a Layout Builder DB override, and the canonical rebuild
+ * is a no-op once applied, so the new aside block is inserted into the live
+ * sections here (idempotent; see HomeLayoutRebuilder::ensureBornTodayAside).
+ */
+function saho_frontpage_post_update_add_born_today_aside(&$sandbox = NULL): string {
+  return \Drupal::service('saho_frontpage.home_layout')->rebuild();
+}

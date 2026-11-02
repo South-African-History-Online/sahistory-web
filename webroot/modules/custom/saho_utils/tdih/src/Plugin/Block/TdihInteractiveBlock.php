@@ -9,7 +9,10 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\File\FileUrlGeneratorInterface;
 use Drupal\image\Entity\ImageStyle;
+use Drupal\node\NodeInterface;
+use Drupal\tdih\Excerpt;
 use Drupal\tdih\Service\NodeFetcher;
+use Drupal\tdih\SouthAfricanDay;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\ReplaceCommand;
@@ -26,6 +29,21 @@ use Symfony\Component\HttpFoundation\RequestStack;
  * )
  */
 class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginInterface {
+
+  /**
+   * Ruled "Also on this day" entries shown under the lead on the home aside.
+   */
+  public const MORE_LIMIT = 3;
+
+  /**
+   * Character budget for the lead synopsis.
+   */
+  public const SYNOPSIS_LENGTH = 220;
+
+  /**
+   * People links shown under the lead synopsis.
+   */
+  public const PEOPLE_LIMIT = 3;
 
   /**
    * The NodeFetcher service used to load nodes for specific dates.
@@ -328,20 +346,9 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
    * {@inheritdoc}
    */
   public function getCacheMaxAge() {
-    // Force South African timezone for consistent TDIH functionality.
-    $sa_timezone = new \DateTimeZone('Africa/Johannesburg');
-
-    // Calculate seconds until midnight in South African timezone.
-    $now = $this->time->getCurrentTime();
-    // Calculate the timestamp for midnight tonight in SA timezone.
-    $midnight = new \DateTime('now', $sa_timezone);
-    $midnight->setTime(0, 0, 0);
-    $midnight->modify('+1 day');
-    $seconds_until_midnight = $midnight->getTimestamp() - $now;
-
-    // Return seconds until midnight, or minimum 60 seconds to prevent
-    // excessive cache rebuilds if we're very close to midnight.
-    return max($seconds_until_midnight, 60);
+    // The register turns over at South African midnight; never below 60 s
+    // so a page built just before midnight does not thrash the cache.
+    return SouthAfricanDay::secondsUntilMidnight($this->time->getCurrentTime());
   }
 
   /**
@@ -461,42 +468,18 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
     $target_date = $month . '-' . $day;
 
     // Only auto-load events if "show_today_history" is enabled.
+    $lead_event = NULL;
+    $more_events = [];
     if ($this->configuration['show_today_history']) {
-      $nodes = $this->nodeFetcher->loadPotentialEvents($target_date);
-
-      // Editorial curation first - but most days carry no
-      // field_home_page_feature event, and the old block showed the
-      // day's uncurated events rather than an empty panel. Fall back to
-      // the full day set so "No events found for today" only appears
-      // when the day genuinely has nothing.
-      if (empty($nodes)) {
-        $nodes = $this->nodeFetcher->loadAllBirthdayEvents($target_date);
-      }
-
-      if (!empty($nodes)) {
-        // Build node items for rendering and filter by exact date.
-        foreach ($nodes as $node) {
-          $item = $this->buildNodeItem($node);
-
-          // Check if this item matches target date using strings.
-          if (!empty($item['raw_date'])) {
-            // Extract MM-DD from YYYY-MM-DD format.
-            if (preg_match('/\d{4}-(\d{2})-(\d{2})/', $item['raw_date'], $matches)) {
-              $item_date = $matches[1] . '-' . $matches[2];
-              if ($item_date === $target_date) {
-                $all_events[] = $item;
-              }
-            }
-          }
-        }
-
-        // Show up to three ruled chronology entries so the aside holds its
-        // column (#460); shuffle so the pick still rotates day to day.
-        if (count($all_events) > 3) {
-          shuffle($all_events);
-          $all_events = array_slice($all_events, 0, 3);
-        }
-      }
+      // Editorial curation picks the lead: an event ticked "home page
+      // feature" with an image. The ruled "Also on this day" entries under
+      // it come from the whole day, not just the curated pool - most days
+      // carry no, or one, curated event and the aside used to show that
+      // single entry next to a feature card twice its height (#460).
+      $featured = $this->matchingItems($this->nodeFetcher->loadPotentialEvents($target_date), $target_date);
+      $all = $this->matchingItems($this->nodeFetcher->loadAllBirthdayEvents($target_date), $target_date);
+      [$lead_event, $more_events] = self::arrangeDay($featured, $all, self::MORE_LIMIT);
+      $all_events = $lead_event ? array_merge([$lead_event], $more_events) : [];
     }
 
     // A shared ?date=MM-DD link renders that day's events server-side and
@@ -553,6 +536,8 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
     return [
       '#theme' => 'tdih_interactive_block',
       '#all_events' => $all_events,
+      '#lead_event' => $lead_event,
+      '#more_events' => $more_events,
       '#target_date' => $target_date,
       '#date_picker_form' => $form,
       '#date_picker_mode' => $this->configuration['date_picker_mode'],
@@ -570,6 +555,79 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
         ],
       ],
     ];
+  }
+
+  /**
+   * Keeps the items whose event date falls on the target month-day.
+   *
+   * The fetcher's LIKE '%-MM-DD' is a potential match (it also matches a
+   * YYYY-MM-DD HH:MM value or a -MM-DD inside a longer string), so the
+   * exact month-day is re-checked here.
+   *
+   * @param \Drupal\node\NodeInterface[] $nodes
+   *   Loaded event nodes.
+   * @param string $target_date
+   *   MM-DD.
+   *
+   * @return array[]
+   *   Item arrays (see buildNodeItem()), keyed by nid.
+   */
+  protected function matchingItems(array $nodes, string $target_date): array {
+    $items = [];
+    foreach ($nodes as $node) {
+      $item = $this->buildNodeItem($node);
+      if (!empty($item['raw_date'])
+        && preg_match('/\d{4}-(\d{2})-(\d{2})/', $item['raw_date'], $matches)
+        && $matches[1] . '-' . $matches[2] === $target_date) {
+        $items[$item['id']] = $item;
+      }
+    }
+    return $items;
+  }
+
+  /**
+   * Splits a day's events into the lead card and the "Also on" ledger.
+   *
+   * Lead preference: a curated (home page feature) event with an image,
+   * then any curated event, then any event with an image, then the first
+   * event. The ledger is everything else in chronological order, capped at
+   * $limit; when the day holds more than that the pick rotates (the block
+   * is render-cached until midnight, so one shuffle per day).
+   *
+   * @param array[] $featured
+   *   Curated item arrays keyed by nid (may be empty).
+   * @param array[] $all
+   *   Every item array for the day keyed by nid (superset of $featured).
+   * @param int $limit
+   *   Maximum ledger entries.
+   *
+   * @return array
+   *   [lead item or NULL, ledger items].
+   */
+  public static function arrangeDay(array $featured, array $all, int $limit = self::MORE_LIMIT): array {
+    // The curated pool is a subset of the day; make sure the lead candidates
+    // exist in $all even if the two caches drifted apart for a moment.
+    $pool = $all + $featured;
+    if (!$pool) {
+      return [NULL, []];
+    }
+    $has_image = static fn (array $item): bool => !empty($item['image']);
+    $lead = current(array_filter($featured, $has_image))
+      ?: current($featured)
+      ?: current(array_filter($pool, $has_image))
+      ?: current($pool);
+    $lead['featured'] = isset($featured[$lead['id']]);
+
+    $rest = $pool;
+    unset($rest[$lead['id']]);
+    $rest = array_values($rest);
+    if (count($rest) > $limit) {
+      shuffle($rest);
+      $rest = array_slice($rest, 0, $limit);
+    }
+    usort($rest, static fn (array $a, array $b): int => $a['event_date'] <=> $b['event_date']);
+
+    return [$lead, $rest];
   }
 
   /**
@@ -608,6 +666,32 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
       $body_text = html_entity_decode(strip_tags($node->get('body')->processed));
     }
 
+    // The lead card's synopsis: the curated field_synopsis when an editor
+    // wrote one, else the opening sentences of the body.
+    $synopsis = '';
+    if ($node->hasField('field_synopsis') && !$node->get('field_synopsis')->isEmpty()) {
+      $synopsis = Excerpt::sentences((string) $node->get('field_synopsis')->value, self::SYNOPSIS_LENGTH);
+    }
+    if ($synopsis === '' && $body_text !== '') {
+      $synopsis = Excerpt::sentences($body_text, self::SYNOPSIS_LENGTH);
+    }
+
+    // People in this event (field_people_related_tab), published only.
+    $people = [];
+    if ($node->hasField('field_people_related_tab') && !$node->get('field_people_related_tab')->isEmpty()) {
+      foreach ($node->get('field_people_related_tab')->referencedEntities() as $person) {
+        if ($person instanceof NodeInterface && $person->isPublished()) {
+          $people[] = [
+            'title' => $person->label(),
+            'url' => $person->toUrl()->toString(),
+          ];
+          if (count($people) >= self::PEOPLE_LIMIT) {
+            break;
+          }
+        }
+      }
+    }
+
     // Return a data array.
     return [
       'id' => $node->id(),
@@ -622,6 +706,9 @@ class TdihInteractiveBlock extends BlockBase implements ContainerFactoryPluginIn
       // Mark body as safe HTML to ensure proper rendering of images
       // and formatting.
       'body_format' => 'full_html',
+      'synopsis' => $synopsis,
+      'people' => $people,
+      'featured' => FALSE,
     ];
   }
 

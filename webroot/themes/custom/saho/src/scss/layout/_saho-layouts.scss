@@ -117,10 +117,61 @@
     align-items: stretch;
   }
 
-  // A one-entry chronology aside sizes to its content instead of stretching
-  // a column of empty paper next to the feature (#460).
-  .layout--saho-editorial > .region--aside:has(.tdih-entry:first-child:last-child) {
-    align-self: start;
+}
+
+// The aside stacks its registers (This day in history, Born on this day)
+// as a flex column so the TDIH box fills the row's height and pins its
+// "View more" link to its own foot, and the second register sits under it.
+// Replaces the #460 one-entry shrink rule: the aside now fills the column
+// with the day's ledger instead of a single entry over empty paper.
+.layout--saho-editorial > .region--aside {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+
+  > .block {
+    margin: 0;
+  }
+
+  > .block-tdih-interactive-block {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    height: auto;
+
+    > .block__content {
+      flex: 1 1 auto;
+      display: flex;
+      flex-direction: column;
+      height: auto;
+    }
+  }
+
+  > .block-tdih-born-today {
+    flex: 0 0 auto;
+  }
+}
+
+// The lead stretches to the aside's height (the two registers under it are
+// taller than a short feature title): the feature card is a flex column
+// with its register line pinned to the foot, so the ink card fills the row
+// instead of leaving paper under it.
+.layout--saho-editorial > .region--lead {
+  display: flex;
+  flex-direction: column;
+
+  > .block {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+
+    > .block__content {
+      flex: 1 1 auto;
+      display: flex;
+      flex-direction: column;
+    }
   }
 }
 
