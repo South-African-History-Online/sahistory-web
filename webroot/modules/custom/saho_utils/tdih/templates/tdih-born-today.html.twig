@@ -1,0 +1,44 @@
+{#
+/**
+ * @file
+ * "Born on this day": a strip of portraits under the TDIH aside.
+ *
+ * A mono strip header, then one ruled row per biography: round portrait
+ * (duotone, true colour on hover), name as the link, born year in the
+ * accent mono, one clamped line of description. Foot link to the
+ * biography register. Square corners, hairlines, no shadows.
+ *
+ * Available variables:
+ * - people: Item arrays (title, url, image, year, line).
+ * - month_day: Today's MM-DD (South Africa).
+ * - more_url: Path of the biography register.
+ */
+#}
+<section class="tdih-born-today" aria-labelledby="tdih-born-heading">
+  <h2 id="tdih-born-heading" class="tdih-born-today__strip">
+    {{ 'Born on this day'|t }} &middot; {{ "now"|date('j F') }}
+  </h2>
+  <ul class="tdih-born-today__list">
+    {% for person in people %}
+      <li class="tdih-born-today__row">
+        <a href="{{ person.url }}" class="tdih-born-today__portrait" tabindex="-1" aria-hidden="true">
+          {% if person.image %}
+            <img src="{{ person.image }}" alt="" loading="lazy" decoding="async" width="56" height="56">
+          {% else %}
+            <span class="tdih-born-today__initial">{{ person.title|striptags|first|upper }}</span>
+          {% endif %}
+        </a>
+        <span class="tdih-born-today__text">
+          <span class="tdih-born-today__year">{{ 'b. @year'|t({'@year': person.year}) }}</span>
+          <a href="{{ person.url }}" class="tdih-born-today__name">{{ person.title|striptags }}</a>
+          {% if person.line %}
+            <span class="tdih-born-today__line">{{ person.line }}</span>
+          {% endif %}
+        </span>
+      </li>
+    {% endfor %}
+  </ul>
+  {% if more_url %}
+    <a href="{{ more_url }}" class="tdih-born-today__more">{{ 'Biography register'|t }} <span aria-hidden="true">&rarr;</span></a>
+  {% endif %}
+</section>

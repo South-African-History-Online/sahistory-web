@@ -10,7 +10,9 @@
  * theme's Open Record tokens.
  *
  * Available variables:
- * - all_events: An array of node data for today's events.
+ * - all_events: An array of node data for today's events (lead first).
+ * - lead_event: The day's lead item (curated event preferred) or null.
+ * - more_events: Up to four further items for the "Also on" ledger.
  * - date_picker_form: The form for selecting a date.
  * - display_mode: The display mode (compact or full).
  * - show_header_title / show_today_history / show_details_button /
@@ -33,37 +35,61 @@
 
   <div class="tdih-block-body">
     <div class="tdih-today-history-wrapper" {% if not show_today_history %}style="display: none;"{% endif %}>
-      {% if show_today_history and all_events|length > 0 %}
+      {% if show_today_history and lead_event %}
         <div class="tdih-today-events">
           <h3 id="tdih-today-heading" class="visually-hidden">{{ 'Today in history'|t }}</h3>
-          {# The panel's editorial lead: the first entry carrying one of the
-             editor-curated event images. The block guarantees item.image is a
-             real, existing file (saho_hero_mobile derivative). #}
-          {% set lead = (all_events|slice(0, 10)|filter(item => item.image)|first) ?: null %}
-          {% if lead %}
-            <a href="{{ lead.url }}" class="tdih-lead-figure" tabindex="-1" aria-hidden="true">
-              <img
-                src="{{ lead.image }}"
-                alt=""
-                loading="lazy"
-                decoding="async"
-              >
-            </a>
-          {% endif %}
-          <div class="tdih-entry-list">
-            {% for item in all_events|slice(0, 10) %}
-              <a href="{{ item.url }}" class="tdih-event-item tdih-entry">
-                <span class="tdih-entry-marker" aria-hidden="true"></span>
-                <span class="tdih-entry-text">
-                  <span class="tdih-entry-year">{{ item.event_date|date('Y') }}</span>
-                  <span class="tdih-event-title">{{ item.title|striptags }}</span>
-                  {% if display_mode != 'compact' and item.body %}
-                    <span class="tdih-event-body">{{ item.body|striptags|truncate(120, true, '...') }}</span>
-                  {% endif %}
-                </span>
+          {# The lead card: the curated event (home page feature) when the
+             day has one, its editor image, then the synopsis and the people
+             in the event. The block guarantees lead_event.image is a real,
+             existing file (saho_hero_mobile derivative). #}
+          <div class="tdih-lead">
+            {% if lead_event.image %}
+              <a href="{{ lead_event.url }}" class="tdih-lead-figure" tabindex="-1" aria-hidden="true">
+                <img
+                  src="{{ lead_event.image }}"
+                  alt=""
+                  loading="lazy"
+                  decoding="async"
+                >
               </a>
-            {% endfor %}
+            {% endif %}
+            <a href="{{ lead_event.url }}" class="tdih-event-item tdih-entry tdih-entry--lead">
+              <span class="tdih-entry-marker" aria-hidden="true"></span>
+              <span class="tdih-entry-text">
+                <span class="tdih-entry-year">{{ lead_event.event_date|date('Y') }}</span>
+                <span class="tdih-event-title">{{ lead_event.title|striptags }}</span>
+                {% if lead_event.synopsis %}
+                  <span class="tdih-event-body tdih-lead-synopsis">{{ lead_event.synopsis }}</span>
+                {% endif %}
+              </span>
+            </a>
+            {% if lead_event.people %}
+              <p class="tdih-lead-people">
+                <span class="tdih-lead-people__label">{{ 'People'|t }}</span>
+                {% for person in lead_event.people %}
+                  <a href="{{ person.url }}" class="tdih-lead-people__link">{{ person.title }}</a>{% if not loop.last %}<span class="tdih-lead-people__sep" aria-hidden="true">&middot;</span>{% endif %}
+                {% endfor %}
+              </p>
+            {% endif %}
           </div>
+
+          {% if more_events %}
+            <h3 class="tdih-more-heading">{{ 'Also on @date'|t({'@date': "now"|date('j F')}) }}</h3>
+            <div class="tdih-entry-list tdih-entry-list--more">
+              {% for item in more_events %}
+                <a href="{{ item.url }}" class="tdih-event-item tdih-entry">
+                  <span class="tdih-entry-marker" aria-hidden="true"></span>
+                  <span class="tdih-entry-text">
+                    <span class="tdih-entry-year">{{ item.event_date|date('Y') }}</span>
+                    <span class="tdih-event-title">{{ item.title|striptags }}</span>
+                    {% if display_mode != 'compact' and item.synopsis %}
+                      <span class="tdih-event-body">{{ item.synopsis }}</span>
+                    {% endif %}
+                  </span>
+                </a>
+              {% endfor %}
+            </div>
+          {% endif %}
         </div>
       {% elseif show_today_history %}
         <p class="tdih-no-events">{{ 'No events found for today.'|t }}</p>

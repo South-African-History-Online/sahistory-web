@@ -22,3 +22,14 @@ declare(strict_types=1);
 function saho_frontpage_deploy_rebuild_node_144647_home(array &$sandbox): string {
   return \Drupal::service('saho_frontpage.home_layout')->rebuild();
 }
+
+/**
+ * Adds the "Born on this day" aside on environments installed from config.
+ *
+ * Same install-marks-post-updates-as-run caveat as the rebuild above: a
+ * fresh environment skips saho_frontpage_post_update_add_born_today_aside,
+ * so the (idempotent) top-up also runs here.
+ */
+function saho_frontpage_deploy_add_born_today_aside(array &$sandbox): string {
+  return \Drupal::service('saho_frontpage.home_layout')->rebuild();
+}

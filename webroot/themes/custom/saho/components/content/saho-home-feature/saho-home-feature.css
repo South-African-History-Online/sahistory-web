@@ -10,6 +10,11 @@
   --link-hover: #fff;
 
   height: 100%;
+  /* Flex column so the register line (__meta) pins to the foot when the
+     card is stretched to the aside's height on the editorial row. */
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
   background: var(--saho-ink);
   color: var(--text-on-dark);
   padding: var(--space-6);
@@ -23,6 +28,11 @@
    ratio keeps the card height stable whatever the upload's shape; archival
    portraits bias the crop upward to keep faces in frame. */
 .saho-home-feature__media {
+  /* The 16:9 ratio is the floor; when the editorial row is taller than the
+     card (the aside's two registers under a short title) the figure grows
+     to absorb the slack, so the photo gets taller instead of the ink card
+     carrying a void under the actions. */
+  flex: 1 0 auto;
   margin: calc(-1 * var(--space-6)) calc(-1 * var(--space-6)) var(--space-5);
   aspect-ratio: 16 / 9;
   overflow: hidden;
@@ -139,7 +149,8 @@
   text-transform: uppercase;
   /* Muted mono tone on ink, from the design source. */
   color: #9a937f;
-  margin-top: 20px;
+  margin-top: auto;
+  padding-top: 20px;
   margin-bottom: 0;
 }
 

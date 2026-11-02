@@ -9,6 +9,7 @@ use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Entity\Query\ConditionInterface;
 use Drupal\Core\Entity\Query\QueryInterface;
 use Drupal\node\NodeInterface;
 use Drupal\tdih\Service\NodeFetcher;
@@ -181,6 +182,64 @@ class NodeFetcherTest extends UnitTestCase {
 
     $fetcher = new NodeFetcher($entity_type_manager, $this->mockDatabase(), $cache, $this->mockTime());
     $this->assertSame([], $fetcher->loadAllBirthdayEvents('01-01'));
+  }
+
+  /**
+   * @covers ::loadBirthdaysOnDay
+   */
+  public function testBirthdaysOnDayQueriesBiographiesAndCachesPerDay(): void {
+    $query = $this->createMock(QueryInterface::class);
+    $conditions = [];
+    $query->method('condition')->willReturnCallback(function ($field, $value = NULL, $operator = NULL) use (&$conditions, $query) {
+      $conditions[] = [$field, $value, $operator];
+      return $query;
+    });
+    $group = $this->createMock(ConditionInterface::class);
+    $group_conditions = [];
+    $group->method('condition')->willReturnCallback(function ($field, $value = NULL, $operator = NULL) use (&$group_conditions, $group) {
+      $group_conditions[] = [$field, $value, $operator];
+      return $group;
+    });
+    $query->method('orConditionGroup')->willReturn($group);
+    $query->method('accessCheck')->willReturnSelf();
+    $query->method('range')->willReturnSelf();
+    $query->method('execute')->willReturn([7 => 7]);
+
+    $bio = $this->mockNode(TRUE);
+    $storage = $this->createMock(EntityStorageInterface::class);
+    $storage->method('getQuery')->willReturn($query);
+    $storage->method('loadMultiple')->with([7])->willReturn([7 => $bio]);
+    $entity_type_manager = $this->createMock(EntityTypeManagerInterface::class);
+    $entity_type_manager->method('getStorage')->with('node')->willReturn($storage);
+
+    $cache = $this->createMock(CacheBackendInterface::class);
+    $cache->method('get')->willReturn(FALSE);
+    $cache->expects($this->once())->method('set')->with(
+      'tdih:birthdays:11-02',
+      [7],
+      self::REQUEST_TIME + 86400,
+      ['node_list:biography'],
+    );
+
+    $fetcher = new NodeFetcher($entity_type_manager, $this->mockDatabase(), $cache, $this->mockTime());
+    $this->assertSame([7 => $bio], $fetcher->loadBirthdaysOnDay('11-02'));
+    $this->assertContains(['type', 'biography', NULL], $conditions);
+    $this->assertContains(['field_drupal_birth_date', '%-11-02', 'LIKE'], $group_conditions);
+    $this->assertContains(['field_dob', '2 November%', 'LIKE'], $group_conditions);
+    $this->assertContains(['field_dob', '02-November-%', 'LIKE'], $group_conditions);
+
+    $this->assertSame([], $fetcher->loadBirthdaysOnDay('13-40'), 'An invalid month-day never queries.');
+  }
+
+  /**
+   * @covers ::textualDayPrefixes
+   */
+  public function testTextualDayPrefixes(): void {
+    $this->assertSame(
+      ['2 November', '2-November-', '02 November', '02-November-'],
+      NodeFetcher::textualDayPrefixes('11-02'),
+    );
+    $this->assertSame(['16 December', '16-December-'], NodeFetcher::textualDayPrefixes('12-16'));
   }
 
 }

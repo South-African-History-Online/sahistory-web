@@ -45,6 +45,64 @@ class HomeLayoutRebuilder {
   }
 
   /**
+   * Block configuration of the "Born on this day" aside under TDIH.
+   */
+  public const BORN_TODAY_CONFIGURATION = [
+    'label' => 'Born on this day',
+    'label_display' => '0',
+    'provider' => 'tdih',
+    'limit' => 3,
+    'portraits_only' => TRUE,
+    'context_mapping' => [],
+  ];
+
+  /**
+   * Adds the "Born on this day" block under TDIH on an existing home layout.
+   *
+   * The rebuild() method is a no-op once the Open Record signature is present, so a
+   * block added to the canonical layout later has to be inserted into the
+   * live sections. Idempotent: returns FALSE when the block is already
+   * placed. Inserts into the section that holds the TDIH aside, at the
+   * next weight after it.
+   *
+   * @param \Drupal\node\NodeInterface $node
+   *   The home node.
+   * @param \Drupal\layout_builder\Section[] $sections
+   *   Its current sections.
+   *
+   * @return bool
+   *   TRUE when the block was added and the node saved.
+   */
+  public function ensureBornTodayAside(NodeInterface $node, array $sections): bool {
+    foreach ($sections as $section) {
+      foreach ($section->getComponents() as $component) {
+        if ($component->getPluginId() === 'tdih_born_today') {
+          return FALSE;
+        }
+      }
+    }
+    foreach ($sections as $section) {
+      foreach ($section->getComponents() as $component) {
+        if ($component->getPluginId() !== 'tdih_interactive_block') {
+          continue;
+        }
+        $configuration = ['id' => 'tdih_born_today'] + self::BORN_TODAY_CONFIGURATION;
+        $new = new SectionComponent($this->uuid->generate(), $component->getRegion(), $configuration);
+        $new->setWeight($component->getWeight() + 1);
+        $section->appendComponent($new);
+        $node->set('layout_builder__layout', $sections);
+        if ($node->getEntityType()->isRevisionable()) {
+          $node->setNewRevision(TRUE);
+          $node->setRevisionLogMessage('Born on this day aside added under This day in history by saho_frontpage.');
+        }
+        $node->save();
+        return TRUE;
+      }
+    }
+    return FALSE;
+  }
+
+  /**
    * Checks whether sections carry the Open Record home signature.
    *
    * The rebuilt layout always starts with the front-door search block on the
@@ -87,8 +145,11 @@ class HomeLayoutRebuilder {
     $sections = $layout_field->getSections();
 
     if ($this->isOpenRecordLayout($sections)) {
+      $added = $this->ensureBornTodayAside($node, $sections);
       $this->discardPendingDrafts();
-      return 'Open Record home layout already applied; nothing to do.';
+      return $added
+        ? 'Open Record home layout already applied; added the Born on this day aside.'
+        : 'Open Record home layout already applied; nothing to do.';
     }
 
     // Snapshot the current layout exactly once; never overwrite a backup.
@@ -123,6 +184,7 @@ class HomeLayoutRebuilder {
         'use_todays_date' => TRUE,
         'context_mapping' => [],
       ],
+      'tdih_born_today' => self::BORN_TODAY_CONFIGURATION,
     ];
     foreach ($sections as $section) {
       foreach ($section->getComponents() as $component) {
@@ -153,6 +215,7 @@ class HomeLayoutRebuilder {
       new Section('saho_editorial', [], [
         $make('saho_editorial_feature', 'lead', 0),
         $make('tdih_interactive_block', 'aside', 0),
+        $make('tdih_born_today', 'aside', 1),
       ]),
       new Section('saho_standard', [], [$make('saho_browse_index', 'content', 0)]),
       new Section('saho_standard', [], [$make('saho_recently_added', 'content', 0)]),

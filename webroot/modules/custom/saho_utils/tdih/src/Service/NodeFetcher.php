@@ -169,6 +169,66 @@ class NodeFetcher {
   }
 
   /**
+   * Loads published biographies whose birth date falls on a month-day.
+   *
+   * Backs the "Born on this day" aside. field_drupal_birth_date is a
+   * datetime (date-only) field stored as YYYY-MM-DD, so the same
+   * leading-wildcard LIKE as the events lookup applies, and the nid list
+   * is cached per month-day under node_list:biography.
+   *
+   * @param string $month_day
+   *   MM-DD.
+   *
+   * @return \Drupal\node\NodeInterface[]
+   *   Published biography nodes keyed by nid, oldest birth first.
+   */
+  public function loadBirthdaysOnDay($month_day) {
+    if (!$month_day || !$this->isValidMonthDay($month_day)) {
+      return [];
+    }
+    try {
+      $cid = 'tdih:birthdays:' . $month_day;
+      $cached = $this->cache->get($cid);
+      if ($cached !== FALSE) {
+        $nids = $cached->data;
+      }
+      else {
+        $query = $this->entityTypeManager->getStorage('node')->getQuery();
+        $safe_month_day = $this->escapeLikeWildcards($month_day);
+        // Two birth-date fields coexist on biographies: the datetime
+        // field_drupal_birth_date (929 records) and the legacy free-text
+        // field_dob ("2 November 1908", "02-November-1908", or just a
+        // year). The day-precision text spellings are matched by their
+        // four literal prefixes; year-only values never match a day.
+        $day_group = $query->orConditionGroup()
+          ->condition('field_drupal_birth_date', "%-$safe_month_day", 'LIKE');
+        foreach (self::textualDayPrefixes($month_day) as $prefix) {
+          $day_group->condition('field_dob', $this->escapeLikeWildcards($prefix) . '%', 'LIKE');
+        }
+        $nids = $query->condition('type', 'biography')
+          ->condition('status', 1)
+          ->condition($day_group)
+          // See loadPotentialEvents(): shared cache, published-only query,
+          // no grants modules installed.
+          ->accessCheck(FALSE)
+          ->range(0, 200)
+          ->execute();
+        $nids = array_values($nids ?: []);
+        $this->cache->set(
+          $cid,
+          $nids,
+          $this->time->getRequestTime() + static::CACHE_MAX_AGE,
+          ['node_list:biography']
+        );
+      }
+      return $this->loadPublishedNodes($nids);
+    }
+    catch (\Exception $e) {
+    }
+    return [];
+  }
+
+  /**
    * Get all available months and days that have events.
    *
    * This method is used to populate the date picker with valid dates.
@@ -226,6 +286,28 @@ class NodeFetcher {
     }
 
     return $dates;
+  }
+
+  /**
+   * The legacy field_dob spellings of a day: "2 November", "02-November".
+   *
+   * @param string $month_day
+   *   MM-DD.
+   *
+   * @return string[]
+   *   Prefixes (without the year) in both the spaced and dashed forms, with
+   *   and without the leading zero on the day.
+   */
+  public static function textualDayPrefixes(string $month_day): array {
+    [$month, $day] = explode('-', $month_day);
+    $name = \DateTimeImmutable::createFromFormat('!m', $month)->format('F');
+    $days = array_unique([(string) (int) $day, $day]);
+    $prefixes = [];
+    foreach ($days as $d) {
+      $prefixes[] = "$d $name";
+      $prefixes[] = "$d-$name-";
+    }
+    return $prefixes;
   }
 
   /**
