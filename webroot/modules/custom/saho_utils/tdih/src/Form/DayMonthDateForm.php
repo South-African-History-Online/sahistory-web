@@ -8,6 +8,7 @@ use Drupal\Core\File\FileUrlGeneratorInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\RendererInterface;
+use Drupal\saho_utils\Service\FocalPointPositionService;
 use Drupal\tdih\Service\NodeFetcher;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\tdih\Plugin\Block\TdihInteractiveBlock;
@@ -39,6 +40,13 @@ class DayMonthDateForm extends FormBase {
   protected $renderer;
 
   /**
+   * The focal point position service.
+   *
+   * @var \Drupal\saho_utils\Service\FocalPointPositionService|null
+   */
+  protected $focalPoint;
+
+  /**
    * Constructs a DayMonthDateForm object.
    *
    * @param \Drupal\tdih\Service\NodeFetcher $node_fetcher
@@ -47,15 +55,19 @@ class DayMonthDateForm extends FormBase {
    *   The file URL generator.
    * @param \Drupal\Core\Render\RendererInterface $renderer
    *   The renderer service.
+   * @param \Drupal\saho_utils\Service\FocalPointPositionService|null $focal_point
+   *   Resolves the editorial focal point to a CSS object-position.
    */
   public function __construct(
     NodeFetcher $node_fetcher,
     FileUrlGeneratorInterface $file_url_generator,
     RendererInterface $renderer,
+    ?FocalPointPositionService $focal_point = NULL,
   ) {
     $this->nodeFetcher = $node_fetcher;
     $this->fileUrlGenerator = $file_url_generator;
     $this->renderer = $renderer;
+    $this->focalPoint = $focal_point;
   }
 
   /**
@@ -66,6 +78,7 @@ class DayMonthDateForm extends FormBase {
       $container->get('tdih.node_fetcher'),
       $container->get('file_url_generator'),
       $container->get('renderer'),
+      $container->get('saho_utils.focal_point'),
     );
   }
 
@@ -241,6 +254,7 @@ class DayMonthDateForm extends FormBase {
                 'raw_date' => $raw_date,
                 'event_date' => $event_timestamp,
                 'image' => $image_url,
+                'image_position' => $this->focalPoint?->forEntity($node, 'field_event_image'),
                 'body' => html_entity_decode(strip_tags($node->get('body')->processed ?? '')),
               ];
             }
@@ -323,6 +337,7 @@ class DayMonthDateForm extends FormBase {
                 'raw_date' => $raw_date,
                 'event_date' => $event_timestamp,
                 'image' => $image_url,
+                'image_position' => $this->focalPoint?->forEntity($node, 'field_event_image'),
                 'body' => html_entity_decode(strip_tags($node->get('body')->processed ?? '')),
               ];
             }

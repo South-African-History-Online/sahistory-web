@@ -35,10 +35,13 @@ class EntityItemBuilderService {
    *   The image extractor service.
    * @param \Drupal\saho_utils\Service\ContentExtractorService $content_extractor
    *   The content extractor service.
+   * @param \Drupal\saho_utils\Service\FocalPointPositionService|null $focalPoint
+   *   Resolves the editorial focal point to a CSS object-position.
    */
   public function __construct(
     ImageExtractorService $image_extractor,
     ContentExtractorService $content_extractor,
+    protected ?FocalPointPositionService $focalPoint = NULL,
   ) {
     $this->imageExtractor = $image_extractor;
     $this->contentExtractor = $content_extractor;
@@ -87,6 +90,12 @@ class EntityItemBuilderService {
       : $this->imageExtractor->extractImageUrl($entity, $image_field);
 
     $item['image'] = $image_url;
+    // The editorial focal point as a CSS object-position for the CSS
+    // object-fit crops the templates apply; NULL keeps the stylesheet's
+    // default.
+    $item['image_position'] = $image_url && $this->focalPoint
+      ? $this->focalPoint->forEntity($entity, $image_field)
+      : NULL;
 
     return $item;
   }

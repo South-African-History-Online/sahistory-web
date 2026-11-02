@@ -10,6 +10,7 @@ use Drupal\saho_featured_articles\Service\FeaturedContentService;
 use Drupal\saho_featured_articles\Service\StatisticsService;
 use Drupal\saho_frontpage\CurrentFeatureService;
 use Drupal\saho_refs\DisplayRefService;
+use Drupal\saho_utils\Service\FocalPointPositionService;
 use Drupal\saho_utils\Service\ImageExtractorService;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -61,6 +62,7 @@ class FeaturedArticlesController extends ControllerBase {
     protected ImageExtractorService $imageExtractor,
     protected RequestStack $requestStack,
     protected ImageFactory $imageFactory,
+    protected ?FocalPointPositionService $focalPoint = NULL,
   ) {
   }
 
@@ -76,6 +78,7 @@ class FeaturedArticlesController extends ControllerBase {
       $container->get('saho_utils.image_extractor'),
       $container->get('request_stack'),
       $container->get('image.factory'),
+      $container->get('saho_utils.focal_point'),
     );
   }
 
@@ -160,6 +163,7 @@ class FeaturedArticlesController extends ControllerBase {
       'heading_level' => 'h2',
       'background_image' => $image,
       'background_image_mobile' => $this->nodeImage($node, 'saho_hero_mobile') ?? $image,
+      'image_position' => $this->nodeImagePosition($node, self::HERO_MIN_WIDTH),
       'button_text' => 'Open the feature',
       'button_url' => $node->toUrl()->toString(),
       'button2_text' => 'View chronology',
@@ -357,6 +361,43 @@ class FeaturedArticlesController extends ControllerBase {
       if ($url) {
         return $url;
       }
+    }
+    return NULL;
+  }
+
+  /**
+   * The editorial focal point of the image nodeImage() would pick.
+   *
+   * Same field walk and resolution floor as nodeImage(), so the position
+   * belongs to the file that is actually rendered.
+   *
+   * @param \Drupal\node\NodeInterface $node
+   *   The node.
+   * @param int $min_width
+   *   The same floor passed to nodeImage() for the slot.
+   *
+   * @return string|null
+   *   A CSS object-position, or NULL without a focal point.
+   */
+  protected function nodeImagePosition(NodeInterface $node, int $min_width = 0): ?string {
+    if ($this->focalPoint === NULL) {
+      return NULL;
+    }
+    foreach (self::IMAGE_FIELDS as $field_name) {
+      if (!$node->hasField($field_name) || $node->get($field_name)->isEmpty()) {
+        continue;
+      }
+      $file = $node->get($field_name)->first()->entity ?? NULL;
+      if (!$file instanceof FileInterface || !file_exists($file->getFileUri())) {
+        continue;
+      }
+      if ($min_width > 0) {
+        $image = $this->imageFactory->get($file->getFileUri());
+        if (!$image->isValid() || $image->getWidth() < $min_width) {
+          continue;
+        }
+      }
+      return $this->focalPoint->forEntity($node, $field_name);
     }
     return NULL;
   }

@@ -91,7 +91,7 @@
                 {# Get the file URL - image style will be applied via CSS object-fit #}
                 {% set file_uri = file_entity.uri.value %}
                 {% set image_url = file_url(file_uri) %}
-                {% set card_data = card_data|merge({image_url: image_url}) %}
+                {% set card_data = card_data|merge({image_url: image_url, image_position: saho_focal_position(file_uri)}) %}
 
                 {# Get alt text if available - use array access instead of first() method #}
                 {% set image_field_values = node.get(image_field).getValue() %}
@@ -105,7 +105,7 @@
           {% if not card_data.image_url and node.hasField('field_main_image') and not node.get('field_main_image').isEmpty() %}
             {% set media_file = node.get('field_main_image').entity.field_media_image.entity %}
             {% if media_file %}
-              {% set card_data = card_data|merge({image_url: file_url(media_file.uri.value)}) %}
+              {% set card_data = card_data|merge({image_url: file_url(media_file.uri.value), image_position: saho_focal_position(media_file.uri.value)}) %}
               {% set media_item = node.get('field_main_image').entity.field_media_image %}
               {% if media_item.alt %}
                 {% set card_data = card_data|merge({image_alt: media_item.alt}) %}
@@ -127,7 +127,7 @@
                        class="card-img-top saho-card-image__img"
                        loading="lazy"
                        decoding="async"
-                       style="height: 200px; object-fit: cover;">
+                       style="height: 200px; object-fit: cover;{% if card_data.image_position %} object-position: {{ card_data.image_position }};{% endif %}">
                 {% else %}
                   <div class="card-img-top saho-card-image--placeholder bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
                     {% set icon_class = placeholder_icons[card_data.content_type|lower] ?? placeholder_icons.default %}

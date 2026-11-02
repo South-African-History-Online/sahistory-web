@@ -236,6 +236,7 @@ final class BornTodayBlock extends BlockBase implements ContainerFactoryPluginIn
       'title' => $node->label(),
       'url' => $node->toUrl()->toString(),
       'image' => $item['image'] ?? '',
+      'image_position' => $item['image_position'] ?? NULL,
       'birth_date' => $birth,
       'year' => $parsed['year'],
       'line' => $line,
