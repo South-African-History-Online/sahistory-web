@@ -59,6 +59,7 @@
         'field_type_of_event',
         'field_upcomingevent_image',
         'field_file_upload',
+        'field_feature_parent',
         'field_parent',
         'comment_node_upcomingevent',
         'sharing_buttons'
@@ -87,6 +88,9 @@
       {% set sidebar_has_content = true %}
     {% endif %}
     {% if content.field_parent is defined and content.field_parent|render|trim %}
+      {% set sidebar_has_content = true %}
+    {% endif %}
+    {% if content.field_feature_parent is defined and content.field_feature_parent|render|trim %}
       {% set sidebar_has_content = true %}
     {% endif %}
     {% if content.field_file_upload is defined and content.field_file_upload|render|trim %}
@@ -130,11 +134,18 @@
         </section>
       {% endif %}
 
-      {# Display parent field if available #}
-      {% if content.field_parent %}
+      {# Related: the page this event belongs with, then its feature tags. #}
+      {% set related_page = content.field_feature_parent is defined ? content.field_feature_parent|render|trim : '' %}
+      {% set related_tags = content.field_parent is defined ? content.field_parent|render|trim : '' %}
+      {% if related_page or related_tags %}
         <section class="saho-meta-block saho-meta-block--event">
           <h2 class="saho-meta-block__title">Related</h2>
-          <div class="saho-meta-block__val">{{ content.field_parent }}</div>
+          {% if related_page %}
+            <div class="saho-meta-block__val">{{ content.field_feature_parent }}</div>
+          {% endif %}
+          {% if related_tags %}
+            <div class="saho-meta-block__val">{{ content.field_parent }}</div>
+          {% endif %}
         </section>
       {% endif %}
 
