@@ -49,6 +49,11 @@ updates:
       # Ignore major updates to Drupal core and modules that might require manual intervention
       - dependency-name: "drupal/core*"
         update-types: ["version-update:semver-major"]
+      # dropzonejs 2.11 only finds Dropzone at libraries/dropzone/dropzone-min.js
+      # or dist/min/dropzone.min.js (5.x); the npm-asset 6.x package ships
+      # dist/dropzone-min.js, which it never resolves. Lift when the module does.
+      - dependency-name: "npm-asset/dropzone"
+        update-types: ["version-update:semver-major"]
     # One PR per run: Drupal modules and the rest of the PHP tree together,
     # majors included (core majors stay ignored above).
     groups:
