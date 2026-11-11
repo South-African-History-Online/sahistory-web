@@ -6,6 +6,7 @@
  */
 
 use Drupal\Component\Utility\Html;
+use Drupal\Core\Entity\Element\EntityAutocomplete;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Markup;
 use Drupal\file\FileInterface;
@@ -47,6 +48,70 @@ function saho_utils_form_alter(&$form, FormStateInterface $form_state, $form_id)
       $form['field_event_date']['widget'][0]['value']['#date_year_range'] = '1000:2100';
     }
   }
+}
+
+/**
+ * Implements hook_field_widget_single_element_form_alter().
+ *
+ * SAHO carries taxonomy-term autocompletes next to node autocompletes with
+ * near-identical labels: "Feature (Parent)" takes a feature tag while
+ * "Feature Parent" takes a page. Editors paste "Title (8897)" from one into
+ * the other and core answers with a bare "The referenced entity
+ * (taxonomy_term: 8897) does not exist." (#683). Put a validator that
+ * explains the mix-up in front of core's: the first error set on an
+ * element is the one that is kept.
+ */
+function saho_utils_field_widget_single_element_form_alter(array &$element, FormStateInterface $form_state, array $context): void {
+  if (!isset($element['target_id']) || $context['widget']->getPluginId() !== 'entity_reference_autocomplete') {
+    return;
+  }
+  if ($context['items']->getFieldDefinition()->getSetting('target_type') !== 'taxonomy_term') {
+    return;
+  }
+  // The element-info default is only merged in later, so name core's
+  // validator explicitly when nothing has set one yet.
+  $validators = $element['target_id']['#element_validate']
+    ?? [[EntityAutocomplete::class, 'validateEntityAutocomplete']];
+  array_unshift($validators, '_saho_utils_validate_term_autocomplete_is_not_a_page');
+  $element['target_id']['#element_validate'] = $validators;
+}
+
+/**
+ * Element validator: a node id pasted into a taxonomy-term autocomplete.
+ *
+ * Only speaks up when the "(id)" names no term but does name a node, so
+ * every other case still gets core's own message.
+ *
+ * @param array $element
+ *   The entity_autocomplete element.
+ * @param \Drupal\Core\Form\FormStateInterface $form_state
+ *   The form state.
+ */
+function _saho_utils_validate_term_autocomplete_is_not_a_page(array &$element, FormStateInterface $form_state): void {
+  $input = $element['#value'] ?? '';
+  if (!is_string($input) || trim($input) === '') {
+    return;
+  }
+  $id = EntityAutocomplete::extractEntityIdFromAutocompleteInput(trim($input));
+  if ($id === NULL || !ctype_digit((string) $id)) {
+    return;
+  }
+  $entity_type_manager = \Drupal::entityTypeManager();
+  if (!$entity_type_manager->hasDefinition('node') || $entity_type_manager->getStorage('taxonomy_term')->load($id)) {
+    return;
+  }
+  $node = $entity_type_manager->getStorage('node')->load($id);
+  if (!$node) {
+    return;
+  }
+  $bundles = \Drupal::service('entity_type.bundle.info')->getBundleInfo('node');
+  $form_state->setError($element, t('%field takes a tag (taxonomy term), not a page: "@input" is the @bundle page %title (node @id). Start typing the name and pick a suggestion from the list instead.', [
+    '%field' => $element['#title'] ?? t('This field'),
+    '@input' => trim($input),
+    '@bundle' => $bundles[$node->bundle()]['label'] ?? $node->bundle(),
+    '%title' => $node->access('view') ? $node->label() : t('(no access)'),
+    '@id' => $id,
+  ]));
 }
 
 /**
