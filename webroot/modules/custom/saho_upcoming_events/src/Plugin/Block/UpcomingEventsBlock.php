@@ -6,6 +6,7 @@ use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\datetime\Plugin\Field\FieldType\DateTimeItemInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -207,14 +208,27 @@ class UpcomingEventsBlock extends BlockBase implements ContainerFactoryPluginInt
     // Use SAST timezone for consistency.
     $today = new \DateTime('today', new \DateTimeZone('Africa/Johannesburg'));
 
-    // Query more events than needed to account for filtering.
-    // Sort DESC to get newest events first, then filter in PHP.
+    // Soonest first. Sorting DESC and walking from the far end handed the
+    // block the furthest-away events whenever more than limit * 3 were
+    // published. Pre-filter in SQL to events that start, or end, on
+    // or after today so the ASC window is spent on candidates only; the
+    // exact effective-end check still happens in PHP below. Dates are
+    // stored as UTC strings, so compare against today's SAST midnight in
+    // UTC with a day of slack - the PHP filter trims the overshoot.
+    $cutoff = (clone $today)
+      ->modify('-1 day')
+      ->setTimezone(new \DateTimeZone('UTC'))
+      ->format(DateTimeItemInterface::DATETIME_STORAGE_FORMAT);
     $query = $storage->getQuery()
       ->accessCheck(TRUE)
       ->condition('type', 'upcomingevent')
       ->condition('status', 1)
-      ->exists('field_start_date')
-      ->sort('field_start_date', 'DESC')
+      ->exists('field_start_date');
+    $not_over = $query->orConditionGroup()
+      ->condition('field_start_date', $cutoff, '>=')
+      ->condition('field_end_date', $cutoff, '>=');
+    $query->condition($not_over)
+      ->sort('field_start_date', 'ASC')
       ->range(0, $limit * 3);
 
     $nids = $query->execute();
