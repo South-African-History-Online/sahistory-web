@@ -18,18 +18,12 @@ updates:
       include: "scope"
     reviewers:
       - "South-African-History-Online/frontend-developers"
+    # One PR per run: every theme dependency, majors included, lands in a
+    # single grouped PR instead of one PR per package.
     groups:
-      dev-dependencies:
+      theme-dependencies:
         patterns:
-          - "*-loader"
-          - "*-webpack-plugin"
-          - "webpack*"
-          - "eslint*"
-          - "stylelint*"
-          - "postcss*"
-        update-types:
-          - "minor"
-          - "patch"
+          - "*"
 
   # Check for updates to Composer packages
   - package-ecosystem: "composer"
@@ -50,10 +44,9 @@ updates:
       # Ignore major updates to Drupal core and modules that might require manual intervention
       - dependency-name: "drupal/core*"
         update-types: ["version-update:semver-major"]
+    # One PR per run: Drupal modules and the rest of the PHP tree together,
+    # majors included (core majors stay ignored above).
     groups:
-      drupal-modules:
+      composer-dependencies:
         patterns:
-          - "drupal/*"
-        update-types:
-          - "minor"
-          - "patch"
+          - "*"
