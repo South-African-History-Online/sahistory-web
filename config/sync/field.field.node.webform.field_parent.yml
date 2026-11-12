@@ -5,17 +5,25 @@ dependencies:
   config:
     - field.storage.node.field_parent
     - node.type.webform
+    - taxonomy.vocabulary.field_feature_tag
 id: node.webform.field_parent
 field_name: field_parent
 entity_type: node
 bundle: webform
-label: 'Feature (Parent)'
-description: 'Start typing and choose a feature tag from the suggestions. This field holds feature tags (taxonomy terms), not pages: a value such as "Solomon Tshekisho Plaatje (8897)" copied from a page''s Feature Parent field will not save here.'
+label: 'Feature tags'
+description: 'Features this form is listed under (the Features vocabulary behind the /taxonomy/features landing pages). Start typing and choose from the suggestions.'
 required: false
 translatable: false
 default_value: {  }
 default_value_callback: ''
 settings:
   handler: 'default:taxonomy_term'
-  handler_settings: {  }
+  handler_settings:
+    target_bundles:
+      field_feature_tag: field_feature_tag
+    sort:
+      field: name
+      direction: asc
+    auto_create: false
+    auto_create_bundle: ''
 field_type: entity_reference

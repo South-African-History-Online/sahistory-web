@@ -5,17 +5,25 @@ dependencies:
   config:
     - field.storage.node.field_parent
     - node.type.upcomingevent
+    - taxonomy.vocabulary.field_feature_tag
 id: node.upcomingevent.field_parent
 field_name: field_parent
 entity_type: node
 bundle: upcomingevent
-label: 'Feature (Parent)'
-description: 'Feature tags (taxonomy terms) for this event - start typing and choose from the suggestions. To link the event to a page such as a biography, use Feature Parent above.'
+label: 'Feature tags'
+description: 'Features this event is listed under (the Features vocabulary behind the /taxonomy/features landing pages). Start typing and choose from the suggestions. The page this event belongs with goes in Feature Parent above.'
 required: false
 translatable: false
 default_value: {  }
 default_value_callback: ''
 settings:
   handler: 'default:taxonomy_term'
-  handler_settings: {  }
+  handler_settings:
+    target_bundles:
+      field_feature_tag: field_feature_tag
+    sort:
+      field: name
+      direction: asc
+    auto_create: false
+    auto_create_bundle: ''
 field_type: entity_reference
