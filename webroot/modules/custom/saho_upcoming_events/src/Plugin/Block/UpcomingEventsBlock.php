@@ -239,33 +239,18 @@ class UpcomingEventsBlock extends BlockBase implements ContainerFactoryPluginInt
 
     $nodes = $storage->loadMultiple($nids);
 
-    // Filter in PHP to include "happening now" events.
+    // Same status rule as the listing and the event page.
     $upcoming_events = [];
     foreach ($nodes as $node) {
-      if (!$node->hasField('field_start_date') || $node->get('field_start_date')->isEmpty()) {
+      $status = saho_upcoming_events_status($node, $today);
+      if (!$status['start'] || $status['status'] === 'past') {
         continue;
       }
-
-      // Calculate effective end date.
-      $effective_end_date = $this->getEffectiveEndDate($node);
-      // Skip events with invalid/missing dates.
-      if ($effective_end_date === NULL) {
-        continue;
-      }
-
-      $effective_end_date_only = new \DateTime($effective_end_date->format('Y-m-d'), new \DateTimeZone('Africa/Johannesburg'));
-
-      // Include if event hasn't ended yet.
-      if ($effective_end_date_only >= $today) {
-        // @phpstan-ignore-next-line
-        $start_date = $node->get('field_start_date')->date;
-        $upcoming_events[] = [
-          'node' => $node,
-          'start_timestamp' => $start_date->getTimestamp(),
-          'is_happening_now' => $this->isHappeningNow($node, $today),
-        ];
-      }
-
+      $upcoming_events[] = [
+        'node' => $node,
+        'start_timestamp' => $status['start']->getTimestamp(),
+        'is_happening_now' => $status['status'] === 'in-progress',
+      ];
       if (count($upcoming_events) >= $limit) {
         break;
       }
@@ -283,72 +268,6 @@ class UpcomingEventsBlock extends BlockBase implements ContainerFactoryPluginInt
     });
 
     return array_column($upcoming_events, 'node');
-  }
-
-  /**
-   * Get the effective end date for an event.
-   *
-   * @param \Drupal\node\NodeInterface $node
-   *   The event node.
-   *
-   * @return \Drupal\Core\Datetime\DrupalDateTime|null
-   *   The effective end date (end_date if set, otherwise start_date),
-   *   or NULL if no valid date exists.
-   */
-  private function getEffectiveEndDate($node) {
-    $start_date = NULL;
-    if ($node->hasField('field_start_date') && !$node->get('field_start_date')->isEmpty()) {
-      // @phpstan-ignore-next-line
-      $start_date = $node->get('field_start_date')->date;
-    }
-
-    $end_date = NULL;
-    if ($node->hasField('field_end_date') && !$node->get('field_end_date')->isEmpty()) {
-      // @phpstan-ignore-next-line
-      $end_date = $node->get('field_end_date')->date;
-    }
-
-    $effective_end_date = $end_date ?? $start_date;
-
-    // Return NULL if no valid date exists (corrupted/incomplete event data).
-    if ($effective_end_date === NULL) {
-      return NULL;
-    }
-
-    $effective_end_date->setTimezone(new \DateTimeZone('Africa/Johannesburg'));
-    return $effective_end_date;
-  }
-
-  /**
-   * Check if an event is happening now.
-   *
-   * @param \Drupal\node\NodeInterface $node
-   *   The event node.
-   * @param \DateTime $current_date
-   *   The current date to compare against.
-   *
-   * @return bool
-   *   TRUE if the event is happening now.
-   */
-  private function isHappeningNow($node, $current_date) {
-    // @phpstan-ignore-next-line
-    $start_date = $node->get('field_start_date')->date;
-    if ($start_date === NULL) {
-      return FALSE;
-    }
-
-    $start_date->setTimezone(new \DateTimeZone('Africa/Johannesburg'));
-    $start_date_only = new \DateTime($start_date->format('Y-m-d'), new \DateTimeZone('Africa/Johannesburg'));
-
-    $effective_end_date = $this->getEffectiveEndDate($node);
-    // Events without valid dates cannot be "happening now".
-    if ($effective_end_date === NULL) {
-      return FALSE;
-    }
-
-    $effective_end_date_only = new \DateTime($effective_end_date->format('Y-m-d'), new \DateTimeZone('Africa/Johannesburg'));
-
-    return ($start_date_only <= $current_date && $effective_end_date_only >= $current_date);
   }
 
 }

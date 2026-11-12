@@ -93,19 +93,34 @@ final class EventCardMetaTimezoneTest extends KernelTestBase {
   }
 
   /**
-   * Status follows the South African calendar day.
+   * Status follows the South African calendar day, not the UTC one.
    */
-  public function testStatus(): void {
-    $utc = new \DateTimeZone('UTC');
-    $fmt = static fn(string $rel): string => (new \DateTime($rel, $utc))->format('Y-m-d\TH:i:s');
-    $this->assertSame('past', saho_upcoming_events_card_meta($this->event($fmt('-10 days')))['status']);
-    $now = saho_upcoming_events_card_meta($this->event($fmt('-1 day'), $fmt('+1 day')));
+  public function testStatusFollowsSouthAfricanDay(): void {
+    $sast = new \DateTimeZone('Africa/Johannesburg');
+    $day = static fn(string $d): \DateTime => new \DateTime($d, $sast);
+
+    // 22:30 UTC on the 18th is 00:30 on the 19th in Johannesburg.
+    $late = $this->event('2026-11-18T22:30:00');
+    $on_the_18th = saho_upcoming_events_status($late, $day('2026-11-18'));
+    $this->assertSame('upcoming', $on_the_18th['status']);
+    $this->assertSame('Tomorrow', $on_the_18th['label']);
+    $this->assertSame(1, $on_the_18th['days_until']);
+    $this->assertSame('in-progress', saho_upcoming_events_status($late, $day('2026-11-19'))['status']);
+    $this->assertSame('past', saho_upcoming_events_status($late, $day('2026-11-20'))['status']);
+
+    // Multi-day: in progress from start day to end day inclusive.
+    $festival = $this->event('2027-06-16T07:00:00', '2027-06-18T15:00:00');
+    $this->assertSame('In 6 days', saho_upcoming_events_status($festival, $day('2027-06-10'))['label']);
+    $this->assertSame('Upcoming', saho_upcoming_events_status($festival, $day('2027-06-01'))['label']);
+    $now = saho_upcoming_events_status($festival, $day('2027-06-18'));
     $this->assertSame('in-progress', $now['status']);
     $this->assertTrue($now['pulse']);
-    $soon = saho_upcoming_events_card_meta($this->event($fmt('+30 days')));
-    $this->assertSame('upcoming', $soon['status']);
-    $this->assertSame('Upcoming', $soon['label']);
-    $this->assertSame('', saho_upcoming_events_card_meta(Node::create(['type' => 'upcomingevent', 'title' => 'No date']))['when']);
+    $this->assertSame('Past event', saho_upcoming_events_status($festival, $day('2027-06-19'))['label']);
+
+    // No start date: past, no when.
+    $none = Node::create(['type' => 'upcomingevent', 'title' => 'No date']);
+    $this->assertNull(saho_upcoming_events_status($none)['start']);
+    $this->assertSame('', saho_upcoming_events_card_meta($none)['when']);
   }
 
   /**
