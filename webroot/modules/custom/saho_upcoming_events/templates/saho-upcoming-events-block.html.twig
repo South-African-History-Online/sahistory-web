@@ -17,38 +17,11 @@
   {% if events %}
     <div class="saho-uev__grid">
       {% for event in events %}
-        {# Calculate event status - using DATE-ONLY comparison (not timestamp) #}
-        {% set today_date = "now"|date('Y-m-d') %}
-        {% set start_date = event.field_start_date.value|date('Y-m-d') %}
-        {% set end_date = event.field_end_date.value ? event.field_end_date.value|date('Y-m-d') : start_date %}
-
-        {# Convert to timestamps for comparison (midnight of each day) #}
-        {% set today_timestamp = today_date|date('U') %}
-        {% set start_timestamp = start_date|date('U') %}
-        {% set end_timestamp = end_date|date('U') %}
-
-        {% set event_status_local = 'past' %}
-        {% set event_status_label_local = 'Past event' %}
-        {% set show_pulse_local = false %}
-
-        {% if start_timestamp <= today_timestamp and end_timestamp >= today_timestamp %}
-          {% set event_status_local = 'in-progress' %}
-          {% set event_status_label_local = 'Happening now' %}
-          {% set show_pulse_local = true %}
-        {% elseif start_timestamp > today_timestamp %}
-          {% set event_status_local = 'upcoming' %}
-          {% set days_diff = ((start_timestamp - today_timestamp) / 86400)|round(0, 'floor') %}
-
-          {% if days_diff == 0 %}
-            {% set event_status_label_local = 'Today' %}
-          {% elseif days_diff == 1 %}
-            {% set event_status_label_local = 'Tomorrow' %}
-          {% elseif days_diff <= 7 %}
-            {% set event_status_label_local = 'In ' ~ days_diff ~ ' days' %}
-          {% else %}
-            {% set event_status_label_local = 'Upcoming' %}
-          {% endif %}
-        {% endif %}
+        {# Status and "when" come from template_preprocess_saho_upcoming_events_block(), in SA time. #}
+        {% set meta = event_meta[event.id()] %}
+        {% set event_status_local = meta.status %}
+        {% set event_status_label_local = meta.label %}
+        {% set show_pulse_local = meta.pulse %}
 
         <article class="saho-uev__card event-card-clickable saho-uev__card--{{ event_status_local }}">
 
@@ -73,16 +46,9 @@
             </h3>
 
             <div class="saho-uev__meta">
-              {% if event.field_start_date.value %}
-                <span class="saho-uev__date">
-                  {% if event.field_end_date.value %}
-                    {% set start_date_only = event.field_start_date.value|date('Y-m-d') %}
-                    {% set end_date_only = event.field_end_date.value|date('Y-m-d') %}
-                    {% if start_date_only == end_date_only %}
-                      {{ event.field_start_date.value|date('j F Y, H:i') }} - {{ event.field_end_date.value|date('H:i') }}
-                    {% else %}
-                      {{ event.field_start_date.value|date('j F Y, H:i') }} - {{ event.field_end_date.value|date('j F Y, H:i') }}
-                    {% endif %}
+              {% if meta.when %}
+                <span class="saho-uev__date">{{ meta.when }}</span>
+              {% endif %}
                   {% else %}
                     {{ event.field_start_date.value|date('j F Y, H:i') }}
                   {% endif %}

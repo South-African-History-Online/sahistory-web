@@ -15,25 +15,8 @@
   } %}
 {% endif %}
 
-{# Format start date for display #}
-{% set formatted_start_date = null %}
-{% if node.field_start_date.value %}
-  {% if node.field_end_date.value %}
-    {# Multi-day or same-day with end time #}
-    {% set start_date_only = node.field_start_date.value|date('Y-m-d') %}
-    {% set end_date_only = node.field_end_date.value|date('Y-m-d') %}
-    {% if start_date_only == end_date_only %}
-      {# Same day event - show date once with time range #}
-      {% set formatted_start_date = node.field_start_date.value|date('j F Y, H:i') ~ ' - ' ~ node.field_end_date.value|date('H:i') %}
-    {% else %}
-      {# Multi-day event - show full date and time for both #}
-      {% set formatted_start_date = node.field_start_date.value|date('j F Y, H:i') ~ ' - ' ~ node.field_end_date.value|date('j F Y, H:i') %}
-    {% endif %}
-  {% else %}
-    {# No end date - just show start date and time #}
-    {% set formatted_start_date = node.field_start_date.value|date('j F Y, H:i') %}
-  {% endif %}
-{% endif %}
+{# One-line "when" in SA time from saho_preprocess_node__upcomingevent__teaser(); the preprocessed date-only string is the fallback. #}
+{% set formatted_start_date = event_when|default(formatted_start_date) %}
 
 {# Embed the SDC component #}
 {% embed 'saho:saho-upcoming-events-card' with {
