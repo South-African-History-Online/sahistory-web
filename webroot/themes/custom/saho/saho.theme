@@ -674,29 +674,6 @@ function saho_preprocess_node(array &$variables) {
 }
 
 /**
- * Parse a stored datetime/date field value into a DateTime in the given zone.
- *
- * The field_start_date / field_end_date fields are configured as datetime
- * (Y-m-d\TH:i:s) but legacy rows contain date-only values (Y-m-d). Returns
- * NULL if the value can't be parsed.
- */
-function _saho_upcomingevent_parse_date($value, \DateTimeZone $tz): ?\DateTime {
-  if (empty($value)) {
-    return NULL;
-  }
-  $formats = ['Y-m-d\TH:i:s', 'Y-m-d H:i:s', 'Y-m-d'];
-  foreach ($formats as $format) {
-    // Datetime field values are stored in UTC.
-    $dt = \DateTime::createFromFormat('!' . $format, $value, new \DateTimeZone('UTC'));
-    if ($dt instanceof \DateTime) {
-      $dt->setTimezone($tz);
-      return $dt;
-    }
-  }
-  return NULL;
-}
-
-/**
  * Implements hook_preprocess_node() for upcoming events.
  */
 function saho_preprocess_node__upcomingevent(&$variables) {
@@ -763,59 +740,26 @@ function saho_preprocess_node__upcomingevent__teaser(array &$variables): void {
  *   The preprocess variables, by reference.
  */
 function _saho_upcomingevent_status_props(NodeInterface $node, array &$variables): void {
-  if ($node->hasField('field_start_date') && !$node->get('field_start_date')->isEmpty()) {
-    $tz = new \DateTimeZone('Africa/Johannesburg');
-    $today = new \DateTime('today', $tz);
-    $start_date = _saho_upcomingevent_parse_date($node->get('field_start_date')->value, $tz);
-    if (!$start_date) {
-      return;
-    }
-
-    // Calculate effective end date.
-    $end_date = NULL;
-    if ($node->hasField('field_end_date') && !$node->get('field_end_date')->isEmpty()) {
-      $end_date = _saho_upcomingevent_parse_date($node->get('field_end_date')->value, $tz);
-    }
-    $effective_end_date = $end_date ?? $start_date;
-
-    $start_date_only = new \DateTime($start_date->format('Y-m-d'), new \DateTimeZone('Africa/Johannesburg'));
-    $effective_end_date_only = new \DateTime($effective_end_date->format('Y-m-d'), new \DateTimeZone('Africa/Johannesburg'));
-
-    // Determine event status.
-    $variables['event_status'] = 'past';
-    $variables['event_status_label'] = 'Past Event';
-    $variables['event_badge_variant'] = 'secondary';
-
-    if ($start_date_only <= $today && $effective_end_date_only >= $today) {
-      // Event is happening now.
-      $variables['event_status'] = 'in-progress';
-      $variables['event_status_label'] = 'Happening Now';
-      $variables['event_badge_variant'] = 'heritage-red';
+  // One status rule for the whole site: saho_upcoming_events_status() also
+  // drives the home-page block and the /all-upcoming-events split, so the
+  // page, the cards and the listing cannot disagree.
+  $status = function_exists('saho_upcoming_events_status') ? saho_upcoming_events_status($node) : NULL;
+  if ($status && $status['start']) {
+    $start_date = $status['start'];
+    $end_date = $status['end'];
+    $variables['event_status'] = $status['status'];
+    $variables['event_status_label'] = $status['label'];
+    $variables['event_badge_variant'] = [
+      'past' => 'secondary',
+      'in-progress' => 'heritage-red',
+      'upcoming' => 'primary',
+    ][$status['status']];
+    if ($status['pulse']) {
       $variables['show_pulse'] = TRUE;
     }
-    elseif ($start_date_only > $today) {
-      // Event is upcoming.
-      $variables['event_status'] = 'upcoming';
-      $variables['event_badge_variant'] = 'primary';
-
-      // Calculate countdown.
-      $diff = $today->diff($start_date_only);
-      $days_until = (int) $diff->format('%a');
-
-      if ($days_until == 0) {
-        $variables['event_status_label'] = 'Today';
-      }
-      elseif ($days_until == 1) {
-        $variables['event_status_label'] = 'Tomorrow';
-      }
-      elseif ($days_until <= 7) {
-        $variables['event_status_label'] = "In $days_until days";
-      }
-      else {
-        $variables['event_status_label'] = 'Upcoming';
-      }
-
-      $variables['countdown'] = $days_until;
+    if ($status['days_until'] !== NULL) {
+      // The card component's schema types countdown as string|null.
+      $variables['countdown'] = (string) $status['days_until'];
     }
 
     // Format dates for display with time.
