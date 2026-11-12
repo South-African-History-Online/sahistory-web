@@ -743,6 +743,18 @@ function saho_preprocess_node__upcomingevent(&$variables) {
 }
 
 /**
+ * Implements hook_preprocess_node() for upcoming event teasers.
+ *
+ * The one-line "when" on listing cards comes from the same helper as the
+ * home-page block, so both agree with the event page (all in SA time).
+ */
+function saho_preprocess_node__upcomingevent__teaser(array &$variables): void {
+  if (function_exists('saho_upcoming_events_card_meta')) {
+    $variables['event_when'] = saho_upcoming_events_card_meta($variables['node'])['when'];
+  }
+}
+
+/**
  * Computes event status, countdown and formatted dates for an upcoming event.
  *
  * @param \Drupal\node\NodeInterface $node

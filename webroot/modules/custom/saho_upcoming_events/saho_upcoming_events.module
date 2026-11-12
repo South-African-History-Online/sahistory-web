@@ -5,6 +5,13 @@
  * Primary module hooks for SAHO Upcoming Events module.
  */
 
+use Drupal\node\NodeInterface;
+
+/**
+ * The timezone every public event time is shown in.
+ */
+const SAHO_UPCOMING_EVENTS_TIMEZONE = 'Africa/Johannesburg';
+
 /**
  * Implements hook_help().
  */
@@ -31,6 +38,95 @@ function saho_upcoming_events_theme() {
       'template' => 'saho-upcoming-events-block',
     ],
   ];
+}
+
+/**
+ * Implements hook_preprocess_HOOK() for the upcoming events block.
+ *
+ * Status and "when" per card, computed in South African time from the UTC
+ * storage value. The template used to run the raw storage string through
+ * Twig's date filter, which treats it as local time and so printed UTC.
+ */
+function template_preprocess_saho_upcoming_events_block(array &$variables): void {
+  $variables['event_meta'] = [];
+  foreach ($variables['events'] as $event) {
+    if ($event instanceof NodeInterface) {
+      $variables['event_meta'][$event->id()] = saho_upcoming_events_card_meta($event);
+    }
+  }
+}
+
+/**
+ * Status, label and one-line "when" for an event card, in SA time.
+ *
+ * Shared by the block and the teaser so every card on the site agrees with
+ * the event page, which already formats in Africa/Johannesburg.
+ *
+ * @param \Drupal\node\NodeInterface $node
+ *   The upcomingevent node.
+ *
+ * @return array
+ *   Keys: status (past | in-progress | upcoming), label, pulse (bool),
+ *   when (string, empty when there is no start date).
+ */
+function saho_upcoming_events_card_meta(NodeInterface $node): array {
+  $meta = ['status' => 'past', 'label' => 'Past event', 'pulse' => FALSE, 'when' => ''];
+  $start = saho_upcoming_events_local_date($node, 'field_start_date');
+  if (!$start) {
+    return $meta;
+  }
+  $end = saho_upcoming_events_local_date($node, 'field_end_date');
+  $tz = new \DateTimeZone(SAHO_UPCOMING_EVENTS_TIMEZONE);
+  $today = new \DateTime('today', $tz);
+  $start_day = new \DateTime($start->format('Y-m-d'), $tz);
+  $end_day = new \DateTime(($end ?? $start)->format('Y-m-d'), $tz);
+
+  if ($start_day <= $today && $end_day >= $today) {
+    $meta['status'] = 'in-progress';
+    $meta['label'] = 'Happening now';
+    $meta['pulse'] = TRUE;
+  }
+  elseif ($start_day > $today) {
+    $meta['status'] = 'upcoming';
+    $days = (int) $today->diff($start_day)->format('%a');
+    $meta['label'] = match (TRUE) {
+      $days === 0 => 'Today',
+      $days === 1 => 'Tomorrow',
+      $days <= 7 => "In $days days",
+      default => 'Upcoming',
+    };
+  }
+
+  if (!$end) {
+    $meta['when'] = $start->format('j F Y, H:i');
+  }
+  elseif ($start->format('Y-m-d') === $end->format('Y-m-d')) {
+    $meta['when'] = $start->format('j F Y, H:i') . ' - ' . $end->format('H:i');
+  }
+  else {
+    $meta['when'] = $start->format('j F Y, H:i') . ' - ' . $end->format('j F Y, H:i');
+  }
+  return $meta;
+}
+
+/**
+ * A datetime field value as a \DateTime in South African time, or NULL.
+ *
+ * Datetime fields store UTC strings; the computed ->date is a UTC
+ * DrupalDateTime, cloned here so the field item is left untouched.
+ */
+function saho_upcoming_events_local_date(NodeInterface $node, string $field): ?\DateTime {
+  if (!$node->hasField($field) || $node->get($field)->isEmpty()) {
+    return NULL;
+  }
+  // @phpstan-ignore-next-line
+  $date = $node->get($field)->date;
+  if (!$date) {
+    return NULL;
+  }
+  $local = clone $date->getPhpDateTime();
+  $local->setTimezone(new \DateTimeZone(SAHO_UPCOMING_EVENTS_TIMEZONE));
+  return $local;
 }
 
 /**

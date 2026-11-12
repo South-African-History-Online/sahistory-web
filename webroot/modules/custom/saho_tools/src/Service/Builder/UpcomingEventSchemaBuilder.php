@@ -35,27 +35,13 @@ class UpcomingEventSchemaBuilder extends SchemaBuilderBase {
       'name' => $node->getTitle(),
     ] + $this->identityProperties($node);
 
-    // Add start date.
-    $start_date = NULL;
-    if ($node->hasField('field_start_date') && !$node->get('field_start_date')->isEmpty()) {
-      $start_date = $node->get('field_start_date')->value;
-    }
-
-    // Fallback: Use node created date if start date is missing.
-    if (empty($start_date)) {
-      $start_date = date('c', $node->getCreatedTime());
-    }
-
+    // Dates as ISO 8601 with the South African offset. The storage value is
+    // a bare UTC string; emitted as-is, consumers read it as local time and
+    // the event lands two hours early.
+    $start_date = $this->localIsoDate($node, 'field_start_date')
+      ?? date('c', $node->getCreatedTime());
     $schema['startDate'] = $start_date;
-
-    // Add end date.
-    if ($node->hasField('field_end_date') && !$node->get('field_end_date')->isEmpty()) {
-      $schema['endDate'] = $node->get('field_end_date')->value;
-    }
-    else {
-      // Default to start date if no end date specified.
-      $schema['endDate'] = $start_date;
-    }
+    $schema['endDate'] = $this->localIsoDate($node, 'field_end_date') ?? $start_date;
 
     // Add event description from body.
     if ($node->hasField('body') && !$node->get('body')->isEmpty()) {
@@ -188,6 +174,23 @@ class UpcomingEventSchemaBuilder extends SchemaBuilderBase {
    */
   protected function getOrganizationSchema(): array {
     return $this->organizationRef();
+  }
+
+  /**
+   * A datetime field as ISO 8601 in Africa/Johannesburg, or NULL if empty.
+   */
+  private function localIsoDate(NodeInterface $node, string $field): ?string {
+    if (!$node->hasField($field) || $node->get($field)->isEmpty()) {
+      return NULL;
+    }
+    // @phpstan-ignore-next-line
+    $date = $node->get($field)->date;
+    if (!$date) {
+      return NULL;
+    }
+    $local = clone $date->getPhpDateTime();
+    $local->setTimezone(new \DateTimeZone('Africa/Johannesburg'));
+    return $local->format('Y-m-d\TH:i:sP');
   }
 
 }
