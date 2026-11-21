@@ -198,3 +198,36 @@ function saho_utils_update_10002() {
 
   return t('Verified/corrected @count event dates.', ['@count' => $updated]);
 }
+
+/**
+ * Reconcile entity and field definitions flagged on the status report.
+ *
+ * Registers the file URL alias field and the responsive image style entity
+ * type, and refreshes the file type field. No database schema changes: the
+ * alias field has custom storage, the file type column is unchanged and the
+ * responsive image style is a config entity.
+ */
+function saho_utils_update_10003() {
+  $manager = \Drupal::entityDefinitionUpdateManager();
+  $entity_type_manager = \Drupal::entityTypeManager();
+  $done = [];
+
+  if ($entity_type_manager->hasDefinition('responsive_image_style') && !$manager->getEntityType('responsive_image_style')) {
+    $manager->installEntityType($entity_type_manager->getDefinition('responsive_image_style'));
+    $done[] = 'installed responsive_image_style';
+  }
+
+  $definitions = \Drupal::service('entity_field.manager')->getFieldStorageDefinitions('file');
+
+  if (isset($definitions['path']) && !$manager->getFieldStorageDefinition('path', 'file')) {
+    $manager->installFieldStorageDefinition('path', 'file', $definitions['path']->getProvider(), $definitions['path']);
+    $done[] = 'installed file.path';
+  }
+
+  if (isset($definitions['type']) && $manager->getFieldStorageDefinition('type', 'file')) {
+    $manager->updateFieldStorageDefinition($definitions['type']);
+    $done[] = 'updated file.type';
+  }
+
+  return $done ? implode(', ', $done) . '.' : 'Nothing to reconcile.';
+}
