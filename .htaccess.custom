@@ -105,6 +105,12 @@ ErrorDocument 403 /403.shtml
 <IfModule mod_rewrite.c>
   RewriteEngine on
 
+  # The installer and rebuild front controllers are never needed on an
+  # installed site (drush handles both) and install.php is a recurring
+  # attack surface (SA-CORE-2026-019), so serve the static 403 before PHP
+  # runs.
+  RewriteRule ^(core/)?(install|rebuild)\.php($|/) - [F,L]
+
   # Scraper mitigation (2026-07-31 incident): a distributed fleet walks the
   # faceted /classroom URL space on the language-prefixed variants at
   # ~1,700 req/min. Only the prefixed variants are blocked - the English
