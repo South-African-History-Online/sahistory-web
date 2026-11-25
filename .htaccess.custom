@@ -111,6 +111,19 @@ ErrorDocument 403 /403.shtml
   # runs.
   RewriteRule ^(core/)?(install|rebuild)\.php($|/) - [F,L]
 
+  # The Dumile Feni and Rick Turner subsites moved to their own subdomains
+  # (static archives, November 2026). Their old paths here carry years of
+  # inbound links, so send the pages that have a direct counterpart to it and
+  # everything else under the old path to the new home page.
+  RewriteRule ^dumileo?(/.*)?$ https://dumile.sahistory.org.za/ [R=301,L]
+  RewriteRule ^r-turner/(biography|chronology)/?$ https://rickturner.sahistory.org.za/life/$1/ [R=301,L]
+  RewriteRule ^r-turner/his-writings/?$ https://rickturner.sahistory.org.za/writings/ [R=301,L]
+  RewriteRule ^r-turner/gallery/?$ https://rickturner.sahistory.org.za/gallery/ [R=301,L]
+  RewriteRule ^r-turner/(articles|article-landing-page)/?$ https://rickturner.sahistory.org.za/remembering/ [R=301,L]
+  RewriteRule ^r-turner/Thirty_Years_On/?$ https://rickturner.sahistory.org.za/remembering/thirty-years-on/ [R=301,L]
+  RewriteRule ^r-turner/Who_Shot_My_Dad/?$ https://rickturner.sahistory.org.za/remembering/who-shot-my-dad/ [R=301,L]
+  RewriteRule ^r-turner(/.*)?$ https://rickturner.sahistory.org.za/ [R=301,L]
+
   # Scraper mitigation (2026-07-31 incident): a distributed fleet walks the
   # faceted /classroom URL space on the language-prefixed variants at
   # ~1,700 req/min. Only the prefixed variants are blocked - the English
